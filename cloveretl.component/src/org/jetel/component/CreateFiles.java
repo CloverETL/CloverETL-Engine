@@ -56,7 +56,7 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
     private static final String COMPONENT_TYPE = "CREATE_FILES"; //$NON-NLS-1$
 
 	// XML attribute names
-	private static final String XML_TARGET_ATTRIBUTE = "target"; //$NON-NLS-1$
+	private static final String XML_TARGET_ATTRIBUTE = "fileURL"; //$NON-NLS-1$
 	private static final String XML_DIRECTORY_ATTRIBUTE = "directory"; //$NON-NLS-1$
 	private static final String XML_MAKE_PARENT_DIRS_ATTRIBUTE = "makeParentDirs"; //$NON-NLS-1$
 	private static final String XML_MODIFIED_DATE_ATTRIBUTE = "modifiedDate"; //$NON-NLS-1$
@@ -73,17 +73,17 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
     private static final String IP_MAKE_PARENTS_NAME = XML_MAKE_PARENT_DIRS_ATTRIBUTE;
     private static final String IP_MODIFIED_DATE_NAME = XML_MODIFIED_DATE_ATTRIBUTE;
 
-    private static final int ERR_TARGET_URI_INDEX = 2;
+    private static final int ERR_TARGET_URL_INDEX = 2;
     
-    private static final String ERR_TARGET_URI_NAME = "targetUri"; //$NON-NLS-1$
+    private static final String ERR_TARGET_URL_NAME = XML_TARGET_ATTRIBUTE;
 
     private static final String RESULT_RECORD_NAME = "Result"; //$NON-NLS-1$
 
-    private static final int RS_TARGET_URI_INDEX = 0;
+    private static final int RS_TARGET_URL_INDEX = 0;
     private static final int RS_RESULT_INDEX = 1;
     private static final int RS_ERROR_MESSAGE_INDEX = 2;
 
-    private static final String RS_TARGET_URI_NAME = ERR_TARGET_URI_NAME;
+    private static final String RS_TARGET_URL_NAME = XML_TARGET_ATTRIBUTE;
     private static final String RS_RESULT_NAME = ERR_RESULT_NAME;
     private static final String RS_ERROR_MESSAGE_NAME = ERR_ERROR_MESSAGE_NAME;
 
@@ -192,14 +192,14 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
 		if (ex != null) {
 			resultRecord.getField(RS_RESULT_INDEX).setValue(false);
 			resultRecord.getField(RS_ERROR_MESSAGE_INDEX).setValue(ex.getMessage());
-			resultRecord.getField(RS_TARGET_URI_INDEX).setValue(target);
+			resultRecord.getField(RS_TARGET_URL_INDEX).setValue(target);
 		} else {
 			boolean success = result.success(index);
 			resultRecord.getField(RS_RESULT_INDEX).setValue(success);
 			if (!success) {
 				resultRecord.getField(RS_ERROR_MESSAGE_INDEX).setValue(result.getError(index));
 			}
-			resultRecord.getField(RS_TARGET_URI_INDEX).setValue(result.getURI(index).getPath());
+			resultRecord.getField(RS_TARGET_URL_INDEX).setValue(result.getURI(index).getPath());
 		}
 	}
 	
@@ -209,10 +209,10 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
 		Exception ex = result.getException();
 		if (ex != null) {
 			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(ex.getMessage());
-			errorRecord.getField(ERR_TARGET_URI_INDEX).setValue(target);
+			errorRecord.getField(ERR_TARGET_URL_INDEX).setValue(target);
 		} else {
 			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(result.getError(index));
-			errorRecord.getField(ERR_TARGET_URI_INDEX).setValue(result.getURI(index).getPath());
+			errorRecord.getField(ERR_TARGET_URL_INDEX).setValue(result.getURI(index).getPath());
 		}
 	}
 
@@ -230,7 +230,7 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
 	public static DataRecordMetadata staticCreateResultMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(RESULT_RECORD_NAME);
 		
-		metadata.addField(RS_TARGET_URI_INDEX, new DataFieldMetadata(RS_TARGET_URI_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(RS_TARGET_URL_INDEX, new DataFieldMetadata(RS_TARGET_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(RS_RESULT_INDEX, new DataFieldMetadata(RS_RESULT_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(RS_ERROR_MESSAGE_INDEX, new DataFieldMetadata(RS_ERROR_MESSAGE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 
@@ -242,7 +242,7 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
 		
 		metadata.addField(ERR_RESULT_INDEX, new DataFieldMetadata(ERR_RESULT_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(ERR_ERROR_MESSAGE_INDEX, new DataFieldMetadata(ERR_ERROR_MESSAGE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(ERR_TARGET_URI_INDEX, new DataFieldMetadata(ERR_TARGET_URI_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(ERR_TARGET_URL_INDEX, new DataFieldMetadata(ERR_TARGET_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 
 		return metadata;
 	}

@@ -54,7 +54,7 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
     private static final String COMPONENT_TYPE = "LIST_FILES"; //$NON-NLS-1$
 
 	// XML attribute names
-	private static final String XML_TARGET_ATTRIBUTE = "target"; //$NON-NLS-1$
+	private static final String XML_TARGET_ATTRIBUTE = "fileURL"; //$NON-NLS-1$
 	private static final String XML_RECURSIVE_ATTRIBUTE = "recursive"; //$NON-NLS-1$
 
 	private String target;
@@ -63,12 +63,9 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 	private String defaultTarget;
 	private Boolean defaultRecursive;
 
-    private static final int ERR_LIST_TARGET_INDEX = 2;
-    private static final String ERR_LIST_TARGET_NAME = "listTarget"; //$NON-NLS-1$
-
     private static final String RESULT_RECORD_NAME = "Result"; //$NON-NLS-1$
 
-    private static final int RS_URI_INDEX = 0;
+    private static final int RS_URL_INDEX = 0;
     private static final int RS_NAME_INDEX = 1;
     private static final int RS_CAN_READ_INDEX = 2;
     private static final int RS_CAN_WRITE_INDEX = 3;
@@ -80,9 +77,8 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
     private static final int RS_SIZE_INDEX = 9;
     private static final int RS_RESULT_INDEX = 10;
     private static final int RS_ERROR_MESSAGE_INDEX = 11;
-    private static final int RS_LIST_TARGET_INDEX = 12;
     
-    private static final String RS_URI_NAME = "uri"; //$NON-NLS-1$
+    private static final String RS_URL_NAME = "URL"; //$NON-NLS-1$
     private static final String RS_NAME_NAME = "name"; //$NON-NLS-1$
     private static final String RS_CAN_READ_NAME = "canRead"; //$NON-NLS-1$
     private static final String RS_CAN_WRITE_NAME = "canWrite"; //$NON-NLS-1$
@@ -94,7 +90,6 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
     private static final String RS_SIZE_NAME = "size"; //$NON-NLS-1$
     private static final String RS_RESULT_NAME = ERR_RESULT_NAME;
     private static final String RS_ERROR_MESSAGE_NAME = ERR_ERROR_MESSAGE_NAME;
-    private static final String RS_LIST_TARGET_NAME = ERR_LIST_TARGET_NAME;
 
     
     private static final String INPUT_PARAMETERS_RECORD_NAME = "Attributes"; //$NON-NLS-1$
@@ -158,14 +153,12 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 		Exception ex = result.getException();
 		if (ex != null) {
 			resultRecord.getField(RS_RESULT_INDEX).setValue(false);
-			resultRecord.getField(RS_LIST_TARGET_INDEX).setValue(target);
 			resultRecord.getField(RS_ERROR_MESSAGE_INDEX).setValue(ex.getMessage());
 		} else {
 			boolean success = result.success(index);
 			resultRecord.getField(RS_RESULT_INDEX).setValue(success);
-			resultRecord.getField(RS_LIST_TARGET_INDEX).setValue(result.getURI(index).getPath());
 			if (success) {
-				resultRecord.getField(RS_URI_INDEX).setValue(info.getURI().toString());
+				resultRecord.getField(RS_URL_INDEX).setValue(info.getURI().toString());
 				resultRecord.getField(RS_NAME_INDEX).setValue(info.getName());
 				resultRecord.getField(RS_CAN_READ_INDEX).setValue(info.canRead());
 				resultRecord.getField(RS_CAN_WRITE_INDEX).setValue(info.canWrite());
@@ -186,10 +179,8 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 		errorRecord.getField(ERR_RESULT_INDEX).setValue(false);
 		Exception ex = result.getException();
 		if (ex != null) {
-			errorRecord.getField(ERR_LIST_TARGET_INDEX).setValue(target);
 			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(ex.getMessage());
 		} else {
-			errorRecord.getField(ERR_LIST_TARGET_INDEX).setValue(result.getURI(index).getPath());
 			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(result.getError(index));
 		}
 	}
@@ -265,7 +256,7 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 	public static DataRecordMetadata staticCreateResultMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(RESULT_RECORD_NAME);
 		
-		metadata.addField(RS_URI_INDEX, new DataFieldMetadata(RS_URI_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(RS_URL_INDEX, new DataFieldMetadata(RS_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(RS_NAME_INDEX, new DataFieldMetadata(RS_NAME_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(RS_CAN_READ_INDEX, new DataFieldMetadata(RS_CAN_READ_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(RS_CAN_WRITE_INDEX, new DataFieldMetadata(RS_CAN_WRITE_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
@@ -277,7 +268,6 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 		metadata.addField(RS_SIZE_INDEX, new DataFieldMetadata(RS_SIZE_NAME, DataFieldType.LONG, DUMMY_DELIMITER));
 		metadata.addField(RS_RESULT_INDEX, new DataFieldMetadata(RS_RESULT_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(RS_ERROR_MESSAGE_INDEX, new DataFieldMetadata(RS_ERROR_MESSAGE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(RS_LIST_TARGET_INDEX, new DataFieldMetadata(RS_LIST_TARGET_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 
 		return metadata;
 	}
@@ -287,7 +277,6 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 		
 		metadata.addField(ERR_RESULT_INDEX, new DataFieldMetadata(ERR_RESULT_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(ERR_ERROR_MESSAGE_INDEX, new DataFieldMetadata(ERR_ERROR_MESSAGE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(ERR_LIST_TARGET_INDEX, new DataFieldMetadata(ERR_LIST_TARGET_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 
 		return metadata;
 	}
