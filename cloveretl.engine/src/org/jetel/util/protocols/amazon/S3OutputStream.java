@@ -64,49 +64,50 @@ public class S3OutputStream extends OutputStream {
 		if (uploaded) {
 			return;
 		}
-		
-		uploaded = true;
-		os.close();
-		os = null;
-		
-		if (!S3InputStream.isS3File(url)) {
-			throw new IllegalArgumentException("Not an Amazon S3 host");
-		}
-		
-		String accessKey = S3InputStream.getAccessKey(url);
-		String secretKey = S3InputStream.getSecretKey(url);
-		String file = url.getFile();
-		if (file.startsWith("/")) {
-			file = file.substring(1);
-		}
-		
-		AWSCredentials credentials = new AWSCredentials(accessKey, secretKey);
-		RestS3Service service;
-		
 		try {
-			service = new RestS3Service(credentials);
-		} catch (S3ServiceException e) {
-			throw new IOException(e);
+			uploaded = true;
+			os.close();
+			os = null;
+			
+			if (!S3InputStream.isS3File(url)) {
+				throw new IllegalArgumentException("Not an Amazon S3 host");
+			}
+			
+			String accessKey = S3InputStream.getAccessKey(url);
+			String secretKey = S3InputStream.getSecretKey(url);
+			String file = url.getFile();
+			if (file.startsWith("/")) {
+				file = file.substring(1);
+			}
+			
+			AWSCredentials credentials = new AWSCredentials(accessKey, secretKey);
+			RestS3Service service;
+			
+			try {
+				service = new RestS3Service(credentials);
+			} catch (S3ServiceException e) {
+				throw new IOException(e);
+			}
+	
+			String bucket = S3InputStream.getBucket(url);
+			S3Bucket s3bucket = new S3Bucket(bucket); 
+	
+			S3Object uploadObject;
+			try {
+				uploadObject = new S3Object(s3bucket, tempFile);
+			} catch (NoSuchAlgorithmException e) {
+				throw new IOException(e);
+			}
+			uploadObject.setKey(file);
+			
+			try {
+				service.putObject(bucket, uploadObject);
+			} catch (S3ServiceException e) {
+				throw new IOException(e);
+			}
+		} finally {
+			tempFile.delete();
 		}
-
-		String bucket = S3InputStream.getBucket(url);
-		S3Bucket s3bucket = new S3Bucket(bucket); 
-
-		S3Object uploadObject;
-		try {
-			uploadObject = new S3Object(s3bucket, tempFile);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IOException(e);
-		}
-		uploadObject.setKey(file);
-		
-		try {
-			service.putObject(bucket, uploadObject);
-		} catch (S3ServiceException e) {
-			throw new IOException(e);
-		}
-		
-		tempFile.delete();
 	}
 	
 	@Override

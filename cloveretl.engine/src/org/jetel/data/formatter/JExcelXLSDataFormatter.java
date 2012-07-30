@@ -143,6 +143,13 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		} catch (IOException e) {
 			logger.warn("Failed to close output stream.", e);
 		}
+		if (tmpDir != null) {
+			try {
+				FileUtils.deleteRecursively(tmpDir);
+			} catch (IOException e) {
+				logger.warn("Failed to delete temp directory " + tmpDir.getAbsolutePath(), e);
+			}
+		}
 	}
 
 	/* (non-Javadoc)

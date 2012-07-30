@@ -425,8 +425,8 @@ public abstract class TreeWriter extends Node {
 
 		try {
 			// Init new cache record manager
-			File tmpDir = getGraph().getAuthorityProxy().newTempDir("tree-writer-cache-", -1);
-			File file = new File(tmpDir, "jdbm-cache");
+			tempDirectory = getGraph().getAuthorityProxy().newTempDir("tree-writer-cache-", -1);
+			File file = new File(tempDirectory, "jdbm-cache");
 			sharedCache = CacheRecordManager.createInstance(file.getAbsolutePath(), cacheSize);
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
@@ -532,6 +532,9 @@ public abstract class TreeWriter extends Node {
 		try {
 			sharedCache.close();
 			writer.close();
+			if (tempDirectory != null) {
+				FileUtils.deleteRecursively(tempDirectory);
+			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(getType() + ": " + e.getMessage(), e);
 		}

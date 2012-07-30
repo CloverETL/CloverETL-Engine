@@ -28,6 +28,7 @@ import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.log4j.Logger;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -46,6 +47,8 @@ import org.jetel.util.bytes.CloverBuffer;
  *@since      November 20, 2006
  */
 public class DynamicRecordBuffer {
+	
+	private static final Logger log = Logger.getLogger(DynamicRecordBuffer.class);
 
 	protected CloverBuffer readDataBuffer;
     protected CloverBuffer writeDataBuffer;
@@ -126,12 +129,22 @@ public class DynamicRecordBuffer {
 	public void close() throws IOException {
 		isClosed = true;
 		
-		if (tempFile != null) {
-			tempFile.close();
-		}
 		for (TempFile tempFile : obsoleteTempFiles) {
-			tempFile.close();
+			try {
+				tempFile.close();
+			} catch (IOException e) {
+				log.error("Failed to close temp file.", e);
+			}
 		}
+		
+		if (tempFile != null) {
+			try {
+				tempFile.close();
+			} catch (IOException e) {
+				log.error("Failed to close temp file.", e);
+			}
+		}
+		
         readDataBuffer = null;
         writeDataBuffer = null;
 	}
@@ -158,7 +171,11 @@ public class DynamicRecordBuffer {
 			tempFile.reset();
 		}
 		while (!obsoleteTempFiles.isEmpty()) {
-			obsoleteTempFiles.remove().close();
+			try {
+				obsoleteTempFiles.remove().close();
+			} catch (IOException e) {
+				log.warn("Failed to close temp file.", e);
+			}
 		}
 		
 		readDataBuffer.clear();
@@ -478,18 +495,16 @@ public class DynamicRecordBuffer {
 			}
 		}
 
-		public void close() {
+		public void close() throws IOException {
 			try {
+				fullFileBuffers = null;
+		        emptyFileBuffers = null;
 				tempFileChannel.close();
-			} catch (IOException e) {
-				throw new JetelRuntimeException("Can't close TMP file: " + tempFile.getAbsoluteFile(), e);
+			} finally {
+		        if (!tempFile.delete()) {
+		        	log.warn("Failed to delete temp file: " + tempFile.getAbsolutePath());
+		        }
 			}
-			if (!tempFile.delete()) {
-				throw new JetelRuntimeException("Can't delete TMP file: " + tempFile.getAbsoluteFile());
-			}
-
-	        fullFileBuffers = null;
-	        emptyFileBuffers = null;
 		}
 
 		public void reset() {
