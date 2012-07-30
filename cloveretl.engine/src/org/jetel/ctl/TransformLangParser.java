@@ -231,7 +231,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         }
 
         /**
-	 * Analyzes special tokens (comments) for occurence of indication comment to determine
+	 * Analyzes special tokens (comments) for occurrence of indication comment to determine
 	 * if compiled or non-compiled mode is active.
 	 */
         private boolean isCompiledMode(Token regular) {
@@ -614,7 +614,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                         problemReporter.setErrorLocation(errorLocation);
                         }
                 } else {
-                        warn(jjtn000, "Multiple import of \u005c""+filenameURL+"\u005c": ignoring redundant occurences", "Try to remove multiple occurences of import of the same file");
+                        warn(jjtn000, "Multiple import of \u005c""+filenameURL+"\u005c": ignoring redundant occurrences", "Try to remove multiple occurrences of import of the same file");
                 }
     } finally {
           if (jjtc000) {
