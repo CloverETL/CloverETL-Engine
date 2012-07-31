@@ -155,7 +155,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("HTTPConnector_post_error_unknownhost.grf") // ok, is to fail
 							&& !pathname.getName().equals("HTTPConnector_post_error_unknownprotocol.grf") // ok, is to fail
 							&& !pathname.getName().equals("HTTPConnector_inputmapping_null_values.grf") // ok, is to fail
-							&& !pathname.getName().equals("HttpConector_errHandlingNoRedir.grf"); // ok, is to fail
+							&& !pathname.getName().equals("HttpConector_errHandlingNoRedir.grf") // ok, is to fail
+							&& !pathname.getName().equals("XLSZipMultisheet.grf"); // remove after CL-2425 resolved
 					
 				}
 			});
