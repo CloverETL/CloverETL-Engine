@@ -40,6 +40,7 @@ import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.string.StringUtils;
 
 public abstract class AbstractFileOperation<R extends org.jetel.component.fileoperation.result.Result> extends Node {
 
@@ -488,6 +489,16 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
         	status.add(FileOperationComponentMessages.getString("AbstractFileOperation.init_failed"), e, Severity.ERROR, this, Priority.NORMAL); //$NON-NLS-1$
         }
     	
+		if (hasInputPort && StringUtils.isEmpty(inputMappingCode)) {
+			status.add(FileOperationComponentMessages.getString("AbstractFileOperation.mapping_not_defined"), Severity.WARNING, this, Priority.LOW, XML_INPUT_MAPPING_ATTRIBUTE);
+		}
+		if (hasStandardOutputPort && StringUtils.isEmpty(outputMappingCode)) {
+			status.add(FileOperationComponentMessages.getString("AbstractFileOperation.mapping_not_defined"), Severity.WARNING, this, Priority.LOW, XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
+		}
+		if (hasErrorOutputPort && StringUtils.isEmpty(errorMappingCode)) {
+			status.add(FileOperationComponentMessages.getString("AbstractFileOperation.mapping_not_defined"), Severity.WARNING, this, Priority.LOW, XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
+		}
+		
         return status;
 	}
 
