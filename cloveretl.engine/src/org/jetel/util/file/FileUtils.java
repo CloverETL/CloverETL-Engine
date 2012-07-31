@@ -91,7 +91,6 @@ import com.ice.tar.TarInputStream;
 import com.jcraft.jsch.ChannelSftp;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-import java.net.URLDecoder;
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -1619,15 +1618,17 @@ public class FileUtils {
 	}
 
 	/**
-	 * This method affects only windows platform following way:
-	 * 1) backslashes are replaced by slashes
-	 * 2) if first character is slash and device specification follows, the starting slash is removed
+	 * <p>This method affects only windows platform following way:
+	 * <ul><li> backslashes are replaced by slashes
+	 * <li>if first character is slash and device specification follows, the starting slash is removed
+	 * </ul>
 	 * 
-	 * For example:
-	 * c:\project\data.txt -> c:/project/data.txt
+	 * <p>For example:
+	 * 
+	 * <p><tt>c:\project\data.txt -> c:/project/data.txt<br>
 	 * /c:/project/data.txt -> c:/project/data.txt
 	 * 
-	 * A path reached from method anUrl.getPath() (or anUrl.getFile()) should be cleaned by this method. 
+	 * <p>A path reached from method anUrl.getPath() (or anUrl.getFile()) should be cleaned by this method. 
 	 * 
 	 * @param path
 	 * @return
