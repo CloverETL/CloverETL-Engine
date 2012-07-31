@@ -116,33 +116,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	@Override
 	public void close() {
 		if (!open) return;
-		
-		try {
-			if (wb.getNumberOfSheets() == 0) {
-				// Fix of issue #5567: If there's nothing in the workbook, write empty sheet so that resulting file is readable.
-				wb.createSheet("EmptySheet", 0);
-				wb.write();
-			}
-		} catch (Exception e) {
-			logger.warn("Could not create empty sheet. The file may be unreadable.", e);
-		}
-		try {
-			wb.close();
-		} catch (Exception e) {
-			logger.warn("Failed to close Excel Workbook.", e);
-		}
-
-		sheet = null;
-		open = false;
-		
-		try {
-			if (os != null) {
-				os.flush();
-				os.close();
-			}
-		} catch (IOException e) {
-			logger.warn("Failed to close output stream.", e);
-		}
+		closeCurrentWb();
 		if (tmpDir != null) {
 			try {
 				FileUtils.deleteRecursively(tmpDir);
@@ -238,6 +212,37 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		open = true;
 	}
 	
+	private void closeCurrentWb() {
+		if (!open) return;
+		
+		try {
+			if (wb.getNumberOfSheets() == 0) {
+				// Fix of issue #5567: If there's nothing in the workbook, write empty sheet so that resulting file is readable.
+				wb.createSheet("EmptySheet", 0);
+				wb.write();
+			}
+		} catch (Exception e) {
+			logger.warn("Could not create empty sheet. The file may be unreadable.", e);
+		}
+		try {
+			wb.close();
+		} catch (Exception e) {
+			logger.warn("Failed to close Excel Workbook.", e);
+		}
+
+		sheet = null;
+		open = false;
+		
+		try {
+			if (os != null) {
+				os.flush();
+				os.close();
+			}
+		} catch (IOException e) {
+			logger.warn("Failed to close output stream.", e);
+		}
+	}
+	
 	/**
 	 * Prepares cell format depending on field format and locale
 	 * 
@@ -271,7 +276,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 */
 	@Override
 	public void setDataTarget(Object outputDataTarget) {
-		close();
+		closeCurrentWb();
 		Workbook oldWb = null;
         try{
             WorkbookSettings settings = new WorkbookSettings();
