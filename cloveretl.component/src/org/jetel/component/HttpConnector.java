@@ -250,12 +250,12 @@ public class HttpConnector extends Node {
 	/**
 	 * The name of an XML attribute representing input file URL.
 	 */
-	private final static String XML_INPUT_FILEURL_ATTRIBUTE = "inFileURL";
+	private final static String XML_INPUT_FILEURL_ATTRIBUTE = "inFileUrl";
 
 	/**
 	 * The name of an XML attribute representing output file URL.
 	 */
-	private final static String XML_OUTPUT_FILEURL_ATTRIBUTE = "outFileURL";
+	private final static String XML_OUTPUT_FILEURL_ATTRIBUTE = "outFileUrl";
 	
 	/**
 	 * The name of an XML attribute representing if the output should be appended.
@@ -810,7 +810,7 @@ public class HttpConnector extends Node {
 	private String inputFileUrl;
 	private String inputFileUrlToUse;
     private static final int IP_INPUT_FILE_URL_INDEX = 8;
-    private static final String IP_INPUT_FILE_URL_NAME = "inputFileURL";
+    private static final String IP_INPUT_FILE_URL_NAME = "inputFileUrl";
     
 
 	/**  
@@ -819,7 +819,7 @@ public class HttpConnector extends Node {
 	private String outputFileUrl;
 	private String outputFileUrlToUse;
 	private static final int IP_OUTPUT_FILE_URL_INDEX = 9;
-    private static final String IP_OUTPUT_FILE_URL_NAME = "outputFileURL";
+    private static final String IP_OUTPUT_FILE_URL_NAME = "outputFileUrl";
    
 	/**  
 	 * <code>True</code>, if the response should be appended to the output file, <code>false</code> if the file should be overwritten.
