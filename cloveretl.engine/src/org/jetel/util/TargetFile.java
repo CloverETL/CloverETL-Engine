@@ -154,22 +154,29 @@ public class TargetFile {
     	} else if (outputPort != null) {
     		throw new ComponentNotReadyException("File url must contains port or dict protocol.");
     	} else if (fileURL != null && fileURL.startsWith(DICT_PROTOCOL)) {
-           	initDictTarget();
+           	if (!initDictTarget()) {
+           		//dictionary contains just regular fileURL (SOURCE type), let's process it
+           		processRegularFileURL();
+           	}
     	} else {
-        	initUrl();
-        	if (fileURL != null && (after.indexOf(MultiOutFile.NUM_CHAR) != -1 && before.startsWith("zip:"))) {
-        		throw new ComponentNotReadyException("File url must not contain wildcard in inzip filename");
-        	}
-        	if (fileTag == null) {
-        		initFileNames(null);
-        	} 
-        	else if (fileTag instanceof Number) {
-        		initFileNames(format.format((Number)fileTag));
-        	} else {
-        		initFileNames(fileTag.toString());
-        	}
+    		processRegularFileURL();
     	}
     	initOutput();
+    }
+
+    private void processRegularFileURL() throws ComponentNotReadyException, IOException {
+    	initUrl();
+    	if (fileURL != null && (after.indexOf(MultiOutFile.NUM_CHAR) != -1 && before.startsWith("zip:"))) {
+    		throw new ComponentNotReadyException("File url must not contain wildcard in inzip filename");
+    	}
+    	if (fileTag == null) {
+    		initFileNames(null);
+    	} 
+    	else if (fileTag instanceof Number) {
+    		initFileNames(format.format((Number)fileTag));
+    	} else {
+    		initFileNames(fileTag.toString());
+    	}
     }
     
     public void reset() {
@@ -239,7 +246,7 @@ public class TargetFile {
     	format = new DecimalFormat(sb.toString());
     }
 
-	private void initDictTarget() throws ComponentNotReadyException {
+	private boolean initDictTarget() throws ComponentNotReadyException {
 		if (dictionary == null) {
 			throw new RuntimeException("The component doesn't support dictionary writing.");
 		}
@@ -278,9 +285,23 @@ public class TargetFile {
 				dictionary.setValue(aDict[0], dictObjectArray);
 			}
 			break;
+		case SOURCE:
+			if (dictValue instanceof CharSequence) {
+				//fileURL refers to a dictionary entry which is SOURCE type
+				//so dictionary entry content has to be a string which is real fileURL to be written
+				//fileURL variable is updated and false value returned to inform
+				//that writer has to write to file specified in fileURL variable 
+				fileURL = ((CharSequence) dictValue).toString();
+				dictProcesstingType = null; //just to be sure that all other code will not be confused
+				return false; 
+			} else {
+				throw new IllegalStateException("Dictionary doesn't contain valid value for the key '" + aDict[0] + "' in source processing mode. " +
+						"Only charsequence are supported.");
+			}
 		default:
 			throw new ComponentNotReadyException("invalid dictionary processting type " + dictProcesstingType);
 		}
+		return true;
 	}
     
 	private void initPortFields() throws ComponentNotReadyException {
