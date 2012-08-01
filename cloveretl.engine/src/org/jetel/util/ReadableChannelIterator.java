@@ -136,6 +136,7 @@ public class ReadableChannelIterator {
 		// dictionary iterator
 		dictionaryReadingIterator = new ReadableChannelDictionaryIterator(dictionary);
 		dictionaryReadingIterator.setCharset(charset);
+		dictionaryReadingIterator.setContextURL(contextURL);
 		
 		// current state
 		currentPortProtocolPosition = 0;

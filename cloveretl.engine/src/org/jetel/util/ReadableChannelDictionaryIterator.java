@@ -23,6 +23,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
@@ -38,6 +39,7 @@ import org.jetel.data.Defaults;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.util.file.FileUtils;
 
 
 /***
@@ -54,6 +56,7 @@ public class ReadableChannelDictionaryIterator {
 
 	// charset and dictionary
 	private String charset;
+	private URL contextURL;
 	private Dictionary dictionary;
 
 	// dictionary value
@@ -163,7 +166,7 @@ public class ReadableChannelDictionaryIterator {
 		charBuffer.compact();	// ready for writing
         decoder.decode(dataBuffer, charBuffer, false);
         charBuffer.flip();
-        return createReadableByteChannel(charBuffer.toString());
+        return createChannelFromFileName(charBuffer.toString());
 	}
 	
 	/**
@@ -180,6 +183,25 @@ public class ReadableChannelDictionaryIterator {
 		return Channels.newChannel(str);
 	}
 
+	/**
+	 * Creates readable channel for a file name.
+	 * 
+	 * @param fileName
+	 * @return
+	 * @throws JetelException
+	 */
+	private ReadableByteChannel createChannelFromFileName(String fileName) throws JetelException {
+		defaultLogger.debug("Opening input file " + fileName);
+		try {
+			ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
+			defaultLogger.debug("Reading input file " + fileName);
+			return channel;
+		} catch (IOException e) {
+			throw new JetelException("File is unreachable: " + fileName, e);
+		}
+	}
+
+	
 	/**
 	 * Iterators for dictionary values.
 	 */
@@ -285,4 +307,9 @@ public class ReadableChannelDictionaryIterator {
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}	
+	
+	public void setContextURL(URL contextURL) {
+		this.contextURL = contextURL;
+	}
+	
 }
