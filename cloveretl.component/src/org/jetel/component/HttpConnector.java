@@ -1609,9 +1609,9 @@ public class HttpConnector extends Node {
 	    	initExecutionParametersFromComponentAttributes();
 	    }
 		
-		inputMappingTransformation.init();
-		standardOutputMappingTransformation.init();
-	    errorOutputMappingTransformation.init();
+		inputMappingTransformation.init(XML_INPUT_MAPPING_ATTRIBUTE);
+		standardOutputMappingTransformation.init(XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
+	    errorOutputMappingTransformation.init(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
 	}	
 	
 	/**

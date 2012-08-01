@@ -18,6 +18,7 @@
  */
 package org.jetel.util;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -371,10 +372,39 @@ public class CTLMapping {
 		this.classLoader = classLoader;
 	}
 	
+	public static class MissingRecordFieldMessage {
+		
+		public final String recordName;
+		public final String errorMessage;
+		public final boolean output;
+		
+		private MissingRecordFieldMessage(String recordName, String errorMessage, boolean output) {
+			this.recordName = recordName;
+			this.errorMessage = errorMessage;
+			this.output = output;
+		}
+		
+		public static MissingRecordFieldMessage newOutputFieldMessage(String recordName, String errorMessage) {
+			return new MissingRecordFieldMessage(recordName, errorMessage, true);
+		}
+
+		public static MissingRecordFieldMessage newInputFieldMessage(String recordName, String errorMessage) {
+			return new MissingRecordFieldMessage(recordName, errorMessage, false);
+		}
+		
+	}
+	
 	/**
 	 * CTL mapping initialization can be called only once. Output records content at the time is considered as default output.
+	 * 
+	 * @param xmlAttribute name of the attribute that contains the source of the transformation
+	 * @param missingFieldChecks error messages for individual input and output records
+	 * 
+	 * @see MissingRecordFieldMessage
+	 * 
+	 * @throws ComponentNotReadyException
 	 */
-	public void init() throws ComponentNotReadyException {
+	public void init(String xmlAttribute, MissingRecordFieldMessage... missingFieldChecks) throws ComponentNotReadyException {
 		assert (!isInitialized);
 		isInitialized = true;
 		
@@ -400,8 +430,25 @@ public class CTLMapping {
 				ctlTransformation = RecordTransformFactory.createTransform(sourceCode, null, 
 						null, null, component, inputRecordsMetadata, outputRecordsMetadata,
 						classLoader, classpath);
-			} catch (MissingFieldException missingField) {
-				throw missingField;
+			} catch (MissingFieldException mfe) {
+				if (mfe.isOutput()) {
+					DataRecord record = getOutputRecord(mfe.getRecordId());
+					for (MissingRecordFieldMessage check : missingFieldChecks) {
+						if (check.output && (record == getOutputRecord(check.recordName))) {
+							Object[] messageArgs = new Object[] { mfe.getFieldName() };
+							throw new ComponentNotReadyException(component, xmlAttribute, MessageFormat.format(check.errorMessage, messageArgs));
+						}
+					}
+				} else {
+					DataRecord record = getInputRecord(mfe.getRecordId());
+					for (MissingRecordFieldMessage check : missingFieldChecks) {
+						if (!check.output && (record == getInputRecord(check.recordName))) {
+							Object[] messageArgs = new Object[] { mfe.getFieldName() };
+							throw new ComponentNotReadyException(component, xmlAttribute, MessageFormat.format(check.errorMessage, messageArgs));
+						}
+					}
+				}
+				throw new ComponentNotReadyException(component, xmlAttribute, mfe.getMessage());
 			} catch (Exception e) {
 				throw new JetelRuntimeException(name + " is invalid.", e);
 			}

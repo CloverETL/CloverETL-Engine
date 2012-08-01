@@ -197,7 +197,7 @@ public class CTLMappingTest extends CloverTestCase {
     			"return ALL;" +
     			"}");
     	
-    	mapping.init();
+    	mapping.init(null);
     	mapping.preExecute();
     	
     	
@@ -239,7 +239,7 @@ public class CTLMappingTest extends CloverTestCase {
     			"return ALL;" +
     			"}");
     	
-    	mapping.init();
+    	mapping.init(null);
     	mapping.preExecute();
     	
     	
@@ -294,7 +294,7 @@ public class CTLMappingTest extends CloverTestCase {
     			"return ALL;" +
     			"}");
     	
-    	mapping.init();
+    	mapping.init(null);
     	mapping.preExecute();
     	
     	
@@ -339,7 +339,7 @@ public class CTLMappingTest extends CloverTestCase {
     	mapping.addAutoMapping("firstIn", "secondOut");
     	mapping.addAutoMapping("secondIn", "firstOut");
     	
-    	mapping.init();
+    	mapping.init(null);
     	mapping.preExecute();
     	
     	
