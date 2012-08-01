@@ -196,7 +196,7 @@ public class WebdavOutputStream extends OutputStream {
 			} catch (Throwable e) {
 				error = e;
 				// close the input stream, so that IOException is thrown when writing to the corresponding OutputStream
-				FileUtils.close(is); 
+				FileUtils.closeQuietly(is); 
 			}
 		}
 	}
