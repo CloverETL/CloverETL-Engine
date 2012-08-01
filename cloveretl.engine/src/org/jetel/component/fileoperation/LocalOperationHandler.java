@@ -233,7 +233,7 @@ public class LocalOperationHandler implements IOperationHandler {
 				fis = new FileInputStream(file);
 				return fis.getChannel();
 			} catch (Exception ex) { // close the input stream on exception
-				FileUtils.close(fis);
+				FileUtils.closeQuietly(fis);
 				if (ex instanceof IOException) {
 					throw (IOException) ex;
 				} else {
@@ -251,7 +251,7 @@ public class LocalOperationHandler implements IOperationHandler {
 				fos = new FileOutputStream(file, append);
 				return fos.getChannel();
 			} catch (Exception ex) { // close the output stream on exception
-				FileUtils.close(fos);
+				FileUtils.closeQuietly(fos);
 				if (ex instanceof IOException) {
 					throw (IOException) ex;
 				} else {
