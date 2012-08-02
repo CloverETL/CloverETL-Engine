@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -432,6 +433,9 @@ public class FTPOperationHandler implements IOperationHandler {
 		Info info = info(uri, ftp);
 		if (info == null) {
 			throw new FileNotFoundException(uri.toString());
+		}
+		if (!info.isDirectory() && uri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), uri)); //$NON-NLS-1$
 		}
 		return delete(ftp, info, params);
 	}
