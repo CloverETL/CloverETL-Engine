@@ -58,6 +58,16 @@ import org.jetel.component.fileoperation.result.ResolveResult;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
 
+/**
+ * Remember to copy the code of the test methods
+ * to SandboxOperationHandlerTest.java in cloveretl.test.scenarios/trans
+ * when making any modifications. 
+ * 
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created Aug 2, 2012
+ */
 public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	
 	protected static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -203,6 +213,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		target = relativeURI("root.tmp");
 		assertTrue(manager.copy(source, target, new CopyParameters().setNoOverwrite()).success());
 		assertEquals("File was overwritten in no-overwrite mode", texts.get(target.toString()), read(manager.getInput(target).channel()));
+		target = relativeURI("file-copied-to-directory/");
+		assertFalse(manager.copy(source, target).success());
+		target = relativeURI("file-copied-to-directory");
+		assertFalse(manager.exists(target));
 
 		{
 			String originalContent = "Original content";
@@ -498,6 +512,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		target = relativeURI("root.tmp");
 		assertTrue(manager.move(source, target, new MoveParameters().setNoOverwrite()).success());
 		assertEquals("File was overwritten in no-overwrite mode", texts.get(target.toString()), read(manager.getInput(target).channel()));
+		target = relativeURI("file-moved-to-directory/");
+		assertFalse(manager.move(source, target).success());
+		target = relativeURI("file-moved-to-directory");
+		assertFalse(manager.exists(target));
 
 		{
 			String originalContent = "Original content";
@@ -846,6 +864,14 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertTrue(manager.delete(uri).success());
 			assertFalse(manager.exists(uri));
 		}
+		
+		{
+			String dir = "file-vs-dir/";
+			uri = relativeURI(dir, "file");
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			assertFalse(manager.delete(relativeURI(dir, "file/")).success());
+			assertTrue(manager.isFile(uri));
+		}
 	}
 
 	public void testResolve() throws Exception {
@@ -968,6 +994,9 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			files = "directory with space/file with space.tmp";
 			result = manager.create(relativeURI("spaces/", files), new CreateParameters().setMakeParents(true));
 			assumeTrue(result.successCount() == files.split(";").length);
+			files = "file-vs-dir/file";
+			result = manager.create(relativeURI(files), new CreateParameters().setMakeParents(true));
+			assumeTrue(result.successCount() == files.split(";").length);
 		}
 		
 		List<Info> result;
@@ -1037,6 +1066,9 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertEquals("Different list result", new HashSet<String>(Arrays.asList("spaces/directory%20with%20space/;spaces/directory%20with%20space/file%20with%20space.tmp".split(";"))), new HashSet<String>(getRelativePaths(baseUri, result)));
 		printInfo(baseUri, result);
 
+		result = manager.list(relativeURI("file-vs-dir/file/"), new ListParameters().setRecursive(true)).getResult();
+		System.out.println(result);
+		assertEquals(0, result.size());
 	}
 	
 	protected CloverURI relativeURI(String uri) throws URISyntaxException {

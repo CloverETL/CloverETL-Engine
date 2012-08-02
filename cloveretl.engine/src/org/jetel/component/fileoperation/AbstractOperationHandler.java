@@ -108,6 +108,8 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Info targetInfo = simpleHandler.info(targetUri);
 		if ((targetInfo != null) && targetInfo.isDirectory()) {
 			targetUri = URIUtils.getChildURI(targetUri, sourceInfo.getName());
+		} else if (!sourceInfo.isDirectory() && targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 		}
 		return copyInternal(sourceUri, targetUri, params) ? CloverURI.createSingleURI(targetUri) : null;
 	}
@@ -179,6 +181,8 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Info targetInfo = simpleHandler.info(targetUri);
 		if ((targetInfo != null) && targetInfo.isDirectory()) {
 			targetUri = URIUtils.getChildURI(targetUri, sourceInfo.getName());
+		} else if (!sourceInfo.isDirectory() && targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 		}
 		return moveInternal(sourceUri, targetUri, params) ? SingleCloverURI.createSingleURI(targetUri) : null;
 	}
@@ -239,6 +243,9 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Info info = simpleHandler.info(target);
 		if (info == null) {
 			throw new FileNotFoundException(target.toString());
+		}
+		if (!info.isDirectory() && target.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), target)); //$NON-NLS-1$
 		}
 		if (params.isRecursive() && info.isDirectory()) {
 			for (URI child: simpleHandler.list(target)) {

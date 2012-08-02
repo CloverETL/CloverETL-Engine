@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.text.MessageFormat;
 import java.util.List;
 
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
@@ -141,6 +142,8 @@ public class DefaultOperationHandler implements IOperationHandler {
 		InfoResult targetInfo = manager.info(target); 
 		if (targetInfo.isDirectory()) {
 			target = CloverURI.createSingleURI(targetInfo.getURI(), sourceInfo.getName()).getAbsoluteURI();
+		} else if (!sourceInfo.isDirectory() && target.getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), target.getPath())); //$NON-NLS-1$
 		}
 		return copyInternal(source, target, params) ? target : null;
 	}
