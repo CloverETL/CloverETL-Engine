@@ -130,27 +130,35 @@ public class LocalOperationHandler implements IOperationHandler {
 		}
 	}
 
-	private SingleCloverURI copy(File source, File target, CopyParameters params) throws IOException {
+	private SingleCloverURI copy(URI sourceUri, URI targetUri, CopyParameters params) throws IOException {
+		File source = new File(sourceUri);
 		if (!source.exists()) {
 			throw new FileNotFoundException(source.toString());
 		}
+		File target = new File(targetUri);
 		if (target.isDirectory()) {
 			target = new File(target, source.getName());
+		} else if (!source.isDirectory() && targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 		}
 		return copyInternal(source, target, params) ? CloverURI.createSingleURI(target.toURI()) : null;
 	}
 
 	@Override
 	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params) throws IOException {
-		return copy(new File(source.toURI()), new File(target.toURI()), params);
+		return copy(source.toURI(), target.toURI(), params);
 	}
 	
-	private SingleCloverURI move(File source, File target, MoveParameters params) throws IOException {
+	private SingleCloverURI move(URI sourceUri, URI targetUri, MoveParameters params) throws IOException {
+		File source = new File(sourceUri);
 		if (!source.exists()) {
 			throw new FileNotFoundException(source.toString());
 		}
+		File target = new File(targetUri);
 		if (target.isDirectory()) {
 			target = new File(target, source.getName());
+		} else if (!source.isDirectory() && targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 		}
 		return moveInternal(source, target, params) ? SingleCloverURI.createSingleURI(target.toURI()) : null;
 	}
@@ -215,7 +223,7 @@ public class LocalOperationHandler implements IOperationHandler {
 
 	@Override
 	public SingleCloverURI move(SingleCloverURI source, SingleCloverURI target, MoveParameters params) throws IOException {
-		return move(new File(source.toURI()), new File(target.toURI()), params);
+		return move(source.toURI(), target.toURI(), params);
 	}
 	
 	private static class FileContent implements Content {
@@ -306,7 +314,12 @@ public class LocalOperationHandler implements IOperationHandler {
 
 	@Override
 	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
-		return delete(new File(target.toURI()), params);
+		URI uri = target.toURI();
+		File file = new File(uri);
+		if (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !file.isDirectory()) {
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), file)); //$NON-NLS-1$
+		}
+		return delete(file, params);
 	}
 	
 	private List<String> getParts(String uri) {
