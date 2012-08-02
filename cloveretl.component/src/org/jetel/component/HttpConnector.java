@@ -452,7 +452,7 @@ public class HttpConnector extends Node {
 
 		@Override
 		public void writeResponse(HttpResponse response) throws IOException {
-			if (outField != null) {
+			if (outputField != null) {
 				outputField.setValue(getResponseContent(response));
 			}
 		}
@@ -1545,12 +1545,13 @@ public class HttpConnector extends Node {
 			standardOutputRecord = DataRecordFactory.newRecord(standardOutputPort.getMetadata());
 			standardOutputRecord.init();
 			standardOutputRecord.reset();
-			if (outputFieldName == null) {
-				outField = (StringDataField) standardOutputRecord.getField(0);
-			} else {
-				outField = (StringDataField) standardOutputRecord.getField(outputFieldName);
-			}			
-			
+			if (standardOutputMapping == null) {
+				if (outputFieldName == null) {
+					outField = (StringDataField) standardOutputRecord.getField(0);
+				} else {
+					outField = (StringDataField) standardOutputRecord.getField(outputFieldName);
+				}
+			}
 		}
 		
 		if (hasErrorOutputPort) {
@@ -1930,7 +1931,7 @@ public class HttpConnector extends Node {
 	}
 
 
-	/** Method that fill the standard output record based on the given output mapping (or by name, if no explicit transformation specified)
+	/** Method that fill the standard output record based on the given output mapping
 	 * 
 	 * @throws Exception
 	 */
@@ -1938,7 +1939,10 @@ public class HttpConnector extends Node {
 		if (hasStandardOutputPort) {
 			populateInputParamsRecord();
 			populateResultRecordError();
-			outField.setNull(true);
+			
+			if (outField != null) {
+				outField.setNull(true);
+			}
 			
 			if (standardOutputMapping != null) {
 				standardOutputMappingTransformation.execute();
@@ -2223,7 +2227,7 @@ public class HttpConnector extends Node {
 		}
 
 		OutputPort outputPort = getOutputPort(STANDARD_OUTPUT_PORT_NUMBER);
-		if (outputPort != null) {
+		if (outputPort != null && standardOutputMapping == null) {
 			DataFieldMetadata outField;
 			if (!StringUtils.isEmpty(outputFieldName)) {
 				outField = outputPort.getMetadata().getField(outputFieldName);
@@ -2235,8 +2239,13 @@ public class HttpConnector extends Node {
 			if (outputFieldName != null && outField == null) {
 				status.add(new ConfigurationProblem("Output field name '" + outputFieldName + "' does not exist in output metadata.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
 				
-			} else if (outputFieldName != null && outField.getDataType() != DataFieldType.STRING) {
-				status.add(new ConfigurationProblem("Output field '" + outputFieldName + "' has incompatible type '" + outField.getDataType().toString() + "'. Field has to be String.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+			}
+			if (outField != null && outField.getDataType() != DataFieldType.STRING) {
+				if (outputFieldName != null) {
+					status.add(new ConfigurationProblem("Output field '" + outputFieldName + "' has incompatible type '" + outField.getDataType().toString() + "'. The field has to be 'string'.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+				} else {
+					status.add(new ConfigurationProblem("'Output field' not specified -> using the first field in output metadata as output, but it has incompatible type '" + outField.getDataType().toString() + "'. The field has to be 'string'.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+				}
 			}
 		}
 		
