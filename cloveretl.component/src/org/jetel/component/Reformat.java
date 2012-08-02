@@ -47,6 +47,7 @@ import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -377,9 +378,11 @@ public class Reformat extends Node {
 		//create instance of record transformation
         if (transformation == null) {
 			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
+			ClassLoader classLoader = new MultiParentClassLoader(getClass().getClassLoader(),
+					getGraph().getRuntimeContext().getClassLoader());
 			transformation = RecordTransformFactory.createTransform(transform, transformClass, 
 					transformURL, charset, this, inMetadata, outMetadata,
-					this.getClass().getClassLoader(), classPath);
+					classLoader, classPath);
 		}
         
 		// init transformation
