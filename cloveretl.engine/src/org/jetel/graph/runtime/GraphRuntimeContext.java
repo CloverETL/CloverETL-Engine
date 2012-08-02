@@ -19,6 +19,7 @@
 package org.jetel.graph.runtime;
 
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -501,7 +502,7 @@ public class GraphRuntimeContext {
 	 * 
 	 * @param classLoader
 	 */
-	public void setClassLoader(ClassLoader classLoader) {
+	public synchronized void setClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
     
@@ -578,8 +579,16 @@ public class GraphRuntimeContext {
 	 * 
 	 * @return
 	 */
-	public ClassLoader getClassLoader() {
+	public synchronized ClassLoader getClassLoader() {
+		if (classLoader == null) {
+			classLoader = createClassPathClassLoader();
+		}
 		return classLoader;
+	}
+	
+	private ClassLoader createClassPathClassLoader() {
+		
+		return new URLClassLoader(getRuntimeClassPath());
 	}
 
 	/**
