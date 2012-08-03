@@ -347,7 +347,6 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			target = relativeURI(dir, "parentDir6/"); // will create directories "parentDir6/dir"
 			assertTrue(manager.copy(source, target, params).success());
 			assertTrue(manager.isDirectory(relativeURI(dir, "parentDir6/dir")));
-			assertTrue(manager.copy(source, target, params).success());
 			target = relativeURI(dir, "parentDir7/copy"); // will create directories "parentDir7/copy" as a copy of "dir"
 			assertTrue(manager.copy(source, target, params).success());
 			assertTrue(manager.isFile(relativeURI(dir, "parentDir7/copy/content.tmp")));
@@ -646,6 +645,57 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			info = manager.info(target);
 			assertTrue(info.isFile());
 			assertEquals(fileName, info.getName());
+		}
+
+		{
+			String dir = "nonexisting/";
+			MoveParameters params = new MoveParameters().setMakeParents(true);
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			source = relativeURI(dir, "file.tmp");
+			target = relativeURI(dir, "parentDir1"); // will create a file called "parentDir1"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isFile(target));
+			assertFalse(manager.exists(relativeURI(dir, "parentDir1/file.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir2/"); // will create a directory "parentDir2" and a file "file.tmp"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir2/file.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir3/copy.tmp"); // will create a directory "parentDir3" and a file "copy.tmp"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isFile(target));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir4/copy.tmp/"); // will create directories "parentDir4/copy.tmp" and a file "file.tmp"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir4/copy.tmp/file.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			source = relativeURI(dir, "dir");
+			target = relativeURI(dir, "parentDir5"); // will create a directory "parentDir5" as a copy of "dir"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir5/content.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir6/"); // will create directories "parentDir6/dir"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isDirectory(relativeURI(dir, "parentDir6/dir")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir7/copy"); // will create directories "parentDir7/copy" as a copy of "dir"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir7/copy/content.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir8/copy/"); // will create directories "parentDir8/copy/dir"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir8/copy/dir/content.tmp")));
 		}
 	}
 	
