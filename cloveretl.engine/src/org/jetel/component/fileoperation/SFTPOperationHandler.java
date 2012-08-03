@@ -71,6 +71,8 @@ public class SFTPOperationHandler implements IOperationHandler {
 		throw new UnsupportedOperationException();
 	}
 
+	private static final CreateParameters CREATE_PARENT_DIRS = new CreateParameters().setDirectory(true).setMakeParents(true);
+
 	private URI rename(URI source, URI target, MoveParameters params) throws IOException, SftpException {
 		ChannelSftp ftp = null;
 		try {
@@ -81,7 +83,8 @@ public class SFTPOperationHandler implements IOperationHandler {
 			}
 			Info targetInfo = info(target, ftp);
 			boolean targetChanged = false;
-			if (targetInfo != null && targetInfo.isDirectory()) {
+			if (((targetInfo != null) && targetInfo.isDirectory()) ||
+					(Boolean.TRUE.equals(params.isMakeParents()) && target.toString().endsWith(URIUtils.PATH_SEPARATOR))) {
 				target = URIUtils.getChildURI(target, sourceInfo.getName());
 				targetChanged = true; // maybe new targetInfo will not be needed 
 			}
@@ -96,6 +99,17 @@ public class SFTPOperationHandler implements IOperationHandler {
 					if (params.isUpdate() && (sourceInfo.getLastModified().compareTo(targetInfo.getLastModified()) <= 0)) {
 						return target;
 					}
+				}
+			}
+
+			if (Boolean.TRUE.equals(params.isMakeParents())) {
+				if (targetChanged) { // obtain new targetInfo if the target has changed
+					targetInfo = info(target, ftp);
+					targetChanged = false;
+				}
+				if (targetInfo == null) {
+					URI parentUri = URIUtils.getParentURI(target);
+					create(ftp, parentUri, CREATE_PARENT_DIRS);
 				}
 			}
 			if (source.normalize().equals(target.normalize())) {
