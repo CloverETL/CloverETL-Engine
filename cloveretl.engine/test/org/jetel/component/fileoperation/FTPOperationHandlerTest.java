@@ -90,85 +90,9 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(handler.canPerform(Operation.write(FTPOperationHandler.FTP_SCHEME)));
 	}
 
-	// overridden - setting last modified date is not supported
 	@Override
-	public void testCreate() throws Exception {
-		CloverURI uri;
-		
-		uri = relativeURI("file");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(manager.exists(uri));
-		assertTrue(manager.create(uri).success());
-		assertTrue(manager.isFile(uri));
-		
-		uri = relativeURI("topdir1/subdir/subsubdir/file");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(manager.exists(uri));
-		assertFalse(manager.create(uri).success());
-		assertFalse(manager.exists(uri));
-		
-		uri = relativeURI("topdir1/subdir/subsubdir/file");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
-		assertTrue(manager.isFile(uri));
-		
-		uri = relativeURI("topdir2/subdir/subsubdir/dir");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(manager.exists(uri));
-		assertFalse(manager.create(uri, new CreateParameters().setDirectory(true)).success());
-		assertFalse(manager.exists(uri));
-
-		uri = relativeURI("topdir2/subdir/subsubdir/dir");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setDirectory(true).setMakeParents(true)).success());
-		assertTrue(manager.isDirectory(uri));
-		
-		uri = relativeURI("topdir2/subdir/subsubdir/dir2/");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
-		assertTrue(manager.isDirectory(uri));
-		
-		uri = relativeURI("datedFile");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
-		assertTrue(manager.isFile(uri));
-		
-		uri = relativeURI("datedDir1");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setDirectory(true)).success());
-		assertTrue(manager.isDirectory(uri));
-
-		uri = relativeURI("datedDir2/");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters()).success());
-		assertTrue(manager.isDirectory(uri));
-
-		{
-			String dirName = "directory with spaces";
-			String fileName = "file with spaces.tmp";
-			InfoResult info;
-
-			uri = relativeURI(dirName);
-			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
-			
-			uri = relativeURI(dirName + "/" + fileName);
-			System.out.println(uri.getAbsoluteURI());
-			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
-			info = manager.info(uri);
-			assertTrue(String.format("%s is not a file", uri), info.isFile());
-			assertEquals(fileName, info.getName());
-			
-			uri = relativeURI(dirName);
-			info = manager.info(uri);
-			assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
-			assertEquals(dirName, info.getName());
-		}
+	public void testCreateDated() throws Exception {
+		// FIXME overridden - setting last modified date is not supported
 	}
 
 	@Override

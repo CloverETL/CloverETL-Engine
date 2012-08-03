@@ -219,6 +219,10 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 	}
 
 	@Override
+	public void testCreateDated() throws Exception {
+	}
+	
+	@Override
 	public void testSpecialCharacters() throws Exception {
 		String text = "žluťoučký kůň úpěl ďábelské ódy";
 

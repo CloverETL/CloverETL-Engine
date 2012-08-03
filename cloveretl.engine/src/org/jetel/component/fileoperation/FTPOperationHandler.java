@@ -318,6 +318,11 @@ public class FTPOperationHandler implements IOperationHandler {
 			} else {
 				success = createFile(ftp, path);
 			}
+		} else {
+			Boolean directory = params.isDirectory();
+			if ((directory != null) && !directory.equals(fileInfo.isDirectory())) {
+				throw new IOException(MessageFormat.format(createDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), fileInfo.getURI())); //$NON-NLS-1$ //$NON-NLS-2$
+			}
 		}
 		return success;
 	}
