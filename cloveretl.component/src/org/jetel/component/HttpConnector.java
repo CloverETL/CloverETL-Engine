@@ -1545,12 +1545,10 @@ public class HttpConnector extends Node {
 			standardOutputRecord = DataRecordFactory.newRecord(standardOutputPort.getMetadata());
 			standardOutputRecord.init();
 			standardOutputRecord.reset();
-			if (standardOutputMapping == null) {
-				if (outputFieldName == null) {
-					outField = (StringDataField) standardOutputRecord.getField(0);
-				} else {
-					outField = (StringDataField) standardOutputRecord.getField(outputFieldName);
-				}
+			if (outputFieldName != null) {
+				outField = (StringDataField) standardOutputRecord.getField(outputFieldName);
+			} else if (standardOutputMapping == null) {
+				outField = (StringDataField) standardOutputRecord.getField(0);
 			}
 		}
 		
@@ -2227,11 +2225,11 @@ public class HttpConnector extends Node {
 		}
 
 		OutputPort outputPort = getOutputPort(STANDARD_OUTPUT_PORT_NUMBER);
-		if (outputPort != null && standardOutputMapping == null) {
-			DataFieldMetadata outField;
+		if (outputPort != null) {
+			DataFieldMetadata outField = null;
 			if (!StringUtils.isEmpty(outputFieldName)) {
 				outField = outputPort.getMetadata().getField(outputFieldName);
-			} else {
+			} else if (standardOutputMapping == null) {
 				outField = outputPort.getMetadata().getField(0);
 			}
 			
