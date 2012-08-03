@@ -153,6 +153,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assumeTrue(manager.create(relativeURI("u/a.tmp;u/b.tmp"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("w.tmp")).success());
 		assumeTrue(manager.create(relativeURI("samefile/f.tmp;samefile/dir/"), new CreateParameters().setMakeParents(true)).success());
+		assumeTrue(manager.create(relativeURI("nonexisting/file.tmp;nonexisting/dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
 		
 		CloverURI source;
 		CloverURI target;
@@ -314,6 +315,45 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			info = manager.info(target);
 			assertTrue(info.isFile());
 			assertEquals(fileName, info.getName());
+		}
+		
+		{
+			String dir = "nonexisting/";
+			CopyParameters params = new CopyParameters().setMakeParents(true);
+
+			source = relativeURI(dir, "file.tmp");
+			target = relativeURI(dir, "parentDir1"); // will create a file called "parentDir1"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isFile(target));
+			assertFalse(manager.exists(relativeURI(dir, "parentDir1/file.tmp")));
+			target = relativeURI(dir, "parentDir2/"); // will create a directory "parentDir2" and a file "file.tmp"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir2/file.tmp")));
+			target = relativeURI(dir, "parentDir3/copy.tmp"); // will create a directory "parentDir3" and a file "copy.tmp"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isFile(target));
+			target = relativeURI(dir, "parentDir4/copy.tmp/"); // will create directories "parentDir4/copy.tmp" and a file "file.tmp"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir4/copy.tmp/file.tmp")));
+
+			params.setRecursive(true);
+			source = relativeURI(dir, "dir");
+			target = relativeURI(dir, "parentDir5"); // will create a directory "parentDir5" as a copy of "dir"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir5/content.tmp")));
+			target = relativeURI(dir, "parentDir6/"); // will create directories "parentDir6/dir"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isDirectory(relativeURI(dir, "parentDir6/dir")));
+			assertTrue(manager.copy(source, target, params).success());
+			target = relativeURI(dir, "parentDir7/copy"); // will create directories "parentDir7/copy" as a copy of "dir"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir7/copy/content.tmp")));
+			target = relativeURI(dir, "parentDir8/copy/"); // will create directories "parentDir8/copy/dir"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir8/copy/dir/content.tmp")));
 		}
 	}
 	
@@ -1081,7 +1121,6 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 
 	public void testCreate() throws Exception {
 		CloverURI uri;
-		Date modifiedDate = new Date(10000);
 		
 		uri = relativeURI("file");
 		System.out.println(uri.getAbsoluteURI());
@@ -1095,14 +1134,6 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertFalse(manager.create(uri).success());
 		assertFalse(String.format("Created %s even though the parent dir did not exist", uri), manager.exists(uri));
 		
-		uri = relativeURI("topdir1/subdir/subsubdir/file");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
-		assertTrue(String.format("%s is a not file", uri), manager.isFile(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
-		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
-		
 		uri = relativeURI("topdir2/subdir/subsubdir/dir");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
@@ -1114,36 +1145,6 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
 		assertTrue(String.format("Failed to create %s", uri), manager.create(uri, new CreateParameters().setDirectory(true).setMakeParents(true)).success());
 		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
-		
-		uri = relativeURI("topdir2/subdir/subsubdir/dir2/");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
-		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
-		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
-		
-		uri = relativeURI("datedFile");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
-		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
-		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
-		
-		uri = relativeURI("datedDir1");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setDirectory(true).setLastModified(modifiedDate)).success());
-		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
-		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
-
-		uri = relativeURI("datedDir2/");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
-		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
-		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
 		
 		uri = relativeURI("fileShouldBeDirectory");
 		System.out.println(uri.getAbsoluteURI());
@@ -1180,6 +1181,51 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals(dirName, info.getName());
 		}
 
+	}
+	
+	public void testCreateDated() throws Exception {
+		CloverURI uri;
+		Date modifiedDate = new Date(10000);
+		
+		uri = relativeURI("topdir1/subdir/subsubdir/file");
+		System.out.println(uri.getAbsoluteURI());
+		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+		assertTrue(String.format("%s is a not file", uri), manager.isFile(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
+		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
+		
+		uri = relativeURI("topdir2/subdir/subsubdir/dir2/");
+		System.out.println(uri.getAbsoluteURI());
+		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
+		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
+		
+		uri = relativeURI("file");
+		uri = relativeURI("datedFile");
+		System.out.println(uri.getAbsoluteURI());
+		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
+		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
+		
+		uri = relativeURI("datedDir1");
+		System.out.println(uri.getAbsoluteURI());
+		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setDirectory(true).setLastModified(modifiedDate)).success());
+		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
+		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
+
+		uri = relativeURI("datedDir2/");
+		System.out.println(uri.getAbsoluteURI());
+		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
+		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
+		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
+		
 	}
 	
 //	public void testInterruptCreate() throws Exception {

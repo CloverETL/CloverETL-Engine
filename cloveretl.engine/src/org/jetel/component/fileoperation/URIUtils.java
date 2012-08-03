@@ -20,6 +20,7 @@ package org.jetel.component.fileoperation;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
@@ -67,6 +68,19 @@ public class URIUtils {
 	
 	public static URI getParentURI(URI uri) {
 		return uri.toString().endsWith(PATH_SEPARATOR) ? uri.resolve(PARENT_DIR_NAME) : uri.resolve(CURRENT_DIR_NAME);
+	}
+	
+	public static URI trimToLastSlash(URI uri) {
+		String path = uri.getPath();
+		if ((path == null) || path.indexOf(PATH_SEPARATOR) < 0) {
+			return null;
+		}
+		path = path.substring(0, path.lastIndexOf(PATH_SEPARATOR) + 1);
+		try {
+			return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), path, uri.getQuery(), uri.getFragment());
+		} catch (URISyntaxException e) {
+			return null;
+		}
 	}
 	
 	public static String getFileName(URI uri) {
