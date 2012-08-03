@@ -57,6 +57,8 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		this.simpleHandler = simpleHandler;
 	}
 
+	private static final CreateParameters CREATE_PARENT_DIRS = new CreateParameters().setMakeParents(true).setDirectory(true);
+	
 	protected boolean copyInternal(URI sourceUri, URI targetUri, CopyParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
@@ -71,6 +73,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				throw new SameFileException(sourceUri, targetUri);
 			}
 		}
+		boolean makeParents = Boolean.TRUE.equals(params.isMakeParents());
 		if (source.isDirectory()) {
 			if (!params.isRecursive()) {
 				return false;
@@ -78,8 +81,14 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 			if (target != null && !target.isDirectory()) {
 				throw new IOException(format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source, target)); //$NON-NLS-1$
 			}
-			if (target == null && !simpleHandler.makeDir(targetUri)) {
-				throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
+			if (target == null) {
+				if (makeParents) {
+					URI parentUri = URIUtils.getParentURI(targetUri);
+					create(parentUri, CREATE_PARENT_DIRS);
+				}
+				if (!simpleHandler.makeDir(targetUri)) {
+					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
+				}
 			}
 			boolean success = true;
 			for (URI child: simpleHandler.list(sourceUri)) {
@@ -95,6 +104,9 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				if (params.isUpdate() && (source.getLastModified().compareTo(target.getLastModified()) <= 0)) {
 					return true;
 				}
+			} else if (makeParents) {
+				URI parentUri = URIUtils.getParentURI(targetUri);
+				create(parentUri, CREATE_PARENT_DIRS);
 			}
 			return simpleHandler.copyFile(sourceUri, targetUri) != null;
 		}
@@ -108,8 +120,12 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Info targetInfo = simpleHandler.info(targetUri);
 		if ((targetInfo != null) && targetInfo.isDirectory()) {
 			targetUri = URIUtils.getChildURI(targetUri, sourceInfo.getName());
-		} else if (!sourceInfo.isDirectory() && targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
-			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+		} else if (targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			if (Boolean.TRUE.equals(params.isMakeParents())) {
+				targetUri = URIUtils.getChildURI(targetUri, sourceInfo.getName());
+			} else if (!sourceInfo.isDirectory()) {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+			}
 		}
 		return copyInternal(sourceUri, targetUri, params) ? CloverURI.createSingleURI(targetUri) : null;
 	}
@@ -134,6 +150,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				throw new SameFileException(sourceUri, targetUri);
 			}
 		}
+		boolean makeParents = Boolean.TRUE.equals(params.isMakeParents());
 		if (source.isDirectory()) {
 			if (target != null) {
 				if (target.isDirectory()) {
@@ -145,6 +162,9 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				} else {
 					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source, target)); //$NON-NLS-1$
 				}
+			} else if (makeParents) {
+				URI parentUri = URIUtils.getParentURI(targetUri);
+				create(parentUri, CREATE_PARENT_DIRS);
 			}
 			if (simpleHandler.renameTo(sourceUri, targetUri) != null) {
 				return true;
@@ -167,6 +187,9 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 					return true;
 				}
 				simpleHandler.deleteFile(targetUri); // necessary for renameTo()
+			} else if (makeParents) {
+				URI parentUri = URIUtils.getParentURI(targetUri);
+				create(parentUri, CREATE_PARENT_DIRS);
 			}
 			boolean renamed = simpleHandler.renameTo(sourceUri, targetUri) != null;
 			return renamed || (simpleHandler.copyFile(sourceUri, targetUri) != null && simpleHandler.deleteFile(sourceUri));
@@ -181,8 +204,12 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Info targetInfo = simpleHandler.info(targetUri);
 		if ((targetInfo != null) && targetInfo.isDirectory()) {
 			targetUri = URIUtils.getChildURI(targetUri, sourceInfo.getName());
-		} else if (!sourceInfo.isDirectory() && targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
-			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+		} else if (targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			if (Boolean.TRUE.equals(params.isMakeParents())) {
+				targetUri = URIUtils.getChildURI(targetUri, sourceInfo.getName());
+			} else if (!sourceInfo.isDirectory()) {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+			}
 		}
 		return moveInternal(sourceUri, targetUri, params) ? SingleCloverURI.createSingleURI(targetUri) : null;
 	}

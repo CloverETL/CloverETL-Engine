@@ -98,6 +98,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		if (source.equals(target)) {
 			throw new SameFileException(source, target);
 		}
+		boolean makeParents = Boolean.TRUE.equals(params.isMakeParents());
 		if (source.isDirectory()) {
 			if (!params.isRecursive()) {
 				return false;
@@ -105,10 +106,13 @@ public class LocalOperationHandler implements IOperationHandler {
 			if (target.exists() && !target.isDirectory()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source, target)); //$NON-NLS-1$
 			}
-			if (!target.exists() && !target.mkdir()) {
-				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
-			}
 			boolean success = true;
+			if (!target.exists()) {
+				success = (makeParents ? target.mkdirs() : target.mkdir());
+				if (!success) {
+					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
+				}
+			}
 			for (File child: source.listFiles()) {
 				success &= copyInternal(child, new File(target, child.getName()), params);
 			}
@@ -122,6 +126,9 @@ public class LocalOperationHandler implements IOperationHandler {
 					return true;
 				}
 			} else {
+				if (makeParents && (target.getParentFile() != null)) {
+					target.getParentFile().mkdirs();
+				}
 				if (!target.createNewFile()) {
 					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
 				}
@@ -138,8 +145,12 @@ public class LocalOperationHandler implements IOperationHandler {
 		File target = new File(targetUri);
 		if (target.isDirectory()) {
 			target = new File(target, source.getName());
-		} else if (!source.isDirectory() && targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
-			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+		} else if (targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			if (Boolean.TRUE.equals(params.isMakeParents())) {
+				target = new File(target, source.getName());
+			} else if (!source.isDirectory()) {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+			}
 		}
 		return copyInternal(source, target, params) ? CloverURI.createSingleURI(target.toURI()) : null;
 	}
@@ -157,8 +168,12 @@ public class LocalOperationHandler implements IOperationHandler {
 		File target = new File(targetUri);
 		if (target.isDirectory()) {
 			target = new File(target, source.getName());
-		} else if (!source.isDirectory() && targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
-			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+		} else if (targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			if (Boolean.TRUE.equals(params.isMakeParents())) {
+				target = new File(target, source.getName());
+			} else if (!source.isDirectory()) {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+			}
 		}
 		return moveInternal(source, target, params) ? SingleCloverURI.createSingleURI(target.toURI()) : null;
 	}
@@ -182,6 +197,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		if (source.equals(target)) {
 			throw new SameFileException(source, target);
 		}
+		boolean makeParents = Boolean.TRUE.equals(params.isMakeParents());
 		if (source.isDirectory()) {
 			if (target.exists()) {
 				if (target.isDirectory()) {
@@ -193,14 +209,16 @@ public class LocalOperationHandler implements IOperationHandler {
 				} else {
 					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source, target)); //$NON-NLS-1$
 				}
+			} else if (makeParents && (target.getParentFile() != null)) {
+				target.getParentFile().mkdirs();
 			}
 			if (source.renameTo(target)) {
 				return true;
 			}
+			boolean success = true;
 			if (!target.mkdir()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
 			}
-			boolean success = true;
 			for (File child: source.listFiles()) {
 				File childTarget = new File(target, child.getName());
 				success &= moveInternal(child, childTarget, params);
@@ -215,6 +233,8 @@ public class LocalOperationHandler implements IOperationHandler {
 					return true;
 				}
 				target.delete(); // necessary for renameTo()
+			} else if (makeParents && target.getParentFile() != null) {
+				target.getParentFile().mkdirs();
 			}
 			boolean renamed = source.renameTo(target);
 			return renamed || (FileUtils.copyFile(source, target) && source.delete());
