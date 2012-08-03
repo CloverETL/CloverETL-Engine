@@ -1093,7 +1093,7 @@ public final class TransformationGraph extends GraphElement {
 	    	if (getJobType() != getRuntimeContext().getJobType()) {
 				status.add(new ConfigurationProblem("Inconsitent runtime setup. " +
 						"Internal graph nature (" + getJobType() + ") differs from runtime graph nature (" + getRuntimeContext().getJobType() + "). " +
-								"Probably internal graph nature does not corespond to graph file suffix.",
+								"Probably internal graph nature does not correspond to graph file suffix.",
 						Severity.ERROR, null, Priority.NORMAL));
 	    	}
 	    	
