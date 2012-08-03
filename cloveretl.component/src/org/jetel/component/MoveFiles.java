@@ -56,6 +56,7 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 	private static final String XML_SOURCE_ATTRIBUTE = "sourceURL"; //$NON-NLS-1$
 	private static final String XML_TARGET_ATTRIBUTE = "targetURL"; //$NON-NLS-1$
 	private static final String XML_OVERWRITE_ATTRIBUTE = "overwrite"; //$NON-NLS-1$
+	private static final String XML_MAKE_PARENT_DIRS_ATTRIBUTE = "makeParentDirs"; //$NON-NLS-1$
 
     private static final int ERR_SOURCE_URL_INDEX = 2;
     private static final int ERR_TARGET_URL_INDEX = 3;
@@ -82,18 +83,22 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
     private static final int IP_SOURCE_INDEX = 0;
     private static final int IP_TARGET_INDEX = 1;
     private static final int IP_OVERWRITE_INDEX = 2;
+    private static final int IP_MAKE_PARENTS_INDEX = 3;
 
     private static final String IP_SOURCE_NAME = XML_SOURCE_ATTRIBUTE;
     private static final String IP_TARGET_NAME = XML_TARGET_ATTRIBUTE;
     private static final String IP_OVERWRITE_NAME = XML_OVERWRITE_ATTRIBUTE;
+    private static final String IP_MAKE_PARENTS_NAME = XML_MAKE_PARENT_DIRS_ATTRIBUTE;
 
 	private String source;
 	private String target;
 	private OverwriteMode overwrite;
+	private Boolean makeParents;
 
 	private String defaultSource;
 	private String defaultTarget;
 	private OverwriteMode defaultOverwrite;
+	private Boolean defaultMakeParents;
 	
 	/**
 	 * @param id
@@ -113,6 +118,10 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 
 	private void setOverwrite(OverwriteMode overwrite) {
 		this.defaultOverwrite = overwrite;
+	}
+
+	private void setMakeParents(Boolean makeParents) {
+		this.defaultMakeParents = makeParents;
 	}
 
 	@Override
@@ -144,6 +153,9 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 		//set overwrite mode
 		CharSequence runtimeOverwrite = (CharSequence) inputParamsRecord.getField(IP_OVERWRITE_INDEX).getValue();
 		overwrite = runtimeOverwrite != null ? OverwriteMode.fromStringIgnoreCase(runtimeOverwrite.toString()) : null;
+
+		//set make parents
+		makeParents = (Boolean) inputParamsRecord.getField(IP_MAKE_PARENTS_INDEX).getValue();
 	}
 
 	@Override
@@ -151,6 +163,7 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_SOURCE_NAME, defaultSource);
 		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_TARGET_NAME, defaultTarget);
 		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_OVERWRITE_NAME, (defaultOverwrite != null) ? defaultOverwrite.toString() : null);
+		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_MAKE_PARENTS_NAME, defaultMakeParents);
 	}
 
 	@Override
@@ -194,6 +207,9 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 		MoveParameters params = new MoveParameters();
 		if (overwrite != null) {
 			params.setOverwriteMode(overwrite);
+		}
+		if (makeParents != null) {
+			params.setMakeParents(makeParents);
 		}
 		return manager.move(source, target, params);
 	}
@@ -240,6 +256,7 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
 		metadata.addField(IP_SOURCE_INDEX, new DataFieldMetadata(IP_SOURCE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(IP_TARGET_INDEX, new DataFieldMetadata(IP_TARGET_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(IP_OVERWRITE_INDEX, new DataFieldMetadata(IP_OVERWRITE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(IP_MAKE_PARENTS_INDEX, new DataFieldMetadata(IP_MAKE_PARENTS_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		
 		return metadata;
 	}
@@ -306,6 +323,9 @@ public class MoveFiles extends AbstractFileOperation<MoveResult> {
             	if (overwrite != null) {
             		moveFiles.setOverwrite(OverwriteMode.fromStringIgnoreCase(overwrite));
             	}
+            }
+            if (componentAttributes.exists(XML_MAKE_PARENT_DIRS_ATTRIBUTE)) {
+            	moveFiles.setMakeParents(componentAttributes.getBoolean(XML_MAKE_PARENT_DIRS_ATTRIBUTE, false));
             }
             AbstractFileOperation.fromXML(moveFiles, componentAttributes);
         } catch (AttributeNotFoundException exception) {

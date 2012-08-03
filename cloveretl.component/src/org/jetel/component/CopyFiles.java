@@ -57,6 +57,7 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 	private static final String XML_TARGET_ATTRIBUTE = "targetURL"; //$NON-NLS-1$
 	private static final String XML_RECURSIVE_ATTRIBUTE = "recursive"; //$NON-NLS-1$
 	private static final String XML_OVERWRITE_ATTRIBUTE = "overwrite"; //$NON-NLS-1$
+	private static final String XML_MAKE_PARENT_DIRS_ATTRIBUTE = "makeParentDirs"; //$NON-NLS-1$
 	
     private static final int ERR_SOURCE_URI_INDEX = 2;
     private static final int ERR_TARGET_URI_INDEX = 3;
@@ -84,21 +85,25 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
     private static final int IP_TARGET_INDEX = 1;
     private static final int IP_RECURSIVE_INDEX = 2;
     private static final int IP_OVERWRITE_INDEX = 3;
+    private static final int IP_MAKE_PARENTS_INDEX = 4;
 
     private static final String IP_SOURCE_NAME = XML_SOURCE_ATTRIBUTE;
     private static final String IP_TARGET_NAME = XML_TARGET_ATTRIBUTE;
     private static final String IP_RECURSIVE_NAME = XML_RECURSIVE_ATTRIBUTE;
     private static final String IP_OVERWRITE_NAME = XML_OVERWRITE_ATTRIBUTE;
+    private static final String IP_MAKE_PARENTS_NAME = XML_MAKE_PARENT_DIRS_ATTRIBUTE;
 
 	private String source;
 	private String target;
 	private Boolean recursive;
 	private OverwriteMode overwrite;
+	private Boolean makeParents;
 	
 	private String defaultSource;
 	private String defaultTarget;
 	private Boolean defaultRecursive;
 	private OverwriteMode defaultOverwrite;
+	private Boolean defaultMakeParents;
 	
 	public CopyFiles(String id, TransformationGraph graph) {
 		super(id, graph);
@@ -120,6 +125,10 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 		this.defaultOverwrite = overwrite;
 	}
 	
+	private void setMakeParents(Boolean makeParents) {
+		this.defaultMakeParents = makeParents;
+	}
+
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
@@ -152,6 +161,9 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 		//set overwrite mode
 		CharSequence runtimeOverwrite = (CharSequence) inputParamsRecord.getField(IP_OVERWRITE_INDEX).getValue();
 		overwrite = runtimeOverwrite != null ? OverwriteMode.fromStringIgnoreCase(runtimeOverwrite.toString()) : null;
+
+		//set make parents
+		makeParents = (Boolean) inputParamsRecord.getField(IP_MAKE_PARENTS_INDEX).getValue();
 	}
 	
 	@Override
@@ -160,6 +172,7 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_TARGET_NAME, defaultTarget);
 		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_RECURSIVE_NAME, defaultRecursive);
 		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_OVERWRITE_NAME, (defaultOverwrite != null) ? defaultOverwrite.toString() : null);
+		inputMapping.setDefaultOutputValue(PARAMS_RECORD_ID, IP_MAKE_PARENTS_NAME, defaultMakeParents);
 	}
 
 	@Override
@@ -207,6 +220,9 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 		if (overwrite != null) {
 			params.setOverwriteMode(overwrite);
 		}
+		if (makeParents != null) {
+			params.setMakeParents(makeParents);
+		}
 		return manager.copy(source, target, params);
 	}
 	
@@ -253,6 +269,7 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 		metadata.addField(IP_TARGET_INDEX, new DataFieldMetadata(IP_TARGET_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(IP_RECURSIVE_INDEX, new DataFieldMetadata(IP_RECURSIVE_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(IP_OVERWRITE_INDEX, new DataFieldMetadata(IP_OVERWRITE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(IP_MAKE_PARENTS_INDEX, new DataFieldMetadata(IP_MAKE_PARENTS_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		
 		return metadata;
 	}
@@ -322,6 +339,9 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
             	if (overwrite != null) {
             		copyFiles.setOverwrite(OverwriteMode.fromStringIgnoreCase(overwrite));
             	}
+            }
+            if (componentAttributes.exists(XML_MAKE_PARENT_DIRS_ATTRIBUTE)) {
+            	copyFiles.setMakeParents(componentAttributes.getBoolean(XML_MAKE_PARENT_DIRS_ATTRIBUTE, false));
             }
             AbstractFileOperation.fromXML(copyFiles, componentAttributes);
         } catch (AttributeNotFoundException exception) {
