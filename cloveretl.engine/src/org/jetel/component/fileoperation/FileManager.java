@@ -406,6 +406,22 @@ public class FileManager {
 			}
 		}
 		
+		if (Boolean.TRUE.equals(params.isMakeParents())) {
+			URI parent = URIUtils.trimToLastSlash(target.toURI());
+			if (parent != null) {
+				Operation createOperation = Operation.create(parent.getScheme());
+				IOperationHandler createHandler = findHandler(createOperation);
+				if (createHandler != null) {
+					try {
+						createHandler.create(CloverURI.createSingleURI(parent), new CreateParameters().setDirectory(true).setMakeParents(true)); 
+					} catch (Throwable t) {
+						// ignore, try to continue and see if it works
+						// FIXME the operation could succeed, but create the file in a wrong directory
+					}
+				}
+			}
+		}
+		
 		Iterator<IOperationHandler> h = handlers.iterator();
 		for (List<SingleCloverURI> resolvedSource: resolvedSources) {
 			IOperationHandler handler = h.next();
