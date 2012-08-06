@@ -1794,6 +1794,17 @@ public class FileUtils {
 		return false;
 	}
 
+	/**
+	 * Checks the given string whether represents multiple URL.
+	 * This is only simple test, whether the given string contains
+	 * one of these three characters <b>;*?</b>.
+	 * @param fileURL
+	 * @return true if and only if the given string represents multiple URL
+	 */
+	public static boolean isMultiURL(String fileURL) {
+		return fileURL != null && (fileURL.contains(";") || fileURL.contains("*") || fileURL.contains("?"));
+	}
+	
 }
 
 /*
