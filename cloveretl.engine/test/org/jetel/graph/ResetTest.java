@@ -159,7 +159,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("XMLExtract_fileURL_not_xml.grf") // ok, is to fail
 							&& !pathname.getName().equals("XMLExtract_charset_invalid.grf") // ok, is to fail
 							&& !pathname.getName().equals("XMLExtract_mappingURL_missing.grf") // ok, is to fail
-							&& !pathname.getName().equals("RunGraph_differentOutputMetadataFail.grf"); // ok, is to fail
+							&& !pathname.getName().equals("RunGraph_differentOutputMetadataFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("SandboxOperationHandlerTest.grf"); // runs only on server
 					
 				}
 			});
