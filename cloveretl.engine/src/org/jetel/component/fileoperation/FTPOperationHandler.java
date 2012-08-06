@@ -23,10 +23,14 @@ import static java.text.MessageFormat.format;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -523,9 +527,46 @@ public class FTPOperationHandler implements IOperationHandler {
 		return new URLContent(source.toURI());
 	}
 
+	private static class FTPOutputStream extends FilterOutputStream {
+
+		private final FTPClient ftp;
+		
+		public FTPOutputStream(OutputStream out, FTPClient ftp) {
+			super(out);
+			this.ftp = ftp;
+		}
+
+		@Override
+		public void close() throws IOException {
+			super.close();
+			if (ftp.isConnected()) {
+				ftp.disconnect();
+			}
+		}
+		
+	}
+	
 	@Override
 	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) {
-		return new URLContent(target.toURI());
+		return new URLContent(target.toURI()) {
+
+			@Override
+			public WritableByteChannel append() throws IOException {
+				FTPClient ftp = null;
+				try {
+					ftp = connect(uri);
+					return Channels.newChannel(new FTPOutputStream(ftp.appendFileStream(uri.getPath()), ftp));
+				} catch (Throwable t) {
+					disconnect(ftp);
+					if (t instanceof IOException) {
+						throw (IOException) t;
+					} else {
+						throw new IOException(t);
+					}
+				}
+			}
+			
+		};
 	}
 
 	@Override
