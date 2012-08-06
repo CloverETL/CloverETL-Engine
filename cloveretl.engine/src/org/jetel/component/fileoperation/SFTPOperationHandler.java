@@ -23,7 +23,11 @@ import static java.text.MessageFormat.format;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -65,23 +69,46 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 	private FileManager manager = FileManager.getInstance();
 	
+	private static final CreateParameters CREATE_PARENT_DIRS = new CreateParameters().setDirectory(true).setMakeParents(true);
+
+	private static class SFTPSession {
+		public final Session session;
+		public final ChannelSftp channel;
+
+		public SFTPSession(Session session, ChannelSftp channel) {
+			this.session = session;
+			this.channel = channel;
+		}
+		
+		public void disconnect() {
+			try {
+				if ((channel != null) && channel.isConnected()) {
+					channel.disconnect();
+				}
+			} finally {
+				if ((session != null) && session.isConnected()) {
+					session.disconnect();
+				}
+			}
+		}
+	}
+	
 	@Override
 	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target,
 			CopyParameters params) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
-	private static final CreateParameters CREATE_PARENT_DIRS = new CreateParameters().setDirectory(true).setMakeParents(true);
-
 	private URI rename(URI source, URI target, MoveParameters params) throws IOException, SftpException {
-		ChannelSftp ftp = null;
+		SFTPSession session = null;
 		try {
-			ftp = connect(source);
-			Info sourceInfo = info(source, ftp);
+			session = connect(source);
+			ChannelSftp channel = session.channel;
+			Info sourceInfo = info(source, channel);
 			if (sourceInfo == null) {
 				throw new FileNotFoundException(source.toString());
 			}
-			Info targetInfo = info(target, ftp);
+			Info targetInfo = info(target, channel);
 			boolean targetChanged = false;
 			if (((targetInfo != null) && targetInfo.isDirectory()) ||
 					(Boolean.TRUE.equals(params.isMakeParents()) && target.toString().endsWith(URIUtils.PATH_SEPARATOR))) {
@@ -90,7 +117,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 			}
 			if (params.isUpdate() || params.isNoOverwrite()) {
 				if (targetChanged) { // obtain new targetInfo if the target has changed
-					targetInfo = info(target, ftp);
+					targetInfo = info(target, channel);
 				}
 				if (targetInfo != null) {
 					if (params.isNoOverwrite()) {
@@ -104,21 +131,21 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 			if (Boolean.TRUE.equals(params.isMakeParents())) {
 				if (targetChanged) { // obtain new targetInfo if the target has changed
-					targetInfo = info(target, ftp);
+					targetInfo = info(target, channel);
 					targetChanged = false;
 				}
 				if (targetInfo == null) {
 					URI parentUri = URIUtils.getParentURI(target);
-					create(ftp, parentUri, CREATE_PARENT_DIRS);
+					create(channel, parentUri, CREATE_PARENT_DIRS);
 				}
 			}
 			if (source.normalize().equals(target.normalize())) {
 				throw new SameFileException(source, target);
 			}
-			ftp.rename(quote(source.getPath()), quote(target.getPath()));
+			channel.rename(quote(source.getPath()), quote(target.getPath()));
 			return target;
 		} finally {
-			disconnect(ftp);
+			disconnectQuietly(session);
 		}
 	}
 
@@ -167,44 +194,44 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 	private final ListParameters LIST_NONRECURSIVE = new ListParameters().setRecursive(false);
 	
-	private void delete(ChannelSftp ftp, Info info, DeleteParameters params) throws IOException, SftpException {
+	private void delete(ChannelSftp channel, Info info, DeleteParameters params) throws IOException, SftpException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
 		URI uri = info.getURI();
 		if (info.isDirectory()) {
 			if (params.isRecursive()) {
-				List<Info> children = list(uri, ftp, LIST_NONRECURSIVE);
+				List<Info> children = list(uri, channel, LIST_NONRECURSIVE);
 				for (Info child: children) {
-					delete(ftp, child, params);
+					delete(channel, child, params);
 				}
 			}
-			ftp.rmdir(quote(uri.getPath()));
+			channel.rmdir(quote(uri.getPath()));
 		} else {
-			ftp.rm(quote(uri.getPath()));
+			channel.rm(quote(uri.getPath()));
 		}
 	}
 
-	private void delete(ChannelSftp ftp, URI uri, DeleteParameters params) throws IOException, SftpException {
-		Info info = info(uri, ftp);
+	private void delete(ChannelSftp channel, URI uri, DeleteParameters params) throws IOException, SftpException {
+		Info info = info(uri, channel);
 		if (info == null) {
 			throw new FileNotFoundException(uri.toString());
 		}
-		delete(ftp, info, params);
+		delete(channel, info, params);
 	}
 	
 	@Override
 	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
 		URI uri = target.toURI();
-		ChannelSftp ftp = null;
+		SFTPSession session = null;
 		try {
-			ftp = connect(uri);
-			delete(ftp, uri, params);
+			session = connect(uri);
+			delete(session.channel, uri, params);
 			return true;
 		} catch (SftpException ex) {
 			throw new IOException(ex);
 		} finally {
-			disconnect(ftp);
+			disconnectQuietly(session);
 		}
 	}
 
@@ -230,7 +257,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		return decodeString(userInfo).split(":");
 	}
 
-	private ChannelSftp connect(URI uri) throws IOException {
+	private SFTPSession connect(URI uri) throws IOException {
 		String[] user = getUserInfo(uri);
 		Session session = null;
 		ChannelSftp channel = null;
@@ -245,13 +272,16 @@ public class SFTPOperationHandler implements IOperationHandler {
 			session.connect();
 			channel = (ChannelSftp) session.openChannel(uri.getScheme());
 			channel.connect();
-			return channel;
+			return new SFTPSession(session, channel);
 		} catch (Exception e) {
-			if (session != null && session.isConnected()) {
-				session.disconnect();
-			}
-			if (channel != null && channel.isConnected()) {
-				channel.disconnect();
+			try {
+				if ((channel != null) && channel.isConnected()) {
+					channel.disconnect();
+				}
+			} finally {
+				if ((session != null) && session.isConnected()) {
+					session.disconnect();
+				}
 			}
 			throw new IOException(FileOperationMessages.getString("FTPOperationHandler.connection_failed"), e); //$NON-NLS-1$
 		}
@@ -391,7 +421,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		return sb.toString();
 	}
 	
-	private Info info(URI targetUri, ChannelSftp ftp) {
+	private Info info(URI targetUri, ChannelSftp channel) {
 		try {
 			URI parentUri = URIUtils.getParentURI(targetUri);
 			String fileName = parentUri.relativize(targetUri).toString();
@@ -399,16 +429,16 @@ public class SFTPOperationHandler implements IOperationHandler {
 				fileName = fileName.substring(0, fileName.length()-1);
 			}
 			fileName = URIUtils.urlDecode(fileName);
-			SftpATTRS attrs = ftp.stat(quote(targetUri.getPath()));
+			SftpATTRS attrs = channel.stat(quote(targetUri.getPath()));
 			if (!attrs.isDir()) {
 				@SuppressWarnings("unchecked")
-				Vector<LsEntry> files = ftp.ls(quote(targetUri.getPath()));
+				Vector<LsEntry> files = channel.ls(quote(targetUri.getPath()));
 				if (files != null && !files.isEmpty()) {
 					return new SFTPInfo(files.get(0), parentUri);
 				}
 			} else {
 				@SuppressWarnings("unchecked")
-				Vector<LsEntry> files = ftp.ls(quote(parentUri.getPath()));
+				Vector<LsEntry> files = channel.ls(quote(parentUri.getPath()));
 				if (files != null) {
 					for (LsEntry file: files) {
 						if ((file != null) && !file.getFilename().equals(URIUtils.CURRENT_DIR_NAME) && !file.getFilename().equals(URIUtils.PARENT_DIR_NAME)) {
@@ -429,22 +459,26 @@ public class SFTPOperationHandler implements IOperationHandler {
 		}
 		return null;
 	}
+	
+	private void disconnect(SFTPSession sftp) {
+		if (sftp != null) {
+			sftp.disconnect();
+		}
+	}
 
-	private void disconnect(ChannelSftp ftp) {
-		if ((ftp != null) && ftp.isConnected()) {
-			try {
-				ftp.disconnect();
-			} catch(Exception ex) {
-				ex.printStackTrace();
-			}
+	private void disconnectQuietly(SFTPSession sftp) {
+		try {
+			disconnect(sftp);
+		} catch (Exception ex) {
+			ex.printStackTrace(); // FIXME
 		}
 	}
 	
-	private List<Info> list(URI parentUri, ChannelSftp ftp, ListParameters params) throws IOException, SftpException {
+	private List<Info> list(URI parentUri, ChannelSftp channel, ListParameters params) throws IOException, SftpException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
-		Info rootInfo = info(parentUri, ftp);
+		Info rootInfo = info(parentUri, channel);
 		if (rootInfo == null) {
 			throw new FileNotFoundException(parentUri.toString());
 		}
@@ -455,14 +489,14 @@ public class SFTPOperationHandler implements IOperationHandler {
 			return Arrays.asList(rootInfo);
 		} else {
 			@SuppressWarnings("unchecked")
-			Vector<LsEntry> files = ftp.ls(quote(parentUri.getPath()));
+			Vector<LsEntry> files = channel.ls(quote(parentUri.getPath()));
 			List<Info> result = new ArrayList<Info>(files.size());
 			for (LsEntry file: files) {
 				if ((file != null) && !file.getFilename().equals(URIUtils.CURRENT_DIR_NAME) && !file.getFilename().equals(URIUtils.PARENT_DIR_NAME)) {
 					Info child = info(file, parentUri);
 					result.add(child);
 					if (params.isRecursive() && file.getAttrs().isDir()) {
-						result.addAll(list(child.getURI(), ftp, params));
+						result.addAll(list(child.getURI(), channel, params));
 					}
 				}
 			}
@@ -474,14 +508,14 @@ public class SFTPOperationHandler implements IOperationHandler {
 	public List<Info> list(SingleCloverURI parent, ListParameters params)
 			throws IOException {
 		URI parentUri = parent.toURI();
-		ChannelSftp ftp = connect(parentUri);
+		SFTPSession session = null;
 		try {
-			ftp = connect(parentUri);
-			return list(parentUri, ftp, params);
+			session = connect(parentUri);
+			return list(parentUri, session.channel, params);
 		} catch (SftpException ex) {
 			throw new IOException(ex);
 		} finally {
-			disconnect(ftp);
+			disconnectQuietly(session);
 		}
 	}
 	
@@ -492,12 +526,12 @@ public class SFTPOperationHandler implements IOperationHandler {
 	}
 
 	private Info info(URI targetUri) throws IOException {
-		ChannelSftp ftp = null;
+		SFTPSession session = null;
 		try {
-			ftp = connect(targetUri);
-			return info(targetUri, ftp);
+			session = connect(targetUri);
+			return info(targetUri, session.channel);
 		} finally {
-			disconnect(ftp);
+			disconnectQuietly(session);
 		}
 	}
 
@@ -505,7 +539,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		ftp.put(new ByteArrayInputStream(new byte[0]), path);
 	}
 
-	private void create(ChannelSftp ftp, URI uri, CreateParameters params) throws IOException, SftpException {
+	private void create(ChannelSftp channel, URI uri, CreateParameters params) throws IOException, SftpException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
@@ -516,12 +550,12 @@ public class SFTPOperationHandler implements IOperationHandler {
 		if (fileInfo == null) { // does not exist
 			if (createParents) {
 				URI parentUri = URIUtils.getParentURI(uri);
-				create(ftp, parentUri, params.clone().setDirectory(true));
+				create(channel, parentUri, params.clone().setDirectory(true));
 			}
 			if (createDirectory) {
-				ftp.mkdir(path);
+				channel.mkdir(path);
 			} else {
-				createFile(ftp, path);
+				createFile(channel, path);
 			}
 		} else {
 			if (createDirectory != fileInfo.isDirectory()) {
@@ -530,9 +564,9 @@ public class SFTPOperationHandler implements IOperationHandler {
 		}
 		Date lastModified = params.getLastModified();
 		if (lastModified != null) {
-			ftp.setMtime(path, (int) lastModified.getTime());
+			channel.setMtime(path, (int) lastModified.getTime());
 		} else {
-			ftp.setMtime(path, (int) System.currentTimeMillis());
+			channel.setMtime(path, (int) System.currentTimeMillis());
 		}
 	}
 
@@ -540,15 +574,15 @@ public class SFTPOperationHandler implements IOperationHandler {
 	public boolean create(SingleCloverURI target, CreateParameters params)
 			throws IOException {
 		URI uri = target.toURI();
-		ChannelSftp ftp = null;
+		SFTPSession session = null;
 		try {
-			ftp = connect(uri);
-			create(ftp, uri, params);
+			session = connect(uri);
+			create(session.channel, uri, params);
 			return true;
 		} catch (SftpException ex) {
 			throw new IOException(ex);
 		} finally {
-			disconnect(ftp);
+			disconnectQuietly(session);
 		}
 	}
 
@@ -586,6 +620,38 @@ public class SFTPOperationHandler implements IOperationHandler {
 	public String toString() {
 		return "SFTPOperationHandler"; //$NON-NLS-1$
 	}
+	
+	private class SFTPOutputStream extends FilterOutputStream {
+		
+		private final SFTPSession session;
+
+		public SFTPOutputStream(OutputStream out, SFTPSession session) {
+			super(out);
+			this.session = session;
+		}
+
+		@Override
+		public void close() throws IOException {
+			super.close();
+			disconnect(session);
+		}
+	}
+	
+	private class SFTPInputStream extends FilterInputStream {
+		
+		private final SFTPSession session;
+
+		public SFTPInputStream(InputStream in, SFTPSession session) {
+			super(in);
+			this.session = session;
+		}
+
+		@Override
+		public void close() throws IOException {
+			super.close();
+			disconnect(session);
+		}
+	}
 
 	private class SFTPContent implements Content {
 		
@@ -597,27 +663,36 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public ReadableByteChannel read() throws IOException {
+			SFTPSession session = null;
 			try {
-				return Channels.newChannel(connect(uri).get(quote(uri.getPath())));
+				session = connect(uri);
+				return Channels.newChannel(new SFTPInputStream(session.channel.get(quote(uri.getPath())), session));
 			} catch (SftpException e) {
+				disconnectQuietly(session);
 				throw new IOException(e);
 			}
 		}
 
 		@Override
 		public WritableByteChannel write() throws IOException {
+			SFTPSession session = null;
 			try {
-				return Channels.newChannel(connect(uri).put(quote(uri.getPath()), ChannelSftp.OVERWRITE));
+				session = connect(uri);
+				return Channels.newChannel(new SFTPOutputStream(session.channel.put(quote(uri.getPath()), ChannelSftp.OVERWRITE), session));
 			} catch (SftpException e) {
+				disconnectQuietly(session);
 				throw new IOException(e);
 			}
 		}
 
 		@Override
 		public WritableByteChannel append() throws IOException {
+			SFTPSession session = null;
 			try {
-				return Channels.newChannel(connect(uri).put(quote(uri.getPath()), ChannelSftp.APPEND));
+				session = connect(uri);
+				return Channels.newChannel(new SFTPOutputStream(session.channel.put(quote(uri.getPath()), ChannelSftp.APPEND), session));
 			} catch (SftpException e) {
+				disconnectQuietly(session);
 				throw new IOException(e);
 			}
 		}
