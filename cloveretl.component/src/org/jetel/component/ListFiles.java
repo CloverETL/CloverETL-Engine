@@ -150,11 +150,7 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 
 	@Override
 	protected void populateResultRecord() {
-		Exception ex = result.getException();
-		if (ex != null) {
-			resultRecord.getField(RS_RESULT_INDEX).setValue(false);
-			resultRecord.getField(RS_ERROR_MESSAGE_INDEX).setValue(ex.getMessage());
-		} else {
+		if (verboseOutput && (result.getException() == null)) {
 			boolean success = result.success(index);
 			resultRecord.getField(RS_RESULT_INDEX).setValue(success);
 			if (success) {
@@ -171,17 +167,19 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 			} else {
 				resultRecord.getField(RS_ERROR_MESSAGE_INDEX).setValue(result.getError(index));
 			}
+		} else {
+			resultRecord.getField(RS_RESULT_INDEX).setValue(result.success());
+			resultRecord.getField(RS_ERROR_MESSAGE_INDEX).setValue(result.getFirstErrorMessage());
 		}
 	}
 
 	@Override
 	protected void populateErrorRecord() {
 		errorRecord.getField(ERR_RESULT_INDEX).setValue(false);
-		Exception ex = result.getException();
-		if (ex != null) {
-			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(ex.getMessage());
-		} else {
+		if (verboseOutput && (result.getException() == null)) {
 			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(result.getError(index));
+		} else {
+			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(result.getFirstErrorMessage());
 		}
 	}
 	
@@ -217,7 +215,7 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 	protected void processResult() throws InterruptedException {
 		if (result.getException() != null) {
 			processError();
-		} else {
+		} else if (verboseOutput) {
 			for (index = 0; index < result.totalCount(); index++) {
 				if (result.success(index)) {
 					List<Info> infos = result.getResult(index);
@@ -229,6 +227,10 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 					processError();
 				}
 			}
+		} else if (result.success()) {
+			processSuccess();
+		} else {
+			processError();
 		}
 	}
 

@@ -81,4 +81,17 @@ public abstract class AbstractResult implements Result {
 		return successCount;
 	}
 
+	@Override
+	public String getFirstErrorMessage() {
+		if (exception != null) {
+			return exception.getMessage();
+		}
+		for (int i = 0; i < totalCount(); i++) {
+			if (getError(i) != null) {
+				return getError(i);
+			}
+		}
+		return null;
+	}
+
 }

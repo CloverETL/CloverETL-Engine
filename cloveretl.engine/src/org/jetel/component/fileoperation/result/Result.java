@@ -39,5 +39,7 @@ public interface Result {
 	public String getError(int i);
 	
 	public Exception getException();
+	
+	public String getFirstErrorMessage();
 
 }
