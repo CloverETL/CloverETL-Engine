@@ -312,7 +312,7 @@ public class NodeTrackingDetail implements NodeTracking {
 	public void gatherTrackingDetails() {
 		//result
 		result = node.getResultCode();
-		if (result != Result.RUNNING && result != Result.FINISHED_OK) {
+		if (result != Result.RUNNING && result != Result.WAITING && result != Result.FINISHED_OK) {
 			return;
 		}
 
