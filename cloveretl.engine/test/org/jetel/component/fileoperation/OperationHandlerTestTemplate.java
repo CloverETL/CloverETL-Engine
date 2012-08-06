@@ -1276,6 +1276,29 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
 		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
 		
+		{
+			String dirName = "touch";
+			modifiedDate = null; 
+
+			uri = relativeURI(dirName);
+			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+			
+			uri = relativeURI(dirName + "/file.tmp");
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			modifiedDate = manager.info(uri).getLastModified();
+			Thread.sleep(1000);
+			assertTrue(manager.create(uri).success());
+			assertTrue(manager.info(uri).getLastModified().after(modifiedDate));
+			
+			uri = relativeURI(dirName + "/dir/");
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			modifiedDate = manager.info(uri).getLastModified();
+			Thread.sleep(1000);
+			assertTrue(manager.create(uri).success());
+			assertTrue(manager.info(uri).getLastModified().after(modifiedDate));
+		}
 	}
 	
 //	public void testInterruptCreate() throws Exception {

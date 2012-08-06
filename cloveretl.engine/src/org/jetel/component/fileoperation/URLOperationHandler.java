@@ -72,7 +72,7 @@ public class URLOperationHandler implements IOperationHandler {
 	
 	public static class URLContent implements Content {
 		
-		private final URI uri;
+		protected final URI uri;
 		
 		private final Proxy proxy;
 		

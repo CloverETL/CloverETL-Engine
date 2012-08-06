@@ -480,6 +480,8 @@ public class LocalOperationHandler implements IOperationHandler {
 		Date lastModified = params.getLastModified();
 		if (lastModified != null) {
 			success &= file.setLastModified(lastModified.getTime());
+		} else {
+			file.setLastModified(System.currentTimeMillis());
 		}
 		if ((isDirectory != null) && (!isDirectory.equals(file.isDirectory()))) {
 			throw new IOException(MessageFormat.format(isDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), file)); //$NON-NLS-1$ //$NON-NLS-2$

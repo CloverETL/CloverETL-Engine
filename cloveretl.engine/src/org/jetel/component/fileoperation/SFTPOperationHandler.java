@@ -531,6 +531,8 @@ public class SFTPOperationHandler implements IOperationHandler {
 		Date lastModified = params.getLastModified();
 		if (lastModified != null) {
 			ftp.setMtime(path, (int) lastModified.getTime());
+		} else {
+			ftp.setMtime(path, (int) System.currentTimeMillis());
 		}
 	}
 

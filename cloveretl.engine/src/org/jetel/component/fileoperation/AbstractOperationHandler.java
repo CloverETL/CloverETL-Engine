@@ -356,6 +356,8 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Date lastModified = params.getLastModified();
 		if (lastModified != null) {
 			success &= simpleHandler.setLastModified(uri, lastModified);
+		} else {
+			simpleHandler.setLastModified(uri, new Date());
 		}
 		return success;
 	}
