@@ -155,7 +155,11 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("HTTPConnector_post_error_unknownhost.grf") // ok, is to fail
 							&& !pathname.getName().equals("HTTPConnector_post_error_unknownprotocol.grf") // ok, is to fail
 							&& !pathname.getName().equals("HTTPConnector_inputmapping_null_values.grf") // ok, is to fail
-							&& !pathname.getName().equals("HttpConector_errHandlingNoRedir.grf"); // ok, is to fail
+							&& !pathname.getName().equals("HttpConector_errHandlingNoRedir.grf") // ok, is to fail
+							&& !pathname.getName().equals("XMLExtract_fileURL_not_xml.grf") // ok, is to fail
+							&& !pathname.getName().equals("XMLExtract_charset_invalid.grf") // ok, is to fail
+							&& !pathname.getName().equals("XMLExtract_mappingURL_missing.grf") // ok, is to fail
+							&& !pathname.getName().equals("RunGraph_differentOutputMetadataFail.grf"); // ok, is to fail
 					
 				}
 			});
