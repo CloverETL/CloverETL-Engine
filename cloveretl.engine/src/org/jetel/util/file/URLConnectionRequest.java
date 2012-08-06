@@ -69,7 +69,9 @@ public class URLConnectionRequest {
      * @return
      */
     static String encode(String source) {
-    	return Base64.encodeBase64String(source.getBytes()).trim();
+    	// CL-2434: the method pads the result with equal signs '=' correctly, but seems to append a new line
+    	// Base64.encodeBase64URLSafeString() does not pad the result with '=', which was causing the authentication to fail 
+    	return Base64.encodeBase64String(source.getBytes()).trim();  
     }
     
 	/**
