@@ -215,7 +215,7 @@ public class ResetTest extends CloverTestCase {
 	@Override
 	protected void runTest() throws Throwable {
 		
-		final String beseAbsolutePath = new File(basePath).getAbsolutePath();
+		final String beseAbsolutePath = new File(basePath).getAbsolutePath().replace('\\', '/');
 		logger.info("Project dir: " + beseAbsolutePath);
 		logger.info("Analyzing graph " + graphFile.getPath());
 		logger.info("Batch mode: " + batchMode);
