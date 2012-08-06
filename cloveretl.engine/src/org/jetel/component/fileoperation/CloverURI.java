@@ -30,7 +30,7 @@ import org.jetel.data.Defaults;
 
 public abstract class CloverURI {
 	
-	public static final String SEPARATOR = Defaults.DEFAULT_PATH_SEPARATOR_REGEX; //$NON-NLS-1$
+	public static final String SEPARATOR = Defaults.DEFAULT_PATH_SEPARATOR_REGEX;
 	
 	public static final String PATH_SEPARATOR = "/"; //$NON-NLS-1$
 	
