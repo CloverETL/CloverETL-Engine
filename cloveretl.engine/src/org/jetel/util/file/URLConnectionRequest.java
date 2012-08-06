@@ -68,8 +68,8 @@ public class URLConnectionRequest {
      * @param source
      * @return
      */
-    static String encode(String source){
-    	return Base64.encodeBase64URLSafeString(source.getBytes());
+    static String encode(String source) {
+    	return Base64.encodeBase64String(source.getBytes()).trim();
     }
     
 	/**
