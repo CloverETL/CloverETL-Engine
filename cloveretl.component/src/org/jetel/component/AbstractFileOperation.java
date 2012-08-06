@@ -53,7 +53,10 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
     /** the name of an XML attribute used to define output mapping to the second error output port */
 	public static final String XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE = "errorOutputMapping"; //$NON-NLS-1$
 
-    /** the name of an XML attribute for error output redirection */
+    /** the name of an XML attribute for verbose output */
+	public static final String XML_VERBOSE_OUTPUT = "verboseOutput"; //$NON-NLS-1$
+
+	/** the name of an XML attribute for error output redirection */
 	public static final String XML_REDIRECT_ERROR_OUTPUT = "redirectErrorOutput"; //$NON-NLS-1$
 
 	/** the port index used for data record input */
@@ -165,6 +168,17 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
     protected CTLMapping errorMapping;
 
     /**
+     * If enabled, individual files will be sent 
+     * as separate records to the output port.
+     * 
+     * Otherwise, results are grouped and for each
+     * input record, one output record is created.
+     *  
+     * Disabled by default.
+     */
+    protected boolean verboseOutput;
+
+    /**
      * Enables redirection of error output to standard output. Disabled by default.
      */
     protected boolean redirectErrorOutput;
@@ -271,6 +285,10 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 		this.redirectErrorOutput = redirectErrorOutput;
 	}
 
+	protected void setVerboseOutput(boolean verboseOutput) {
+		this.verboseOutput = verboseOutput;
+	}
+
 	static int performTransformation(RecordTransform transformation, DataRecord[] inRecords, DataRecord[] outRecords, String errMessage) {
 		try {
 			return transformation.transform(inRecords, outRecords);
@@ -289,6 +307,7 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
     		node.setStandardOutputMapping(componentAttributes.getString(XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, null));
     		node.setErrorOutputMapping(componentAttributes.getString(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, null));
     		node.setRedirectErrorOutput(componentAttributes.getBoolean(XML_REDIRECT_ERROR_OUTPUT, false));
+    		node.setVerboseOutput(componentAttributes.getBoolean(XML_VERBOSE_OUTPUT, false));	
         } catch (Exception exception) {
             throw new XMLConfigurationException(FileOperationComponentMessages.getString("AbstractFileOperation.error_creating_component"), exception); //$NON-NLS-1$
         }
@@ -498,7 +517,7 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 	protected void processResult() throws InterruptedException {
 		if (result.getException() != null) {
 			processError();
-		} else {
+		} else if (verboseOutput) {
 			for (index = 0; index < result.totalCount(); index++) {
 				if (result.success(index)) {
 					processSuccess();
@@ -506,6 +525,10 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 					processError();
 				}
 			}
+		} else if (result.success()) {
+			processSuccess();
+		} else {
+			processError();
 		}
 	}
 
