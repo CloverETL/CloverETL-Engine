@@ -3,9 +3,12 @@ package org.jetel.hadoop.connection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
@@ -104,4 +107,66 @@ public class HadoopPathResolver implements CustomPathResolver {
 			return null;
 		}
 	}
+
+	@Override
+	public URL getURL(URL contextURL, String fileURL) throws MalformedURLException {
+		if (HadoopURLUtils.isHDFSUrl(fileURL))
+			return new URL(contextURL,fileURL,new HadoopStreamHandler());
+		else
+			throw new MalformedURLException("Not a Hadoop/HDFS URL: "+fileURL);
+	}
+
+	 protected class HadoopStreamHandler extends URLStreamHandler{
+		
+		@Override
+		public URLConnection openConnection(URL url) throws IOException {
+			return new HadoopStreamConnection(url);
+		}
+		
+	}
+	 
+	 protected class HadoopStreamConnection extends URLConnection{
+
+		protected HadoopStreamConnection(URL arg0) {
+			super(arg0);
+		}
+
+		@Override
+		public void connect() throws IOException {
+			TransformationGraph graph=ContextProvider.getGraph();
+			if (graph==null){
+				throw new IOException(String.format("Internal error: Cannot find HDFS connection [%s] referenced in fileURL \"%s\". Missing TransformationGraph instance.",this.url.getProtocol(),this.url.toString()));
+			}
+			
+			IConnection  conn = graph.getConnection(this.url.getProtocol());
+			if (conn==null)
+				throw new IOException(String.format("Cannot find HDFS connection [%s] referenced in fileURL \"%s\".",this.url.getProtocol(),this.url.toString()));
+			if (!(conn instanceof HadoopConnection)){
+				throw new IOException(String.format("Connection [%s:%s] is not of HDFS type.",conn.getId(),conn.getName()));
+			}else{
+				try {
+					conn.init();
+					if(log.isDebugEnabled()) log.debug(String.format("Connecting to HDFS through [%s:%s] for reading.",conn.getId(),conn.getName()));
+					((HadoopConnection)conn).getConnection(); // just testing that we can connect, we don't store the connection
+				} catch (ComponentNotReadyException e) {
+					log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s",e.getGraphElement().getId(),e.getGraphElement().getName(),e.getMessage()));
+					throw new IOException("Cannot connect to HDFS - "+e.getMessage(),e);
+				}
+				// release connection
+				conn.free();
+			}
+		}
+		
+		@Override
+		public InputStream getInputStream() throws IOException{
+			return HadoopPathResolver.this.getInputStream(null, this.url.toString());		
+		}
+		
+		public OutputStream getOutputStream() throws IOException{
+			return HadoopPathResolver.this.getOutputStream(null, this.url.toString(), false, 0);
+		}
+		 
+	 }
+	 
+	 
 }
