@@ -134,6 +134,10 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 //		uri = createURI("http:(proxy://195.70.145.15:8000)//www.cloveretl.com");
 //		channel = manager.getInput(uri).channel();
 //		assertTrue(read(channel).length() > 0);
+		
+		uri = createURI("http://anonymous:@koule:22401/repository/default/oracle.dat");
+		channel = manager.getInput(uri).channel();
+		assertTrue(read(channel).length() > 0);
 
 	}
 
