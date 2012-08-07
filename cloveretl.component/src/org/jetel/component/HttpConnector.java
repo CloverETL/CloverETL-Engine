@@ -494,7 +494,16 @@ public class HttpConnector extends Node {
 				try {
 					StreamUtils.copy(inputConnection, outputChannel);
 				} finally {
-					inputConnection.close();
+					try {
+						inputConnection.close();
+					} catch (IOException e) {
+						logger.warn("Failed to close HTTP response input channel");
+					}
+					try {
+						outputChannel.close();
+					} catch (IOException e) {
+						logger.warn("Failed to close HTTP response output channel");
+					}
 				}
 			}
 			
