@@ -85,7 +85,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		this.metadata = metadata;
         this.debugMode = debugMode;
 		reader = writer = null;
-    	edgeType = EdgeTypeEnum.DIRECT;
 		edge = null;
 		eofSent = false;
 	}
@@ -139,7 +138,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @return    The type value
 	 */
 	public EdgeTypeEnum getEdgeType() {
-		return edgeType;
+		return edgeType != null ? edgeType : EdgeTypeEnum.DIRECT;
 	}
 
 	/**
@@ -278,7 +277,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			}
 		}
 		if (edge == null) {
-			edge = edgeType.createEdgeBase(this);
+			edge = getEdgeType().createEdgeBase(this);
 		}
         try {
             edge.init();

@@ -63,11 +63,6 @@ public class JobflowEdge extends Edge {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
-		//jobflow prefers fast propagate edge type 
-		if (edgeType == EdgeTypeEnum.DIRECT) {
-			edgeType = EdgeTypeEnum.DIRECT_FAST_PROPAGATE;
-		}
-		
 		super.init();
 		
 		lastWrittenToken = DataRecordFactory.newToken(getMetadata());
@@ -135,4 +130,9 @@ public class JobflowEdge extends Edge {
 		getWriter().getTokenTracker().eofOutputPort(getOutputPortNumber());
 	}
 	
+	public EdgeTypeEnum getEdgeType() {
+		//jobflow prefers fast propagate edge type 
+		return edgeType != null ? edgeType : EdgeTypeEnum.DIRECT_FAST_PROPAGATE;
+	}
+
 }
