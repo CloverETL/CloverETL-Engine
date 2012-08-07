@@ -106,7 +106,7 @@ public class URLOperationHandler implements IOperationHandler {
 		@Override
 		public ReadableByteChannel read() throws IOException {
 			URL url = uri.toURL();
-			URLConnection connection = (proxy == null) ? url.openConnection() : FileUtils.getAuthorizedConnection(url, proxy, proxyUserInfo);
+			URLConnection connection = (proxy == null) ? FileUtils.getAuthorizedConnection(url) : FileUtils.getAuthorizedConnection(url, proxy, proxyUserInfo);
 //			connection.setConnectTimeout(TIMEOUT);
 //			connection.setReadTimeout(TIMEOUT);
 			connection.setDoInput(true);
@@ -117,7 +117,7 @@ public class URLOperationHandler implements IOperationHandler {
 		@Override
 		public WritableByteChannel write() throws IOException {
 			URL url = uri.toURL();
-			URLConnection connection = (proxy == null) ? url.openConnection() : FileUtils.getAuthorizedConnection(url, proxy, proxyUserInfo);
+			URLConnection connection = (proxy == null) ? FileUtils.getAuthorizedConnection(url) : FileUtils.getAuthorizedConnection(url, proxy, proxyUserInfo);
 //			connection.setConnectTimeout(TIMEOUT);
 //			connection.setReadTimeout(TIMEOUT);
 			connection.setDoOutput(true);
