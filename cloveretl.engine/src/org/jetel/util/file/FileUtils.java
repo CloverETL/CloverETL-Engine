@@ -148,6 +148,7 @@ public class FileUtils {
 		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
 		h.put(ZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
 		h.put(TAR_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
+		h.put(TGZ_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
 		h.put(FTP_PROTOCOL, ftpStreamHandler);
 		h.put(SFTP_PROTOCOL, sFtpStreamHandler);
 		h.put(SCP_PROTOCOL, sFtpStreamHandler);
@@ -241,6 +242,13 @@ public class FileUtils {
     	// remove mark for absolute path
     	if (contextURL != null && fileURL.startsWith(FILE_PROTOCOL_ABSOLUTE_MARK)) {
     		fileURL = fileURL.substring((FILE_PROTOCOL+":").length());
+    	}
+
+    	 //first we try the custom path resolvers
+    	for (CustomPathResolver customPathResolver : customPathResolvers) {
+    		try{
+    			return customPathResolver.getURL(contextURL, fileURL);
+    		}catch(MalformedURLException ex) {}
     	}
     	
     	// standard url

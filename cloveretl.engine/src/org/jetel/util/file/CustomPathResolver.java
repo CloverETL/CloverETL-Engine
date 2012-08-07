@@ -21,6 +21,7 @@ package org.jetel.util.file;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -57,5 +58,17 @@ public interface CustomPathResolver {
 	 * @return
 	 */
 	public OutputStream getOutputStream(URL contextURL, String input, boolean appendData, int compressLevel) throws IOException;
+	
+	
+	
+	/**
+	 * Method should return URL object with proper URLStreamHandler &amp; URLConnection allowing to process openStream() and openConnection() methods 
+	 * 
+	 * @param contextURL
+	 * @param fileURL
+	 * @return
+	 * @throws MalformedURLException - thrown when this resolver does not support protocol defined in fileURL
+	 */
+	public URL getURL(URL contextURL, String fileURL) throws MalformedURLException;
 
 }
