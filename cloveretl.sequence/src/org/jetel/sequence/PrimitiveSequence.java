@@ -25,15 +25,14 @@ import java.util.Properties;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 
@@ -68,7 +67,6 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     private long start = 0;
     private long step = 1;
     boolean alreadyIncremented = false;
-    private String configFileName;
     
     public PrimitiveSequence(String id, TransformationGraph graph, String name) {
         super(id, graph, name);
@@ -147,7 +145,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * @see org.jetel.data.sequence.Sequence#currentValueLong()
      */
     @Override
-	public long currentValueLong() {
+	public synchronized long currentValueLong() {
         return alreadyIncremented ? value - step : value;
 
     }
@@ -156,7 +154,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * @see org.jetel.data.sequence.Sequence#nextValueLong()
      */
     @Override
-	public long nextValueLong() {
+	public synchronized long nextValueLong() {
     	long tmpVal=value;
         value += step;
         alreadyIncremented = true;
@@ -183,7 +181,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * @see org.jetel.data.sequence.Sequence#resetValue()
      */
     @Override
-	public void resetValue() {
+	public synchronized void resetValue() {
     	alreadyIncremented = false;
         value = start;
     }
@@ -204,7 +202,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * Sets start value and resets this sequencer.
      * @param start
      */
-    public void setStart(long start) {
+    public synchronized void setStart(long start) {
         this.start = start;
         resetValue();
     }
@@ -217,7 +215,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * Sets step value and resets this sequencer.
      * @param step
      */
-    public void setStep(long step) {
+    public synchronized void setStep(long step) {
         this.step = step;
     }
 
@@ -244,7 +242,6 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 						xattribs.getString(XML_ID_ATTRIBUTE),
 						graph,
 						xattribs.getString(XML_NAME_ATTRIBUTE, ""));
-				seq.configFileName = configAttr;
 				
 	            try {
 	            	URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
@@ -260,7 +257,6 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 	        		
 	                stream.close();
 	            } catch (Exception ex) {
-	                seq.configFileName = null;
 	                initFromConfigFileException = ex;
 	            }
 				
