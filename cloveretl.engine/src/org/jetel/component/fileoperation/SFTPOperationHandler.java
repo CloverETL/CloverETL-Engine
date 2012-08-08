@@ -205,8 +205,10 @@ public class SFTPOperationHandler implements IOperationHandler {
 				for (Info child: children) {
 					delete(channel, child, params);
 				}
+				channel.rmdir(quote(uri.getPath()));
+			} else {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), uri)); //$NON-NLS-1$
 			}
-			channel.rmdir(quote(uri.getPath()));
 		} else {
 			channel.rm(quote(uri.getPath()));
 		}
@@ -253,8 +255,8 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 	private String[] getUserInfo(URI uri) {
 		String userInfo = uri.getUserInfo();
-		if (userInfo == null) return new String[] {""};
-		return decodeString(userInfo).split(":");
+		if (userInfo == null) return new String[] {""}; //$NON-NLS-1$
+		return decodeString(userInfo).split(":"); //$NON-NLS-1$
 	}
 
 	private SFTPSession connect(URI uri) throws IOException {

@@ -318,15 +318,12 @@ public class LocalOperationHandler implements IOperationHandler {
 			throw new FileNotFoundException(file.toString());
 		}
 		if (file.isDirectory()) {
-			File[] children = file.listFiles();
 			if (params.isRecursive()) {
-				for (File child: children) {
+				for (File child: file.listFiles()) {
 					delete(child, params);
 				}
 			} else {
-				if ((children != null) && (children.length > 0)) {
-					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_empty"), file)); //$NON-NLS-1$
-				}
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), file)); //$NON-NLS-1$
 			}
 		}
 		return file.delete();

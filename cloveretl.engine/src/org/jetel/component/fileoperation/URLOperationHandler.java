@@ -127,7 +127,7 @@ public class URLOperationHandler implements IOperationHandler {
 
 		@Override
 		public WritableByteChannel append() throws IOException {
-			throw new IOException(FileOperationMessages.getString("URLOperationHandler.append_not_supported")); //$NON-NLS-1$
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.append_not_supported")); //$NON-NLS-1$
 		}
 		
 	}
