@@ -170,7 +170,7 @@ public class DeleteFiles extends AbstractFileOperation<DeleteResult> {
 
 	@Override
 	protected void populateResultRecord() {
-		if (verboseOutput && (result.getException() == null)) {
+		if ((verboseOutput || (result.totalCount() == 1)) && (result.getException() == null)) {
 			boolean success = result.success(index);
 			resultRecord.getField(RS_RESULT_INDEX).setValue(success);
 			if (!success) {
@@ -187,7 +187,7 @@ public class DeleteFiles extends AbstractFileOperation<DeleteResult> {
 	@Override
 	protected void populateErrorRecord() {
 		errorRecord.getField(ERR_RESULT_INDEX).setValue(false);
-		if (verboseOutput && (result.getException() == null)) {
+		if ((verboseOutput || (result.totalCount() == 1)) && (result.getException() == null)) {
 			errorRecord.getField(ERR_ERROR_MESSAGE_INDEX).setValue(result.getError(index));
 			errorRecord.getField(ERR_TARGET_URL_INDEX).setValue(result.getURI(index).getPath());
 		} else {

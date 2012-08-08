@@ -517,7 +517,7 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 	protected void processResult() throws InterruptedException {
 		if (result.getException() != null) {
 			processError();
-		} else if (verboseOutput) {
+		} else if (verboseOutput || (result.totalCount() == 1)) {
 			for (index = 0; index < result.totalCount(); index++) {
 				if (result.success(index)) {
 					processSuccess();
