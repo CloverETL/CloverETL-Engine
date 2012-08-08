@@ -902,8 +902,8 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		
 		uri = relativeURI("emptyDir");
 		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
-		assertTrue(String.format("Delete %s failed", uri), manager.delete(uri).success());
-		assertFalse(String.format("%s still exists", uri), manager.exists(uri));
+		assertFalse(String.format("Non-recursive delete of an empty dir %s succeeded", uri), manager.delete(uri).success());
+		assertTrue(String.format("%s does not exist anymore", uri), manager.exists(uri));
 
 		uri = relativeURI("eclipse");
 		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
@@ -951,7 +951,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertFalse(manager.exists(uri));
 			
 			uri = relativeURI(dirName);
-			assertTrue(manager.delete(uri).success());
+			assertTrue(manager.delete(uri, new DeleteParameters().setRecursive(true)).success());
 			assertFalse(manager.exists(uri));
 		}
 		

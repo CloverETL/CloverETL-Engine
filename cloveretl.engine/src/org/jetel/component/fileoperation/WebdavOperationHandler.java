@@ -62,7 +62,7 @@ public class WebdavOperationHandler implements IOperationHandler {
 
 		@Override
 		public WritableByteChannel append() throws IOException {
-			throw new UnsupportedOperationException("Appending is not supported");
+			throw new UnsupportedOperationException(FileOperationMessages.getString("IOperationHandler.append_not_supported")); //$NON-NLS-1$
 		}
 		
 	}

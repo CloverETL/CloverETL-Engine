@@ -274,9 +274,13 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		if (!info.isDirectory() && target.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
 			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), target)); //$NON-NLS-1$
 		}
-		if (params.isRecursive() && info.isDirectory()) {
-			for (URI child: simpleHandler.list(target)) {
-				delete(child, params);
+		if (info.isDirectory()) {
+			if (params.isRecursive()) {
+				for (URI child: simpleHandler.list(target)) {
+					delete(child, params);
+				}
+			} else {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), target)); //$NON-NLS-1$
 			}
 		}
 		return info.isDirectory() ? simpleHandler.removeDir(target) : simpleHandler.deleteFile(target);

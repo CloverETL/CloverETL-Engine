@@ -446,8 +446,10 @@ public class FTPOperationHandler implements IOperationHandler {
 				for (Info child: children) {
 					delete(ftp, child, params);
 				}
+				return ftp.removeDirectory(uri.getPath());
+			} else {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), uri)); //$NON-NLS-1$
 			}
-			return ftp.removeDirectory(uri.getPath());
 		} else {
 			return ftp.deleteFile(uri.getPath());
 		}
