@@ -559,7 +559,7 @@ public class WcardPattern {
 
 			// remove authorization info 
 			String dirURL = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + dir;
-			String pattern = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + url.getFile();
+			String pattern = url.getFile();
 			
 			List<DavResource> resources = sardine.getResources(dirURL);
 			for (DavResource res : resources) {
