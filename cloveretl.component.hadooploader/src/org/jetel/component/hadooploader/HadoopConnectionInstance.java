@@ -273,6 +273,7 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 	public HadoopFileStatus[] listStatus(URI path) throws IOException {
 		if (dfs != null) {
 			FileStatus[] status = dfs.listStatus(new Path(path));
+			if (status==null) throw new IOException("Can't get HDFS file(s) status for: "+path.toString());
 			HadoopFileStatus[] hStatus = new HadoopFileStatus[status.length];
 			for (int i = 0; i < status.length; i++) {
 				hStatus[i] = new HadoopFileStatus(status[i].getPath().toUri(),
