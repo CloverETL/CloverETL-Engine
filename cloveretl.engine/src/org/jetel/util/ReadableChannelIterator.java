@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -80,6 +81,7 @@ public class ReadableChannelIterator {
 
 	// current source name
 	private String currentFileName;
+	
 	
 	// true if fileURL contains port or dictionary protocol
 	private boolean isGraphDependentSource;
@@ -220,6 +222,8 @@ public class ReadableChannelIterator {
 			try {
 				ReadableByteChannel channel = portReadingIterator.getNextData();
 				currentFileName = portReadingIterator.getCurrentFileName();
+				
+				
 				return channel;
 			} catch (NullPointerException e) {
 				throw new JetelException("The field '" + portReadingIterator.getLastFieldName() + "' contain unsupported null value.");
@@ -367,6 +371,14 @@ public class ReadableChannelIterator {
 		return currentFileName;
 	}
 
+	public DataRecord getCurrenRecord() {
+		
+		if(this.portReadingIterator!=null) {
+			return this.portReadingIterator.getCurrentRecord();
+		}
+		return null;
+	}
+	
 	/**
 	 * Sets a dictionary for dictionary reading.
 	 * @param dictionary
