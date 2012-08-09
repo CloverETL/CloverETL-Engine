@@ -34,7 +34,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.Node;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -149,6 +151,20 @@ public class ClassLoaderUtils {
 	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths)
 			throws ComponentNotReadyException {
 		return new GreedyURLClassLoader(libraryPaths, parentCl);
+	}
+	
+	/**
+	 * Answers class loader composed of the node's plugin classloader and current runtime context
+	 * class loader.
+	 * @param node
+	 * @return
+	 */
+	public static ClassLoader createNodeClassLoader(Node node) {
+		
+		return new MultiParentClassLoader(
+			node.getGraph().getRuntimeContext().getClassLoader(),
+			node.getClass().getClassLoader()
+		);
 	}
 
 	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) throws ComponentNotReadyException {

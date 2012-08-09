@@ -97,16 +97,6 @@ public class CTLMapping {
 	private List<DataRecord[]> autoMapping;
 	
 	/**
-	 * classpath needed for CTL compilation
-	 */
-	private CloverClassPath classpath;
-	
-	/**
-	 * classloader needed for CTL compilation
-	 */
-	private ClassLoader classLoader;
-	
-	/**
 	 * compiled CTL code or null if CTL code is not specified
 	 */
 	private RecordTransform ctlTransformation;
@@ -357,21 +347,6 @@ public class CTLMapping {
 		}
 	}
 	
-	/**
-	 * Sets classpath which is required for CTL code compilation.
-	 */
-	public void setClasspath(CloverClassPath classpath) {
-		this.classpath = classpath;
-	}
-	
-	/**
-	 * Sets classloader which is required for CTL code compilation.
-	 * @param classLoader
-	 */
-	public void setClassLoader(ClassLoader classLoader) {
-		this.classLoader = classLoader;
-	}
-	
 	public static class MissingRecordFieldMessage {
 		
 		public final String recordName;
@@ -428,8 +403,7 @@ public class CTLMapping {
         if (!StringUtils.isEmpty(sourceCode)) {
 			try {
 				ctlTransformation = RecordTransformFactory.createTransform(sourceCode, null, 
-						null, null, component, inputRecordsMetadata, outputRecordsMetadata,
-						classLoader, classpath);
+						null, null, component, inputRecordsMetadata, outputRecordsMetadata);
 			} catch (MissingFieldException mfe) {
 				if (mfe.isOutput()) {
 					DataRecord record = getOutputRecord(mfe.getRecordId());

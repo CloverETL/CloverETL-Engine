@@ -1510,20 +1510,14 @@ public class HttpConnector extends Node {
 		// create input mapping transformation
     	inputMappingTransformation = new CTLMapping("Input mapping", this);
     	inputMappingTransformation.setTransformation(inputMapping);
-    	inputMappingTransformation.setClasspath(getGraph().getRuntimeContext().getClassPath());
-    	inputMappingTransformation.setClassLoader(this.getClass().getClassLoader());
         
 		// create standard output mapping transformation
     	standardOutputMappingTransformation = new CTLMapping("Standard output mapping", this);
     	standardOutputMappingTransformation.setTransformation(standardOutputMapping);
-    	standardOutputMappingTransformation.setClasspath(getGraph().getRuntimeContext().getClassPath());
-    	standardOutputMappingTransformation.setClassLoader(this.getClass().getClassLoader());
         
 		// create error output mapping transformation
     	errorOutputMappingTransformation = new CTLMapping("Error output mapping", this);
     	errorOutputMappingTransformation.setTransformation(errorOutputMapping);
-    	errorOutputMappingTransformation.setClasspath(getGraph().getRuntimeContext().getClassPath());
-    	errorOutputMappingTransformation.setClassLoader(this.getClass().getClassLoader());
 
 		DataRecordMetadata paramsMetadata = createInputParametersMetadata();
 		inputParamsRecord = DataRecordFactory.newRecord(paramsMetadata);

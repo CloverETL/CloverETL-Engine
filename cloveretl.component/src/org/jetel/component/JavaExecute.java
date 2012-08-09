@@ -153,14 +153,7 @@ public class JavaExecute extends Node {
      * @throws ComponentNotReadyException
      */
     private JavaRunnable loadClass(String runnableClassName) throws ComponentNotReadyException {
-    	Object javaRunnable = RecordTransformFactory.loadClass(this.getClass().getClassLoader(), 
-    			runnableClassName, getGraph().getRuntimeContext().getClassPath());
-    	
-    	if (javaRunnable instanceof JavaRunnable) {
-    		return (JavaRunnable) javaRunnable;
-    	} else {
-            throw new ComponentNotReadyException("The transformation class does not implement the JavaRunnable interface!");
-        }
+    	return RecordTransformFactory.loadClassInstance(runnableClassName, JavaRunnable.class, this);
     }
     
     /* (non-Javadoc)
@@ -191,14 +184,7 @@ public class JavaExecute extends Node {
      * @throws ComponentNotReadyException
      */
     private JavaRunnable loadClassDynamic(String runnable, ClassLoader classLoader) throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(runnable, classLoader,
-    			getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
-
-        if (transObject instanceof JavaRunnable) {
-			return (JavaRunnable) transObject;
-        }
-
-        throw new ComponentNotReadyException("Provided transformation class doesn't implement JavaRunnable.");
+        return DynamicJavaClass.instantiate(runnable, JavaRunnable.class, this);
     }
 	
     /**

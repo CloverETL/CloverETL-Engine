@@ -38,7 +38,6 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -241,9 +240,7 @@ public class JmsReader extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private JmsMsg2DataRecord createProcessor(String psorClass) throws ComponentNotReadyException {
-    	Object psor = RecordTransformFactory.loadClass(this.getClass().getClassLoader(), 
-    			psorClass, getGraph().getRuntimeContext().getClassPath());
-    	
+    	Object psor = RecordTransformFactory.loadClassInstance(psorClass, this);
     	if (psor instanceof JmsMsg2DataRecord) {
     		return (JmsMsg2DataRecord) psor;
     	} else {
@@ -258,14 +255,7 @@ public class JmsReader extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private JmsMsg2DataRecord createProcessorDynamic(String psorCode) throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(psorCode, this.getClass().getClassLoader(),
-    			getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
-
-        if (transObject instanceof JmsMsg2DataRecord) {
-			return (JmsMsg2DataRecord) transObject;
-        }
-
-        throw new ComponentNotReadyException("Provided msg processor class doesn't implement required interface.");
+        return DynamicJavaClass.instantiate(psorCode, JmsMsg2DataRecord.class, this);
     }
 
 	/**

@@ -217,14 +217,7 @@ public class Denormalizer extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	protected RecordDenormalize createDenormalizerDynamic(String denormCode) throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(denormCode, this.getClass().getClassLoader(),
-        		getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
-
-        if (transObject instanceof RecordDenormalize) {
-			return (RecordDenormalize) transObject;
-        }
-
-        throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordDenormalize.");
+        return DynamicJavaClass.instantiate(denormCode, RecordDenormalize.class, this);
     }
 		
 	@Override
@@ -236,8 +229,7 @@ public class Denormalizer extends Node {
 
 		if (denorm == null) {
 			if (xformClass != null) {
-				denorm = (RecordDenormalize) RecordTransformFactory.loadClass(this.getClass().getClassLoader(),
-						xformClass, getGraph().getRuntimeContext().getClassPath());
+				denorm = (RecordDenormalize) RecordTransformFactory.loadClassInstance(xformClass, this);
 			} else if (xform == null && xformURL != null) {
 				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
 			}

@@ -19,7 +19,6 @@
 package org.jetel.graph.runtime;
 
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -29,6 +28,7 @@ import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -588,7 +588,7 @@ public class GraphRuntimeContext {
 	
 	private ClassLoader createClassPathClassLoader() {
 		
-		return new URLClassLoader(getRuntimeClassPath());
+		return new GreedyURLClassLoader(getRuntimeClassPath());
 	}
 
 	/**
