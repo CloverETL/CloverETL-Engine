@@ -1053,13 +1053,13 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		int[] columns = new int[3];
 		for (Info info: infos) {
 			columns[0] = Math.max(columns[0], base.relativize(info.getURI()).toString().length());
-			columns[1] = Math.max(columns[1], DATE_FORMAT.format(info.getLastModified()).length());
+			columns[1] = info.getLastModified() != null ? Math.max(columns[1], DATE_FORMAT.format(info.getLastModified()).length()) : 1;
 			columns[2] = Math.max(columns[2], String.valueOf(info.getSize()).length());
 		}
 		String format = String.format(" %%s %%-%ds   %%%ds   %%%dd B%%n", columns[0], columns[1], columns[2]);
 		System.out.printf("Retrieved contents of %s:%n", base);
 		for (Info info: infos) {
-			System.out.printf(format, info.isDirectory() ? "D" : "F", base.relativize(info.getURI()), DATE_FORMAT.format(info.getLastModified()), info.getSize());
+			System.out.printf(format, info.isDirectory() ? "D" : "F", base.relativize(info.getURI()), (info.getLastModified() != null) ? DATE_FORMAT.format(info.getLastModified()) : "", info.getSize());
 		}
 	}
 
