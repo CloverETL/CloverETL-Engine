@@ -9,6 +9,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
@@ -167,6 +169,52 @@ public class HadoopPathResolver implements CustomPathResolver {
 		}
 		 
 	 }
-	 
-	 
+
+	@Override
+	public boolean handlesURL(URL contextURL, String fileURL) {
+		return HadoopURLUtils.isHDFSUrl(fileURL);
+	}
+
+	@Override
+	public List<String> resolveWildcardURL(URL contextURL, String fileURL)
+			throws MalformedURLException {
+		if (HadoopURLUtils.isHDFSUrl(fileURL)){
+
+			try{
+				final URI inputURI = URI.create(fileURL);
+
+				final String hadoopConnName = inputURI.getHost();
+
+				TransformationGraph graph=ContextProvider.getGraph();
+				if (graph==null){
+					throw new MalformedURLException();
+				}
+
+				IConnection  conn = graph.getConnection(hadoopConnName);
+				if (conn==null)
+					throw new MalformedURLException();
+				if (!(conn instanceof HadoopConnection)){
+					throw new MalformedURLException();
+				}else{
+					conn.init();
+					String uriPath=inputURI.getPath();
+					String matchPattern= uriPath.replaceAll("\\?", ".?").replaceAll("\\*", ".*");
+					
+					HadoopFileStatus[] statuses=((HadoopConnection)conn).getConnection().listStatus(new URI(uriPath.substring(0,uriPath.lastIndexOf("/"))));
+					List<String> filenames=new ArrayList<String>(statuses.length);
+
+					for(HadoopFileStatus status: statuses){
+						if (status.getFile().getPath().matches(matchPattern)){
+							filenames.add(new StringBuilder(HadoopURLUtils.HDFS_PROTOCOL_URL_PREFIX).append(hadoopConnName).append(status.getFile().getPath()).toString());
+						}
+					}
+					return filenames;
+				}
+			}catch(Exception ex){
+				throw new MalformedURLException();
+			}
+		}
+		throw new MalformedURLException();
+	}
+
 }
