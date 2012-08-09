@@ -163,7 +163,7 @@ public class FileUtils {
 	 * Third-party implementation of path resolving - useful to make possible to run the graph inside of war file.
 	 */
     private static final List<CustomPathResolver> customPathResolvers = new ArrayList<CustomPathResolver>();
-    private static final String PLUS_CHAR_ENCODED = URLEncoder.encode("+");
+	private static final String PLUS_CHAR_ENCODED = URLEncoder.encode("+");
 
     /**
      * Used only to extract the protocol name in a generic manner
@@ -881,6 +881,12 @@ public class FileUtils {
     	
     	return false;
 	}
+	
+	public static List<CustomPathResolver> getCustompathresolvers() {
+		return customPathResolvers;
+	}
+
+	
 	
 	private static boolean hasCustomPathInputResolver(URL contextURL, String input) throws IOException {	
 		InputStream innerStream;
