@@ -464,6 +464,19 @@ public class WcardPattern {
 			// NOTHING
 		}
 		
+		
+		// try CustomPathResolvers first
+		for(CustomPathResolver resolver: FileUtils.getCustompathresolvers()){
+			if (resolver.handlesURL(parent, fileName)){
+				try{
+					return resolver.resolveWildcardURL(parent, fileName);
+				}catch(MalformedURLException e){
+					//NOTHING - will be handled the standard way below
+				}
+			}
+		}
+		
+		
 		// wildcards for file protocol
 		if (url.getProtocol().equals(FILE)) {
 			return getFileNames(fileName);
