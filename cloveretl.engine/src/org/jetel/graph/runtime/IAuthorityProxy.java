@@ -94,7 +94,6 @@ public abstract class IAuthorityProxy {
 		public long runId;
 		public String clusterNodeId;
 		public String jobUrl;
-		public String version;
 		public Date startTime;
 		public Date endTime;
 		public long duration;
@@ -125,7 +124,6 @@ public abstract class IAuthorityProxy {
 			result.setProperty("runId", Long.toString(runId));
 			result.setProperty("clusterNodeId", String.valueOf(clusterNodeId));
 			result.setProperty("jobUrl", String.valueOf(jobUrl));
-			result.setProperty("graphVersion", String.valueOf(version));
 			result.setProperty("startTime", String.valueOf(startTime));
 			result.setProperty("endTime", String.valueOf(endTime));
 			result.setProperty("duration", Long.toString(duration));
