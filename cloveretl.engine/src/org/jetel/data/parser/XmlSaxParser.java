@@ -110,6 +110,8 @@ public class XmlSaxParser {
     public static final String XML_GENERATEDKEY = "generatedKey";
     public static final String XML_XMLFIELDS = "xmlFields";
     public static final String XML_INPUTFIELDS = "inputFields";
+    public static final String XML_INPUTFIELD = "inputField";
+    public static final String XML_OUTPUTFIELD = "outputField";
     public static final String XML_CLOVERFIELDS = "cloverFields";
     public static final String XML_SEQUENCEFIELD = "sequenceField";
     public static final String XML_SEQUENCEID = "sequenceId";
