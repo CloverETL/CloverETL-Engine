@@ -24,9 +24,10 @@ import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFUNCTIONDECLARAT
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTIMPORTSOURCE;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTRETURNSTATEMENT;
 
-import java.net.URL;
-import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -42,6 +43,7 @@ import org.jetel.ctl.ASTnode.CLVFBlock;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.MissingFieldException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.CloverClassPath;
@@ -51,8 +53,10 @@ import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
 import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.CodeParser;
-import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.classloader.MultiParentClassLoader;
+import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.DynamicCompiler;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
@@ -160,6 +164,13 @@ public class RecordTransformFactory {
     	}
     }
 
+    public static RecordTransform createTransform(String transform, String transformClass, String transformUrl,
+    		String charset, Node node, DataRecordMetadata inMetaData[], DataRecordMetadata outMetadata[])
+    	throws ComponentNotReadyException, MissingFieldException {
+    	
+    	return createTransform(transform, transformClass, transformUrl, charset, node, inMetaData, outMetadata,
+    			ClassLoaderUtils.createNodeClassLoader(node), node.getGraph().getRuntimeContext().getClassPath());
+    }
 
     /**
      * 
@@ -177,7 +188,7 @@ public class RecordTransformFactory {
      * @throws MissingFieldException if the CTL transformation tried to access non-existing field
      * @throws ComponentNotReadyException
      */
-    public static RecordTransform createTransform(String transform, String transformClass, String transformURL,
+    private static RecordTransform createTransform(String transform, String transformClass, String transformURL,
     		String charset, Node node, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata,
     		ClassLoader classLoader, CloverClassPath classPath) throws ComponentNotReadyException, MissingFieldException {
     	
@@ -191,7 +202,7 @@ public class RecordTransformFactory {
         Log logger = LogFactory.getLog(node.getClass());
         
         //without these parameters we cannot create transformation
-        if(transform == null && transformClass == null && transformURL == null) {
+        if (transform == null && transformClass == null && transformURL == null) {
             throw new ComponentNotReadyException("Record transformation is not defined.");
         }
         
@@ -203,7 +214,7 @@ public class RecordTransformFactory {
         
         if (transformClass != null) {
             //get transformation from link to the compiled class
-            transformation = (RecordTransform)RecordTransformFactory.loadClass(classLoader, transformClass, classPath);
+            transformation = (RecordTransform)loadClassInstance(transformClass, classLoader);
         }else if (transform == null && transformURL != null){
         	transform = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
         	PropertyRefResolver refResolver= new PropertyRefResolver(node.getGraph().getGraphProperties());
@@ -215,8 +226,8 @@ public class RecordTransformFactory {
             case TRANSFORM_JAVA_SOURCE:
                 // try compile transform parameter as java code
 				// try preprocessing if applicable
-                transformation = (RecordTransform)RecordTransformFactory.loadClassDynamic(
-                        logger, null, transform, inMetadata, outMetadata, classLoader, classPath, false);
+                transformation = RecordTransformFactory.loadClassDynamic(
+                        logger, null, transform, inMetadata, outMetadata, node, false);
                 break;
             case TRANSFORM_CLOVER_TL:
                 transformation = new RecordTransformTL(transform, logger);
@@ -248,9 +259,8 @@ public class RecordTransformFactory {
             	}
                 break;
             case TRANSFORM_JAVA_PREPROCESS:
-                transformation = (RecordTransform)RecordTransformFactory.loadClassDynamic(logger,
-                		"Transform" + node.getId(), transform, inMetadata, outMetadata, classLoader,
-                		classPath, true);
+                transformation = RecordTransformFactory.loadClassDynamic(logger,
+                		"Transform" + node.getId(), transform, inMetadata, outMetadata, node, true);
                 break;
             default:
                 // logger.error("Can't determine transformation code type at
@@ -263,35 +273,81 @@ public class RecordTransformFactory {
     	
         return transformation;
     }
-
+    
     /**
-     * @param parentClassLoader
-     * @param logger
+     * Answers instance of given <tt>transformClassName</tt>.
+     * 
      * @param transformClassName
-     * @param libraryPaths
+     * @param loader  class loader to lookup class by name
      * @return
      * @throws ComponentNotReadyException
      */
-    public static Object loadClass(ClassLoader parentClassLoader, String transformClassName, 
-    		CloverClassPath classPath) throws ComponentNotReadyException {
+    public static Object loadClassInstance(String transformClassName, ClassLoader loader)
+    	throws ComponentNotReadyException {
+    	try {
+    		Class<?> klass = Class.forName(transformClassName, true, loader);
+    		return klass.newInstance();
+    	} catch (ClassNotFoundException e) {
+    		throw new ComponentNotReadyException("Cannot find class: " + transformClassName, e);
+    	} catch (IllegalAccessException e) {
+    		throw new ComponentNotReadyException("Cannot instantiate class: " + transformClassName, e);
+    	} catch (InstantiationException e) {
+    		throw new ComponentNotReadyException("Cannot instantiate class: " + transformClassName, e);
+    	} catch (ExceptionInInitializerError e) {
+    		throw new ComponentNotReadyException("Cannot initialize class: " + transformClassName, e);
+    	} catch (LinkageError e) {
+    		throw new ComponentNotReadyException("Cannot link class: " + transformClassName, e);
+    	} catch (SecurityException e) {
+    		throw new ComponentNotReadyException("Cannot instantiate class: " + transformClassName, e);
+    	}
+    }
+    
+    public static Object loadClassInstance(String transformClassName) throws ComponentNotReadyException {
     	
-    	//extra libraries are necessary for the code which was generated from CTL2,
-    	//where CTL functions are called directly and have to be part of classpath
-    	ClassLoader classLoader = new URLClassLoader(DynamicCompiler.getExtraLibraries().toArray(new URL[0]), parentClassLoader);
-        if (classPath != null && classPath.getRuntimeClassPath() != null 
-        		&& classPath.getRuntimeClassPath().length > 0) {
-            classLoader = new GreedyURLClassLoader(classPath.getRuntimeClassPath(), classLoader);
-        }
-
-		try {
-			return Class.forName(transformClassName, true, classLoader).newInstance();
-		} catch (ClassNotFoundException e) {
-			throw new ComponentNotReadyException("Cannot find class: " + transformClassName, e);
-		} catch (Exception e) {
-			throw new ComponentNotReadyException("Cannot load class: " + transformClassName, e);
-		} catch (NoClassDefFoundError e) {
-			throw new ComponentNotReadyException("Cannot load class: " + transformClassName, new RuntimeException(e));
-		}
+    	Node node = ContextProvider.getNode();
+    	if (node == null) {
+    		return loadClassInstance(transformClassName, Thread.currentThread().getContextClassLoader());
+    	} else {
+    		return loadClassInstance(transformClassName, node);
+    	}
+    }
+    
+    /**
+     * Answers instance of class with given <tt>transformClassName</tt>. The supplied node
+     * is used as a context to fetch its class loader and the runtime class path as well.
+     * 
+     * @param transformClassName
+     * @param node
+     * @return
+     * @throws ComponentNotReadyException
+     */
+    public static Object loadClassInstance(String transformClassName, Node node) throws ComponentNotReadyException {
+    	
+    	ClassLoader loader = new MultiParentClassLoader(
+    		ClassLoaderUtils.createNodeClassLoader(node),
+    		getCTLLibsClassLoader()
+    	);
+    	return loadClassInstance(transformClassName, loader);
+    }
+    
+    public static <T> T loadClassInstance(String transformClassName, Class<T> expectedType, Node node)
+    	throws ComponentNotReadyException {
+    	
+    	Object instance = loadClassInstance(transformClassName, node);
+    	try {
+    		return expectedType.cast(instance);
+    	} catch (ClassCastException e) {
+    		throw new ComponentNotReadyException(node, "Provided class '" + transformClassName + "' does not extend/implement " + expectedType.getName());
+    	}
+    }
+    
+    private static ClassLoader getCTLLibsClassLoader() {
+    	
+    	Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
+    	for (PluginDescriptor plugin : DynamicCompiler.getCTLRelatedPlugins()) {
+    		loaders.add(plugin.getClassLoader());
+    	}
+    	return new MultiParentClassLoader(loaders.toArray(new ClassLoader[loaders.size()]));
     }
 
     /**
@@ -304,8 +360,7 @@ public class RecordTransformFactory {
      * @throws ComponentNotReadyException
      */
     public static RecordTransform loadClassDynamic(Log logger, String className, String transformCode,
-            DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, ClassLoader classLoader,
-            CloverClassPath classPath, boolean addTransformCodeStub) throws ComponentNotReadyException {
+            DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, Node node, boolean addTransformCodeStub) throws ComponentNotReadyException {
         // creating dynamicTransformCode from internal transformation format
         CodeParser codeParser = new CodeParser(inMetadata, outMetadata);
         if (!addTransformCodeStub) 
@@ -317,7 +372,7 @@ public class RecordTransformFactory {
         if (addTransformCodeStub)
         	codeParser.addTransformCodeStub("Transform" + className);
 
-        return loadClassDynamic(codeParser.getSourceCode(), classLoader, classPath);
+        return loadClassDynamic(codeParser.getSourceCode(), node);
     }
     
     /**
@@ -326,15 +381,10 @@ public class RecordTransformFactory {
      * @return
      * @throws ComponentNotReadyException
      */
-    public static RecordTransform loadClassDynamic(String sourceCode, ClassLoader classLoader, CloverClassPath classPath)
+    public static RecordTransform loadClassDynamic(String sourceCode, Node node)
             throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(sourceCode, classLoader, classPath.getCompileClassPath());
-
-        if (transObject instanceof RecordTransform) {
-			return (RecordTransform) transObject;
-        }
-
-        throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
+    	
+        return DynamicJavaClass.instantiate(sourceCode, RecordTransform.class, node);
     }
     
     private static Pattern getPattern(String hashBang) {

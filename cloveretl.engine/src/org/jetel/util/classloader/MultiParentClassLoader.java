@@ -18,6 +18,7 @@
  */
 package org.jetel.util.classloader;
 
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ import org.jetel.plugin.PluginClassLoader;
  *
  * @created 1.8.2012
  */
-public class MultiParentClassLoader extends ClassLoader {
+public final class MultiParentClassLoader extends ClassLoader {
 
 	private final ClassLoader parents[];
 	
@@ -44,10 +45,11 @@ public class MultiParentClassLoader extends ClassLoader {
 	 * @param parents
 	 */
 	public MultiParentClassLoader(ClassLoader ... parents) {
+		super(null);
 		if (parents == null) {
 			throw new NullPointerException("parents");
 		}
-		this.parents = parents;
+		this.parents = parents; 
 	}
 	
 	public URL[] getAllURLs() {
@@ -60,6 +62,16 @@ public class MultiParentClassLoader extends ClassLoader {
 			} else if (parent instanceof URLClassLoader) {
 				URLClassLoader ucl = (URLClassLoader)parent;
 				urls.addAll(Arrays.asList(ucl.getURLs()));
+			} else {
+				try {
+					Method getAllURLs = parent.getClass().getMethod("getAllURLs");
+					Object loaderUrls = getAllURLs.invoke(parent);
+					if (loaderUrls instanceof URL[]) {
+						urls.addAll(Arrays.asList((URL[])loaderUrls));
+					}
+				} catch (Exception e) {
+					// ignore
+				}
 			}
 		}
 		return urls.toArray(new URL[urls.size()]);

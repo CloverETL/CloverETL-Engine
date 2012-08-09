@@ -42,12 +42,10 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -377,12 +375,8 @@ public class Reformat extends Node {
 
 		//create instance of record transformation
         if (transformation == null) {
-			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
-			ClassLoader classLoader = new MultiParentClassLoader(getClass().getClassLoader(),
-					getGraph().getRuntimeContext().getClassLoader());
 			transformation = RecordTransformFactory.createTransform(transform, transformClass, 
-					transformURL, charset, this, inMetadata, outMetadata,
-					classLoader, classPath);
+					transformURL, charset, this, inMetadata, outMetadata);
 		}
         
 		// init transformation
@@ -549,7 +543,7 @@ public class Reformat extends Node {
 
         			try {
 						RecordTransformFactory.createTransform(checkTransform, null, null, 
-								charset, this, inMetadata, outMetadata, null, null);
+								charset, this, inMetadata, outMetadata);
 					} catch (ComponentNotReadyException e) {
 						// find which component attribute was used
 						String attribute = transform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;

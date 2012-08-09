@@ -25,7 +25,9 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -73,7 +75,7 @@ public final class DynamicCompiler {
 	 * Constructs a <code>DynamicCompiler</code> instance for a given class loader to be used during compilation.
 	 * Additional class path URLs may be provided if any external Java classes are required.
 	 *
-	 * @param classLoader the class loader to be used, may be <code>null</code>
+	 * @param classLoader the class loader to load classes referenced from unit having been compiled
 	 * @param compileClassPath the array of additional class path URLs, may be <code>null</code>
 	 */
 	public DynamicCompiler(ClassLoader classLoader, URL... compileClassPath) {
@@ -136,21 +138,29 @@ public final class DynamicCompiler {
 	 * @return set of libraries which should be part of compile time classpath
 	 */
 	public static Set<URL> getExtraLibraries() {
-		List<Extension> importantExtensions = Plugins.getExtensions(TLFunctionLibraryDescription.EXTENSION_POINT_ID);
-		importantExtensions.addAll(Plugins.getExtensions(org.jetel.interpreter.extensions.TLFunctionLibraryDescription.EXTENSION_POINT_ID));
-		importantExtensions.addAll(Plugins.getExtensions(TLCompilerDescription.EXTENSION_POINT_ID));
 		
-		final Set<PluginDescriptor> importantPlugins = new HashSet<PluginDescriptor>();
-		for (Extension extension : importantExtensions) {
-			importantPlugins.add(extension.getPlugin());
-		}
-
 		final Set<URL> libraries = new HashSet<URL>();
-		for (PluginDescriptor p : importantPlugins) {
+		for (PluginDescriptor p : getCTLRelatedPlugins()) {
 			libraries.addAll(Arrays.asList(p.getLibraryURLs()));
 		}
-		
 		return libraries;
+	}
+	
+	/**
+	 * Answers plugins that declare extensions related to CTL (resp. TL).
+	 * @return
+	 */
+	public static Collection<PluginDescriptor> getCTLRelatedPlugins() {
+		
+		final List<PluginDescriptor> result = new ArrayList<PluginDescriptor>();
+		for (PluginDescriptor plugin : Plugins.getPluginDescriptors().values()) {
+			if (!plugin.getExtensions(TLFunctionLibraryDescription.EXTENSION_POINT_ID).isEmpty() ||
+				!plugin.getExtensions(org.jetel.interpreter.extensions.TLFunctionLibraryDescription.EXTENSION_POINT_ID).isEmpty() ||
+				!plugin.getExtensions(TLCompilerDescription.EXTENSION_POINT_ID).isEmpty()) {
+				result.add(plugin);
+			}
+		}
+		return result;
 	}
 
 	/**

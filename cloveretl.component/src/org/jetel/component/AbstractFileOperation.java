@@ -404,20 +404,14 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 		//create input mapping
 		inputMapping = new CTLMapping("Input mapping", this); //$NON-NLS-1$
 		inputMapping.setTransformation(inputMappingCode);
-		inputMapping.setClasspath(getGraph().getRuntimeContext().getClassPath());
-		inputMapping.setClassLoader(this.getClass().getClassLoader());
 		
 		//create output mapping
 		outputMapping = new CTLMapping("Output mapping", this); //$NON-NLS-1$
 		outputMapping.setTransformation(outputMappingCode);
-		outputMapping.setClasspath(getGraph().getRuntimeContext().getClassPath());
-		outputMapping.setClassLoader(this.getClass().getClassLoader());
 
 		//create error mapping
 		errorMapping = new CTLMapping("Error mapping", this); //$NON-NLS-1$
 		errorMapping.setTransformation(errorMappingCode);
-		errorMapping.setClasspath(getGraph().getRuntimeContext().getClassPath());
-		errorMapping.setClassLoader(this.getClass().getClassLoader());
 
 		// create input params record, no matter if input edge is connected
 		// used to resolve default values

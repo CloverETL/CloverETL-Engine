@@ -417,10 +417,8 @@ public class HashJoin extends Node {
 			inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
 		}
 		if (transformation == null) {
-			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, transformURL,
-					charset, this, inMetadata, outMetadata, this.getClass().getClassLoader(),
-					classPath);
+					charset, this, inMetadata, outMetadata);
 		}
 		// init transformation
         if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
@@ -1042,7 +1040,7 @@ public class HashJoin extends Node {
 				}
 
 				try {
-					RecordTransformFactory.createTransform(checkTransform, null, null, charset, this, inMetadata, outMetadata, null, null);
+					RecordTransformFactory.createTransform(checkTransform, null, null, charset, this, inMetadata, outMetadata);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;

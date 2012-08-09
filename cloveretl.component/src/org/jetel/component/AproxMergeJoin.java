@@ -52,7 +52,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
@@ -757,10 +756,8 @@ public class AproxMergeJoin extends Node {
 		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT)
 				.getMetadata() };
 		if (transformation == null) {
-			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
-					transformURL, charset, this, inMetadata, outMetadata,
-					this.getClass().getClassLoader(), classPath);
+					transformURL, charset, this, inMetadata, outMetadata);
 		}
 		// init transformation
         if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
@@ -768,10 +765,9 @@ public class AproxMergeJoin extends Node {
         }
 		outMetadata = new DataRecordMetadata[] { getOutputPort(SUSPICIOUS_OUT).getMetadata() };
 		if (transformationForSuspicious == null) {
-			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformationForSuspicious = RecordTransformFactory.createTransform(transformSourceForSuspicious, 
 					transformClassNameForSuspicious, transformURLForsuspicious, charset, this, 
-					inMetadata, outMetadata, this.getClass().getClassLoader(), classPath);
+					inMetadata, outMetadata);
 		}
 		// init transformation
         if (!transformationForSuspicious.init(transformationParametersForSuspicious, inMetadata, outMetadata)) {
@@ -1244,8 +1240,7 @@ public class AproxMergeJoin extends Node {
 
     			try {
     				RecordTransformFactory.createTransform(checkTransform, null, null, 
-    						charset, this, inMetadata, outMetadata,
-    						null, null);
+    						charset, this, inMetadata, outMetadata);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = transform != null ? transformAttribute : transformURLAttribute;

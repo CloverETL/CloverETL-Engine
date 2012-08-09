@@ -545,13 +545,7 @@ public class Rollup extends Node {
         }
 
     	if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
-            try {
-            	return (RecordRollup) DynamicJavaClass.instantiate(sourceCode, getClass().getClassLoader(),
-            			getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
-            } catch (ClassCastException exception) {
-                throw new ComponentNotReadyException(
-                        "The transformation code does not implement the RecordRollup interface!", exception);
-			}
+            return DynamicJavaClass.instantiate(sourceCode, RecordRollup.class, this);
         }
 
         throw new ComponentNotReadyException("Cannot determine the type of the transformation code!");
@@ -567,9 +561,7 @@ public class Rollup extends Node {
      * @throws ComponentNotReadyException if an error occurred during the instantiation of the transform
      */
     private RecordRollup createTransformFromClassName(String className) throws ComponentNotReadyException {
-    	Object recordRollup = RecordTransformFactory.loadClass(this.getClass().getClassLoader(), 
-    			className, getGraph().getRuntimeContext().getClassPath());
-    	
+    	Object recordRollup = RecordTransformFactory.loadClassInstance(className, this);
     	if (recordRollup instanceof RecordRollup) {
     		return (RecordRollup) recordRollup;
     	} else {

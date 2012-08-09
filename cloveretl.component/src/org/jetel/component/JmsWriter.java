@@ -209,14 +209,7 @@ public class JmsWriter extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private DataRecord2JmsMsg createProcessor(String psorClass) throws ComponentNotReadyException {
-    	Object psor = RecordTransformFactory.loadClass(this.getClass().getClassLoader(), 
-    			psorClass, getGraph().getRuntimeContext().getClassPath());
-    	
-    	if (psor instanceof DataRecord2JmsMsg) {
-    		return (DataRecord2JmsMsg) psor;
-    	} else {
-            throw new ComponentNotReadyException("The transformation class does not implement the DataRecord2JmsMsg interface!");
-        }
+    	return RecordTransformFactory.loadClassInstance(psorClass, DataRecord2JmsMsg.class, this);
 	}
 
 	/**
@@ -226,14 +219,8 @@ public class JmsWriter extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private DataRecord2JmsMsg createProcessorDynamic(String psorCode) throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(psorCode, this.getClass().getClassLoader(),
-        		getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
-
-        if (transObject instanceof DataRecord2JmsMsg) {
-			return (DataRecord2JmsMsg) transObject;
-        }
-
-        throw new ComponentNotReadyException("Provided msg processor class doesn't implement required interface.");
+		
+		return DynamicJavaClass.instantiate(psorCode, DataRecord2JmsMsg.class, this);
     }
 
 	@Override

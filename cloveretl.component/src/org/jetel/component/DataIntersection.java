@@ -49,7 +49,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -623,10 +622,8 @@ public class DataIntersection extends Node {
                 WRITE_TO_PORT_A_B).getMetadata() };
 		//create instance of record transformation
         if (transformation == null) {
-			CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
-					transformURL, charset, this, inMetadata, outMetadata,
-					this.getClass().getClassLoader(), classPath);
+					transformURL, charset, this, inMetadata, outMetadata);
         }
 		// init transformation
         if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
@@ -844,8 +841,7 @@ public class DataIntersection extends Node {
 
     			try {
     				RecordTransformFactory.createTransform(checkTransform, null, null, 
-    						charset, this, inMetadata, outMetadata,
-    						null, null);
+    						charset, this, inMetadata, outMetadata);
 				} catch (ComponentNotReadyException e) {
 					// find which component attribute was used
 					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
