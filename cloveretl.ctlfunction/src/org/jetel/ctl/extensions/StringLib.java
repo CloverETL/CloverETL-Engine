@@ -1259,12 +1259,12 @@ public class StringLib extends TLFunctionLibrary {
 	
 	// RESOLVE PARAMS
 	
-	@TLFunctionAnnotation("Resolves parameters at given string.")
+	@TLFunctionAnnotation("Resolves parameters in a given string.")
 	public static final String resolveParams(TLFunctionCallContext context, String value) {
 		return resolveParams(context, value, false, false);
 	}
 	
-	@TLFunctionAnnotation("Resolves parameters at given string.")
+	@TLFunctionAnnotation("Resolves parameters in a given string.")
 	public static final String resolveParams(TLFunctionCallContext context, String value, boolean resolveSpecialChars, boolean resolveCTL) {
 		RefResFlag refResFlag = null;
 		if (resolveSpecialChars) {
