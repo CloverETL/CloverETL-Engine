@@ -214,7 +214,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		try {
 			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext);
 			rr.jobUrl = graphFileName;
-			rr.version = graph.getGuiVersion();
         } catch (XMLConfigurationException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
