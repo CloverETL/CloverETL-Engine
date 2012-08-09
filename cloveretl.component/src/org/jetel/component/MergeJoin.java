@@ -775,7 +775,7 @@ public class MergeJoin extends Node {
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
 					joinType,
-					xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true),
+					xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, false),
 					xattribs.getBoolean(XML_ASCENDING_INPUTS_ATTRIBUTE, true));
 			
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
