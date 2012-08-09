@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -95,6 +96,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 
 		public static final String HADOOP_DEFAULT_PORT = "8020";
 		public static final String HADOOP_URI_STR_FORMAT = "hdfs://%s:%s/";
+		public static final String CONNECTION_TYPE_ID = "HADOOP";
 		
 		private String user;
 		private String pwd;
@@ -453,41 +455,48 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		
 		private void initClassLoading() throws ComponentNotReadyException {
 			List<URL> additionalJars = new ArrayList<URL>();
-			
+
 			if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
 				URL hadoopJar;
 				try {
-					hadoopJar=new URL(hadoopCoreJar);
+					hadoopJar = new URL(hadoopCoreJar);
 				} catch (MalformedURLException e) {
-					try{
-						hadoopJar=new URL("file:"+hadoopCoreJar);
-					}catch(MalformedURLException ex){
-						throw new ComponentNotReadyException("Cannot load hadoop-core.jar from '"+hadoopCoreJar+"'", ex);
+					try {
+						hadoopJar = new URL("file:" + hadoopCoreJar);
+					} catch (MalformedURLException ex) {
+						throw new ComponentNotReadyException(
+								"Cannot load hadoop-core.jar from '"
+										+ hadoopCoreJar + "'", ex);
 					}
 				}
 				additionalJars.add(hadoopJar);
 			}
-			
+
 			ClassLoader thisClassLoader = this.getClass().getClassLoader();
-			
+
 			if (thisClassLoader instanceof PluginClassLoader) {
 				PluginClassLoader thisPluginClassLoader = (PluginClassLoader) thisClassLoader;
 				try {
-					additionalJars.add(thisPluginClassLoader.getPluginDescriptor().getURL(
-							HADOOP_CONNECTION_IMPLEMENTATION_JAR));
+					additionalJars.add(thisPluginClassLoader.getPluginDescriptor()
+							.getURL(HADOOP_CONNECTION_IMPLEMENTATION_JAR));
 				} catch (MalformedURLException e1) {
 					throw new ComponentNotReadyException(e1);
 				}
-			}
-			else if (hadoopModuleImplementationPath != null) {
+			} else if (hadoopModuleImplementationPath != null) {
 				additionalJars.add(hadoopModuleImplementationPath);
-			}
-			else if (additionalJars.size() == 0) {
-			}
-			else {
-				throw new ComponentNotReadyException(ERROR_LOADING_IMPL_MOD);
+			} else {
+				try {
+					additionalJars.add(ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor().
+						getURL(HADOOP_CONNECTION_IMPLEMENTATION_JAR));
+				} catch (MalformedURLException e) {
+					throw new ComponentNotReadyException(e);
+				}
 			}
 			
+			if (additionalJars.size() == 0) {
+				throw new ComponentNotReadyException(ERROR_LOADING_IMPL_MOD);
+			}
+
 			loaderJars = (URL[]) additionalJars.toArray(new URL[0]);
 		}
 		
