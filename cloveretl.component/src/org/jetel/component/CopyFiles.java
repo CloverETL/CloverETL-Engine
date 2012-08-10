@@ -23,7 +23,6 @@ import java.text.MessageFormat;
 import org.apache.log4j.Level;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.OverwriteMode;
-import org.jetel.component.fileoperation.SingleCloverURI;
 import org.jetel.component.fileoperation.result.CopyResult;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ConfigurationStatus;
@@ -177,9 +176,11 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 
 	@Override
 	protected void logSuccess() {
-		SingleCloverURI sourceUri = result.getSource(index);
-		SingleCloverURI resultUri = result.getResult(index);
-		String message = MessageFormat.format(FileOperationComponentMessages.getString("CopyFiles.copy_success"), sourceUri.getPath(), resultUri.getPath());  //$NON-NLS-1$
+		String resultPath = getResultPath();
+		if (resultPath == null) {
+			resultPath = getTargetPath();
+		}
+		String message = MessageFormat.format(FileOperationComponentMessages.getString("CopyFiles.copy_success"), getSourcePath(), resultPath);  //$NON-NLS-1$
 		tokenTracker.logMessage(inputRecord, Level.INFO, message, null);
 	}
 
@@ -190,9 +191,7 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 		if (ex != null) {
 			message = ex.getMessage();
 		} else {
-			String error = result.getError(index);
-			SingleCloverURI sourceUri = result.getSource(index);
-			message = MessageFormat.format(FileOperationComponentMessages.getString("CopyFiles.copy_failed"), sourceUri.getPath(), error); //$NON-NLS-1$
+			message = MessageFormat.format(FileOperationComponentMessages.getString("CopyFiles.copy_failed"), getSourcePath(), getError()); //$NON-NLS-1$
 		}
 		 
 		tokenTracker.logMessage(inputRecord, Level.INFO, message, null);
@@ -204,7 +203,7 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 		if (ex != null) {
 			throw new JetelRuntimeException(MessageFormat.format("Failed to copy {0} to {1}", source, target), ex);
 		} else {
-			throw new JetelRuntimeException(MessageFormat.format("Failed to copy {0} to {1}: {2}", result.getSource(index).getPath(), result.getTarget(index).getPath(), result.getError(index)));
+			throw new JetelRuntimeException(MessageFormat.format("Failed to copy {0} to {1}: {2}", getSourcePath(), getTargetPath(), getError()));
 		}
 	}
 
@@ -226,6 +225,35 @@ public class CopyFiles extends AbstractFileOperation<CopyResult> {
 		return manager.copy(source, target, params);
 	}
 	
+	@Override
+	protected CopyResult createSkippedResult() {
+		return new CopyResult().setException(new RuntimeException("Skipped because one of the previous operations failed. Disable the 'Stop on fail' attribute to continue processing."));
+	}
+	
+	private String getResultPath() {
+		if ((result.getException() == null) && verboseOutput || (result.totalCount() == 1) && result.success(index)) {
+			return result.getResult(index).getPath();
+		}
+
+		return null;
+	}
+
+	private String getSourcePath() {
+		if ((result.getException() == null) && verboseOutput || (result.totalCount() == 1)) {
+			return result.getSource(index).getPath();
+		}
+
+		return source;
+	}
+
+	private String getTargetPath() {
+		if ((result.getException() == null) && verboseOutput || (result.totalCount() == 1)) {
+			return result.getTarget(index).getPath();
+		}
+
+		return source;
+	}
+
 	@Override
 	protected void populateResultRecord() {
 		if ((verboseOutput || (result.totalCount() == 1)) && (result.getException() == null)) {

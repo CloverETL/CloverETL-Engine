@@ -22,7 +22,6 @@ import java.text.MessageFormat;
 
 import org.apache.log4j.Level;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
-import org.jetel.component.fileoperation.SingleCloverURI;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ConfigurationStatus;
@@ -126,8 +125,7 @@ public class DeleteFiles extends AbstractFileOperation<DeleteResult> {
 
 	@Override
 	protected void logSuccess() {
-		SingleCloverURI uri = result.getResult(index);
-		String message = MessageFormat.format(FileOperationComponentMessages.getString("DeleteFiles.delete_success"), uri.getPath());  //$NON-NLS-1$
+		String message = MessageFormat.format(FileOperationComponentMessages.getString("DeleteFiles.delete_success"), getTargetPath());  //$NON-NLS-1$
 		tokenTracker.logMessage(inputRecord, Level.INFO, message, null);
 	}
 
@@ -138,9 +136,7 @@ public class DeleteFiles extends AbstractFileOperation<DeleteResult> {
 		if (ex != null) {
 			message = ex.getMessage();
 		} else {
-			String error = result.getError(index);
-			SingleCloverURI uri = result.getURI(index);
-			message = MessageFormat.format(FileOperationComponentMessages.getString("DeleteFiles.delete_failed"), uri.getPath(), error);  //$NON-NLS-1$
+			message = MessageFormat.format(FileOperationComponentMessages.getString("DeleteFiles.delete_failed"), getTargetPath(), getError());  //$NON-NLS-1$
 		}
 		
 		tokenTracker.logMessage(inputRecord, Level.INFO, message, null);
@@ -152,7 +148,7 @@ public class DeleteFiles extends AbstractFileOperation<DeleteResult> {
 		if (ex != null) {
 			throw new JetelRuntimeException(MessageFormat.format("Failed to delete {0}", target), ex);
 		} else {
-			throw new JetelRuntimeException(MessageFormat.format("Failed to delete {0}: {1}", result.getURI(index).getPath(), result.getError(index)));
+			throw new JetelRuntimeException(MessageFormat.format("Failed to delete {0}: {1}", getTargetPath(), getError()));
 		}
 	}
 
@@ -166,6 +162,19 @@ public class DeleteFiles extends AbstractFileOperation<DeleteResult> {
 			params.setRecursive(recursive);
 		}
 		return manager.delete(target, params);
+	}
+
+	@Override
+	protected DeleteResult createSkippedResult() {
+		return new DeleteResult().setException(new RuntimeException("Skipped because one of the previous operations failed. Disable the 'Stop on fail' attribute to continue processing."));
+	}
+
+	private String getTargetPath() {
+		if ((result.getException() == null) && verboseOutput || (result.totalCount() == 1)) {
+			return result.getURI(index).getPath();
+		}
+
+		return target;
 	}
 
 	@Override

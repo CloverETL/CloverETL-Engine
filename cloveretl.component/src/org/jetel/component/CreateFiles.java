@@ -25,7 +25,6 @@ import java.util.Date;
 
 import org.apache.log4j.Level;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
-import org.jetel.component.fileoperation.SingleCloverURI;
 import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
@@ -138,8 +137,7 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
 
 	@Override
 	protected void logSuccess() {
-		SingleCloverURI uri = result.getResult(index);
-		String message = MessageFormat.format(FileOperationComponentMessages.getString("CreateFiles.create_success"), uri.getPath());  //$NON-NLS-1$
+		String message = MessageFormat.format(FileOperationComponentMessages.getString("CreateFiles.create_success"), getTargetPath());  //$NON-NLS-1$
 		tokenTracker.logMessage(inputRecord, Level.INFO, message, null);
 	}
 
@@ -150,9 +148,7 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
 		if (ex != null) {
 			message = ex.getMessage();
 		} else {
-			String error = result.getError(index);
-			SingleCloverURI uri = result.getURI(index);
-			message = MessageFormat.format(FileOperationComponentMessages.getString("CreateFiles.create_failed"), uri.getPath(), error);  //$NON-NLS-1$
+			message = MessageFormat.format(FileOperationComponentMessages.getString("CreateFiles.create_failed"), getTargetPath(), getError());  //$NON-NLS-1$
 		}
 		
 		tokenTracker.logMessage(inputRecord, Level.INFO, message, null);
@@ -164,7 +160,7 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
 		if (ex != null) {
 			throw new JetelRuntimeException(MessageFormat.format("Failed to create {0}", target), ex);
 		} else {
-			throw new JetelRuntimeException(MessageFormat.format("Failed to create {0}: {1}", result.getURI(index).getPath(), result.getError(index)));
+			throw new JetelRuntimeException(MessageFormat.format("Failed to create {0}: {1}", getTargetPath(), getError()));
 		}
 	}
 
@@ -184,6 +180,19 @@ public class CreateFiles extends AbstractFileOperation<CreateResult> {
 			params.setLastModified(modifiedDate);
 		}
 		return manager.create(target, params);
+	}
+
+	@Override
+	protected CreateResult createSkippedResult() {
+		return new CreateResult().setException(new RuntimeException("Skipped because one of the previous operations failed. Disable the 'Stop on fail' attribute to continue processing."));
+	}
+
+	private String getTargetPath() {
+		if ((result.getException() == null) && verboseOutput || (result.totalCount() == 1)) {
+			return result.getURI(index).getPath();
+		}
+
+		return target;
 	}
 
 	@Override

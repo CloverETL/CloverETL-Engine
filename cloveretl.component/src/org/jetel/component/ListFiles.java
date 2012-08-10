@@ -24,7 +24,6 @@ import java.util.List;
 import org.apache.log4j.Level;
 import org.jetel.component.fileoperation.Info;
 import org.jetel.component.fileoperation.SimpleParameters.ListParameters;
-import org.jetel.component.fileoperation.SingleCloverURI;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ConfigurationStatus;
@@ -149,6 +148,19 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 	}
 
 	@Override
+	protected ListResult createSkippedResult() {
+		return new ListResult().setException(new RuntimeException("Skipped because one of the previous operations failed. Disable the 'Stop on fail' attribute to continue processing."));
+	}
+
+	private String getTargetPath() {
+		if ((result.getException() == null) && verboseOutput || (result.totalCount() == 1)) {
+			return result.getURI(index).getPath();
+		}
+
+		return target;
+	}
+
+	@Override
 	protected void populateResultRecord() {
 		Exception ex = result.getException();
 		if (ex != null) {
@@ -196,9 +208,7 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 		if (ex != null) {
 			message = ex.getMessage();
 		} else {
-			String error = result.getError(index);
-			SingleCloverURI uri = result.getURI(index);
-			message = MessageFormat.format(FileOperationComponentMessages.getString("ListFiles.listing_failed"), uri.getPath(), error);  //$NON-NLS-1$
+			message = MessageFormat.format(FileOperationComponentMessages.getString("ListFiles.listing_failed"), getTargetPath(), getError());  //$NON-NLS-1$
 		}
 		
 		tokenTracker.logMessage(inputRecord, Level.INFO, message, null);
@@ -210,7 +220,7 @@ public class ListFiles extends AbstractFileOperation<ListResult> {
 		if (ex != null) {
 			throw new JetelRuntimeException(MessageFormat.format("Failed to list {0}", target), ex);
 		} else {
-			throw new JetelRuntimeException(MessageFormat.format("Failed to list {0}: {1}", result.getURI(index).getPath(), result.getError(index)));
+			throw new JetelRuntimeException(MessageFormat.format("Failed to list {0}: {1}", result.getURI(index).getPath(), getError()));
 		}
 	}
 
