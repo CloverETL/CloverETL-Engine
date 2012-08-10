@@ -59,6 +59,9 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 	/** the name of an XML attribute for error output redirection */
 	public static final String XML_REDIRECT_ERROR_OUTPUT = "redirectErrorOutput"; //$NON-NLS-1$
 
+    /** the name of an XML attribute for flag which decides what to do if a operation fails */
+	public static final String XML_STOP_ON_FAIL_ATTRIBUTE = "stopOnFail"; //$NON-NLS-1$
+
 	/** the port index used for data record input */
     protected static final int INPUT_PORT_NUMBER = 0;
 
@@ -183,6 +186,16 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
      */
     protected boolean redirectErrorOutput;
 
+    /** 
+     * Do not execute the following operations if an operation fails. Enabled by default.
+     */
+    protected boolean stopOnFail;
+    
+    /**
+     * Has any of the previous operations failed?
+     */
+    protected boolean failure = false;
+
 	/**
 	 * Runtime for error output mapping.
 	 */
@@ -289,6 +302,10 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 		this.verboseOutput = verboseOutput;
 	}
 
+	protected void setStopOnFail(boolean stopOnFail) {
+		this.stopOnFail = stopOnFail;
+	}
+
 	static int performTransformation(RecordTransform transformation, DataRecord[] inRecords, DataRecord[] outRecords, String errMessage) {
 		try {
 			return transformation.transform(inRecords, outRecords);
@@ -307,7 +324,8 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
     		node.setStandardOutputMapping(componentAttributes.getString(XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, null));
     		node.setErrorOutputMapping(componentAttributes.getString(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, null));
     		node.setRedirectErrorOutput(componentAttributes.getBoolean(XML_REDIRECT_ERROR_OUTPUT, false));
-    		node.setVerboseOutput(componentAttributes.getBoolean(XML_VERBOSE_OUTPUT, false));	
+    		node.setVerboseOutput(componentAttributes.getBoolean(XML_VERBOSE_OUTPUT, false));
+    		node.setStopOnFail(componentAttributes.getBoolean(XML_STOP_ON_FAIL_ATTRIBUTE, true));
         } catch (Exception exception) {
             throw new XMLConfigurationException(FileOperationComponentMessages.getString("AbstractFileOperation.error_creating_component"), exception); //$NON-NLS-1$
         }
@@ -321,11 +339,18 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 	
 	protected abstract void setDefaultParameters();
 	
+	protected abstract R createSkippedResult();
+	
 	protected boolean mainExecuteOperation() throws InterruptedException {
 		//prepare input parameters
 		processInputMapping();
 		
-		result = executeOperation();
+		if (stopOnFail && failure) {
+			result = createSkippedResult();
+		} else {
+			result = executeOperation();
+		}
+		
 		boolean spawnNewTokens = (foTokenTracker != null) && (result.totalCount() != 1); 
 		if (spawnNewTokens) {
 			foTokenTracker.setNoUnify();
@@ -508,7 +533,19 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 		}
 	}
 	
+	protected String getError() {
+		if (result.getException() != null) {
+			return result.getException().getMessage();
+		}
+		if (verboseOutput || (result.totalCount() == 1)) {
+			return result.getError(index);
+		}
+
+		return null;
+	}
+
 	protected void processResult() throws InterruptedException {
+		failure = failure || !result.success(); 
 		if (result.getException() != null) {
 			processError();
 		} else if (verboseOutput || (result.totalCount() == 1)) {
