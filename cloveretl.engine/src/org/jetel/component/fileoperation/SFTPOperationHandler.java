@@ -52,6 +52,7 @@ import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfoIteractive;
+import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
@@ -142,7 +143,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 			if (source.normalize().equals(target.normalize())) {
 				throw new SameFileException(source, target);
 			}
-			channel.rename(quote(source.getPath()), quote(target.getPath()));
+			channel.rename(getPath(source), getPath(target));
 			return target;
 		} finally {
 			disconnectQuietly(session);
@@ -205,12 +206,12 @@ public class SFTPOperationHandler implements IOperationHandler {
 				for (Info child: children) {
 					delete(channel, child, params);
 				}
-				channel.rmdir(quote(uri.getPath()));
+				channel.rmdir(getPath(uri));
 			} else {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), uri)); //$NON-NLS-1$
 			}
 		} else {
-			channel.rm(quote(uri.getPath()));
+			channel.rm(getPath(uri));
 		}
 	}
 
@@ -291,6 +292,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 	private class SFTPInfo implements Info {
 		
+		private final String name;
 		private final LsEntry file;
 		private final URI uri;
 		private final URI parent;
@@ -299,20 +301,23 @@ public class SFTPOperationHandler implements IOperationHandler {
 		private static final int S_IWRITE= 00200; // write by owner
 		private static final int S_IEXEC = 00100; // execute/search by owner
 		
-		public SFTPInfo(LsEntry file, URI parent) throws UnsupportedEncodingException {
+		public SFTPInfo(LsEntry file, String name, URI parent, URI self) throws UnsupportedEncodingException {
 			this.file = file;
 			this.parent = parent;
-			String name = file.getFilename();
+			this.name = name;
 			if (file.getAttrs().isDir() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
 				name = name + URIUtils.PATH_SEPARATOR;
 			}
-			URI tmp = URIUtils.getChildURI(parent, name);
-			this.uri = tmp;
+			if (self != null) {
+				this.uri = self;
+			} else {
+				this.uri = URIUtils.getChildURI(parent, name);
+			}
 		}
-
+		
 		@Override
 		public String getName() {
-			return file.getFilename();
+			return name;
 		}
 
 		@Override
@@ -398,15 +403,23 @@ public class SFTPOperationHandler implements IOperationHandler {
 		
 	}
 
-	private Info info(LsEntry file, URI parent) {
+	private Info info(LsEntry file, String name, URI parent, URI self) {
 		if (file == null) {
 			return null;
 		}
 		try {
-			return new SFTPInfo(file, parent);
+			return new SFTPInfo(file, (name != null) ? name : file.getFilename(), parent, self);
 		} catch (IOException ex) {
 			return null;
 		}
+	}
+	
+	private static String getPath(URI uri) {
+		String path = uri.getPath();
+		if (StringUtils.isEmpty(path)) {
+			path = URIUtils.PATH_SEPARATOR;
+		}
+		return quote(path);
 	}
 	
 	private static String quote(String path) {
@@ -425,31 +438,31 @@ public class SFTPOperationHandler implements IOperationHandler {
 	
 	private Info info(URI targetUri, ChannelSftp channel) {
 		try {
-			URI parentUri = URIUtils.getParentURI(targetUri);
-			String fileName = parentUri.relativize(targetUri).toString();
-			if (fileName.endsWith(URIUtils.PATH_SEPARATOR)) {
-				fileName = fileName.substring(0, fileName.length()-1);
-			}
-			fileName = URIUtils.urlDecode(fileName);
-			SftpATTRS attrs = channel.stat(quote(targetUri.getPath()));
+			String path = getPath(targetUri);
+			SftpATTRS attrs = channel.stat(path);
 			if (!attrs.isDir()) {
 				@SuppressWarnings("unchecked")
-				Vector<LsEntry> files = channel.ls(quote(targetUri.getPath()));
-				if (files != null && !files.isEmpty()) {
-					return new SFTPInfo(files.get(0), parentUri);
+				Vector<LsEntry> files = channel.ls(path);
+				if ((files != null) && !files.isEmpty()) {
+					return info(files.get(0), null, null, targetUri);
 				}
 			} else {
 				@SuppressWarnings("unchecked")
-				Vector<LsEntry> files = channel.ls(quote(parentUri.getPath()));
-				if (files != null) {
+				Vector<LsEntry> files = channel.ls(path);
+				if ((files != null) && !files.isEmpty() && (files.get(0) != null)) {
 					for (LsEntry file: files) {
-						if ((file != null) && !file.getFilename().equals(URIUtils.CURRENT_DIR_NAME) && !file.getFilename().equals(URIUtils.PARENT_DIR_NAME)) {
-							Info info = info(file, parentUri);
-							if (info.getName().equals(fileName)) {
-								return info;
+						if ((file != null) && file.getAttrs().isDir() && file.getFilename().equals(URIUtils.CURRENT_DIR_NAME)) {
+							URI parentUri = URIUtils.getParentURI(targetUri);
+							if (parentUri != null) {
+								String fileName = parentUri.relativize(targetUri).toString();
+								fileName = URIUtils.urlDecode(fileName);
+								return info(file, fileName, null, targetUri);
 							}
+							return info(file, null, null, targetUri);
 						}
+						
 					}
+					return info(files.get(0), null, null, targetUri);
 				}
 			}
 		} catch (SftpException sftpe) {
@@ -491,11 +504,11 @@ public class SFTPOperationHandler implements IOperationHandler {
 			return Arrays.asList(rootInfo);
 		} else {
 			@SuppressWarnings("unchecked")
-			Vector<LsEntry> files = channel.ls(quote(parentUri.getPath()));
+			Vector<LsEntry> files = channel.ls(getPath(parentUri));
 			List<Info> result = new ArrayList<Info>(files.size());
 			for (LsEntry file: files) {
 				if ((file != null) && !file.getFilename().equals(URIUtils.CURRENT_DIR_NAME) && !file.getFilename().equals(URIUtils.PARENT_DIR_NAME)) {
-					Info child = info(file, parentUri);
+					Info child = info(file, null, parentUri, null);
 					result.add(child);
 					if (params.isRecursive() && file.getAttrs().isDir()) {
 						result.addAll(list(child.getURI(), channel, params));
@@ -548,7 +561,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		boolean createDirectory = Boolean.TRUE.equals(params.isDirectory());
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
 		Info fileInfo = info(uri);
-		String path = quote(uri.getPath());
+		String path = getPath(uri);
 		if (fileInfo == null) { // does not exist
 			if (createParents) {
 				URI parentUri = URIUtils.getParentURI(uri);
@@ -668,7 +681,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 			SFTPSession session = null;
 			try {
 				session = connect(uri);
-				return Channels.newChannel(new SFTPInputStream(session.channel.get(quote(uri.getPath())), session));
+				return Channels.newChannel(new SFTPInputStream(session.channel.get(getPath(uri)), session));
 			} catch (SftpException e) {
 				disconnectQuietly(session);
 				throw new IOException(e);
@@ -680,7 +693,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 			SFTPSession session = null;
 			try {
 				session = connect(uri);
-				return Channels.newChannel(new SFTPOutputStream(session.channel.put(quote(uri.getPath()), ChannelSftp.OVERWRITE), session));
+				return Channels.newChannel(new SFTPOutputStream(session.channel.put(getPath(uri), ChannelSftp.OVERWRITE), session));
 			} catch (SftpException e) {
 				disconnectQuietly(session);
 				throw new IOException(e);
@@ -692,7 +705,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 			SFTPSession session = null;
 			try {
 				session = connect(uri);
-				return Channels.newChannel(new SFTPOutputStream(session.channel.put(quote(uri.getPath()), ChannelSftp.APPEND), session));
+				return Channels.newChannel(new SFTPOutputStream(session.channel.put(getPath(uri), ChannelSftp.APPEND), session));
 			} catch (SftpException e) {
 				disconnectQuietly(session);
 				throw new IOException(e);
