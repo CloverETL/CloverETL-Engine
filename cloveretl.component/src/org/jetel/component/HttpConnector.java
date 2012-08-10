@@ -1323,8 +1323,13 @@ public class HttpConnector extends Node {
 		
 		if (additionalHeadersRecord != null) {
 			for (DataField field : additionalHeadersRecord) {
-				if (!field.isNull()) {
-					additionalRequestHeadersToUse.put(field.getMetadata().getLabelOrName(), field.getValue().toString());
+				if (inputMappingTransformation.isOutputOverridden(additionalHeadersRecord, field)) {
+					String labelOrName = field.getMetadata().getLabelOrName();
+					if (!field.isNull()) {
+						additionalRequestHeadersToUse.put(labelOrName, field.getValue().toString());
+					} else {
+						additionalRequestHeadersToUse.remove(labelOrName);
+					}
 				}
 			}
 		}
