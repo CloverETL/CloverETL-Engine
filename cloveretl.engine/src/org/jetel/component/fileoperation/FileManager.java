@@ -250,6 +250,8 @@ public class FileManager {
 		List<SingleCloverURI> resolvedTarget = resolve(targetExpression).getResult();
 		if (resolvedTarget.size() > 1) {
 			return result.setException(new IllegalArgumentException(format(FileOperationMessages.getString("FileManager.single_target_URI_permitted"), resolvedTarget))); //$NON-NLS-1$
+		} else if (resolvedTarget.size() == 1) {
+			targetExpression = resolvedTarget.get(0);
 		}
 		SingleCloverURI target = targetExpression.getSingleURI();
 		List<SingleCloverURI> sources = sourceList.split();
@@ -275,7 +277,9 @@ public class FileManager {
 		}
 		if (count > 1) {
 			if (resolvedTarget.size() < 1 || !info(resolvedTarget.get(0)).isDirectory()) {
-				return result.setException(new IOException(format(FileOperationMessages.getString("FileManager.not_a_directory"), targetExpression))); //$NON-NLS-1$
+				if (info(resolvedTarget.get(0)).exists() || !Boolean.TRUE.equals(params.isMakeParents()) || !resolvedTarget.get(0).getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
+					return result.setException(new IOException(format(FileOperationMessages.getString("FileManager.not_a_directory"), targetExpression))); //$NON-NLS-1$
+				}
 			}
 		}
 		
@@ -340,6 +344,8 @@ public class FileManager {
 		List<SingleCloverURI> resolvedTarget = resolve(targetExpression).getResult();
 		if (resolvedTarget.size() > 1) {
 			return result.setException(new IllegalArgumentException(format(FileOperationMessages.getString("FileManager.single_target_URI_permitted"), resolvedTarget))); //$NON-NLS-1$
+		} else if (resolvedTarget.size() == 1) {
+			target = resolvedTarget.get(0);
 		}
 		List<SingleCloverURI> sources = sourceList.split();
 		List<IOperationHandler> handlers = new ArrayList<IOperationHandler>(sources.size());
@@ -366,7 +372,9 @@ public class FileManager {
 		}
 		if (count > 1) {
 			if (resolvedTarget.size() < 1 || !info(resolvedTarget.get(0)).isDirectory()) {
-				return result.setException(new IOException(format(FileOperationMessages.getString("FileManager.not_a_directory"), targetExpression))); //$NON-NLS-1$
+				if (info(resolvedTarget.get(0)).exists() || !Boolean.TRUE.equals(params.isMakeParents()) || !resolvedTarget.get(0).getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
+					return result.setException(new IOException(format(FileOperationMessages.getString("FileManager.not_a_directory"), targetExpression))); //$NON-NLS-1$
+				}
 			}
 		}
 		
