@@ -251,7 +251,6 @@ public class FileManager {
 		if (resolvedTarget.size() > 1) {
 			return result.setException(new IllegalArgumentException(format(FileOperationMessages.getString("FileManager.single_target_URI_permitted"), resolvedTarget))); //$NON-NLS-1$
 		}
-		boolean nonRecursive = !Boolean.TRUE.equals(params.isRecursive());
 		SingleCloverURI target = targetExpression.getSingleURI();
 		List<SingleCloverURI> sources = sourceList.split();
 		List<IOperationHandler> handlers = new ArrayList<IOperationHandler>(sources.size());
@@ -298,55 +297,20 @@ public class FileManager {
 		
 		Iterator<IOperationHandler> h = handlers.iterator();
 		
-		if (nonRecursive) {
-			List<IOperationHandler> infoHandlers = new ArrayList<IOperationHandler>(sources.size());
-			for (SingleCloverURI sourceExpression: sources) {
-				Operation operation = getOperation(OperationKind.INFO, sourceExpression);
-				IOperationHandler handler = findHandler(operation);
-				if (handler == null) {
-					return result.setException(new UnsupportedOperationException(operation.toString()));
-				}
-				infoHandlers.add(handler);
-			}
-			Iterator<IOperationHandler> ih = infoHandlers.iterator();
-			for (List<SingleCloverURI> resolvedSource: resolvedSources) {
-				IOperationHandler infoHandler = ih.next();
-				IOperationHandler handler = h.next();
-				for (SingleCloverURI source: resolvedSource) {
-					try {
-						Info info = infoHandler.info(source, null);
-						if ((info != null) && info.isDirectory()) {
-							continue;
-						}
-						SingleCloverURI copied = handler.copy(source, target, params); 
-						if (copied != null) {
-							result.add(source, target, copied);
-						} else {
-							result.addError(source, target, FileOperationMessages.getString("FileManager.copy_failed")); //$NON-NLS-1$
-						}
-					} catch (FileNotFoundException fnfe) {
-						result.addError(source, target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
-					} catch (Throwable t) {
-						result.addError(source, target, t.getMessage());
+		for (List<SingleCloverURI> resolvedSource: resolvedSources) {
+			IOperationHandler handler = h.next();
+			for (SingleCloverURI source: resolvedSource) {
+				try {
+					SingleCloverURI copied = handler.copy(source, target, params); 
+					if (copied != null) {
+						result.add(source, target, copied);
+					} else {
+						result.addError(source, target, FileOperationMessages.getString("FileManager.copy_failed")); //$NON-NLS-1$
 					}
-				}
-			}
-		} else {
-			for (List<SingleCloverURI> resolvedSource: resolvedSources) {
-				IOperationHandler handler = h.next();
-				for (SingleCloverURI source: resolvedSource) {
-					try {
-						SingleCloverURI copied = handler.copy(source, target, params); 
-						if (copied != null) {
-							result.add(source, target, copied);
-						} else {
-							result.addError(source, target, FileOperationMessages.getString("FileManager.copy_failed")); //$NON-NLS-1$
-						}
-					} catch (FileNotFoundException fnfe) {
-						result.addError(source, target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
-					} catch (Throwable t) {
-						result.addError(source, target, t.getMessage());
-					}
+				} catch (FileNotFoundException fnfe) {
+					result.addError(source, target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
+				} catch (Throwable t) {
+					result.addError(source, target, t.getMessage());
 				}
 			}
 		}

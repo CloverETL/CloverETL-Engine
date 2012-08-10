@@ -168,8 +168,8 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		source = relativeURI("srcdir");
 		target = relativeURI("srcdir_copy");
 		result = manager.copy(source, target);
-		assertTrue(result.success());
-		assertEquals(0, result.totalCount());
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
 		assertTrue(manager.copy(source, target, new CopyParameters().setRecursive(true)).success());
 		for (String path: texts.keySet()) {
 			if (path.startsWith(source.toString())) {
@@ -238,10 +238,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		source = relativeURI("s/*");
 		target = relativeURI("t");
 		result = manager.copy(source, target);
-		assertTrue(result.success());
-		assertEquals(1, result.totalCount());
+		assertFalse(result.success());
+		assertEquals(2, result.totalCount());
 		assertEquals(1, result.successCount());
-		assertEquals(0, result.errorCount());
+		assertEquals(1, result.errorCount());
 
 		source = relativeURI("u/*");
 		target = relativeURI("v");

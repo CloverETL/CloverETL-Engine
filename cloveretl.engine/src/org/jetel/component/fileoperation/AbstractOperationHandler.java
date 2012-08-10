@@ -76,10 +76,10 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		boolean makeParents = Boolean.TRUE.equals(params.isMakeParents());
 		if (source.isDirectory()) {
 			if (!params.isRecursive()) {
-				return false;
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_copy_directory"), source.getURI())); //$NON-NLS-1$
 			}
 			if (target != null && !target.isDirectory()) {
-				throw new IOException(format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source, target)); //$NON-NLS-1$
+				throw new IOException(format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source.getURI(), target.getURI())); //$NON-NLS-1$
 			}
 			if (target == null) {
 				if (makeParents) {
@@ -87,7 +87,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 					create(parentUri, CREATE_PARENT_DIRS);
 				}
 				if (!simpleHandler.makeDir(targetUri)) {
-					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
+					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target.getURI())); //$NON-NLS-1$
 				}
 			}
 			boolean success = true;
@@ -156,11 +156,11 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				if (target.isDirectory()) {
 					List<URI> children = simpleHandler.list(targetUri);
 					if ((children != null) && (children.size() > 0)) {
-						throw new IOException(format(FileOperationMessages.getString("IOperationHandler.not_empty"), target)); //$NON-NLS-1$
+						throw new IOException(format(FileOperationMessages.getString("IOperationHandler.not_empty"), target.getURI())); //$NON-NLS-1$
 					}
 					simpleHandler.removeDir(targetUri); // necessary for renameTo()
 				} else {
-					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source, target)); //$NON-NLS-1$
+					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source.getURI(), target.getURI())); //$NON-NLS-1$
 				}
 			} else if (makeParents) {
 				URI parentUri = URIUtils.getParentURI(targetUri);
@@ -170,7 +170,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 				return true;
 			}
 			if (!simpleHandler.makeDir(targetUri)) {
-				throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
+				throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target.getURI())); //$NON-NLS-1$
 			}
 			boolean success = true;
 			for (URI child: simpleHandler.list(sourceUri)) {
