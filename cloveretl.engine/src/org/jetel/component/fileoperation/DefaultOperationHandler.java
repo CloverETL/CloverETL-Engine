@@ -104,7 +104,7 @@ public class DefaultOperationHandler implements IOperationHandler {
 		boolean makeParents = Boolean.TRUE.equals(params.isMakeParents());
 		if (sourceInfo.isDirectory()) {
 			if (!params.isRecursive()) {
-				return false;
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_copy_directory"), source)); //$NON-NLS-1$
 			}
 			if (targetInfo.exists() && !targetInfo.isDirectory()) {
 				throw new IOException(format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source, target)); //$NON-NLS-1$
