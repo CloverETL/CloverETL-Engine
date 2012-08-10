@@ -82,21 +82,24 @@ public class FTPOperationHandler implements IOperationHandler {
 		return false;
 	}
 	
-	private class FTPInfo implements Info {
+	private static class FTPInfo implements Info {
 		
 		private final FTPFile file;
 		private final URI uri;
 		private final URI parent;
 		
-		public FTPInfo(FTPFile file, URI parent) throws UnsupportedEncodingException {
+		public FTPInfo(FTPFile file, URI parent, URI self) throws UnsupportedEncodingException {
 			this.file = file;
 			this.parent = parent;
 			String name = file.getName();
 			if (file.isDirectory() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
 				name = name + URIUtils.PATH_SEPARATOR;
 			}
-			URI tmp = URIUtils.getChildURI(parent, name);
-			this.uri = tmp;
+			if (self != null) {
+				this.uri = self;
+			} else {
+				this.uri = URIUtils.getChildURI(parent, name);
+			}
 		}
 
 		@Override
@@ -237,12 +240,12 @@ public class FTPOperationHandler implements IOperationHandler {
 		}
 	}
 	
-	private Info info(FTPFile file, URI parent) {
+	private Info info(FTPFile file, URI parent, URI self) {
 		if (file == null) {
 			return null;
 		}
 		try {
-			return new FTPInfo(file, parent);
+			return new FTPInfo(file, parent, self);
 		} catch (IOException ex) {
 			return null;
 		}
@@ -250,30 +253,28 @@ public class FTPOperationHandler implements IOperationHandler {
 	
 	private Info info(URI targetUri, FTPClient ftp) {
 		try {
-//			System.err.println(connection.cd(targetUri.getPath()) ? "DIR" : "FILE");
-			URI parentUri = URIUtils.getParentURI(targetUri);
-			String fileName = parentUri.relativize(targetUri).toString();
-			if (fileName.endsWith(URIUtils.PATH_SEPARATOR)) {
-				fileName = fileName.substring(0, fileName.length()-1);
-			}
-			fileName = URIUtils.urlDecode(fileName);
-			FTPFile[] files = ftp.listFiles(parentUri.getPath());
-			if (files != null) {
+			FTPFile[] files = ftp.listFiles(targetUri.getPath());
+			if ((files != null) && (files.length != 0) && (files[0] != null)) {
 				for (FTPFile file: files) {
-					if ((file != null) && !file.getName().equals(URIUtils.CURRENT_DIR_NAME) && !file.getName().equals(URIUtils.PARENT_DIR_NAME)) {
-						Info info = info(file, parentUri);
-						if (info.getName().equals(fileName)) {
-							return info;
+					if ((file != null) && file.isDirectory() && file.getName().equals(URIUtils.CURRENT_DIR_NAME)) {
+						URI parentUri = URIUtils.getParentURI(targetUri);
+						if (parentUri != null) {
+							String fileName = parentUri.relativize(targetUri).toString();
+							fileName = URIUtils.urlDecode(fileName);
+							file.setName(fileName);
 						}
+						return info(file, null, targetUri);
 					}
+					
 				}
+				return info(files[0], null, targetUri);
 			}
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
 		return null;
 	}
-	
+
 	private void disconnect(FTPClient ftp) {
 		if ((ftp != null) && ftp.isConnected()) {
 			try {
@@ -501,7 +502,7 @@ public class FTPOperationHandler implements IOperationHandler {
 			List<Info> result = new ArrayList<Info>(files.length);
 			for (FTPFile file: files) {
 				if ((file != null) && !file.getName().equals(URIUtils.CURRENT_DIR_NAME) && !file.getName().equals(URIUtils.PARENT_DIR_NAME)) {
-					Info child = info(file, parentUri);
+					Info child = info(file, parentUri, null);
 					result.add(child);
 					if (params.isRecursive() && file.isDirectory()) {
 						result.addAll(list(child.getURI(), ftp, params));

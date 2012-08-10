@@ -25,6 +25,8 @@ import java.net.URISyntaxException;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.result.InfoResult;
+import org.jetel.component.fileoperation.result.ListResult;
+import org.jetel.component.fileoperation.result.ResolveResult;
 
 public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 	
@@ -108,6 +110,63 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 			URI child = URIUtils.getChildURI(root, name);
 			manager.create(CloverURI.createSingleURI(child));
 		}
+	}
+
+	@Override
+	public void testList() throws Exception {
+		super.testList();
+		
+		CloverURI uri;
+		ListResult result;
+		
+		uri = CloverURI.createURI("ftp://test:test@koule/");
+		result = manager.list(uri);
+		assertTrue(result.success());
+		System.out.println(result.getResult());
+
+		uri = CloverURI.createURI("ftp://test:test@koule");
+		result = manager.list(uri);
+		assertTrue(result.success());
+		System.out.println(result.getResult());
+	}
+
+	@Override
+	public void testInfo() throws Exception {
+		super.testInfo();
+
+		CloverURI uri;
+		InfoResult result;
+		
+		uri = CloverURI.createURI("ftp://test:test@koule/");
+		result = manager.info(uri);
+		assertTrue(result.success());
+		assertTrue(result.isDirectory());
+		System.out.println(result.getResult());
+
+		uri = CloverURI.createURI("ftp://test:test@koule");
+		result = manager.info(uri);
+		assertTrue(result.success());
+		assertTrue(result.isDirectory());
+		System.out.println(result.getResult());
+	}
+
+	@Override
+	public void testResolve() throws Exception {
+		super.testResolve();
+
+		CloverURI uri;
+		ResolveResult result;
+		
+		uri = CloverURI.createURI("ftp://test:test@koule/*");
+		result = manager.resolve(uri);
+		assertTrue(result.success());
+		System.out.println(result.getResult());
+
+		uri = CloverURI.createURI("ftp://test:test@koule");
+		result = manager.resolve(uri);
+		assertTrue(result.success());
+		assertEquals(1, result.totalCount());
+		System.out.println(result.getResult());
 	}
 	
 	

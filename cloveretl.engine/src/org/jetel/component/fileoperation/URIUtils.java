@@ -25,6 +25,8 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
 
+import org.jetel.util.string.StringUtils;
+
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -67,6 +69,10 @@ public class URIUtils {
 	}
 	
 	public static URI getParentURI(URI uri) {
+		String path = uri.getPath();
+		if (StringUtils.isEmpty(path) || path.equals(PATH_SEPARATOR)) {
+			return null;
+		}
 		return uri.toString().endsWith(PATH_SEPARATOR) ? uri.resolve(PARENT_DIR_NAME) : uri.resolve(CURRENT_DIR_NAME);
 	}
 	
