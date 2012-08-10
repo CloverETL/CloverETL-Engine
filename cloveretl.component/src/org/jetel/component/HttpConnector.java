@@ -1321,9 +1321,11 @@ public class HttpConnector extends Node {
 
 		additionalRequestHeadersToUse = (Map<String, CharSequence>) inputParamsRecord.getField(IP_ADDITIONAL_REQUEST_HEADERS_INDEX).getValue();
 		
-		for (DataField field : additionalHeadersRecord) {
-			if (!field.isNull()) {
-				additionalRequestHeadersToUse.put(field.getMetadata().getLabelOrName(), field.getValue().toString());
+		if (additionalHeadersRecord != null) {
+			for (DataField field : additionalHeadersRecord) {
+				if (!field.isNull()) {
+					additionalRequestHeadersToUse.put(field.getMetadata().getLabelOrName(), field.getValue().toString());
+				}
 			}
 		}
 	}
