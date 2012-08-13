@@ -474,7 +474,7 @@ public final class TransformationGraph extends GraphElement {
 				try {
 					phase.init();
 				} catch (ComponentNotReadyException e) {
-					throw new ComponentNotReadyException(this, "Phase " + phase.getPhaseNum() + " can't be initilized.", e);
+					throw new ComponentNotReadyException(this, "Phase " + phase.getPhaseNum() + " can't be initialized.", e);
 				}
 			}
 		} finally {
