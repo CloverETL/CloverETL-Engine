@@ -1723,7 +1723,7 @@ public class HttpConnector extends Node {
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_CONSUMER_KEY_NAME, consumerKey);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_CONSUMER_SECRET_NAME, consumerSecret);
 		if (!StringUtils.isEmpty(rawHttpHeaders)) {
-			inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_RAW_HTTP_HEADERS_NAME, Arrays.asList(rawHttpHeaders.split("\\n|\\r\\n|\\r")));
+			inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_RAW_HTTP_HEADERS_NAME, parseRawHttpHeadersItems());
 		}
 		
 		if (requestCookies != null) {
@@ -1733,6 +1733,10 @@ public class HttpConnector extends Node {
 				inputMappingTransformation.setDefaultOutputValue(REQUEST_COOKIES_RECORD_NAME, StringUtils.normalizeName(name), value);
 			}
 		}
+	}
+
+	private List<String> parseRawHttpHeadersItems() {
+		return Arrays.asList(rawHttpHeaders.split("\\n|\\r\\n|\\r"));
 	}
 
 	/** Maps values in <code>toRecord</code> from records contained in <code>fromRecords</code> by name.
@@ -2410,6 +2414,16 @@ public class HttpConnector extends Node {
 			status.add(new ConfigurationProblem("Fields of error records redirected to standard output port will be empty unless Standard output mapping is defined", Severity.WARNING, this, Priority.NORMAL, XML_REDIRECT_ERROR_OUTPUT));
 		}
 		
+		if (!StringUtils.isEmpty(rawHttpHeaders)) {
+			for (CharSequence rawHeader : parseRawHttpHeadersItems()) {
+				try {
+					parseRawHeaderItem(rawHeader);
+				} catch (IllegalArgumentException e) {
+					status.add(new ConfigurationProblem("Missing ':' semicolon character in \"raw HTTP header\" item: \"" + rawHeader + "\"", Severity.WARNING, this, Priority.NORMAL, XML_RAW_HTTP_HEADERS_ATTRIBUTE));
+				}
+			}
+		}
+		
         try {
         	tryToInit(true);
         } catch (Exception e) {
@@ -2749,14 +2763,15 @@ public class HttpConnector extends Node {
 			setRefProperties(fieldValues);
 		}
 		
-		if (rawHttpHeadersToUse != null && !rawHttpHeadersToUse.isEmpty()) { // TODO check format here (because of inputMapping) and also in checkConfg
+		if (rawHttpHeadersToUse != null && !rawHttpHeadersToUse.isEmpty()) {
 			for (CharSequence rawHeader : rawHttpHeadersToUse) {
-				String rawHeaderStr = rawHeader.toString().trim();
-				if (!rawHeaderStr.isEmpty()) {
-					int separatorIndex = rawHeaderStr.indexOf(":");
-					String name = rawHeaderStr.substring(0, separatorIndex).trim();
-					String value = refResolver.resolveRef(rawHeaderStr.substring(separatorIndex + 1).trim());
-					method.addHeader(name, value);
+				try {
+					RawHeader header = parseRawHeaderItem(rawHeader);
+					if (header != null) {
+						method.addHeader(header.name, header.value);
+					}
+				} catch (IllegalArgumentException e) {
+					logger.debug("Ignoring invalid \"raw HTTP header\" item: \"" + rawHeader + "\"");
 				}
 			}
 		}
@@ -2776,6 +2791,32 @@ public class HttpConnector extends Node {
 			}
 		}
 	}	
+	
+	private static class RawHeader {
+		public final String name;
+		public final String value;
+
+		private RawHeader(String name, String value) {
+			this.name = name;
+			this.value = value;
+		}
+	}
+	
+	private RawHeader parseRawHeaderItem(CharSequence rawHeader) {
+		String rawHeaderStr = rawHeader.toString().trim();
+		if (!rawHeaderStr.isEmpty()) {
+			rawHeaderStr = refResolver.resolveRef(rawHeaderStr);
+			int separatorIndex = rawHeaderStr.indexOf(":");
+			if (separatorIndex > 0) {
+				String name = rawHeaderStr.substring(0, separatorIndex).trim();
+				String value = rawHeaderStr.substring(separatorIndex + 1).trim();
+				return new RawHeader(name, value);
+			} else {
+				throw new IllegalArgumentException();
+			}
+		}
+		return null;
+	}
 	
 	private void addRequestCookies(HttpRequestBase method) throws ComponentNotReadyException {
 		if (requestCookies == null) {
