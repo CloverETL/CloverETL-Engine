@@ -3,6 +3,7 @@ package org.jetel.graph;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.concurrent.Future;
 
@@ -56,6 +57,7 @@ public class ResetTest extends CloverTestCase {
 	};
 		
 	private final static String GRAPHS_DIR = "graph";
+	private final static String TRANS_DIR = "trans";
 	private final static String[] OUT_DIRS = {"data-out/", "data-tmp/", "seq/"};
 	
 	private final String basePath;
@@ -237,8 +239,15 @@ public class ResetTest extends CloverTestCase {
 			runtimeContext.addAdditionalProperty("LIB_DIR", libDir);
 			logger.info("LIB_DIR set to " + libDir);
 		}
+		
+		// for scenarios graphs, add the TRANS dir to the classpath
+		if (basePath.contains("cloveretl.test.scenarios")) {
+			runtimeContext.setRuntimeClassPath(new URL[] {FileUtils.getFileURL(FileUtils.appendSlash(beseAbsolutePath) + TRANS_DIR + "/")});
+			runtimeContext.setCompileClassPath(runtimeContext.getRuntimeClassPath());
+		}
 
 		runtimeContext.setBatchMode(batchMode);
+		
 		
 		final TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(graphFile), runtimeContext);
 		try {
