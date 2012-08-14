@@ -68,7 +68,14 @@ public class URLConnectionRequest {
      * @return
      */
     static String encode(String source){
-    	return Base64.encodeBase64URLSafeString(source.getBytes());
+    	// CL-2434: the method pads the result with equal signs '=' correctly
+    	// Base64.encodeBase64URLSafeString() does not pad the result with '=', which was causing the authentication to fail
+    	
+    	// commons-codec-1.4 uses multiline chunking in Base64.encodeBase64String(), 
+    	// therefore Base64.encodeBase64String() has been replaced with the following: 
+    	return org.apache.commons.codec.binary.StringUtils.newStringUtf8(Base64.encodeBase64(source.getBytes(), false));
+    	// FIXME Since commons-codec-1.5 the code can be replaced with:
+    	// return Base64.encodeBase64String(source.getBytes());
     }
     
 	/**
