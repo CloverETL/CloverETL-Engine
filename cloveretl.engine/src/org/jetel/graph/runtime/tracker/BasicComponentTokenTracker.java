@@ -157,6 +157,9 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	}
 
 	protected void validateToken(DataRecord token) {
+		if (token == null) {
+			throw new IllegalArgumentException("null data record cannot be tracked");
+		}
 		if (!(token instanceof Token)) {
 			throw new IllegalArgumentException("plain data record cannot be tracked");
 		}
