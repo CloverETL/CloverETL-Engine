@@ -52,6 +52,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.tracker.TokenTracker;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.primitive.DuplicateKeyMap;
 import org.jetel.util.string.StringUtils;
 
@@ -460,8 +461,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					logger.error("Node "
 							+ message.getSender().getId()
 							+ " finished with status: "
-							+ ((ErrorMsgBody) message.getBody())
-									.getErrorMessage() + (causeException != null ? " caused by: " + causeException.getMessage() : ""));
+							+ ((ErrorMsgBody) message.getBody()).getErrorMessage()
+							+ (causeException != null ? "\nCaused by: " + MiscUtils.exceptionChainToMessage(null, causeException): ""));
 					logger.error("Node " + message.getSender().getId() + " error details:", causeException);
 					return Result.ERROR;
 				case MESSAGE:
