@@ -113,6 +113,8 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 	@Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
+    	
+    	resetValue();
     }
     
     /**
