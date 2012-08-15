@@ -275,7 +275,7 @@ public class FileUtils {
 			StringBuilder anchor = new StringBuilder();
 			ArchiveType type = getArchiveType(fileURL, innerInput, anchor);
 			URL archiveFileUrl = getFileURL(contextURL, innerInput.toString());
-			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, ARCHIVE_URL_STREAM_HANDLER);
+			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, new ArchiveURLStreamHandler(contextURL));
 		}
 		
         // file url
@@ -1672,16 +1672,29 @@ public class FileUtils {
 	}
 	
     public static class ArchiveURLStreamHandler extends URLStreamHandler {
-    	@Override
+    	
+    	private URL context;
+    	
+		public ArchiveURLStreamHandler() {
+		}
+		
+    	private ArchiveURLStreamHandler(URL context) {
+			this.context = context;
+		}
+
+		@Override
     	protected URLConnection openConnection(URL u) throws IOException {
-			return new ArchiveURLConnection(u);
+			return new ArchiveURLConnection(context, u);
     	}
     }
     
     private static class ArchiveURLConnection extends URLConnection {
+    	
+    	private URL context;
 
-		public ArchiveURLConnection(URL url) {
+		public ArchiveURLConnection(URL context, URL url) {
 			super(url);
+			this.context = context;
 		}
     	
 		@Override
@@ -1690,7 +1703,35 @@ public class FileUtils {
 		
 		@Override
 		public InputStream getInputStream() throws IOException {
-			return FileUtils.getInputStream(null, url.toString());
+			String urlString;
+			try {
+				// Try to decode %-encoded URL
+				// Fix of CLD-2872 if scheme is in a zip file and the URL contains spaces (or other URL-invalid chars)
+				URI uri = url.toURI();
+				if (uri.isOpaque()) {
+					// This is intended to handle archive (e.g. zip:...) URLs
+					// Example of expected URI format: zip:(sandbox://sanboxName/path%20with%20spaces.zip)#path%20inside%20zip.xsd
+					// Decode only fragmet part to get zip:(sandbox://sanboxName/path%20with%20spaces.zip)#path inside zip.xsd
+					urlString = decodeFragment(uri);
+				} else {
+					urlString = uri.toString();
+				}
+			} catch (URISyntaxException e) {
+				urlString = url.toString();
+			}
+			return FileUtils.getInputStream(context, urlString);
+		}
+		
+		private static String decodeFragment(URI uri) {
+			StringBuilder sb = new StringBuilder();
+			if (uri.getScheme() != null) {
+				sb.append(uri.getScheme()).append(':');
+			}
+			sb.append(uri.getRawSchemeSpecificPart());
+			if (uri.getFragment() != null) {
+				sb.append('#').append(uri.getFragment());
+			}
+			return sb.toString();
 		}
     }
     
