@@ -106,6 +106,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 		if (firstRun()) {//a phase-dependent part of initialization
     		//all necessary elements have been initialized in init()
     	} else {
+    		logger.debug("Primitive sequence '" + getId() + "' reset.");
     		resetValue();
     	}
 	}
@@ -113,8 +114,6 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 	@Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
-    	
-    	resetValue();
     }
     
     /**
