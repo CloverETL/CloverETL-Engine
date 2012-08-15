@@ -727,11 +727,6 @@ public class HttpConnector extends Node {
     protected DataRecord[] inputMappingOutRecords;
 
     /**
-     * Input records for output mapping transformation - standard output mapping.
-     */
-    protected DataRecord[] standardOutputMappingInRecords;
-
-    /**
      * Input records for output mapping transformation - error output mapping.
      */
     protected DataRecord[] errorOutputMappingInRecords;
@@ -1658,7 +1653,6 @@ public class HttpConnector extends Node {
 		inputMappingTransformation.addOutputRecord(REQUEST_COOKIES_RECORD_NAME, requestCookiesRecord);
 
 		//create input records for standard output mapping
-		standardOutputMappingInRecords = new DataRecord[] { inputRecord, resultRecord, inputParamsRecord, responseCookiesRecord };
 		standardOutputMappingTransformation.addInputRecord(INPUT_RECORD_NAME, inputRecord);
 		standardOutputMappingTransformation.addInputRecord(RESULT_RECORD_NAME, resultRecord);
 		standardOutputMappingTransformation.addInputRecord(ATTRIBUTES_RECORD_NAME, inputParamsRecord);
@@ -1939,7 +1933,7 @@ public class HttpConnector extends Node {
 	 */
 	private void initForRecord() {
 		// reset all the records used
-		resetRecords(inputParamsRecord, resultRecord, errorRecord);
+		resetRecords(inputParamsRecord, resultRecord, errorRecord, responseCookiesRecord);
 		resetRecords(standardOutputMappingOutRecords);
 		resetRecords(errorOutputMappingOutRecords);
 		
@@ -2803,16 +2797,18 @@ public class HttpConnector extends Node {
 	}
 	
 	private RawHeader parseRawHeaderItem(CharSequence rawHeader) {
-		String rawHeaderStr = rawHeader.toString().trim();
-		if (!rawHeaderStr.isEmpty()) {
-			rawHeaderStr = refResolver.resolveRef(rawHeaderStr);
-			int separatorIndex = rawHeaderStr.indexOf(":");
-			if (separatorIndex > 0) {
-				String name = rawHeaderStr.substring(0, separatorIndex).trim();
-				String value = rawHeaderStr.substring(separatorIndex + 1).trim();
-				return new RawHeader(name, value);
-			} else {
-				throw new IllegalArgumentException();
+		if (rawHeader != null) {
+			String rawHeaderStr = rawHeader.toString().trim();
+			if (!rawHeaderStr.isEmpty()) {
+				rawHeaderStr = refResolver.resolveRef(rawHeaderStr);
+				int separatorIndex = rawHeaderStr.indexOf(":");
+				if (separatorIndex > 0) {
+					String name = rawHeaderStr.substring(0, separatorIndex).trim();
+					String value = rawHeaderStr.substring(separatorIndex + 1).trim();
+					return new RawHeader(name, value);
+				} else {
+					throw new IllegalArgumentException();
+				}
 			}
 		}
 		return null;
