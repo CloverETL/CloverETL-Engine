@@ -60,40 +60,39 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 	
 	@Override
 	public void initToken(Date date, String nodeId, TokenContent token) {
-		getLogger().info(String.format("[token %s] Creating in component %s.", token.getLabel(), nodeIdToString(nodeId)));
+		getLogger().info(String.format("Token [%s] created.", token.getLabel()));
 	}
 
 	@Override
 	public void freeToken(Date date, String nodeId, TokenContent token) {
-		getLogger().info(String.format("[token %s] Terminating in component %s.", token.getLabel(), nodeIdToString(nodeId)));
+		getLogger().info(String.format("Token [%s] terminated.", token.getLabel()));
 	}
 
 	@Override
 	public void readToken(Date date, String nodeId, int port, TokenContent token) {
-		getLogger().info(String.format("[token %s] Reading by component %s from input port %s.", token.getLabel(), nodeIdToString(nodeId), port));
+		getLogger().info(String.format("Token [%s] received from input port %s.", token.getLabel(), port));
 	}
 
 	@Override
 	public void writeToken(Date date, String nodeId, int port, TokenContent token) {
-		getLogger().info(String.format("[token %s] Writing by component %s to output port %s.", token.getLabel(), nodeIdToString(nodeId), port));
+		getLogger().info(String.format("Token [%s] sent to output port %s.", token.getLabel(), port));
 	}
 
 	@Override
 	public void linkTokens(Date date, String nodeId, TokenContent sourceToken, TokenContent targetToken) {
-		getLogger().info(String.format("[token %s] Transforming to %s in component %s.", sourceToken.getLabel(), targetToken.getLabel(), nodeIdToString(nodeId)));
+		getLogger().info(String.format("Token [%s] is linked to token [%s].", sourceToken.getLabel(), targetToken.getLabel()));
 	}
 
 	@Override
 	public void executeJob(Date date, String nodeId, TokenContent token, JobType jobType, RunStatus runStatus) {
 		StringBuilder result = new StringBuilder();
 		if (token != null && token.getTokenId() >= 0) { 
-			result.append(String.format("[token %s] ", token.getLabel()));
+			result.append(String.format("Token [%s] ", token.getLabel()));
 		}
-		result.append(String.format("Starting %s:%s:%s in component %s%s.",
+		result.append(String.format("started %s:%s:%s%s.",
 				jobType,
 				runStatus.runId,
 				runStatus.jobUrl,
-				nodeIdToString(nodeId),
 				StringUtils.isEmpty(runStatus.clusterNodeId) ? "" : " on node " + runStatus.clusterNodeId));
 		if (runStatus.graphParameters != null && !runStatus.graphParameters.isEmpty()) {
 			result.append(String.format("\nGraph parameters:\n%s",
@@ -110,13 +109,12 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 	public void jobFinished(Date date, String nodeId, TokenContent token, JobType jobType, RunStatus runStatus) {
 		StringBuilder result = new StringBuilder();
 		if (token != null && token.getTokenId() >= 0) { 
-			result.append(String.format("[token %s] ", token.getLabel()));
+			result.append(String.format("Token [%s] ", token.getLabel()));
 		}
-		result.append(String.format("Finishing %s:%s:%s in component %s%s with status %s%s.",
+		result.append(String.format("detected finish %s:%s:%s %s with status %s%s.",
 				jobType,
 				runStatus.runId == 0 ? "" : runStatus.runId,
 				runStatus.jobUrl,
-				nodeIdToString(nodeId),
 				StringUtils.isEmpty(runStatus.clusterNodeId) ? "" : " on node " + runStatus.clusterNodeId,
 				runStatus.status,
 				getErrorDescription(runStatus)));
@@ -143,14 +141,10 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 	public void logMessage(Date date, String nodeId, TokenContent token, Level level, String message, String exception) {
 		StringBuilder result = new StringBuilder();
 		if (token != null && token.getTokenId() >= 0) { 
-			result.append(String.format("[token %s] ", token.getLabel()));
+			result.append(String.format("Tokene [%s] : ", token.getLabel()));
 		}
-		result.append(String.format("Message in component %s '%s'.%s", nodeIdToString(nodeId), message, (!StringUtils.isEmpty(exception) ? ("\n" + exception) : "")));
+		result.append(String.format("%s.%s", message, (!StringUtils.isEmpty(exception) ? ("\n" + exception) : "")));
 		getLogger().log(level, result.toString());
-	}
-	
-	private String nodeIdToString(String nodeId) {
-		return graph.getNodes().get(nodeId).toString();
 	}
 	
 	private static String formatProperties(Properties properties) {
