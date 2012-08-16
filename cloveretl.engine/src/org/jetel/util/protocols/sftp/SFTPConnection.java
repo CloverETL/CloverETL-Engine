@@ -391,4 +391,8 @@ public class SFTPConnection extends URLConnection {
 		}
 
 	}
+	
+	public void setURL(URL url) {
+		super.url = url;
+	}
 }

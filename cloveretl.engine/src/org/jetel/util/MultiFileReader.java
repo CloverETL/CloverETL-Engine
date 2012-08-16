@@ -285,10 +285,10 @@ public class MultiFileReader {
 					autoFilling.setFileTimestamp(fileTimestamp);
 				}
 				iSource++;
-				parser.setDataSource(stream);
 				if (!channelIterator.isGraphDependentSource()) {
-					parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
+					parser.setReleaseDataSource(FileUtils.isLocalFile(autoFilling.getFilename()) && !autoFilling.getFilename().equals(STD_IN));
 				}
+				parser.setDataSource(stream);
 				Object sourcePosition;
 				if ((sourcePosition = incrementalReading.getSourcePosition(channelIterator.getCurrentFileName())) != null) {
 					parser.movePosition(sourcePosition);

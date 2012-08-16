@@ -31,15 +31,21 @@ import java.net.URLStreamHandler;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class SFTPStreamHandler extends URLStreamHandler {
-
+	
+	private static SFTPConnection connection = null;
+	
 	@Override
 	public URLConnection openConnection(URL url) throws IOException {
-		return new SFTPConnection(url);
+		return openConnection(url, null);
 	}
 
 	@Override
 	public URLConnection openConnection(URL url, Proxy proxy) throws IOException {
-		return new SFTPConnection(url, proxy);
+		if (!connectionExists(url)) {
+			connection = new SFTPConnection(url, proxy);
+		}
+		connection.setURL(url);
+		return connection;
 	}
 
     protected void parseURL(URL u, String spec, int start, int limit) {
@@ -49,5 +55,25 @@ public class SFTPStreamHandler extends URLStreamHandler {
     		throw new RuntimeException("Parse error: The URL protocol must be sftp or scp!");
     	}
     }
-
+    
+    private boolean connectionExists(URL url) {
+    	if (connection != null) {
+    		URL connectionURL = connection.getURL();
+    		boolean connectionExists = connectionURL.getPort() == url.getPort();
+    		if (connectionExists && connectionURL.getHost() != null) {
+    			connectionExists = connectionURL.getHost().equals(url.getHost());
+    		}
+    		if (connectionExists && connectionURL.getProtocol() != null) {
+    			connectionExists = connectionURL.getProtocol().equals(url.getProtocol());
+    		}
+    		if (connectionExists && connectionURL.getAuthority() != null) {
+    			connectionExists = connectionURL.getAuthority().equals(url.getAuthority());
+    		}
+    		if (connectionExists && connectionURL.getUserInfo() != null) {
+    			connectionExists = connectionURL.getUserInfo().equals(url.getUserInfo());
+    		}
+    		return connectionExists;
+    	}
+    	return false;
+    }
 }

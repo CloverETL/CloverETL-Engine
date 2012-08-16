@@ -200,7 +200,6 @@ public class WcardPattern {
 			fileName = patterns.get(i);
 			// returns list of names for filename that can have a wild card '?' or '*'
 			for (FileStreamName fileStreamName: innerFileNames(fileName, false)) {
-				if (fileStreamName.getInputStream() != null) fileStreamName.getInputStream().close();
 				mfiles.add(fileStreamName.getFileName());
 			}
 		}
@@ -621,8 +620,6 @@ public class WcardPattern {
 		} catch (Throwable e) {
 			// return original name
 			mfiles.add(url.toString());
-		} finally {
-			if (sftpConnection != null) sftpConnection.disconnect();
 		}
 		
 		return mfiles;
