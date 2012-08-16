@@ -517,7 +517,7 @@ public class SystemExecute extends Node{
 	
 	private void deleteBatch(){
 		if (interpreter!=null) {
-			if (batch != null && getGraph().getRuntimeContext().isDebugMode() && !batch.delete()) {
+			if (batch != null && !getGraph().getRuntimeContext().isDebugMode() && !batch.delete()) {
 				logger.warn("Batch file (" + batch.getName() + ") was not deleted");
 			}
 		}
