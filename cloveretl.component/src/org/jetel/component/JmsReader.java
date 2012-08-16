@@ -240,12 +240,7 @@ public class JmsReader extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private JmsMsg2DataRecord createProcessor(String psorClass) throws ComponentNotReadyException {
-    	Object psor = RecordTransformFactory.loadClassInstance(psorClass, this);
-    	if (psor instanceof JmsMsg2DataRecord) {
-    		return (JmsMsg2DataRecord) psor;
-    	} else {
-            throw new ComponentNotReadyException("The transformation class does not implement the JmsMsg2DataRecord interface!");
-        }
+    	return RecordTransformFactory.loadClassInstance(psorClass, JmsMsg2DataRecord.class, this);
 	}
 	
 	/**
