@@ -74,7 +74,7 @@ public final class DynamicJavaClass {
 	public static Object instantiate(String sourceCode, Node node)
 		throws ComponentNotReadyException {
 		
-		return instantiate(sourceCode, ClassLoaderUtils.createNodeClassLoader(node),
+		return instantiate(sourceCode, node.getClass().getClassLoader(),
 				node.getGraph().getRuntimeContext().getCompileClassPath());
 	}
 	
