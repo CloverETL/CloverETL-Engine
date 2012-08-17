@@ -2353,7 +2353,7 @@ public class HttpConnector extends Node {
 				if (outputFieldName != null) {
 					status.add(new ConfigurationProblem("Output field '" + outputFieldName + "' has incompatible type '" + outField.getDataType().toString() + "'. The field has to be 'string'.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
 				} else {
-					status.add(new ConfigurationProblem("'Output field' not specified -> using the first field in output metadata as output, but it has incompatible type '" + outField.getDataType().toString() + "'. The field has to be 'string'.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+					status.add(new ConfigurationProblem("'Output field' not specified -> HTTP response content will be filled in the first field of output metadata, but the field has incompatible type '" + outField.getDataType().toString() + "'. It has to be 'string'.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
 				}
 			}
 		}
