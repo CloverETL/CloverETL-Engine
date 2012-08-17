@@ -28,7 +28,6 @@ import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
-import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -580,15 +579,7 @@ public class GraphRuntimeContext {
 	 * @return
 	 */
 	public synchronized ClassLoader getClassLoader() {
-		if (classLoader == null) {
-			classLoader = createClassPathClassLoader();
-		}
 		return classLoader;
-	}
-	
-	private ClassLoader createClassPathClassLoader() {
-		
-		return new GreedyURLClassLoader(getRuntimeClassPath());
 	}
 
 	/**
