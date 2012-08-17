@@ -36,7 +36,6 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.util.classloader.GreedyURLClassLoader;
-import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -160,11 +159,13 @@ public class ClassLoaderUtils {
 	 * @return
 	 */
 	public static ClassLoader createNodeClassLoader(Node node) {
-		
-		return new MultiParentClassLoader(
-			node.getGraph().getRuntimeContext().getClassLoader(),
-			node.getClass().getClassLoader()
-		);
+		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
+		if (runtimeClasspath != null && runtimeClasspath.length > 0) {
+			return new GreedyURLClassLoader(node.getGraph().getRuntimeContext().getRuntimeClassPath(),
+					node.getClass().getClassLoader());
+		} else {
+			return node.getClass().getClassLoader();
+		}
 	}
 
 	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) throws ComponentNotReadyException {
