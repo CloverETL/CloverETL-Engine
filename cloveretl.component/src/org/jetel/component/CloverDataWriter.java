@@ -32,6 +32,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -43,6 +44,7 @@ import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -250,6 +252,12 @@ public class CloverDataWriter extends Node {
         	return status;
         }
 
+        if (StringUtils.isEmpty(fileURL)) {
+            status.add("Attribute 'fileURL' is required.", ConfigurationStatus.Severity.ERROR, this,
+            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
+        	return status;
+        }
+        
         try {
         	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
@@ -292,15 +300,16 @@ public class CloverDataWriter extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws XMLConfigurationException 
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
 		CloverDataWriter aDataWriter = null;
 		
 		try{
 			aDataWriter = new CloverDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
 					xattribs.getBoolean(XML_SAVEINDEX_ATRRIBUTE,false));
 			aDataWriter.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			aDataWriter.setSaveMetadata(xattribs.getBoolean(XML_SAVEMETADATA_ATTRIBUTE,false));
@@ -315,8 +324,7 @@ public class CloverDataWriter extends Node {
 				aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
             }
 		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
-			return null;
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID "), ex);
 		}
 		
 		return aDataWriter;
