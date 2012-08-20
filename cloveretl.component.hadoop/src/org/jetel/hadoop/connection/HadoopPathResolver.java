@@ -49,6 +49,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 				}else{
 					try {
 						if(log.isDebugEnabled()) log.debug(String.format("Connecting to HDFS through [%s:%s] for reading.",conn.getId(),conn.getName()));
+						conn.init(); //may not be initialized
 						IHadoopConnection hconn=((HadoopConnection)conn).getConnection();
 						IHadoopInputStream istream=hconn.open(new URI(inputURI.getPath()));
 						return istream.getDataInputStream();
