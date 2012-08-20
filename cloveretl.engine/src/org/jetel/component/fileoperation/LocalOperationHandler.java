@@ -139,10 +139,20 @@ public class LocalOperationHandler implements IOperationHandler {
 
 	private SingleCloverURI copy(URI sourceUri, URI targetUri, CopyParameters params) throws IOException {
 		File source = new File(sourceUri);
+		try {
+			source = source.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (!source.exists()) {
 			throw new FileNotFoundException(source.toString());
 		}
 		File target = new File(targetUri);
+		try {
+			target = target.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (target.isDirectory()) {
 			target = new File(target, source.getName());
 		} else if (targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
@@ -162,10 +172,20 @@ public class LocalOperationHandler implements IOperationHandler {
 	
 	private SingleCloverURI move(URI sourceUri, URI targetUri, MoveParameters params) throws IOException {
 		File source = new File(sourceUri);
+		try {
+			source = source.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (!source.exists()) {
 			throw new FileNotFoundException(source.toString());
 		}
 		File target = new File(targetUri);
+		try {
+			target = target.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (target.isDirectory()) {
 			target = new File(target, source.getName());
 		} else if (targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
@@ -251,6 +271,11 @@ public class LocalOperationHandler implements IOperationHandler {
 		private final File file;
 		
 		public FileContent(File file) {
+			try {
+				file = file.getCanonicalFile();
+			} catch (IOException ex) {
+				// ignore
+			}
 			this.file = file;
 		}
 
@@ -333,6 +358,11 @@ public class LocalOperationHandler implements IOperationHandler {
 	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
 		URI uri = target.toURI();
 		File file = new File(uri);
+		try {
+			file = file.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !file.isDirectory()) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), file)); //$NON-NLS-1$
 		}
@@ -448,6 +478,11 @@ public class LocalOperationHandler implements IOperationHandler {
 	public List<Info> list(SingleCloverURI parent, ListParameters params) throws IOException {
 		URI uri = parent.toURI();
 		File file = new File(uri);
+		try {
+			file = file.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !file.isDirectory()) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), file)); //$NON-NLS-1$
 		}
@@ -455,6 +490,11 @@ public class LocalOperationHandler implements IOperationHandler {
 	}
 	
 	private boolean create(File file, CreateParameters params) throws IOException {
+		try {
+			file = file.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		boolean success = true;
 		Boolean isDirectory = params.isDirectory();
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents()); 
