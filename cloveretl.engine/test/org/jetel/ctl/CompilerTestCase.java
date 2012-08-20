@@ -3832,4 +3832,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
 		check("params", params);
 	}
+
+	public void test_utillib_getParamValue() {
+		doCompile("test_utillib_getParamValue");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("PROJECT", ".");
+		params.put("DATAIN_DIR", "./data-in");
+		params.put("COUNT", "3");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
+		check("params", params);
+	}
 }
