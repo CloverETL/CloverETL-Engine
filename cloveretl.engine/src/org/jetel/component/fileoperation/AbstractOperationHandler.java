@@ -87,7 +87,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 					create(parentUri, CREATE_PARENT_DIRS);
 				}
 				if (!simpleHandler.makeDir(targetUri)) {
-					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), target.getURI())); //$NON-NLS-1$
+					throw new IOException(format(FileOperationMessages.getString("IOperationHandler.create_failed"), targetUri)); //$NON-NLS-1$
 				}
 			}
 			boolean success = true;
@@ -287,8 +287,12 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
-		return delete(target.toURI(), params);
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
+		URI uri = target.toURI().normalize();
+		if (delete(uri, params)) {
+			return CloverURI.createSingleURI(uri);
+		}
+		return null;
 	}
 
 	@Override
@@ -367,8 +371,12 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params) throws IOException {
-		return create(target.toURI(), params);
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
+		URI uri = target.toURI().normalize();
+		if (create(uri, params)) {
+			return CloverURI.createSingleURI(uri);
+		}
+		return null;
 	}
 
 	@Override

@@ -224,13 +224,13 @@ public class SFTPOperationHandler implements IOperationHandler {
 	}
 	
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
-		URI uri = target.toURI();
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
+		URI uri = target.toURI().normalize();
 		SFTPSession session = null;
 		try {
 			session = connect(uri);
 			delete(session.channel, uri, params);
-			return true;
+			return CloverURI.createSingleURI(uri);
 		} catch (SftpException ex) {
 			throw new IOException(ex);
 		} finally {
@@ -586,14 +586,13 @@ public class SFTPOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params)
-			throws IOException {
-		URI uri = target.toURI();
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
+		URI uri = target.toURI().normalize();
 		SFTPSession session = null;
 		try {
 			session = connect(uri);
 			create(session.channel, uri, params);
-			return true;
+			return CloverURI.createSingleURI(uri);
 		} catch (SftpException ex) {
 			throw new IOException(ex);
 		} finally {

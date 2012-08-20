@@ -676,8 +676,9 @@ public class FileManager {
 			if (handler != null) {
 				for (SingleCloverURI target: resolve(targetExpression)) {
 					try {
-						if (handler.delete(target, params)) {
-							result.add(target);
+						SingleCloverURI deleted = handler.delete(target, params); 
+						if (deleted != null) {
+							result.add(deleted);
 						} else {
 							result.addError(target, FileOperationMessages.getString("FileManager.delete_failed")); //$NON-NLS-1$
 						}
@@ -952,10 +953,7 @@ public class FileManager {
 			if (target.toURI().toString().endsWith(URIUtils.PATH_SEPARATOR)) {
 				params.setDirectory(true);
 			}
-			if (handler.create(target, params)) {
-				return target;
-			}
-			return null;
+			return handler.create(target, params); 
 		}
 		throw new UnsupportedOperationException(operation.toString());
 	}
