@@ -192,6 +192,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		Properties properties = new Properties();
 		properties.put("PROJECT", ".");
 		properties.put("DATAIN_DIR", "${PROJECT}/data-in");
+		properties.put("COUNT", "`1+2`");
+		properties.put("NEWLINE", "\\n");
 		g.setGraphProperties(properties);
 		initDefaultDictionary(g);
 		return g;
@@ -3826,6 +3828,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("PROJECT", ".");
 		params.put("DATAIN_DIR", "./data-in");
+		params.put("COUNT", "3");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
 		check("params", params);
 	}
 }
