@@ -110,7 +110,7 @@ public class UtilLib extends TLFunctionLibrary {
 		Map<String, String> map = new HashMap<String, String>();
 		if (props != null) {
 			for (String key: props.stringPropertyNames()) {
-				map.put(key, refResolver.resolveRef(props.getProperty(key), RefResFlag.ALL_OFF));
+				map.put(key, refResolver.resolveRef(props.getProperty(key), RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 		}
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
