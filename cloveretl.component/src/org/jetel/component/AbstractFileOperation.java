@@ -541,7 +541,7 @@ public abstract class AbstractFileOperation<R extends org.jetel.component.fileop
 			return result.getError(index);
 		}
 
-		return null;
+		return result.getFirstErrorMessage();
 	}
 
 	protected void processResult() throws InterruptedException {
