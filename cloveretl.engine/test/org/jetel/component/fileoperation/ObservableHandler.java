@@ -81,7 +81,7 @@ public class ObservableHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
 		observer.observe(parent, Operation.delete(target.getScheme()));
 		return parent.delete(target, params);
 	}
@@ -105,7 +105,7 @@ public class ObservableHandler implements IOperationHandler {
 	}
 	
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params) throws IOException {
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
 		observer.observe(parent, Operation.create(target.getScheme()));
 		return parent.create(target, params);
 	}

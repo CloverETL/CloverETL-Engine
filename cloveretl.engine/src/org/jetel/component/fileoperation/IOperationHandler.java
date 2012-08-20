@@ -44,7 +44,7 @@ public interface IOperationHandler {
 
 	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) throws IOException;
 	
-	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException;
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException;
 
 	public List<SingleCloverURI> resolve(SingleCloverURI uri, ResolveParameters params) throws IOException;
 	
@@ -52,7 +52,7 @@ public interface IOperationHandler {
 	
 	public Info info(SingleCloverURI target, InfoParameters params) throws IOException;
 	
-	public boolean create(SingleCloverURI target, CreateParameters params) throws IOException;
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException;
 	
 	public File getFile(SingleCloverURI uri, FileParameters params) throws IOException;
 	

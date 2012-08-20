@@ -180,7 +180,7 @@ public class URLOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params) {
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -195,7 +195,7 @@ public class URLOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) {
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) {
 		throw new UnsupportedOperationException();
 	}
 	

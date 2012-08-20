@@ -335,19 +335,22 @@ public class FTPOperationHandler implements IOperationHandler {
 	
 
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params) throws IOException {
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
 		if (params.getLastModified() != null) {
 			throw new UnsupportedOperationException(FileOperationMessages.getString("FTPOperationHandler.setting_date_not_supported")); //$NON-NLS-1$
 		}
-		URI uri = target.toURI();
+		URI uri = target.toURI().normalize();
 		FTPClient ftp = null;
 		try {
 			ftp = connect(uri);
-			return create(ftp, uri, params);
+			if (create(ftp, uri, params)) {
+				return CloverURI.createSingleURI(uri);
+			}
 		} finally {
 			disconnect(ftp);
 		}
 		
+		return null;
 	}
 
 	@Override
@@ -468,15 +471,18 @@ public class FTPOperationHandler implements IOperationHandler {
 	}
 	
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
-		URI uri = target.toURI();
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
+		URI uri = target.toURI().normalize();
 		FTPClient ftp = null;
 		try {
 			ftp = connect(uri);
-			return delete(ftp, uri, params);
+			if (delete(ftp, uri, params)) {
+				return CloverURI.createSingleURI(uri);
+			}
 		} finally {
 			disconnect(ftp);
 		}
+		return null;
 	}
 
 	@Override

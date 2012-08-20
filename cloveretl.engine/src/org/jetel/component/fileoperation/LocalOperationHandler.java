@@ -355,7 +355,7 @@ public class LocalOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
 		URI uri = target.toURI();
 		File file = new File(uri);
 		try {
@@ -366,7 +366,10 @@ public class LocalOperationHandler implements IOperationHandler {
 		if (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !file.isDirectory()) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), file)); //$NON-NLS-1$
 		}
-		return delete(file, params);
+		if (delete(file, params)) {
+			return CloverURI.createSingleURI(file.toURI());
+		}
+		return null;
 	}
 	
 	private List<String> getParts(String uri) {
@@ -490,11 +493,6 @@ public class LocalOperationHandler implements IOperationHandler {
 	}
 	
 	private boolean create(File file, CreateParameters params) throws IOException {
-		try {
-			file = file.getCanonicalFile();
-		} catch (IOException ex) {
-			// ignore
-		}
 		boolean success = true;
 		Boolean isDirectory = params.isDirectory();
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents()); 
@@ -527,8 +525,17 @@ public class LocalOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params) throws IOException {
-		return create(new File(target.toURI()), params);
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
+		File file = new File(target.toURI());
+		try {
+			file = file.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
+		if (create(file, params)) {
+			return CloverURI.createSingleURI(file.toURI());
+		}
+		return null;
 	}
 	
 	private Info info(File file) {
