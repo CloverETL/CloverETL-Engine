@@ -117,7 +117,6 @@ public class JavaExecute extends Node {
 			Node node, Properties runnableParameters, ClassLoader classLoader, boolean doInit) throws ComponentNotReadyException {
 		
 		JavaRunnable codeToRun = null;
-		Log logger = LogFactory.getLog(node.getClass());
 		
 		if(runnable == null && runnableClass == null && runnableURL == null) {
             throw new ComponentNotReadyException("Runnable class is not defined.");
@@ -134,7 +133,7 @@ public class JavaExecute extends Node {
     		codeToRun = loadClassDynamic(runnable, classLoader);
         }
         
-        codeToRun.setGraph(node.getGraph()); 
+        codeToRun.setNode(node); 
         
         if (doInit && !codeToRun.init(runnableParameters)) {
             throw new ComponentNotReadyException("Error when initializing tranformation function !");        
