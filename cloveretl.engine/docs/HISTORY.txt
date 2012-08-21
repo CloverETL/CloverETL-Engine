@@ -2,6 +2,23 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+
+REL 3-3-0-M3
+------------
+* DBFDataWriter component
+* USE_DIRECT_MEMORY in default properties – ability to turn off usage of direct memory and use heap instead (lower performance, better manageability)
+* Tempspace Management - components were updated to use centralised tempspace management
+	- BACKWARDS INCOMPATIBILITY
+		- components cannot specify their own tmp paths (SortWithinGroups, ExtSort, HTTPConnector, XLSDataWriter, XMLWriter)
+		- components cannot prevent deletion of their temporary files (SystemExecute - Delete tmp batch file)
+- XMLExtract - ability to read element/attribute names
+- MD5Sum, SHA1Sum, SHA256Sum aggregation functions
+- MSAccess specific/connection
+- CTL functions to access environment variables, Java properties, graph parameters
+- dateDiff() CTL function implementation fixed - provides correct results, BACKWARDS INCOMPATIBILITY in some cases
+- Upgraded bundled Oracle JDBC driver to version 11.2.0.3.0
+
+
 REL 3-3-0-M2
 ------------
 * Support for list and map fields in metadata (container types)
