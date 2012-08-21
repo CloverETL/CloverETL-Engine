@@ -222,6 +222,17 @@ public class ReadableChannelIterator {
 			try {
 				ReadableByteChannel channel = portReadingIterator.getNextData();
 				currentFileName = portReadingIterator.getCurrentFileName();
+				//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
+				if (isURISourcePreferred) {
+					try {
+						//TODO: use contectURL ?? return  contextURL!=null ? CloverURI.createSingleURI(contextURL.toURI(), currentFileName).toURI() : new URI(currentFileName);  
+						return  new URI(currentFileName);
+	        		} catch(URISyntaxException ex){
+	        			throw new JetelException("Invalid fileURL - "+ex.getMessage(),ex);
+	        		} catch (Exception e) {
+						//DO NOTHING - just try to open a stream based on the currentFileName in the next step
+					}
+				} 
 				return channel;
 			} catch (NullPointerException e) {
 				throw new JetelException("The field '" + portReadingIterator.getLastFieldName() + "' contain unsupported null value.");
