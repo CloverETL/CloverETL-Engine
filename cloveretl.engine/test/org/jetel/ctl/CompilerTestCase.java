@@ -3789,7 +3789,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_resolveParams() {
 		doCompile("test_stringlib_resolveParams");
-		check("resultNoParams", "Special character representing new line is: \\n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
+		check("resultNoParams", "Special character representing new line is: \\n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
 		check("resultFalseFalseParams", "Special character representing new line is: \\n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
 		check("resultTrueFalseParams", "Special character representing new line is: \n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
 		check("resultFalseTrueParams", "Special character representing new line is: \\n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
