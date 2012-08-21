@@ -1261,7 +1261,7 @@ public class StringLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Resolves parameters in a given string.")
 	public static final String resolveParams(TLFunctionCallContext context, String value) {
-		return resolveParams(context, value, false, false);
+		return resolveParams(context, value, false, true);
 	}
 	
 	@TLFunctionAnnotation("Resolves parameters in a given string.")
