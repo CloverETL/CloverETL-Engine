@@ -15,7 +15,7 @@ REL 3-3-0-M3
 - MD5Sum, SHA1Sum, SHA256Sum aggregation functions
 - MSAccess specific/connection
 - CTL functions to access environment variables, Java properties, graph parameters
-- dateDiff() CTL function implementation fixed - provides correct results, BACKWARDS INCOMPATIBILITY in some cases
+- dateDiff() CTL function implementation fixed - provides correct results (BACKWARDS INCOMPATIBILITY)
 - Upgraded bundled Oracle JDBC driver to version 11.2.0.3.0
 
 
