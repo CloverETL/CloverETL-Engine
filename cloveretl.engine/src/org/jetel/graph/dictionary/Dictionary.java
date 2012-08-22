@@ -277,14 +277,42 @@ public class Dictionary extends GraphElement {
 		return dictionary.isEmpty();
 	}
 	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Dictionary#").append(this.hashCode());
+		if (dictionary.isEmpty()) {
+			sb.append(" empty");
+		} else {
+			printContent(sb, null, " Dictionary content:");
+		}
+		return sb.toString(); 
+	}
+
 	/**
 	 * Prints out the dictionary content into log at INFO level.
 	 * @param logger
 	 * @param message
 	 */
 	public void printContent(Log logger, String message) {
-		if (!dictionary.isEmpty() && logger.isInfoEnabled()) {
-			logger.info(message);
+		printContent(null, logger, message);
+	}
+	
+	/**
+	 * Prints out the dictionary content into log at INFO level AND/OR into specified StringBuilder.
+	 * 
+	 * @param stringBuilder - if it's null, it's ignored; if it's not null, it's filled with dictionary content
+	 * @param logger - if it's null, it's ignored; if it's not null, it's used for logging dictionary content
+	 * @param message - first message introducing the content
+	 */
+	private void printContent(StringBuilder sb, Log logger, String message) {
+		if (!dictionary.isEmpty() 
+				&& (sb != null || (logger != null && logger.isInfoEnabled()))
+				) {
+			if (logger != null)
+				logger.info(message);
+			if (sb != null) {
+				sb.append(message).append("\n");
+			}
 			
 			Set<String> keys = this.getKeys();
 			for (String key : keys) {
@@ -298,9 +326,15 @@ public class Dictionary extends GraphElement {
 				} else {
 					entryValue = "<unprintable_value>";
 				}
-				logger.info("DictEntry:" + key + ":" + entry.getType().getTypeId() + ":" + entryValue);
-			}
-		}
+				String s = "DictEntry:" + key + ":" + entry.getType().getTypeId() + ":" + entryValue;
+				if (logger != null) {
+					logger.info(s);
+				}
+				if (sb != null) {
+					sb.append(s).append("\n");					
+				}
+			}// for
+		}// if not empty
 	}
-
+	
 }
