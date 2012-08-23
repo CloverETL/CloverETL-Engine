@@ -270,7 +270,7 @@ public class CTLMapping {
 	}
 
 	/**
-	 * @param name index of requested output record
+	 * @param index index of requested output record
 	 * @return output data record at the given index
 	 */
 	public DataRecord getOutputRecord(int index) {
@@ -278,6 +278,17 @@ public class CTLMapping {
 			return null;
 		}
 		return outputRecordsList.get(index);
+	}
+
+	/**
+	 * @param index index of requested default output record
+	 * @return default output data record at the given index
+	 */
+	public DataRecord getDefaultOutputRecord(int index) {
+		if (index < 0 || index >= defaultOutputRecords.length) {
+			return null;
+		}
+		return defaultOutputRecords[index];
 	}
 
 	/**
