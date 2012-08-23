@@ -474,7 +474,7 @@ public class XMLExtract extends Node {
 			long timestamp = tmpFile.lastModified();
 			autoFilling.setFileSize(tmpFile.length());
 			autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
-			m_inputSource = new InputSource(Channels.newInputStream(stream));
+			m_inputSource = new InputSource(Channels.newReader(stream, charset));
 			return true;
 		}
 		readableChannelIterator.blankRead();
