@@ -18,6 +18,7 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -151,7 +152,7 @@ public class SimpleParameters implements Parameters, Cloneable {
 				}
 			}
 			
-			throw new IllegalArgumentException(string);
+			throw new IllegalArgumentException(MessageFormat.format(FileOperationMessages.getString("SimpleParameters.unknown_overwrite_mode"), string)); //$NON-NLS-1$
 		}
 	}
 
