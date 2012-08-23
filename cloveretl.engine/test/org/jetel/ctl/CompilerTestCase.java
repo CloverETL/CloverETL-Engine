@@ -39,7 +39,6 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
@@ -3842,12 +3841,5 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		params.put("COUNT", "3");
 		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
 		check("params", params);
-	}
-
-	public void test_utillib_getParamValue_nonexisting() {
-		try {
-			doCompile("test_utillib_getParamValue_nonexisting");
-			fail();
-		} catch (Exception ex) {}
 	}
 }

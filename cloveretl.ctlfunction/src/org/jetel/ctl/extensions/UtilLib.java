@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.jetel.ctl.Stack;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -100,11 +99,7 @@ public class UtilLib extends TLFunctionLibrary {
     // GET PARAM VALUE
 	@TLFunctionAnnotation("Returns the resolved value of a graph parameter")
     public static String getParamValue(TLFunctionCallContext context, String paramName) {
-		TypedProperties props = context.getGraph().getGraphProperties();
-		if (!props.containsKey(paramName)) {
-			throw new JetelRuntimeException("No such graph parameter: " + paramName);
-		}
-		return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().resolveRef(props.getProperty(paramName), RefResFlag.SPEC_CHARACTERS_OFF);
+		return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().resolveRef(context.getGraph().getGraphProperties().getProperty(paramName), RefResFlag.SPEC_CHARACTERS_OFF);
     }
     
     @TLFunctionInitAnnotation()
