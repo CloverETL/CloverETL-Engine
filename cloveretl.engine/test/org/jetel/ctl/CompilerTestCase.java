@@ -3840,6 +3840,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		params.put("DATAIN_DIR", "./data-in");
 		params.put("COUNT", "3");
 		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
+		params.put("NONEXISTING", null);
 		check("params", params);
 	}
 }
