@@ -301,10 +301,7 @@ public class XMLExtract extends Node {
 			// set input file
 			extract.setInputFile(xattribs.getStringEx(XML_SOURCEURI_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 
-			// if can use nested nodes.
-			if (xattribs.exists(XML_USENESTEDNODES_ATTRIBUTE)) {
-				extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE));
-			}
+			extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE, true));
 
 			// set mapping
 			String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
