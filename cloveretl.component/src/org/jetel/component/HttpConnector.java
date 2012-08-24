@@ -404,7 +404,7 @@ public class HttpConnector extends Node {
 	/**
 	 * Name of the result record
 	 */
-    private static final String RESULT_RECORD_NAME = "Result";
+    private static final String RESULT_RECORD_NAME = "Response";
 	
 	/**
 	 * Result field representing the content of the response
@@ -3159,7 +3159,7 @@ public class HttpConnector extends Node {
 	 * @return result metadata used by this component
 	 */
 	public static DataRecordMetadata createResultMetadata() {
-		DataRecordMetadata metadata = new DataRecordMetadata(RESULT_RECORD_NAME);
+		DataRecordMetadata metadata = new DataRecordMetadata(HttpConnector.RESULT_RECORD_NAME);
 		
 		metadata.addField(RP_CONTENT_INDEX, new DataFieldMetadata(RP_CONTENT_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(RP_OUTPUTFILE_INDEX, new DataFieldMetadata(RP_OUTPUTFILE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
