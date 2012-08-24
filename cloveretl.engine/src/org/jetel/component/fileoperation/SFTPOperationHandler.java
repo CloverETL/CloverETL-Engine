@@ -358,7 +358,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Date getLastModified() {
-			return new Date(file.getAttrs().getMTime());
+			return new Date(file.getAttrs().getMTime() * 1000L);
 		}
 
 		@Override
@@ -368,7 +368,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Date getLastAccessed() {
-			return new Date(file.getAttrs().getATime());
+			return new Date(file.getAttrs().getATime() * 1000L);
 		}
 
 		@Override
@@ -578,11 +578,9 @@ public class SFTPOperationHandler implements IOperationHandler {
 			}
 		}
 		Date lastModified = params.getLastModified();
-		if (lastModified != null) {
-			channel.setMtime(path, (int) lastModified.getTime());
-		} else {
-			channel.setMtime(path, (int) System.currentTimeMillis());
-		}
+		long millis = (lastModified != null) ? lastModified.getTime() : System.currentTimeMillis();
+		long secs = millis / 1000;
+		channel.setMtime(path, (int) secs);
 	}
 
 	@Override
