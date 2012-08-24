@@ -36,14 +36,18 @@ import java.net.SocketAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.URLStreamHandler;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Adler32;
@@ -80,7 +84,6 @@ import com.ice.tar.TarInputStream;
 import com.jcraft.jsch.ChannelSftp;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-import java.net.URLDecoder;
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -113,15 +116,65 @@ public class FileUtils {
 	private static final String FILE_PROTOCOL = "file";
 	private static final String FILE_PROTOCOL_ABSOLUTE_MARK = "file:./";
 	
+	// archive protocol names
+	private static final String TAR_PROTOCOL = "tar";
+	private static final String GZIP_PROTOCOL = "gzip";
+	private static final String ZIP_PROTOCOL = "zip";
+	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
 	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
+
+	public static final Map<String, URLStreamHandler> handlers;
+
+	private static final String FTP_PROTOCOL = "ftp";
+
+	private static final String SFTP_PROTOCOL = "sftp";
+
+	private static final String SCP_PROTOCOL = "scp";
+	
+	static {
+		Map<String, URLStreamHandler> h = new HashMap<String, URLStreamHandler>();
+		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
+		h.put(ZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
+		h.put(TAR_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
+		h.put(FTP_PROTOCOL, ftpStreamHandler);
+		h.put(SFTP_PROTOCOL, sFtpStreamHandler);
+		h.put(SCP_PROTOCOL, sFtpStreamHandler);
+		for (ProxyProtocolEnum p: ProxyProtocolEnum.values()) {
+			h.put(p.toString(), proxyHandler);
+		}
+		h.put(SandboxUrlUtils.SANDBOX_PROTOCOL, new SandboxStreamHandler(null));
+		handlers = Collections.unmodifiableMap(h);
+	}
 	
 	/**
 	 * Third-party implementation of path resolving - useful to make possible to run the graph inside of war file.
 	 */
     private static final List<CustomPathResolver> customPathResolvers = new ArrayList<CustomPathResolver>();
     private static final String PLUS_CHAR_ENCODED = URLEncoder.encode("+");
+
+	private static final URLStreamHandler GENERAL_HANDLER = new URLStreamHandler() {
+		@Override
+		protected URLConnection openConnection(URL u) throws IOException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	};
+
+	public static final URL getUrl(String url) throws MalformedURLException {
+		try {
+			return new URL(url);
+		} catch (MalformedURLException e) {
+			String protocol = new URL(null, url, GENERAL_HANDLER).getProtocol();
+			URLStreamHandler handler = FileUtils.handlers.get(protocol.toLowerCase());
+			if (handler != null) {
+				return new URL(null, url, handler);
+			} else {
+				throw e;
+			}
+		}
+	}
 
     public static URL getFileURL(String fileURL) throws MalformedURLException {
     	return getFileURL((URL) null, fileURL);

@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.string.StringUtils;
 
@@ -894,7 +895,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Checks whether specified string is valid URL")
 	public static final boolean isUrl(TLFunctionCallContext context, String url) {
 		try {
-			new URL(url);
+			FileUtils.getUrl(url);
 			return true;
 		} catch (MalformedURLException e) {
 			return false;
@@ -915,7 +916,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out protocol name from specified URL")
 	public static final String getUrlProtocol(TLFunctionCallContext context, String url) {
 		try {
-			return new URL(url).getProtocol();
+			return FileUtils.getUrl(url).getProtocol();
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -935,7 +936,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out user info from specified URL")
 	public static final String getUrlUserInfo(TLFunctionCallContext context, String url) {
 		try {
-			String ui = new URL(url).getUserInfo();
+			String ui = FileUtils.getUrl(url).getUserInfo();
 			return ui == null ? "" : ui;
 		} catch (MalformedURLException e) {
 			return null;
@@ -956,7 +957,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out host name from specified URL")
 	public static final String getUrlHost(TLFunctionCallContext context, String url) {
 		try {
-			return new URL(url).getHost();
+			return FileUtils.getUrl(url).getHost();
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -976,7 +977,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out port number from specified URL. Returns -1 if port not defined, -2 if URL has invalid syntax.")
 	public static final int getUrlPort(TLFunctionCallContext context, String url) {
 		try {
-			return new URL(url).getPort();
+			return FileUtils.getUrl(url).getPort();
 		} catch (MalformedURLException e) {
 			return -2;
 		}
@@ -996,7 +997,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out path part of specified URL")
 	public static final String getUrlPath(TLFunctionCallContext context, String url) {
 		try {
-			return new URL(url).getPath();
+			return FileUtils.getUrl(url).getPath();
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -1016,7 +1017,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out query (parameters) from specified URL")
 	public static final String getUrlQuery(TLFunctionCallContext context, String url) {
 		try {
-			String q = new URL(url).getQuery();
+			String q = FileUtils.getUrl(url).getQuery();
 			return q == null ? "" : q;
 		} catch (MalformedURLException e) {
 			return null;
@@ -1037,7 +1038,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Parses out fragment after \"#\" character, also known as ref, reference or anchor, from specified URL")
 	public static final String getUrlRef(TLFunctionCallContext context, String url) {
 		try {
-			String query = new URL(url).getRef();
+			String query = FileUtils.getUrl(url).getRef();
 			return query == null ? "" : query;
 		} catch (MalformedURLException e) {
 			return null;
@@ -1062,7 +1063,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String escapeUrl(TLFunctionCallContext context, String urlStr) {
 		try {
 			// parse input string
-			URL url = new URL(urlStr);
+			URL url = FileUtils.getUrl(urlStr);
 			// create URI representation of the URL which handles character quoting
 			return new URI(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort(), url.getPath(), url.getQuery(), url.getRef()).toASCIIString();
 		} catch (MalformedURLException e) {
@@ -1090,7 +1091,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final String unescapeUrl(TLFunctionCallContext context, String url) {
 		try {
 			// try to parse passed string as URL and convert it to URI which handles escaping of characters
-			URI uri = new URL(url).toURI();
+			URI uri = FileUtils.getUrl(url).toURI();
 			
 			// get unescaped parts of the URL
 			String scheme = uri.getScheme();
@@ -1107,7 +1108,7 @@ public class StringLib extends TLFunctionLibrary {
 			if (query != null) sb.append('?').append(query);
 			if (fragment != null) sb.append('#').append(fragment);
 			
-			return new URL(sb.toString()).toString();
+			return FileUtils.getUrl(sb.toString()).toString();
 		} catch (MalformedURLException e) {
 			throw new TransformLangExecutorRuntimeException("Failed to unescape URL", e);
 		} catch (URISyntaxException e) {
