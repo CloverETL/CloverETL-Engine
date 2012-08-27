@@ -1038,6 +1038,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setQuoteChar(quoteChar);
 		dataRecordMetadata.setQuotedStrings(quotedStrings);
 		dataRecordMetadata.setRecordSize(recordSize);
+		//nature of duplicate is preserve
+		dataRecordMetadata.setNature(getNature());
 
 		for (DataFieldMetadata field : fields) {
 			dataRecordMetadata.addField(field.duplicate());
@@ -1492,16 +1494,15 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	
 	/**
 	 * Record nature is by default derived from graph job type if is available.
+	 * Local specification of nature is used only if the parent graph is not available.
 	 * @return nature associated with this metadata
 	 * @see #setNature(DataRecordNature)
 	 */
 	public DataRecordNature getNature() {
-		if (nature != null) {
-			return nature;
-		} else if (getGraph() != null) {
+		if (getGraph() != null) {
 			return DataRecordNature.fromJobType(getGraph().getJobType());
 		} else {
-			return DataRecordNature.DEFAULT;
+			return nature != null ? nature : DataRecordNature.DEFAULT;
 		}
 	}
 	
