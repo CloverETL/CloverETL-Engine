@@ -393,5 +393,12 @@ public class TLCompiler implements ITLCompiler {
 		return functionContexts; 
 	}
 	
+	public DataRecordMetadata[] getInputMetadata() {
+		return inMetadata;
+	}
 	
+	public DataRecordMetadata[] getOutputMetadata() {
+		return outMetadata;
+	}
+
 }
