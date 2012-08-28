@@ -35,6 +35,7 @@ public class UtilLib extends TLFunctionLibrary {
     	final TLFunctionPrototype ret = 
     		"sleep".equals(functionName) ? new SleepFunction() :
     		"randomUUID".equals(functionName) ? new RandomUuidFunction() : 
+           	"getParamValue".equals(functionName) ? new GetParamValueFunction() :
         	"getParamValues".equals(functionName) ? new GetParamValuesFunction() :
         	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
     		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : null; 
@@ -95,6 +96,34 @@ public class UtilLib extends TLFunctionLibrary {
     	}
     }
     
+    // GET PARAM VALUE
+	@TLFunctionAnnotation("Returns the resolved value of a graph parameter")
+    public static String getParamValue(TLFunctionCallContext context, String paramName) {
+		return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().resolveRef(context.getGraph().getGraphProperties().getProperty(paramName), RefResFlag.SPEC_CHARACTERS_OFF);
+    }
+    
+    @TLFunctionInitAnnotation()
+    public static final void getParamValueInit(TLFunctionCallContext context) {
+		TypedProperties props = context.getGraph() != null ? context.getGraph().getGraphProperties() : null;
+		PropertyRefResolver refResolver = new PropertyRefResolver(props);
+		
+		context.setCache(new TLPropertyRefResolverCache(refResolver));
+    }
+
+    class GetParamValueFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    		getParamValueInit(context);
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+			String paramName = stack.popString();
+    		stack.push(getParamValue(context, paramName));
+    	}
+    }
+
     // GET PARAM VALUES
     @SuppressWarnings("unchecked")
 	@TLFunctionAnnotation("Returns an unmodifiable map of resolved values of graph parameters")
@@ -110,7 +139,7 @@ public class UtilLib extends TLFunctionLibrary {
 		Map<String, String> map = new HashMap<String, String>();
 		if (props != null) {
 			for (String key: props.stringPropertyNames()) {
-				map.put(key, refResolver.resolveRef(props.getProperty(key), RefResFlag.ALL_OFF));
+				map.put(key, refResolver.resolveRef(props.getProperty(key), RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 		}
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));

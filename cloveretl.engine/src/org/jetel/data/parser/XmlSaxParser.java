@@ -102,13 +102,16 @@ public class XmlSaxParser {
 	private static final String FEATURES_ASSIGN = ":=";
 	
 	private static final String XML_MAPPING = "Mapping";
-    public static final String XML_NESTED = "nested";
+    public static final String XML_USE_PARENT_RECORD = "useParentRecord";
+    public static final String XML_IMPLICIT = "implicit";
     public static final String XML_ELEMENT = "element";
     public static final String XML_OUTPORT = "outPort";
     public static final String XML_PARENTKEY = "parentKey";
     public static final String XML_GENERATEDKEY = "generatedKey";
     public static final String XML_XMLFIELDS = "xmlFields";
     public static final String XML_INPUTFIELDS = "inputFields";
+    public static final String XML_INPUTFIELD = "inputField";
+    public static final String XML_OUTPUTFIELD = "outputField";
     public static final String XML_CLOVERFIELDS = "cloverFields";
     public static final String XML_SEQUENCEFIELD = "sequenceField";
     public static final String XML_SEQUENCEID = "sequenceId";
@@ -646,7 +649,7 @@ public class XmlSaxParser {
 	                                autoFilling.setAutoFillingFields(outRecord);
 	                                
 	                                // can I do the map? it depends on skip and numRecords.
-	                                if (m_activeMapping.doMap()  && !m_activeMapping.isNested()) {
+	                                if (m_activeMapping.doMap()  && !m_activeMapping.isUsingParentRecord()) {
 		                                //send off record
 	                                	outPort.writeRecord(outRecord);
 	                                }

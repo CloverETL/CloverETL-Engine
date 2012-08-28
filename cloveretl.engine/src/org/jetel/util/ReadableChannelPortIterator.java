@@ -226,6 +226,13 @@ public class ReadableChannelPortIterator {
 	}
 	
 	/**
+	 * @return the record
+	 */
+	public DataRecord getCurrentRecord() {
+		return record;
+	}
+	
+	/**
 	 * Return last processed field name.
 	 * @return
 	 */
@@ -265,6 +272,7 @@ public class ReadableChannelPortIterator {
 			return currentFileName;
 		}
 		
+
 		/**
 		 * Gets readable or null.
 		 * @return

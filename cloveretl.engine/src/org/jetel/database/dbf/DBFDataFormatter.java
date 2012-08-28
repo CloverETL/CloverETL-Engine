@@ -124,6 +124,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 	@Override
 	public void reset() {
 		resetRecordCounter();
+		dataBuffer.mark();
 		dataBuffer.reset();
 	}
 

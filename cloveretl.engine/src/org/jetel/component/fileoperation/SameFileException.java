@@ -38,7 +38,7 @@ public class SameFileException extends IOException {
 	private static final long serialVersionUID = -6997666241488023133L;
 
 	public SameFileException(Object file1, Object file2) {
-		super(MessageFormat.format(FileOperationMessages.getString("SameFileException.message"), file1, file2));
+		super(MessageFormat.format(FileOperationMessages.getString("SameFileException.message"), file1, file2)); //$NON-NLS-1$
 	}
 	
 }

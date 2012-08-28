@@ -192,6 +192,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		Properties properties = new Properties();
 		properties.put("PROJECT", ".");
 		properties.put("DATAIN_DIR", "${PROJECT}/data-in");
+		properties.put("COUNT", "`1+2`");
+		properties.put("NEWLINE", "\\n");
 		g.setGraphProperties(properties);
 		initDefaultDictionary(g);
 		return g;
@@ -3787,7 +3789,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_resolveParams() {
 		doCompile("test_stringlib_resolveParams");
-		check("resultNoParams", "Special character representing new line is: \\n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
+		check("resultNoParams", "Special character representing new line is: \\n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
 		check("resultFalseFalseParams", "Special character representing new line is: \\n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
 		check("resultTrueFalseParams", "Special character representing new line is: \n calling CTL function `uppercase(\"message\")`; $DATAIN_DIR=./data-in");
 		check("resultFalseTrueParams", "Special character representing new line is: \\n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
@@ -3826,6 +3828,57 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		Map<String, String> params = new HashMap<String, String>();
 		params.put("PROJECT", ".");
 		params.put("DATAIN_DIR", "./data-in");
+		params.put("COUNT", "3");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
 		check("params", params);
+	}
+
+	public void test_utillib_getParamValue() {
+		doCompile("test_utillib_getParamValue");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("PROJECT", ".");
+		params.put("DATAIN_DIR", "./data-in");
+		params.put("COUNT", "3");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
+		params.put("NONEXISTING", null);
+		check("params", params);
+	}
+
+	public void test_stringlib_getUrlParts() {
+		doCompile("test_stringlib_getUrlParts");
+		
+		List<Boolean> isUrl = Arrays.asList(true, true, true, true, false);
+		List<String> path = Arrays.asList(
+				"/users/a6/15e83578ad5cba95c442273ea20bfa/msf-183/out5.txt",
+				"/data-in/fileOperation/input.txt",
+				"/data/file.txt",
+				"/data/file.txt",
+				null);
+		List<String> protocol = Arrays.asList("sftp", "sandbox", "ftp", "https", null);
+		List<String> host = Arrays.asList(
+				"ava-fileManipulator1-devel.getgooddata.com",
+				"cloveretl.test.scenarios",
+				"ftp.test.com",
+				"www.test.com",
+				null);
+		List<Integer> port = Arrays.asList(-1, -1, 21, 80, -2);
+		List<String> userInfo = Arrays.asList(
+				"user%40gooddata.com:password",
+				"",
+				"test:test",
+				"test:test",
+				null);
+		List<String> ref = Arrays.asList("", "", "", "", null);
+		List<String> query = Arrays.asList("", "", "", "", null);
+
+		check("isUrl", isUrl);
+		check("path", path);
+		check("protocol", protocol);
+		check("host", host);
+		check("port", port);
+		check("userInfo", userInfo);
+		check("ref", ref);
+		check("query", query);
+		
 	}
 }

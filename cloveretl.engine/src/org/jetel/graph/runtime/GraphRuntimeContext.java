@@ -62,7 +62,6 @@ public class GraphRuntimeContext {
 	private boolean verboseMode;
 	private Properties additionalProperties;
 	private boolean skipCheckConfig;
-	private boolean clearObsoleteTempFiles;
 	private String password;
 	private boolean debugMode;
 	private String debugDirectory;
@@ -137,7 +136,6 @@ public class GraphRuntimeContext {
 		ret.classLoader = getClassLoader();
 		ret.jobType = getJobType();
 		ret.authorityProxy = getAuthorityProxy();
-		ret.clearObsoleteTempFiles = isClearObsoleteTempFiles();
 		
 		return ret;
 	}
@@ -165,7 +163,6 @@ public class GraphRuntimeContext {
 		prop.setProperty("deamon", Boolean.toString(isDaemon()));
 		prop.setProperty("clusterNodeId", String.valueOf(getClusterNodeId()));
 		prop.setProperty("graphNature", String.valueOf(getJobType()));
-		prop.setProperty(PropertyKey.CLEAR_OBSOLETE_TEMP_FILES.getKey(), String.valueOf(isClearObsoleteTempFiles()));
 		
 		return prop;
 	}
@@ -501,7 +498,7 @@ public class GraphRuntimeContext {
 	 * 
 	 * @param classLoader
 	 */
-	public void setClassLoader(ClassLoader classLoader) {
+	public synchronized void setClassLoader(ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
     
@@ -560,25 +557,11 @@ public class GraphRuntimeContext {
 	}
 	
 	/**
-	 * @return the clearObsoleteTempFiles
-	 */
-	public boolean isClearObsoleteTempFiles() {
-		return clearObsoleteTempFiles;
-	}
-	
-	/**
-	 * @param clearObsoleteTempFiles the clearObsoleteTempFiles to set
-	 */
-	public void setClearObsoleteTempFiles(boolean clearObsoleteTempFiles) {
-		this.clearObsoleteTempFiles = clearObsoleteTempFiles;
-	}
-	
-	/**
 	 * Returns a class loader to be used for loading classes used in a graph
 	 * 
 	 * @return
 	 */
-	public ClassLoader getClassLoader() {
+	public synchronized ClassLoader getClassLoader() {
 		return classLoader;
 	}
 

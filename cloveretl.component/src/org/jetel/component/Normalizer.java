@@ -178,14 +178,8 @@ public class Normalizer extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private RecordNormalize createNormalizerDynamic(String normCode) throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(normCode, this.getClass().getClassLoader(),
-        		getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
-
-        if (transObject instanceof RecordNormalize) {
-			return (RecordNormalize) transObject;
-        }
-
-        throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordNormalize.");
+		
+		return DynamicJavaClass.instantiate(normCode, RecordNormalize.class, this);
     }
 		
 	@Override
@@ -200,8 +194,7 @@ public class Normalizer extends Node {
 
 		if (norm == null) {
 			if (xformClass != null) {
-				norm = (RecordNormalize) RecordTransformFactory.loadClass(this.getClass().getClassLoader(),
-						xformClass, getGraph().getRuntimeContext().getClassPath());
+				norm = (RecordNormalize) RecordTransformFactory.loadClassInstance(xformClass, this);
 			}else if (xform == null) {
 				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
 			}

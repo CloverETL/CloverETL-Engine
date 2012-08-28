@@ -60,7 +60,7 @@ public class XMLMappingDefinitionParser {
 	private static final String XML_ROOT_ELEMENT = "Mappings";
 	
 	private static final String XML_MAPPING = "Mapping";
-	private static final String XML_MAPPING_NESTED = "nested";
+	private static final String XML_MAPPING_PARENT_RECORD = "useParentRecord";
 	private static final String XML_MAPPING_IMPLICIT = "implicit";
 	
 	
@@ -353,9 +353,9 @@ public class XMLMappingDefinitionParser {
 			mapping.setTemplateNestedDepth(attributes.getInteger(XML_TEMPLATE_DEPTH, -1));
 		}
 
-		if (attributes.exists(XML_MAPPING_NESTED)) {
-			String nested = attributes.getString(XML_MAPPING_NESTED, null);
-			mapping.setNested(Boolean.parseBoolean(nested));
+		if (attributes.exists(XML_MAPPING_PARENT_RECORD)) {
+			String nested = attributes.getString(XML_MAPPING_PARENT_RECORD, null);
+			mapping.setUsingParentRecord(Boolean.parseBoolean(nested));
 			mapping.setNestedSource(nested);
 		}
 

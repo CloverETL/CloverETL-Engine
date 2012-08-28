@@ -3,6 +3,7 @@ package org.jetel.graph;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.concurrent.Future;
 
@@ -56,6 +57,7 @@ public class ResetTest extends CloverTestCase {
 	};
 		
 	private final static String GRAPHS_DIR = "graph";
+	private final static String TRANS_DIR = "trans";
 	private final static String[] OUT_DIRS = {"data-out/", "data-tmp/", "seq/"};
 	
 	private final String basePath;
@@ -145,7 +147,26 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
 							&& !pathname.getName().equals("testdata_intersection.grf") // remove after CL-1792 solved
 							&& !pathname.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
-							&& !pathname.getName().equals("incrementalReadingDB_explicitMapping.grf"); // remove after CL-2239 solved
+							&& !pathname.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
+							&& !pathname.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_error_unknownhost.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_error_unknownprotocol.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_inputfield.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_inputfileURL.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_get_requestcontent.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_post_error_unknownhost.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_post_error_unknownprotocol.grf") // ok, is to fail
+							&& !pathname.getName().equals("HTTPConnector_inputmapping_null_values.grf") // ok, is to fail
+							&& !pathname.getName().equals("HttpConnector_errHandlingNoRedir.grf") // ok, is to fail
+							&& !pathname.getName().equals("XMLExtract_fileURL_not_xml.grf") // ok, is to fail
+							&& !pathname.getName().equals("XMLExtract_charset_invalid.grf") // ok, is to fail
+							&& !pathname.getName().equals("XMLExtract_mappingURL_missing.grf") // ok, is to fail
+							&& !pathname.getName().equals("XMLExtract_fileURL_not_exists.grf") // ok, is to fail
+							&& !pathname.getName().equals("XMLExtract_charset_not_default_fail.grf") // ok, is to fail
+							&& !pathname.getName().equals("RunGraph_differentOutputMetadataFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
+							&& !pathname.getName().equals("DenormalizerWithoutInputFile.grf"); // probably subgraph not supposed to be executed separately
+					
 				}
 			});
 			
@@ -198,7 +219,7 @@ public class ResetTest extends CloverTestCase {
 	@Override
 	protected void runTest() throws Throwable {
 		
-		final String beseAbsolutePath = new File(basePath).getAbsolutePath();
+		final String beseAbsolutePath = new File(basePath).getAbsolutePath().replace('\\', '/');
 		logger.info("Project dir: " + beseAbsolutePath);
 		logger.info("Analyzing graph " + graphFile.getPath());
 		logger.info("Batch mode: " + batchMode);
@@ -219,8 +240,15 @@ public class ResetTest extends CloverTestCase {
 			runtimeContext.addAdditionalProperty("LIB_DIR", libDir);
 			logger.info("LIB_DIR set to " + libDir);
 		}
+		
+		// for scenarios graphs, add the TRANS dir to the classpath
+		if (basePath.contains("cloveretl.test.scenarios")) {
+			runtimeContext.setRuntimeClassPath(new URL[] {FileUtils.getFileURL(FileUtils.appendSlash(beseAbsolutePath) + TRANS_DIR + "/")});
+			runtimeContext.setCompileClassPath(runtimeContext.getRuntimeClassPath());
+		}
 
 		runtimeContext.setBatchMode(batchMode);
+		
 		
 		final TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream(graphFile), runtimeContext);
 		try {

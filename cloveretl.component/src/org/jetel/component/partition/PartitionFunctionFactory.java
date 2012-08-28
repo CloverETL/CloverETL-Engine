@@ -152,13 +152,7 @@ public class PartitionFunctionFactory {
 	 * @throws ComponentNotReadyException
 	 */
 	private PartitionFunction createPartitionFce(String partitionClass) throws ComponentNotReadyException {
-		Object partitionFunction = RecordTransformFactory.loadClass(node.getClass().getClassLoader(),
-         			partitionClass, node.getGraph().getRuntimeContext().getClassPath());
-		if (partitionFunction instanceof PartitionFunction) {
-			return (PartitionFunction) partitionFunction;
-		} else {
-            throw new ComponentNotReadyException("The transformation class does not implement the PartitionFunction interface!");
-		}
+		return RecordTransformFactory.loadClassInstance(partitionClass, PartitionFunction.class, node);
 	}
 
 	/**
@@ -206,9 +200,7 @@ public class PartitionFunctionFactory {
 			return function;
 		} else if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
 			//get partition function form java code
-	        Object transObject = DynamicJavaClass.instantiate(partitionSource, this.getClass().getClassLoader(),
-	        		node.getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
-
+	        Object transObject = DynamicJavaClass.instantiate(partitionSource, node);
 	        if (transObject instanceof PartitionFunction) {
 				return (PartitionFunction) transObject;
 	        }

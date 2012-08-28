@@ -121,14 +121,14 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
     		} catch (ComponentNotReadyException e) {
             	rr.endTime = new Date(System.currentTimeMillis());
             	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-    			rr.errMessage = "Error during graph initialization: " + e.getMessage();           
+    			rr.errMessage = MiscUtils.exceptionChainToMessage("Error during graph initialization.", e);           
             	rr.errException = MiscUtils.stackTraceToString(e);
             	rr.status = Result.ERROR;
             	return rr;
             } catch (RuntimeException e) {
             	rr.endTime = new Date(System.currentTimeMillis());
             	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-            	rr.errMessage = "Error during graph initialization: " +  e.getMessage();           
+            	rr.errMessage = MiscUtils.exceptionChainToMessage("Error during graph initialization.", e);           
             	rr.errException = MiscUtils.stackTraceToString(e);
             	rr.status = Result.ERROR;
             	return rr;
@@ -151,14 +151,14 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
     		} catch (InterruptedException e) {
             	rr.endTime = new Date(System.currentTimeMillis());
             	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-    			rr.errMessage = "Graph was unexpectedly interrupted !" + e.getMessage();            
+    			rr.errMessage = MiscUtils.exceptionChainToMessage("Graph was unexpectedly interrupted !", e);            
             	rr.errException = MiscUtils.stackTraceToString(e);
             	rr.status = Result.ERROR;
             	return rr;
     		} catch (ExecutionException e) {
             	rr.endTime = new Date(System.currentTimeMillis());
             	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-    			rr.errMessage = "Error during graph processing !" + e.getMessage();            
+    			rr.errMessage = MiscUtils.exceptionChainToMessage("Error during graph processing !", e);            
             	rr.errException = MiscUtils.stackTraceToString(e);
             	rr.status = Result.ERROR;
             	return rr;
@@ -171,8 +171,8 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
             rr.status = result;
     		rr.errMessage = graph.getWatchDog().getErrorMessage();            
         	rr.errException = MiscUtils.stackTraceToString(graph.getWatchDog().getCauseException());
-        	rr.errNode = causeGraphElement != null ? causeGraphElement.getId() : null;
-        	rr.errNodeType = (causeGraphElement instanceof Node) ? ((Node) causeGraphElement).getType() : null;
+        	rr.errComponent = causeGraphElement != null ? causeGraphElement.getId() : null;
+        	rr.errComponentType = (causeGraphElement instanceof Node) ? ((Node) causeGraphElement).getType() : null;
         } finally {
     		if (graph != null)
     			graph.free();
@@ -201,7 +201,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         } catch (IOException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-        	rr.errMessage = "Error - graph definition file can't be read: " + e.getMessage();
+        	rr.errMessage = MiscUtils.exceptionChainToMessage("Error - graph definition file can't be read!", e);
         	rr.errException = MiscUtils.stackTraceToString(e);
         	rr.status = Result.ERROR;
         	return rr;
@@ -214,18 +214,17 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		try {
 			graph = TransformationGraphXMLReaderWriter.loadGraph(in, runtimeContext);
 			rr.jobUrl = graphFileName;
-			rr.version = graph.getGuiVersion();
         } catch (XMLConfigurationException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-        	rr.errMessage = "Error in reading graph from XML !" + e.getMessage();
+        	rr.errMessage = MiscUtils.exceptionChainToMessage("Error in reading graph from XML!", e);
         	rr.errException = MiscUtils.stackTraceToString(e);
         	rr.status = Result.ERROR;
         	return rr;
         } catch (GraphConfigurationException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-        	rr.errMessage = "Error - graph's configuration invalid !" + e.getMessage();
+        	rr.errMessage = MiscUtils.exceptionChainToMessage("Error - graph's configuration invalid!", e);
         	rr.errException = MiscUtils.stackTraceToString(e);
         	rr.status = Result.ERROR;
         	return rr;

@@ -32,6 +32,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -83,6 +84,7 @@ public class ReadableChannelIterator {
 
 	// current source name
 	private String currentFileName;
+	
 	
 	// true if fileURL contains port or dictionary protocol
 	private boolean isGraphDependentSource;
@@ -139,6 +141,7 @@ public class ReadableChannelIterator {
 		// dictionary iterator
 		dictionaryReadingIterator = new ReadableChannelDictionaryIterator(dictionary);
 		dictionaryReadingIterator.setCharset(charset);
+		dictionaryReadingIterator.setContextURL(contextURL);
 		
 		// current state
 		currentPortProtocolPosition = 0;
@@ -386,6 +389,14 @@ public class ReadableChannelIterator {
 		return currentFileName;
 	}
 
+	public DataRecord getCurrenRecord() {
+		
+		if(this.portReadingIterator!=null) {
+			return this.portReadingIterator.getCurrentRecord();
+		}
+		return null;
+	}
+	
 	/**
 	 * Sets a dictionary for dictionary reading.
 	 * @param dictionary

@@ -19,14 +19,12 @@
 package org.jetel.component;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -40,9 +38,11 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -67,22 +67,32 @@ import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.AuthPolicy;
+import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.cookie.Cookie;
+import org.apache.http.cookie.CookieOrigin;
+import org.apache.http.cookie.CookieSpec;
+import org.apache.http.cookie.CookieSpecFactory;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.DefaultTargetAuthenticationHandler;
 import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.impl.cookie.BestMatchSpec;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.Level;
 import org.jetel.data.DataField;
@@ -93,9 +103,9 @@ import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -267,7 +277,7 @@ public class HttpConnector extends Node {
 	/**
 	 * The name of an XML attribute representing additional header parameters.
 	 */
-	private final static String XML_HEADER_PROPERTIES_ATTRIBUTE = "headerProperties";
+	public final static String XML_ADDITIONAL_HTTP_HEADERS_ATTRIBUTE = "headerProperties";
 
 	/**
 	 * The name of an XML attribute representing input field name, holding request content.
@@ -363,6 +373,11 @@ public class HttpConnector extends Node {
 	 */
 	private final static String XML_CONSUMER_SECRET_ATTRIBUTE = "consumerSecret";
 	
+	private final static String XML_RAW_HTTP_HEADERS_ATTRIBUTE = "rawHeaders";
+	
+	public final static String XML_REQUEST_COOKIES_ATTRIBUTE = "requestCookies";
+	
+	public final static String XML_RESPONSE_COOKIES_ATTRIBUTE = "responseCookies";
 	
 	/**
 	 * Default value of the 'append output' flag 
@@ -389,7 +404,7 @@ public class HttpConnector extends Node {
 	/**
 	 * Name of the result record
 	 */
-    private static final String RESULT_RECORD_NAME = "Result";
+    private static final String RESULT_RECORD_NAME = "Response";
 	
 	/**
 	 * Result field representing the content of the response
@@ -416,9 +431,15 @@ public class HttpConnector extends Node {
     private static final String RP_HEADER_NAME = "header";
 
    	/**
+	 * Result field representing HTTP headers sent by server in a raw format
+	 */
+    private static final int RP_RAW_HTTP_HAEDERS_INDEX = 4;
+    private static final String RP_RAW_HTTP_HAEDERS_NAME = "rawHeaders";
+
+    /**
 	 * Result field representing the error message (can have a value only if error port is redirected to std port)
 	 */
-    private static final int RP_MESSAGE_INDEX = 4;
+    private static final int RP_MESSAGE_INDEX = 5;
     private static final String RP_MESSAGE_NAME = "errorMessage";
 
     
@@ -454,7 +475,7 @@ public class HttpConnector extends Node {
 
 		@Override
 		public void writeResponse(HttpResponse response) throws IOException {
-			if (outField != null) {
+			if (outputField != null) {
 				outputField.setValue(getResponseContent(response));
 			}
 		}
@@ -496,7 +517,16 @@ public class HttpConnector extends Node {
 				try {
 					StreamUtils.copy(inputConnection, outputChannel);
 				} finally {
-					inputConnection.close();
+					try {
+						inputConnection.close();
+					} catch (IOException e) {
+						logger.warn("Failed to close HTTP response input channel");
+					}
+					try {
+						outputChannel.close();
+					} catch (IOException e) {
+						logger.warn("Failed to close HTTP response output channel");
+					}
 				}
 			}
 			
@@ -680,6 +710,12 @@ public class HttpConnector extends Node {
      */
     protected DataRecord inputRecord;
 	
+    protected DataRecord additionalHeadersRecord;	
+
+    protected DataRecord requestCookiesRecord;	
+
+    protected DataRecord responseCookiesRecord;	
+    
     /**
      * Input records for input mapping transformation.
      */
@@ -689,11 +725,6 @@ public class HttpConnector extends Node {
      * Output records for input mapping transformation.
      */
     protected DataRecord[] inputMappingOutRecords;
-
-    /**
-     * Input records for output mapping transformation - standard output mapping.
-     */
-    protected DataRecord[] standardOutputMappingInRecords;
 
     /**
      * Input records for output mapping transformation - error output mapping.
@@ -717,6 +748,14 @@ public class HttpConnector extends Node {
 	 * Name of the run configuration record
 	 */
     private static final String ATTRIBUTES_RECORD_NAME = "Attributes";
+
+    public static final String ADDITIONAL_HTTP_HEADERS_RECORD_NAME = "AdditionlHTTPHeaders";
+
+    public static final String REQUEST_COOKIES_RECORD_NAME = "RequestCookies";
+
+    private static final String RESPONSE_COOKIES_RECORD_NAME = "ResponseCookies";
+
+    private static final String RESPONSE_COOKIES_SEPARATOR = ";";
     
 	/** 
 	 * URL to which the HTTPConnector should connect. 
@@ -769,10 +808,9 @@ public class HttpConnector extends Node {
     /** 
 	 *  String representing properties, that should be used as additional HTTP headers.
 	 */
-	private String rawRequestProperties;
-	private String rawRequestPropertiesToUse;
-	private static final int IP_REQUEST_PROPERTIES_INDEX = 5;
-    private static final String IP_REQUEST_PROPERTIES_NAME = "additionalHTTPHeaderProperties";
+	private String additionalRequestHeadersStr;
+	private static final int IP_ADDITIONAL_REQUEST_HEADERS_INDEX = 5;
+    private static final String IP_ADDITIONAL_REQUEST_HEADERS_NAME = "additionalHTTPHeaders";
     
     /**  
 	 * Character set that should be used.
@@ -895,7 +933,20 @@ public class HttpConnector extends Node {
 	private static final int IP_MULTIPART_ENTITIES_INDEX = 18;
     private static final String IP_MULTIPART_ENTITIES_NAME = "multipartEntities";
     
+	/**
+	 * String representing raw HTTP headers to be directly injected into HTTP request.
+	 */
+	private String rawHttpHeaders;
+	private List<CharSequence> rawHttpHeadersToUse;
+	private static final int IP_RAW_HTTP_HEADERS_INDEX = 19;
+    private static final String IP_RAW_HTTP_HEADERS_NAME = "rawHTTPHeaders";
 
+	/**
+	 * String representing fields used as multipart entities.
+	 */
+	private String requestCookiesStr;
+	private Properties requestCookies;
+	private String responseCookies;
 
 	/* === Job flow related properties ===  */
 	
@@ -936,7 +987,8 @@ public class HttpConnector extends Node {
 	/** 
 	 * Parsed request properties - used as the additional HTTP headers. 
 	 */
-	private Properties requestProperties;
+	private Properties additionalRequestHeaders;
+	private Map<String, CharSequence> additionalRequestHeadersToUse; // additionalRequestHeaders modified by input mapping
 	
 	/**
 	 * Fields that should be ignored
@@ -993,6 +1045,8 @@ public class HttpConnector extends Node {
 	 */
 	private DefaultHttpClient httpClient;
 
+	private RequestResponseCookieStore cookieStore;
+	
 	/**
 	 * OAuth consumer used to sign requests when OAuth is used.
 	 */
@@ -1179,16 +1233,6 @@ public class HttpConnector extends Node {
 		} else {
 			responseWriter = new ResponseByValueWriter(outField);
 		}
-
-		// build properties from raw request properties
-		if (!StringUtils.isEmpty(rawRequestProperties)) {
-			requestProperties = new Properties();
-			try {
-				requestProperties.load(new StringReader(rawRequestProperties));
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "Unexpected exception during request properties reading.", e);
-			}
-		}
 	}
 
 	/** Extracts a set of ignored field names from given string representation.
@@ -1215,7 +1259,7 @@ public class HttpConnector extends Node {
 	 * @param index
 	 * @return a Boolean value of given field in input record.
 	 */
-	private Boolean getBooleanInputParameterValue(int index) {
+	private Boolean getBooleanInputParameterValue(int index, Boolean defaultValue) {
 		Object value = inputParamsRecord.getField(index).getValue();
 		
 		if (Boolean.FALSE.equals(value)) {
@@ -1224,7 +1268,7 @@ public class HttpConnector extends Node {
 			return true;
 		} 
 		
-		return null;
+		return defaultValue;
 	}	
 
 	/** Returns a string value of the given field in input record.
@@ -1245,6 +1289,7 @@ public class HttpConnector extends Node {
 	 *  properties of this components.
 	 * 
 	 */
+	@SuppressWarnings("unchecked")
 	protected void processInputParamsRecord() {
 		rawUrlToUse = getStringInputParameterValue(IP_URL_INDEX);
 //		urlInputFieldToUse = getStringInputParameterValue(IP_URL_FIELD_INDEX);
@@ -1254,20 +1299,35 @@ public class HttpConnector extends Node {
 //		inputFieldNameToUse = getStringInputParameterValue(IP_INPUT_FIELD_NAME_INDEX);
 //		outputFieldNameToUse = getStringInputParameterValue(IP_OUTPUT_FIELD_NAME_INDEX);
 		outputFileUrlToUse = getStringInputParameterValue(IP_OUTPUT_FILE_URL_INDEX);
-		appendOutputToUse = getBooleanInputParameterValue(IP_APPEND_OUTPUT_INDEX);
+		appendOutputToUse = getBooleanInputParameterValue(IP_APPEND_OUTPUT_INDEX, Boolean.FALSE);
 		charsetToUse = getStringInputParameterValue(IP_CHARSET_INDEX);
-		rawRequestPropertiesToUse = getStringInputParameterValue(IP_REQUEST_PROPERTIES_INDEX);
-		addInputFieldsAsParametersToUse = getBooleanInputParameterValue(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_INDEX);
+		addInputFieldsAsParametersToUse = getBooleanInputParameterValue(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_INDEX, Boolean.FALSE);
 		addInputFieldsAsParametersToToUse = getStringInputParameterValue(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_INDEX);
 		ignoredFieldsToUse = getStringInputParameterValue(IP_IGNORED_FIELDS_INDEX);
 		authenticationMethodToUse = getStringInputParameterValue(IP_AUTHENTICATION_METHOD_INDEX);
 		usernameToUse = getStringInputParameterValue(IP_USERNAME_INDEX);
 		passwordToUse = getStringInputParameterValue(IP_PASSWORD_INDEX);
-		storeResponseToTempFileToUse = getBooleanInputParameterValue(IP_STORE_RESPONSE_TO_TEMP_INDEX);
+		storeResponseToTempFileToUse = getBooleanInputParameterValue(IP_STORE_RESPONSE_TO_TEMP_INDEX, Boolean.FALSE);
 		temporaryFilePrefixToUse = getStringInputParameterValue(IP_TEMP_FILE_PREFIX_INDEX);
 		multipartEntitiesToUse = getStringInputParameterValue(IP_MULTIPART_ENTITIES_INDEX);
 		consumerKeyToUse = getStringInputParameterValue(IP_CONSUMER_KEY_INDEX);
-		consumerSecretToUse = getStringInputParameterValue(IP_CONSUMER_SECRET_INDEX);		
+		consumerSecretToUse = getStringInputParameterValue(IP_CONSUMER_SECRET_INDEX);
+		rawHttpHeadersToUse = (List<CharSequence>) inputParamsRecord.getField(IP_RAW_HTTP_HEADERS_INDEX).getValue();
+
+		additionalRequestHeadersToUse = (Map<String, CharSequence>) inputParamsRecord.getField(IP_ADDITIONAL_REQUEST_HEADERS_INDEX).getValue();
+		
+		if (additionalHeadersRecord != null) {
+			for (DataField field : additionalHeadersRecord) {
+				if (inputMappingTransformation.isOutputOverridden(additionalHeadersRecord, field)) {
+					String labelOrName = field.getMetadata().getLabelOrName();
+					if (!field.isNull()) {
+						additionalRequestHeadersToUse.put(labelOrName, field.getValue().toString());
+					} else {
+						additionalRequestHeadersToUse.remove(labelOrName);
+					}
+				}
+			}
+		}
 	}
 	
 
@@ -1329,20 +1389,17 @@ public class HttpConnector extends Node {
 //			}
 //		}
 		
-		if (resultRecord != null) {
-			// create response writer based on the configuration
-			if (outputFileUrlToUse != null) {
-				responseWriter = new ResponseFileWriter(resultRecord.getField(RP_OUTPUTFILE_INDEX), outputFileUrlToUse);
-				
-			} else if (storeResponseToTempFileToUse) {
-				responseWriter = new ResponseTempFileWriter(resultRecord.getField(RP_OUTPUTFILE_INDEX), temporaryFilePrefixToUse);
-				
-			} else {
-				responseWriter = new ResponseByValueWriter(resultRecord.getField(RP_CONTENT_INDEX));
-			}
-
+		// create response writer based on the configuration
+		if (outputFileUrlToUse != null) {
+			responseWriter = new ResponseFileWriter(resultRecord != null? resultRecord.getField(RP_OUTPUTFILE_INDEX) : null, outputFileUrlToUse);
+			
+		} else if (storeResponseToTempFileToUse) {
+			responseWriter = new ResponseTempFileWriter(resultRecord != null? resultRecord.getField(RP_OUTPUTFILE_INDEX) : null, temporaryFilePrefixToUse);
+			
+		} else {
+			responseWriter = new ResponseByValueWriter(resultRecord != null? resultRecord.getField(RP_CONTENT_INDEX) : null);
 		}
-		
+
 		// filter multipart entities (ignored fields are removed from multipart entities record)
 		if (!ignoredFieldsSet.isEmpty() && !StringUtils.isEmpty(multipartEntities)) {
 			List<String> multipartEntitiesList = new ArrayList<String>();
@@ -1364,17 +1421,6 @@ public class HttpConnector extends Node {
 				multipartEntities = null;
 			}
 		}		
-		
-		
-		// build properties from raw request properties
-		if (!StringUtils.isEmpty(rawRequestPropertiesToUse)) {
-			requestProperties = new Properties();
-			try {
-				requestProperties.load(new StringReader(rawRequestPropertiesToUse));
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "Unexpected exception during request properties reading.", e);
-			}
-		}
 	}
 
 	/** Builds a string from given request.
@@ -1506,30 +1552,54 @@ public class HttpConnector extends Node {
 		// create input mapping transformation
     	inputMappingTransformation = new CTLMapping("Input mapping", this);
     	inputMappingTransformation.setTransformation(inputMapping);
-    	inputMappingTransformation.setClasspath(getGraph().getRuntimeContext().getClassPath());
-    	inputMappingTransformation.setClassLoader(this.getClass().getClassLoader());
         
 		// create standard output mapping transformation
     	standardOutputMappingTransformation = new CTLMapping("Standard output mapping", this);
     	standardOutputMappingTransformation.setTransformation(standardOutputMapping);
-    	standardOutputMappingTransformation.setClasspath(getGraph().getRuntimeContext().getClassPath());
-    	standardOutputMappingTransformation.setClassLoader(this.getClass().getClassLoader());
         
 		// create error output mapping transformation
     	errorOutputMappingTransformation = new CTLMapping("Error output mapping", this);
     	errorOutputMappingTransformation.setTransformation(errorOutputMapping);
-    	errorOutputMappingTransformation.setClasspath(getGraph().getRuntimeContext().getClassPath());
-    	errorOutputMappingTransformation.setClassLoader(this.getClass().getClassLoader());
 
 		DataRecordMetadata paramsMetadata = createInputParametersMetadata();
 		inputParamsRecord = DataRecordFactory.newRecord(paramsMetadata);
 		inputParamsRecord.init();    	
+		
+		if (requestCookiesStr != null) {
+			requestCookies = new Properties();
+			try {
+				requestCookies.load(new StringReader(requestCookiesStr));
+			} catch (IOException e) {
+				throw new ComponentNotReadyException("Failed to load request cookies", e);
+			}
+			
+			requestCookiesRecord = DataRecordFactory.newRecord(createMetadataFromProperties(requestCookies, REQUEST_COOKIES_RECORD_NAME));
+			requestCookiesRecord.init();
+		}
+		
+		// build properties from request headers
+		if (!StringUtils.isEmpty(additionalRequestHeadersStr)) {
+			additionalRequestHeaders = new Properties();
+			try {
+				additionalRequestHeaders.load(new StringReader(additionalRequestHeadersStr));
+				
+				additionalHeadersRecord = DataRecordFactory.newRecord(createMetadataFromProperties(additionalRequestHeaders, ADDITIONAL_HTTP_HEADERS_RECORD_NAME));
+				additionalHeadersRecord.init();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
+			}
+		}
 		
 		//create internal result data record
 		if (hasStandardOutputPort) {
 			DataRecordMetadata resultMetadata = createResultMetadata();
 			resultRecord = DataRecordFactory.newRecord(resultMetadata);
 			resultRecord.init();
+			
+			if (responseCookies != null) {
+				responseCookiesRecord = DataRecordFactory.newRecord(createResponseCookiesMetadata(responseCookies));
+				responseCookiesRecord.init();
+			}
 		}
 
 		//create internal error data record
@@ -1550,12 +1620,11 @@ public class HttpConnector extends Node {
 			standardOutputRecord = DataRecordFactory.newRecord(standardOutputPort.getMetadata());
 			standardOutputRecord.init();
 			standardOutputRecord.reset();
-			if (outputFieldName == null) {
-				outField = (StringDataField) standardOutputRecord.getField(0);
-			} else {
+			if (outputFieldName != null) {
 				outField = (StringDataField) standardOutputRecord.getField(outputFieldName);
-			}			
-			
+			} else if (standardOutputMapping == null) {
+				outField = (StringDataField) standardOutputRecord.getField(0);
+			}
 		}
 		
 		if (hasErrorOutputPort) {
@@ -1575,17 +1644,19 @@ public class HttpConnector extends Node {
 		//create output records for input mapping
 		List<DataRecord> inputMappingOutRecordsList = new ArrayList<DataRecord>();
 		inputMappingOutRecordsList.add(inputParamsRecord);
+		inputMappingOutRecordsList.add(additionalHeadersRecord);
+		inputMappingOutRecordsList.add(requestCookiesRecord);
 		inputMappingOutRecords = inputMappingOutRecordsList.toArray(new DataRecord[0]);
 		
-		if (inputParamsRecord != null) {
-			inputMappingTransformation.addOutputRecord(ATTRIBUTES_RECORD_NAME, inputParamsRecord);
-		}
+		inputMappingTransformation.addOutputRecord(ATTRIBUTES_RECORD_NAME, inputParamsRecord);
+		inputMappingTransformation.addOutputRecord(ADDITIONAL_HTTP_HEADERS_RECORD_NAME, additionalHeadersRecord);
+		inputMappingTransformation.addOutputRecord(REQUEST_COOKIES_RECORD_NAME, requestCookiesRecord);
 
 		//create input records for standard output mapping
-		standardOutputMappingInRecords = new DataRecord[] { inputRecord, resultRecord, inputParamsRecord };
 		standardOutputMappingTransformation.addInputRecord(INPUT_RECORD_NAME, inputRecord);
 		standardOutputMappingTransformation.addInputRecord(RESULT_RECORD_NAME, resultRecord);
 		standardOutputMappingTransformation.addInputRecord(ATTRIBUTES_RECORD_NAME, inputParamsRecord);
+		standardOutputMappingTransformation.addInputRecord(RESPONSE_COOKIES_RECORD_NAME, responseCookiesRecord);
 		
 		//create input records for error output mapping
 		errorOutputMappingInRecords = new DataRecord[] { inputRecord, errorRecord, inputParamsRecord };
@@ -1614,15 +1685,15 @@ public class HttpConnector extends Node {
 	    	initExecutionParametersFromComponentAttributes();
 	    }
 		
-		inputMappingTransformation.init();
-		standardOutputMappingTransformation.init();
-	    errorOutputMappingTransformation.init();
+		inputMappingTransformation.init(XML_INPUT_MAPPING_ATTRIBUTE);
+		standardOutputMappingTransformation.init(XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE);
+	    errorOutputMappingTransformation.init(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
 	}	
 	
 	/**
 	 * 
 	 */
-	private void initExecutionParametersFromComponentAttributes() {
+	private void initExecutionParametersFromComponentAttributes() throws ComponentNotReadyException {
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_URL_NAME, rawUrl);
 //		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_URL_FIELD_NAME, urlInputField);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_REQUEST_METHOD_NAME, requestMethod);
@@ -1633,7 +1704,7 @@ public class HttpConnector extends Node {
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_OUTPUT_FILE_URL_NAME, outputFileUrl);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_APPEND_OUTPUT_NAME, appendOutput);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_CHARSET_NAME, charset);
-		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_REQUEST_PROPERTIES_NAME, rawRequestProperties);
+		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_ADDITIONAL_REQUEST_HEADERS_NAME, additionalRequestHeaders != null ? new LinkedHashMap<Object,Object>(additionalRequestHeaders) : new LinkedHashMap<String,Object>());
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_ADD_INPUT_FIELDS_AS_PARAMETERS_NAME, addInputFieldsAsParameters);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_NAME, addInputFieldsAsParametersTo);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_IGNORED_FIELDS_NAME, ignoredFields);
@@ -1644,8 +1715,22 @@ public class HttpConnector extends Node {
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_TEMP_FILE_PREFIX_NAME, temporaryFilePrefix);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_MULTIPART_ENTITIES_NAME, multipartEntities);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_CONSUMER_KEY_NAME, consumerKey);
-		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_CONSUMER_SECRET_NAME, consumerSecret);		
+		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_CONSUMER_SECRET_NAME, consumerSecret);
+		if (!StringUtils.isEmpty(rawHttpHeaders)) {
+			inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_RAW_HTTP_HEADERS_NAME, parseRawHttpHeadersItems());
+		}
 		
+		if (requestCookies != null) {
+			for (Entry<Object,Object> cookieEntry : requestCookies.entrySet()) {
+				String name = (String) cookieEntry.getKey();
+				String value = (String) cookieEntry.getValue();
+				inputMappingTransformation.setDefaultOutputValue(REQUEST_COOKIES_RECORD_NAME, StringUtils.normalizeName(name), value);
+			}
+		}
+	}
+
+	private List<String> parseRawHttpHeadersItems() {
+		return Arrays.asList(rawHttpHeaders.split("\\n|\\r\\n|\\r"));
 	}
 
 	/** Maps values in <code>toRecord</code> from records contained in <code>fromRecords</code> by name.
@@ -1733,11 +1818,38 @@ public class HttpConnector extends Node {
 			
 			Header[] headers = response.getAllHeaders();
 			Map<String, String> headersMap = new HashMap<String, String>(headers.length);
+			List<String> rawHeaders = new ArrayList<String>(headers.length);
 			for (Header header: headers) {
 				headersMap.put(header.getName(), header.getValue());
+				rawHeaders.add(header.getName() + ": " + header.getValue());
 			}
 			resultRecord.getField(RP_HEADER_INDEX).setValue(headersMap);
-		} 
+			resultRecord.getField(RP_RAW_HTTP_HAEDERS_INDEX).setValue(rawHeaders);
+		}
+		
+		if (responseCookiesRecord != null) {
+			responseCookiesRecord.reset();
+			processCookies();
+		}
+	}
+	
+	private void processCookies() {
+		List<Cookie> cookies = httpClient.getCookieStore().getCookies();
+		for (Cookie cookie : cookies) {
+			DataField field = getRecordFieldByLabelOrName(responseCookiesRecord, cookie.getName());
+			if (field != null) {
+				field.setValue(cookie.getValue());
+			}
+		}
+	}
+	
+	private static DataField getRecordFieldByLabelOrName(DataRecord record, String labelOrName) {
+		DataRecordMetadata metadata = record.getMetadata();
+		DataFieldMetadata field = metadata.getFieldByLabel(labelOrName); // getField*() directly on DataRecord throws IndexOutOfBoundsException :-(
+		if (field == null) {
+			field = metadata.getField(labelOrName);
+		}
+		return field == null ? null : record.getField(field.getNumber());
 	}
 	
 	@Override
@@ -1810,6 +1922,7 @@ public class HttpConnector extends Node {
 		
 		if (!success) {
 			logError(result.getException());
+			logger.debug("Execution unsuccessful:", result.getException());
 		}
 		
 		return success;
@@ -1820,7 +1933,7 @@ public class HttpConnector extends Node {
 	 */
 	private void initForRecord() {
 		// reset all the records used
-		resetRecords(inputParamsRecord, resultRecord, errorRecord);
+		resetRecords(inputParamsRecord, resultRecord, errorRecord, responseCookiesRecord);
 		resetRecords(standardOutputMappingOutRecords);
 		resetRecords(errorOutputMappingOutRecords);
 		
@@ -1850,19 +1963,8 @@ public class HttpConnector extends Node {
 		resetRecords(inputMappingOutRecords);
 		inputMappingTransformation.execute();
 		processInputParamsRecord();
-
 	}	
 
-//	/** Maps fields based on the configuration to preserve compatibility.
-//	 * 
-//	 * @throws Exception
-//	 */
-//	private void mapLegacyInput() {
-//		if (inputFieldName != null) {
-//			inputParamsRecord.getField(IP_INPUT_FIELD_NAME_INDEX).setValue(inputFieldName);
-//		}		
-//	}
-	
 	/** Prepares configuration based on record read from the input port.
 	 * 
 	 * @return a configuration based on record read from the input port.
@@ -1935,7 +2037,7 @@ public class HttpConnector extends Node {
 	}
 
 
-	/** Method that fill the standard output record based on the given output mapping (or by name, if no explicit transformation specified)
+	/** Method that fill the standard output record based on the given output mapping
 	 * 
 	 * @throws Exception
 	 */
@@ -1943,7 +2045,10 @@ public class HttpConnector extends Node {
 		if (hasStandardOutputPort) {
 			populateInputParamsRecord();
 			populateResultRecordError();
-			outField.setNull(true);
+			
+			if (outField != null) {
+				outField.setNull(true);
+			}
 			
 			if (standardOutputMapping != null) {
 				standardOutputMappingTransformation.execute();
@@ -1983,8 +2088,16 @@ public class HttpConnector extends Node {
 	 */
 	private void mapLegacyOutput() throws Exception {
 		// output field connected - set the value there.
+		// NOTE: no output mapping is defined.
 		if (outField != null) {
-			outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
+			if (outputFileUrlToUse != null || storeResponseToTempFileToUse) {
+				// if we are storing the response to file, set the file URL into output field
+				outField.setValue(resultRecord.getField(RP_OUTPUTFILE_INDEX));
+				
+			} else {
+				// otherwise store the content
+				outField.setValue(resultRecord.getField(RP_CONTENT_INDEX));
+			}			
 		}		
 	}
 	
@@ -2027,7 +2140,7 @@ public class HttpConnector extends Node {
 			httpConnector.setInputFileUrl(xattribs.getStringEx(XML_INPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 			httpConnector.setOutputFileUrl(xattribs.getStringEx(XML_OUTPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 			httpConnector.setAppendOutput(xattribs.getBoolean(XML_APPEND_OUTPUT_ATTRIBUTE, DEFAULT_APPEND_OUTPUT));
-			httpConnector.setRequestProperties(xattribs.getString(XML_HEADER_PROPERTIES_ATTRIBUTE, null));
+			httpConnector.setAdditionalRequestHeaders(xattribs.getString(XML_ADDITIONAL_HTTP_HEADERS_ATTRIBUTE, null));
 			httpConnector.setRequestContent(xattribs.getString(XML_REQUEST_CONTENT_ATTRIBUTE, null));
 			httpConnector.setInputFieldName(xattribs.getString(XML_INPUT_PORT_FIELD_NAME, null));
 			httpConnector.setOutputFieldName(xattribs.getString(XML_OUTPUT_PORT_FIELD_NAME, null));
@@ -2044,6 +2157,9 @@ public class HttpConnector extends Node {
 			httpConnector.setUrlInputField(xattribs.getString(XML_URL_FROM_INPUT_FIELD_ATTRIBUTE, null));
 			httpConnector.setConsumerKey(xattribs.getString(XML_CONSUMER_KEY_ATTRIBUTE, null));
 			httpConnector.setConsumerSecret(xattribs.getString(XML_CONSUMER_SECRET_ATTRIBUTE, null));
+			httpConnector.setRawHttpHeaders(xattribs.getString(XML_RAW_HTTP_HEADERS_ATTRIBUTE, null));
+			httpConnector.setRequestCookies(xattribs.getString(XML_REQUEST_COOKIES_ATTRIBUTE, null));
+			httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
 
 			/** job flow related properties */
 			httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -2221,10 +2337,10 @@ public class HttpConnector extends Node {
 
 		OutputPort outputPort = getOutputPort(STANDARD_OUTPUT_PORT_NUMBER);
 		if (outputPort != null) {
-			DataFieldMetadata outField;
+			DataFieldMetadata outField = null;
 			if (!StringUtils.isEmpty(outputFieldName)) {
 				outField = outputPort.getMetadata().getField(outputFieldName);
-			} else {
+			} else if (standardOutputMapping == null) {
 				outField = outputPort.getMetadata().getField(0);
 			}
 			
@@ -2232,8 +2348,13 @@ public class HttpConnector extends Node {
 			if (outputFieldName != null && outField == null) {
 				status.add(new ConfigurationProblem("Output field name '" + outputFieldName + "' does not exist in output metadata.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
 				
-			} else if (outputFieldName != null && outField.getDataType() != DataFieldType.STRING) {
-				status.add(new ConfigurationProblem("Output field '" + outputFieldName + "' has incompatible type '" + outField.getDataType().toString() + "'. Field has to be String.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+			}
+			if (outField != null && outField.getDataType() != DataFieldType.STRING) {
+				if (outputFieldName != null) {
+					status.add(new ConfigurationProblem("Output field '" + outputFieldName + "' has incompatible type '" + outField.getDataType().toString() + "'. The field has to be 'string'.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+				} else {
+					status.add(new ConfigurationProblem("'Output field' not specified -> HTTP response content will be filled in the first field of output metadata, but the field has incompatible type '" + outField.getDataType().toString() + "'. It has to be 'string'.", Severity.ERROR, this, Priority.NORMAL, XML_OUTPUT_PORT_FIELD_NAME));
+				}
 			}
 		}
 		
@@ -2245,27 +2366,11 @@ public class HttpConnector extends Node {
 			status.add(new ConfigurationProblem("'Input file URL' will be ignored because input port is connected.", Severity.WARNING, this, Priority.NORMAL));
 		}
 
-		int outputCount = 0;
-		if (outputFileUrl != null) {
-			outputCount++;
+		if (storeResponseToTempFile && outputFileUrl != null) {
+			status.add(new ConfigurationProblem("Only one of 'Output file URL' and 'Store response file URL to output field' may be used.", Severity.ERROR, this, Priority.NORMAL));
 		}
-		if (outputFieldName != null) {
-			outputCount++;
-		}
-		if (storeResponseToTempFile) {
-			outputCount++;
-		}
-		
-		if (outputCount > 1) {
-			status.add(new ConfigurationProblem("Only one of 'Output file URL', 'Output field' and 'Store response file URL to output field' may be used.", Severity.ERROR, this, Priority.NORMAL));
-		}
-	
 		
 			
-//		if (outputPort != null && !StringUtils.isEmpty(outputFileUrl)) {
-//			status.add(new ConfigurationProblem("'Output file URL' will be ignored because output port is connected.", Severity.WARNING, this, Priority.NORMAL));
-//		}
-
 		if (!StringUtils.isEmpty(requestContent) && !StringUtils.isEmpty(inputFileUrl)) {
 			status.add(new ConfigurationProblem("You can set either 'Request content' or 'Input file URL'.", Severity.ERROR, this, Priority.NORMAL));
 		}
@@ -2301,6 +2406,16 @@ public class HttpConnector extends Node {
 		
 		if (redirectErrorOutput && standardOutputMapping == null) {
 			status.add(new ConfigurationProblem("Fields of error records redirected to standard output port will be empty unless Standard output mapping is defined", Severity.WARNING, this, Priority.NORMAL, XML_REDIRECT_ERROR_OUTPUT));
+		}
+		
+		if (!StringUtils.isEmpty(rawHttpHeaders)) {
+			for (CharSequence rawHeader : parseRawHttpHeadersItems()) {
+				try {
+					parseRawHeaderItem(rawHeader);
+				} catch (IllegalArgumentException e) {
+					status.add(new ConfigurationProblem("Missing ':' semicolon character in \"raw HTTP header\" item: \"" + rawHeader + "\"", Severity.WARNING, this, Priority.NORMAL, XML_RAW_HTTP_HEADERS_ATTRIBUTE));
+				}
+			}
 		}
 		
         try {
@@ -2359,7 +2474,7 @@ public class HttpConnector extends Node {
 		
 		
 		// process parameters
-		if (addInputFieldsAsParametersToToUse.equals("BODY")) {
+		if ("BODY".equals(addInputFieldsAsParametersToToUse)) {
 			//set request body if any
 			//FIXME: this replaces the multipart entity set in the previous step
 			//we leave it as-is to make the behavior compatible with older version using httpClient 3.x
@@ -2421,10 +2536,10 @@ public class HttpConnector extends Node {
 		HttpRequestBase method = null;
 		
 		// configure the request method
-		if (requestMethodToUse.equals(POST)) {
+		if (POST.equals(requestMethodToUse)) {
 			method = preparePostMethod(configuration);
 			
-		} else if (requestMethodToUse.equals(GET)) {
+		} else if (GET.equals(requestMethodToUse)) {
 			method = prepareGetMethod(configuration);
 			
 		} else {
@@ -2433,10 +2548,13 @@ public class HttpConnector extends Node {
 		}
 		
 		// add resolved header parameters
-		if (!StringUtils.isEmpty(rawRequestPropertiesToUse)) {
+		if ((additionalRequestHeadersToUse != null && !additionalRequestHeadersToUse.isEmpty()) 
+				|| (rawHttpHeadersToUse != null && !rawHttpHeadersToUse.isEmpty())) {
 			addHeaderParameters(method);
 		}
 		
+		addRequestCookies(method);
+
 		return method;
 	}
 	
@@ -2539,11 +2657,11 @@ public class HttpConnector extends Node {
 		httpClient.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(3, false));
 		
 		httpClient.addRequestInterceptor(requestLoggingInterceptor);
+		httpClient.addRequestInterceptor(cookieStore);
 		httpClient.addResponseInterceptor(responseLoggingInterceptor);
-		
+
 		// configure proxy 
 		if (configuration.getProxyURL() != null) {
-			
 			HttpHost proxy = new HttpHost(configuration.getProxyURL().getHost(), configuration.getProxyURL().getPort());
 			httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);			
 		}
@@ -2556,13 +2674,13 @@ public class HttpConnector extends Node {
 			
 			//set authentication method
 			String authMethod = null;
-			if (authenticationMethodToUse.equals("BASIC")) {
+			if ("BASIC".equals(authenticationMethodToUse)) {
 				//basic http authentication
 				authMethod = AuthPolicy.BASIC;
-			} else if (authenticationMethodToUse.equals("DIGEST")) {
+			} else if ("DIGEST".equals(authenticationMethodToUse)) {
 				//digest http authentication
 				authMethod = AuthPolicy.DIGEST;
-			} else if (authenticationMethodToUse.equals("ANY")) {
+			} else if ("ANY".equals(authenticationMethodToUse)) {
 				//one of the possible authentication method will be used
 				authMethod = "ANY";
 			}
@@ -2589,7 +2707,21 @@ public class HttpConnector extends Node {
 		if (!StringUtils.isEmpty(consumerKeyToUse) && !StringUtils.isEmpty(consumerSecretToUse)){
 			// Consumer instance that should be used (used for OAuth authentication)
 			oauthConsumer = new CommonsHttpOAuthConsumer(consumerKeyToUse, consumerSecretToUse);				
-		}		
+		}
+		
+		// Set cookie policy to send all cookies in a request regardless of CookieOrigin (because we don't set it anyway)
+		CookieSpecFactory csf = new CookieSpecFactory() {
+			public CookieSpec newInstance(HttpParams params) {
+				return new BestMatchSpec() {
+					@Override
+					public boolean match(Cookie cookie, CookieOrigin origin) {
+						return true;
+					}
+				};
+			}
+		};
+		httpClient.getCookieSpecs().register("sendAllCookiesPolicy", csf);
+		httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, "sendAllCookiesPolicy");
 	}
 
 	/** Changes the query string in given URI and returns the updated URI.
@@ -2625,19 +2757,79 @@ public class HttpConnector extends Node {
 			setRefProperties(fieldValues);
 		}
 		
-		// pass request properties to the http connection
-		for (Entry<Object, Object> entry : requestProperties.entrySet()) {
-			String value = refResolver.resolveRef((String) entry.getValue());
-			
-			// check if the value is fully resolved
-			if (PropertyRefResolver.containsProperty(value)) {
-				throw new ComponentNotReadyException(this, "Could not resolve all references in additional HTTP header: '" + (String)entry.getValue() + "' (resolved as '" + value + "')");
+		if (rawHttpHeadersToUse != null && !rawHttpHeadersToUse.isEmpty()) {
+			for (CharSequence rawHeader : rawHttpHeadersToUse) {
+				try {
+					RawHeader header = parseRawHeaderItem(rawHeader);
+					if (header != null) {
+						method.addHeader(header.name, header.value);
+					}
+				} catch (IllegalArgumentException e) {
+					logger.debug("Ignoring invalid \"raw HTTP header\" item: \"" + rawHeader + "\"");
+				}
 			}
-			
-			method.getParams().setParameter((String) entry.getKey(), value);
-			method.addHeader((String) entry.getKey(), value);
+		}
+		
+		if (additionalRequestHeadersToUse != null && !additionalRequestHeadersToUse.isEmpty()) {
+			// pass request properties to the http connection
+			for (Entry<String, CharSequence> entry : additionalRequestHeadersToUse.entrySet()) {
+				String value = refResolver.resolveRef(entry.getValue().toString());
+				
+				// check if the value is fully resolved
+				if (PropertyRefResolver.containsProperty(value)) {
+					throw new ComponentNotReadyException(this, "Could not resolve all references in additional HTTP header: '" + entry.getValue() + "' (resolved as '" + value + "')");
+				}
+				
+				method.getParams().setParameter((String) entry.getKey(), value);
+				method.addHeader((String) entry.getKey(), value);
+			}
 		}
 	}	
+	
+	private static class RawHeader {
+		public final String name;
+		public final String value;
+
+		private RawHeader(String name, String value) {
+			this.name = name;
+			this.value = value;
+		}
+	}
+	
+	private RawHeader parseRawHeaderItem(CharSequence rawHeader) {
+		if (rawHeader != null) {
+			String rawHeaderStr = rawHeader.toString().trim();
+			if (!rawHeaderStr.isEmpty()) {
+				rawHeaderStr = refResolver.resolveRef(rawHeaderStr);
+				int separatorIndex = rawHeaderStr.indexOf(":");
+				if (separatorIndex > 0) {
+					String name = rawHeaderStr.substring(0, separatorIndex).trim();
+					String value = rawHeaderStr.substring(separatorIndex + 1).trim();
+					return new RawHeader(name, value);
+				} else {
+					throw new IllegalArgumentException();
+				}
+			}
+		}
+		return null;
+	}
+	
+	private void addRequestCookies(HttpRequestBase method) throws ComponentNotReadyException {
+		if (requestCookies == null) {
+			return;
+		}
+		
+		//CookieStore cookieStore = httpClient.getCookieStore();
+		cookieStore = new RequestResponseCookieStore();
+		httpClient.setCookieStore(cookieStore);
+		for (DataField field : requestCookiesRecord) {
+			if (!field.isNull()) {
+				String name = field.getMetadata().getLabelOrName();
+				String value = field.getValue().toString();
+				cookieStore.addCookie(new BasicClientCookie(name, value));
+			}
+		}
+	}
 	
 	/** Creates a map representing request parameters.
 	 * 
@@ -2697,6 +2889,10 @@ public class HttpConnector extends Node {
 	 * @throws IOException
 	 */
 	private String prepareURL(String urlTemplate, Set<String> substituedPlaceHolders) throws ComponentNotReadyException {
+		if (urlTemplate == null) {
+			throw new ComponentNotReadyException("Invalid URL: null");
+		}
+		
 		// FIXME: is this check really necessary? The URL is checked at the end for unresolved references 
 		if (!isPossibleToMapVariables(urlTemplate)) {
 			throw new ComponentNotReadyException("Invalid input. Can't create URL or map fields to URL");
@@ -2845,7 +3041,7 @@ public class HttpConnector extends Node {
 		inputParamsRecord.getField(IP_OUTPUT_FILE_URL_INDEX).setValue(outputFileUrlToUse);
 		inputParamsRecord.getField(IP_APPEND_OUTPUT_INDEX).setValue(appendOutputToUse);
 		inputParamsRecord.getField(IP_CHARSET_INDEX).setValue(charsetToUse);
-		inputParamsRecord.getField(IP_REQUEST_PROPERTIES_INDEX).setValue(rawRequestPropertiesToUse);
+		inputParamsRecord.getField(IP_ADDITIONAL_REQUEST_HEADERS_INDEX).setValue(additionalRequestHeadersToUse);
 		inputParamsRecord.getField(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_INDEX).setValue(addInputFieldsAsParametersToUse);
 		inputParamsRecord.getField(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_INDEX).setValue(addInputFieldsAsParametersToToUse);
 		inputParamsRecord.getField(IP_IGNORED_FIELDS_INDEX).setValue(ignoredFieldsToUse);
@@ -2857,6 +3053,7 @@ public class HttpConnector extends Node {
 		inputParamsRecord.getField(IP_MULTIPART_ENTITIES_INDEX).setValue(multipartEntitiesToUse);
 		inputParamsRecord.getField(IP_CONSUMER_KEY_INDEX).setValue(consumerKeyToUse);
 		inputParamsRecord.getField(IP_CONSUMER_SECRET_INDEX).setValue(consumerSecretToUse);
+		inputParamsRecord.getField(IP_RAW_HTTP_HEADERS_INDEX).setValue(rawHttpHeadersToUse);
 	}
 
 	/** Populates the error record.
@@ -2905,7 +3102,7 @@ public class HttpConnector extends Node {
 		metadata.addField(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_INDEX, new DataFieldMetadata(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_INDEX, new DataFieldMetadata(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(IP_IGNORED_FIELDS_INDEX, new DataFieldMetadata(IP_IGNORED_FIELDS_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_REQUEST_PROPERTIES_INDEX, new DataFieldMetadata(IP_REQUEST_PROPERTIES_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(IP_ADDITIONAL_REQUEST_HEADERS_INDEX, new DataFieldMetadata(IP_ADDITIONAL_REQUEST_HEADERS_NAME, DataFieldType.STRING, DUMMY_DELIMITER, DataFieldContainerType.MAP));
 		metadata.addField(IP_CHARSET_INDEX, new DataFieldMetadata(IP_CHARSET_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(IP_REQUEST_CONTENT_INDEX, new DataFieldMetadata(IP_REQUEST_CONTENT_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(IP_INPUT_FILE_URL_INDEX, new DataFieldMetadata(IP_INPUT_FILE_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
@@ -2921,7 +3118,39 @@ public class HttpConnector extends Node {
 		metadata.addField(IP_STORE_RESPONSE_TO_TEMP_INDEX, new DataFieldMetadata(IP_STORE_RESPONSE_TO_TEMP_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
 		metadata.addField(IP_TEMP_FILE_PREFIX_INDEX, new DataFieldMetadata(IP_TEMP_FILE_PREFIX_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(IP_MULTIPART_ENTITIES_INDEX, new DataFieldMetadata(IP_MULTIPART_ENTITIES_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(IP_RAW_HTTP_HEADERS_INDEX, new DataFieldMetadata(IP_RAW_HTTP_HEADERS_NAME, DataFieldType.STRING, DUMMY_DELIMITER, DataFieldContainerType.LIST));
+		
+		return metadata;
+	}
+	
+	public static DataRecordMetadata createMetadataFromProperties(Properties requestCookies, String metadataName) {
+		DataRecordMetadata metadata = new DataRecordMetadata(metadataName);
+		
+		for (Object variableName : requestCookies.keySet()) {
+			DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, DUMMY_DELIMITER);
+			field.setLabel((String) variableName);
+			metadata.addField(field);
+		}
 
+		metadata.normalize();
+		return metadata;
+	}
+	
+	public static DataRecordMetadata createResponseCookiesMetadata(String responseCookies) {
+		DataRecordMetadata metadata = new DataRecordMetadata(RESPONSE_COOKIES_RECORD_NAME);
+		
+		String[] cookies = responseCookies.split(RESPONSE_COOKIES_SEPARATOR);
+		
+		for (String c : cookies) {
+			String cookie = c.trim();
+			if (!cookie.isEmpty()) {
+				DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, DUMMY_DELIMITER);
+				field.setLabel(cookie);
+				metadata.addField(field);
+			}
+		}
+		
+		metadata.normalize();
 		return metadata;
 	}
 	
@@ -2930,16 +3159,13 @@ public class HttpConnector extends Node {
 	 * @return result metadata used by this component
 	 */
 	public static DataRecordMetadata createResultMetadata() {
-		DataRecordMetadata metadata = new DataRecordMetadata(RESULT_RECORD_NAME);
+		DataRecordMetadata metadata = new DataRecordMetadata(HttpConnector.RESULT_RECORD_NAME);
 		
 		metadata.addField(RP_CONTENT_INDEX, new DataFieldMetadata(RP_CONTENT_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(RP_OUTPUTFILE_INDEX, new DataFieldMetadata(RP_OUTPUTFILE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 		metadata.addField(RP_STATUS_CODE_INDEX, new DataFieldMetadata(RP_STATUS_CODE_NAME, DataFieldType.INTEGER, DUMMY_DELIMITER));
-		
-		DataFieldMetadata header = new DataFieldMetadata(RP_HEADER_NAME, DataFieldType.STRING, DUMMY_DELIMITER);
-		header.setContainerType(DataFieldContainerType.MAP);
-		metadata.addField(RP_HEADER_INDEX, header);
-		
+		metadata.addField(RP_HEADER_INDEX, new DataFieldMetadata(RP_HEADER_NAME, DataFieldType.STRING, DUMMY_DELIMITER, DataFieldContainerType.MAP));
+		metadata.addField(RP_RAW_HTTP_HAEDERS_INDEX, new DataFieldMetadata(RP_RAW_HTTP_HAEDERS_NAME, DataFieldType.STRING, DUMMY_DELIMITER, DataFieldContainerType.LIST));
 		metadata.addField(RP_MESSAGE_INDEX, new DataFieldMetadata(RP_MESSAGE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
 
 		return metadata;
@@ -2994,8 +3220,8 @@ public class HttpConnector extends Node {
 		return appendOutput;
 	}
 
-	public void setRequestProperties(String rawRequestProperties) {
-		this.rawRequestProperties = rawRequestProperties;
+	public void setAdditionalRequestHeaders(String additionalRequestHeadersAsProperties) {
+		this.additionalRequestHeadersStr = additionalRequestHeadersAsProperties;
 	}
 
 	public String getRequestContent() {
@@ -3150,6 +3376,10 @@ public class HttpConnector extends Node {
 		this.consumerSecret = consumerSecret;
 	}	
 	
+	public void setRawHttpHeaders(String rawHttpHeaders) {
+		this.rawHttpHeaders = rawHttpHeaders;
+	}
+
 	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
@@ -3158,9 +3388,65 @@ public class HttpConnector extends Node {
 	private void setRedirectErrorOutput(boolean redirectErrorOutput) {
 		this.redirectErrorOutput = redirectErrorOutput;
 	}
-
+	
+	public void setRequestCookies(String requestCookies) {
+		this.requestCookiesStr = requestCookies;
+	}
+	
+	public void setResponseCookies(String responseCookies) {
+		this.responseCookies = responseCookies;
+	}
+	
 	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new ReformatComponentTokenTracker(this);
 	}
+	
+	/**
+	 * CookieStore for HttpClient allowing to separate request and response cookies.
+	 * 
+	 * @author tkramolis (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 9.8.2012
+	 */
+	private static class RequestResponseCookieStore implements CookieStore, HttpRequestInterceptor {
+
+		private BasicCookieStore requestCookieStore = new BasicCookieStore();
+		private BasicCookieStore responseCookieStore = new BasicCookieStore();
+		private boolean responseState = false;
+		
+		private CookieStore getCurrentStore() {
+			return responseState ? responseCookieStore : requestCookieStore;
+		}
+		
+		@Override
+		public void addCookie(Cookie cookie) {
+			getCurrentStore().addCookie(cookie); 
+		}
+		
+		@Override
+		public List<Cookie> getCookies() {
+			return getCurrentStore().getCookies();
+		}
+
+		@Override
+		public boolean clearExpired(Date date) {
+			// Note: no reson for this particular implemention, just a suggestion; this method is not used anyway (at least now)
+			return requestCookieStore.clearExpired(date) || responseCookieStore.clearExpired(date);
+		}
+
+		@Override
+		public void clear() {
+			requestCookieStore.clear();
+			responseCookieStore.clear();
+		}
+		
+		@Override
+		public void process(HttpRequest request, HttpContext context) throws HttpException, IOException {
+			responseState = true;
+		}
+
+	}
+	
 }

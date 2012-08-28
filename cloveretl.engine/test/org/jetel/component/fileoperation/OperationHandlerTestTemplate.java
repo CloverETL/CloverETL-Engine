@@ -58,6 +58,16 @@ import org.jetel.component.fileoperation.result.ResolveResult;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
 
+/**
+ * Remember to copy the code of the test methods
+ * to SandboxOperationHandlerTest.java in cloveretl.test.scenarios/trans
+ * when making any modifications. 
+ * 
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created Aug 2, 2012
+ */
 public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	
 	protected static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
@@ -143,6 +153,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assumeTrue(manager.create(relativeURI("u/a.tmp;u/b.tmp"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("w.tmp")).success());
 		assumeTrue(manager.create(relativeURI("samefile/f.tmp;samefile/dir/"), new CreateParameters().setMakeParents(true)).success());
+		assumeTrue(manager.create(relativeURI("nonexisting/file.tmp;nonexisting/dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
 		
 		CloverURI source;
 		CloverURI target;
@@ -157,8 +168,8 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		source = relativeURI("srcdir");
 		target = relativeURI("srcdir_copy");
 		result = manager.copy(source, target);
-		assertTrue(result.success());
-		assertEquals(0, result.totalCount());
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
 		assertTrue(manager.copy(source, target, new CopyParameters().setRecursive(true)).success());
 		for (String path: texts.keySet()) {
 			if (path.startsWith(source.toString())) {
@@ -203,6 +214,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		target = relativeURI("root.tmp");
 		assertTrue(manager.copy(source, target, new CopyParameters().setNoOverwrite()).success());
 		assertEquals("File was overwritten in no-overwrite mode", texts.get(target.toString()), read(manager.getInput(target).channel()));
+		target = relativeURI("file-copied-to-directory/");
+		assertFalse(manager.copy(source, target).success());
+		target = relativeURI("file-copied-to-directory");
+		assertFalse(manager.exists(target));
 
 		{
 			String originalContent = "Original content";
@@ -223,10 +238,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		source = relativeURI("s/*");
 		target = relativeURI("t");
 		result = manager.copy(source, target);
-		assertTrue(result.success());
-		assertEquals(1, result.totalCount());
+		assertFalse(result.success());
+		assertEquals(2, result.totalCount());
 		assertEquals(1, result.successCount());
-		assertEquals(0, result.errorCount());
+		assertEquals(1, result.errorCount());
 
 		source = relativeURI("u/*");
 		target = relativeURI("v");
@@ -262,6 +277,83 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		result = manager.copy(source, target);
 		assertFalse(result.success());
 		assertTrue(manager.exists(source));
+
+		{
+			String sourceDir = "spaces/source/";
+			String targetDir = "spaces/target/";
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+			InfoResult info;
+
+			source = relativeURI(sourceDir, dirName);
+			assertFalse(String.format("%s already exists", source), manager.exists(source));
+			
+			source = relativeURI(sourceDir, dirName + "/" + fileName);
+			System.out.println(source.getAbsoluteURI());
+			assertTrue(manager.create(source, new CreateParameters().setMakeParents(true)).success());
+
+			target = relativeURI(targetDir);
+			assertTrue(manager.create(target, new CreateParameters().setMakeParents(true).setDirectory(true)).success());
+			
+			source = relativeURI(sourceDir, dirName);
+			assertTrue(manager.copy(source, target, new CopyParameters().setRecursive(true)).success());
+			
+			target = relativeURI(targetDir, dirName);
+			info = manager.info(target);
+			assertTrue(String.format("%s does not exist", target), info.exists());
+			assertTrue(String.format("%s is not a directory", target), info.isDirectory());
+			assertEquals(dirName, info.getName());
+			
+			target = relativeURI(targetDir, dirName + "/" + fileName);
+			info = manager.info(target);
+			assertTrue(String.format("%s is not a file", target), info.isFile());
+			assertEquals(fileName, info.getName());
+			
+			source = relativeURI(sourceDir, dirName + "/" + fileName);
+			assertTrue(manager.delete(target).success());
+			assertTrue(manager.copy(source, target).success());
+			info = manager.info(target);
+			assertTrue(info.isFile());
+			assertEquals(fileName, info.getName());
+		}
+		
+		{
+			String dir = "nonexisting/";
+			CopyParameters params = new CopyParameters().setMakeParents(true);
+
+			source = relativeURI(dir, "file.tmp");
+			target = relativeURI(dir, "parentDir1"); // will create a file called "parentDir1"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isFile(target));
+			assertFalse(manager.exists(relativeURI(dir, "parentDir1/file.tmp")));
+			target = relativeURI(dir, "parentDir2/"); // will create a directory "parentDir2" and a file "file.tmp"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir2/file.tmp")));
+			target = relativeURI(dir, "parentDir3/copy.tmp"); // will create a directory "parentDir3" and a file "copy.tmp"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isFile(target));
+			target = relativeURI(dir, "parentDir4/copy.tmp/"); // will create directories "parentDir4/copy.tmp" and a file "file.tmp"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir4/copy.tmp/file.tmp")));
+
+			params.setRecursive(true);
+			source = relativeURI(dir, "dir");
+			target = relativeURI(dir, "parentDir5"); // will create a directory "parentDir5" as a copy of "dir"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir5/content.tmp")));
+			target = relativeURI(dir, "parentDir6/"); // will create directories "parentDir6/dir"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isDirectory(relativeURI(dir, "parentDir6/dir")));
+			target = relativeURI(dir, "parentDir7/copy"); // will create directories "parentDir7/copy" as a copy of "dir"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir7/copy/content.tmp")));
+			target = relativeURI(dir, "parentDir8/copy/"); // will create directories "parentDir8/copy/dir"
+			assertTrue(manager.copy(source, target, params).success());
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir8/copy/dir/content.tmp")));
+		}
 	}
 	
 	public void testSpecialCharacters() throws Exception {
@@ -316,6 +408,25 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		info = manager.info(uri);
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 		
+		{
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+
+			uri = relativeURI(dirName);
+			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+			
+			uri = relativeURI(dirName + "/" + fileName);
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a file", uri), info.isFile());
+			assertEquals(fileName, info.getName());
+			
+			uri = relativeURI(dirName);
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+			assertEquals(dirName, info.getName());
+		}
 	}
 	
 	protected void prepareData(Map<String, String> texts) throws Exception {
@@ -440,6 +551,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		target = relativeURI("root.tmp");
 		assertTrue(manager.move(source, target, new MoveParameters().setNoOverwrite()).success());
 		assertEquals("File was overwritten in no-overwrite mode", texts.get(target.toString()), read(manager.getInput(target).channel()));
+		target = relativeURI("file-moved-to-directory/");
+		assertFalse(manager.move(source, target).success());
+		target = relativeURI("file-moved-to-directory");
+		assertFalse(manager.exists(target));
 
 		{
 			String originalContent = "Original content";
@@ -491,6 +606,97 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		result = manager.move(source, target);
 		assertFalse(result.success());
 		assertTrue(manager.exists(source));
+
+		{
+			String sourceDir = "spaces/source/";
+			String targetDir = "spaces/target/";
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+			InfoResult info;
+
+			source = relativeURI(sourceDir, dirName);
+			assertFalse(String.format("%s already exists", source), manager.exists(source));
+			
+			source = relativeURI(sourceDir, dirName + "/" + fileName);
+			System.out.println(source.getAbsoluteURI());
+			assertTrue(manager.create(source, new CreateParameters().setMakeParents(true)).success());
+
+			target = relativeURI(targetDir);
+			assertTrue(manager.create(target, new CreateParameters().setMakeParents(true).setDirectory(true)).success());
+			
+			source = relativeURI(sourceDir, dirName);
+			assertTrue(manager.move(source, target).success());
+			
+			target = relativeURI(targetDir, dirName);
+			info = manager.info(target);
+			assertTrue(String.format("%s does not exist", target), info.exists());
+			assertTrue(String.format("%s is not a directory", target), info.isDirectory());
+			assertEquals(dirName, info.getName());
+			
+			target = relativeURI(targetDir, dirName + "/" + fileName);
+			info = manager.info(target);
+			assertTrue(String.format("%s is not a file", target), info.isFile());
+			assertEquals(fileName, info.getName());
+			
+			source = relativeURI(sourceDir, dirName + "/" + fileName);
+			assertTrue(manager.delete(target).success());
+			assertTrue(manager.create(source, new CreateParameters().setMakeParents(true)).success());
+			assertTrue(manager.move(source, target).success());
+			info = manager.info(target);
+			assertTrue(info.isFile());
+			assertEquals(fileName, info.getName());
+		}
+
+		{
+			String dir = "nonexisting/";
+			MoveParameters params = new MoveParameters().setMakeParents(true);
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			source = relativeURI(dir, "file.tmp");
+			target = relativeURI(dir, "parentDir1"); // will create a file called "parentDir1"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isFile(target));
+			assertFalse(manager.exists(relativeURI(dir, "parentDir1/file.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir2/"); // will create a directory "parentDir2" and a file "file.tmp"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir2/file.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir3/copy.tmp"); // will create a directory "parentDir3" and a file "copy.tmp"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isFile(target));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir4/copy.tmp/"); // will create directories "parentDir4/copy.tmp" and a file "file.tmp"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir4/copy.tmp/file.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			source = relativeURI(dir, "dir");
+			target = relativeURI(dir, "parentDir5"); // will create a directory "parentDir5" as a copy of "dir"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isDirectory(target));
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir5/content.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir6/"); // will create directories "parentDir6/dir"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isDirectory(relativeURI(dir, "parentDir6/dir")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir7/copy"); // will create directories "parentDir7/copy" as a copy of "dir"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir7/copy/content.tmp")));
+
+			assumeTrue(manager.create(relativeURI(dir, "file.tmp;dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+			target = relativeURI(dir, "parentDir8/copy/"); // will create directories "parentDir8/copy/dir"
+			assertTrue(manager.move(source, target, params).success());
+			assertTrue(manager.isFile(relativeURI(dir, "parentDir8/copy/dir/content.tmp")));
+		}
 	}
 	
 	protected String read(ReadableByteChannel channel) {
@@ -537,6 +743,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
 		texts.put("srcdir/found.tmp", "V lese padají šišky");
 		texts.put("root.tmp", "Root file");
+		texts.put("directory with spaces/file with spaces.tmp", "Spaces");
 		prepareData(texts);
 		assumeTrue(manager.isDirectory(relativeURI("srcdir")));
 		
@@ -577,6 +784,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		texts.put("srcdir/f.tmp", "Tak se z lesa ozývá");
 		texts.put("srcdir/found.tmp", "V lese padají šišky");
 		texts.put("root.tmp", "Root file");
+		texts.put("directory with spaces/file with spaces.tmp", "Spaces");
 
 		CloverURI uri = null;
 		
@@ -597,7 +805,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		}
 		
 		{
-			assumeTrue(manager.create(relativeURI("srcdir/")).success());
+			assumeTrue(manager.create(relativeURI("srcdir/;directory with spaces/")).success());
 		}
 
 		try {
@@ -639,6 +847,18 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals(1, provider.size());
 			write(provider.channel(), newContent);
 			assertEquals(newContent, read(manager.getInput(relativeURI(provider.getURI().toString())).channel()));
+		}
+
+		{
+			String path = "directory with spaces/file with spaces.tmp";
+			uri = relativeURI(path);
+			String newContent = "New content";
+			assertEquals(1, manager.getOutput(uri).size());
+			WritableContentProvider provider = manager.getOutput(uri);
+			for (int i = 0; i < provider.size(); i++) {
+				write(provider.channel(i), newContent);
+				assertEquals(newContent, read(manager.getInput(relativeURI(provider.getURI(i).toString())).channel()));
+			}
 		}
 	}
 
@@ -682,8 +902,8 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		
 		uri = relativeURI("emptyDir");
 		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
-		assertTrue(String.format("Delete %s failed", uri), manager.delete(uri).success());
-		assertFalse(String.format("%s still exists", uri), manager.exists(uri));
+		assertFalse(String.format("Non-recursive delete of an empty dir %s succeeded", uri), manager.delete(uri).success());
+		assertTrue(String.format("%s does not exist anymore", uri), manager.exists(uri));
 
 		uri = relativeURI("eclipse");
 		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
@@ -715,6 +935,33 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		} else {
 			System.err.println("Could not test deleting 'wildcardsDir/*.tmp'");
 		}
+
+		{
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+
+			uri = relativeURI(dirName);
+			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+			
+			uri = relativeURI(dirName + "/" + fileName);
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			
+			assertTrue(manager.delete(uri).success());
+			assertFalse(manager.exists(uri));
+			
+			uri = relativeURI(dirName);
+			assertTrue(manager.delete(uri, new DeleteParameters().setRecursive(true)).success());
+			assertFalse(manager.exists(uri));
+		}
+		
+		{
+			String dir = "file-vs-dir/";
+			uri = relativeURI(dir, "file");
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			assertFalse(manager.delete(relativeURI(dir, "file/")).success());
+			assertTrue(manager.isFile(uri));
+		}
 	}
 
 	public void testResolve() throws Exception {
@@ -729,6 +976,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assumeTrue(manager.isDirectory(relativeURI("subdir/tmpdir")));
 			assumeTrue(manager.create(relativeURI("subdir/tmpfile.tmp")).success());
 			assumeTrue(manager.isFile(relativeURI("subdir/tmpfile.tmp")));
+			assumeTrue(manager.create(relativeURI("spaces/directory with spaces/file with spaces.tmp"), new CreateParameters().setMakeParents(true)).success());
 		}
 		
 		ResolveResult result;
@@ -744,6 +992,46 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertEquals(2, result.successCount());
 
 		result = manager.resolve(relativeURI("subdir/*/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/*/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory?with?spaces/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory with spaces/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory%20with%20spaces/"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory%20wit*"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory with?spaces/file with%20spaces.tmp"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory%20with?spaces/file?with spaces.tmp"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(1, result.successCount());
+
+		result = manager.resolve(relativeURI("spaces/directory%20wit*/file%20wit*.tmp"));
 		System.out.println(result);
 		assertTrue(result.success());
 		assertEquals(1, result.successCount());
@@ -765,13 +1053,13 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		int[] columns = new int[3];
 		for (Info info: infos) {
 			columns[0] = Math.max(columns[0], base.relativize(info.getURI()).toString().length());
-			columns[1] = Math.max(columns[1], DATE_FORMAT.format(info.getLastModified()).length());
+			columns[1] = info.getLastModified() != null ? Math.max(columns[1], DATE_FORMAT.format(info.getLastModified()).length()) : 1;
 			columns[2] = Math.max(columns[2], String.valueOf(info.getSize()).length());
 		}
 		String format = String.format(" %%s %%-%ds   %%%ds   %%%dd B%%n", columns[0], columns[1], columns[2]);
 		System.out.printf("Retrieved contents of %s:%n", base);
 		for (Info info: infos) {
-			System.out.printf(format, info.isDirectory() ? "D" : "F", base.relativize(info.getURI()), DATE_FORMAT.format(info.getLastModified()), info.getSize());
+			System.out.printf(format, info.isDirectory() ? "D" : "F", base.relativize(info.getURI()), (info.getLastModified() != null) ? DATE_FORMAT.format(info.getLastModified()) : "", info.getSize());
 		}
 	}
 
@@ -792,6 +1080,12 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			result = manager.create(relativeURI("dir2-Install/", files), new CreateParameters().setMakeParents(true));
 			assumeTrue(result.successCount() == files.split(";").length);
 			result = manager.create(relativeURI("dir2-Insight/", files), new CreateParameters().setMakeParents(true));
+			assumeTrue(result.successCount() == files.split(";").length);
+			files = "directory with space/file with space.tmp";
+			result = manager.create(relativeURI("spaces/", files), new CreateParameters().setMakeParents(true));
+			assumeTrue(result.successCount() == files.split(";").length);
+			files = "file-vs-dir/file";
+			result = manager.create(relativeURI(files), new CreateParameters().setMakeParents(true));
 			assumeTrue(result.successCount() == files.split(";").length);
 		}
 		
@@ -857,6 +1151,14 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertEquals(2, listResult.errorCount());
 		}
 		
+		result = manager.list(relativeURI("spaces"), new ListParameters().setRecursive(true)).getResult();
+		System.out.println(result);
+		assertEquals("Different list result", new HashSet<String>(Arrays.asList("spaces/directory%20with%20space/;spaces/directory%20with%20space/file%20with%20space.tmp".split(";"))), new HashSet<String>(getRelativePaths(baseUri, result)));
+		printInfo(baseUri, result);
+
+		result = manager.list(relativeURI("file-vs-dir/file/"), new ListParameters().setRecursive(true)).getResult();
+		System.out.println(result);
+		assertEquals(0, result.size());
 	}
 	
 	protected CloverURI relativeURI(String uri) throws URISyntaxException {
@@ -869,7 +1171,6 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 
 	public void testCreate() throws Exception {
 		CloverURI uri;
-		Date modifiedDate = new Date(10000);
 		
 		uri = relativeURI("file");
 		System.out.println(uri.getAbsoluteURI());
@@ -883,14 +1184,6 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertFalse(manager.create(uri).success());
 		assertFalse(String.format("Created %s even though the parent dir did not exist", uri), manager.exists(uri));
 		
-		uri = relativeURI("topdir1/subdir/subsubdir/file");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
-		assertTrue(String.format("%s is a not file", uri), manager.isFile(uri));
-		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
-		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
-		
 		uri = relativeURI("topdir2/subdir/subsubdir/dir");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
@@ -903,6 +1196,55 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertTrue(String.format("Failed to create %s", uri), manager.create(uri, new CreateParameters().setDirectory(true).setMakeParents(true)).success());
 		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
 		
+		uri = relativeURI("fileShouldBeDirectory");
+		System.out.println(uri.getAbsoluteURI());
+		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+		assertTrue(manager.create(uri).success());
+		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
+		assertFalse(manager.create(uri, new CreateParameters().setDirectory(true)).success());
+		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
+		assertFalse(String.format("%s is a directory", uri), manager.isDirectory(uri));
+		uri = relativeURI("fileShouldBeDirectory/");
+		assertFalse(manager.create(uri).success());
+		uri = relativeURI("fileShouldBeDirectory");
+		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
+		assertFalse(String.format("%s is a directory", uri), manager.isDirectory(uri));
+
+		{
+			String dirName = "directory with spaces";
+			String fileName = "file with spaces.tmp";
+			InfoResult info;
+
+			uri = relativeURI(dirName);
+			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+			
+			uri = relativeURI(dirName + "/" + fileName);
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a file", uri), info.isFile());
+			assertEquals(fileName, info.getName());
+			
+			uri = relativeURI(dirName);
+			info = manager.info(uri);
+			assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
+			assertEquals(dirName, info.getName());
+		}
+
+	}
+	
+	public void testCreateDated() throws Exception {
+		CloverURI uri;
+		Date modifiedDate = new Date(10000);
+		
+		uri = relativeURI("topdir1/subdir/subsubdir/file");
+		System.out.println(uri.getAbsoluteURI());
+		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+		assertTrue(String.format("%s is a not file", uri), manager.isFile(uri));
+		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
+		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
+		
 		uri = relativeURI("topdir2/subdir/subsubdir/dir2/");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
@@ -911,6 +1253,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertTrue(manager.create(uri, new CreateParameters().setLastModified(modifiedDate)).success());
 		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
 		
+		uri = relativeURI("file");
 		uri = relativeURI("datedFile");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
@@ -933,19 +1276,29 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
 		assertEquals("Dates are different", modifiedDate, manager.info(uri).getLastModified());
 		
-		uri = relativeURI("fileShouldBeDirectory");
-		System.out.println(uri.getAbsoluteURI());
-		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
-		assertTrue(manager.create(uri).success());
-		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
-		assertFalse(manager.create(uri, new CreateParameters().setDirectory(true)).success());
-		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
-		assertFalse(String.format("%s is a directory", uri), manager.isDirectory(uri));
-		uri = relativeURI("fileShouldBeDirectory/");
-		assertFalse(manager.create(uri).success());
-		assertTrue(String.format("%s is not a file", uri), manager.isFile(uri));
-		assertFalse(String.format("%s is a directory", uri), manager.isDirectory(uri));
+		{
+			String dirName = "touch";
+			modifiedDate = null; 
 
+			uri = relativeURI(dirName);
+			assertFalse(String.format("%s already exists", uri), manager.exists(uri));
+			
+			uri = relativeURI(dirName + "/file.tmp");
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			modifiedDate = manager.info(uri).getLastModified();
+			Thread.sleep(1000);
+			assertTrue(manager.create(uri).success());
+			assertTrue(manager.info(uri).getLastModified().after(modifiedDate));
+			
+			uri = relativeURI(dirName + "/dir/");
+			System.out.println(uri.getAbsoluteURI());
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			modifiedDate = manager.info(uri).getLastModified();
+			Thread.sleep(1000);
+			assertTrue(manager.create(uri).success());
+			assertTrue(manager.info(uri).getLastModified().after(modifiedDate));
+		}
 	}
 	
 //	public void testInterruptCreate() throws Exception {
@@ -988,6 +1341,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	
 	public void testInterruptDelete() throws Exception {
 		Thread mainThread = Thread.currentThread();
+		System.out.println(mainThread);
 		assumeTrue(!mainThread.isInterrupted());
 
 		CloverURI uri = relativeURI("InterruptDelete");

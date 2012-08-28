@@ -111,13 +111,13 @@ public class XMLElementMappingDefinition extends XMLMappingDefinition {
 	private String templateNestedDepthSource;
 	
 	/**
-	 * Flag indicating, whether the mapping is nested. 
+	 * Flag indicating, whether the mapping fills parent record. 
 	 * If this attribute is <code>true</code>, the element will supply the output record with data, but will not 
 	 * be a final mapping - the output record will not be send. The data record being filled with data is the 
 	 * record of the nearest parent with output port defined. 
 	 */
-	private boolean nested = false;
-	private String nestedSource;
+	private boolean usingParentRecord = false;
+	private String usingParentRecordSource;
 	
 	/**
 	 * Flag indicating, whether the implicit mapping should be used. 
@@ -159,7 +159,7 @@ public class XMLElementMappingDefinition extends XMLMappingDefinition {
 		mapping.setRecordCountLimit(recordCountLimit);
 		mapping.setOutputFields(outputFields == null ? null : Arrays.copyOf(outputFields, outputFields.length));
 		mapping.setXmlElements(xmlElements == null ? null : Arrays.copyOf(xmlElements, xmlElements.length));
-		mapping.setNested(nested);
+		mapping.setUsingParentRecord(usingParentRecord);
 	}
 
 	@Override
@@ -346,20 +346,20 @@ public class XMLElementMappingDefinition extends XMLMappingDefinition {
 		this.elementNameSource = elementNameSource;
 	}
 
-	public boolean isNested() {
-		return nested;
+	public boolean isUsingParentRecord() {
+		return usingParentRecord;
 	}
 
-	public void setNested(boolean nested) {
-		this.nested = nested;
+	public void setUsingParentRecord(boolean usingParentRecord) {
+		this.usingParentRecord = usingParentRecord;
 	}
 
 	public String getNestedSource() {
-		return nestedSource;
+		return usingParentRecordSource;
 	}
 
-	public void setNestedSource(String nestedSource) {
-		this.nestedSource = nestedSource;
+	public void setNestedSource(String usingParentRecordSource) {
+		this.usingParentRecordSource = usingParentRecordSource;
 	}
 
 	public boolean isImplicit() {

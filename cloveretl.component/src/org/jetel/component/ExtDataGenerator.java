@@ -282,8 +282,7 @@ public class ExtDataGenerator extends DataGenerator {
 					// load class base on its class name
 					if (runtimeContext == null) return;
 
-					generatorClass = (RecordGenerate) RecordTransformFactory.loadClass(this.getClass().getClassLoader(),
-							generatorClassName, runtimeContext.getClassPath());
+					generatorClass = RecordTransformFactory.loadClassInstance(generatorClassName, RecordGenerate.class, this);
 				} else if (generatorSource == null) {
 					// read source code from URL
 					generatorSource = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), generatorURL, charset);
@@ -378,14 +377,7 @@ public class ExtDataGenerator extends DataGenerator {
 	 * @throws ComponentNotReadyException
 	 */
 	private RecordGenerate createGeneratorDynamic(String generatorCode) throws ComponentNotReadyException {
-        Object transObject = DynamicJavaClass.instantiate(generatorCode, this.getClass().getClassLoader(),
-        		getGraph().getRuntimeContext().getClassPath().getCompileClassPath());
-
-        if (transObject instanceof RecordGenerate) {
-			return (RecordGenerate) transObject;
-        }
-
-        throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordGenerate.");
+        return DynamicJavaClass.instantiate(generatorCode, RecordGenerate.class, this);
     }
 
 	/**

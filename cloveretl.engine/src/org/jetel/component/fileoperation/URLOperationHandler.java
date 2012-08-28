@@ -72,7 +72,7 @@ public class URLOperationHandler implements IOperationHandler {
 	
 	public static class URLContent implements Content {
 		
-		private final URI uri;
+		protected final URI uri;
 		
 		private final Proxy proxy;
 		
@@ -106,7 +106,7 @@ public class URLOperationHandler implements IOperationHandler {
 		@Override
 		public ReadableByteChannel read() throws IOException {
 			URL url = uri.toURL();
-			URLConnection connection = (proxy == null) ? url.openConnection() : FileUtils.getAuthorizedConnection(url, proxy, proxyUserInfo);
+			URLConnection connection = (proxy == null) ? FileUtils.getAuthorizedConnection(url) : FileUtils.getAuthorizedConnection(url, proxy, proxyUserInfo);
 //			connection.setConnectTimeout(TIMEOUT);
 //			connection.setReadTimeout(TIMEOUT);
 			connection.setDoInput(true);
@@ -117,7 +117,7 @@ public class URLOperationHandler implements IOperationHandler {
 		@Override
 		public WritableByteChannel write() throws IOException {
 			URL url = uri.toURL();
-			URLConnection connection = (proxy == null) ? url.openConnection() : FileUtils.getAuthorizedConnection(url, proxy, proxyUserInfo);
+			URLConnection connection = (proxy == null) ? FileUtils.getAuthorizedConnection(url) : FileUtils.getAuthorizedConnection(url, proxy, proxyUserInfo);
 //			connection.setConnectTimeout(TIMEOUT);
 //			connection.setReadTimeout(TIMEOUT);
 			connection.setDoOutput(true);
@@ -127,7 +127,7 @@ public class URLOperationHandler implements IOperationHandler {
 
 		@Override
 		public WritableByteChannel append() throws IOException {
-			throw new IOException(FileOperationMessages.getString("URLOperationHandler.append_not_supported")); //$NON-NLS-1$
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.append_not_supported")); //$NON-NLS-1$
 		}
 		
 	}
@@ -180,7 +180,7 @@ public class URLOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params) {
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -195,7 +195,7 @@ public class URLOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) {
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) {
 		throw new UnsupportedOperationException();
 	}
 	

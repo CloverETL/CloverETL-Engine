@@ -341,6 +341,14 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		if (sheets != null){
 			sheets.clear();
 		}
+		if (tmpDir != null) {
+			try {
+				FileUtils.deleteRecursively(tmpDir);
+				tmpDir = null;
+			} catch (IOException e) {
+				logger.warn("Failed to delete temp directory " + tmpDir.getAbsolutePath(), e);
+			}
+		}
 	}
 	
 	/**

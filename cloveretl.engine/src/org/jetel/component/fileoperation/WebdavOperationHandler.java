@@ -62,7 +62,7 @@ public class WebdavOperationHandler implements IOperationHandler {
 
 		@Override
 		public WritableByteChannel append() throws IOException {
-			throw new UnsupportedOperationException("Appending is not supported");
+			throw new UnsupportedOperationException(FileOperationMessages.getString("IOperationHandler.append_not_supported")); //$NON-NLS-1$
 		}
 		
 	}
@@ -90,7 +90,7 @@ public class WebdavOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -110,7 +110,7 @@ public class WebdavOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params) throws IOException {
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 

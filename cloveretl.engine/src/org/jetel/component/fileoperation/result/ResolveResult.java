@@ -46,11 +46,13 @@ public class ResolveResult extends AbstractResult implements Iterable<SingleClov
 		addSuccess();
 		result.addAll(resolved);
 		parts.add(resolved);
+		uris.add(uri);
 	}
 	
 	public void addError(SingleCloverURI uri, String error) {
 		addError(error);
 		parts.add(null);
+		uris.add(uri);
 	}
 	
 	public ResolveResult setException(Exception exception) {

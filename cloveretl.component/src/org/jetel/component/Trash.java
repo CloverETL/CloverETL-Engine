@@ -29,6 +29,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -142,11 +143,15 @@ public class Trash extends Node {
 		this.mode = Mode.PERFORMANCE;
 	}
 	
+	protected boolean checkPortNumbers(ConfigurationStatus status) {
+		return checkInputPorts(status, 1, Integer.MAX_VALUE, false) && checkOutputPorts(status, 0, 1);
+	}
+	
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-		if (!checkInputPorts(status, 1, Integer.MAX_VALUE, false) || !checkOutputPorts(status, 0, 1)) {
+		if (!checkPortNumbers(status)) {
 			return status;
 		}
 
@@ -190,7 +195,7 @@ public class Trash extends Node {
 			FileUtils.makeDirs(graph != null ? graph.getRuntimeContext().getContextURL() : null, new File(FileURLParser.getMostInnerAddress(debugFilename)).getParent());
 		}
 		
-		if (debugPrint && inPorts.size() <= 1) {
+		if (debugPrint && inPorts.size() == 1) {
 			if (debugFilename != null) {
 				formatter = new TextTableFormatter(charSet);
 				try {
@@ -347,37 +352,47 @@ public class Trash extends Node {
 		try {
 			trash = new Trash(xattribs.getString(XML_ID_ATTRIBUTE));
 
-			if (xattribs.exists(XML_DEBUGPRINT_ATTRIBUTE)) {
-				trash.setDebugPrint(xattribs.getBoolean(XML_DEBUGPRINT_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_DEBUGFILENAME_ATTRIBUTE)) {
-				trash.setDebugFile(xattribs.getStringEx(XML_DEBUGFILENAME_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_DEBUGAPPEND_ATTRIBUTE)) {
-				trash.setDebugAppend(xattribs.getBoolean(XML_DEBUGAPPEND_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				trash.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
-				trash.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PRINT_TRASH_ID_ATTRIBUTE)) {
-				trash.setPrintTrashID(xattribs.getBoolean(XML_PRINT_TRASH_ID_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_MODE)) {
-				trash.setMode(xattribs.getString(XML_MODE));
-			} else {
-				trash.setMode(PERFORMANCE);
-			}
-
-			trash.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE, -1));
+			trash.loadAttributesFromXML(xattribs);
 
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
 		return trash;
 	}
+
+    protected void loadAttributesFromXML(ComponentXMLAttributes componentAttributes) throws XMLConfigurationException {
+        try {
+			if (componentAttributes.exists(XML_DEBUGPRINT_ATTRIBUTE)) {
+				setDebugPrint(componentAttributes.getBoolean(XML_DEBUGPRINT_ATTRIBUTE));
+			}
+			if (componentAttributes.exists(XML_DEBUGFILENAME_ATTRIBUTE)) {
+				setDebugFile(componentAttributes.getStringEx(XML_DEBUGFILENAME_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+			}
+			if (componentAttributes.exists(XML_DEBUGAPPEND_ATTRIBUTE)) {
+				setDebugAppend(componentAttributes.getBoolean(XML_DEBUGAPPEND_ATTRIBUTE));
+			}
+			if (componentAttributes.exists(XML_CHARSET_ATTRIBUTE)) {
+				setCharset(componentAttributes.getString(XML_CHARSET_ATTRIBUTE));
+			}
+			if (componentAttributes.exists(XML_MK_DIRS_ATTRIBUTE)) {
+				setMkDirs(componentAttributes.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+			}
+			if (componentAttributes.exists(XML_PRINT_TRASH_ID_ATTRIBUTE)) {
+				setPrintTrashID(componentAttributes.getBoolean(XML_PRINT_TRASH_ID_ATTRIBUTE));
+			}
+			if (componentAttributes.exists(XML_MODE)) {
+				setMode(componentAttributes.getString(XML_MODE));
+			} else {
+				setMode(PERFORMANCE);
+			}
+
+			setCompressLevel(componentAttributes.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE, -1));
+        } catch (AttributeNotFoundException exception) {
+            throw new XMLConfigurationException("Missing a required attribute!", exception);
+        } catch (Exception exception) {
+            throw new XMLConfigurationException("Error creating the component!", exception);
+        }
+    }
 
 	@Override
 	public String getType() {

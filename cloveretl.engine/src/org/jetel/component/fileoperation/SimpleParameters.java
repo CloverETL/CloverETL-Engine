@@ -18,6 +18,7 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -95,6 +96,7 @@ public class SimpleParameters implements Parameters, Cloneable {
 
 	public static class MoveParameters extends SimpleParameters {
 		public static final String OVERWRITE = "overwrite"; //$NON-NLS-1$
+		public static final String MAKE_PARENT_DIRS = "makeParentDirs"; //$NON-NLS-1$
 		
 		public MoveParameters() {
 			set(OVERWRITE, OverwriteMode.ALWAYS);
@@ -128,6 +130,14 @@ public class SimpleParameters implements Parameters, Cloneable {
 		public MoveParameters setNoOverwrite() {
 			return setOverwriteMode(OverwriteMode.NEVER);
 		}
+
+		public MoveParameters setMakeParents(Boolean directory) {
+			return (MoveParameters) set(MAKE_PARENT_DIRS, directory);
+		}
+		
+		public Boolean isMakeParents() {
+			return (Boolean) get(MAKE_PARENT_DIRS);
+		}
 	}
 	
 	public static enum OverwriteMode {
@@ -142,13 +152,14 @@ public class SimpleParameters implements Parameters, Cloneable {
 				}
 			}
 			
-			throw new IllegalArgumentException(string);
+			throw new IllegalArgumentException(MessageFormat.format(FileOperationMessages.getString("SimpleParameters.unknown_overwrite_mode"), string)); //$NON-NLS-1$
 		}
 	}
 
 	public static class CopyParameters extends SimpleParameters {
 		public static final String RECURSIVE = "recursive"; //$NON-NLS-1$
 		public static final String OVERWRITE = "overwrite"; //$NON-NLS-1$
+		public static final String MAKE_PARENT_DIRS = "makeParentDirs"; //$NON-NLS-1$
 		
 		public CopyParameters() {
 			set(RECURSIVE, false);
@@ -197,6 +208,13 @@ public class SimpleParameters implements Parameters, Cloneable {
 			return setOverwriteMode(OverwriteMode.NEVER);
 		}
 		
+		public CopyParameters setMakeParents(Boolean directory) {
+			return (CopyParameters) set(MAKE_PARENT_DIRS, directory);
+		}
+		
+		public Boolean isMakeParents() {
+			return (Boolean) get(MAKE_PARENT_DIRS);
+		}
 	}
 
 	public static class CreateParameters extends SimpleParameters {

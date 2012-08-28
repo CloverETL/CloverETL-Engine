@@ -1159,9 +1159,9 @@ public class StringLib extends TLFunctionLibrary {
 			File file = FileUtils.getJavaFile(contextUrl, url);
 			if (file != null) {
 				try {
-					return file.getCanonicalPath();
+					return file.getCanonicalPath().replace('\\', '/');
 				} catch (IOException e) {
-					return file.getAbsolutePath();
+					return file.getAbsolutePath().replace('\\', '/');
 				}
 			}
 		} catch (JetelRuntimeException ex) {}
@@ -1259,12 +1259,12 @@ public class StringLib extends TLFunctionLibrary {
 	
 	// RESOLVE PARAMS
 	
-	@TLFunctionAnnotation("Resolves parameters at given string.")
+	@TLFunctionAnnotation("Resolves parameters in a given string.")
 	public static final String resolveParams(TLFunctionCallContext context, String value) {
-		return resolveParams(context, value, false, false);
+		return resolveParams(context, value, false, true);
 	}
 	
-	@TLFunctionAnnotation("Resolves parameters at given string.")
+	@TLFunctionAnnotation("Resolves parameters in a given string.")
 	public static final String resolveParams(TLFunctionCallContext context, String value, boolean resolveSpecialChars, boolean resolveCTL) {
 		RefResFlag refResFlag = null;
 		if (resolveSpecialChars) {

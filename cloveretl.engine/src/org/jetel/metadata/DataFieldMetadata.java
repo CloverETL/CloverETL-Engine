@@ -178,6 +178,18 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * Constructor for a delimited type of field with specified container type.
+	 * @param name
+	 * @param fieldType
+	 * @param delimiter
+	 * @param containerType 
+	 */
+	public DataFieldMetadata(String name, DataFieldType fieldType, String delimiter, DataFieldContainerType containerType) {
+		this(name, fieldType, delimiter);
+		setContainerType(containerType);
+	}
+
+	/**
 	 * Constructor for a default (String) delimited type of field.
 	 * 
 	 * @param name the name of the field

@@ -47,7 +47,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -352,10 +351,9 @@ public class LookupJoin extends Node {
     				DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
     				
     				// create the transformation
-    				CloverClassPath classPath = getGraph().getWatchDog().getGraphRuntimeContext().getClassPath();
     				transformation = RecordTransformFactory.createTransform(
     						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-    						outMetadata, this.getClass().getClassLoader(), classPath);
+    						outMetadata);
     				// init transformation
     		        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
     		            throw new ComponentNotReadyException("Error when initializing tranformation function.");
@@ -504,10 +502,9 @@ public class LookupJoin extends Node {
     				try {
     					DataRecordMetadata inMetadata[] = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
     					DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
-    					CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 	    				transformation = RecordTransformFactory.createTransform(
 	    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-	    						outMetadata, this.getClass().getClassLoader(), classPath);
+	    						outMetadata);
 					} catch (ComponentNotReadyException e) {
 						// find which component attribute was used
 						String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
@@ -544,10 +541,9 @@ public class LookupJoin extends Node {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
 			if (transformation == null && !runtimeMetadata(lookupTable)) {
-				CloverClassPath classPath = getGraph().getRuntimeContext().getClassPath();
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-						outMetadata, this.getClass().getClassLoader(), classPath);
+						outMetadata);
 			}
 			// init transformation
 	        if (transformation != null && !transformation.init(transformationParameters, inMetadata, outMetadata)) {

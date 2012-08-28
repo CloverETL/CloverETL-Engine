@@ -18,7 +18,14 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.regex.Pattern;
+
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -34,18 +41,52 @@ public class URIUtils {
 	
 	public static final String PARENT_DIR_NAME = ".."; //$NON-NLS-1$
 	
+	public static final String CHARSET = "US-ASCII"; //$NON-NLS-1$
 	
+	private static final Pattern PLUS_PATTERN = Pattern.compile("\\+"); //$NON-NLS-1$
+	
+	private static final String ENCODED_SPACE = "%20"; //$NON-NLS-1$
 
-	public static URI getChildURI(URI parentDir, String name) {
+	public static URI getChildURI(URI parentDir, URI name) {
 		String uriString = parentDir.toString();
 		if (!uriString.endsWith(PATH_SEPARATOR)) {
 			parentDir = URI.create(uriString + PATH_SEPARATOR);
 		}
 		return parentDir.resolve(name);
 	}
+
+	public static URI getChildURI(URI parentDir, String name) {
+		StringBuilder sb = new StringBuilder(name);
+		int end = name.endsWith(PATH_SEPARATOR) ? name.length() - 1 : name.length();
+		// prevent trailing slash from being encoded
+		// there mustn't be any other slashes 
+		sb.replace(0, end, urlEncode(sb.substring(0, end)));
+		String uriString = parentDir.toString();
+		if (!uriString.endsWith(PATH_SEPARATOR)) {
+			parentDir = URI.create(uriString + PATH_SEPARATOR);
+		}
+		return parentDir.resolve(sb.toString());
+	}
 	
 	public static URI getParentURI(URI uri) {
+		String path = uri.getPath();
+		if (StringUtils.isEmpty(path) || path.equals(PATH_SEPARATOR)) {
+			return null;
+		}
 		return uri.toString().endsWith(PATH_SEPARATOR) ? uri.resolve(PARENT_DIR_NAME) : uri.resolve(CURRENT_DIR_NAME);
+	}
+	
+	public static URI trimToLastSlash(URI uri) {
+		String path = uri.getPath();
+		if ((path == null) || path.indexOf(PATH_SEPARATOR) < 0) {
+			return null;
+		}
+		path = path.substring(0, path.lastIndexOf(PATH_SEPARATOR) + 1);
+		try {
+			return new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), path, uri.getQuery(), uri.getFragment());
+		} catch (URISyntaxException e) {
+			return null;
+		}
 	}
 	
 	public static String getFileName(URI uri) {
@@ -53,4 +94,19 @@ public class URIUtils {
 		return uriString.substring(uriString.lastIndexOf('/') + 1);
 	}
 
+	public static String urlEncode(String str) {
+		try {
+			return PLUS_PATTERN.matcher(URLEncoder.encode(str, CHARSET)).replaceAll(ENCODED_SPACE);
+		} catch (UnsupportedEncodingException e) {
+			return str;
+		}
+	}
+
+	public static String urlDecode(String str) {
+		try {
+			return URLDecoder.decode(str, CHARSET);
+		} catch (UnsupportedEncodingException e) {
+			return str;
+		}
+	}
 }

@@ -98,17 +98,21 @@ public class LocalOperationHandler implements IOperationHandler {
 		if (source.equals(target)) {
 			throw new SameFileException(source, target);
 		}
+		boolean makeParents = Boolean.TRUE.equals(params.isMakeParents());
 		if (source.isDirectory()) {
 			if (!params.isRecursive()) {
-				return false;
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_copy_directory"), source)); //$NON-NLS-1$
 			}
 			if (target.exists() && !target.isDirectory()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source, target)); //$NON-NLS-1$
 			}
-			if (!target.exists() && !target.mkdir()) {
-				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
-			}
 			boolean success = true;
+			if (!target.exists()) {
+				success = (makeParents ? target.mkdirs() : target.mkdir());
+				if (!success) {
+					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
+				}
+			}
 			for (File child: source.listFiles()) {
 				success &= copyInternal(child, new File(target, child.getName()), params);
 			}
@@ -122,6 +126,9 @@ public class LocalOperationHandler implements IOperationHandler {
 					return true;
 				}
 			} else {
+				if (makeParents && (target.getParentFile() != null)) {
+					target.getParentFile().mkdirs();
+				}
 				if (!target.createNewFile()) {
 					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
 				}
@@ -130,27 +137,63 @@ public class LocalOperationHandler implements IOperationHandler {
 		}
 	}
 
-	private SingleCloverURI copy(File source, File target, CopyParameters params) throws IOException {
+	private SingleCloverURI copy(URI sourceUri, URI targetUri, CopyParameters params) throws IOException {
+		File source = new File(sourceUri);
+		try {
+			source = source.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (!source.exists()) {
 			throw new FileNotFoundException(source.toString());
 		}
+		File target = new File(targetUri);
+		try {
+			target = target.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (target.isDirectory()) {
 			target = new File(target, source.getName());
+		} else if (targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			if (Boolean.TRUE.equals(params.isMakeParents())) {
+				target = new File(target, source.getName());
+			} else if (!source.isDirectory()) {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+			}
 		}
 		return copyInternal(source, target, params) ? CloverURI.createSingleURI(target.toURI()) : null;
 	}
 
 	@Override
 	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params) throws IOException {
-		return copy(new File(source.toURI()), new File(target.toURI()), params);
+		return copy(source.toURI(), target.toURI(), params);
 	}
 	
-	private SingleCloverURI move(File source, File target, MoveParameters params) throws IOException {
+	private SingleCloverURI move(URI sourceUri, URI targetUri, MoveParameters params) throws IOException {
+		File source = new File(sourceUri);
+		try {
+			source = source.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (!source.exists()) {
 			throw new FileNotFoundException(source.toString());
 		}
+		File target = new File(targetUri);
+		try {
+			target = target.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (target.isDirectory()) {
 			target = new File(target, source.getName());
+		} else if (targetUri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			if (Boolean.TRUE.equals(params.isMakeParents())) {
+				target = new File(target, source.getName());
+			} else if (!source.isDirectory()) {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
+			}
 		}
 		return moveInternal(source, target, params) ? SingleCloverURI.createSingleURI(target.toURI()) : null;
 	}
@@ -174,6 +217,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		if (source.equals(target)) {
 			throw new SameFileException(source, target);
 		}
+		boolean makeParents = Boolean.TRUE.equals(params.isMakeParents());
 		if (source.isDirectory()) {
 			if (target.exists()) {
 				if (target.isDirectory()) {
@@ -185,14 +229,16 @@ public class LocalOperationHandler implements IOperationHandler {
 				} else {
 					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_overwrite_not_a_directory"), source, target)); //$NON-NLS-1$
 				}
+			} else if (makeParents && (target.getParentFile() != null)) {
+				target.getParentFile().mkdirs();
 			}
 			if (source.renameTo(target)) {
 				return true;
 			}
+			boolean success = true;
 			if (!target.mkdir()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.create_failed"), target)); //$NON-NLS-1$
 			}
-			boolean success = true;
 			for (File child: source.listFiles()) {
 				File childTarget = new File(target, child.getName());
 				success &= moveInternal(child, childTarget, params);
@@ -207,6 +253,8 @@ public class LocalOperationHandler implements IOperationHandler {
 					return true;
 				}
 				target.delete(); // necessary for renameTo()
+			} else if (makeParents && target.getParentFile() != null) {
+				target.getParentFile().mkdirs();
 			}
 			boolean renamed = source.renameTo(target);
 			return renamed || (FileUtils.copyFile(source, target) && source.delete());
@@ -215,7 +263,7 @@ public class LocalOperationHandler implements IOperationHandler {
 
 	@Override
 	public SingleCloverURI move(SingleCloverURI source, SingleCloverURI target, MoveParameters params) throws IOException {
-		return move(new File(source.toURI()), new File(target.toURI()), params);
+		return move(source.toURI(), target.toURI(), params);
 	}
 	
 	private static class FileContent implements Content {
@@ -223,6 +271,11 @@ public class LocalOperationHandler implements IOperationHandler {
 		private final File file;
 		
 		public FileContent(File file) {
+			try {
+				file = file.getCanonicalFile();
+			} catch (IOException ex) {
+				// ignore
+			}
 			this.file = file;
 		}
 
@@ -233,7 +286,7 @@ public class LocalOperationHandler implements IOperationHandler {
 				fis = new FileInputStream(file);
 				return fis.getChannel();
 			} catch (Exception ex) { // close the input stream on exception
-				FileUtils.close(fis);
+				FileUtils.closeQuietly(fis);
 				if (ex instanceof IOException) {
 					throw (IOException) ex;
 				} else {
@@ -251,7 +304,7 @@ public class LocalOperationHandler implements IOperationHandler {
 				fos = new FileOutputStream(file, append);
 				return fos.getChannel();
 			} catch (Exception ex) { // close the output stream on exception
-				FileUtils.close(fos);
+				FileUtils.closeQuietly(fos);
 				if (ex instanceof IOException) {
 					throw (IOException) ex;
 				} else {
@@ -290,23 +343,33 @@ public class LocalOperationHandler implements IOperationHandler {
 			throw new FileNotFoundException(file.toString());
 		}
 		if (file.isDirectory()) {
-			File[] children = file.listFiles();
 			if (params.isRecursive()) {
-				for (File child: children) {
+				for (File child: file.listFiles()) {
 					delete(child, params);
 				}
 			} else {
-				if ((children != null) && (children.length > 0)) {
-					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_empty"), file)); //$NON-NLS-1$
-				}
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), file)); //$NON-NLS-1$
 			}
 		}
 		return file.delete();
 	}
 
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
-		return delete(new File(target.toURI()), params);
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
+		URI uri = target.toURI();
+		File file = new File(uri);
+		try {
+			file = file.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
+		if (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !file.isDirectory()) {
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), file)); //$NON-NLS-1$
+		}
+		if (delete(file, params)) {
+			return CloverURI.createSingleURI(file.toURI());
+		}
+		return null;
 	}
 	
 	private List<String> getParts(String uri) {
@@ -337,6 +400,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		if (!base.isDirectory()) {
 			throw new IllegalArgumentException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), base)); //$NON-NLS-1$
 		}
+		part = URIUtils.urlDecode(part);
 		if (hasWildcards(part)) {
 			File[] children = base.listFiles(new WildcardFileFilter(part, directory));
 			return children != null ? Arrays.asList(children) : new ArrayList<File>(0); 
@@ -417,6 +481,11 @@ public class LocalOperationHandler implements IOperationHandler {
 	public List<Info> list(SingleCloverURI parent, ListParameters params) throws IOException {
 		URI uri = parent.toURI();
 		File file = new File(uri);
+		try {
+			file = file.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
 		if (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !file.isDirectory()) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), file)); //$NON-NLS-1$
 		}
@@ -446,6 +515,8 @@ public class LocalOperationHandler implements IOperationHandler {
 		Date lastModified = params.getLastModified();
 		if (lastModified != null) {
 			success &= file.setLastModified(lastModified.getTime());
+		} else {
+			file.setLastModified(System.currentTimeMillis());
 		}
 		if ((isDirectory != null) && (!isDirectory.equals(file.isDirectory()))) {
 			throw new IOException(MessageFormat.format(isDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), file)); //$NON-NLS-1$ //$NON-NLS-2$
@@ -454,8 +525,17 @@ public class LocalOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params) throws IOException {
-		return create(new File(target.toURI()), params);
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
+		File file = new File(target.toURI());
+		try {
+			file = file.getCanonicalFile();
+		} catch (IOException ex) {
+			// ignore
+		}
+		if (create(file, params)) {
+			return CloverURI.createSingleURI(file.toURI());
+		}
+		return null;
 	}
 	
 	private Info info(File file) {

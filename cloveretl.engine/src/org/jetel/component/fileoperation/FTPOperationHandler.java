@@ -23,11 +23,15 @@ import static java.text.MessageFormat.format;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -78,22 +82,24 @@ public class FTPOperationHandler implements IOperationHandler {
 		return false;
 	}
 	
-	private class FTPInfo implements Info {
+	private static class FTPInfo implements Info {
 		
 		private final FTPFile file;
 		private final URI uri;
 		private final URI parent;
 		
-		public FTPInfo(FTPFile file, URI parent) throws UnsupportedEncodingException {
+		public FTPInfo(FTPFile file, URI parent, URI self) throws UnsupportedEncodingException {
 			this.file = file;
 			this.parent = parent;
 			String name = file.getName();
-			String encodedName = URLEncoder.encode(name, "US-ASCII"); //$NON-NLS-1$
-			if (file.isDirectory() && !name.endsWith("/")) { //$NON-NLS-1$
-				encodedName = encodedName + "/"; //$NON-NLS-1$
+			if (file.isDirectory() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
+				name = name + URIUtils.PATH_SEPARATOR;
 			}
-			URI tmp = URIUtils.getChildURI(parent, encodedName);
-			this.uri = tmp;
+			if (self != null) {
+				this.uri = self;
+			} else {
+				this.uri = URIUtils.getChildURI(parent, name);
+			}
 		}
 
 		@Override
@@ -234,12 +240,12 @@ public class FTPOperationHandler implements IOperationHandler {
 		}
 	}
 	
-	private Info info(FTPFile file, URI parent) {
+	private Info info(FTPFile file, URI parent, URI self) {
 		if (file == null) {
 			return null;
 		}
 		try {
-			return new FTPInfo(file, parent);
+			return new FTPInfo(file, parent, self);
 		} catch (IOException ex) {
 			return null;
 		}
@@ -247,29 +253,28 @@ public class FTPOperationHandler implements IOperationHandler {
 	
 	private Info info(URI targetUri, FTPClient ftp) {
 		try {
-//			System.err.println(connection.cd(targetUri.getPath()) ? "DIR" : "FILE");
-			URI parentUri = URIUtils.getParentURI(targetUri);
-			String fileName = parentUri.relativize(targetUri).toString();
-			if (fileName.endsWith(URIUtils.PATH_SEPARATOR)) {
-				fileName = fileName.substring(0, fileName.length()-1);
-			}
-			FTPFile[] files = ftp.listFiles(parentUri.getPath());
-			if (files != null) {
+			FTPFile[] files = ftp.listFiles(targetUri.getPath());
+			if ((files != null) && (files.length != 0) && (files[0] != null)) {
 				for (FTPFile file: files) {
-					if ((file != null) && !file.getName().equals(URIUtils.CURRENT_DIR_NAME) && !file.getName().equals(URIUtils.PARENT_DIR_NAME)) {
-						Info info = info(file, parentUri);
-						if (info.getName().equals(fileName)) {
-							return info;
+					if ((file != null) && file.isDirectory() && file.getName().equals(URIUtils.CURRENT_DIR_NAME)) {
+						URI parentUri = URIUtils.getParentURI(targetUri);
+						if (parentUri != null) {
+							String fileName = parentUri.relativize(targetUri).toString();
+							fileName = URIUtils.urlDecode(fileName);
+							file.setName(fileName);
 						}
+						return info(file, null, targetUri);
 					}
+					
 				}
+				return info(files[0], null, targetUri);
 			}
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
 		return null;
 	}
-	
+
 	private void disconnect(FTPClient ftp) {
 		if ((ftp != null) && ftp.isConnected()) {
 			try {
@@ -318,6 +323,11 @@ public class FTPOperationHandler implements IOperationHandler {
 			} else {
 				success = createFile(ftp, path);
 			}
+		} else {
+			Boolean directory = params.isDirectory();
+			if ((directory != null) && !directory.equals(fileInfo.isDirectory())) {
+				throw new IOException(MessageFormat.format(createDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), fileInfo.getURI())); //$NON-NLS-1$ //$NON-NLS-2$
+			}
 		}
 		return success;
 	}
@@ -325,25 +335,30 @@ public class FTPOperationHandler implements IOperationHandler {
 	
 
 	@Override
-	public boolean create(SingleCloverURI target, CreateParameters params) throws IOException {
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
 		if (params.getLastModified() != null) {
 			throw new UnsupportedOperationException(FileOperationMessages.getString("FTPOperationHandler.setting_date_not_supported")); //$NON-NLS-1$
 		}
-		URI uri = target.toURI();
+		URI uri = target.toURI().normalize();
 		FTPClient ftp = null;
 		try {
 			ftp = connect(uri);
-			return create(ftp, uri, params);
+			if (create(ftp, uri, params)) {
+				return CloverURI.createSingleURI(uri);
+			}
 		} finally {
 			disconnect(ftp);
 		}
 		
+		return null;
 	}
 
 	@Override
 	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params) {
 		throw new UnsupportedOperationException();
 	}
+	
+	private static final CreateParameters CREATE_PARENT_DIRS = new CreateParameters().setDirectory(true).setMakeParents(true);
 	
 	private URI rename(URI source, URI target, MoveParameters params) throws IOException {
 		FTPClient ftp = null;
@@ -355,13 +370,15 @@ public class FTPOperationHandler implements IOperationHandler {
 			}
 			Info targetInfo = info(target, ftp);
 			boolean targetChanged = false;
-			if (targetInfo != null && targetInfo.isDirectory()) {
+			if (((targetInfo != null) && targetInfo.isDirectory()) ||
+					(Boolean.TRUE.equals(params.isMakeParents()) && target.toString().endsWith(URIUtils.PATH_SEPARATOR))) {
 				target = URIUtils.getChildURI(target, sourceInfo.getName());
 				targetChanged = true; // maybe new targetInfo will not be needed 
 			}
 			if (params.isUpdate() || params.isNoOverwrite()) {
 				if (targetChanged) { // obtain new targetInfo if the target has changed
 					targetInfo = info(target, ftp);
+					targetChanged = false;
 				}
 				if (targetInfo != null) {
 					if (params.isNoOverwrite()) {
@@ -370,6 +387,17 @@ public class FTPOperationHandler implements IOperationHandler {
 					if (params.isUpdate() && (sourceInfo.getLastModified().compareTo(targetInfo.getLastModified()) <= 0)) {
 						return target;
 					}
+				}
+			} 
+			
+			if (Boolean.TRUE.equals(params.isMakeParents())) {
+				if (targetChanged) { // obtain new targetInfo if the target has changed
+					targetInfo = info(target, ftp);
+					targetChanged = false;
+				}
+				if (targetInfo == null) {
+					URI parentUri = URIUtils.getParentURI(target);
+					create(ftp, parentUri, CREATE_PARENT_DIRS);
 				}
 			}
 			if (source.normalize().equals(target.normalize())) {
@@ -422,8 +450,10 @@ public class FTPOperationHandler implements IOperationHandler {
 				for (Info child: children) {
 					delete(ftp, child, params);
 				}
+				return ftp.removeDirectory(uri.getPath());
+			} else {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), uri)); //$NON-NLS-1$
 			}
-			return ftp.removeDirectory(uri.getPath());
 		} else {
 			return ftp.deleteFile(uri.getPath());
 		}
@@ -434,19 +464,25 @@ public class FTPOperationHandler implements IOperationHandler {
 		if (info == null) {
 			throw new FileNotFoundException(uri.toString());
 		}
+		if (!info.isDirectory() && uri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), uri)); //$NON-NLS-1$
+		}
 		return delete(ftp, info, params);
 	}
 	
 	@Override
-	public boolean delete(SingleCloverURI target, DeleteParameters params) throws IOException {
-		URI uri = target.toURI();
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
+		URI uri = target.toURI().normalize();
 		FTPClient ftp = null;
 		try {
 			ftp = connect(uri);
-			return delete(ftp, uri, params);
+			if (delete(ftp, uri, params)) {
+				return CloverURI.createSingleURI(uri);
+			}
 		} finally {
 			disconnect(ftp);
 		}
+		return null;
 	}
 
 	@Override
@@ -472,7 +508,7 @@ public class FTPOperationHandler implements IOperationHandler {
 			List<Info> result = new ArrayList<Info>(files.length);
 			for (FTPFile file: files) {
 				if ((file != null) && !file.getName().equals(URIUtils.CURRENT_DIR_NAME) && !file.getName().equals(URIUtils.PARENT_DIR_NAME)) {
-					Info child = info(file, parentUri);
+					Info child = info(file, parentUri, null);
 					result.add(child);
 					if (params.isRecursive() && file.isDirectory()) {
 						result.addAll(list(child.getURI(), ftp, params));
@@ -486,7 +522,7 @@ public class FTPOperationHandler implements IOperationHandler {
 	@Override
 	public List<Info> list(SingleCloverURI parent, ListParameters params) throws IOException {
 		URI parentUri = parent.toURI();
-		FTPClient ftp = connect(parentUri);
+		FTPClient ftp = null;
 		try {
 			ftp = connect(parentUri);
 			return list(parentUri, ftp, params);
@@ -500,9 +536,46 @@ public class FTPOperationHandler implements IOperationHandler {
 		return new URLContent(source.toURI());
 	}
 
+	private static class FTPOutputStream extends FilterOutputStream {
+
+		private final FTPClient ftp;
+		
+		public FTPOutputStream(OutputStream out, FTPClient ftp) {
+			super(out);
+			this.ftp = ftp;
+		}
+
+		@Override
+		public void close() throws IOException {
+			super.close();
+			if (ftp.isConnected()) {
+				ftp.disconnect();
+			}
+		}
+		
+	}
+	
 	@Override
 	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) {
-		return new URLContent(target.toURI());
+		return new URLContent(target.toURI()) {
+
+			@Override
+			public WritableByteChannel append() throws IOException {
+				FTPClient ftp = null;
+				try {
+					ftp = connect(uri);
+					return Channels.newChannel(new FTPOutputStream(ftp.appendFileStream(uri.getPath()), ftp));
+				} catch (Throwable t) {
+					disconnect(ftp);
+					if (t instanceof IOException) {
+						throw (IOException) t;
+					} else {
+						throw new IOException(t);
+					}
+				}
+			}
+			
+		};
 	}
 
 	@Override

@@ -183,7 +183,7 @@ public class WebdavOutputStream extends OutputStream {
 									sardine.createDirectory(path);
 									logger.info("webdav directory:" + path + " created.");
 								} catch (SardineException e) {
-									logger.warn("Failed to create firectory " + path);
+									logger.warn("Failed to create directory " + path);
 								}
 							}
 						}
@@ -196,7 +196,7 @@ public class WebdavOutputStream extends OutputStream {
 			} catch (Throwable e) {
 				error = e;
 				// close the input stream, so that IOException is thrown when writing to the corresponding OutputStream
-				FileUtils.close(is); 
+				FileUtils.closeQuietly(is); 
 			}
 		}
 	}

@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.Node;
 
 /**
  * Utility class for dynamic compiling of Java source code. Offers instantiating of compiled code.
@@ -45,6 +47,58 @@ public final class DynamicJavaClass {
 	private static final Pattern CLASS_PATTERN = Pattern.compile("class\\s+(\\w+)");
 
 	/**
+	 * Instantiates class written in given source code.
+	 * @param sourceCode
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	public static Object instantiate(String sourceCode)
+		throws ComponentNotReadyException {
+		
+		Node node = ContextProvider.getNode();
+		if (node != null) {
+			return instantiate(sourceCode, node);
+		}
+		return instantiate(sourceCode, Thread.currentThread().getContextClassLoader());
+	}
+	
+	/**
+	 * Instantiates class written in given source code.
+	 * The supplied node is the context (class loader, class path).
+	 *  
+	 * @param sourceCode
+	 * @param node
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	public static Object instantiate(String sourceCode, Node node)
+		throws ComponentNotReadyException {
+		
+		return instantiate(sourceCode, node.getClass().getClassLoader(),
+				node.getGraph().getRuntimeContext().getCompileClassPath());
+	}
+	
+	/**
+	 * Instantiates class written in given source code and attempts cast it to given type.
+	 * @param <T>
+	 * @param sourceCode
+	 * @param expectedType
+	 * @param node
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	public static <T> T instantiate(String sourceCode, Class<T> expectedType, Node node)
+		throws ComponentNotReadyException {
+		
+		Object instance = instantiate(sourceCode, node);
+		try {
+			return expectedType.cast(instance);
+		} catch (ClassCastException e) {
+			throw new ComponentNotReadyException(node, "Provided class does not extend/implement " + expectedType.getName());
+		}
+	}
+	
+	/**
 	 * Instantiates a class present within the given Java source code.
 	 *
 	 * @param sourceCode the Java source code with a class to be instantiated
@@ -55,7 +109,7 @@ public final class DynamicJavaClass {
 	 *
 	 * @throws ComponentNotReadyException if instantiation of the class failed for some reason
 	 */
-	public static Object instantiate(String sourceCode, ClassLoader classLoader, URL... compileClassPath)
+	public static Object instantiate(String sourceCode, ClassLoader classLoader, URL ... compileClassPath)
 			throws ComponentNotReadyException {
 		DynamicCompiler compiler = new DynamicCompiler(classLoader, compileClassPath);
 		String className = extractClassName(sourceCode);

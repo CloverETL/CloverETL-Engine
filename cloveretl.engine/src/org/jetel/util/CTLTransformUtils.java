@@ -28,6 +28,8 @@ import org.jetel.component.RecordTransformTL;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.NavigatingVisitor;
 import org.jetel.ctl.TLCompiler;
+import org.jetel.ctl.TransformLangParserTreeConstants;
+import org.jetel.ctl.ASTnode.CLVFAssignment;
 import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.JetelRuntimeException;
@@ -37,6 +39,14 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * The class has the only public method findUsedInputFields that is used to find all fields
+ * used on a right side of assignment in a given CTL transformation.
+ * 
+ * Limitations:
+ *   - Only a list of fields is returned - if a field is shared by two metadata it is not clear from which metadata the field comes from 
+ *   - this utility works only for really very simple transformations,
+ *   	actually it works only for transformation created by drag and drop events in transform dialog
+ *   
  * @author Pavel Simecek (pavel.simecek@javlin.eu)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -45,7 +55,8 @@ import org.jetel.util.string.StringUtils;
 public class CTLTransformUtils {
     private static class CtlAssignmentFinder extends NavigatingVisitor {
     	private final org.jetel.ctl.ASTnode.Node ast;
-    	public DataRecordMetadata [] inputMetadata;
+    	public DataRecordMetadata[] inputMetadata;
+    	public DataRecordMetadata[] outputMetadata;
     	public List<DataFieldMetadata> assignedFields = new ArrayList<DataFieldMetadata>();
     	
     	/**
@@ -54,9 +65,10 @@ public class CTLTransformUtils {
     	 * 
     	 * @param functionName	function to validate
     	 */
-    	public CtlAssignmentFinder(org.jetel.ctl.ASTnode.Node ast, DataRecordMetadata [] inputMetadata) {
+    	public CtlAssignmentFinder(org.jetel.ctl.ASTnode.Node ast, DataRecordMetadata [] inputMetadata, DataRecordMetadata[] outputMetadata) {
     		this.ast = ast;
     		this.inputMetadata = inputMetadata;
+    		this.outputMetadata = outputMetadata;
     	}
     	
     	/**
@@ -97,7 +109,11 @@ public class CTLTransformUtils {
 
     	@Override
 		public Object visit(CLVFFieldAccessExpression fieldAccess, Object data) {
-			if (fieldAccess.getRecordId()!=null && fieldAccess.getRecordId()>=0 && fieldAccess.getRecordId()<inputMetadata.length && !StringUtils.isEmpty(fieldAccess.getFieldName())) {
+			if (!fieldAccess.isOutput()
+					&& fieldAccess.getRecordId() != null
+					&& fieldAccess.getRecordId() >= 0
+					&& fieldAccess.getRecordId() < inputMetadata.length
+					&& !StringUtils.isEmpty(fieldAccess.getFieldName())) {
 				DataRecordMetadata inputRecordMetadata = inputMetadata[fieldAccess.getRecordId()] ;
 				if (inputRecordMetadata != null) {
 					DataFieldMetadata assignedFieldMetadata = inputRecordMetadata.getField(fieldAccess.getFieldName());
@@ -109,8 +125,47 @@ public class CTLTransformUtils {
 
 			return super.visit(fieldAccess, data);
 		}
+    	
+    	/**
+    	 * This visitor method detects assignment with following shape:<br>
+    	 * $out.0.* = $in.0.*
+    	 */
+    	@Override
+    	public Object visit(CLVFAssignment assignment, Object data) {
+    		SimpleNode lhs = (SimpleNode) assignment.jjtGetChild(0);
+    		SimpleNode rhs = (SimpleNode) assignment.jjtGetChild(1);
+
+    		if (lhs.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION &&
+    				rhs.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
+    			final CLVFFieldAccessExpression leftNode = (CLVFFieldAccessExpression) lhs;
+    			final CLVFFieldAccessExpression rightNode = (CLVFFieldAccessExpression) rhs;
+    			if (leftNode.isWildcard() && leftNode.isOutput()
+    					&& rightNode.isWildcard() && !rightNode.isOutput()) {
+        			final DataRecordMetadata leftRecordMetadata = outputMetadata[leftNode.getRecordId()];
+        			final DataRecordMetadata rightRecordMetadata = inputMetadata[rightNode.getRecordId()];
+    				for (DataFieldMetadata rightField : rightRecordMetadata) {
+    					if (leftRecordMetadata.getField(rightField.getName()) != null) {
+    						assignedFields.add(rightField);
+    					}
+    				}
+    			}
+
+    		}
+    		
+    		return super.visit(assignment, data);
+    	}
     }
 
+    /**
+     * The method returns all fields used on right sides of assignments in a CTL transformation.
+     * Note: See class description for limitations.
+     * 
+     * @param graph
+     * @param inMeta
+     * @param outMeta
+     * @param code
+     * @return
+     */
     static public List<DataFieldMetadata> findUsedInputFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String code) {
     	TLCompiler compiler = new TLCompiler(graph,inMeta,outMeta);
@@ -125,7 +180,7 @@ public class CTLTransformUtils {
     	}
 
     	
-    	CtlAssignmentFinder ctlAssignmentFinder = new CtlAssignmentFinder(compiler.getStart(), inMeta);
+    	CtlAssignmentFinder ctlAssignmentFinder = new CtlAssignmentFinder(compiler.getStart(), inMeta, outMeta);
     	return ctlAssignmentFinder.visit();
     }
 	

@@ -94,16 +94,14 @@ public abstract class IAuthorityProxy {
 		public long runId;
 		public String clusterNodeId;
 		public String jobUrl;
-		public String version;
 		public Date startTime;
 		public Date endTime;
 		public long duration;
-		public Result status;
+		public Result status = Result.N_A;
 		public String errException;
 		public String errMessage;
-		public String errNode;
-		public String errNodeType;
-		public Exception exception;
+		public String errComponent;
+		public String errComponentType;
 		public Properties graphParameters;
 		public DictionaryValuesContainer dictionaryIn;
 		public DictionaryValuesContainer dictionaryOut;
@@ -125,16 +123,14 @@ public abstract class IAuthorityProxy {
 			result.setProperty("runId", Long.toString(runId));
 			result.setProperty("clusterNodeId", String.valueOf(clusterNodeId));
 			result.setProperty("jobUrl", String.valueOf(jobUrl));
-			result.setProperty("graphVersion", String.valueOf(version));
 			result.setProperty("startTime", String.valueOf(startTime));
 			result.setProperty("endTime", String.valueOf(endTime));
 			result.setProperty("duration", Long.toString(duration));
 			result.setProperty("status", String.valueOf(status.name()));
 			result.setProperty("errException", String.valueOf(errException));
 			result.setProperty("errMessage", String.valueOf(errMessage));
-			result.setProperty("errNode", String.valueOf(errNode));
-			result.setProperty("errNodeType", String.valueOf(errNodeType));
-			result.setProperty("exception", String.valueOf(MiscUtils.stackTraceToString(exception)));
+			result.setProperty("errComponent", String.valueOf(errComponent));
+			result.setProperty("errComponentType", String.valueOf(errComponentType));
 			if (dictionaryIn != null) {
 				result.setProperty("dictionaryIn", PropertiesUtils.formatProperties(dictionaryIn.toProperties()));
 			}
@@ -150,12 +146,20 @@ public abstract class IAuthorityProxy {
 			s.append("Status: ").append(status)
 			.append(", Job URL: ").append("\"").append(jobUrl).append("\"")
 			.append(", Message: ").append(errMessage != null ? "\""+errMessage+"\"" : "none")
-			.append(", Exception: ").append(exception != null ? exception.toString() : "none")
-			.append(", Error Node: ").append(errNode != null ? errNode : "none")
-			.append(", Error Node Type: ").append(errNodeType != null ? errNodeType : "none")
+			.append(", Exception: ").append(errException != null ? errException.toString() : "none")
+			.append(", Error Component: ").append(errComponent != null ? errComponent : "none")
+			.append(", Error Component Type: ").append(errComponentType != null ? errComponentType : "none")
 			.append(", Duration: ").append(duration)
 			.append(", RunId: ").append(runId);
 			return s.toString();
+		}
+
+		/**
+		 * Sets {@link #errMessage} and {@link #errException} based on given {@link Exception}.
+		 */
+		public void setException(Exception e) {
+			errMessage = MiscUtils.exceptionChainToMessage(null, e);
+			errException = MiscUtils.stackTraceToString(e);
 		}
 
 		

@@ -129,4 +129,10 @@ public class TempFileCreationException extends Exception {
 		causes.put(tempSpace, t);
 	}
 
+	/**
+	 * @return the reason
+	 */
+	public Reason getReason() {
+		return reason;
+	}
 }

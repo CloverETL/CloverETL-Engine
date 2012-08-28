@@ -280,10 +280,16 @@ public class MultiFileReader {
 				if (source == null) continue; // if record no record found
 				if (!channelIterator.isGraphDependentSource()) {
 					autoFilling.setFilename(channelIterator.getCurrentFileName());
-					File tmpFile = new File(autoFilling.getFilename());
-					long timestamp = tmpFile.lastModified();
-					autoFilling.setFileSize(tmpFile.length());
-					autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
+					long fileSize = 0;
+					Date fileTimestamp = null;
+					if (FileUtils.isLocalFile(contextURL, autoFilling.getFilename())) {
+						File tmpFile = new File(autoFilling.getFilename());
+						long timestamp = tmpFile.lastModified();
+						fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
+						fileSize = tmpFile.length();
+					}
+					autoFilling.setFileSize(fileSize);
+					autoFilling.setFileTimestamp(fileTimestamp);
 				}
 				iSource++;
 				parser.setDataSource(source);

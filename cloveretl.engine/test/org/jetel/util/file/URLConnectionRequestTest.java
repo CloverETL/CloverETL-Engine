@@ -16,30 +16,19 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component;
+package org.jetel.util.file;
 
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
+import static org.jetel.util.file.URLConnectionRequest.decodeString;
+import static org.jetel.util.file.URLConnectionRequest.encode;
+import junit.framework.TestCase;
 
-/**
- * @author krivanekm (info@cloveretl.com)
- *         (c) Javlin, a.s. (www.cloveretl.com)
- *
- * @created Jun 4, 2012
- */
-public class FileOperationComponentMessages {
-	private static final String BUNDLE_NAME = "org.jetel.component.FileOperationComponentMessages"; //$NON-NLS-1$
+public class URLConnectionRequestTest extends TestCase {
 
-	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
+    private static final String BASIC_AUTH_HEADER_VALUE = "janko.hrasko%40gooddata.com:7897897883f22f8505cc36876be4f54c95ecf5";
 
-	private FileOperationComponentMessages() {
-	}
-
-	public static String getString(String key) {
-		try {
-			return RESOURCE_BUNDLE.getString(key);
-		} catch (MissingResourceException e) {
-			return '!' + key + '!';
-		}
-	}
+    public void testLongBasicAuthHeaderBase64Encoding() {
+        final String base64EncodedAuthHeader = encode(decodeString(BASIC_AUTH_HEADER_VALUE));
+        assertNotNull(base64EncodedAuthHeader); 
+        assertFalse(base64EncodedAuthHeader.contains("\n"));
+    }
 }

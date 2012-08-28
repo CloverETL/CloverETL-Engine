@@ -311,7 +311,7 @@ public abstract class XLSParser extends AbstractParser {
 	}
     
 	/**
-	 * If any of the metadata attribute wasn't set cell order coresponds with field order in metadata
+	 * If any of the metadata attribute wasn't set cell order corresponds with field order in metadata
 	 */
 	private void noMetadataInfo(){
 		for (short i=0;i<fieldNumber.length;i++){
@@ -338,7 +338,7 @@ public abstract class XLSParser extends AbstractParser {
 	}
 	
 	/**
-	 * If clover fields and xls colums are set there is made mapping between coresponding fields and cells
+	 * If clover fields and xls colums are set there is made mapping between corresponding fields and cells
 	 * 
 	 * @param fieldNames
 	 * @throws ComponentNotReadyException
@@ -374,7 +374,7 @@ public abstract class XLSParser extends AbstractParser {
 	protected abstract void mapNames(Map<String, Integer> fieldNames) throws ComponentNotReadyException;
 	
 	/**
-	 * If clover fields and xls colums are set there is made mapping between coresponding fields and cells
+	 * If clover fields and xls colums are set there is made mapping between corresponding fields and cells
 	 * 
 	 * @param fieldNames
 	 * @throws ComponentNotReadyException
@@ -484,10 +484,10 @@ public abstract class XLSParser extends AbstractParser {
 	 * Sets mapping type between xls columns and metadata 
 	 * 
 	 * @param mappingType: <ul>
-	 * <li>NO_METADATA_INFO - cell order coresponds with field order in metadata</li>
+	 * <li>NO_METADATA_INFO - cell order corresponds with field order in metadata</li>
 	 * <li>ONLY_CLOVER_FIELDS  - cells are read in order of clover fields</li>
-	 * <li>CLOVER_FIELDS_AND_XLS_NUMBERS - mapping between coresponding fields and cells</li>
-	 * <li>CLOVER_FIELDS_AND_XLS_NAMES - mapping between coresponding fields and cells</li>
+	 * <li>CLOVER_FIELDS_AND_XLS_NUMBERS - mapping between corresponding fields and cells</li>
+	 * <li>CLOVER_FIELDS_AND_XLS_NAMES - mapping between corresponding fields and cells</li>
 	 * <li>MAP_NAMES - finds fields in metadata with the same names as names in xls sheet</li>
 	 * </ul>
 	 */

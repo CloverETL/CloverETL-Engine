@@ -86,7 +86,7 @@ public class RuntimeMappingModelFactory {
 			mapping.setParent(parent);
 			mapping.setElementName(mappingDefinition.getElementName());
 			mapping.setImplicit(mappingDefinition.isImplicit());
-			mapping.setNested(mappingDefinition.isNested());
+			mapping.setUsingParentRecord(mappingDefinition.isUsingParentRecord());
 			mapping.setOutputPortNumber(mappingDefinition.getOutputPort());
 			mapping.setParentKeyFields(mappingDefinition.getParentKey());
 			mapping.setGeneratedKeyFields(mappingDefinition.getGeneratedKey());
@@ -114,7 +114,7 @@ public class RuntimeMappingModelFactory {
 
 			// expand template
 			if (mappingDefinition.getTemplateReference() != null && mappingDefinition.getTemplateNestedDepth() != -1) {
-				int depth = mappingDefinition.getTemplateNestedDepth() == -1? 1 : -1;
+				int depth = mappingDefinition.getTemplateNestedDepth() == -1? 1 : mappingDefinition.getTemplateNestedDepth();
 				XMLElementRuntimeMappingModel currentMapping = mapping;
 				while (depth > 0) {
 					currentMapping = new XMLElementRuntimeMappingModel(currentMapping, currentMapping);
@@ -187,11 +187,9 @@ public class RuntimeMappingModelFactory {
 		
 		RecordTransform result = null;
 		if (!StringUtils.isEmpty(transformationCode)) {
-			CloverClassPath classPath = context.getGraph().getRuntimeContext().getClassPath();
 			try {
 				result = RecordTransformFactory.createTransform(transformationCode, null, 
-						null, null, context.getParentComponent(), new DataRecordMetadata[]{inPort.getMetadata()}, new DataRecordMetadata[]{outPort.getMetadata()},
-						this.getClass().getClassLoader(), classPath);
+						null, null, context.getParentComponent(), new DataRecordMetadata[]{inPort.getMetadata()}, new DataRecordMetadata[]{outPort.getMetadata()});
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Output mapping transformation is invalid", e); 
 			}

@@ -217,5 +217,14 @@ public class FileUtilsTest extends CloverTestCase {
 			assertEquals("../project/data.txt",  FileUtils.normalizeFilePath("../project/data.txt"));
 	}
 	
+	public void testIsMultiURL() {
+		assertFalse(FileUtils.isMultiURL(null));
+		assertFalse(FileUtils.isMultiURL(""));
+		assertFalse(FileUtils.isMultiURL("abc"));
+		assertTrue(FileUtils.isMultiURL("abc;"));
+		assertTrue(FileUtils.isMultiURL("abc*defg"));
+		assertTrue(FileUtils.isMultiURL("?defg"));
+		assertTrue(FileUtils.isMultiURL(";abc?defg*"));
+	}
 	
 }

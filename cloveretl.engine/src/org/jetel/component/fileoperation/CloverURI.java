@@ -26,9 +26,11 @@ import java.net.URL;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.jetel.data.Defaults;
+
 public abstract class CloverURI {
 	
-	public static final String SEPARATOR = ";"; //$NON-NLS-1$
+	public static final String SEPARATOR = Defaults.DEFAULT_PATH_SEPARATOR_REGEX;
 	
 	public static final String PATH_SEPARATOR = "/"; //$NON-NLS-1$
 	
@@ -131,6 +133,7 @@ public abstract class CloverURI {
 		if (uri.contains(SEPARATOR)) {
 			throw new IllegalArgumentException(FileOperationMessages.getString("CloverURI.not_a_single_URI")); //$NON-NLS-1$
 		}
+		uri = preprocess(uri);
 		return new SingleCloverURI(context, uri);
 	}
 	
