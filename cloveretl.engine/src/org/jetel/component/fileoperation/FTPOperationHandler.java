@@ -349,7 +349,7 @@ public class FTPOperationHandler implements IOperationHandler {
 		boolean success = true;
 		boolean createDirectory = Boolean.TRUE.equals(params.isDirectory());
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
-		Info fileInfo = info(uri);
+		Info fileInfo = info(uri, ftp);
 		if (fileInfo == null) { // does not exist
 			URI parentUri = URIUtils.getParentURI(uri);
 			if (createParents) {
