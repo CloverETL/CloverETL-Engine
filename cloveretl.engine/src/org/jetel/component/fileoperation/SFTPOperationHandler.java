@@ -644,8 +644,11 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public void close() throws IOException {
-			super.close();
-			disconnect(session);
+			try {
+				super.close();
+			} finally {
+				disconnect(session);
+			}
 		}
 	}
 	
@@ -660,8 +663,11 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public void close() throws IOException {
-			super.close();
-			disconnect(session);
+			try {
+				super.close();
+			} finally {
+				disconnect(session);
+			}
 		}
 	}
 
