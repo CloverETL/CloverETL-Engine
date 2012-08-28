@@ -251,9 +251,31 @@ public class FTPOperationHandler implements IOperationHandler {
 		}
 	}
 	
+	private static String quote(String path) {
+		StringBuilder sb = new StringBuilder();
+		int length = path.length();
+		for (int i = 0; i < length; i++) {
+			char c = path.charAt(i);
+			switch (c) {
+			case '*': 
+				sb.append("%2A");
+				break;
+			case '?':
+				sb.append("%3F");
+				break;
+			default: sb.append(c);
+			}
+		}
+		return sb.toString();
+	}
+
+	private String getPath(URI uri) {
+		return quote(uri.getPath());
+	}
+	
 	private Info info(URI targetUri, FTPClient ftp) {
 		try {
-			FTPFile[] files = ftp.listFiles(targetUri.getPath());
+			FTPFile[] files = ftp.listFiles(getPath(targetUri));
 			if ((files != null) && (files.length != 0) && (files[0] != null)) {
 				for (FTPFile file: files) {
 					if ((file != null) && file.isDirectory() && file.getName().equals(URIUtils.CURRENT_DIR_NAME)) {
@@ -317,7 +339,7 @@ public class FTPOperationHandler implements IOperationHandler {
 				URI parentUri = URIUtils.getParentURI(uri);
 				create(ftp, parentUri, params.clone().setDirectory(true));
 			}
-			String path = uri.getPath();
+			String path = getPath(uri);
 			if (createDirectory) {
 				success = ftp.makeDirectory(path);
 			} else {
@@ -367,6 +389,8 @@ public class FTPOperationHandler implements IOperationHandler {
 			Info sourceInfo = info(source, ftp);
 			if (sourceInfo == null) {
 				throw new FileNotFoundException(source.toString());
+			} else if (!sourceInfo.isDirectory() && target.getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), source));
 			}
 			Info targetInfo = info(target, ftp);
 			boolean targetChanged = false;
@@ -403,7 +427,7 @@ public class FTPOperationHandler implements IOperationHandler {
 			if (source.normalize().equals(target.normalize())) {
 				throw new SameFileException(source, target);
 			}
-			return ftp.rename(source.getPath(), target.getPath()) ? target : null;
+			return ftp.rename(getPath(source), getPath(target)) ? target : null;
 		} finally {
 			disconnect(ftp);
 		}
@@ -419,7 +443,9 @@ public class FTPOperationHandler implements IOperationHandler {
 		if (sourceUri.getAuthority().equals(targetUri.getAuthority())) {
 			try {
 				URI result = rename(sourceUri, targetUri, params);
-				return result != null ? CloverURI.createSingleURI(result) : null;
+				if (result != null) {
+					return CloverURI.createSingleURI(result);
+				}
 			} catch (FileNotFoundException fnfe) {
 				throw fnfe;
 			} catch (SameFileException sfe) {
@@ -450,12 +476,12 @@ public class FTPOperationHandler implements IOperationHandler {
 				for (Info child: children) {
 					delete(ftp, child, params);
 				}
-				return ftp.removeDirectory(uri.getPath());
+				return ftp.removeDirectory(getPath(uri));
 			} else {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.cannot_remove_directory"), uri)); //$NON-NLS-1$
 			}
 		} else {
-			return ftp.deleteFile(uri.getPath());
+			return ftp.deleteFile(getPath(uri));
 		}
 	}
 
@@ -504,7 +530,7 @@ public class FTPOperationHandler implements IOperationHandler {
 		if (!rootInfo.isDirectory()) {
 			return Arrays.asList(rootInfo);
 		} else {
-			FTPFile[] files = ftp.listFiles(parentUri.getPath());
+			FTPFile[] files = ftp.listFiles(getPath(parentUri));
 			List<Info> result = new ArrayList<Info>(files.length);
 			for (FTPFile file: files) {
 				if ((file != null) && !file.getName().equals(URIUtils.CURRENT_DIR_NAME) && !file.getName().equals(URIUtils.PARENT_DIR_NAME)) {
@@ -564,7 +590,7 @@ public class FTPOperationHandler implements IOperationHandler {
 				FTPClient ftp = null;
 				try {
 					ftp = connect(uri);
-					return Channels.newChannel(new FTPOutputStream(ftp.appendFileStream(uri.getPath()), ftp));
+					return Channels.newChannel(new FTPOutputStream(ftp.appendFileStream(getPath(uri)), ftp));
 				} catch (Throwable t) {
 					disconnect(ftp);
 					if (t instanceof IOException) {
