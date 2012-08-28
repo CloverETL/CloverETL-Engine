@@ -560,7 +560,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		}
 		boolean createDirectory = Boolean.TRUE.equals(params.isDirectory());
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
-		Info fileInfo = info(uri);
+		Info fileInfo = info(uri, channel);
 		String path = getPath(uri);
 		if (fileInfo == null) { // does not exist
 			if (createParents) {
