@@ -202,13 +202,13 @@ public class FTPOperationHandler implements IOperationHandler {
 		}
 	}
 
-	private String[] getUserInfo(URI uri) {
+	protected String[] getUserInfo(URI uri) {
 		String userInfo = uri.getUserInfo();
 		if (userInfo == null) return new String[] {""}; //$NON-NLS-1$
 		return decodeString(userInfo).split(":"); //$NON-NLS-1$
 	}
 
-	private FTPClient connect(URI uri) throws IOException {
+	protected FTPClient connect(URI uri) throws IOException {
 		FTPClient ftp = new FTPClient();
 		ftp.setListHiddenFiles(true);
 		String[] user = getUserInfo(uri);
