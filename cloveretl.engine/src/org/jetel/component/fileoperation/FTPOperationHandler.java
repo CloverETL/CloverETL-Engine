@@ -594,9 +594,12 @@ public class FTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public void close() throws IOException {
-			super.close();
-			if (ftp.isConnected()) {
-				ftp.disconnect();
+			try {
+				super.close();
+			} finally {
+				if (ftp.isConnected()) {
+					ftp.disconnect();
+				}
 			}
 		}
 		
