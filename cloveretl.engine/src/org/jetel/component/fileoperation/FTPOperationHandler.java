@@ -51,6 +51,7 @@ import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.component.fileoperation.URLOperationHandler.URLContent;
+import org.jetel.util.string.StringUtils;
 
 public class FTPOperationHandler implements IOperationHandler {
 	
@@ -270,29 +271,44 @@ public class FTPOperationHandler implements IOperationHandler {
 	}
 
 	private String getPath(URI uri) {
-		return quote(uri.getPath());
+		String result = quote(uri.getPath()); 
+		return StringUtils.isEmpty(result) ? URIUtils.PATH_SEPARATOR : result;
 	}
 	
 	private Info info(URI targetUri, FTPClient ftp) {
-		try {
-			FTPFile[] files = ftp.listFiles(getPath(targetUri));
-			if ((files != null) && (files.length != 0) && (files[0] != null)) {
-				for (FTPFile file: files) {
-					if ((file != null) && file.isDirectory() && file.getName().equals(URIUtils.CURRENT_DIR_NAME)) {
-						URI parentUri = URIUtils.getParentURI(targetUri);
-						if (parentUri != null) {
-							String fileName = parentUri.relativize(targetUri).toString();
-							fileName = URIUtils.urlDecode(fileName);
-							file.setName(fileName);
+		String path = getPath(targetUri);
+		if (path.equals(URIUtils.PATH_SEPARATOR)) {
+			FTPFile root = new FTPFile();
+			root.setType(FTPFile.DIRECTORY_TYPE);
+			root.setName(URIUtils.CURRENT_DIR_NAME);
+			return info(root, null, targetUri);
+		} else {
+			try {
+				if (ftp.changeWorkingDirectory(path)) { // a directory
+					URI parentUri = URIUtils.getParentURI(targetUri);
+					if (parentUri != null) {
+						FTPFile[] files = ftp.listFiles(getPath(parentUri));
+						String fileName = parentUri.relativize(targetUri).toString();
+						if (fileName.endsWith(URIUtils.PATH_SEPARATOR)) {
+							fileName = fileName.substring(0, fileName.length()-1);
 						}
-						return info(file, null, targetUri);
+						fileName = URIUtils.urlDecode(fileName);
+						for (FTPFile file: files) {
+							if ((file != null) && file.isDirectory() && file.getName().equals(fileName)) {
+								return info(file, null, targetUri);
+							}
+						}
 					}
-					
+				} else { // a file
+					FTPFile[] files = ftp.listFiles(path);
+					if ((files != null) && (files.length != 0) && (files[0] != null)) {
+						return info(files[0], null, targetUri);
+					}
 				}
-				return info(files[0], null, targetUri);
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
 			}
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			
 		}
 		return null;
 	}
@@ -335,9 +351,14 @@ public class FTPOperationHandler implements IOperationHandler {
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
 		Info fileInfo = info(uri);
 		if (fileInfo == null) { // does not exist
+			URI parentUri = URIUtils.getParentURI(uri);
 			if (createParents) {
-				URI parentUri = URIUtils.getParentURI(uri);
 				create(ftp, parentUri, params.clone().setDirectory(true));
+			} else {
+				Info parentInfo = info(parentUri, ftp);
+				if (parentInfo == null) {
+					throw new FileNotFoundException(uri.toString());
+				}
 			}
 			String path = getPath(uri);
 			if (createDirectory) {
