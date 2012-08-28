@@ -165,7 +165,8 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("XMLExtract_charset_not_default_fail.grf") // ok, is to fail
 							&& !pathname.getName().equals("RunGraph_differentOutputMetadataFail.grf") // ok, is to fail
 							&& !pathname.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
-							&& !pathname.getName().equals("DenormalizerWithoutInputFile.grf"); // probably subgraph not supposed to be executed separately
+							&& !pathname.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
+							&& !pathname.getName().equals("BeanWriterReader_employees.grf"); // remove after CL-2474 solved
 					
 				}
 			});
