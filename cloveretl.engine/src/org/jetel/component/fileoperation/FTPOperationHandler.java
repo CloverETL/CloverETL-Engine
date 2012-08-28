@@ -23,13 +23,16 @@ import static java.text.MessageFormat.format;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -583,6 +586,28 @@ public class FTPOperationHandler implements IOperationHandler {
 		return new URLContent(source.toURI());
 	}
 
+	private static class FTPInputStream extends FilterInputStream {
+
+		private final FTPClient ftp;
+		
+		public FTPInputStream(InputStream in, FTPClient ftp) {
+			super(in);
+			this.ftp = ftp;
+		}
+
+		@Override
+		public void close() throws IOException {
+			try {
+				super.close();
+			} finally {
+				if (ftp.isConnected()) {
+					ftp.disconnect();
+				}
+			}
+		}
+		
+	}
+
 	private static class FTPOutputStream extends FilterOutputStream {
 
 		private final FTPClient ftp;
@@ -605,6 +630,72 @@ public class FTPOperationHandler implements IOperationHandler {
 		
 	}
 	
+	protected class FTPContent implements Content {
+		
+		private final URI uri;
+		
+		public FTPContent(URI uri) {
+			this.uri = uri;
+		}
+
+		@Override
+		public ReadableByteChannel read() throws IOException {
+			FTPClient ftp = null;
+			try {
+				ftp = connect(uri);
+				return Channels.newChannel(new FTPInputStream(ftp.retrieveFileStream(getPath(uri)), ftp));
+			} catch (Throwable t) {
+				disconnect(ftp);
+				if (t instanceof IOException) {
+					throw (IOException) t;
+				} else {
+					throw new IOException(t);
+				}
+			}
+		}
+
+		@Override
+		public WritableByteChannel write() throws IOException {
+			FTPClient ftp = null;
+			try {
+				ftp = connect(uri);
+				Info info = info(uri, ftp);
+				if ((info != null) && info.isDirectory()) {
+					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri));
+				}
+				return Channels.newChannel(new FTPOutputStream(ftp.storeFileStream(getPath(uri)), ftp));
+			} catch (Throwable t) {
+				disconnect(ftp);
+				if (t instanceof IOException) {
+					throw (IOException) t;
+				} else {
+					throw new IOException(t);
+				}
+			}
+		}
+
+		@Override
+		public WritableByteChannel append() throws IOException {
+			FTPClient ftp = null;
+			try {
+				ftp = connect(uri);
+				Info info = info(uri, ftp);
+				if ((info != null) && info.isDirectory()) {
+					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri));
+				}
+				return Channels.newChannel(new FTPOutputStream(ftp.appendFileStream(getPath(uri)), ftp));
+			} catch (Throwable t) {
+				disconnect(ftp);
+				if (t instanceof IOException) {
+					throw (IOException) t;
+				} else {
+					throw new IOException(t);
+				}
+			}
+		}
+		
+	}
+
 	@Override
 	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) {
 		return new URLContent(target.toURI()) {
