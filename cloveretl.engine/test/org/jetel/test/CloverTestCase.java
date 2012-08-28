@@ -89,7 +89,9 @@ public abstract class CloverTestCase extends TestCase {
 		Future<Result> result = manager.executeWatchDog(watchDog);
 		Result value = result.get();
 		if (value == Result.ERROR) {
-			rethrowRuntime(watchDog.getCauseException());
+			if (watchDog.getCauseException() != null) {
+				rethrowRuntime(watchDog.getCauseException());
+			}
 		}
 		return value;
 	}
