@@ -213,6 +213,9 @@ public class FTPOperationHandler implements IOperationHandler {
 
 	protected FTPClient connect(URI uri) throws IOException {
 		FTPClient ftp = new FTPClient();
+//		FTPClientConfig config = new FTPClientConfig();
+//		config.setServerTimeZoneId("GMT+0");
+//		ftp.configure(config);
 		ftp.setListHiddenFiles(true);
 		String[] user = getUserInfo(uri);
 		try {
