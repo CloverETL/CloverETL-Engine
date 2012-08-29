@@ -253,7 +253,7 @@ public class FileUtils {
         	if( fileURL.startsWith("/") ){
                 return new URL(fileURL);
         	} else {
-        		return new URL(contextURL, fileURL);
+        		return getStandardUrlWeblogicHack(contextURL, fileURL);
         	}
         } catch(MalformedURLException ex) {}
 
@@ -290,6 +290,34 @@ public class FileUtils {
 			prefix += "/";
 		}
         return new URL(contextURL, prefix + fileURL);
+    }
+    
+    /**
+     * method created as workaround to issue https://bug.javlin.eu/browse/CLS-886
+     * 
+     * weblogic implementation of java.net.URLStreamHandler - weblogic.net.http.Handler
+     * does not print credentials in its toExternalForm(URL u) method.
+     * 
+     * On any non-weblogic platform this method can be replaced by 
+     * new URL(URL context, String spec);
+     * 
+     * Method enforce using the Sun handler implementation for http and https protocols
+     * @throws MalformedURLException 
+     */
+    private static URL getStandardUrlWeblogicHack(URL contextUrl, String fileUrl) throws MalformedURLException {
+    	if (contextUrl != null || fileUrl != null) {
+    		final URL resolvedInContextUrl = new URL(contextUrl, fileUrl);
+    		final String resolverInContextString = resolvedInContextUrl.toExternalForm();
+    		if (resolverInContextString != null) {
+		    	if (resolverInContextString.startsWith("http:")) {
+		    		return new URL(contextUrl, fileUrl, new sun.net.www.protocol.http.Handler());
+		    	}
+		    	if (resolverInContextString.startsWith("https:")) {
+		    		return new URL(contextUrl, fileUrl, new sun.net.www.protocol.https.Handler());
+		    	}
+    		}
+    	}
+    	return new URL(contextUrl, fileUrl);
     }
     
     /**
