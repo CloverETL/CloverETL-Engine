@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.result.CreateResult;
+import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
@@ -66,7 +67,10 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 	@Override
 	protected void tearDown() throws Exception {
 		Thread.interrupted(); // reset the interrupted flag of the current thread
-		manager.delete(CloverURI.createURI(baseUri), new DeleteParameters().setRecursive(true));
+		DeleteResult result = manager.delete(CloverURI.createURI(baseUri), new DeleteParameters().setRecursive(true));
+		if (!result.success()) {
+			System.err.println("Failed to delete " + result.getURI(0));
+		}
 		super.tearDown();
 		handler = null;
 	}
