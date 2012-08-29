@@ -127,21 +127,19 @@ public class FileUtils {
 	private static final String TAR_PROTOCOL = "tar";
 	private static final String GZIP_PROTOCOL = "gzip";
 	private static final String ZIP_PROTOCOL = "zip";
-
-	// FTP-like protocol names
-	private static final String FTP_PROTOCOL = "ftp";
-	private static final String SFTP_PROTOCOL = "sftp";
-	private static final String SCP_PROTOCOL = "scp";
 	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
 	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
 
-	/**
-	 * Maps known URL protocols to their handlers
-	 */
 	public static final Map<String, URLStreamHandler> handlers;
 
+	private static final String FTP_PROTOCOL = "ftp";
+
+	private static final String SFTP_PROTOCOL = "sftp";
+
+	private static final String SCP_PROTOCOL = "scp";
+	
 	static {
 		Map<String, URLStreamHandler> h = new HashMap<String, URLStreamHandler>();
 		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
@@ -196,6 +194,14 @@ public class FileUtils {
 			}
 		}
 	}
+
+	private static final URLStreamHandler GENERAL_HANDLER = new URLStreamHandler() {
+		@Override
+		protected URLConnection openConnection(URL u) throws IOException {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	};
 
     public static URL getFileURL(String fileURL) throws MalformedURLException {
     	return getFileURL((URL) null, fileURL);
