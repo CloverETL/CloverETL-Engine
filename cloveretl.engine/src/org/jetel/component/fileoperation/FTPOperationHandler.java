@@ -646,7 +646,11 @@ public class FTPOperationHandler implements IOperationHandler {
 			FTPClient ftp = null;
 			try {
 				ftp = connect(uri);
-				return Channels.newChannel(new FTPInputStream(ftp.retrieveFileStream(getPath(uri)), ftp));
+				InputStream is = ftp.retrieveFileStream(getPath(uri));
+				if (is == null) {
+					throw new IOException(ftp.getReplyString());
+				}
+				return Channels.newChannel(new FTPInputStream(is, ftp));
 			} catch (Throwable t) {
 				disconnect(ftp);
 				if (t instanceof IOException) {
@@ -666,7 +670,11 @@ public class FTPOperationHandler implements IOperationHandler {
 				if ((info != null) && info.isDirectory()) {
 					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri));
 				}
-				return Channels.newChannel(new FTPOutputStream(ftp.storeFileStream(getPath(uri)), ftp));
+				OutputStream os = ftp.storeFileStream(getPath(uri));
+				if (os == null) {
+					throw new IOException(ftp.getReplyString());
+				}
+				return Channels.newChannel(new FTPOutputStream(os, ftp));
 			} catch (Throwable t) {
 				disconnect(ftp);
 				if (t instanceof IOException) {
@@ -686,7 +694,11 @@ public class FTPOperationHandler implements IOperationHandler {
 				if ((info != null) && info.isDirectory()) {
 					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri));
 				}
-				return Channels.newChannel(new FTPOutputStream(ftp.appendFileStream(getPath(uri)), ftp));
+				OutputStream os = ftp.appendFileStream(getPath(uri));
+				if (os == null) {
+					throw new IOException(ftp.getReplyString());
+				}
+				return Channels.newChannel(new FTPOutputStream(os, ftp));
 			} catch (Throwable t) {
 				disconnect(ftp);
 				if (t instanceof IOException) {
@@ -708,7 +720,15 @@ public class FTPOperationHandler implements IOperationHandler {
 				FTPClient ftp = null;
 				try {
 					ftp = connect(uri);
-					return Channels.newChannel(new FTPOutputStream(ftp.appendFileStream(getPath(uri)), ftp));
+					Info info = info(uri, ftp);
+					if ((info != null) && info.isDirectory()) {
+						throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri));
+					}
+					OutputStream os = ftp.appendFileStream(getPath(uri));
+					if (os == null) {
+						throw new IOException(ftp.getReplyString());
+					}
+					return Channels.newChannel(new FTPOutputStream(os, ftp));
 				} catch (Throwable t) {
 					disconnect(ftp);
 					if (t instanceof IOException) {
