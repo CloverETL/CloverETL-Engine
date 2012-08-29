@@ -633,6 +633,18 @@ public class FTPOperationHandler implements IOperationHandler {
 		
 	}
 	
+	/**
+	 * Used in FTPSOperationHandler.
+	 * Seems to handle connections inefficiently,
+	 * which may cause the streams to unexpectedly return
+	 * zero bytes. Until fixed, use {@link URLContent}
+	 * where possible.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Aug 29, 2012
+	 */
 	protected class FTPContent implements Content {
 		
 		private final URI uri;
