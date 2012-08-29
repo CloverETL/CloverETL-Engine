@@ -98,12 +98,15 @@ public abstract class CloverTestCase extends TestCase {
 	
 	protected static void rethrowRuntime(Throwable throwable) {
 		
+		if (throwable == null) {
+			return;
+		}
 		if (throwable instanceof RuntimeException) {
 			throw (RuntimeException)throwable;
 		} else if (throwable instanceof Error) {
 			throw (Error)throwable;
 		} else {
-			throw new RuntimeException(throwable.getMessage(), throwable);
+			throw new RuntimeException(throwable);
 		}
 	}
 }
