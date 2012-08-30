@@ -224,7 +224,7 @@ public class FTPOperationHandler implements IOperationHandler {
 				port = 21;
 			}
 			ftp.connect(uri.getHost(), port);
-			if(!ftp.login(user.length >= 1 ? user[0] : "", user.length >= 2 ? user[1] : "")) { //$NON-NLS-1$ //$NON-NLS-2$
+			if (!ftp.login(user.length >= 1 ? user[0] : "", user.length >= 2 ? user[1] : "")) { //$NON-NLS-1$ //$NON-NLS-2$
 	            ftp.logout();
 	            throw new IOException(FileOperationMessages.getString("FTPOperationHandler.authentication_failed")); //$NON-NLS-1$
 	        }
@@ -282,13 +282,13 @@ public class FTPOperationHandler implements IOperationHandler {
 	}
 	
 	private Info info(URI targetUri, FTPClient ftp) {
-		String path = getPath(targetUri);
-		if (path.equals(URIUtils.PATH_SEPARATOR)) {
+		if (getPath(targetUri.normalize()).equals(URIUtils.PATH_SEPARATOR)) {
 			FTPFile root = new FTPFile();
 			root.setType(FTPFile.DIRECTORY_TYPE);
 			root.setName(URIUtils.CURRENT_DIR_NAME);
 			return info(root, null, targetUri);
 		} else {
+			String path = getPath(targetUri);
 			try {
 				if (ftp.changeWorkingDirectory(path)) { // a directory
 					URI parentUri = URIUtils.getParentURI(targetUri);
@@ -726,6 +726,21 @@ public class FTPOperationHandler implements IOperationHandler {
 	@Override
 	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) {
 		return new URLContent(target.toURI()) {
+			
+			@Override
+			public WritableByteChannel write() throws IOException {
+				FTPClient ftp = null;
+				try {
+					ftp = connect(uri);
+					Info info = info(uri, ftp);
+					if ((info != null) && info.isDirectory()) {
+						throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri));
+					}
+				} finally {
+					disconnect(ftp);
+				}
+				return super.write();
+			}
 
 			@Override
 			public WritableByteChannel append() throws IOException {
