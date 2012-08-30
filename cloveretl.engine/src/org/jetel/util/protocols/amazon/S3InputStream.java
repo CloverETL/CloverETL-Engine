@@ -18,6 +18,9 @@
  */
 package org.jetel.util.protocols.amazon;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
@@ -25,9 +28,6 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 
 import org.jetel.util.file.WcardPattern;
 import org.jets3t.service.S3ServiceException;
@@ -99,6 +99,9 @@ public class S3InputStream extends InputStream {
 		
 		if (!host.endsWith(org.jets3t.service.Constants.S3_DEFAULT_HOSTNAME)) {
 			throw new IllegalArgumentException("Not an Amazon S3 host");
+		}
+		else if (host.equals(org.jets3t.service.Constants.S3_DEFAULT_HOSTNAME)) {
+			throw new IllegalArgumentException("No bucket name specified in the host address.");
 		}
 		else {
 			int hostLen = host.length();
