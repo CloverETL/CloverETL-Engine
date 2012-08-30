@@ -130,6 +130,9 @@ public class FileUtils {
 	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
+    private static final CredentialsSerializingHandler CREDENTIALS_SERIALIZING_HANDLER = 
+    		new CredentialsSerializingHandler();
+    
 	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
 
 	public static final Map<String, URLStreamHandler> handlers;
@@ -307,14 +310,9 @@ public class FileUtils {
     private static URL getStandardUrlWeblogicHack(URL contextUrl, String fileUrl) throws MalformedURLException {
     	if (contextUrl != null || fileUrl != null) {
     		final URL resolvedInContextUrl = new URL(contextUrl, fileUrl);
-    		final String resolverInContextString = resolvedInContextUrl.toExternalForm();
-    		if (resolverInContextString != null) {
-		    	if (resolverInContextString.startsWith("http:")) {
-		    		return new URL(contextUrl, fileUrl, new sun.net.www.protocol.http.Handler());
-		    	}
-		    	if (resolverInContextString.startsWith("https:")) {
-		    		return new URL(contextUrl, fileUrl, new sun.net.www.protocol.https.Handler());
-		    	}
+    		final String resolvedInContextString = resolvedInContextUrl.toExternalForm();
+    		if (resolvedInContextString != null && resolvedInContextString.startsWith("http")) {
+    	    	return new URL(contextUrl, fileUrl, FileUtils.CREDENTIALS_SERIALIZING_HANDLER);
     		}
     	}
     	return new URL(contextUrl, fileUrl);
