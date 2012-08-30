@@ -408,6 +408,16 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		info = manager.info(uri);
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 		
+		uri = relativeURI("foo/./bar");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertTrue(String.format("%s is not a file", uri), info.isFile());
+
+		uri = relativeURI("foo/../foo/bar");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertTrue(String.format("%s is not a file", uri), info.isFile());
+		
 		{
 			String dirName = "directory with spaces";
 			String fileName = "file with spaces.tmp";
