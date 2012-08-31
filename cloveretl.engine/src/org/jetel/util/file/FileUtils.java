@@ -130,9 +130,22 @@ public class FileUtils {
 	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
-    private static final CredentialsSerializingHandler CREDENTIALS_SERIALIZING_HANDLER = 
-    		new CredentialsSerializingHandler();
+	private static final URLStreamHandler HTTP_HANDLER = new CredentialsSerializingHandler() {
+
+		@Override
+		protected int getDefaultPort() {
+			return 80;
+		}
+	};
     
+	private static final URLStreamHandler HTTPS_HANDLER = new CredentialsSerializingHandler() {
+
+		@Override
+		protected int getDefaultPort() {
+			return 443;
+		}
+	};
+
 	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
 
 	public static final Map<String, URLStreamHandler> handlers;
@@ -154,8 +167,8 @@ public class FileUtils {
 		h.put(FTP_PROTOCOL, ftpStreamHandler);
 		h.put(SFTP_PROTOCOL, sFtpStreamHandler);
 		h.put(SCP_PROTOCOL, sFtpStreamHandler);
-		h.put(HTTP_PROTOCOL, CREDENTIALS_SERIALIZING_HANDLER);
-		h.put(HTTPS_PROTOCOL, CREDENTIALS_SERIALIZING_HANDLER);
+		h.put(HTTP_PROTOCOL, HTTP_HANDLER);
+		h.put(HTTPS_PROTOCOL, HTTPS_HANDLER);
 		for (ProxyProtocolEnum p: ProxyProtocolEnum.values()) {
 			h.put(p.toString(), proxyHandler);
 		}
@@ -307,9 +320,14 @@ public class FileUtils {
     private static URL getStandardUrlWeblogicHack(URL contextUrl, String fileUrl) throws MalformedURLException {
     	if (contextUrl != null || fileUrl != null) {
     		final URL resolvedInContextUrl = new URL(contextUrl, fileUrl);
-    		final String resolvedInContextString = resolvedInContextUrl.toExternalForm();
-    		if (resolvedInContextString != null && resolvedInContextString.startsWith("http")) {
-    	    	return new URL(contextUrl, fileUrl, FileUtils.CREDENTIALS_SERIALIZING_HANDLER);
+    		String protocol = resolvedInContextUrl.getProtocol();
+    		if (protocol != null) {
+    			protocol = protocol.toLowerCase();
+    			if (protocol.equals(HTTP_PROTOCOL)) {
+        	    	return new URL(contextUrl, fileUrl, FileUtils.HTTP_HANDLER);
+    			} else if (protocol.equals(HTTPS_PROTOCOL)) {
+        	    	return new URL(contextUrl, fileUrl, FileUtils.HTTPS_HANDLER);
+    			}
     		}
     	}
     	return new URL(contextUrl, fileUrl);
