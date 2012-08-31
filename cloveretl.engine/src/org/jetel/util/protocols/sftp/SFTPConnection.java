@@ -159,7 +159,7 @@ public class SFTPConnection extends URLConnection {
 	 * Session disconnect.
 	 */
 	public void disconnect() {
-		if (session != null && session.isConnected()) {
+		if (openedStreams == 0 && session != null && session.isConnected()) {
 			session.disconnect();
 			handler.removeFromPool(this);
 		}
@@ -196,9 +196,9 @@ public class SFTPConnection extends URLConnection {
 			InputStream is = new BufferedInputStream(channel.get(file.equals("") ? "/" : file)) {
 				@Override
 				public void close() throws IOException {
-					super.close();
 					openedStreams--;
-					if (openedStreams == 0) {
+					if (openedStreams >= 0) {
+						super.close();
 						disconnect();
 					}
 				}
@@ -220,9 +220,9 @@ public class SFTPConnection extends URLConnection {
 			OutputStream os = new BufferedOutputStream(channel.put(url.getFile(), mode)) {
 				@Override
 				public void close() throws IOException {
-					super.close();
 					openedStreams--;
-			    	if (openedStreams == 0) {
+					if (openedStreams >= 0) {
+						super.close();
 						disconnect();
 					}
 				}
@@ -408,7 +408,7 @@ public class SFTPConnection extends URLConnection {
 
 	}
 	
-	public void setURL(URL url) {
+	void setURL(URL url) {
 		super.url = url;
 	}
 }
