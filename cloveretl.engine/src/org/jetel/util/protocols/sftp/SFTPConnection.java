@@ -63,6 +63,7 @@ public class SFTPConnection extends URLConnection {
 	private Proxy proxy4;
 	
 	private final SFTPStreamHandler handler;
+	private int openedStreams = 0;
 
 	// standard encoding for URLDecoder
 	// see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
@@ -196,9 +197,13 @@ public class SFTPConnection extends URLConnection {
 				@Override
 				public void close() throws IOException {
 					super.close();
-					disconnect();
+					openedStreams--;
+					if (openedStreams == 0) {
+						disconnect();
+					}
 				}
 			};
+			openedStreams++;
 			return is;
 		} catch (SftpException e) {
 			throw new IOException(e.getMessage());
@@ -216,9 +221,13 @@ public class SFTPConnection extends URLConnection {
 				@Override
 				public void close() throws IOException {
 					super.close();
-			    	disconnect();
+					openedStreams--;
+			    	if (openedStreams == 0) {
+						disconnect();
+					}
 				}
 			};
+			openedStreams++;
 			return os;
 		} catch (SftpException e) {
 			throw new IOException(e.getMessage());
