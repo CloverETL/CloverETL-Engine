@@ -20,11 +20,11 @@ package org.jetel.component.fileoperation;
 
 import static java.text.MessageFormat.format;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -633,7 +633,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		return "SFTPOperationHandler"; //$NON-NLS-1$
 	}
 	
-	private class SFTPOutputStream extends FilterOutputStream {
+	private class SFTPOutputStream extends BufferedOutputStream {
 		
 		private final SFTPSession session;
 
@@ -652,7 +652,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		}
 	}
 	
-	private class SFTPInputStream extends FilterInputStream {
+	private class SFTPInputStream extends BufferedInputStream {
 		
 		private final SFTPSession session;
 
