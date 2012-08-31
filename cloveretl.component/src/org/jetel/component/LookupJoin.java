@@ -587,7 +587,7 @@ public class LookupJoin extends Node {
 
 			join = new LookupJoin(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), joinKey,
-					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), xattribs
+					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), xattribs
 							.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
 		      xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
