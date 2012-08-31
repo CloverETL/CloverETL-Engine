@@ -127,21 +127,38 @@ public class FileUtils {
 	private static final String TAR_PROTOCOL = "tar";
 	private static final String GZIP_PROTOCOL = "gzip";
 	private static final String ZIP_PROTOCOL = "zip";
-
-	// FTP-like protocol names
-	private static final String FTP_PROTOCOL = "ftp";
-	private static final String SFTP_PROTOCOL = "sftp";
-	private static final String SCP_PROTOCOL = "scp";
 	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
+	private static final URLStreamHandler HTTP_HANDLER = new CredentialsSerializingHandler() {
+
+		@Override
+		protected int getDefaultPort() {
+			return 80;
+		}
+	};
+    
+	private static final URLStreamHandler HTTPS_HANDLER = new CredentialsSerializingHandler() {
+
+		@Override
+		protected int getDefaultPort() {
+			return 443;
+		}
+	};
+
 	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
 
-	/**
-	 * Maps known URL protocols to their handlers
-	 */
 	public static final Map<String, URLStreamHandler> handlers;
 
+	private static final String FTP_PROTOCOL = "ftp";
+
+	private static final String SFTP_PROTOCOL = "sftp";
+
+	private static final String SCP_PROTOCOL = "scp";
+	
+	private static final String HTTP_PROTOCOL = "http";
+	private static final String HTTPS_PROTOCOL = "https";
+	
 	static {
 		Map<String, URLStreamHandler> h = new HashMap<String, URLStreamHandler>();
 		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
@@ -150,6 +167,8 @@ public class FileUtils {
 		h.put(FTP_PROTOCOL, ftpStreamHandler);
 		h.put(SFTP_PROTOCOL, sFtpStreamHandler);
 		h.put(SCP_PROTOCOL, sFtpStreamHandler);
+		h.put(HTTP_PROTOCOL, HTTP_HANDLER);
+		h.put(HTTPS_PROTOCOL, HTTPS_HANDLER);
 		for (ProxyProtocolEnum p: ProxyProtocolEnum.values()) {
 			h.put(p.toString(), proxyHandler);
 		}
@@ -247,7 +266,7 @@ public class FileUtils {
         	if( fileURL.startsWith("/") ){
                 return new URL(fileURL);
         	} else {
-        		return new URL(contextURL, fileURL);
+        		return getStandardUrlWeblogicHack(contextURL, fileURL);
         	}
         } catch(MalformedURLException ex) {}
 
@@ -284,6 +303,34 @@ public class FileUtils {
 			prefix += "/";
 		}
         return new URL(contextURL, prefix + fileURL);
+    }
+    
+    /**
+     * method created as workaround to issue https://bug.javlin.eu/browse/CLS-886
+     * 
+     * weblogic implementation of java.net.URLStreamHandler - weblogic.net.http.Handler
+     * does not print credentials in its toExternalForm(URL u) method.
+     * 
+     * On any non-weblogic platform this method can be replaced by 
+     * new URL(URL context, String spec);
+     * 
+     * Method enforce using the Sun handler implementation for http and https protocols
+     * @throws MalformedURLException 
+     */
+    private static URL getStandardUrlWeblogicHack(URL contextUrl, String fileUrl) throws MalformedURLException {
+    	if (contextUrl != null || fileUrl != null) {
+    		final URL resolvedInContextUrl = new URL(contextUrl, fileUrl);
+    		String protocol = resolvedInContextUrl.getProtocol();
+    		if (protocol != null) {
+    			protocol = protocol.toLowerCase();
+    			if (protocol.equals(HTTP_PROTOCOL)) {
+        	    	return new URL(contextUrl, fileUrl, FileUtils.HTTP_HANDLER);
+    			} else if (protocol.equals(HTTPS_PROTOCOL)) {
+        	    	return new URL(contextUrl, fileUrl, FileUtils.HTTPS_HANDLER);
+    			}
+    		}
+    	}
+    	return new URL(contextUrl, fileUrl);
     }
     
     /**

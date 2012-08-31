@@ -18,12 +18,15 @@
  */
 package org.jetel.component.fileoperation;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
+import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
@@ -31,6 +34,7 @@ import org.jetel.component.fileoperation.result.ResolveResult;
 public class SFTPOperationHandlerTest extends OperationHandlerTestTemplate {
 
 	private static final String testingUri = "sftp://test:test@koule/home/test/tmp/file_operation_tests/";
+//	private static final String testingUri = "sftp://test:test@localhost/";
 
 	private SFTPOperationHandler handler = null;
 
@@ -44,7 +48,8 @@ public class SFTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		try {
 			URI base = new URI(testingUri);
 			CloverURI tmpDirUri = CloverURI.createURI(base.resolve(String.format("CloverTemp%d/", System.nanoTime())));
-			manager.create(tmpDirUri, new CreateParameters().setDirectory(true));
+			CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true));
+			assumeTrue(result.success());
 			return tmpDirUri.getSingleURI().toURI();
 		} catch (URISyntaxException ex) {
 			return null;

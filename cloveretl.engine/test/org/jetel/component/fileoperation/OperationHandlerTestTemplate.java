@@ -408,6 +408,16 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		info = manager.info(uri);
 		assertTrue(String.format("%s is not a file", uri), info.isFile());
 		
+		uri = relativeURI("foo/./bar");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertTrue(String.format("%s is not a file", uri), info.isFile());
+
+		uri = relativeURI("foo/../foo/bar");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri);
+		assertTrue(String.format("%s is not a file", uri), info.isFile());
+		
 		{
 			String dirName = "directory with spaces";
 			String fileName = "file with spaces.tmp";
@@ -1237,6 +1247,21 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		CloverURI uri;
 		Date modifiedDate = new Date(10000);
 		
+		{ // does not work very well on FTP, as the timezone knowledge is required
+			uri = relativeURI("datedFile.tmp");
+			long tolerance = 2 * 60 * 1000; // 2 minutes 
+			Date beforeFileWasCreated = new Date(System.currentTimeMillis() - tolerance);
+			assertTrue(manager.create(uri).success());
+			Date afterFileWasCreated = new Date(System.currentTimeMillis() + tolerance);
+			InfoResult info = manager.info(uri);
+			assertTrue(info.isFile());
+			Date fileCreatedDate = info.getLastModified();
+			if (fileCreatedDate != null) {
+				assertTrue(fileCreatedDate.after(beforeFileWasCreated));
+				assertTrue(afterFileWasCreated.after(fileCreatedDate));
+			}
+		}
+
 		uri = relativeURI("topdir1/subdir/subsubdir/file");
 		System.out.println(uri.getAbsoluteURI());
 		assertFalse(String.format("%s already exists", uri), manager.exists(uri));
