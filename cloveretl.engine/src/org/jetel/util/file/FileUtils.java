@@ -143,6 +143,9 @@ public class FileUtils {
 
 	private static final String SCP_PROTOCOL = "scp";
 	
+	private static final String HTTP_PROTOCOL = "http";
+	private static final String HTTPS_PROTOCOL = "https";
+	
 	static {
 		Map<String, URLStreamHandler> h = new HashMap<String, URLStreamHandler>();
 		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
@@ -151,6 +154,8 @@ public class FileUtils {
 		h.put(FTP_PROTOCOL, ftpStreamHandler);
 		h.put(SFTP_PROTOCOL, sFtpStreamHandler);
 		h.put(SCP_PROTOCOL, sFtpStreamHandler);
+		h.put(HTTP_PROTOCOL, CREDENTIALS_SERIALIZING_HANDLER);
+		h.put(HTTPS_PROTOCOL, CREDENTIALS_SERIALIZING_HANDLER);
 		for (ProxyProtocolEnum p: ProxyProtocolEnum.values()) {
 			h.put(p.toString(), proxyHandler);
 		}
@@ -197,14 +202,6 @@ public class FileUtils {
 			}
 		}
 	}
-
-	private static final URLStreamHandler GENERAL_HANDLER = new URLStreamHandler() {
-		@Override
-		protected URLConnection openConnection(URL u) throws IOException {
-			// TODO Auto-generated method stub
-			return null;
-		}
-	};
 
     public static URL getFileURL(String fileURL) throws MalformedURLException {
     	return getFileURL((URL) null, fileURL);
