@@ -227,4 +227,18 @@ public class FileUtilsTest extends CloverTestCase {
 		assertTrue(FileUtils.isMultiURL(";abc?defg*"));
 	}
 	
+	public void testGetFileURLWeblogicHandler() throws MalformedURLException {
+		final String credentials = "user:pass@";
+		final String fileSpec = "http://" + credentials + "javlin.eu/file";
+		final URL contexUrl = null;
+		
+		URL urlWithCredentials = FileUtils.getFileURL(contexUrl, fileSpec);
+		String serializedUrl = urlWithCredentials.toExternalForm();
+		String toStringUrl = urlWithCredentials.toString();
+		
+		assertNotNull(serializedUrl);
+		assertTrue(serializedUrl.contains(credentials));
+		assertNotNull(toStringUrl);
+		assertTrue(toStringUrl.contains(credentials));
+	}
 }
