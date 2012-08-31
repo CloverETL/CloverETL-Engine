@@ -416,4 +416,8 @@ public class SFTPConnection extends URLConnection {
 		}
 
 	}
+	
+	void setURL(URL url) {
+		super.url = url;
+	}
 }
