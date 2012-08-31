@@ -61,6 +61,8 @@ public class SFTPConnection extends URLConnection {
 
 	private Proxy proxy;
 	private Proxy proxy4;
+	
+	private final SFTPStreamHandler handler;
 
 	// standard encoding for URLDecoder
 	// see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
@@ -69,19 +71,22 @@ public class SFTPConnection extends URLConnection {
 	/**
 	 * SFTP constructor.
 	 * @param url
+	 * @param handler
 	 */
-	protected SFTPConnection(URL url) {
-		this(url, null);
+	protected SFTPConnection(URL url, SFTPStreamHandler handler) {
+		this(url, null, handler);
 	}
 	
 	/**
 	 * SFTP constructor.
 	 * @param url
 	 * @param proxy
+	 * @param handler
 	 */
-	protected SFTPConnection(URL url, java.net.Proxy proxy) {
+	protected SFTPConnection(URL url, java.net.Proxy proxy, SFTPStreamHandler handler) {
 		super(url);
 		mode = ChannelSftp.OVERWRITE;
+		this.handler = handler;
 		
 		if (proxy == null) return;
 		SocketAddress sa = proxy.address();
@@ -153,8 +158,10 @@ public class SFTPConnection extends URLConnection {
 	 * Session disconnect.
 	 */
 	public void disconnect() {
-		if (session != null && session.isConnected())
+		if (session != null && session.isConnected()) {
 			session.disconnect();
+			handler.removeFromPool(this);
+		}
 	}
 
 	/**
@@ -189,7 +196,7 @@ public class SFTPConnection extends URLConnection {
 				@Override
 				public void close() throws IOException {
 					super.close();
-					session.disconnect();
+					disconnect();
 				}
 			};
 			return is;
@@ -209,7 +216,7 @@ public class SFTPConnection extends URLConnection {
 				@Override
 				public void close() throws IOException {
 					super.close();
-			    	session.disconnect();
+			    	disconnect();
 				}
 			};
 			return os;
@@ -226,7 +233,7 @@ public class SFTPConnection extends URLConnection {
 	 * @return
 	 * @throws IOException
 	 */
-	public Vector ls(String path) throws IOException {
+	public Vector<?> ls(String path) throws IOException {
 		connect();
 		try {
 			channel = getChannelSftp();
@@ -372,7 +379,7 @@ public class SFTPConnection extends URLConnection {
 
 		public String[] promptKeyboardInteractive(String destination,
 				String name, String instruction, String[] prompt, boolean[] echo) {
-			return true ? new String[] { password } : null;
+			return new String[] { password };
 		}
 	}
 

@@ -289,9 +289,8 @@ public class MultiFileReader {
 					parser.setReleaseDataSource(FileUtils.isLocalFile(autoFilling.getFilename()) && !autoFilling.getFilename().equals(STD_IN));
 				}
 				parser.setDataSource(stream);
-				Object sourcePosition;
-				if ((sourcePosition = incrementalReading.getSourcePosition(channelIterator.getCurrentFileName())) != null) {
-					parser.movePosition(sourcePosition);
+				if (!channelIterator.isGraphDependentSource()) {
+					parser.setReleaseDataSource(!autoFilling.getFilename().equals(STD_IN));
 				}
 				skip();
 				return isSourceOpen = true;
