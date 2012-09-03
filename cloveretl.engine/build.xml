@@ -1055,6 +1055,11 @@ defined.version.suffix=release
 		</ant>
 	</target>
 	
+	<!-- this target is here to ensure that plugins are built before the target runtests-engine is called -->
+	<target name="runtests-tests-reset" depends="build-plugins">
+		<echo message="Executing Clover Test Environment environment - tests reset"/>
+	</target>
+	
 	<target name="reporttests" depends="runtests">
 		<mkdir dir="${dir.testsreport}"/>
 		<junitreport>
