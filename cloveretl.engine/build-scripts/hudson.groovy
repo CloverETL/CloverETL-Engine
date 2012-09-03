@@ -83,7 +83,7 @@ if( !runTests ){
 		antArgs += "-Druntests-plugins-dontrun=true"	
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
 		antCustomEnv["ANT_OPTS"] = antCustomEnv["ANT_OPTS"] + " -XX:MaxPermSize=128m"
-		antArgs += "-Druntests-target=runtests-scenario-after-commit"
+		antArgs += "-Druntests-target=runtests-tests-reset"
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
