@@ -155,10 +155,6 @@
 		<replace dir="${dir.src.improved}" token="/* JDBC_4_ANT_KEY_END */" value="*/"/>
 	</target>
 
-  <target name="find-required-plugins-recursive">
-     
-  </target>
-
 	<target name="find-required-plugins" depends="init">
 		<xslt 
 			style="${dir.engine}/build-scripts/required-plugins.xsl"
@@ -170,8 +166,6 @@
 			<param name="home" expression="${basedir}/.."/>
 		</xslt>
 		<property file="${required.plugins.file}"/>
-
-    <antcall target="find-required-plugins-recursive" />
 		
 		<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
 		
