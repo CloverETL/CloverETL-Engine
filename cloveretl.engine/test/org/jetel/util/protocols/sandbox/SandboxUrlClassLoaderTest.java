@@ -28,6 +28,7 @@ import org.jetel.data.Defaults;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.junit.Ignore;
 
 import junit.framework.TestCase;
 
@@ -37,6 +38,7 @@ import junit.framework.TestCase;
  *
  * @created 29.8.2012
  */
+@Ignore("ignored until CL-2497 resolved")
 public class SandboxUrlClassLoaderTest extends TestCase {
 
 	private static boolean afterInit = false;

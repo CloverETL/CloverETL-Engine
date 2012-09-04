@@ -52,6 +52,7 @@ import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -435,9 +436,9 @@ public class Partition extends Node {
 					StringUtils.split(xattribs.getString(XML_RANGES_ATTRIBUTE), RANGES_DELIMITER) :
 						null;		
 		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE),
-		    		xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE, null, false),
+		    		xattribs.getStringEx(XML_PARTIONSOURCE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
 		    		xattribs.getString(XML_PARTITIONCLASS_ATTRIBUTE, null),
-		    		xattribs.getString(XML_PARTITIONURL_ATTRIBUTE, null), 
+		    		xattribs.getStringEx(XML_PARTITIONURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 		    		key, ranges);
 			partition.setFunctionParameters(xattribs.attributes2Properties(
 					new String[]{XML_ID_ATTRIBUTE,XML_PARTIONSOURCE_ATTRIBUTE,

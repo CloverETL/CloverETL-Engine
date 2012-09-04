@@ -61,6 +61,9 @@ public class SFTPConnection extends URLConnection {
 
 	private Proxy proxy;
 	private Proxy proxy4;
+	
+	private final SFTPStreamHandler handler;
+	private int openedStreams = 0;
 
 	// standard encoding for URLDecoder
 	// see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
@@ -69,19 +72,22 @@ public class SFTPConnection extends URLConnection {
 	/**
 	 * SFTP constructor.
 	 * @param url
+	 * @param handler
 	 */
-	protected SFTPConnection(URL url) {
-		this(url, null);
+	protected SFTPConnection(URL url, SFTPStreamHandler handler) {
+		this(url, null, handler);
 	}
 	
 	/**
 	 * SFTP constructor.
 	 * @param url
 	 * @param proxy
+	 * @param handler
 	 */
-	protected SFTPConnection(URL url, java.net.Proxy proxy) {
+	protected SFTPConnection(URL url, java.net.Proxy proxy, SFTPStreamHandler handler) {
 		super(url);
 		mode = ChannelSftp.OVERWRITE;
+		this.handler = handler;
 		
 		if (proxy == null) return;
 		SocketAddress sa = proxy.address();
@@ -153,8 +159,10 @@ public class SFTPConnection extends URLConnection {
 	 * Session disconnect.
 	 */
 	public void disconnect() {
-		if (session != null && session.isConnected())
+		if (openedStreams == 0 && session != null && session.isConnected()) {
 			session.disconnect();
+			handler.removeFromPool(this);
+		}
 	}
 
 	/**
@@ -188,10 +196,14 @@ public class SFTPConnection extends URLConnection {
 			InputStream is = new BufferedInputStream(channel.get(file.equals("") ? "/" : file)) {
 				@Override
 				public void close() throws IOException {
-					super.close();
-					session.disconnect();
+					openedStreams--;
+					if (openedStreams >= 0) {
+						super.close();
+						disconnect();
+					}
 				}
 			};
+			openedStreams++;
 			return is;
 		} catch (SftpException e) {
 			throw new IOException(e.getMessage());
@@ -208,10 +220,14 @@ public class SFTPConnection extends URLConnection {
 			OutputStream os = new BufferedOutputStream(channel.put(url.getFile(), mode)) {
 				@Override
 				public void close() throws IOException {
-					super.close();
-			    	session.disconnect();
+					openedStreams--;
+					if (openedStreams >= 0) {
+						super.close();
+						disconnect();
+					}
 				}
 			};
+			openedStreams++;
 			return os;
 		} catch (SftpException e) {
 			throw new IOException(e.getMessage());
@@ -226,7 +242,7 @@ public class SFTPConnection extends URLConnection {
 	 * @return
 	 * @throws IOException
 	 */
-	public Vector ls(String path) throws IOException {
+	public Vector<?> ls(String path) throws IOException {
 		connect();
 		try {
 			channel = getChannelSftp();
@@ -379,7 +395,7 @@ public class SFTPConnection extends URLConnection {
 		@Override
 		public String[] promptKeyboardInteractive(String destination,
 				String name, String instruction, String[] prompt, boolean[] echo) {
-			return true ? new String[] { password } : null;
+			return new String[] { password };
 		}
 	}
 
@@ -399,5 +415,9 @@ public class SFTPConnection extends URLConnection {
 			return password != null;
 		}
 
+	}
+	
+	void setURL(URL url) {
+		super.url = url;
 	}
 }

@@ -111,5 +111,21 @@ function integer transform() {
 	default: res64 = true;
 		break; 
 	}
+	
+	// this tests if the variable stack is restored after a switch with no break
+	string s = "something";
+	
+	switch (s) {
+		case "nothing":
+	}
+	
+	s = "something";
+
+	switch (s) {
+		case "something":
+	}
+	
+	s = "something";
+
 	return 0;
 }
