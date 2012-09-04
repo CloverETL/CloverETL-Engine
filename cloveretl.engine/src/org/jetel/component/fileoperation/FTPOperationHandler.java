@@ -236,13 +236,7 @@ public class FTPOperationHandler implements IOperationHandler {
 	        }
 	        return ftp;
 		} catch (IOException ioe) {
-			if (ftp != null && ftp.isConnected()) {
-				try {
-					ftp.disconnect();
-				} catch (IOException e) {
-					e.printStackTrace(); // FIXME log the error
-				}
-			}
+			disconnect(ftp);
 			throw new IOException(FileOperationMessages.getString("FTPOperationHandler.connection_failed"), ioe); //$NON-NLS-1$
 		}
 	}

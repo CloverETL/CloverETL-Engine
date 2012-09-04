@@ -773,7 +773,7 @@ public class MergeJoin extends Node {
 
 			join = new MergeJoin(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_JOINKEY_ATTRIBUTE),
-					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
 					joinType,

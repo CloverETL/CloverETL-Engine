@@ -1416,6 +1416,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					}
 				}
 				
+				stack.exitedBlock(); // CL-2501
 				return data;
 			}
 		}
