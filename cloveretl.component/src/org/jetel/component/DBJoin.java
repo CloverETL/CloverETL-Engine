@@ -564,7 +564,7 @@ public class DBJoin extends Node {
             dbjoin = new DBJoin(
                     xattribs.getString(XML_ID_ATTRIBUTE),
                     connectionName,query,joinKey,
-                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+                    xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
                     xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {

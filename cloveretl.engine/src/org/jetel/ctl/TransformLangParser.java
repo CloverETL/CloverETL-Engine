@@ -68,6 +68,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               this.problemReporter = parent.problemReporter;
               this.parsedImports = parent.parsedImports;
               this.isImported  = true;
+              this.encoding = parent.encoding;
       }
 
         public void reset(java.io.InputStream stream) {

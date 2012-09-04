@@ -870,7 +870,7 @@ public class FileUtils {
 		return getWritableChannel(contextURL, input, appendData, -1);
 	}
 
-	private static boolean isArchive(String input) {
+	public static boolean isArchive(String input) {
 		return input.startsWith("zip:") || input.startsWith("tar:") || input.startsWith("gzip:");
 	}
 

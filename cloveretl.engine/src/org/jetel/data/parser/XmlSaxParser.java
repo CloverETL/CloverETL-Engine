@@ -205,7 +205,7 @@ public class XmlSaxParser {
 		}
 		
 		if (m_elementPortMap.size() < 1) {
-			throw new ComponentNotReadyException(parentComponent.getId() + ": At least one mapping has to be defined.  <Mapping element=\"elementToMatch\" outPort=\"123\" [parentKey=\"key in parent\" generatedKey=\"new foreign key in target\"]/>");
+			throw new ComponentNotReadyException(parentComponent.getId() + ": At least one mapping has to be defined. Absence of mapping can be caused by invalid mapping definition. Check for warnings in log above. Mapping example: <Mapping element=\"elementToMatch\" outPort=\"123\" [parentKey=\"key in parent\" generatedKey=\"new foreign key in target\"]/>");
 		}
 		
 		
