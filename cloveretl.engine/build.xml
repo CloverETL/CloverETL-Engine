@@ -1058,6 +1058,8 @@ defined.version.suffix=release
 	<!-- this target is here to ensure that plugins are built before the target runtests-engine is called -->
 	<target name="runtests-tests-reset">
 		<echo message="Executing Clover Test Environment environment - tests reset"/>
+		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
+		<property name="dir.test.additional.classpath" value=""/>
 		<parallel>
 			<daemons>
 				<antcall target="start-testdb" />
@@ -1071,10 +1073,7 @@ defined.version.suffix=release
 		</parallel>
 	</target>
 	
-	<target name="tests-reset" depends="build-plugins,runtests-engine">
-		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
-		<property name="dir.test.additional.classpath" value=""/>
-	</target>
+	<target name="tests-reset" depends="build-plugins,runtests-engine"/>
 	
 	<target name="reporttests" depends="runtests">
 		<mkdir dir="${dir.testsreport}"/>
