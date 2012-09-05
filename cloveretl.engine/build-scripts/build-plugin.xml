@@ -199,7 +199,6 @@
               		property="required.plugins.classes"
               		srcFile="${required.plugins.collected}">
               		<filterchain>
-				<sortfilter />
 				<uniqfilter />
               		</filterchain>
           	</loadfile>
