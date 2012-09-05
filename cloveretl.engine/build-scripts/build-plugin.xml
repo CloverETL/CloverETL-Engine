@@ -198,9 +198,6 @@
 		<loadfile
               		property="required.plugins.classes"
               		srcFile="${required.plugins.collected}">
-              		<filterchain>
-				<uniqfilter />
-              		</filterchain>
           	</loadfile>
 
 		<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
