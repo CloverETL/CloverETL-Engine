@@ -37,6 +37,7 @@
 	<property name="dir.obfuscate.classes" value="${dir.obfuscate}/classes"/>
 	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
 	<property name="required.plugins.file" value="${dir.build}/required-plugins.txt"/>
+	<property name="required.plugins.collected" value="${dir.build}/required-plugins-collected.txt" />
 	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
 	<property file="${basedir}/build-plugin.properties"/>
@@ -155,21 +156,57 @@
 		<replace dir="${dir.src.improved}" token="/* JDBC_4_ANT_KEY_END */" value="*/"/>
 	</target>
 
+	<target name="save-required-plugins">
+		<if>
+			<available file="${basedir}/../${plugin.name}/plugin.xml" />
+		<then>
+			<xslt 
+				style="${dir.engine}/build-scripts/required-plugins.xsl"
+				in="${basedir}/../${plugin.name}/plugin.xml"
+				out="${basedir}/../${plugin.name}/required-plugins.txt"
+				>
+				<param name="separator" expression=","/>
+				<param name="dist" expression="${dir.dist.other.plugins}"/>
+				<param name="home" expression="${basedir}/.."/>
+			</xslt>
+
+
+
+			<property file="${basedir}/../${plugin.name}/required-plugins.txt" prefix="${plugin.name}"/>
+			<propertycopy name="property.classes" from="${plugin.name}.required.plugins.classes" />
+			<echo file="${required.plugins.collected}" append="true">${property.classes}
+</echo>
+			<propertycopy name="list.property" from="${plugin.name}.required.plugins.dirs" />
+
+			<foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive" />
+		</then>
+		</if>
+	</target>
+
+	<target name="save-required-plugins-recursive">
+		<antcall target="save-required-plugins">
+			<param name="plugin.name" value="${plugin.name}" />
+		</antcall>
+	</target>
+
 	<target name="find-required-plugins" depends="init">
-		<xslt 
-			style="${dir.engine}/build-scripts/required-plugins.xsl"
-			in="${basedir}/plugin.xml"
-			out="${required.plugins.file}"
-			>
-			<param name="separator" expression=","/>
-			<param name="dist" expression="${dir.dist.other.plugins}"/>
-			<param name="home" expression="${basedir}/.."/>
-		</xslt>
-		<property file="${required.plugins.file}"/>
-		
+		<echo message="plugin.name ${plugin.name}" />
+		<antcall target="save-required-plugins">
+			<param name="plugin.name" value="${plugin.name}" />
+		</antcall>
+
+		<loadfile
+              		property="required.plugins.classes"
+              		srcFile="${required.plugins.collected}">
+              		<filterchain>
+				<sortfilter />
+				<uniqfilter />
+              		</filterchain>
+          	</loadfile>
+
 		<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
 		
-		<echo>required.plugins=${required.plugins}</echo>
+		<echo>required.plugins.classes=${required.plugins.classes}</echo>
 	</target>
 	
 	<target name="compile" depends="init,improve-java-sources,find-required-plugins" description="Compile sources">
@@ -557,7 +594,7 @@
 			</classpath>
 			<batchtest todir="${dir.testsresult}">
 				<fileset dir="${dir.src.test}">
-					<include name="**/*Test.java"/>
+					<include name="**/Mapping*Test.java"/>
 					<include name="**/Test*.java" />
 				</fileset>
 			</batchtest>
