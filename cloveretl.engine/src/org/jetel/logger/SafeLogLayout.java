@@ -32,6 +32,13 @@ import org.apache.log4j.spi.ThrowableInformation;
  */
 public class SafeLogLayout extends PatternLayout {
 	
+	public SafeLogLayout() {
+	}
+
+	public SafeLogLayout(String pattern) {
+		super(pattern);
+	}
+
 	@Override
 	public boolean ignoresThrowable() {
 		return false;
