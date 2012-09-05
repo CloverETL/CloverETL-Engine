@@ -594,8 +594,7 @@
 			</classpath>
 			<batchtest todir="${dir.testsresult}">
 				<fileset dir="${dir.src.test}">
-					<include name="**/Mapping*Test.java"/>
-					<include name="**/Test*.java" />
+					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>
 			<formatter type="plain"/>
