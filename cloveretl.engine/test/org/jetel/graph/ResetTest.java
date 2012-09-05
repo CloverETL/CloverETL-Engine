@@ -82,6 +82,7 @@ public class ResetTest extends CloverTestCase {
 				@Override
 				public boolean accept(File pathname) {
 					return pathname.getName().endsWith(".grf") 
+							&& pathname.getName().startsWith("graph")// temporary, just for debugging
 							&& !pathname.getName().startsWith("TPCH")// ok, performance tests - last very long
 							&& !pathname.getName().contains("Performance")// ok, performance tests - last very long
 							&& !pathname.getName().equals("graphJoinData.grf") // ok, uses class file that is not created

@@ -1056,8 +1056,24 @@ defined.version.suffix=release
 	</target>
 	
 	<!-- this target is here to ensure that plugins are built before the target runtests-engine is called -->
-	<target name="runtests-tests-reset" depends="build-plugins">
+	<target name="runtests-tests-reset">
 		<echo message="Executing Clover Test Environment environment - tests reset"/>
+		<parallel>
+			<daemons>
+				<antcall target="start-testdb" />
+			</daemons>
+			<sequential>
+				<sleep seconds="5" />
+				<antcall target="generate-eval-license" />
+				<antcall target="tests-reset" />
+				<antcall target="clean-eval-license" />
+			</sequential>
+		</parallel>
+	</target>
+	
+	<target name="tests-reset" depends="build-plugins,runtests-engine">
+		<property name="test.cloveretl.plugins" value="${dir.package}/plugins"/>
+		<property name="dir.test.additional.classpath" value=""/>
 	</target>
 	
 	<target name="reporttests" depends="runtests">
