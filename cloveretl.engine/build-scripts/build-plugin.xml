@@ -158,7 +158,7 @@
 	</target>
 
   <target name="save-required-plugins-lib">
-			<echo file="${required.plugins.lib.collected}" append="true">${lib.file}
+			<echo file="${required.plugins.lib.collected}" append="true">;${lib.file}
 </echo>
   </target>
 
@@ -182,9 +182,14 @@
 			<echo file="${required.plugins.collected}" append="true">${property.classes}
 </echo>
 
-      <foreach param="lib.file" target="save-required-plugins-lib">
-          <fileset dir="${basedir}/../${plugin.name}/lib" includes="*.jar" />
-      </foreach>
+			<if>
+				<available file="${basedir}/../${plugin.name}/lib" type="dir" />
+			<then>
+				<foreach param="lib.file" target="save-required-plugins-lib">
+					<fileset dir="${basedir}/../${plugin.name}/lib" includes="*.jar" />
+				</foreach>
+			</then>
+			</if>
 
 
 			<propertycopy name="list.property" from="${plugin.name}.required.plugins.dirs" />
@@ -206,20 +211,25 @@
         <param name="plugin.name" value="${plugin.name}" />
 		</antcall>
 
-    <loadfile property="required.plugins.classes"
-              srcFile="${required.plugins.collected}">
-    </loadfile>
+	<loadfile property="required.plugins.classes"
+		srcFile="${required.plugins.collected}">
+	</loadfile>
 
-    <loadfile property="required.plugins.lib"
-              srcFile="${required.plugins.lib.collected}">
-    </loadfile>
+	<if>
+		<available file="${required.plugins.lib.collected}" />
+	<then>
+		<loadfile property="required.plugins.lib"
+			srcFile="${required.plugins.lib.collected}">
+		</loadfile>
+	</then>
+	<else>
+		<property name="required.plugins.lib" value="" />
+	</else>
+	</if>
 
-    <echo messages="required.plugins.lib.collected ${required.plugins.lib.collected}" />
-    <fail />
-
-    <property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
+	<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}${required.plugins.lib}" />
 		
-		<echo>required.plugins.classes=${required.plugins.classes}</echo>
+		<echo>cp.compile=${cp.compile}</echo>
 	</target>
 	
 	<target name="compile" depends="init,improve-java-sources,find-required-plugins" description="Compile sources">
