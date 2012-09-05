@@ -38,6 +38,7 @@
 	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
 	<property name="required.plugins.file" value="${dir.build}/required-plugins.txt"/>
 	<property name="required.plugins.collected" value="${dir.build}/required-plugins-collected.txt" />
+	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
 	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
 	<property file="${basedir}/build-plugin.properties"/>
@@ -156,6 +157,11 @@
 		<replace dir="${dir.src.improved}" token="/* JDBC_4_ANT_KEY_END */" value="*/"/>
 	</target>
 
+  <target name="save-required-plugins-lib">
+			<echo file="${required.plugins.lib.collected}" append="true">${lib.file}
+</echo>
+  </target>
+
 	<target name="save-required-plugins">
 		<if>
 			<available file="${basedir}/../${plugin.name}/plugin.xml" />
@@ -170,12 +176,17 @@
 				<param name="home" expression="${basedir}/.."/>
 			</xslt>
 
-
-
 			<property file="${basedir}/../${plugin.name}/required-plugins.txt" prefix="${plugin.name}"/>
 			<propertycopy name="property.classes" from="${plugin.name}.required.plugins.classes" />
+
 			<echo file="${required.plugins.collected}" append="true">${property.classes}
 </echo>
+
+      <foreach param="lib.file" target="save-required-plugins-lib">
+          <fileset dir="${basedir}/../${plugin.name}/lib" includes="*.jar" />
+      </foreach>
+
+
 			<propertycopy name="list.property" from="${plugin.name}.required.plugins.dirs" />
 
 			<foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive" />
@@ -192,15 +203,21 @@
 	<target name="find-required-plugins" depends="init">
 		<echo message="plugin.name ${plugin.name}" />
 		<antcall target="save-required-plugins">
-			<param name="plugin.name" value="${plugin.name}" />
+        <param name="plugin.name" value="${plugin.name}" />
 		</antcall>
 
-		<loadfile
-              		property="required.plugins.classes"
-              		srcFile="${required.plugins.collected}">
-          	</loadfile>
+    <loadfile property="required.plugins.classes"
+              srcFile="${required.plugins.collected}">
+    </loadfile>
 
-		<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
+    <loadfile property="required.plugins.lib"
+              srcFile="${required.plugins.lib.collected}">
+    </loadfile>
+
+    <echo messages="required.plugins.lib.collected ${required.plugins.lib.collected}" />
+    <fail />
+
+    <property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
 		
 		<echo>required.plugins.classes=${required.plugins.classes}</echo>
 	</target>
