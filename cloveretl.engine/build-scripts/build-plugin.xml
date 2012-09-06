@@ -177,6 +177,8 @@
 			</xslt>
 
 			<property file="${basedir}/../${plugin.name}/required-plugins.txt" prefix="${plugin.name}"/>
+			<delete file="${basedir}/../${plugin.name}/required-plugins.txt" />
+
 			<propertycopy name="property.classes" from="${plugin.name}.required.plugins.classes" />
 
 			<echo file="${required.plugins.collected}" append="true">${property.classes}
@@ -214,6 +216,7 @@
 	<loadfile property="required.plugins.classes"
 		srcFile="${required.plugins.collected}">
 	</loadfile>
+	<delete file="${required.plugins.collected}" />
 
 	<if>
 		<available file="${required.plugins.lib.collected}" />
@@ -221,6 +224,8 @@
 		<loadfile property="required.plugins.lib"
 			srcFile="${required.plugins.lib.collected}">
 		</loadfile>
+	  <delete file="${required.plugins.lib.collected}" />
+
 	</then>
 	<else>
 		<property name="required.plugins.lib" value="" />
