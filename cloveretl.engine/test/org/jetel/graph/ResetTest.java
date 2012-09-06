@@ -82,7 +82,6 @@ public class ResetTest extends CloverTestCase {
 				@Override
 				public boolean accept(File pathname) {
 					return pathname.getName().endsWith(".grf") 
-							&& pathname.getName().startsWith("graph")// temporary, just for debugging
 							&& !pathname.getName().startsWith("TPCH")// ok, performance tests - last very long
 							&& !pathname.getName().contains("Performance")// ok, performance tests - last very long
 							&& !pathname.getName().equals("graphJoinData.grf") // ok, uses class file that is not created
@@ -146,7 +145,6 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
 							&& !pathname.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
 							&& !pathname.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
-							&& !pathname.getName().equals("testdata_intersection.grf") // remove after CL-1792 solved
 							&& !pathname.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
 							&& !pathname.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
 							&& !pathname.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
