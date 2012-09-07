@@ -181,19 +181,9 @@
 
 			<propertycopy name="property.classes" from="${plugin.name}.required.plugins.classes" />
 
-      <!--
-      <if>
-          <available file="${property.classes}" type="dir"/>
-          <then>
-      -->
-              <echo file="${required.plugins.collected}" append="true">${property.classes}
+      <echo file="${required.plugins.collected}" append="true">${property.classes}
 </echo>
       
-      <!--
-          </then>
-      </if>
-      -->
-
 			<if>
 				<available file="${basedir}/../${plugin.name}/lib" type="dir" />
 			<then>
@@ -209,18 +199,21 @@
       <if>
           <equals arg1="${recursive}" arg2="1"/>
           <then>
-              <foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive" />
+              <foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive">
+                  <param name="recursive" value="${recursive}"/>
+              </foreach>
           </then>
       </if>
 		</then>
 		</if>
-	</target>
+  </target>
 
-	<target name="save-required-plugins-recursive">
-		<antcall target="save-required-plugins">
-			<param name="plugin.name" value="${plugin.name}" />
-		</antcall>
-	</target>
+    <target name="save-required-plugins-recursive">
+        <antcall target="save-required-plugins">
+            <param name="plugin.name" value="${plugin.name}" />
+            <param name="recursive" value="${recursive}"/>
+        </antcall>
+    </target>
 
     <target name="find-required-plugins" depends="init">
         <echo message="plugin.name ${plugin.name}" />
