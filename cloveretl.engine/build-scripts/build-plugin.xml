@@ -310,7 +310,7 @@
 			</else>
 		</if>
 		
-    <echo "DEBUG: cp.compile ${cp.compile}" />
+    <echo message="DEBUG: cp.compile ${cp.compile}" />
 		<proguard 
 			shrink="false" 
 			verbose="true"
