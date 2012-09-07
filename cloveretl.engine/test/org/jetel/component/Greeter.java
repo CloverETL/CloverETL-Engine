@@ -16,47 +16,16 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.exception;
-
+package org.jetel.component;
 
 /**
- * An exception indicating that an attempt was made to access a non-existing field.
- * 
- * @author krivanekm (info@cloveretl.com)
+ * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created Jul 3, 2012
+ * @created 6.9.2012
  */
-public class MissingFieldException extends JetelRuntimeException {
-
-	private static final long serialVersionUID = -4595828225287715756L;
-
-	private final boolean output;
-	
-	private final int recordId;
-
-	private final String fieldName;
-	
-	/**
-	 * @param message
-	 */
-	public MissingFieldException(String message, boolean output, int recordId, String fieldName) {
-		super(message);
-		this.fieldName = fieldName;
-		this.output = output;
-		this.recordId = recordId;
+public class Greeter {
+	public String getGreeting(String message) {
+		return "Hello " + message;
 	}
-
-	public boolean isOutput() {
-		return output;
-	}
-
-	public int getRecordId() {
-		return recordId;
-	}
-
-	public String getFieldName() {
-		return fieldName;
-	}
-	
 }

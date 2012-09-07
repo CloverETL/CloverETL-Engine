@@ -19,6 +19,7 @@
 package org.jetel.component.partition;
 
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
@@ -26,6 +27,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -43,9 +45,14 @@ public class RoundRobinPartition implements PartitionFunction{
     }
     
     @Override
-	public void init(int numPartitions,RecordKey partitionKey){
-        this.numPorts=numPartitions;
-        this.last=-1;
+	public void init(int numPartitions, RecordKey partitionKey) {
+    	init(numPartitions, partitionKey, null, null);
+    }
+    
+    @Override
+    public void init(int numPartitions, RecordKey partitionKey, Properties parameters, DataRecordMetadata metadata) {
+		this.numPorts = numPartitions;
+		this.last = -1;
     }
     
 	@Override

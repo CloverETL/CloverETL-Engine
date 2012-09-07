@@ -20,7 +20,7 @@ package org.jetel.component;
 
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -51,7 +51,7 @@ public class CTLRecordGenerateAdapter extends CTLAbstractTransformAdapter implem
      *
      * @throws NullPointerException if either the executor or the logger is <code>null</code>
      */
-	public CTLRecordGenerateAdapter(TransformLangExecutor executor, Log logger) {
+	public CTLRecordGenerateAdapter(TransformLangExecutor executor, Logger logger) {
 		super(executor, logger);
 	}
 

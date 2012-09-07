@@ -19,6 +19,7 @@
 package org.jetel.component.partition;
 
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
 import org.jetel.ctl.CTLAbstractTransform;
 import org.jetel.ctl.CTLEntryPoint;
@@ -27,6 +28,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -47,7 +49,13 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 	private DataRecord inputRecord = null;
 
 	@Override
-	public final void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
+	@Deprecated
+	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
+		init(numPartitions, partitionKey, null, null);
+	}
+	
+	@Override
+	public final void init(int numPartitions, RecordKey partitionKey, Properties parameters, DataRecordMetadata metadata) throws ComponentNotReadyException {
 		globalScopeInit();
 		initDelegate(numPartitions);
 	}

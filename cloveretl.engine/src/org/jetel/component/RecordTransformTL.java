@@ -21,6 +21,8 @@ package org.jetel.component;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -53,6 +55,11 @@ public class RecordTransformTL extends AbstractTransformTL implements RecordTran
     /**Constructor for the DataRecordTransform object */
     public RecordTransformTL(String srcCode, Log logger) {
     	super(srcCode, logger);
+    }
+
+    /**Constructor for the DataRecordTransform object */
+    public RecordTransformTL(String srcCode, Logger logger) {
+    	super(srcCode, LogFactory.getLog(logger.getName()));
     }
 
 	/**

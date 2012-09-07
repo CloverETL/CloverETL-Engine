@@ -19,6 +19,7 @@
 package org.jetel.component.partition;
 
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
@@ -27,6 +28,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -42,14 +44,19 @@ public class HashPartition implements PartitionFunction{
     int numPorts;
     HashKey hashKey;
     
-    public HashPartition(){
+    public HashPartition() {
     }
     
     @Override
+    @Deprecated
 	public void init(int numPartitions, RecordKey partitionKey){
-        this.numPorts=numPartitions;
-        hashKey=new HashKey(partitionKey,null);
     }
+
+	@Override
+	public void init(int numPartitions, RecordKey partitionKey, Properties parameters, DataRecordMetadata metadata) {
+        this.numPorts = numPartitions;
+        hashKey = new HashKey(partitionKey, null);
+	}
 
 	@Override
 	public void preExecute() throws ComponentNotReadyException {

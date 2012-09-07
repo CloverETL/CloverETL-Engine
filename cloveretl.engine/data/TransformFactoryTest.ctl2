@@ -1,0 +1,4 @@
+function integer transform() {
+	$out.0.outField = $in.0.inField + " CTL2 external";
+	return OK;
+}

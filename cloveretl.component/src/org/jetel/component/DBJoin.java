@@ -40,8 +40,6 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -395,29 +393,11 @@ public class DBJoin extends Node {
 	        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
 	        		getOutputPort(WRITE_TO_PORT).getMetadata() };
 
-			// transformation source for checkconfig
-	        String checkTransform = null;
-	        if (transformSource != null) {
-	        	checkTransform = transformSource;
-	        } else if (transformURL != null) {
-	        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(),
-	        			transformURL, charset);
-	        }
-	        // only the transform and transformURL parameters are checked, transformClass is ignored
-	        if (checkTransform != null) {
-	        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-	        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-	        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-	    			try {
-	    				transformation = RecordTransformFactory.createTransform(
-	    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-	    						outMetadata);
-					} catch (ComponentNotReadyException e) {
-						// find which component attribute was used
-						String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-						// report CTL error as a warning
-						status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-					}
+	        //check transformation
+	        if (transformation == null) {
+	        	TransformFactory<RecordTransform> transformFactory = getTransformFactory(inMetadata, outMetadata);
+	        	if (transformFactory.isTransformSpecified()) {
+	        		transformFactory.checkConfig(status);
 	        	}
 	        }
         }
@@ -456,11 +436,14 @@ public class DBJoin extends Node {
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
-			if (transformSource != null || transformClassName != null) {
-				transformation = RecordTransformFactory.createTransform(
-						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-						outMetadata);
-			}			
+			
+			if (transformation == null) {
+				TransformFactory<RecordTransform> transformFactory = getTransformFactory(inMetadata, outMetadata);
+	        	if (transformFactory.isTransformSpecified()) {
+	        		transformation = transformFactory.createTransform();
+	        	}
+			}
+
 			// init transformation
 	        if (transformation != null && !transformation.init(transformationParameters, inMetadata, outMetadata)) {
 	            throw new ComponentNotReadyException("Error when initializing tranformation function.");
@@ -474,6 +457,18 @@ public class DBJoin extends Node {
 					"while left outer join is switched on");
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
+	}
+	
+	private TransformFactory<RecordTransform> getTransformFactory(DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata) {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setTransform(transformSource);
+    	transformFactory.setTransformClass(transformClassName);
+    	transformFactory.setTransformUrl(transformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(inMetadata);
+    	transformFactory.setOutMetadata(outMetadata);
+    	return transformFactory;
 	}
 	
 	private DataRecordMetadata extractDbMetadata(IConnection connection, String sqlQuery)

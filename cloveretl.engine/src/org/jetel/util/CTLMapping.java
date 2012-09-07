@@ -28,7 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jetel.component.RecordTransform;
-import org.jetel.component.RecordTransformFactory;
+import org.jetel.component.RecordTransformDescriptor;
+import org.jetel.component.TransformFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -413,8 +414,12 @@ public class CTLMapping {
 		//create CTL transformation
         if (!StringUtils.isEmpty(sourceCode)) {
 			try {
-				ctlTransformation = RecordTransformFactory.createTransform(sourceCode, null, 
-						null, null, component, inputRecordsMetadata, outputRecordsMetadata);
+	        	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+	        	transformFactory.setTransform(sourceCode);
+	        	transformFactory.setComponent(component);
+	        	transformFactory.setInMetadata(inputRecordsMetadata);
+	        	transformFactory.setOutMetadata(outputRecordsMetadata);
+	        	ctlTransformation = transformFactory.createTransform();
 			} catch (MissingFieldException mfe) {
 				if (mfe.isOutput()) {
 					DataRecord record = getOutputRecord(mfe.getRecordId());
@@ -573,15 +578,6 @@ public class CTLMapping {
 		DataRecord outputRecord = outputRecordsMap.get(name);
 		if (outputRecord != null) {
 			return outputRecordsList.indexOf(outputRecord);
-		} else {
-			return -1;
-		}
-	}
-
-	private int indexOfInputRecord(String name) {
-		DataRecord inputRecord = inputRecordsMap.get(name);
-		if (inputRecord != null) {
-			return inputRecordsList.indexOf(inputRecord);
 		} else {
 			return -1;
 		}

@@ -20,13 +20,12 @@ package org.jetel.component.denormalize;
 
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.component.AbstractTransformTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
@@ -68,7 +67,7 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 	protected int cleanFunction;
 
 	/** Constructor for the DataRecordTransform object */
-	public RecordDenormalizeTL(Log logger, String srcCode, TransformationGraph graph) {
+	public RecordDenormalizeTL(Logger logger, String srcCode) {
 		super(srcCode, logger);
 	}
 

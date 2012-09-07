@@ -22,7 +22,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.jetel.component.RecordTransform;
-import org.jetel.component.RecordTransformFactory;
+import org.jetel.component.RecordTransformDescriptor;
+import org.jetel.component.TransformFactory;
 import org.jetel.data.xml.mapping.InputFieldMappingDefinition;
 import org.jetel.data.xml.mapping.XMLElementMappingDefinition;
 import org.jetel.data.xml.mapping.XMLMappingConstants;
@@ -33,7 +34,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.OutputPort;
-import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -188,8 +188,12 @@ public class RuntimeMappingModelFactory {
 		RecordTransform result = null;
 		if (!StringUtils.isEmpty(transformationCode)) {
 			try {
-				result = RecordTransformFactory.createTransform(transformationCode, null, 
-						null, null, context.getParentComponent(), new DataRecordMetadata[]{inPort.getMetadata()}, new DataRecordMetadata[]{outPort.getMetadata()});
+	        	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+	        	transformFactory.setTransform(transformationCode);
+	        	transformFactory.setComponent(context.getParentComponent());
+	        	transformFactory.setInMetadata(inPort.getMetadata());
+	        	transformFactory.setOutMetadata(outPort.getMetadata());
+	        	result = transformFactory.createTransform();
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Output mapping transformation is invalid", e); 
 			}

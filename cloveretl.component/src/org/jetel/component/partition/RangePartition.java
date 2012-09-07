@@ -19,6 +19,7 @@
 package org.jetel.component.partition;
 
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
@@ -29,6 +30,7 @@ import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.RangeLookupTable;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -75,7 +77,13 @@ public class RangePartition implements PartitionFunction{
     }
     
     @Override
+    @Deprecated
 	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
+    	init(numPartitions, partitionKey, null, null);
+    }
+    
+    @Override
+    public void init(int numPartitions, RecordKey partitionKey, Properties parameters, DataRecordMetadata metadata) throws ComponentNotReadyException {
         lookupTable.init();
         lookup = lookupTable.createLookup(partitionKey);
     }

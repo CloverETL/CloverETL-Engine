@@ -616,17 +616,12 @@ public class DataIntersection extends Node {
         recordKeys[1].setEqualNULLs(equalNULLs);
 
         // init transformation
-        DataRecordMetadata[] inMetadata = (DataRecordMetadata[]) getInMetadata()
-                .toArray(new DataRecordMetadata[0]);
-        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(
-                WRITE_TO_PORT_A_B).getMetadata() };
 		//create instance of record transformation
         if (transformation == null) {
-			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
-					transformURL, charset, this, inMetadata, outMetadata);
+			transformation = getTransformFactory().createTransform();
         }
 		// init transformation
-        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+        if (!transformation.init(transformationParameters, getInMetadataArray(), getTransformOutMetadata())) {
             throw new ComponentNotReadyException("Error when initializing tranformation function.");
         }
 
@@ -636,7 +631,22 @@ public class DataIntersection extends Node {
 			new SlaveReader(slavePort, recordKeys[SLAVE_ON_PORT], false);
 	}
 
+	private TransformFactory<RecordTransform> getTransformFactory() {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setTransform(transformSource);
+    	transformFactory.setTransformClass(transformClassName);
+    	transformFactory.setTransformUrl(transformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(getInMetadata());
+    	transformFactory.setOutMetadata(getTransformOutMetadata());
+    	return transformFactory;
+	}
 
+	private DataRecordMetadata[] getTransformOutMetadata() {
+        return new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT_A_B).getMetadata() };
+	}
+	
     /**
      * @param transformationParameters The transformationParameters to set.
      */
@@ -820,35 +830,9 @@ public class DataIntersection extends Node {
 			}
         }
 
-        // transformation source for checkconfig
-        String checkTransform = null;
-        if (transformSource != null) {
-        	checkTransform = transformSource;
-        } else if (transformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
-        }
-        // only the transform and transformURL parameters are checked, transformClass is ignored
-        if (checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-        		// only CTL is checked
-        		
-        		DataRecordMetadata[] inMetadata = 
-        			(DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]);
-        		DataRecordMetadata[] outMetadata = 
-        			new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT_A_B).getMetadata() };
-
-    			try {
-    				RecordTransformFactory.createTransform(checkTransform, null, null, 
-    						charset, this, inMetadata, outMetadata);
-				} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-        	}
+        //check transformation
+        if (transformation == null) {
+        	getTransformFactory().checkConfig(status);
         }
 
         return status;
