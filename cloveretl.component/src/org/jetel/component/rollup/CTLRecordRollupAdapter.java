@@ -20,7 +20,7 @@ package org.jetel.component.rollup;
 
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.component.Rollup;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
@@ -92,7 +92,7 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
      *
      * @throws NullPointerException if either the executor or the logger is <code>null</code>
      */
-    public CTLRecordRollupAdapter(TransformLangExecutor executor, Log logger) {
+    public CTLRecordRollupAdapter(TransformLangExecutor executor, Logger logger) {
 		super(executor, logger);
 	}
 

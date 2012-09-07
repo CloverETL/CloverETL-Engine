@@ -105,6 +105,7 @@ public abstract class GraphElement implements IGraphElement {
         this.name = name;
         this.checked = false;
         this.initialized = false;
+        this.logger = Logger.getLogger(this.getClass().getName() + "." + getId());
     }
     
     /* (non-Javadoc)
@@ -122,7 +123,6 @@ public abstract class GraphElement implements IGraphElement {
     @Override
 	synchronized public void init() throws ComponentNotReadyException {
         initialized = true;
-        logger = Logger.getLogger(this.getClass().getName() + "." + getId());
         jobType = getGraph() != null ? getGraph().getJobType() : JobType.ETL_GRAPH;
     }
 

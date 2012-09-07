@@ -20,7 +20,7 @@ package org.jetel.component.rollup;
 
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.component.AbstractTransformTL;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -116,7 +116,7 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
      * @param sourceCode the source code of the transformation
      * @param logger the logger to be used by this TL wrapper
      */
-    public RecordRollupTL(String sourceCode, Log logger) {
+    public RecordRollupTL(String sourceCode, Logger logger) {
     	super(sourceCode, logger);
     }
 

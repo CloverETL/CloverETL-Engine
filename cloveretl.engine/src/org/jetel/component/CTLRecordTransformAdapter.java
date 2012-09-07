@@ -21,6 +21,8 @@ package org.jetel.component;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -56,6 +58,18 @@ public final class CTLRecordTransformAdapter extends CTLAbstractTransformAdapter
      */
 	public CTLRecordTransformAdapter(TransformLangExecutor executor, Log logger) {
 		super(executor, logger);
+	}
+
+    /**
+     * Constructs a <code>CTLRecordTransformAdapter</code> for a given CTL executor and logger.
+     *
+     * @param executor the CTL executor to be used by this transform adapter, may not be <code>null</code>
+     * @param executor the logger to be used by this transform adapter, may not be <code>null</code>
+     *
+     * @throws NullPointerException if either the executor or the logger is <code>null</code>
+     */
+	public CTLRecordTransformAdapter(TransformLangExecutor executor, Logger logger) {
+		super(executor, LogFactory.getLog(logger.getName()));
 	}
 
 	/**

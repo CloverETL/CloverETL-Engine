@@ -18,45 +18,28 @@
  */
 package org.jetel.exception;
 
+import org.jetel.component.TransformFactory;
 
 /**
- * An exception indicating that an attempt was made to access a non-existing field.
+ * This exception is mainly used when an issue with class loading occurs.
  * 
- * @author krivanekm (info@cloveretl.com)
+ * @see TransformFactory
+ * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created Jul 3, 2012
+ * @created 3.9.2012
  */
-public class MissingFieldException extends JetelRuntimeException {
+public class LoadClassException extends JetelRuntimeException {
 
-	private static final long serialVersionUID = -4595828225287715756L;
+	private static final long serialVersionUID = -4380470214908000235L;
 
-	private final boolean output;
-	
-	private final int recordId;
-
-	private final String fieldName;
-	
-	/**
-	 * @param message
-	 */
-	public MissingFieldException(String message, boolean output, int recordId, String fieldName) {
+	public LoadClassException(String message) {
 		super(message);
-		this.fieldName = fieldName;
-		this.output = output;
-		this.recordId = recordId;
-	}
-
-	public boolean isOutput() {
-		return output;
-	}
-
-	public int getRecordId() {
-		return recordId;
-	}
-
-	public String getFieldName() {
-		return fieldName;
 	}
 	
+	public LoadClassException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+
 }

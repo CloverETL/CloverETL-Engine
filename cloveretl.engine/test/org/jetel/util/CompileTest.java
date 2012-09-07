@@ -21,7 +21,7 @@ package org.jetel.util;
 
 import java.net.URL;
 
-import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.LoadClassException;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.CompilationException;
@@ -89,7 +89,7 @@ public class CompileTest extends CloverTestCase {
 		for (int i=0; i<COMPILE_LOOPS; i++){
 			try {
 				DynamicJavaClass.instantiate(src2, getClass().getClassLoader());
-			} catch (ComponentNotReadyException exception) {
+			} catch (LoadClassException exception) {
 				exception.printStackTrace();
 				fail("Compilation failed!");
 			}

@@ -21,7 +21,7 @@ package org.jetel.component.partition;
 import java.nio.ByteBuffer;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.component.AbstractTransformTL;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
@@ -61,15 +61,20 @@ public class PartitionTL extends AbstractTransformTL implements PartitionFunctio
 	 * @param parameters
 	 * @param logger
 	 */
-	public PartitionTL(String srcCode, DataRecordMetadata metadata, Properties parameters, Log logger) {
+	public PartitionTL(String srcCode, Logger logger) {
 		super(srcCode, logger);
-
-		wrapper.setMatadata(metadata);
-		wrapper.setParameters(parameters);
 	}
 
 	@Override
+	@Deprecated
 	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
+		init(numPartitions, partitionKey, null, null);
+	}
+	
+	@Override
+	public void init(int numPartitions, RecordKey partitionKey, Properties parameters, DataRecordMetadata metadata) throws ComponentNotReadyException {
+		wrapper.setMatadata(metadata);
+		wrapper.setParameters(parameters);
         wrapper.setGraph(getGraph());
 		wrapper.init();
 

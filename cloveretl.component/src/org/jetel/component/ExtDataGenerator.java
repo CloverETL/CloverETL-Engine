@@ -18,15 +18,10 @@
  */
 package org.jetel.component;
 
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.ctl.ErrorMessage;
-import org.jetel.ctl.ITLCompiler;
-import org.jetel.ctl.TLCompilerFactory;
-import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -34,12 +29,10 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Result;
-import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.compile.DynamicJavaClass;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -227,24 +220,33 @@ public class ExtDataGenerator extends DataGenerator {
 			return;
 		super.init();
 
-		DataRecordMetadata[] outMetadata = getOutMetadata().toArray(new DataRecordMetadata[getOutMetadata().size()]);
-		verifyAutofilling(outMetadata[0]);
-		createGeneratorClass(getGraph().getRuntimeContext(), outMetadata);
+		verifyAutofilling(getOutMetadataArray()[0]);
+
+		if (generatorClass == null) {
+			generatorClass = getTransformFactory().createTransform();
+		}
 
 		// set graph instance to transformation (if CTL it can access lookups etc.)
-		if (generatorClass != null) {
-			initGeneratorClass(outMetadata);
-		}
+		initGeneratorClass();
 
 		// autofilling
 		autoFilling.setFilename(getId());
-		autoFilling.addAutoFillingFields(outMetadata[0]);
+		autoFilling.addAutoFillingFields(getOutMetadataArray()[0]);
 	}
 
-	private void initGeneratorClass(DataRecordMetadata[] outMetadata) throws ComponentNotReadyException {
-        generatorClass.setNode(this);
-		
-		if (!generatorClass.init(generateParameters, outMetadata)) {
+	private TransformFactory<RecordGenerate> getTransformFactory() {
+    	TransformFactory<RecordGenerate> transformFactory = TransformFactory.createTransformFactory(RecordGenerateDescriptor.newInstance());
+    	transformFactory.setTransform(generatorSource);
+    	transformFactory.setTransformClass(generatorClassName);
+    	transformFactory.setTransformUrl(generatorURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setOutMetadata(getOutMetadata());
+    	return transformFactory;
+	}
+	
+	private void initGeneratorClass() throws ComponentNotReadyException {
+		if (!generatorClass.init(generateParameters, getOutMetadataArray())) {
 			throw new ComponentNotReadyException("Generator failed to initialize: " + generatorClass.getMessage());
 		}
 	}
@@ -268,66 +270,6 @@ public class ExtDataGenerator extends DataGenerator {
 		}
 	}
 	
-	/**
-	 * Creates generate class (and verifies generator language).
-	 * @param watchDog
-	 * @throws ComponentNotReadyException
-	 */
-	private void createGeneratorClass(GraphRuntimeContext runtimeContext, DataRecordMetadata outMetadata[]) throws ComponentNotReadyException {
-		if (generatorSource != null || generatorClassName != null || generatorURL != null) {
-			// create instance of the record generator
-			if (generatorClass == null) {
-				
-				if (generatorClassName != null) {
-					// load class base on its class name
-					if (runtimeContext == null) return;
-
-					generatorClass = RecordTransformFactory.loadClassInstance(generatorClassName, RecordGenerate.class, this);
-				} else if (generatorSource == null) {
-					// read source code from URL
-					generatorSource = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), generatorURL, charset);
-				}
-				
-				if (generatorClassName == null) {
-					switch (RecordTransformFactory.guessTransformType(generatorSource)) {
-					case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
-						generatorClass = createGeneratorDynamic(generatorSource);
-						break;
-					case RecordTransformFactory.TRANSFORM_CLOVER_TL:
-						generatorClass = new RecordGenerateTL(generatorSource,logger);
-						break;
-					case RecordTransformFactory.TRANSFORM_CTL:
-						ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),null,outMetadata,"UTF-8");
-						List<ErrorMessage> msgs = compiler.compile(generatorSource,CTLRecordGenerate.class, getId());
-						if (compiler.errorCount() > 0) {
-							String report = ErrorMessage.listToString(msgs, logger);
-							throw new ComponentNotReadyException(
-									"CTL code compilation finished with "
-											+ compiler.errorCount() + " errors" + report);
-						}
-						Object ret = compiler.getCompiledCode();
-						if (ret instanceof TransformLangExecutor) {
-							// setup interpreted runtime
-							generatorClass = new CTLRecordGenerateAdapter(
-									(TransformLangExecutor) ret, logger);
-						} else if (ret instanceof CTLRecordGenerate) {
-							generatorClass = (CTLRecordGenerate)ret;
-						} else {
-							// this should never happen as compiler always
-							// generates correct interface
-							throw new ComponentNotReadyException("Invalid type of record transformation");
-						}
-
-						break;
-					default:
-						throw new ComponentNotReadyException(
-								"Can't determine transformation code type at component ID :" + getId());
-					}
-				}
-			}
-		}
-	}
-
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
@@ -337,28 +279,24 @@ public class ExtDataGenerator extends DataGenerator {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-		if (!checkInputPorts(status, 0, 0)
-				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+		if (!checkInputPorts(status, 0, 0) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
 			return status;
 		}
-		
-		 try {
-			 DataRecordMetadata[] outMetadata = getOutMetadata().toArray(new DataRecordMetadata[getOutMetadata().size()]);
-			 verifyAutofilling(getOutMetadata().get(0));
-			 createGeneratorClass(null, outMetadata);
-			 
-		 } catch (ComponentNotReadyException e) {
-			 ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
-					 ConfigurationStatus.Severity.ERROR, this,
-					 ConfigurationStatus.Priority.NORMAL);
-			 
-			 if(!StringUtils.isEmpty(e.getAttributeName())) {
-				 problem.setAttributeName(e.getAttributeName()); 
-			 }
-			 status.add(problem); 
-		 } finally { 
-			 free(); 
-		 }
+
+		try {
+			verifyAutofilling(getOutMetadata().get(0));
+
+			if (generatorClass == null) {
+				getTransformFactory().checkConfig(status);
+			}
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+
+			if (!StringUtils.isEmpty(e.getAttributeName())) {
+				problem.setAttributeName(e.getAttributeName());
+			}
+			status.add(problem);
+		}
 		return status;
 	}
 

@@ -21,7 +21,7 @@ package org.jetel.ctl;
 import java.io.Serializable;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 
 /**
  * An error message within CTL code.
@@ -183,7 +183,7 @@ public class ErrorMessage implements Serializable {
 	 * @param logger
 	 * @return
 	 */
-	public static String listToString(List<ErrorMessage> errors, Log logger) {
+	public static String listToString(List<ErrorMessage> errors, Logger logger) {
 		StringBuilder sb = new StringBuilder();
 		for (ErrorMessage msg : errors) {
 			if (logger != null) {

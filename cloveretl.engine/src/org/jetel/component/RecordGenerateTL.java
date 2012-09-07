@@ -20,7 +20,7 @@ package org.jetel.component;
 
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -46,7 +46,7 @@ public class RecordGenerateTL extends AbstractTransformTL implements RecordGener
     private int generateOnErrorFunction;
 
     /**Constructor for the DataRecordTransform object */
-    public RecordGenerateTL(String srcCode, Log logger) {
+    public RecordGenerateTL(String srcCode, Logger logger) {
     	super(srcCode, logger);
     }
 

@@ -303,6 +303,15 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	}
 
 	/**
+	 * Gets the metadata on output ports of the Node object
+	 *
+	 * @return array of output ports metadata
+	 */
+	public DataRecordMetadata[] getOutMetadataArray() {
+		return getOutMetadata().toArray(new DataRecordMetadata[0]);
+	}
+
+	/**
 	 *  Gets the metadata on input ports of the Node object
 	 *
 	 *@return    Collection of input ports metadata
@@ -315,6 +324,15 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	    return ret;
 	}
 
+	/**
+	 * Gets the metadata on input ports of the Node object
+	 *
+	 * @return array of input ports metadata
+	 */
+	public DataRecordMetadata[] getInMetadataArray() {
+		return getInMetadata().toArray(new DataRecordMetadata[0]);
+	}
+	
 	/**
 	 *  Gets the number of records passed through specified port type and number
 	 *

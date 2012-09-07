@@ -19,8 +19,9 @@
 package org.jetel.component.partition;
 
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -30,6 +31,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -59,7 +61,7 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
      *
      * @throws NullPointerException if either the executor or the logger is <code>null</code>
      */
-	public CTLRecordPartitionAdapter(TransformLangExecutor executor, Log logger) {
+	public CTLRecordPartitionAdapter(TransformLangExecutor executor, Logger logger) {
 		super(executor, logger);
 	}
 
@@ -69,7 +71,13 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
 	}
 
 	@Override
+	@Deprecated
 	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
+		init(numPartitions, partitionKey, null, null);
+	}
+
+	@Override
+	public void init(int numPartitions, RecordKey partitionKey, Properties parameters, DataRecordMetadata metadata) throws ComponentNotReadyException {
         // initialize global scope and call user initialization function
 		super.init(numPartitions);
 
