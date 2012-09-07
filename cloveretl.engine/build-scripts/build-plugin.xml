@@ -181,8 +181,13 @@
 
 			<propertycopy name="property.classes" from="${plugin.name}.required.plugins.classes" />
 
-			<echo file="${required.plugins.collected}" append="true">${property.classes}
+      <if>
+          <available file="${property.classes}" type="dir"/>
+      </if>
+      <then>
+			    <echo file="${required.plugins.collected}" append="true">${property.classes}
 </echo>
+      </then>
 
 			<if>
 				<available file="${basedir}/../${plugin.name}/lib" type="dir" />
@@ -196,7 +201,12 @@
 
 			<propertycopy name="list.property" from="${plugin.name}.required.plugins.dirs" />
 
-			<foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive" />
+      <if>
+          <equals arg1="${recursive}" arg2="1"/>
+          <then>
+              <foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive" />
+          </then>
+      </if>
 		</then>
 		</if>
 	</target>
@@ -207,35 +217,37 @@
 		</antcall>
 	</target>
 
-	<target name="find-required-plugins" depends="init">
-		<echo message="plugin.name ${plugin.name}" />
-		<antcall target="save-required-plugins">
-        <param name="plugin.name" value="${plugin.name}" />
-		</antcall>
+    <target name="find-required-plugins" depends="init">
+        <echo message="plugin.name ${plugin.name}" />
+		    <antcall target="save-required-plugins">
+            <param name="plugin.name" value="${plugin.name}" />
+            <param name="recursive" value="1" />
+		    </antcall>
 
-	<loadfile property="required.plugins.classes"
-		srcFile="${required.plugins.collected}">
-	</loadfile>
-	<delete file="${required.plugins.collected}" />
+        <loadfile property="required.plugins.classes"
+                 srcFile="${required.plugins.collected}">
+        </loadfile>
+        <delete file="${required.plugins.collected}" />
 
-	<if>
-		<available file="${required.plugins.lib.collected}" />
-	<then>
-		<loadfile property="required.plugins.lib"
-			srcFile="${required.plugins.lib.collected}">
-		</loadfile>
-	  <delete file="${required.plugins.lib.collected}" />
+        <if>
+            <available file="${required.plugins.lib.collected}" />
+            <then>
+                <loadfile property="required.plugins.lib"
+                          srcFile="${required.plugins.lib.collected}">
+                </loadfile>
+                <delete file="${required.plugins.lib.collected}" />
 
-	</then>
-	<else>
-		<property name="required.plugins.lib" value="" />
-	</else>
-	</if>
+            </then>
+            <else>
+                <property name="required.plugins.lib" value="" />
+            </else>
+        </if>
 
-	<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}${required.plugins.lib}" />
-		
-		<echo>cp.compile=${cp.compile}</echo>
-	</target>
+        <property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.classes}${required.plugins.lib}" />
+        <property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}${required.plugins.lib}" />
+      
+        <echo>cp.compile=${cp.compile}</echo>
+   </target>
 	
 	<target name="compile" depends="init,improve-java-sources,find-required-plugins" description="Compile sources">
 		<!-- Create directory for binaries. -->
@@ -606,7 +618,7 @@
     		<sysproperty key="net.sourceforge.cobertura.datafile" file="${cobertura.ser}" />
     		<sysproperty key="file.encoding" value="UTF-8" />
 			<env key="cloveretl.plugins" value="${test.cloveretl.plugins}"/>
-			<classpath path="${cp.compile}">
+			<classpath path="${cp.compile.junit}">
 				<pathelement path="${dir.classestest}"/>
 				<pathelement path="${dir.engine.classestest}"/>
 				<fileset dir="${test.cloveretl.plugins}/${plugin.dir.name}/">
