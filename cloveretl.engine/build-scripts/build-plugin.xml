@@ -181,13 +181,18 @@
 
 			<propertycopy name="property.classes" from="${plugin.name}.required.plugins.classes" />
 
+      <!--
       <if>
           <available file="${property.classes}" type="dir"/>
-      </if>
-      <then>
-			    <echo file="${required.plugins.collected}" append="true">${property.classes}
+          <then>
+      -->
+              <echo file="${required.plugins.collected}" append="true">${property.classes}
 </echo>
-      </then>
+      
+      <!--
+          </then>
+      </if>
+      -->
 
 			<if>
 				<available file="${basedir}/../${plugin.name}/lib" type="dir" />
