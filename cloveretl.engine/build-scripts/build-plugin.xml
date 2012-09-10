@@ -196,13 +196,8 @@
 
 			<propertycopy name="list.property" from="${plugin.name}.required.plugins.dirs" />
 
-      <if>
-          <equals arg1="${recursive}" arg2="1"/>
-          <then>
-              <foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive">
-              </foreach>
-          </then>
-      </if>
+      <foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive">
+      </foreach>
 		</then>
 		</if>
   </target>
