@@ -240,9 +240,6 @@
 
         <property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.classes}${required.plugins.lib}" />
       
-        <echo>cp.compile=${cp.compile}</echo>
-
-
         <xslt 
             style="${dir.engine}/build-scripts/required-plugins.xsl"
             in="${basedir}/plugin.xml"
@@ -255,7 +252,9 @@
         <property file="${required.plugins.file}"/>
       
         <property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
-      
+
+        <echo>cp.compile=${cp.compile}</echo>
+        <echo>cp.compile.junit=${cp.compile.junit}</echo>
         <echo>required.plugins=${required.plugins}</echo>
     </target>
 	
