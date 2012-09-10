@@ -197,12 +197,19 @@
 			<propertycopy name="list.property" from="${plugin.name}.required.plugins.dirs" />
 
       <foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive">
+          <param name="echo.recursive.property" value="1" />
       </foreach>
 		</then>
 		</if>
   </target>
 
     <target name="save-required-plugins-recursive">
+        <if>
+            <equals arg1="${echo.recursive.property}" arg2="1" />
+            <then>
+                <echo message="RECURSIVE plugin.name ${plugin.name}" />
+            </then>
+        </if>
         <antcall target="save-required-plugins">
             <param name="plugin.name" value="${plugin.name}" />
         </antcall>
