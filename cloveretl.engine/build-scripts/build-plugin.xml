@@ -240,7 +240,15 @@
         </else>
     </if>
     <!-- classes -->
-    <loadfile property="required.plugins.cp" srcFile="${required.plugins.collected}" />
+    <if>
+        <available file="${required.plugins.collected}" />
+        <then>
+            <loadfile property="required.plugins.cp" srcFile="${required.plugins.collected}" />
+        </then>
+        <else>
+            <property name="required.plugins.cp" value="" />
+        </else>
+    </if>
 		
 		<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
 		<property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.classes}" />
