@@ -228,9 +228,9 @@
 		<property file="${required.plugins.file}"/>
 
     <!-- libs -->
-    <loadfile property="required.plugins.lib" file="${required.plugins.lib.collected}" />
+    <loadfile property="required.plugins.lib" srcFile="${required.plugins.lib.collected}" />
     <!-- classes -->
-    <loadfile property="required.plugins.cp" file="${required.plugins.collected}" />
+    <loadfile property="required.plugins.cp" srcFile="${required.plugins.collected}" />
 		
 		<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
 		<property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.classes}" />
