@@ -228,6 +228,9 @@
 		</xslt>
 		<property file="${required.plugins.file}"/>
 
+    <antcall target="save-required-plugins">
+        <param name="plugin.name" value="${plugin.name}" />
+    </antcall>
 
     <!-- libs -->
     <if>
