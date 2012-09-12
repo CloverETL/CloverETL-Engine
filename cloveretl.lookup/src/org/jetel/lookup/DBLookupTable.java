@@ -56,6 +56,7 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.primitive.SimpleCache;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -221,11 +222,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		}
 	}
 	
-	@Override
-    public synchronized void reset() throws ComponentNotReadyException {
-    	super.reset();
-    }
-    
     public static DBLookupTable fromProperties(TypedProperties properties) 
     throws AttributeNotFoundException, GraphConfigurationException{
 
@@ -360,11 +356,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         return status;
     }
 
-	public void toXML(Element xmlElement) {
-		// TODO Auto-generated method stub
-		
-	}
-    
     @Override
 	public Iterator<DataRecord> iterator() {
         if (!isInitialized()) {
@@ -404,7 +395,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 					String[] fieldName = st.getCloverOutputFields();
 					DataFieldMetadata fieldMetadata;
 					String tableName = dbMeta.getTableName(1);
-					dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+					dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordParsingType.DELIMITED);
 					dbMetadata.setLabel(tableName);
 					dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
 					dbMetadata.setRecordDelimiter("\n");
@@ -526,7 +517,7 @@ class DBLookup implements Lookup{
 	private boolean storeNulls;
 	private int cacheSize;
 
-	private SimpleCache resultCache;
+	private SimpleCache<HashKey, DataRecord> resultCache;
 	private List<DataRecord> result;
 	private List<DataRecord> resultList = new ArrayList<DataRecord>();
 	private DataRecord currentResult;
@@ -590,8 +581,7 @@ class DBLookup implements Lookup{
 	public void seek() {
 		if (resultCache == null && resultSet == null) {//first seek
 			if (cacheSize>0){
-		        this.resultCache= new SimpleCache(cacheSize);
-		        resultCache.enableDuplicity();
+		        this.resultCache= new SimpleCache<HashKey, DataRecord>(cacheSize);
 		    }
 		}
 		try {
@@ -622,7 +612,7 @@ class DBLookup implements Lookup{
 				String[] fieldName = statement.getCloverOutputFields();
 				DataFieldMetadata fieldMetadata;
 				String tableName = dbMeta.getTableName(1);
-				dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+				dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordParsingType.DELIMITED);
 				dbMetadata.setLabel(tableName);
 				dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
 				dbMetadata.setRecordDelimiter("\n");

@@ -25,8 +25,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,7 +46,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.WcardPattern;
-import org.jetel.util.primitive.DuplicateKeyMap;
+import org.jetel.util.primitive.MultiValueMap;
 import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -250,7 +250,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	/**
 	 * Map "rules" stores rules given by user in following form: key: patternOut value: proper descendant of Rule class
 	 */
-	protected DuplicateKeyMap rules = new DuplicateKeyMap(new LinkedHashMap<String, Rule>());
+	protected MultiValueMap<String, Rule> rules = new MultiValueMap<String, Rule>(new LinkedHashMap<String, List<Rule>>());
 	protected Rule[][] transformMapArray;// rules from "rules" map translated for concrete metadata
 	protected ArrayList<Rule[][]> alternativeTransformMapArrays;
 	protected int[][] order;// order for assigning output fields (important if assigning sequence values)
@@ -296,7 +296,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *            input field's pattern
 	 */
 	public void addFieldToFieldRule(String patternOut, String patternIn) {
-		rules.put(patternOut, new FieldRule(patternIn));
+		rules.putValue(patternOut, new FieldRule(patternIn));
 	}
 
 	/**
@@ -392,7 +392,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *            value to assign (can be string representation of any type)
 	 */
 	public void addConstantToFieldRule(String patternOut, String source) {
-		rules.put(patternOut, new ConstantRule(source));
+		rules.putValue(patternOut, new ConstantRule(source));
 	}
 
 	/**
@@ -404,7 +404,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *            value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, int value) {
-		rules.put(patternOut, new ConstantRule(value));
+		rules.putValue(patternOut, new ConstantRule(value));
 	}
 
 	/**
@@ -416,7 +416,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *            value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, long value) {
-		rules.put(patternOut, new ConstantRule(value));
+		rules.putValue(patternOut, new ConstantRule(value));
 	}
 
 	/**
@@ -428,7 +428,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *            value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, double value) {
-		rules.put(patternOut, new ConstantRule(value));
+		rules.putValue(patternOut, new ConstantRule(value));
 	}
 
 	/**
@@ -440,7 +440,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *            value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, Date value) {
-		rules.put(patternOut, new ConstantRule(value));
+		rules.putValue(patternOut, new ConstantRule(value));
 	}
 
 	/**
@@ -452,7 +452,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *            value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, Numeric value) {
-		rules.put(patternOut, new ConstantRule(value));
+		rules.putValue(patternOut, new ConstantRule(value));
 	}
 
 	/**
@@ -707,7 +707,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	public void addSequenceToFieldRule(String patternOut, String sequence) {
 		String sequenceString = sequence.startsWith("${") ? sequence.substring(sequence.indexOf(DOT) + 1, sequence
 				.length() - 1) : sequence;
-		rules.put(patternOut, new SequenceRule(sequenceString));
+		rules.putValue(patternOut, new SequenceRule(sequenceString));
 	}
 
 	/**
@@ -762,7 +762,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *            sequence for getting value
 	 */
 	public void addSequenceToFieldRule(String patternOut, Sequence sequence) {
-		rules.put(patternOut, new SequenceRule(sequence));
+		rules.putValue(patternOut, new SequenceRule(sequence));
 	}
 
 	/**
@@ -817,7 +817,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		if (parameterName.indexOf(DOT) > -1) {
 			parameterName = parameterName.substring(parameterName.indexOf(DOT) + 1, parameterName.length() - 1);
 		}
-		rules.put(patternOut, new ParameterRule(parameterName));
+		rules.putValue(patternOut, new ParameterRule(parameterName));
 	}
 
 	/**
@@ -897,7 +897,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *            output field pattern for deleting rule
 	 */
 	public void deleteRule(String patternOut) {
-		rules.put(patternOut, new DeleteRule());
+		rules.putValue(patternOut, new DeleteRule());
 	}
 
 	/**
@@ -910,7 +910,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public void deleteRule(int outRecNo, int outFieldNo) {
 		String patternOut = String.valueOf(outRecNo) + DOT + outFieldNo;
-		rules.put(patternOut, new DeleteRule());
+		rules.putValue(patternOut, new DeleteRule());
 	}
 
 	/**
@@ -923,7 +923,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public void deleteRule(int outRecNo, String outField) {
 		String patternOut = String.valueOf(outRecNo) + DOT + outField;
-		rules.put(patternOut, new DeleteRule());
+		rules.putValue(patternOut, new DeleteRule());
 	}
 
 	/**
@@ -934,7 +934,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public void deleteRule(int outFieldNo) {
 		String patternOut = String.valueOf(0) + DOT + outFieldNo;
-		rules.put(patternOut, new DeleteRule());
+		rules.putValue(patternOut, new DeleteRule());
 	}
 
 	/**
@@ -1032,13 +1032,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 		// key is in form: recNumber.fieldNumber
 		Map<String, Rule> transformMap = new LinkedHashMap<String, Rule>();
 		ArrayList<Map<String, Rule>> alternativeTransformMaps = new ArrayList<Map<String, Rule>>();
-		Entry<String, ArrayList<Rule>> rulesEntry;
+		Entry<String, List<Rule>> rulesEntry;
 		String field;
 		String ruleString = null;
 		String[] outFields;
 		String[] inFields;
 		// iteration over each user given rule
-		for (Iterator<Entry<String, ArrayList<Rule>>> iterator = rules.entrySet().iterator(); iterator.hasNext();) {
+		for (Iterator<Entry<String, List<Rule>>> iterator = rules.entrySet().iterator(); iterator.hasNext();) {
 			rulesEntry = iterator.next();
 			for (Rule rule : rulesEntry.getValue()) {
 				rule.setGraph(getGraph());
@@ -1599,9 +1599,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public ArrayList<String> getRulesAsStrings() {
 		ArrayList<String> list = new ArrayList<String>();
-		Entry<String, ArrayList<Rule>> entry;
-		ArrayList<Rule> subList;
-		for (Iterator<Entry<String, ArrayList<Rule>>> iterator = rules.entrySet().iterator(); iterator.hasNext();) {
+		Entry<String, List<Rule>> entry;
+		List<Rule> subList;
+		for (Iterator<Entry<String, List<Rule>>> iterator = rules.entrySet().iterator(); iterator.hasNext();) {
 			entry = iterator.next();
 			subList = entry.getValue();
 			for (int i = 0; i < subList.size(); i++) {
