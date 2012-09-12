@@ -254,7 +254,7 @@
     </if>
 		
 		<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
-		<property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.classes}" />
+		<property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.cp}${required.plugins.lib}" />
 		
 		<echo>required.plugins=${required.plugins}</echo>
 		<echo>required.plugins.lib=${required.plugins.lib}</echo>
