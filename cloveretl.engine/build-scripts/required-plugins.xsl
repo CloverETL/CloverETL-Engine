@@ -24,6 +24,10 @@
         <xsl:apply-templates select="/plugin/requires" mode="classes"/>
 		<xsl:text disable-output-escaping="yes"><![CDATA[
 ]]></xsl:text>
+		<xsl:text>required.plugins.dirs=</xsl:text>
+        <xsl:apply-templates select="/plugin/requires" mode="dirs"/>
+		<xsl:text disable-output-escaping="yes"><![CDATA[
+]]></xsl:text>
 	</xsl:template>
 
 
@@ -81,6 +85,26 @@
 		</xsl:if>
 		
 		<xsl:text>/build/classes</xsl:text>
+	</xsl:template>	
+
+	<xsl:template match="/plugin/requires" mode="dirs">
+        <xsl:apply-templates select="*" mode="dirs"/>
+	</xsl:template>
+	<xsl:template match="import" mode="dirs">
+		<xsl:if test="position() != 1">
+			<xsl:value-of select="$separator"/>
+		</xsl:if>
+		<!-- escape \ for build on windows -->
+		<xsl:text>cloveretl.</xsl:text>
+
+		<xsl:if test="starts-with(@plugin-id,'org.jetel.')">
+			<xsl:value-of select="substring-after(@plugin-id,'org.jetel.')"/>
+		</xsl:if>
+
+		<xsl:if test="starts-with(@plugin-id,'com.opensys.clover.')">
+			<xsl:value-of select="substring-after(@plugin-id,'com.opensys.clover.')"/>
+			<xsl:text>.commercial</xsl:text>
+		</xsl:if>
 	</xsl:template>	
 		
 

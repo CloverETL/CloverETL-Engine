@@ -212,6 +212,7 @@
             <param name="plugin.name" value="${plugin.name}" />
         </antcall>
     </target>
+
 	<target name="find-required-plugins" depends="init">
 		<xslt 
 			style="${dir.engine}/build-scripts/required-plugins.xsl"
