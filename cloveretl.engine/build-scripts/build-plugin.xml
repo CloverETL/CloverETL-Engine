@@ -37,6 +37,7 @@
 	<property name="dir.obfuscate.classes" value="${dir.obfuscate}/classes"/>
 	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
 	<property name="required.plugins.file" value="${dir.build}/required-plugins.txt"/>
+	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib.txt"/>
 	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
 	<property file="${basedir}/build-plugin.properties"/>
@@ -227,8 +228,17 @@
 		</xslt>
 		<property file="${required.plugins.file}"/>
 
+
     <!-- libs -->
-    <loadfile property="required.plugins.lib" srcFile="${required.plugins.lib.collected}" />
+    <if>
+        <available file="${required.plugins.lib.collected}" />
+        <then>
+            <loadfile property="required.plugins.lib" srcFile="${required.plugins.lib.collected}" />
+        </then>
+        <else>
+            <property name="required.plugins.lib" value="" />
+        </else>
+    </if>
     <!-- classes -->
     <loadfile property="required.plugins.cp" srcFile="${required.plugins.collected}" />
 		
