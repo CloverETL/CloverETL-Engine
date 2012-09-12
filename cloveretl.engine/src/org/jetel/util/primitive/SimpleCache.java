@@ -18,7 +18,6 @@
  */
 package org.jetel.util.primitive;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -26,17 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
-
 
 /**
  * Simple cache based on LinkedHashMap.<br>
  * It keeps LRU order of accessed items. When maximum capacity
  * is reached and new item is to be stored, the Eldest entry is
  * automatically removed. 
- * When simple cache is created it can be only one entry upon one key, if you 
- * want to have more entries upon one key (using of ArrayList) after creating 
- * the object call method enableDuplicity()
+ * Simple cache supports more entries upon one key.
  * 
  * @author david pavlis
  * @author avackova <agata.vackova@javlinconsulting.cz> ; 
@@ -45,25 +40,20 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @since  24.11.2005
  *
  */
-public class SimpleCache {
+public class SimpleCache<K, V> {
     
-    protected Map map;
-    protected DuplicateKeyMap keyMap = null;
+    protected MultiValueMap<K, V> multiValueMap = null;
     
     protected transient int totalSize = 0;
     protected int maxSize;
     
-    protected Object savedKey;
-    protected Object[] result = new Object[1];
-    protected List resultList = new ArrayList(1);
-
     /**
      * Creates cache with initial size of 16 entries.
      * Maximum size is defaulted to 100.
      */
     public SimpleCache() {
 		StoreMap tmp = new StoreMap();
-		map = Collections.synchronizedMap(tmp);
+		multiValueMap = new MultiValueMap<K, V>(Collections.synchronizedMap(tmp));
 		maxSize = tmp.getMaxEntries();
 	}
     
@@ -75,7 +65,7 @@ public class SimpleCache {
      */
     public SimpleCache(int initialCapacity) {
 		StoreMap tmp = new StoreMap(initialCapacity);
-		map = Collections.synchronizedMap(tmp);
+		multiValueMap = new MultiValueMap<K, V>(Collections.synchronizedMap(tmp));
 		maxSize = tmp.getMaxEntries();
 	}
     
@@ -88,34 +78,18 @@ public class SimpleCache {
      */
     public SimpleCache(int initialCapacity, int maxCapacity) {
 		StoreMap tmp = new StoreMap(initialCapacity, maxCapacity);
-		map = Collections.synchronizedMap(tmp);
+		multiValueMap = new MultiValueMap<K, V>(Collections.synchronizedMap(tmp));
 		maxSize = tmp.getMaxEntries();
 	}
     
-    /**
-     * This method turns on duplicity entries upon the same key
-     * 
-     */
-    public void enableDuplicity(){
-    	keyMap = new DuplicateKeyMap(map);
-    }
     
     public Object[] getAll(Object key, Object[] returnType){
-    	if (keyMap != null) {
-    		return keyMap.getAll(key, returnType);
-    	}
-    	result[0] = map.get(key);
-    	return result;
+    	List<V> list = multiValueMap.get(key);
+    	return list != null ? list.toArray(returnType) : null;
     }
     
-    public List getAll(Object key){
-    	if (keyMap != null) {
-    		return keyMap.getAll(key);
-    	}
-    	if (!map.containsKey(key)) return null;
-    	resultList.clear();
-    	resultList.add(map.get(key));
-    	return resultList;
+    public List<V> getAll(Object key){
+    	return multiValueMap.get(key);
     }
     
     /**
@@ -124,15 +98,7 @@ public class SimpleCache {
      * @return first entry upon the given key
      */
     public Object get(Object key){
-    	savedKey = key;
-    	return (keyMap == null ? map.get(key) : keyMap.get(key) );
-    }
-    
-    /**
-     * @return next entry upon the key from last used method get
-     */
-    public Object getNext(){
-    	return (keyMap == null ? null :keyMap.getNext() );
+    	return multiValueMap.get(key);
     }
     
     /**
@@ -144,55 +110,32 @@ public class SimpleCache {
      *
      * @return <code>true</code> if the value was successfully stored in the cache, <code>false</code> otherwise 
      */
-    public boolean put(Object key, Object value) {
-		if (keyMap != null) {
-			if (totalSize >= maxSize) {
-				// Check if there is a mapping for the current key and if it is the only mapping present.
-				// The call to the get() method here ensures that the order of entries is updated properly
-				// in the underlying linked hash map and thus the LRU algorithm works properly.
-				if (keyMap.get(key) != null && keyMap.size() == 1) {
-					// If there is only a single mapping, all data records share a single key. Adding another
-					// entry would require the size of the cache to be grown and that is not supported.
-					return false;
-				}
-
-				// Remove the eldest entry now. If the get() method was not called earlier, we could remove
-				// previously stored data records for the current key.
-				Iterator iterator = map.entrySet().iterator();
-				Entry eldestEntry = (Entry) iterator.next();
-				iterator.remove();
-
-				totalSize -= ((List) eldestEntry.getValue()).size();
+    public boolean put(K key, V value) {
+		if (totalSize >= maxSize) {
+			// Check if there is a mapping for the current key and if it is the only mapping present.
+			// The call to the get() method here ensures that the order of entries is updated properly
+			// in the underlying linked hash map and thus the LRU algorithm works properly.
+			if (multiValueMap.get(key) != null && multiValueMap.size() == 1) {
+				// If there is only a single mapping, all data records share a single key. Adding another
+				// entry would require the size of the cache to be grown and that is not supported.
+				return false;
 			}
 
-			keyMap.put(key, value);
-			totalSize++;
-		} else {
-			map.put(key, value);
+			// Remove the eldest entry now. If the get() method was not called earlier, we could remove
+			// previously stored data records for the current key.
+			Iterator<Entry<K, List<V>>> iterator = multiValueMap.entrySet().iterator();
+			Entry<K, List<V>> eldestEntry = iterator.next();
+			iterator.remove();
 
-			if (map.size() > maxSize) {
-				Iterator iterator = map.entrySet().iterator();
-				iterator.next();
-				iterator.remove();
-	    	}
+			totalSize -= eldestEntry.getValue().size();
 		}
 
-		savedKey = key;
+		multiValueMap.putValue(key, value);
+		totalSize++;
 
 		return true;
     }
 
-    /**
-     * @return number of records found for last used key
-     */
-    public int getNumFound(){
-    	if (keyMap==null){
-    		return map.containsKey(savedKey) ? 1 : 0; 
-    	}else{
-    		return keyMap.getNumFound();
-    	}
-    }
-    
     /**
      * Returns <tt>true</tt> if this map contains a mapping for the
      * specified key.
@@ -202,12 +145,11 @@ public class SimpleCache {
      * key.
      */
     public boolean containsKey(Object key){
-    	return map.containsKey(key);
+    	return multiValueMap.containsKey(key);
     }
     
     public void clear(){
-    	map.clear();
-    	savedKey = null;
+    	multiValueMap.clear();
     	totalSize = 0;
     }
     
@@ -217,8 +159,7 @@ public class SimpleCache {
      * @author avackova
      *
      */
-    @SuppressWarnings("Se")
-    class StoreMap extends LinkedHashMap{
+    class StoreMap extends LinkedHashMap<K, List<V>> {
     	
 		private static final long serialVersionUID = 7137792243985321904L;
 		
@@ -272,7 +213,7 @@ public class SimpleCache {
          * when it is greater then maximal size the eldest entry is removed
          */
         @Override
-		protected boolean removeEldestEntry(Map.Entry eldest) {
+		protected boolean removeEldestEntry(Map.Entry<K, List<V>> eldest) {
          	remove = totalSize > max_entries;
 //        	if (remove) {
 //	        	tmp = eldest.getValue();
