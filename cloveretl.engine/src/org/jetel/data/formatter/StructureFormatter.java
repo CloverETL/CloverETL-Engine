@@ -132,7 +132,7 @@ public class StructureFormatter extends AbstractFormatter {
 		String fieldName;
 		int index ;
 		int startIndex = 0;
-		Map fields = metadata.getFieldNamesMap();
+		Map<String, Integer> fields = metadata.getFieldNamesMap();
 		do {
 			//find next '$' in mask
 			index = mask.indexOf('$',startIndex);
@@ -151,7 +151,7 @@ public class StructureFormatter extends AbstractFormatter {
 		maskAnalizeMap.toArray(maskAnalize);
 		fieldIndexes = new int[maskAnalize.length];
 		for (int i = 0; i < fieldIndexes.length; i++) {
-			fieldIndexes[i] = (Integer)fields.get(maskAnalize[i].name);
+			fieldIndexes[i] = fields.get(maskAnalize[i].name);
 		}
 	}
 

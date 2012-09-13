@@ -56,9 +56,9 @@ public class LookupTableFactory {
     private static Log logger = LogFactory.getLog(ComponentFactory.class);
 
     private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
-    private final static Class[] PARAMETERS_FOR_FROM_XML_METHOD = new Class[] { TransformationGraph.class, Element.class };
+    private final static Class<?>[] PARAMETERS_FOR_FROM_XML_METHOD = new Class[] { TransformationGraph.class, Element.class };
     private final static String NAME_OF_STATIC_LOAD_FROM_PROPERTIES = "fromProperties";
-    private final static Class[] PARAMETERS_FOR_FROM_PROPERTIES_METHOD = new Class[] {TypedProperties.class };
+    private final static Class<?>[] PARAMETERS_FOR_FROM_PROPERTIES_METHOD = new Class[] {TypedProperties.class };
     private final static Map<String, LookupTableDescription> lookupTableMap = new HashMap<String, LookupTableDescription>();
     
     public static void init() {
@@ -93,7 +93,7 @@ public class LookupTableFactory {
      * @param lookupTableType
      * @return class from the given lookup table type
      */
-    private final static Class getLookupTableClass(String lookupTableType) {
+    private final static Class<? extends LookupTable> getLookupTableClass(String lookupTableType) {
         String className = null;
         LookupTableDescription lookupTableDescription = lookupTableMap.get(lookupTableType);
         
@@ -102,14 +102,14 @@ public class LookupTableFactory {
                 //unknown lookup table type, we suppose lookupTableType as full class name classification
                 className = lookupTableType;
                 //find class of lookupTable
-                return Class.forName(lookupTableType); 
+                return Class.forName(lookupTableType).asSubclass(LookupTable.class); 
             } else {
                 className = lookupTableDescription.getClassName();
 
                 PluginDescriptor pluginDescriptor = lookupTableDescription.getPluginDescriptor();
                 
                 //find class of lookupTable
-                return Class.forName(className, true, pluginDescriptor.getClassLoader());
+                return Class.forName(className, true, pluginDescriptor.getClassLoader()).asSubclass(LookupTable.class);
             }
         } catch(ClassNotFoundException ex) {
             logger.error("Unknown lookup table: " + lookupTableType + " class: " + className);
@@ -122,7 +122,7 @@ public class LookupTableFactory {
 
 	public final static LookupTable createLookupTable(TypedProperties lookupProperties) {
 		String lookupTableType = lookupProperties.getProperty("type");
-        Class tClass = getLookupTableClass(lookupTableType);
+        Class<? extends LookupTable> tClass = getLookupTableClass(lookupTableType);
         try {
             //create instance of lookup table
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_PROPERTIES, PARAMETERS_FOR_FROM_PROPERTIES_METHOD);
@@ -137,7 +137,7 @@ public class LookupTableFactory {
      *  Method for creating various types of LookupTable based on lookup type & XML parameter definition.
      */
     public final static LookupTable createLookupTable(TransformationGraph graph, String lookupTableType, org.w3c.dom.Node nodeXML) {
-        Class tClass = getLookupTableClass(lookupTableType);
+        Class<? extends LookupTable> tClass = getLookupTableClass(lookupTableType);
 
         try {
             //create instance of lookup table
@@ -152,13 +152,13 @@ public class LookupTableFactory {
     /**
      *  Method for creating various types of LookupTable based on lookup type, parameters and theirs types for lookup table constructor.
      */
-    public final static LookupTable createLookupTable(TransformationGraph graph, String lookupTableType, Object[] constructorParameters, Class[] parametersType) {
-        Class tClass = getLookupTableClass(lookupTableType);
+    public final static LookupTable createLookupTable(TransformationGraph graph, String lookupTableType, Object[] constructorParameters, Class<?>[] parametersType) {
+        Class<? extends LookupTable> tClass = getLookupTableClass(lookupTableType);
 
         try {
             //create instance of lookup table
-            Constructor constructor = tClass.getConstructor(parametersType);
-            return (LookupTable) constructor.newInstance(constructorParameters);
+            Constructor<? extends LookupTable> constructor = tClass.getConstructor(parametersType);
+            return constructor.newInstance(constructorParameters);
         } catch(Exception ex) {
             logger.error("Can't create object of : " + lookupTableType + " exception: " + ex);
             throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);

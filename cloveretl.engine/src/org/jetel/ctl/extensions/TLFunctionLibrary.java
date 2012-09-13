@@ -87,9 +87,8 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     	Class<? extends TLFunctionLibrary> clazz = getClass();
     	HashSet<String> initMethods = new HashSet<String>();
     	
-    	TLFunctionInitAnnotation ia = null;
     	for (Method m : clazz.getMethods()) {
-    		if ( (ia = m.getAnnotation(TLFunctionInitAnnotation.class)) != null) {
+    		if ( (m.getAnnotation(TLFunctionInitAnnotation.class)) != null) {
         		Type[] parameters = m.getGenericParameterTypes();
         		if (parameters.length != 1 || !TLFunctionCallContext.class.equals(parameters[0])) {
         			throw new IllegalArgumentException("Init function definition must have exactly one parameter of type TLFunctionCallContext - method " + m.getName());			

@@ -188,6 +188,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	 * @return    The Type value
 	 */
 	@Override
+	@Deprecated
 	public char getType() {
 		return DataFieldMetadata.BOOLEAN_FIELD;
 	}
@@ -216,7 +217,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 			setNull(false);
 		} catch (ParseBooleanException e) {
 			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - - doesn't match defined True/False format \"%s\" ",
-					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, booleanFormatter.toString()),
+					getMetadata().getName(), getMetadata().getDataType().getName(), seq, booleanFormatter.toString()),
 					seq.toString(),e);
 		}
 	}

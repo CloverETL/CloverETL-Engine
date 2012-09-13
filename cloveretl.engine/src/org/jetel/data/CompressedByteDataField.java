@@ -123,6 +123,7 @@ public class CompressedByteDataField extends ByteDataField {
     }
 
 	@Override
+	@Deprecated
 	public char getType() {
 		return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
 	}

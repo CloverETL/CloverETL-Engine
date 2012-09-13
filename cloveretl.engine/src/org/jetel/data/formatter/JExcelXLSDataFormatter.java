@@ -51,7 +51,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
@@ -209,7 +210,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		cellStyle = new WritableCellFormat[includedFieldIndices.length];
 		CellView view = new CellView();
 		view.setHidden(false);
-		if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
+		if (metadata.getParsingType() == DataRecordParsingType.DELIMITED) {
 			view.setAutosize(true);
 		}
 		for (int i = 0; i < includedFieldIndices.length; i++) {
@@ -237,12 +238,13 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 * @param field
 	 * @return
 	 */
+	@SuppressWarnings("deprecation")
 	private static WritableCellFormat getCellFormat(DataFieldMetadata field){
-		if (!(field.isNumeric() || field.getType() == DataFieldMetadata.DATE_FIELD || field.getType() == DataFieldMetadata.DATETIME_FIELD)){
+		if (!(field.getDataType().isNumeric() || field.getDataType() == DataFieldType.DATE || field.getDataType() == DataFieldType.DATETIME)){
 			return null;
 		}
 		String format = field.getFormat();
-		if (field.isNumeric()) {
+		if (field.getDataType().isNumeric()) {
 			return format != null ? new WritableCellFormat(new NumberFormat(format)) : null;
 		}
 		//DateDataField
@@ -373,6 +375,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public int write(DataRecord record) throws IOException {
 		if (multiSheetWriting) {
@@ -381,22 +384,22 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		}else if (sheet == null) {
 			prepareSheet();
 		}
-		char metaType;//metadata field type
+		DataFieldType metaType;//metadata field type
 		Object value;//field value
 		Object valueXls = null;//value to set
 		short colNum;
 		for (int i = 0; i < includedFieldIndices.length; i++) {
-			metaType = metadata.getField(includedFieldIndices[i]).getType();
+			metaType = metadata.getField(includedFieldIndices[i]).getDataType();
 			colNum = (short)(firstColumn + i);
 			value = record.getField(includedFieldIndices[i]).getValue();
 			if (value == null) continue;
-			if (metaType == DataFieldMetadata.BYTE_FIELD || metaType == DataFieldMetadata.BYTE_FIELD_COMPRESSED
-					|| metaType == DataFieldMetadata.STRING_FIELD){
+			if (metaType == DataFieldType.BYTE || metaType == DataFieldType.CBYTE
+					|| metaType == DataFieldType.STRING) {
 				valueXls = new Label(colNum,currentRow,value.toString());
 			}else{
 				switch (metaType) {
-				case DataFieldMetadata.DATE_FIELD:
-				case DataFieldMetadata.DATETIME_FIELD:
+				case DATE:
+				case DATETIME:
 					if (cellStyle[i] != null) {
 						valueXls = new DateTime(colNum, currentRow,
 								(Date) value, cellStyle[i]);
@@ -405,7 +408,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 								(Date) value);
 					}
 					break;
-				case DataFieldMetadata.INTEGER_FIELD:
+				case INTEGER:
 					if (cellStyle[i] != null) {
 						valueXls = new Number(colNum, currentRow,
 								(Integer) value, cellStyle[i]);
@@ -414,7 +417,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 								(Integer) value);
 					}
 					break;
-				case DataFieldMetadata.LONG_FIELD:
+				case LONG:
 					if (cellStyle[i] != null) {
 						valueXls = new Number(colNum, currentRow,
 								(Long) value, cellStyle[i]);
@@ -423,7 +426,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 								(Long) value);
 					}
 					break;
-				case DataFieldMetadata.DECIMAL_FIELD:
+				case DECIMAL:
 					if (cellStyle[i] != null) {
 						valueXls = new Number(colNum, currentRow,
 								((Decimal)value).getDouble(), cellStyle[i]);
@@ -432,7 +435,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 								((Decimal)value).getDouble());
 					}
 					break;
-				case DataFieldMetadata.NUMERIC_FIELD:
+				case NUMBER:
 					if (cellStyle[i] != null) {
 						valueXls = new Number(colNum, currentRow,
 								(Double) value, cellStyle[i]);
@@ -441,7 +444,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 								(Double) value);
 					}
 					break;
-				case DataFieldMetadata.BOOLEAN_FIELD:
+				case BOOLEAN:
 					if (cellStyle[i] != null) {
 						valueXls = new Boolean(colNum, currentRow,
 								(java.lang.Boolean) value, cellStyle[i]);
@@ -449,6 +452,8 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 						valueXls = new Boolean(colNum, currentRow,
 								(java.lang.Boolean) value);
 					}
+					break;
+				default:
 					break;
 				}
 			}

@@ -35,6 +35,7 @@ import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
 import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -121,11 +122,11 @@ public final class TLUtils {
 		}
 		
 		//field types have to be equal
-		if (! (field1.getType() == field2.getType())) {
+		if (! (field1.getDataType() == field2.getDataType())) {
 			return false;
 		}
 		
-		if (field1.getType() == DataFieldMetadata.DECIMAL_FIELD) {
+		if (field1.getDataType() == DataFieldType.DECIMAL) {
 			
 			if (!StringUtils.equalsWithNulls(field1.getProperty(DataFieldMetadata.LENGTH_ATTR),
 					field2.getProperty(DataFieldMetadata.LENGTH_ATTR))

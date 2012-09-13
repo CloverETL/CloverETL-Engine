@@ -45,7 +45,9 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.NumberIterator;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.string.StringUtils;
@@ -198,7 +200,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	public DataRecordMetadata createMetadata(){
 		if (wb == null) return null;
 		String name = sheet.getName();
-		DataRecordMetadata xlsMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+		DataRecordMetadata xlsMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordParsingType.DELIMITED);
 		xlsMetadata.setLabel(name);
 		xlsMetadata.setFieldDelimiter(DEFAULT_FIELD_DELIMITER);
 		xlsMetadata.setRecordDelimiter(DEFAULT_RECORD_DELIMITER);
@@ -230,15 +232,15 @@ public class JExcelXLSDataParser extends XLSParser {
 			if (type == CellType.EMPTY && namesRow != dataRow && (nameCell == null || nameCell.getType() == CellType.EMPTY)) {
 				continue;
 			}else if (type == CellType.BOOLEAN) {
-				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.BOOLEAN_FIELD,null);
+				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldType.BOOLEAN, null);
 			}else if (type == CellType.DATE){
-				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.DATE_FIELD,null);
+				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldType.DATE, null);
 				field.setFormatStr(((SimpleDateFormat)((DateCell)dataCell).getDateFormat()).toPattern());
 			}else if (type == CellType.NUMBER) {
-				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.NUMERIC_FIELD,null);
+				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldType.NUMBER, null);
 				field.setFormatStr(((DecimalFormat)((NumberCell)dataCell).getNumberFormat()).toPattern());
 			}else{
-				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldMetadata.STRING_FIELD,null);
+				field = new DataFieldMetadata(DataFieldMetadata.EMPTY_NAME, DataFieldType.STRING, null);
 			}
 			field.setLabel(name);
 			xlsMetadata.addField(field);
@@ -309,10 +311,11 @@ public class JExcelXLSDataParser extends XLSParser {
 
 
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		if (currentRow>=lastRow) return null;
-		char type;
+		DataFieldType type;
 		for (short i=0;i<fieldNumber.length;i++){
 			int cloverFieldIndex = fieldNumber[i][CLOVER_NUMBER];
 			int xlsFieldIndex = fieldNumber[i][XLS_NUMBER];
@@ -331,11 +334,11 @@ public class JExcelXLSDataParser extends XLSParser {
 				record.getField(cloverFieldIndex).setNull(true);
 				continue;
 			}
-			type = metadata.getField(cloverFieldIndex).getType();
+			type = metadata.getField(cloverFieldIndex).getDataType();
 			try{
 				switch (type) {
-				case DataFieldMetadata.DATE_FIELD:
-				case DataFieldMetadata.DATETIME_FIELD:
+				case DATE:
+				case DATETIME:
 					if (cell instanceof DateCell) {
 						Date dateWronglyInUTC = ((DateCell) cell).getDate();
 						Date dateInLocalTimeZone = this.changeTimeShiftToLocal(dateWronglyInUTC);
@@ -344,26 +347,28 @@ public class JExcelXLSDataParser extends XLSParser {
 						throw new BadDataFormatException("Incompatible data types, xls type '" + cell.getType() + "' cannot be used to populate a clover 'date' data field.");
 					}
 					break;
-				case DataFieldMetadata.BYTE_FIELD:
-				case DataFieldMetadata.STRING_FIELD:
+				case BYTE:
+				case STRING:
 					record.getField(cloverFieldIndex).fromString(parseString(cell));
 					break;
-				case DataFieldMetadata.DECIMAL_FIELD:
-				case DataFieldMetadata.INTEGER_FIELD:
-				case DataFieldMetadata.LONG_FIELD:
-				case DataFieldMetadata.NUMERIC_FIELD:
+				case DECIMAL:
+				case INTEGER:
+				case LONG:
+				case NUMBER:
 					if (cell instanceof NumberCell) {
 						record.getField(cloverFieldIndex).setValue(((NumberCell) cell).getValue());
 					} else {
 						throw new BadDataFormatException("Incompatible data types, xls type '" + cell.getType() + "' cannot be used to populate a clover 'numeric' data field.");
 					}
 					break;
-				case DataFieldMetadata.BOOLEAN_FIELD:
+				case BOOLEAN:
 					if (cell instanceof BooleanCell) {
 						record.getField(cloverFieldIndex).setValue(((BooleanCell) cell).getValue());
 					} else {
 						throw new BadDataFormatException("Incompatible data types, xls type '" + cell.getType() + "' cannot be used to populate a clover 'boolean' data field.");
 					}
+					break;
+				default:
 					break;
 				}
 			} catch (RuntimeException bdne) { // exception when trying get date or number from different cell type, or there's incorrect format

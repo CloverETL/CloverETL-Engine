@@ -27,7 +27,6 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -193,9 +192,9 @@ public class FixLenCharDataParser extends FixLenDataParser {
 					StringUtils.trimTrailing(rawRec);
 				}
                 // shall we remove quotes ??
-                switch(record.getField(fieldIdx).getType()){
-                case DataFieldMetadata.BYTE_FIELD:
-                case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+                switch(record.getField(fieldIdx).getMetadata().getDataType()){
+                case BYTE:
+                case CBYTE:
                      break;
                 default:
    					StringUtils.unquote(rawRec);

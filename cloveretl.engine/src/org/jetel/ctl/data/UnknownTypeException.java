@@ -20,8 +20,9 @@ package org.jetel.ctl.data;
 
 public class UnknownTypeException extends RuntimeException {
 
+	private static final long serialVersionUID = 7896163359994303508L;
+	
 	private String type;
-
 
 	public UnknownTypeException(String type) {
 		super();
