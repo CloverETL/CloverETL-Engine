@@ -82,8 +82,9 @@ public class FTPOperationHandler implements IOperationHandler {
 		case MOVE: // can be achieved by renaming, but only within a single host 
 			return operation.scheme(0).equalsIgnoreCase(FTP_SCHEME)
 					&& operation.scheme(1).equalsIgnoreCase(FTP_SCHEME);
+		default:
+			return false;
 		}
-		return false;
 	}
 	
 	private static class FTPInfo implements Info {

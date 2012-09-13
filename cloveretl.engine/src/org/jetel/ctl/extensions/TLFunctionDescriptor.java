@@ -41,7 +41,6 @@ package org.jetel.ctl.extensions;
  */
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 import org.jetel.ctl.data.TLType;
 

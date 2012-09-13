@@ -26,7 +26,7 @@ import java.util.Locale;
 
 import org.jetel.enums.CollatorSensitivityType;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -44,7 +44,7 @@ import org.jetel.util.key.RecordKeyTokens;
  *@since      February 28, 2004
  *@revision    $Revision$
  */
-public class RecordComparator implements Comparator {
+public class RecordComparator implements Comparator<DataRecord> {
 
 	protected int keyFields[];
     protected RuleBasedCollator[] collators;
@@ -68,7 +68,6 @@ public class RecordComparator implements Comparator {
      * @param keyFields indexes of fields to be considered for sorting
      * @param collator  Collator which should be use for comparing String fields
      */
-	@Deprecated
     public RecordComparator(int keyFields[], RuleBasedCollator collator){
         this.keyFields = keyFields;
         sortOrderings = new boolean[keyFields.length];
@@ -123,10 +122,8 @@ public class RecordComparator implements Comparator {
 	 *@return          -1 ; 0 ; 1
 	 */
 	@Override
-	public int compare(Object o1, Object o2) {
+	public int compare(DataRecord record1, DataRecord record2) {
         int compResult;
-        final DataRecord record1 = (DataRecord) o1;
-        final DataRecord record2 = (DataRecord) o2;
         /*
          * by D.Pavlis following check has been "relaxed" to speed up
          * processing. if (record1.getMetadata() != record2.getMetadata()) {
@@ -137,7 +134,7 @@ public class RecordComparator implements Comparator {
             for (int i = 0; i < keyFields.length; i++) {
                 final DataField field1 = record1.getField(keyFields[i]);
                 final DataField field2 = record2.getField(keyFields[i]);
-                if (collators[i] != null && field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                if (collators[i] != null && field1.getMetadata().getDataType() == DataFieldType.STRING) {
                     compResult = ((StringDataField) field1).compareTo(field2, collators[i]);
                 } else {
                     compResult = field1.compareTo(field2);
@@ -208,7 +205,7 @@ public class RecordComparator implements Comparator {
          if (useCollator) {
              for (int i = 0; i < keyFields.length; i++) {
                  final DataField field1 = record1.getField(keyFields[i]);
-                 if (collators[i] != null && field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                 if (collators[i] != null && field1.getMetadata().getDataType() == DataFieldType.STRING) {
                     compResult = ((StringDataField) field1).compareTo(
                              record2.getField(record2KeyFields[i]),collators[i]);
                  }else{

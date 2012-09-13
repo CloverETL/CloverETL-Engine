@@ -43,8 +43,7 @@ public class TLCompilerFactory {
 
     private static Log logger = LogFactory.getLog(TLCompilerFactory.class);
 
-	private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
-	private final static Class[] PARAMETERS_FOR_CONSTURCTOR = new Class[] { TransformationGraph.class, DataRecordMetadata[].class, DataRecordMetadata[].class, String.class };
+	private final static Class<?>[] PARAMETERS_FOR_CONSTURCTOR = new Class<?>[] { TransformationGraph.class, DataRecordMetadata[].class, DataRecordMetadata[].class, String.class };
 	private final static Map<String, TLCompilerDescription> compilerMap = new HashMap<String, TLCompilerDescription>();
 	
 	public static void init() {
@@ -76,7 +75,7 @@ public class TLCompilerFactory {
 	}
 	
     
-    public final static Class<?> getCompilerClass(String compilerType) {
+    public final static Class<? extends ITLCompiler> getCompilerClass(String compilerType) {
         String className = null;
         TLCompilerDescription compilerDescription = compilerMap.get(compilerType);
         
@@ -85,14 +84,14 @@ public class TLCompilerFactory {
                 //unknown compiler type, we suppose compilerType as full class name classification
                 className = compilerType;
                 //find class of compiler
-                return Class.forName(compilerType); 
+                return Class.forName(compilerType).asSubclass(ITLCompiler.class); 
             } else {
                 className = compilerDescription.getClassName();
 
                 PluginDescriptor pluginDescriptor = compilerDescription.getPluginDescriptor();
                 
                 //find class of compiler
-                return Class.forName(className, true, pluginDescriptor.getClassLoader());
+                return Class.forName(className, true, pluginDescriptor.getClassLoader()).asSubclass(ITLCompiler.class);
             }
         } catch (ClassNotFoundException ex) {
             logger.error("Unknown TL compiler: " + compilerType + " class: " + className);
@@ -105,12 +104,12 @@ public class TLCompilerFactory {
     }
     
 	public final static ITLCompiler createCompiler(String compilerType, TransformationGraph graph, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, String encoding) {
-		Class<?> tClass = getCompilerClass(compilerType);
+		Class<? extends ITLCompiler> tClass = getCompilerClass(compilerType);
         
         try {
             //create instance of compiler
-			Constructor<?> constructor = tClass.getConstructor(PARAMETERS_FOR_CONSTURCTOR);
-			return (ITLCompiler) constructor.newInstance(new Object[] {graph, inMetadata, outMetadata, encoding});
+			Constructor<? extends ITLCompiler> constructor = tClass.getConstructor(PARAMETERS_FOR_CONSTURCTOR);
+			return constructor.newInstance(new Object[] {graph, inMetadata, outMetadata, encoding});
         } catch(InvocationTargetException e) {
             logger.error("Can't create object of type " + compilerType + " with reason: " + e.getTargetException().getMessage());
             throw new RuntimeException("Can't create object of type " + compilerType + " with reason: " + e.getTargetException().getMessage());

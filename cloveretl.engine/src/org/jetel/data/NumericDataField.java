@@ -344,6 +344,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 *@since     March 28, 2002
 	 */
 	@Override
+	@Deprecated
 	public char getType() {
 		return DataFieldMetadata.NUMERIC_FIELD;
 	}
@@ -485,7 +486,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 			setNull(Double.isNaN(value));
 		} catch (Exception ex) {
 			throw new BadDataFormatException(String.format("field \"%s\" (%s) cannot be set to \"%s\" - try using a different number format (currently: \"%s\")",
-					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, 
+					getMetadata().getName(), getMetadata().getDataType().getName(), seq, 
 					!StringUtils.isEmpty(numericFormatter.getFormatPattern()) ? numericFormatter.getFormatPattern() : "none"));
 		}
 	}

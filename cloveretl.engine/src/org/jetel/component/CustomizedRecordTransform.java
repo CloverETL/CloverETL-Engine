@@ -44,6 +44,7 @@ import org.jetel.exception.TransformException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.primitive.MultiValueMap;
@@ -1789,7 +1790,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @return string (LENGTH,SCALE)
 	 */
 	public static String getDecimalParams(DataFieldMetadata field) {
-		if (field.getType() != DataFieldMetadata.DECIMAL_FIELD) {
+		if (field.getDataType() != DataFieldType.DECIMAL) {
 			return "";
 		}
 		StringBuilder params = new StringBuilder(5);
@@ -1935,8 +1936,8 @@ abstract class Rule {
 	public static boolean checkTypes(DataFieldMetadata outField, DataFieldMetadata inField, PolicyType policy) {
 		boolean checkTypes;
 		// check if both fields are of type DECIMAL, if yes inField must be subtype of outField
-		if (outField.getType() == inField.getType()) {
-			if (outField.getType() == DataFieldMetadata.DECIMAL_FIELD) {
+		if (outField.getDataType() == inField.getDataType()) {
+			if (outField.getDataType() == DataFieldType.DECIMAL) {
 				checkTypes = inField.isSubtype(outField);
 			} else {
 				checkTypes = true;
@@ -1987,7 +1988,7 @@ class FieldRule extends Rule {
 						+ CustomizedRecordTransform.DOT
 						+ targetMetadata[recNo].getField(fieldNo).getName()
 						+ " type - "
-						+ targetMetadata[recNo].getField(fieldNo).getTypeAsString()
+						+ targetMetadata[recNo].getField(fieldNo).getDataType().getName()
 						+ CustomizedRecordTransform.getDecimalParams(targetMetadata[recNo].getField(fieldNo))
 						+ "\n"
 						+ sourceMetadata[CustomizedRecordTransform.getRecNo(fieldParams)].getName()
@@ -1996,7 +1997,7 @@ class FieldRule extends Rule {
 								CustomizedRecordTransform.getFieldNo(fieldParams)).getName()
 						+ " type - "
 						+ sourceMetadata[CustomizedRecordTransform.getRecNo(fieldParams)].getField(
-								CustomizedRecordTransform.getFieldNo(fieldParams)).getTypeAsString()
+								CustomizedRecordTransform.getFieldNo(fieldParams)).getDataType().getName()
 						+ CustomizedRecordTransform.getDecimalParams(sourceMetadata[CustomizedRecordTransform
 								.getRecNo(fieldParams)].getField(CustomizedRecordTransform.getFieldNo(fieldParams)));
 				error(errorMessage);
@@ -2008,7 +2009,7 @@ class FieldRule extends Rule {
 						+ CustomizedRecordTransform.DOT
 						+ targetMetadata[recNo].getField(fieldNo).getName()
 						+ " type - "
-						+ targetMetadata[recNo].getField(fieldNo).getTypeAsString()
+						+ targetMetadata[recNo].getField(fieldNo).getDataType().getName()
 						+ CustomizedRecordTransform.getDecimalParams(targetMetadata[recNo].getField(fieldNo))
 						+ "\n"
 						+ sourceMetadata[CustomizedRecordTransform.getRecNo(fieldParams)].getName()
@@ -2017,7 +2018,7 @@ class FieldRule extends Rule {
 								CustomizedRecordTransform.getFieldNo(fieldParams)).getName()
 						+ " type - "
 						+ sourceMetadata[CustomizedRecordTransform.getRecNo(fieldParams)].getField(
-								CustomizedRecordTransform.getFieldNo(fieldParams)).getTypeAsString()
+								CustomizedRecordTransform.getFieldNo(fieldParams)).getDataType().getName()
 						+ CustomizedRecordTransform.getDecimalParams(sourceMetadata[CustomizedRecordTransform
 								.getRecNo(fieldParams)].getField(CustomizedRecordTransform.getFieldNo(fieldParams)));
 				error(errorMessage);
@@ -2135,50 +2136,50 @@ class SequenceRule extends Rule {
 		// check sequence method
 		String method = source.indexOf(CustomizedRecordTransform.DOT) > -1 ? source.substring(source
 				.indexOf(CustomizedRecordTransform.DOT) + 1) : null;
-		char methodType = DataFieldMetadata.UNKNOWN_FIELD;
+		DataFieldType methodType = DataFieldType.UNKNOWN;
 		if (method != null) {
 			this.method = method;
 			if (method.toLowerCase().startsWith("currentvaluestring")
 					|| method.toLowerCase().startsWith("currentstring")
 					|| method.toLowerCase().startsWith("nextvaluestring")
 					|| method.toLowerCase().startsWith("nextstring")) {
-				methodType = DataFieldMetadata.STRING_FIELD;
+				methodType = DataFieldType.STRING;
 			}
 			if (method.toLowerCase().startsWith("currentvalueint") || method.toLowerCase().startsWith("currentint")
 					|| method.toLowerCase().startsWith("nextvalueint") || method.toLowerCase().startsWith("nextint")) {
-				methodType = DataFieldMetadata.INTEGER_FIELD;
+				methodType = DataFieldType.INTEGER;
 			}
 			if (method.toLowerCase().startsWith("currentvaluelong") || method.toLowerCase().startsWith("currentlong")
 					|| method.toLowerCase().startsWith("nextvaluelong") || method.toLowerCase().startsWith("nextlong")) {
-				methodType = DataFieldMetadata.LONG_FIELD;
+				methodType = DataFieldType.LONG;
 			}
 		} else {// method is not given, prepare the best
-			switch (targetMetadata[recNo].getField(fieldNo).getType()) {
-			case DataFieldMetadata.BYTE_FIELD:
-			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-			case DataFieldMetadata.STRING_FIELD:
+			switch (targetMetadata[recNo].getField(fieldNo).getDataType()) {
+			case BYTE:
+			case CBYTE:
+			case STRING:
 				this.method = sequenceID + CustomizedRecordTransform.DOT + "nextValueString()";
-				methodType = DataFieldMetadata.STRING_FIELD;
+				methodType = DataFieldType.STRING;
 				break;
-			case DataFieldMetadata.DECIMAL_FIELD:
-			case DataFieldMetadata.LONG_FIELD:
-			case DataFieldMetadata.NUMERIC_FIELD:
+			case DECIMAL:
+			case LONG:
+			case NUMBER:
 				this.method = sequenceID + CustomizedRecordTransform.DOT + "nextValueLong()";
-				methodType = DataFieldMetadata.LONG_FIELD;
+				methodType = DataFieldType.LONG;
 				break;
-			case DataFieldMetadata.INTEGER_FIELD:
+			case INTEGER:
 				this.method = sequenceID + CustomizedRecordTransform.DOT + "nextValueInt()";
-				methodType = DataFieldMetadata.INTEGER_FIELD;
+				methodType = DataFieldType.INTEGER;
 				break;
 			default:
 				errorMessage = "Can't set sequence to data field of type: "
-						+ targetMetadata[recNo].getField(fieldNo).getTypeAsString() + " ("
+						+ targetMetadata[recNo].getField(fieldNo).getDataType().getName() + " ("
 						+ targetMetadata[recNo].getName() + CustomizedRecordTransform.DOT
 						+ targetMetadata[recNo].getField(fieldNo).getName() + ")";
 				error(errorMessage);
 			}
 			DataFieldMetadata tmp = null;
-			if (methodType == DataFieldMetadata.UNKNOWN_FIELD) {
+			if (methodType == DataFieldType.UNKNOWN) {
 				error("Unknown sequence method");
 			} else {
 				tmp = new DataFieldMetadata("tmp", methodType, ";");
@@ -2189,7 +2190,7 @@ class SequenceRule extends Rule {
 					errorMessage = "Sequence method:" + this.method + " does not " + "match field type:\n"
 							+ targetMetadata[recNo].getName() + CustomizedRecordTransform.DOT
 							+ targetMetadata[recNo].getField(fieldNo).getName() + " type - "
-							+ targetMetadata[recNo].getField(fieldNo).getTypeAsString()
+							+ targetMetadata[recNo].getField(fieldNo).getDataType().getName()
 							+ CustomizedRecordTransform.getDecimalParams(targetMetadata[recNo].getField(fieldNo));
 					error(errorMessage);
 				}
@@ -2197,7 +2198,7 @@ class SequenceRule extends Rule {
 					errorMessage = "Sequence method:" + this.method + " does not " + "match field type:\n"
 							+ targetMetadata[recNo].getName() + CustomizedRecordTransform.DOT
 							+ targetMetadata[recNo].getField(fieldNo).getName() + " type - "
-							+ targetMetadata[recNo].getField(fieldNo).getTypeAsString()
+							+ targetMetadata[recNo].getField(fieldNo).getDataType().getName()
 							+ CustomizedRecordTransform.getDecimalParams(targetMetadata[recNo].getField(fieldNo));
 					error(errorMessage);
 				}

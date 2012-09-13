@@ -198,9 +198,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 */
 	private class InterpretedRuntimeInitializer extends NavigatingVisitor {
 		
-		private HashMap<String,Integer> lkpNameToIndex = new HashMap<String,Integer>();
-		
-		
 		/**
 		 * Entry method for initialization
 		 * @param tree	root of the AST tree to initialize (CLVFStart or CLVFStartExpression)
@@ -2616,31 +2613,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 	}
 	
-	
-	private List<?> createListFor(TLType varType) {
-		if (varType.isBoolean()) {
-			return new ArrayList<Boolean>();
-		} else if (varType.isDate()) {
-			return new ArrayList<Date>();
-		} else if (varType.isDecimal()) {
-			return new ArrayList<BigDecimal>();
-		} else if (varType.isString()) {
-			return new ArrayList<String>();
-		} else if (varType.isRecord()) {
-			return new ArrayList<DataRecord>();
-		} else if (varType.isInteger()) {
-			return new ArrayList<Integer>();
-		} else if (varType.isLong()){
-			return new ArrayList<Long>();
-		} else if (varType.isDouble()) {
-			return new ArrayList<Double>();
-		}
-	
-		
-		throw new IllegalArgumentException("Cannot create list for type " + varType.name());
-		
-	}
-
 	/**
 	 * Initialized lookup node. Key record and lookup has to be prepared before first usage.
 	 * @param node

@@ -265,15 +265,11 @@ public class TextTableFormatter extends AbstractFormatter {
 				fieldBuffer.flip();
 	            
 				blank.clear();
-				if (dataField == null) {
-					blank.limit(maskAnalize[i].length);
-				} else {
-					// (new String(dataField.toString().getBytes(charSet)).length()); - right: encodes to charset, another parser decodes from charset. 
-					//                                                                         So you takes the lenght from original string 
-					// fieldBuffer.limit() is wrong too - encoding
-					lenght = maskAnalize[i].length - dataField.toString().length();  
-					blank.limit(lenght > 0 ? lenght : 0); // analyzed just n record -> some rows can be longer  
-				}
+				// (new String(dataField.toString().getBytes(charSet)).length()); - right: encodes to charset, another parser decodes from charset. 
+				//                                                                         So you takes the lenght from original string 
+				// fieldBuffer.limit() is wrong too - encoding
+				lenght = maskAnalize[i].length - dataField.toString().length();  
+				blank.limit(lenght > 0 ? lenght : 0); // analyzed just n record -> some rows can be longer  
 
 				if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
 					directFlush();

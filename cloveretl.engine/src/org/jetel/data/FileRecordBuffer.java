@@ -111,6 +111,7 @@ public class FileRecordBuffer {
 	 *@exception  IOException  Description of Exception
 	 *@since                   September 17, 2002
 	 */
+	@SuppressWarnings("resource")
 	private void openTmpFile() throws IOException {
 		
 		try {

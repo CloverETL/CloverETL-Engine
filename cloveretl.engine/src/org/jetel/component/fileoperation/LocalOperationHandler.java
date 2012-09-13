@@ -279,6 +279,7 @@ public class LocalOperationHandler implements IOperationHandler {
 			this.file = file;
 		}
 
+		@SuppressWarnings("resource")
 		@Override
 		public FileChannel read() throws IOException {
 			FileInputStream fis = null;
@@ -295,6 +296,7 @@ public class LocalOperationHandler implements IOperationHandler {
 			}
 		}
 		
+		@SuppressWarnings("resource")
 		public FileChannel write(boolean append) throws IOException {
 			if (!file.exists()) {
 				file.createNewFile();

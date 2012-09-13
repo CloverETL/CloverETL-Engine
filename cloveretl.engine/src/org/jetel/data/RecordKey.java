@@ -536,7 +536,7 @@ public class RecordKey {
 		DataRecordMetadata secondMetadata = secondKey.metadata;
 		for (int i = 0; i < Math.max(keyFields.length, record2KeyFields.length); i++) {
 			if (i<keyFields.length && i<record2KeyFields.length) {
-				if (metadata.getFieldType(keyFields[i]) != secondMetadata.getFieldType(record2KeyFields[i])) {
+				if (metadata.getDataFieldType(keyFields[i]) != secondMetadata.getDataFieldType(record2KeyFields[i])) {
 					incomparable.add(keyFields[i]);
 					incomparable.add(record2KeyFields[i]);
 				}
@@ -627,11 +627,11 @@ public class RecordKey {
 			s = incomparable[i+1];
 			message = "Field "
 					+ (d != null ? StringUtils.quote(masterKey.metadata.getName() + '.' + masterKey.metadata.getField(d).getName())
-							+ " (" + masterKey.metadata.getFieldTypeAsString(d)	+ ")" 
+							+ " (" + masterKey.metadata.getDataFieldType(d).getName()	+ ")" 
 						: "null")
 					+ " is not comparable with field "
 					+ (s != null ? StringUtils.quote(slaveKey.metadata.getName() + '.' + slaveKey.metadata.getField(s).getName())
-							+ " ("	+ slaveKey.metadata.getFieldTypeAsString(s)	+ ")" 
+							+ " ("	+ slaveKey.metadata.getDataFieldType(s).getName()	+ ")" 
 						: "null");
 			if (d == null || s == null) {
 				problem = new ConfigurationProblem(message, Severity.ERROR, component, Priority.NORMAL);

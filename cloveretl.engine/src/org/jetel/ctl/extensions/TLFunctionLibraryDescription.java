@@ -42,11 +42,8 @@ public class TLFunctionLibraryDescription extends PluginableItemDescription {
 
     public final static String EXTENSION_POINT_ID = "ctlfunction";
 
-    private final static String LIBRARY_NAME = "libraryName";
     private final static String CLASS = "className";
 
-    private String libraryName;
-    
     private String className;
     
     private PluginDescriptor pluginDescriptor;
@@ -56,7 +53,6 @@ public class TLFunctionLibraryDescription extends PluginableItemDescription {
     public TLFunctionLibraryDescription(Extension extensionPoint) {
     	super(extensionPoint);
     	
-        this.libraryName = extensionPoint.getParameter(LIBRARY_NAME).getString();
         this.className = extensionPoint.getParameter(CLASS).getString();
         this.pluginDescriptor = extensionPoint.getPlugin();
     }

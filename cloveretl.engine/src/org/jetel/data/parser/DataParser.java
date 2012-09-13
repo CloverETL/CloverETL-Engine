@@ -41,6 +41,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.util.bytes.ByteCharBuffer;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
@@ -262,10 +263,10 @@ public class DataParser extends AbstractTextParser {
 			if(cfg.getMetadata().getField(i).isFixed()) {
 				fieldLengths[i] = cfg.getMetadata().getField(i).getSize();
 			}
-			char type = cfg.getMetadata().getFieldType(i);
+			DataFieldType type = cfg.getMetadata().getDataFieldType(i);
 			quotedFields[i] = cfg.isQuotedStrings() 
-					&& type != DataFieldMetadata.BYTE_FIELD
-					&& type != DataFieldMetadata.BYTE_FIELD_COMPRESSED;
+					&& type != DataFieldType.BYTE
+					&& type != DataFieldType.CBYTE;
 		}
 		
 		metadataFields = cfg.getMetadata().getFields();

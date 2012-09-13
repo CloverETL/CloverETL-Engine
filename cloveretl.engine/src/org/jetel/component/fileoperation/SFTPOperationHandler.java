@@ -624,8 +624,9 @@ public class SFTPOperationHandler implements IOperationHandler {
 		case MOVE: // can be achieved by renaming, but only within a single host 
 			return operation.scheme(0).equalsIgnoreCase(SFTP_SCHEME) 
 					&& operation.scheme(1).equalsIgnoreCase(SFTP_SCHEME);
+		default:
+			return false;
 		}
-		return false;
 	}
 
 	@Override
