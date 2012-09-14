@@ -42,7 +42,16 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		properties.put("ctl", "'${eval}'");
 		properties.put("eval", "`'do' + 'ne'`");
 		properties.put("recursion", "a${recursion}");
-
+		
+		System.setProperty("NAME_WITH_EXT_UNDERLINES", "filename.txt");
+		System.setProperty("NAMEWITHEXT", "filename.txt");
+		System.setProperty("NAME", "filename");
+		System.setProperty("NAME_UNDERLINES", "filename");
+		System.setProperty("NAME.WITH.EXT.DOTS", "filename.txt");
+		System.setProperty("NAME.DOTS", "filename");
+		System.setProperty("NAME_WITH_EXT_SYMBOL", "filename_underline.txt");
+		System.setProperty("NAME.WITH.EXT.SYMBOL", "filename_dots.txt");
+		
 		resolver = new PropertyRefResolver(properties);
 	}
 
@@ -55,6 +64,16 @@ public class PropertyRefResolverTest extends CloverTestCase {
 				resolver.resolveRef("${user}/${password}/${pwd} is user/password"));
 		assertEquals("${user1}/${password1}/xxxyyyzzz is user/password",
 				resolver.resolveRef("${user1}/${password1}/${pwd} is user/password", RefResFlag.SPEC_CHARACTERS_OFF));
+		
+		assertEquals("filename.txt", resolver.resolveRef("${NAME_WITH_EXT_UNDERLINES}"));
+		assertEquals("filename.txt", resolver.resolveRef("${NAMEWITHEXT}"));
+		assertEquals("filename.txt", resolver.resolveRef("${NAME}.txt"));
+		assertEquals("filename.txt", resolver.resolveRef("${NAME_UNDERLINES}.txt"));
+		assertEquals("${NAME.WITH.EXT.DOTS}", resolver.resolveRef("${NAME.WITH.EXT.DOTS}"));
+		assertEquals("${NAME.DOTS}.txt", resolver.resolveRef("${NAME.DOTS}.txt"));
+		
+		// Property containing dots should be preferred for backwards compatibility
+		assertEquals("filename_dots.txt", resolver.resolveRef("${NAME_WITH_EXT_SYMBOL}"));
 	}
 
 	public void testEvaluate() {
