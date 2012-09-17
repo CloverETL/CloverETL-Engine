@@ -2526,6 +2526,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompileExpectError("test_return_incorrect", "Can't convert from 'string' to 'integer'");
 	}
 	
+	public void test_return_void() {
+		doCompile("test_return_void");
+	}
+	
 	public void test_overloading() {
 		doCompile("test_overloading");
 		check("res1", Integer.valueOf(3));
