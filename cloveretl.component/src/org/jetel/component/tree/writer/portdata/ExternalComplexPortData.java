@@ -54,21 +54,21 @@ class ExternalComplexPortData extends ExternalPortData {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		dataStorage = new DirectDynamicRecordBuffer();
-		try {
-			dataStorage.init();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-		 
 		dataMap = new HashMap<String, BTree<byte[], byte[]>>();
 	}
 
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		DataRecordMetadata metadata = inPort.getMetadata();
 		
+		dataStorage = new DirectDynamicRecordBuffer();
+		try {
+			dataStorage.init();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException("Could not initialize record buffer.", e);
+		}
+		
+		DataRecordMetadata metadata = inPort.getMetadata();
 		try {
 			stringKeys = new String[primaryKey.length];
 			for (int outer = 0; outer < primaryKey.length; outer++) {
@@ -83,6 +83,17 @@ class ExternalComplexPortData extends ExternalPortData {
 			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
+		}
+	}
+	
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		dataMap.clear();
+		try {
+			dataStorage.close();
+		} catch (IOException e) {
+			throw new ComponentNotReadyException("Could not delete record buffer.", e);
 		}
 	}
 
