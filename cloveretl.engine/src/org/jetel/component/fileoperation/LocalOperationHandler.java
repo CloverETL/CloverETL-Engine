@@ -79,6 +79,23 @@ public class LocalOperationHandler implements IOperationHandler {
 		}
 	}
 	
+	private void checkSubdir(File source, File target) throws IOException {
+		try {
+			source = source.getCanonicalFile();
+			target = target.getCanonicalFile();
+		} catch (IOException ioe) {
+			throw new IOException(MessageFormat.format("Failed to check that {0} is not a subdirectory of {1}", target, source), ioe);
+		}
+
+		File parent = target;
+		while (parent != null) {
+			if (source.equals(parent)) {
+				throw new IOException(MessageFormat.format("{0} is a subdirectory of {1}", target, source));
+			}
+			parent = parent.getParentFile();
+		}
+	}
+	
 	private boolean copyInternal(File source, File target, CopyParameters params) throws IOException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
@@ -162,6 +179,9 @@ public class LocalOperationHandler implements IOperationHandler {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 			}
 		}
+		if (source.isDirectory()) {
+			checkSubdir(source, target);
+		}
 		return copyInternal(source, target, params) ? CloverURI.createSingleURI(target.toURI()) : null;
 	}
 
@@ -194,6 +214,9 @@ public class LocalOperationHandler implements IOperationHandler {
 			} else if (!source.isDirectory()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 			}
+		}
+		if (source.isDirectory()) {
+			checkSubdir(source, target);
 		}
 		return moveInternal(source, target, params) ? SingleCloverURI.createSingleURI(target.toURI()) : null;
 	}

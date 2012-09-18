@@ -154,6 +154,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assumeTrue(manager.create(relativeURI("w.tmp")).success());
 		assumeTrue(manager.create(relativeURI("samefile/f.tmp;samefile/dir/"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("nonexisting/file.tmp;nonexisting/dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
+		assumeTrue(manager.create(relativeURI("into-itself/srcdir/subdir/file.tmp"), new CreateParameters().setMakeParents(true)).success());
 		
 		CloverURI source;
 		CloverURI target;
@@ -354,6 +355,16 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertTrue(manager.copy(source, target, params).success());
 			assertTrue(manager.isFile(relativeURI(dir, "parentDir8/copy/dir/content.tmp")));
 		}
+
+		{
+			String dir = "into-itself/";
+			CopyParameters params = new CopyParameters().setRecursive(true);
+
+			source = relativeURI(dir, "srcdir");
+			target = relativeURI(dir, "srcdir/./subdir/../subdir/./copy"); // copy is a subdirectory of srcdir
+			assertFalse(manager.copy(source, target, params).success());
+			assertFalse(manager.exists(target));
+		}
 	}
 	
 	public void testSpecialCharacters() throws Exception {
@@ -469,6 +480,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assumeTrue(manager.create(relativeURI("s/a.tmp;s/b.tmp"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("u.tmp")).success());
 		assumeTrue(manager.create(relativeURI("samefile/f.tmp;samefile/dir/"), new CreateParameters().setMakeParents(true)).success());
+		assumeTrue(manager.create(relativeURI("into-itself/srcdir/subdir/file.tmp"), new CreateParameters().setMakeParents(true)).success());
 		
 		CloverURI source;
 		CloverURI target;
@@ -706,6 +718,15 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			target = relativeURI(dir, "parentDir8/copy/"); // will create directories "parentDir8/copy/dir"
 			assertTrue(manager.move(source, target, params).success());
 			assertTrue(manager.isFile(relativeURI(dir, "parentDir8/copy/dir/content.tmp")));
+		}
+
+		{
+			String dir = "into-itself/";
+
+			source = relativeURI(dir, "srcdir");
+			target = relativeURI(dir, "srcdir/./subdir/../subdir/./moved"); // moved is a subdirectory of srcdir
+			assertFalse(manager.move(source, target).success());
+			assertFalse(manager.exists(target));
 		}
 	}
 	
