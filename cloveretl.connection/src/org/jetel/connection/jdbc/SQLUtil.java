@@ -769,5 +769,119 @@ public class SQLUtil {
 		}
 	}
 
+	/**
+	 * The purpose of this class is to split
+	 * a string into individual queries,
+	 * but unlike query.split(";"), it should
+	 * ignore semicolons within strings and comments.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Sep 18, 2012
+	 */
+	private static class SQLSplitter {
+		
+		private enum State {
+			DEFAULT,
+			STRING,
+			ONELINE_COMMENT,
+			MULTILINE_COMMENT
+		}
+		
+		private final String input;
+		
+		private StringBuilder sb = new StringBuilder();
+		
+		private List<String> result = new ArrayList<String>();
+		
+		private State state = State.DEFAULT;
+		
+		private char previous = 0;
+		
+		public SQLSplitter(String input) {
+			this.input = input;
+		}
+		
+		private void flush() {
+			if (sb.length() > 0) {
+				result.add(sb.toString());
+			}
+		}
+		
+		private void setState(State state) {
+			this.state = state;
+			this.previous = 0; // reset the previous character
+		}
+		
+		private void run() {
+			int length = input.length();
+			for (int i = 0; i < length; i++) {
+				char c = input.charAt(i);
+				switch (state) {
+				case DEFAULT:
+					switch (c) {
+					case ';':
+						flush();
+						sb.setLength(0);
+						previous = 0;
+						continue; // stay in the DEFAULT state, do not append ';' to the StringBuilder
+					case '-':
+						if (previous == '-') {
+							setState(State.ONELINE_COMMENT);
+						}
+						break;
+					case '*':
+						if (previous == '/') {
+							setState(state = State.MULTILINE_COMMENT);
+						}
+						break;
+					case '\'':
+						setState(State.STRING);
+						break;
+					}
+					break;
+				case STRING:
+					if (c == '\'') {
+						setState(State.DEFAULT);
+					}
+					break;
+				case ONELINE_COMMENT:
+					if ((c == '\r') || (c == '\n')) {
+						setState(State.DEFAULT);
+					}
+					break;
+				case MULTILINE_COMMENT:
+					if ((c == '/') && (previous == '*')) {
+						setState(State.DEFAULT);
+					}
+					break;
+				}
+				sb.append(c);
+				previous = c;
+			}
+			flush();
+		}
+
+		private String[] getResult() {
+			return result.toArray(new String[result.size()]);
+		}
+
+	}
+	
+	/**
+	 * Splits a string into individual queries,
+	 * ignores semicolons within strings and comments.
+
+	 * @param sql
+	 * @return individual queries
+	 */
+	public static String[] split(String sql) {
+		SQLSplitter splitter = new SQLSplitter(sql);
+		splitter.run();
+		return splitter.getResult();
+	}
+	
+	
 }
 
