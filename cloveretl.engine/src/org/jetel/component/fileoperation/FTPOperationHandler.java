@@ -299,6 +299,9 @@ public class FTPOperationHandler implements IOperationHandler {
 					URI parentUri = URIUtils.getParentURI(targetUri);
 					if (parentUri != null) {
 						FTPFile[] files = ftp.listFiles(getPath(parentUri));
+						if (files.length == 0) {
+							throw new IOException(MessageFormat.format(FileOperationMessages.getString("FTPOperationHandler.parent_dir_listing_failed"), targetUri)); //$NON-NLS-1$
+						}
 						String fileName = parentUri.relativize(targetUri).toString();
 						if (fileName.endsWith(URIUtils.PATH_SEPARATOR)) {
 							fileName = fileName.substring(0, fileName.length()-1);
@@ -327,6 +330,7 @@ public class FTPOperationHandler implements IOperationHandler {
 	private void disconnect(FTPClient ftp) {
 		if ((ftp != null) && ftp.isConnected()) {
 			try {
+				ftp.logout();
 				ftp.disconnect();
 			} catch(IOException ex) {
 				ex.printStackTrace();
@@ -608,8 +612,14 @@ public class FTPOperationHandler implements IOperationHandler {
 			try {
 				super.close();
 			} finally {
-				if (ftp.isConnected()) {
-					ftp.disconnect();
+				try {
+					if (!ftp.completePendingCommand()) {
+						throw new IOException(FileOperationMessages.getString("FTPOperationHandler.failed_to_close_stream")); //$NON-NLS-1$
+					}
+				} finally {
+					if (ftp.isConnected()) {
+						ftp.disconnect();
+					}
 				}
 			}
 		}
@@ -630,8 +640,14 @@ public class FTPOperationHandler implements IOperationHandler {
 			try {
 				super.close();
 			} finally {
-				if (ftp.isConnected()) {
-					ftp.disconnect();
+				try {
+					if (!ftp.completePendingCommand()) {
+						throw new IOException(FileOperationMessages.getString("FTPOperationHandler.failed_to_close_stream")); //$NON-NLS-1$
+					}
+				} finally {
+					if (ftp.isConnected()) {
+						ftp.disconnect();
+					}
 				}
 			}
 		}
@@ -667,6 +683,11 @@ public class FTPOperationHandler implements IOperationHandler {
 				if (is == null) {
 					throw new IOException(ftp.getReplyString());
 				}
+				int replyCode = ftp.getReplyCode();
+				if (!FTPReply.isPositiveIntermediate(replyCode) && !FTPReply.isPositivePreliminary(replyCode)) {
+					is.close();
+					throw new IOException(ftp.getReplyString());
+				}
 				return Channels.newChannel(new FTPInputStream(is, ftp));
 			} catch (Throwable t) {
 				disconnect(ftp);
@@ -691,6 +712,11 @@ public class FTPOperationHandler implements IOperationHandler {
 				if (os == null) {
 					throw new IOException(ftp.getReplyString());
 				}
+				int replyCode = ftp.getReplyCode();
+				if (!FTPReply.isPositiveIntermediate(replyCode) && !FTPReply.isPositivePreliminary(replyCode)) {
+					os.close();
+					throw new IOException(ftp.getReplyString());
+				}
 				return Channels.newChannel(new FTPOutputStream(os, ftp));
 			} catch (Throwable t) {
 				disconnect(ftp);
@@ -713,6 +739,11 @@ public class FTPOperationHandler implements IOperationHandler {
 				}
 				OutputStream os = ftp.appendFileStream(getPath(uri));
 				if (os == null) {
+					throw new IOException(ftp.getReplyString());
+				}
+				int replyCode = ftp.getReplyCode();
+				if (!FTPReply.isPositiveIntermediate(replyCode) && !FTPReply.isPositivePreliminary(replyCode)) {
+					os.close();
 					throw new IOException(ftp.getReplyString());
 				}
 				return Channels.newChannel(new FTPOutputStream(os, ftp));
@@ -758,6 +789,11 @@ public class FTPOperationHandler implements IOperationHandler {
 					}
 					OutputStream os = ftp.appendFileStream(getPath(uri));
 					if (os == null) {
+						throw new IOException(ftp.getReplyString());
+					}
+					int replyCode = ftp.getReplyCode();
+					if (!FTPReply.isPositiveIntermediate(replyCode) && !FTPReply.isPositivePreliminary(replyCode)) {
+						os.close();
 						throw new IOException(ftp.getReplyString());
 					}
 					return Channels.newChannel(new FTPOutputStream(os, ftp));
