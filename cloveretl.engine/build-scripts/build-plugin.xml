@@ -221,7 +221,7 @@
                 <param name="plugin.name" value="${plugin.name}" />
         </antcall>
 
-        <loadfile property="required.plugins.classes"
+        <loadfile property="required.plugins.classes.junit"
                  srcFile="${required.plugins.collected}">
         </loadfile>
         <delete file="${required.plugins.collected}" />
@@ -240,7 +240,7 @@
             </else>
         </if>
 
-        <property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.classes}${required.plugins.lib}" />
+        <property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.classes.junit}${required.plugins.lib}" />
       
         <xslt 
             style="${dir.engine}/build-scripts/required-plugins.xsl"
