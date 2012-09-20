@@ -22,6 +22,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -144,21 +145,21 @@ import org.w3c.dom.Element;
  */
 public class DBJoin extends Node {
 
-    public static final String XML_SQL_QUERY_ATTRIBUTE = "sqlQuery";
-    public static final String XML_URL_ATTRIBUTE = "url";
-    public static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
-	public static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
-	public static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
-	public static final String XML_TRANSFORM_ATTRIBUTE = "transform";
-	public static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
-	public static final String XML_CHARSET_ATTRIBUTE = "charset";
-	public static final String XML_DB_METADATA_ATTRIBUTE = "metadata";
-	public static final String XML_MAX_CACHED_ATTRIBUTE = "maxCached";
-	public static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
-	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
-    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
+    public static final String XML_SQL_QUERY_ATTRIBUTE = "sqlQuery"; //$NON-NLS-1$
+    public static final String XML_URL_ATTRIBUTE = "url"; //$NON-NLS-1$
+    public static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection"; //$NON-NLS-1$
+	public static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey"; //$NON-NLS-1$
+	public static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass"; //$NON-NLS-1$
+	public static final String XML_TRANSFORM_ATTRIBUTE = "transform"; //$NON-NLS-1$
+	public static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL"; //$NON-NLS-1$
+	public static final String XML_CHARSET_ATTRIBUTE = "charset"; //$NON-NLS-1$
+	public static final String XML_DB_METADATA_ATTRIBUTE = "metadata"; //$NON-NLS-1$
+	public static final String XML_MAX_CACHED_ATTRIBUTE = "maxCached"; //$NON-NLS-1$
+	public static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin"; //$NON-NLS-1$
+	private static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions"; //$NON-NLS-1$
+    private static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog"; //$NON-NLS-1$
 
-	public final static String COMPONENT_TYPE = "DBJOIN";
+	public final static String COMPONENT_TYPE = "DBJOIN"; //$NON-NLS-1$
 	
 	private final static int WRITE_TO_PORT = 0;
 	private final static int REJECTED_PORT = 1;
@@ -260,7 +261,7 @@ public class DBJoin extends Node {
 											action = ErrorAction.DEFAULT_ERROR_ACTION;
 										}
 									}
-									String message = "Transformation finished with code: " + transformResult + ". Error message: " + 
+									String message = "Transformation finished with code: " + transformResult + ". Error message: " +  //$NON-NLS-1$ //$NON-NLS-2$
 										transformation.getMessage();
 									if (action == ErrorAction.CONTINUE) {
 										if (errorLog != null){
@@ -277,7 +278,7 @@ public class DBJoin extends Node {
 											if (semiResult != null) {
 												errorLog.write(semiResult.toString());
 											}
-											errorLog.write("\n");
+											errorLog.write("\n"); //$NON-NLS-1$
 										} else {
 											//CL-2020
 											//if no error log is defined, the message is quietly ignored
@@ -345,7 +346,7 @@ public class DBJoin extends Node {
         
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
-            		"Charset "+charset+" not supported!", 
+            		"Charset "+charset+" not supported!",  //$NON-NLS-1$ //$NON-NLS-2$
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
 
@@ -355,10 +356,10 @@ public class DBJoin extends Node {
         	
     		IConnection conn = getGraph().getConnection(connectionName);
             if(conn == null) {
-                throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName);
+                throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName); //$NON-NLS-1$
             }
             if(!(conn instanceof DBConnection)) {
-                throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
+                throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class."); //$NON-NLS-1$ //$NON-NLS-2$
             }
 
             if (dbMetadata == null) {
@@ -434,10 +435,10 @@ public class DBJoin extends Node {
 		// Initializing lookup table
 		IConnection conn = getGraph().getConnection(connectionName);
 		if (conn == null) {
-			throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName);
+			throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName); //$NON-NLS-1$
 		}
 		if (!(conn instanceof DBConnection)) {
-			throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
+			throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class."); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 		conn.init();
 		
@@ -445,13 +446,26 @@ public class DBJoin extends Node {
 			dbMetadata = extractDbMetadata(conn, query);
 		}
 
-		lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_" + this.getId(), (DBConnection) conn, dbMetadata, query, maxCached);
+		lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_" + this.getId(), (DBConnection) conn, dbMetadata, query, maxCached); //$NON-NLS-1$
 		lookupTable.setGraph(getGraph());
 		lookupTable.checkConfig(null);
 		lookupTable.init();
+
+		DataRecordMetadata inMetadata[];
+		DataRecordMetadata outMetadata[];
 		
-		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
-		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
+		InputPort inputPortHandle = getInputPort(READ_FROM_PORT);
+		OutputPort outputPortHandle = getOutputPort(WRITE_TO_PORT);
+
+		if (inputPortHandle == null) {
+			throw new ComponentNotReadyException(MessageFormat.format(DBJoinMessages.getString("DBJoin_InputPortError"), READ_FROM_PORT, this.getId())); //$NON-NLS-1$
+		} else
+			inMetadata = new DataRecordMetadata[] { inputPortHandle.getMetadata(), dbMetadata };
+
+		if (outputPortHandle == null) {
+			throw new ComponentNotReadyException(MessageFormat.format(DBJoinMessages.getString("DBJoin_OutputPortError"), WRITE_TO_PORT, this.getId())); //$NON-NLS-1$
+		} else
+			outMetadata = new DataRecordMetadata[] { outputPortHandle.getMetadata() };
 
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
@@ -463,15 +477,15 @@ public class DBJoin extends Node {
 			}			
 			// init transformation
 	        if (transformation != null && !transformation.init(transformationParameters, inMetadata, outMetadata)) {
-	            throw new ComponentNotReadyException("Error when initializing tranformation function.");
+	            throw new ComponentNotReadyException("Error when initializing tranformation function."); //$NON-NLS-1$
 	        }
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
 		}
 		inPort=getInputPort(READ_FROM_PORT);
 		if (transformation != null && leftOuterJoin && getOutputPort(REJECTED_PORT) != null) {
-			logger.info(this.getId() + " info: There will be no skipped records " +
-					"while left outer join is switched on");
+			logger.info(this.getId() + " info: There will be no skipped records " + //$NON-NLS-1$
+					"while left outer join is switched on"); //$NON-NLS-1$
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
 	}
@@ -484,7 +498,7 @@ public class DBJoin extends Node {
 		try {
 			return connection.createMetadata(parameters);
 		} catch (SQLException exception) {
-			throw new ComponentNotReadyException("Extraction of DB metadata failed!", exception);
+			throw new ComponentNotReadyException("Extraction of DB metadata failed!", exception); //$NON-NLS-1$
 		}
 	}
 
@@ -540,7 +554,7 @@ public class DBJoin extends Node {
     		}
     	}
     	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e); //$NON-NLS-1$
     	}
 	}
 
@@ -585,7 +599,7 @@ public class DBJoin extends Node {
 				dbjoin.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         }
         
 		return dbjoin;
