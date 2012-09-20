@@ -233,10 +233,16 @@ public abstract class TreeReader extends Node {
 			
 			autoFilling.setFilename(sourceIterator.getCurrentFileName());
 			if (!sourceIterator.isGraphDependentSource()) {
-				File tmpFile = new File(autoFilling.getFilename());
-				long timestamp = tmpFile.lastModified();
-				autoFilling.setFileSize(tmpFile.length());
-				autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
+				long fileSize = 0;
+				Date fileTimestamp = null;
+				if (FileUtils.isLocalFile(autoFilling.getFilename()) && !sourceIterator.isGraphDependentSource()) {
+					File tmpFile = new File(autoFilling.getFilename());
+					long timestamp = tmpFile.lastModified();
+					fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
+					fileSize = tmpFile.length();
+				}
+				autoFilling.setFileSize(fileSize);
+				autoFilling.setFileTimestamp(fileTimestamp);
 			}
 			return true;
 		}

@@ -1897,10 +1897,16 @@ public class XMLExtract extends Node {
 			stream = readableChannelIterator.next();
 			if (stream == null) continue; // if record no record found
 			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
-			File tmpFile = new File(autoFilling.getFilename());
-			long timestamp = tmpFile.lastModified();
-			autoFilling.setFileSize(tmpFile.length());
-			autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));				
+			long fileSize = 0;
+			Date fileTimestamp = null;
+			if (FileUtils.isLocalFile(autoFilling.getFilename()) && !readableChannelIterator.isGraphDependentSource()) {
+				File tmpFile = new File(autoFilling.getFilename());
+				long timestamp = tmpFile.lastModified();
+				fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
+				fileSize = tmpFile.length();
+			}
+			autoFilling.setFileSize(fileSize);
+			autoFilling.setFileTimestamp(fileTimestamp);				
 			m_inputSource = new InputSource(Channels.newInputStream(stream));
 			return true;
 		}
