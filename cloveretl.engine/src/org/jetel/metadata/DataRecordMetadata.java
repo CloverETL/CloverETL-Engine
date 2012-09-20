@@ -78,7 +78,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	public static final String EMPTY_NAME = "_";
 
 	/** Parent graph of this metadata */
-	private transient TransformationGraph graph;
+	private TransformationGraph graph;
 	/** Name of the data record. */
 	private String name;
 	/** Description of the data record. */
@@ -116,7 +116,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	private short numNullableFields = 0;
 
-	private transient TypedProperties recordProperties = new TypedProperties();
+	private TypedProperties recordProperties = new TypedProperties();
 	private String localeStr = null;
 
 	/** a format string for numbers */
