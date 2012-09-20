@@ -125,7 +125,7 @@ public class DataFieldMetadata implements Serializable {
 	 * 
 	 * [record name].[field name]
 	 */
-	private TypedProperties fieldProperties;
+	private transient TypedProperties fieldProperties;
 	/**
 	 * Locale string. Both language and country can be specified - if both are specified then language string & country
 	 * string have to be delimited by "." (dot) -> e.g. "en.UK" , "fr.CA". If only language should be specified, then
