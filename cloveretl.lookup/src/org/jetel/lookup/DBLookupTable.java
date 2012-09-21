@@ -458,8 +458,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         key.init();
 
         try {
-            lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()), 
-            		key, keyRecord, connection.getJdbcSpecific());
+        	if (connection.getJdbcSpecific().isConnectionThreadSafe()) {
+        		lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()), 
+                		key, keyRecord, connection.getJdbcSpecific());
+        	} else {
+        		lookup = new ConnectionSyncedDBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()),
+        				key, keyRecord, connection.getJdbcSpecific());
+        	}
         } catch (SQLException e) {
             throw new ComponentNotReadyException(this, e);
         }
@@ -518,26 +523,26 @@ public class DBLookupTable extends GraphElement implements LookupTable {
  */
 class DBLookup implements Lookup{
 
-	private DBLookupTable lookupTable;
-	private DataRecord inRecord;
-	private RecordKey recordKey;
-	private HashKey key;
+	protected DBLookupTable lookupTable;
+	protected DataRecord inRecord;
+	protected RecordKey recordKey;
+	protected HashKey key;
 	
-	private boolean storeNulls;
-	private int cacheSize;
+	protected boolean storeNulls;
+	protected int cacheSize;
 
-	private SimpleCache resultCache;
+	protected SimpleCache resultCache;
 	private List<DataRecord> result;
 	private List<DataRecord> resultList = new ArrayList<DataRecord>();
 	private DataRecord currentResult;
 	private int no;
 	private boolean hasNext;
 	
-	private int cacheNumber = 0;
-	private int totalNumber = 0;
+	protected int cacheNumber = 0;
+	protected int totalNumber = 0;
 
-	private DataRecordMetadata dbMetadata;
-	private SQLCloverStatement statement;
+	protected DataRecordMetadata dbMetadata;
+	protected SQLCloverStatement statement;
 	private ResultSet resultSet;
 	private CopySQLData[] transMap;
 	private JdbcSpecific jdbcSpecific;

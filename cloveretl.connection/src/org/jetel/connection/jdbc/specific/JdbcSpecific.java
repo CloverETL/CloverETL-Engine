@@ -369,4 +369,9 @@ public interface JdbcSpecific {
 	 */
 	public ResultSet wrapResultSet(ResultSet resultSet);
 
+	/**
+	 * Answers whether connection can be used safely in a concurrent manner.
+	 * @return
+	 */
+	boolean isConnectionThreadSafe();
 }
