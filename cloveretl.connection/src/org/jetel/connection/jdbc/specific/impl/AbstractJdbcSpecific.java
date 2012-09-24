@@ -701,9 +701,4 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	public ResultSet wrapResultSet(ResultSet resultSet) {
 		return resultSet;
 	}
-	
-	@Override
-	public boolean isConnectionThreadSafe() {
-		return true;
-	}
 }

@@ -368,10 +368,4 @@ public interface JdbcSpecific {
 	 * @return Implementation of result set which allows to call get methods multiple times.
 	 */
 	public ResultSet wrapResultSet(ResultSet resultSet);
-
-	/**
-	 * Answers whether connection can be used safely in a concurrent manner.
-	 * @return
-	 */
-	boolean isConnectionThreadSafe();
 }

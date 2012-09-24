@@ -162,9 +162,4 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	public boolean isSchemaRequired() {
 		return true;
 	}
-	
-	@Override
-	public boolean isConnectionThreadSafe() {
-		return false;
-	}
 }
