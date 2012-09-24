@@ -41,6 +41,7 @@ import org.jetel.graph.InputPort;
 class StreamedPortData extends PortData {
 	
 	private int[] sortKeys;
+	private String[] sortKeysString;
 	private boolean[] ascending;
 	private boolean portRead = false;
 
@@ -60,7 +61,7 @@ class StreamedPortData extends PortData {
 		if (sortHint != null) {
 			this.ascending = sortHint.getAscending();
 
-			String sortKeysString[] = sortHint.getKeyFields();
+			sortKeysString = sortHint.getKeyFields();
 			this.sortKeys = new int[sortKeysString.length];
 			for (int i = 0; i < sortKeysString.length; i++) {
 				sortKeys[i] = inPort.getMetadata().getFieldPosition(sortKeysString[i]);
@@ -136,7 +137,12 @@ class StreamedPortData extends PortData {
 					if (result > 0) {
 						break;
 					} else {
-						throw new IOException("Input data records are not sorted!");
+						throw new IOException("Input data records are not sorted on input port "+this.getInPort().getInputPortNumber()
+								+". In record number "+(this.getInPort().getInputRecordCounter()-1) 
+								+", key "+this.sortKeysString[i]
+								+", value is "+currentField.toString()
+								+", which is " + (ascending[i]?"greater":"less")
+								+" than next value "+nextField.toString()+".");
 					}
 				}
 			}
