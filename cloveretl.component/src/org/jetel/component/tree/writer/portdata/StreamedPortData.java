@@ -138,11 +138,11 @@ class StreamedPortData extends PortData {
 						break;
 					} else {
 						throw new IOException("Input data records are not sorted on input port "+this.getInPort().getInputPortNumber()
-								+". In record number "+(this.getInPort().getInputRecordCounter()-1) 
-								+", key "+this.sortKeysString[i]
-								+", value is "+currentField.toString()
-								+", which is " + (ascending[i]?"greater":"less")
-								+" than next value "+nextField.toString()+".");
+								+". In record #"+(this.getInPort().getInputRecordCounter()) 
+								+", key field \""+this.sortKeysString[i]+"\""
+								+", value \""+nextField.toString()+"\""
+								+" is " + (ascending[i]?"less":"greater")
+								+" than previous value \""+currentField.toString()+"\".");
 					}
 				}
 			}
