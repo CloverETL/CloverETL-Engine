@@ -24,9 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
-import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.CopySQLData;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement;
@@ -37,7 +35,6 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
-import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
@@ -55,7 +52,6 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.primitive.SimpleCache;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -457,15 +453,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         key.init();
 
         try {
-            lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()), 
-            		key, keyRecord, connection.getJdbcSpecific());
+        	lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()),
+    				key, keyRecord);
         } catch (SQLException e) {
             throw new ComponentNotReadyException(this, e);
         }
 
         lookup.setLookupTable(this);
-        lookup.setCacheSize(maxCached);
-        lookup.setStoreNulls(storeNulls);
         activeLookups.add(lookup);
 
         return lookup;
@@ -501,258 +495,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		throw new UnsupportedOperationException(); 
 	}
     
-}
-/**
- * Implementation of lookup for DBLookupTable. 
- * 
- * @author Agata Vackova (agata.vackova@javlinconsulting.cz) ; 
- * (c) JavlinConsulting s.r.o.
- *  www.javlinconsulting.cz
- *
- * @since Nov 6, 2008
- */
-class DBLookup implements Lookup{
-
-	private DBLookupTable lookupTable;
-	private DataRecord inRecord;
-	private RecordKey recordKey;
-	private HashKey key;
-	
-	private boolean storeNulls;
-	private int cacheSize;
-
-	private SimpleCache resultCache;
-	private List<DataRecord> result;
-	private List<DataRecord> resultList = new ArrayList<DataRecord>();
-	private DataRecord currentResult;
-	private int no;
-	private boolean hasNext;
-	
-	private int cacheNumber = 0;
-	private int totalNumber = 0;
-
-	private DataRecordMetadata dbMetadata;
-	private SQLCloverStatement statement;
-	private ResultSet resultSet;
-	private CopySQLData[] transMap;
-	private JdbcSpecific jdbcSpecific;
-	
-	DBLookup(SQLCloverStatement statement, RecordKey key, DataRecord record, JdbcSpecific jdbcSpecific) throws ComponentNotReadyException, SQLException {
-		this.recordKey = key;
-		this.inRecord = record;
-		this.key = new HashKey(recordKey, inRecord);
-		this.statement = statement;
-		this.jdbcSpecific = jdbcSpecific;
-		statement.init();
+	public int getCacheSize() {
+		return maxCached;
 	}
 	
-	@Override
-	public RecordKey getKey() {
-		return recordKey;
-	}
-
-	void setLookupTable(DBLookupTable lookupTable){
-		this.lookupTable = lookupTable;
-		dbMetadata = lookupTable.getMetadata();
-	}
-	
-	@Override
-	public LookupTable getLookupTable() {
-		return lookupTable;
-	}
-
-	@Override
-	public int getNumFound() {
-    	if (resultCache!=null){
-    		return result != null ? result.size() : 0;
-    	}
-        if (resultSet != null) {
-            try {
-                int curRow=resultSet.getRow();
-                resultSet.last();
-                int count=resultSet.getRow();
-                resultSet.first();
-                resultSet.absolute(curRow);
-                return count;
-            } catch (SQLException ex) {
-                return -1;
-            }
-        }
-       throw new IllegalStateException("Looking up has been never performed. Call seek method first");
-	}
-
-	@Override
-	public void seek() {
-		if (resultCache == null && resultSet == null) {//first seek
-			if (cacheSize>0){
-		        this.resultCache= new SimpleCache(cacheSize);
-		        resultCache.enableDuplicity();
-		    }
-		}
-		try {
-			if (resultCache != null) {
-				seekInCache();
-			}else {
-				seekInDB();
-				hasNext = fetch();
-			}
-			totalNumber++;
-			no = 0;
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private void seekInDB() throws SQLException {
-		// execute query
-		jdbcSpecific.closeResultSetBeforeCreatingNewOne(resultSet);
-		resultSet = statement.executeQuery();
-	   
-	   if (dbMetadata == null) {
-		   if (statement.getCloverOutputFields() == null) {
-			dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), lookupTable.dbConnection.getJdbcSpecific());
-		   }else{
-				ResultSetMetaData dbMeta = resultSet.getMetaData();
-				JdbcSpecific jdbcSpecific = lookupTable.dbConnection.getJdbcSpecific();
-				String[] fieldName = statement.getCloverOutputFields();
-				DataFieldMetadata fieldMetadata;
-				String tableName = dbMeta.getTableName(1);
-				dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
-				dbMetadata.setLabel(tableName);
-				dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
-				dbMetadata.setRecordDelimiter("\n");
-				for (int i = 1; i <= dbMeta.getColumnCount(); i++) {
-					fieldMetadata = SQLUtil.dbMetadata2jetel(fieldName[i], dbMeta, i, jdbcSpecific);
-					dbMetadata.addField(fieldMetadata);
-				}
-				dbMetadata.normalize();
-		   }
-	   }
-	}
-	
-	private void seekInCache() throws SQLException {
-		if (!resultCache.containsKey(key)) {
-			if (inRecord == null) throw new IllegalStateException("No key data for performing lookup");
-            result = resultList;
-            result.clear();
-
-			seekInDB();
-		    HashKey hashKey = new HashKey(recordKey, inRecord.duplicate());
-
-            if (fetch()) {
-		        boolean resultCached = true;
-
-		        do {
-		            DataRecord dataRecord = currentResult.duplicate();
-					resultCached &= resultCache.put(hashKey, dataRecord);
-                    result.add(dataRecord);
-				} while (fetch());
-
-	            if (!resultCached) {
-                    LogFactory.getLog(getClass()).warn("Too many data records for a single key! Enlarge the cache " +
-                    		"size to accomodate more data records...");
-                    resultCache.clear();
-		        } 
-		    } else if (storeNulls) {
-                resultCache.put(hashKey, NullRecord.NULL_RECORD);
-                result.add(NullRecord.NULL_RECORD);
-            }
-		} else {
-            result = resultCache.getAll(key);
-            cacheNumber++;
-        }
-	}
-	
-	private boolean fetch() throws SQLException {
-		if (!resultSet.next()) {
-			resultSet.close();
-			return false;
-		}
-		if (transMap == null) {
-			currentResult = new DataRecord(dbMetadata);
-			currentResult.init();
-			transMap =  CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(dbMetadata, lookupTable.dbConnection.getJdbcSpecific()), 
-					dbMetadata, currentResult, lookupTable.dbConnection.getJdbcSpecific());
-		}
-		//get data from results
-		for (int i = 0; i < transMap.length; i++) {
-			transMap[i].sql2jetel(resultSet);
-		}
-		return true;
-	}
-
-	@Override
-	public void seek(DataRecord keyRecord) {
-		key.setDataRecord(keyRecord);
-		try {
-			statement.setInRecord(keyRecord);
-		} catch (ComponentNotReadyException e) {
-			throw new IllegalStateException(e);
-		}
-		seek();
-	}
-
-	@Override
-	public boolean hasNext() {
-		if (resultCache == null && resultSet == null) {
-			throw new IllegalStateException("Looking up has been never performed. Call seek method first");
-		}
-		return resultCache == null ? hasNext :
-			result != null && no < result.size() && result.get(no) != NullRecord.NULL_RECORD;
-	}
-
-	@Override
-	public DataRecord next() {
-		if (resultCache == null && resultSet == null) {
-			throw new IllegalStateException("Looking up has been never performed. Call seek method first");
-		}
-		if (resultCache != null) {
-			if (no >= result.size()) throw new NoSuchElementException();
-			return result.get(no++);
-		}
-		DataRecord tmp = currentResult.duplicate();
-		try {
-			hasNext = fetch();
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-		return tmp;
-	}
-
-	public void close() throws SQLException{
-		statement.close();
-	}
-	
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-	
-	public void setCacheSize(int cacheSize) {
-		this.cacheSize = cacheSize;
-	}
-	
-	public int getCacheSize(){
-		return cacheSize;
-	}
-
-	public void setStoreNulls(boolean storeNulls){
-		this.storeNulls = storeNulls;
-	}
-
 	public boolean isStoreNulls() {
 		return storeNulls;
-	}
- 
-	public int getCacheNumber() {
-		return cacheNumber;
-	}
-
-	public int getTotalNumber() {
-		return totalNumber;
-	}
-	
-	public DataRecordMetadata getMetadata(){
-		return dbMetadata;
 	}
 }
