@@ -24,6 +24,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -59,6 +60,7 @@ public class ConnectionSyncedDBLookup extends DBLookup {
 	
 	private SimpleCache recordCache;
 	private Iterator<DataRecord> currentIterator;
+	private List<DataRecord> fallbackList = new LinkedList<DataRecord>(); // when cached and cache capacity is insufficient
 	private DataRecordTape recordBuffer;
 	private int recordCount = -1;
 	private int readCount;
@@ -85,7 +87,6 @@ public class ConnectionSyncedDBLookup extends DBLookup {
 		if (isCached()) {
 			result = currentIterator.next();
 			result = result.duplicate();
-			++readCount;
 		} else {
 			try {
 				DataRecord record = DataRecordFactory.newRecord(dbMetadata);
@@ -93,14 +94,15 @@ public class ConnectionSyncedDBLookup extends DBLookup {
 				if (!recordBuffer.get(record)) {
 					throw new NoSuchElementException();
 				}
-				recordBuffer.get(record);
+				result = record;
 			} catch (InterruptedException e) {
 				throw new JetelRuntimeException(e);
 			} catch (IOException e) {
 				throw new JetelRuntimeException(e);
 			}
-			++readCount;
+			
 		}
+		++readCount;
 		return result;
 	}
 
@@ -132,12 +134,10 @@ public class ConnectionSyncedDBLookup extends DBLookup {
 		}
 		if (isCached()) {
 			List<DataRecord> records = recordCache.getAll(key);
-			if (records != null) {
-				readCount = records.size();
-				currentIterator = records.iterator();
-			} else {
-				currentIterator = Collections.<DataRecord>emptyList().iterator();
+			if (records == null) {
+				records = fallbackList;
 			}
+			currentIterator = records.iterator();
 		} else {
 			if (recordBuffer != null) {
 				try {
@@ -192,8 +192,9 @@ public class ConnectionSyncedDBLookup extends DBLookup {
 			int count = 0;
 			HashKey key = null;
 			if (cacheRecords) {
-				key = new HashKey(recordKey, inRecord.duplicate());
+				key = new HashKey(this.key.getRecordKey(), this.key.getDataRecord().duplicate());
 			}
+			boolean recordsCached = true;
 			while (resultSet.next()) {
 				CopySQLData transMap[] = CopySQLData.sql2JetelTransMap(
 						SQLUtil.getFieldTypes(dbMetadata, lookupTable.dbConnection.getJdbcSpecific()), 
@@ -202,11 +203,21 @@ public class ConnectionSyncedDBLookup extends DBLookup {
 				for (int i = 0; i < transMap.length; i++) {
 					transMap[i].sql2jetel(resultSet);
 				}
-				++count;
 				if (cacheRecords) {
-					addToCache(key, record);
+					fallbackList.add(record);
+					recordsCached &= addToCache(key, record);
 				} else {
 					addToBuffer(record);
+				}
+				++count;
+			}
+			if (cacheRecords) {
+				if (recordsCached) {
+					fallbackList.clear();
+				} else {
+					log.warn("Too many data records for a single key. Enlarge the cache " +
+            			"size to accomodate more data records.");
+					recordCache.clear();
 				}
 			}
 			if (count == 0 && storeNulls) {
@@ -231,17 +242,13 @@ public class ConnectionSyncedDBLookup extends DBLookup {
 		}
 	}
 	
-	private void addToCache(HashKey key, DataRecord record) {
+	private boolean addToCache(HashKey key, DataRecord record) {
 		
 		if (recordCache == null) {
 			recordCache = new SimpleCache(1, cacheSize);
 			recordCache.enableDuplicity();
 		}
-		if (!recordCache.put(key, record.duplicate())) {
-			log.warn("Too many data records for a single key. Enlarge the cache " +
-                    		"size to accomodate more data records.");
-			recordCache.clear(); // here we want to clear just for current key, but there is no such method
-		}
+		return recordCache.put(key, record.duplicate());
 	}
 	
 	private void addToBuffer(DataRecord record) throws InterruptedException, IOException {
@@ -283,6 +290,7 @@ public class ConnectionSyncedDBLookup extends DBLookup {
 		readCount = 0;
 		recordCount = -1;
 		currentIterator = null;
+		fallbackList.clear();
 		if (recordBuffer != null) {
 			try {
 				recordBuffer.clear();
