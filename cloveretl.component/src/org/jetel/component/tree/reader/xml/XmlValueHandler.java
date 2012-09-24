@@ -65,13 +65,19 @@ public class XmlValueHandler implements ValueHandler {
 		}
 	}
 	
-	private void fillValueToField(Object value, DataField field, boolean doTrim) {
+	protected String toString(Object value) {
 		String stringValue;
 		if (value instanceof NodeInfo) {
 			stringValue = ((NodeInfo) value).getStringValue();
 		} else {
 			stringValue = value.toString();
 		}
+		
+		return stringValue;
+	}
+	
+	private void fillValueToField(Object value, DataField field, boolean doTrim) {
+		String stringValue = toString(value);
 		
 		if (doTrim) {
 			stringValue = stringValue.trim();
