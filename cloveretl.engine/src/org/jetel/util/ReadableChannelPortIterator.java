@@ -264,9 +264,10 @@ public class ReadableChannelPortIterator {
 		/**
 		 * Gets readable or null.
 		 * @return
-		 * @throws UnsupportedEncodingException
+		 * @throws JetelException
+		 * @throws IOException 
 		 */
-		public abstract ReadableByteChannel getData() throws UnsupportedEncodingException, JetelException;
+		public abstract ReadableByteChannel getData() throws IOException, JetelException;
 	}
 	
 	/**
@@ -373,7 +374,6 @@ public class ReadableChannelPortIterator {
 	 */
 	private static class StreamFieldDataWrapper extends FieldDataWrapper {
 		
-		private InputPortReadableChannel channel;
 		private InputPort inputPort;
 		
 		public StreamFieldDataWrapper(DataField field, String charset, PortHandler portHandler, InputPort inputPort) {
@@ -384,13 +384,12 @@ public class ReadableChannelPortIterator {
 		}
 		
 		@Override
-		public ReadableByteChannel getData() throws UnsupportedEncodingException, JetelException {
-			if (channel == null) {
-				channel = new InputPortReadableChannel(inputPort, field.getMetadata().getName(), charset);
-			}
+		public ReadableByteChannel getData() throws JetelException, IOException {
+			InputPortReadableChannel channel = new InputPortReadableChannel(inputPort, field.getMetadata().getName(), charset);
 			if (!channel.isEOF()) {
 				return channel;
 			}
+			//all records were read
 			return null;
 		}
 	}

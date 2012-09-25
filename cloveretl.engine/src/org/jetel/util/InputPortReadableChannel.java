@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 
@@ -43,6 +44,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	private final String charset;
 	
 	private boolean eof = false;
+	private boolean opened;
 	
 	private ByteArray buffer = new ByteArray();
 	private DataRecord record;
@@ -54,9 +56,9 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	 * @param fieldName Name of the field to be read.
 	 * @param charset Used charset.
 	 * 
-	 * @throws UnsupportedEncodingException 
+	 * @throws IOException 
 	 */
-    public InputPortReadableChannel(InputPort inputPort, String fieldName, String charset) throws UnsupportedEncodingException {
+    public InputPortReadableChannel(InputPort inputPort, String fieldName, String charset) throws IOException {
     	
     	if (inputPort == null || fieldName == null || charset == null) {
     		throw new IllegalArgumentException("inputPort, fieldName or charset is null"); //$NON-NLS-1$
@@ -68,54 +70,33 @@ public class InputPortReadableChannel implements ReadableByteChannel {
     	this.inputPort = inputPort;
     	this.fieldName = fieldName;
     	this.charset = charset;
+    	this.opened = true;
+    	
     	record = new DataRecord(inputPort.getMetadata());
     	record.init();
+    	
+    	readRecord();
     }
     
-    /**
-     * Returns always true.
-     * 
-     * @see InputPortReadableChannel#isEOF()
-     * @see InputPortReadableChannel#close()
-     */
 	@Override
 	public synchronized boolean isOpen() {
-		//channel is still opened
-		return true;
+		return opened;
 	}
 	
-	/**
-	 * Does nothing.
-	 */
 	@Override
 	public synchronized void close() throws IOException {
-		//nothing to do here
+		opened = false;
 	}
 	
 	@Override
 	public synchronized int read(ByteBuffer dst) throws IOException {
-		//read data from input port to given buffer
-		while (buffer.length() < dst.remaining()) {
-			try {
-				record = inputPort.readRecord(record);
-			} catch (InterruptedException e) {
-				throw new IOException("Failed to read record from input port.", e); //$NON-NLS-1$
-			}
-			if (record == null) {
-				//eof reached
-				eof = true;
-				break;
-			}
-			DataField field = record.getField(fieldName);
-			Object value = field.getValue();
-			if (value != null) {
-				//some value read
-				buffer.append(value instanceof byte[] ? (byte[]) value : value.toString().getBytes(charset));
-			} else {
-				//there's null at input port -> stop reading (end of record)
-				break;
-			}
+		
+		if (!opened) {
+			throw new ClosedChannelException();
 		}
+		
+		readRecord();
+		
 		//count of read bytes
 		int read = buffer.length() > dst.limit() ? dst.limit() : buffer.length();
 		//fill given buffer
@@ -132,6 +113,35 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	 */
 	public synchronized boolean isEOF() {
 		return eof && buffer.length() == 0;
+	}
+	
+	/**
+	 * Read data record from input port to internal buffer
+	 * 
+	 * @throws IOException
+	 */
+	private void readRecord() throws IOException {
+		
+		if (buffer.length() == 0) {
+			try {
+				record = inputPort.readRecord(record);
+			} catch (InterruptedException e) {
+				throw new IOException("Failed to read record from input port.", e); //$NON-NLS-1$
+			}
+			
+			if (record != null) {
+				//record was read
+				DataField field = record.getField(fieldName);
+				Object value = field.getValue();
+				if (value != null) {
+					//some value read
+					buffer.append(value instanceof byte[] ? (byte[]) value : value.toString().getBytes(charset));
+				}
+			} else {
+				//eof reached
+				eof = true;
+			}
+		}
 	}
 
 }
