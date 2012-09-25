@@ -30,7 +30,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.primitive.ByteArray;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -41,13 +40,13 @@ import org.jetel.util.property.PropertyRefResolver;
 /***
  * Supports a port reading.
  * 
- * @author Jan Ausperger (jan.ausperger@javlin.eu)
+ * @author Jan Ausperger, Martin Slama (jan.ausperger@javlin.eu)
  *         (c) Javlin, a.s. (www.javlin.eu)
  */
 public class ReadableChannelPortIterator {
 	
     private static Log defaultLogger = LogFactory.getLog(ReadableChannelPortIterator.class);
-	public static final String DEFAULT_CHARSET = "UTF-8";
+	public static final String DEFAULT_CHARSET = "UTF-8"; //$NON-NLS-1$
 
 	// source attributes
 	private InputPort inputPort;
@@ -59,11 +58,9 @@ public class ReadableChannelPortIterator {
 	private PropertyRefResolver propertyRefResolve;
 
 	// data wrapper and a charset for string->byte array
-	private FieldDataWrapper[] fieldDataWrapper;
+	private FieldDataWrapper fieldDataWrapper;
 	private String charset;
 	
-	// pointer to current wrapper and current file name
-	private int currentWrapper = Integer.MAX_VALUE;
 	private String currentFileName;
 	private String lastFieldName;
 	
@@ -84,6 +81,11 @@ public class ReadableChannelPortIterator {
 	public void init() throws ComponentNotReadyException {
 		if (inputPort == null) return;
 		
+		if (portFileURL == null || portFileURL.length > 1) {
+			throw new ComponentNotReadyException(UtilMessages.
+					getString("ReadableChannelPortIterator_multiple_fields_not_allowed")); //$NON-NLS-1$
+		}
+		
 		// set default charset
 		if (charset == null) charset = DEFAULT_CHARSET;
 
@@ -91,32 +93,33 @@ public class ReadableChannelPortIterator {
 		record = new DataRecord(inputPort.getMetadata());
 		record.init();
 
-		// create field data wrappers - array of discrete, stream, source data wrappers
-		fieldDataWrapper = new FieldDataWrapper[portFileURL.length];
 		for (int i=0; i<portFileURL.length; i++) {
 			// parse field url
 			PortHandler portHandler = null;
 			try {
 				portHandler = new PortHandler(portFileURL[i], ProcessingType.DISCRETE);
 			} catch (MalformedURLException e) {
-				throw new ComponentNotReadyException("The source string '" + e.getMessage() + "' is not valid.");
+				throw new ComponentNotReadyException(UtilMessages.getString("ReadableChannelPortIterator_source_string") + 
+						e.getMessage() + UtilMessages.getString("ReadableChannelPortIterator_invalid")); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			
 			// prepare data field
 			String fName = portHandler.getFieldName();
-			if (!record.hasField(fName)) throw new ComponentNotReadyException("The field not found for the statement: '" + portFileURL[i] + "'");
+			if (!record.hasField(fName)) throw new ComponentNotReadyException(UtilMessages.
+					getString("ReadableChannelPortIterator_field_not_found") + portFileURL[i] + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			DataField field = record.getField(fName);
-			if (field == null) throw new ComponentNotReadyException("The field not found for the statement: '" + portFileURL[i] + "'");
+			if (field == null) throw new ComponentNotReadyException(UtilMessages.
+					getString("ReadableChannelPortIterator_field_not_found") + portFileURL[i] + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 			
 			// create a data wrapper
 			if (portHandler.getProcessingType() == ProcessingType.DISCRETE) {
-				fieldDataWrapper[i] = new DiscreteFieldDataWrapper(field, charset);
+				fieldDataWrapper = new DiscreteFieldDataWrapper(field, charset, portHandler);
 			} else if (portHandler.getProcessingType() == ProcessingType.SOURCE) {
-				fieldDataWrapper[i] = new SourceFieldDataWrapper(field, charset);
-				((SourceFieldDataWrapper)fieldDataWrapper[i]).setContextURL(contextURL);
-				((SourceFieldDataWrapper)fieldDataWrapper[i]).setPropertyRefResolver(propertyRefResolve);
+				fieldDataWrapper = new SourceFieldDataWrapper(field, charset, portHandler);
+				((SourceFieldDataWrapper)fieldDataWrapper).setContextURL(contextURL);
+				((SourceFieldDataWrapper)fieldDataWrapper).setPropertyRefResolver(propertyRefResolve);
 			} else if (portHandler.getProcessingType() == ProcessingType.STREAM) {
-				fieldDataWrapper[i] = new StreamFieldDataWrapper(field, charset);
+				fieldDataWrapper = new StreamFieldDataWrapper(field, charset, portHandler, inputPort);
 			}
 		}
 	}
@@ -129,40 +132,25 @@ public class ReadableChannelPortIterator {
 	 * @throws JetelException
 	 */
 	public ReadableByteChannel getNextData() throws IOException, InterruptedException, JetelException {
-		// if there is no next available wrapper, read next record
-		if (currentWrapper >= fieldDataWrapper.length) {
-			record = inputPort.readRecord(record);
-			currentWrapper = 0;
-		}
 		
-		// go through all data records
-		while (record != null) {
-			// return the first available data stream
-			ReadableByteChannel data;
-			for (;currentWrapper<fieldDataWrapper.length; currentWrapper++) {
-				if ((data = fieldDataWrapper[currentWrapper].getData()) != null) {
-					currentFileName = fieldDataWrapper[currentWrapper].getCurrentFileName();
-					lastFieldName = fieldDataWrapper[currentWrapper].getFieldName();
-					currentWrapper++;
-					return data;
-				}
-			}
-			
-			// if there is no next available wrapper, read next record
+		if (fieldDataWrapper.getPortHandler().getProcessingType() == ProcessingType.STREAM) {
+			//processing stream - do not read whole stream before processing starts but process data as they are coming
+			return fieldDataWrapper.getData();
+		} else {
+			//read next record
 			record = inputPort.readRecord(record);
-			currentWrapper = 0;
-		}
-		
-		// the field of the last record doesn't need to have null value
-		for (;currentWrapper<fieldDataWrapper.length; currentWrapper++) {
-			if (fieldDataWrapper[currentWrapper] instanceof StreamFieldDataWrapper) {
+			// go through all data records
+			while (record != null) {
+				// return the first available data stream
 				ReadableByteChannel data;
-				if ((data = ((StreamFieldDataWrapper)fieldDataWrapper[currentWrapper]).getLastData()) != null) {
-					currentFileName = fieldDataWrapper[currentWrapper].getCurrentFileName();
-					lastFieldName = fieldDataWrapper[currentWrapper].getFieldName();
-					currentWrapper++;
+				if ((data = fieldDataWrapper.getData()) != null) {
+					currentFileName = fieldDataWrapper.getCurrentFileName();
+					lastFieldName = fieldDataWrapper.getFieldName();
 					return data;
 				}
+
+				// if there is no next available wrapper, read next record
+				record = inputPort.readRecord(record);
 			}
 		}
 		return null;
@@ -240,14 +228,16 @@ public class ReadableChannelPortIterator {
 		protected DataField field;
 		protected String charset;
 		protected String currentFileName;
+		protected PortHandler portHandler;
 
 		/**
 		 * Constructor.
 		 * @param field
 		 */
-		public FieldDataWrapper(DataField field, String charset) {
+		public FieldDataWrapper(DataField field, String charset, PortHandler portHandler) {
 			this.field = field;
 			this.charset = charset;
+			this.portHandler = portHandler;
 		}
 		
 		/**
@@ -262,6 +252,13 @@ public class ReadableChannelPortIterator {
 		 */
 		public String getCurrentFileName() {
 			return currentFileName;
+		}
+		
+		/**
+		 * @return current port handler
+		 */
+		public PortHandler getPortHandler() {
+			return portHandler;
 		}
 		
 		/**
@@ -282,9 +279,10 @@ public class ReadableChannelPortIterator {
 		 * @param field
 		 * @param charset
 		 */
-		public DiscreteFieldDataWrapper(DataField field, String charset) {
-			super(field, charset);
-			currentFileName = "reading from field name '" + field.getMetadata().getName() + "'";
+		public DiscreteFieldDataWrapper(DataField field, String charset, PortHandler portHandler) {
+			super(field, charset, portHandler);
+			currentFileName = UtilMessages.getString("ReadableChannelPortIterator_reading_field") + 
+				field.getMetadata().getName() + "'"; //$NON-NLS-1$ //$NON-NLS-2$
 		}
 
 		@Override
@@ -300,9 +298,11 @@ public class ReadableChannelPortIterator {
 		 * @throws UnsupportedEncodingException 
 		 */
 		private ReadableByteChannel createReadableByteChannel(Object oValue) throws UnsupportedEncodingException {
-			if (oValue == null) throw new NullPointerException("The field contain unsupported null value.");
+			if (oValue == null) throw new NullPointerException(UtilMessages.
+					getString("ReadableChannelPortIterator_unsupported_null")); //$NON-NLS-1$
 			ByteArrayInputStream str = oValue instanceof byte[] ? 
-					new ByteArrayInputStream((byte[])oValue) : new ByteArrayInputStream(oValue.toString().getBytes(charset));
+					new ByteArrayInputStream((byte[])oValue) : 
+						new ByteArrayInputStream(oValue.toString().getBytes(charset));
 			return Channels.newChannel(str);
 		}
 	}
@@ -320,8 +320,8 @@ public class ReadableChannelPortIterator {
 		 * @param field
 		 * @param charset
 		 */
-		public SourceFieldDataWrapper(DataField field, String charset) {
-			super(field, charset);
+		public SourceFieldDataWrapper(DataField field, String charset, PortHandler portHandler) {
+			super(field, charset, portHandler);
 		}
 
 		/**
@@ -356,13 +356,14 @@ public class ReadableChannelPortIterator {
 		 * @throws JetelException
 		 */
 		private ReadableByteChannel createReadableByteChannel(String fileName) throws JetelException {
-			defaultLogger.debug("Opening input file " + fileName);
+			defaultLogger.debug(UtilMessages.getString("ReadableChannelPortIterator_opening_input") + fileName); //$NON-NLS-1$
 			try {
 				ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
-				defaultLogger.debug("Reading input file " + fileName);
+				defaultLogger.debug(UtilMessages.getString("ReadableChannelPortIterator_reading_input") + fileName); //$NON-NLS-1$
 				return channel;
 			} catch (IOException e) {
-				throw new JetelException("File is unreachable: " + fileName, e);
+				throw new JetelException(UtilMessages.
+						getString("ReadableChannelPortIterator_file_unreachable") + fileName, e); //$NON-NLS-1$
 			}
 		}
 	}
@@ -371,50 +372,26 @@ public class ReadableChannelPortIterator {
 	 * Source field data wrapper.
 	 */
 	private static class StreamFieldDataWrapper extends FieldDataWrapper {
-		// byte array
-		private ByteArray byteArray;
-
-		// flush data at the end
-		private boolean flushDataAtTheEnd;
 		
-		/**
-		 * Constructor.
-		 * @param field
-		 * @param charset
-		 */
-		public StreamFieldDataWrapper(DataField field, String charset) {
-			super(field, charset);
-			byteArray = new ByteArray();
-			currentFileName = "reading from field name '" + field.getMetadata().getName() + "'";
+		private InputPortReadableChannel channel;
+		private InputPort inputPort;
+		
+		public StreamFieldDataWrapper(DataField field, String charset, PortHandler portHandler, InputPort inputPort) {
+			super(field, charset, portHandler);
+			this.inputPort = inputPort;
+			currentFileName = UtilMessages.getString("ReadableChannelPortIterator_reading_from_file") + 
+				field.getMetadata().getName() + "'"; //$NON-NLS-1$ //$NON-NLS-2$
 		}
-
+		
 		@Override
 		public ReadableByteChannel getData() throws UnsupportedEncodingException, JetelException {
-			Object value = field.getValue();
-			if (value == null) {
-				ReadableByteChannel ch = Channels.newChannel(new ByteArrayInputStream(byteArray.getValueDuplicate()));
-				byteArray.reset();
-				flushDataAtTheEnd = false;
-				return ch;
+			if (channel == null) {
+				channel = new InputPortReadableChannel(inputPort, field.getMetadata().getName(), charset);
 			}
-			byteArray.append(value instanceof byte[] ? (byte[])value : value.toString().getBytes(charset));
-			flushDataAtTheEnd = true;
+			if (!channel.isEOF()) {
+				return channel;
+			}
 			return null;
-		}
-		
-		/**
-		 * Gets data if flushDataAtTheEnd = true.
-		 * @return
-		 */
-		public ReadableByteChannel getLastData() {
-			// return null
-			if (!flushDataAtTheEnd) return null;
-			flushDataAtTheEnd = false;
-			
-			// return last data
-			ReadableByteChannel ch = Channels.newChannel(new ByteArrayInputStream(byteArray.getValueDuplicate()));
-			byteArray.reset();
-			return ch;
 		}
 	}
 
@@ -423,9 +400,9 @@ public class ReadableChannelPortIterator {
 	 */
 	public static class PortHandler {
 
-		private static final String PARAM_DELIMITER = ":";
-		private static final String PORT_DELIMITER = "\\.";
-		private static final String PORT = "port";
+		private static final String PARAM_DELIMITER = ":"; //$NON-NLS-1$
+		private static final String PORT_DELIMITER = "\\."; //$NON-NLS-1$
+		private static final String PORT = "port"; //$NON-NLS-1$
 		
 		private String portName;
 		private String fieldName;
@@ -446,7 +423,7 @@ public class ReadableChannelPortIterator {
 			if (fieldNamePort.length < 2) {
 				throw new MalformedURLException(resource);
 			}
-			portName = fieldNamePort[0].replace("$", "");
+			portName = fieldNamePort[0].replace("$", ""); //$NON-NLS-1$ //$NON-NLS-2$
 			fieldName = fieldNamePort[1];
 			processingType = ProcessingType.DISCRETE;
 			if (elements.length > 2) {
