@@ -98,7 +98,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 		readRecord();
 		
 		//count of read bytes
-		int read = buffer.length() > dst.limit() ? dst.limit() : buffer.length();
+		int read = Math.min(buffer.length(), dst.remaining());
 		//fill given buffer
 		dst.put(buffer.getValue(new byte[read], read));
 		if (read > 0) {
