@@ -66,7 +66,7 @@ import org.w3c.dom.Element;
  * 
  *  * &lt;!ATTLIST LookupTable
  *              id ID #REQUIRED
- *              type NMTOKEN (dbLookup) #REQUIRED
+ *              type NMTOKEN (DBLookup) #REQUIRED
  *              metadata CDATA #REQUIRED
  *              sqlQuery CDATA #REQUIRED
  *              dbConnection CDATA #REQUIRED
@@ -79,7 +79,7 @@ import org.w3c.dom.Element;
  */
 public class DBLookupTable extends GraphElement implements LookupTable {
 
-    private static final String XML_LOOKUP_TYPE_DB_LOOKUP = "dbLookup"; 
+    private static final String XML_LOOKUP_TYPE_DB_LOOKUP = "DBLookup"; 
     private static final String XML_SQL_QUERY = "sqlQuery";
     private static final String XML_LOOKUP_MAX_CACHE_SIZE = "maxCached";
     private static final String XML_STORE_NULL_RESPOND = "storeNulls";
@@ -458,7 +458,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         } catch (SQLException e) {
             throw new ComponentNotReadyException(this, e);
         }
-
         lookup.setLookupTable(this);
         activeLookups.add(lookup);
 
@@ -493,13 +492,5 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public boolean remove(HashKey key) {
 		throw new UnsupportedOperationException(); 
-	}
-    
-	public int getCacheSize() {
-		return maxCached;
-	}
-	
-	public boolean isStoreNulls() {
-		return storeNulls;
 	}
 }

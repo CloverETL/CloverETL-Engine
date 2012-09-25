@@ -52,9 +52,11 @@ import org.jetel.util.primitive.SimpleCache;
  *
  * @created 21.9.2012
  */
-public class DBLookup implements Lookup {
+public final class DBLookup implements Lookup {
 
 	private static final Logger log = Logger.getLogger(DBLookup.class);
+	
+	private static final List<DataRecord> NEGATIVE_RESPONSE = Collections.singletonList(NullRecord.NULL_RECORD);
 	
 	private DBLookupTable lookupTable;
 	private SimpleCache recordCache;
@@ -112,21 +114,25 @@ public class DBLookup implements Lookup {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void seek() {
-		
 		++allHits;
 		reset();
 		if (isCached()) {
-			if (recordCache != null && recordCache.containsKey(key)) {
+			if (recordCache != null) {
 				List<DataRecord> records = recordCache.getAll(key);
-				if (records == null) {
-					recordCount = 0;
-					currentIterator = Collections.<DataRecord>emptyList().iterator();
-				} else {
-					recordCount = records.size();
-					currentIterator = records.iterator();
+				if (records != null) {
+					if (NEGATIVE_RESPONSE.equals(records)) {
+						recordCount = 0;
+						currentIterator = Collections.<DataRecord>emptyList().iterator();
+					} else {
+						recordCount = records.size();
+						currentIterator = records.iterator();
+					}
+					++cacheHits;
+					return;
 				}
-				++cacheHits;
-				return;
+			} else {
+				recordCache = new SimpleCache(1, lookupTable.maxCached);
+				recordCache.enableDuplicity();
 			}
 		}
 		List<DataRecord> records;
@@ -155,7 +161,6 @@ public class DBLookup implements Lookup {
 		List<DataRecord> records = new LinkedList<DataRecord>();
 		try {
 			resultSet = statement.executeQuery();
-			DataRecordMetadata dbMetadata = this.dbMetadata;
 			if (dbMetadata == null) {
 				/*
 				 * TODO discover cases where metadata need to be defined from incoming result set
@@ -195,23 +200,22 @@ public class DBLookup implements Lookup {
 				for (int i = 0; i < transMap.length; i++) {
 					transMap[i].sql2jetel(resultSet);
 				}
-				
+				DataRecord storedRecord = record.duplicate();
 				if (isCached()) {
-					recordsCached &= addToCache(key, record);
+					recordsCached &= recordCache.put(key, storedRecord);
 				}
-				records.add(record.duplicate());
+				records.add(storedRecord);
 			}
 			if (isCached() && !recordsCached) {
 				log.warn("Too many data records for a single key: " + toString(key) +
     				" Enlarge the cache size to accomodate more data records.");
 				recordCache.clear();
 			}
-			if (records.isEmpty() && getLookupTable().isStoreNulls()) {
-				if (isCached()) {
-					addToCache(key, NullRecord.NULL_RECORD);
-				} else {
-					records.add(NullRecord.NULL_RECORD);
+			if (records.isEmpty()) {
+				if (lookupTable.storeNulls) {
+					recordCache.put(key, NullRecord.NULL_RECORD);
 				}
+				return Collections.emptyList();
 			}
 			return records;
 		} catch (Exception e) {
@@ -251,15 +255,6 @@ public class DBLookup implements Lookup {
 	public DataRecordMetadata getMetadata() {
 		return this.dbMetadata;
 	}
-	
-	private boolean addToCache(HashKey key, DataRecord record) {
-		
-		if (recordCache == null) {
-			recordCache = new SimpleCache(1, getLookupTable().getCacheSize());
-			recordCache.enableDuplicity();
-		}
-		return recordCache.put(key, record.duplicate());
-	}
 
 	private void checkDataFetched() {
 		if (recordCount < 0) {
@@ -277,7 +272,7 @@ public class DBLookup implements Lookup {
 	}
 	
 	private boolean isCached() {
-		return getLookupTable().getCacheSize() > 0;
+		return lookupTable.maxCached > 0;
 	}
 	
 	int getTotalNumber() {
