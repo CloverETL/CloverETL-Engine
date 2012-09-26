@@ -355,7 +355,23 @@ public class ByteArray implements Comparable, Iterable {
 		System.arraycopy(value, 0, data, 0, count);
 		return data;
 	}
-
+	
+	/**
+	 * Returns duplicated byte array value.
+	 * 
+	 * @param data internal value is copied to the data
+	 * @param maximumCount maximum count of bytes to be copied from data internal value
+	 * @return   data value from param
+	 */
+	public byte[] getValue(byte[] data, int maximumCount) {
+		if (maximumCount > count) {
+			maximumCount = count;
+		}
+		if (data.length < maximumCount) throw new ArrayIndexOutOfBoundsException(data.length);
+		System.arraycopy(value, 0, data, 0, maximumCount);
+		return data;
+	}
+	
 	/**
 	 * Duplicates and returns internal byte array value.
 	 * 
