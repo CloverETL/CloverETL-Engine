@@ -226,7 +226,7 @@ public final class DBLookup implements Lookup {
 				try {
 					resultSet.close();
 				} catch (SQLException e) {
-					// ignore
+					log.warn(e);
 				}
 			}
 		}
