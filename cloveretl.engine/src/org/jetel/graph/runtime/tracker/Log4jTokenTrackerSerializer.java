@@ -111,7 +111,7 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 		if (token != null && token.getTokenId() >= 0) { 
 			result.append(String.format("Token [%s] ", token.getLabel()));
 		}
-		result.append(String.format("detected finish %s:%s:%s %s with status %s%s.",
+		result.append(String.format("detected finish %s:%s:%s%s with status %s%s.",
 				jobType,
 				runStatus.runId == 0 ? "" : runStatus.runId,
 				runStatus.jobUrl,
