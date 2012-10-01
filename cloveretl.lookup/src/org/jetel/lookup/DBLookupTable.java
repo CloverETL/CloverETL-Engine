@@ -381,11 +381,17 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     			query.setLength(whereIndex);
     		}
     	}
-
+    	synchronized (dbConnection.getSqlConnection()) {
+    		return iteratorImpl(query.toString());
+    	}
+   }
+    
+    private Iterator<DataRecord> iteratorImpl(String query) {
+    	
     	ResultSet resultSet = null;
         
        	try {
-        	SQLCloverStatement st = new SQLCloverStatement(dbConnection, query.toString(), null);
+        	SQLCloverStatement st = new SQLCloverStatement(dbConnection, query, null);
         	st.init();
 
         	resultSet = st.executeQuery();
@@ -435,7 +441,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 				// to clean up
 			}
 		}
-   }
+    }
     
 	@Override
 	public Lookup createLookup(RecordKey key) throws ComponentNotReadyException {
