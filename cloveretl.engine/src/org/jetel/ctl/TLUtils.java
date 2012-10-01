@@ -27,6 +27,7 @@ import static org.jetel.ctl.TransformLangParserTreeConstants.JJTRETURNSTATEMENT;
 import java.util.List;
 
 import org.jetel.ctl.ASTnode.CLVFBlock;
+import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
@@ -212,6 +213,10 @@ public final class TLUtils {
 	    			final SimpleNode lhs = (SimpleNode)child.jjtGetChild(0);
 	    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION) {
 	    				// not a mapping
+	    				return false;
+	    			}
+	    			if (!((CLVFFieldAccessExpression) lhs).isOutput()) {
+	    				// lhs must be an output field
 	    				return false;
 	    			}
     			}
