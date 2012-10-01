@@ -572,6 +572,7 @@ public class WcardPattern {
 		// When there is asterisk wildcard, we will presume the user wants to use WebDAV access to list all the files.
 		try {
 			Sardine sardine = SardineFactory.begin(WebdavOutputStream.getUsername(url), WebdavOutputStream.getPassword(url));
+			sardine.enableCompression();
 			String file = url.getFile();
 			int lastSlash = file.lastIndexOf('/');
 			if (lastSlash == -1) {

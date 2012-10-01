@@ -158,6 +158,7 @@ public class WebdavOutputStream extends OutputStream {
 		public void run() {
 			try {
 				Sardine sardine = SardineFactory.begin(username, password);
+				sardine.enableCompression();
 				
 				// This is a workaround needed for example for writing to CloverETL Server.
 				// It will avoid retry on non-repeatable request error.
