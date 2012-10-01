@@ -42,6 +42,7 @@ import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TLUtils;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.ASTnode.CLVFBlock;
+import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.MissingFieldException;
@@ -207,6 +208,10 @@ public class RecordTransformFactory {
 	    			final SimpleNode lhs = (SimpleNode)child.jjtGetChild(0);
 	    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION) {
 	    				// not a mapping
+	    				return false;
+	    			}
+	    			if (!((CLVFFieldAccessExpression) lhs).isOutput()) {
+	    				// lhs must be an output field
 	    				return false;
 	    			}
     			}
