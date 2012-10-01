@@ -27,8 +27,9 @@ import java.nio.charset.Charset;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.primitive.ByteArray;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.graph.InputPort;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Implementation of <code>java.nio.channels.ReadableByteChannel</code> for reading data from input port (thread-safe).
@@ -46,7 +47,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	private boolean eof = false;
 	private boolean opened;
 	
-	private ByteArray buffer = new ByteArray();
+	private CloverBuffer buffer = CloverBuffer.allocate(org.jetel.data.Defaults.Record.FIELD_INITIAL_SIZE);
 	private DataRecord record;
     
 	/**
@@ -72,7 +73,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
     	this.charset = charset;
     	this.opened = true;
     	
-    	record = new DataRecord(inputPort.getMetadata());
+    	record = DataRecordFactory.newRecord(inputPort.getMetadata());
     	record.init();
     	
     	readRecord();
@@ -97,13 +98,23 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 		
 		readRecord();
 		
-		//count of read bytes
-		int read = Math.min(buffer.length(), dst.remaining());
+		buffer.flip();
+		//count of read bytes (limited by the size of given buffer)
+		int read = Math.min(buffer.remaining(), dst.remaining());
+		//check limit of the buffer (count of bytes at the buffer)
+		int limit = buffer.limit();
+		if (limit > read) {
+			buffer.limit(read);
+		}
+		
 		//fill given buffer
-		dst.put(buffer.getValue(new byte[read], read));
-		if (read > 0) {
-			//clear internal buffer
-			buffer = buffer.delete(0, read);
+		dst.put(buffer.buf());
+		//remove copied bytes
+		buffer.compact();
+		
+		if (read > 0 && limit > read) {
+			//adjust internal buffer position (there are some more bytes)
+			buffer.position(limit - read);
 		}
 		return read > 0 ? read : -1;
 	}
@@ -112,7 +123,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	 * @return True if and only if there are no more data to be read from input port, false otherwise.
 	 */
 	public synchronized boolean isEOF() {
-		return eof && buffer.length() == 0;
+		return eof && buffer.position() == 0 && buffer.limit() == buffer.capacity();
 	}
 	
 	/**
@@ -122,7 +133,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	 */
 	private void readRecord() throws IOException {
 		
-		if (buffer.length() == 0) {
+		if (buffer.position() == 0 && buffer.limit() == buffer.capacity()) {
 			try {
 				record = inputPort.readRecord(record);
 			} catch (InterruptedException e) {
@@ -135,7 +146,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 				Object value = field.getValue();
 				if (value != null) {
 					//some value read
-					buffer.append(value instanceof byte[] ? (byte[]) value : value.toString().getBytes(charset));
+					buffer.put(value instanceof byte[] ? (byte[]) value : value.toString().getBytes(charset));
 				}
 			} else {
 				//eof reached
