@@ -1491,9 +1491,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFReturnStatement node, Object data) {
 		if (node.jjtHasChildren()) {
 			node.jjtGetChild(0).jjtAccept(this, data);
+			// save return value of the function to avoid losing it when stack is cleared
+			this.lastReturnValue = stack.pop(); // CL-1864 - do it only if there is a child node
 		}
-		// save return value of the function to avoid losing it when stack is cleared
-		this.lastReturnValue = stack.pop();
 		
 		// set interrupt flag
 		breakFlag = true;

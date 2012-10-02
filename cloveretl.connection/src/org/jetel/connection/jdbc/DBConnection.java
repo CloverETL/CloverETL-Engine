@@ -52,6 +52,7 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -783,6 +784,8 @@ public class DBConnection extends GraphElement implements IConnection {
 		try {
 			connection = connect(OperationType.UNKNOWN);
 		} catch (JetelException e) {
+			throw new SQLException(e.getMessage());
+		} catch (JetelRuntimeException e) {
 			throw new SQLException(e.getMessage());
 		}
         

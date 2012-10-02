@@ -412,8 +412,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         runResult = Result.READY;
         
         //initialise component token tracker if necessary
-        if ((getGraph().getJobType() == JobType.JOBFLOW) &&
-        		getGraph().getRuntimeContext().isTokenTracking()) {
+        if (getGraph() != null
+        		&& getGraph().getJobType() == JobType.JOBFLOW
+        		&& getGraph().getRuntimeContext().isTokenTracking()) {
         	tokenTracker = createComponentTokenTracker();
         } else {
         	tokenTracker = new PrimitiveComponentTokenTracker(this);

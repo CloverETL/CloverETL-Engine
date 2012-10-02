@@ -1155,7 +1155,7 @@ public class FileUtils {
             		if (graph == null) {
     					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
             		}
-                	return graph.getAuthorityProxy().getSandboxResourceOutput(url.getHost(), SandboxUrlUtils.getRelativeUrl(url.toString()), appendData);
+                	return graph.getAuthorityProxy().getSandboxResourceOutput(url.getHost(), getUrlFile(url), appendData);
     			}
     			// file input stream 
     			String filePath = url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url);

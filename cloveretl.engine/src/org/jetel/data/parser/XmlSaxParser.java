@@ -101,7 +101,6 @@ public class XmlSaxParser {
 	private static final String FEATURES_DELIMETER = ";";
 	private static final String FEATURES_ASSIGN = ":=";
 	
-	private static final String XML_MAPPING = "Mapping";
     public static final String XML_USE_PARENT_RECORD = "useParentRecord";
     public static final String XML_IMPLICIT = "implicit";
     public static final String XML_ELEMENT = "element";
@@ -115,8 +114,6 @@ public class XmlSaxParser {
     public static final String XML_CLOVERFIELDS = "cloverFields";
     public static final String XML_SEQUENCEFIELD = "sequenceField";
     public static final String XML_SEQUENCEID = "sequenceId";
-    private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
-    private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 
     public static final String XML_TEMPLATE_ID = "templateId";
     public static final String XML_TEMPLATE_REF = "templateRef";
@@ -875,7 +872,7 @@ public class XmlSaxParser {
 	 * @param namespaceBindings the namespaceBindings to set
 	 */
 	public void setNamespaceBindings(HashMap<String, String> namespaceBindings) {
-		this.namespaceBindings = namespaceBindings;
+		this.namespaceBindings = new HashMap<String, String>(namespaceBindings); // Fix of CL-2510 -- augmentNamespaceURIs() was run twice on the same namespaceBindings instance
 	}
 
 	public boolean isValidate() {

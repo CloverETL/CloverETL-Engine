@@ -459,6 +459,9 @@ public class WcardPattern {
 		mfiles.add(fileName);
 		return mfiles;
 	}
+	
+	// matches the FILENAME part of a path: /dir/subdir/subsubdir/FILENAME
+	private static final Pattern FILENAME_PATTERN = Pattern.compile(".*/([^/]+/?)");
 
 	/**
 	 * Gets files from fileName that can contain wildcards or returns original name.
@@ -483,7 +486,11 @@ public class WcardPattern {
 			FTPFile[] ftpFiles = ftpConnection.ls(url.getFile());				// note: too long operation
 			for (FTPFile lsFile: ftpFiles) {
 				if (lsFile.getType() == FTPFile.DIRECTORY_TYPE) continue;
-				String resolverdFileNameWithoutPath = lsFile.getName();
+				String resolverdFileNameWithoutPath = lsFile.getName().replace('\\', '/');
+				Matcher m = FILENAME_PATTERN.matcher(resolverdFileNameWithoutPath);
+				if (m.matches()) {
+					resolverdFileNameWithoutPath = m.group(1); // CL-2468 - some FTPs return full path as file name, get rid of the path
+				}
 				
 				// replace file name
 				String urlPath = url.getFile();
@@ -565,6 +572,7 @@ public class WcardPattern {
 		// When there is asterisk wildcard, we will presume the user wants to use WebDAV access to list all the files.
 		try {
 			Sardine sardine = SardineFactory.begin(WebdavOutputStream.getUsername(url), WebdavOutputStream.getPassword(url));
+			sardine.enableCompression();
 			String file = url.getFile();
 			int lastSlash = file.lastIndexOf('/');
 			if (lastSlash == -1) {

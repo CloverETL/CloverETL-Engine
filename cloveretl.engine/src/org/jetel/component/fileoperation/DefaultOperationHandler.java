@@ -140,6 +140,17 @@ public class DefaultOperationHandler implements IOperationHandler {
 		}
 	}
 	
+	private void checkSubdir(URI source, URI target) throws IOException {
+		String sourcePath = source.normalize().toString();
+		String targetPath = target.normalize().toString();
+		if (!sourcePath.endsWith(URIUtils.PATH_SEPARATOR)) {
+			sourcePath = sourcePath + URIUtils.PATH_SEPARATOR;
+		}
+		if (targetPath.startsWith(sourcePath)) {
+			throw new IOException(MessageFormat.format("{0} is a subdirectory of {1}", target, source));
+		}
+	}
+	
 	@Override
 	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params) throws IOException {
 		InfoResult sourceInfo = manager.info(source);
@@ -155,6 +166,9 @@ public class DefaultOperationHandler implements IOperationHandler {
 			} else if (!sourceInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), target.getPath())); //$NON-NLS-1$
 			}
+		}
+		if (sourceInfo.isDirectory()) {
+			checkSubdir(source.toURI(), target.toURI());
 		}
 		return copyInternal(source, target, params) ? target : null;
 	}
@@ -174,10 +188,10 @@ public class DefaultOperationHandler implements IOperationHandler {
 				throw new SameFileException(sourceUri, targetUri);
 			}
 		}
+		if (sourceInfo == null) {
+			sourceInfo = manager.info(source);
+		}
 		if (targetInfo.isDirectory()) {
-			if (sourceInfo == null) {
-				sourceInfo = manager.info(source);
-			}
 			if (!sourceInfo.exists()) {
 				throw new FileNotFoundException(source.toURI().toString());
 			}
@@ -193,6 +207,11 @@ public class DefaultOperationHandler implements IOperationHandler {
 				}
 			}
 		}
+		
+		if (sourceInfo.isDirectory()) {
+			checkSubdir(source.toURI(), target.toURI());
+		}
+		
 		CopyResult copyResult = manager.copy(source, target, COPY_RECURSIVE.clone().setOverwriteMode(params.getOverwriteMode()).setMakeParents(params.isMakeParents()));
 		if (copyResult.success() && manager.delete(source, DELETE_RECURSIVE).success()) {
 			return copyResult.getResult(0);

@@ -112,6 +112,17 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		}
 	}
 	
+	protected void checkSubdir(URI source, URI target) throws IOException {
+		String sourcePath = source.normalize().toString();
+		String targetPath = target.normalize().toString();
+		if (!sourcePath.endsWith(URIUtils.PATH_SEPARATOR)) {
+			sourcePath = sourcePath + URIUtils.PATH_SEPARATOR;
+		}
+		if (targetPath.startsWith(sourcePath)) {
+			throw new IOException(MessageFormat.format("{0} is a subdirectory of {1}", target, source));
+		}
+	}
+	
 	protected SingleCloverURI copy(URI sourceUri, URI targetUri, CopyParameters params) throws IOException {
 		Info sourceInfo = simpleHandler.info(sourceUri);
 		if (sourceInfo == null) {
@@ -126,6 +137,9 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 			} else if (!sourceInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 			}
+		}
+		if (sourceInfo.isDirectory()) {
+			checkSubdir(sourceUri, targetUri);
 		}
 		return copyInternal(sourceUri, targetUri, params) ? CloverURI.createSingleURI(targetUri) : null;
 	}
@@ -210,6 +224,9 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 			} else if (!sourceInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 			}
+		}
+		if (sourceInfo.isDirectory()) {
+			checkSubdir(sourceUri, targetUri);
 		}
 		return moveInternal(sourceUri, targetUri, params) ? SingleCloverURI.createSingleURI(targetUri) : null;
 	}

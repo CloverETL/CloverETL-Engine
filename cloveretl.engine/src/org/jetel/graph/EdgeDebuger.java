@@ -182,11 +182,15 @@ public class EdgeDebuger {
     
     private void flushIfNeeded() throws IOException, InterruptedException {
     	if (dataTape != null && (getGraph().getJobType() == JobType.JOBFLOW || (System.currentTimeMillis() - lastFlushTime) > MINIMUM_DELAY_BETWEEN_FLUSHES)) {
-    		dataTape.flush(false);
-    		lastFlushTime = System.currentTimeMillis();
+    		flush();
     	}
     }
 
+    private void flush() throws IOException, InterruptedException {
+		dataTape.flush(false);
+		lastFlushTime = System.currentTimeMillis();
+    }
+    
     private boolean checkRecordToWrite(DataRecord record) {
     	return ((filter == null || isValid(record)) && (sampler == null || sampler.sample()));
     }
@@ -344,4 +348,15 @@ public class EdgeDebuger {
         }
         
     }
+
+	/**
+	 * This method is invoked after all data are written.
+	 * @throws InterruptedException 
+	 * @throws IOException 
+	 * @see Edge#eof()
+	 */
+	public void eof() throws IOException, InterruptedException {
+		flush();
+	}
+	
 }

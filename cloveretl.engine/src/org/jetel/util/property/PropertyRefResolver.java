@@ -18,6 +18,7 @@
  */
 package org.jetel.util.property;
 
+import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -226,8 +227,8 @@ public class PropertyRefResolver {
 		try {
 			resolveRef(valueBuffer, flag);
 		} catch (JetelRuntimeException e) {
-			errorMessages.add(e.getMessage() + " " + value);
-			logger.warn(e.getMessage() + " " + value);
+			errorMessages.add(e.getMessage() + " " + value); //$NON-NLS-1$
+			logger.warn(e.getMessage() + " " + value); //$NON-NLS-1$
 		}
 		
 		return valueBuffer.toString();
@@ -304,7 +305,7 @@ public class PropertyRefResolver {
 		while (expressionMatcher.find()) {
 			//aren't we too deep in recursion?
 			if (isRecursionOverflowed()) {
-				throw new JetelRuntimeException("Graph property cannot be resolved. Infinite recursion is detected. See Defaults.GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH for more details.");
+				throw new JetelRuntimeException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
 			}
 
 			String expression = expressionMatcher.group(1);
@@ -331,8 +332,8 @@ public class PropertyRefResolver {
 
 					anyExpressionEvaluated = true;
 				} catch (ParseException exception) {
-					errorMessages.add("CTL expression '" + resolvedExpression + "' is not valid.");
-					logger.warn("Cannot evaluate expression: " + resolvedExpression, exception);
+					errorMessages.add(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_invalid_ctl_warning"), resolvedExpression)); //$NON-NLS-1$
+					logger.warn(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_evaluation_failed_warning"), resolvedExpression), exception); //$NON-NLS-1$
 				}
 			}
 		}
@@ -356,20 +357,28 @@ public class PropertyRefResolver {
 		while (propertyMatcher.find()) {
 			//aren't we too deep in recursion?
 			if (isRecursionOverflowed()) {
-				throw new JetelRuntimeException("Graph property cannot be resolved. Infinite recursion is detected. See Defaults.GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH for more details.");
+				throw new JetelRuntimeException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
 			}
 
 			// resolve the property reference
 			String reference = propertyMatcher.group(1);
 			String resolvedReference = properties.getProperty(reference);
-
+			
 			if (resolvedReference == null) {
 				resolvedReference = System.getenv(reference);
 			}
-
+			
+			// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
 			if (resolvedReference == null) {
-				reference = reference.replace('_', '.');
-				resolvedReference = System.getProperty(reference);
+				String preferredReference = new String(reference);
+				preferredReference = reference.replace('_', '.');
+				resolvedReference = System.getProperty(preferredReference);
+				if (resolvedReference == null) {
+					resolvedReference = System.getProperty(reference);
+				}
+				else {
+					if (!reference.equals(preferredReference) && System.getProperty(reference) != null) logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+				}
 			}
 
 			if (resolvedReference != null) {
@@ -384,7 +393,7 @@ public class PropertyRefResolver {
 					anyReferenceResolved = true;
 				}
 			} else {
-				errorMessages.add("Property '" + reference + "' is not defined.");
+				errorMessages.add(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_property_not_defined_warning"), reference)); //$NON-NLS-1$
 				//this warn is turned off since this warning can disturb console log even in case everything is correct
 				//see TypedProperties.resolvePropertyReferences() method where a local PropertyRefResolver is used
 				//for initial parameters resolution and after that a global PropertyRefResolver is used for unresolved

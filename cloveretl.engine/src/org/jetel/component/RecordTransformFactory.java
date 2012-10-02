@@ -24,7 +24,6 @@ import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFUNCTIONDECLARAT
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTIMPORTSOURCE;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTRETURNSTATEMENT;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +39,7 @@ import org.jetel.ctl.TLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.ASTnode.CLVFBlock;
+import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.MissingFieldException;
@@ -154,6 +154,10 @@ public class RecordTransformFactory {
 	    			final SimpleNode lhs = (SimpleNode)child.jjtGetChild(0);
 	    			if (lhs.getId() != JJTFIELDACCESSEXPRESSION) {
 	    				// not a mapping
+	    				return false;
+	    			}
+	    			if (!((CLVFFieldAccessExpression) lhs).isOutput()) {
+	    				// lhs must be an output field
 	    				return false;
 	    			}
     			}

@@ -483,6 +483,9 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      */
     @Override
 	public void eof() throws InterruptedException, IOException {
+    	if (edgeDebuger != null) {
+    		edgeDebuger.eof();
+    	}
     	if (!eofSent) {
         	edge.eof();
         	eofSent = true;
