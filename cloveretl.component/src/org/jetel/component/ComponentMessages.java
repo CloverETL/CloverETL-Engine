@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.util.property;
+package org.jetel.component;
 
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -25,14 +25,14 @@ import java.util.ResourceBundle;
  * @author Administrator (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 13.9.2012
+ * @created Oct 2, 2012
  */
-public class PropertyRefResolverMessages {
-	private static final String BUNDLE_NAME = "org.jetel.util.property.PropertyRefResolverMessages"; //$NON-NLS-1$
+public class ComponentMessages {
+	private static final String BUNDLE_NAME = "org.jetel.component.ComponentMessages"; //$NON-NLS-1$
 
 	private static final ResourceBundle RESOURCE_BUNDLE = ResourceBundle.getBundle(BUNDLE_NAME);
 
-	private PropertyRefResolverMessages() {
+	private ComponentMessages() {
 	}
 
 	public static String getString(String key) {

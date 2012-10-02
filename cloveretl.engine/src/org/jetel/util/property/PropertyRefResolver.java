@@ -305,7 +305,7 @@ public class PropertyRefResolver {
 		while (expressionMatcher.find()) {
 			//aren't we too deep in recursion?
 			if (isRecursionOverflowed()) {
-				throw new JetelRuntimeException(PropertyRefResolverMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
+				throw new JetelRuntimeException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
 			}
 
 			String expression = expressionMatcher.group(1);
@@ -332,8 +332,8 @@ public class PropertyRefResolver {
 
 					anyExpressionEvaluated = true;
 				} catch (ParseException exception) {
-					errorMessages.add(MessageFormat.format(PropertyRefResolverMessages.getString("PropertyRefResolver_invalid_ctl_warning"), resolvedExpression)); //$NON-NLS-1$
-					logger.warn(MessageFormat.format(PropertyRefResolverMessages.getString("PropertyRefResolver_evaluation_failed_warning"), resolvedExpression), exception); //$NON-NLS-1$
+					errorMessages.add(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_invalid_ctl_warning"), resolvedExpression)); //$NON-NLS-1$
+					logger.warn(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_evaluation_failed_warning"), resolvedExpression), exception); //$NON-NLS-1$
 				}
 			}
 		}
@@ -357,7 +357,7 @@ public class PropertyRefResolver {
 		while (propertyMatcher.find()) {
 			//aren't we too deep in recursion?
 			if (isRecursionOverflowed()) {
-				throw new JetelRuntimeException(PropertyRefResolverMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
+				throw new JetelRuntimeException(PropertyMessages.getString("PropertyRefResolver_infinite_recursion_warning")); //$NON-NLS-1$
 			}
 
 			// resolve the property reference
@@ -377,7 +377,7 @@ public class PropertyRefResolver {
 					resolvedReference = System.getProperty(reference);
 				}
 				else {
-					if (!reference.equals(preferredReference) && System.getProperty(reference) != null) logger.warn(new String(MessageFormat.format(PropertyRefResolverMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+					if (!reference.equals(preferredReference) && System.getProperty(reference) != null) logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
 				}
 			}
 
@@ -393,7 +393,7 @@ public class PropertyRefResolver {
 					anyReferenceResolved = true;
 				}
 			} else {
-				errorMessages.add(MessageFormat.format(PropertyRefResolverMessages.getString("PropertyRefResolver_property_not_defined_warning"), reference)); //$NON-NLS-1$
+				errorMessages.add(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_property_not_defined_warning"), reference)); //$NON-NLS-1$
 				//this warn is turned off since this warning can disturb console log even in case everything is correct
 				//see TypedProperties.resolvePropertyReferences() method where a local PropertyRefResolver is used
 				//for initial parameters resolution and after that a global PropertyRefResolver is used for unresolved

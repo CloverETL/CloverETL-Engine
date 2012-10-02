@@ -458,12 +458,12 @@ public class DBJoin extends Node {
 		OutputPort outputPortHandle = getOutputPort(WRITE_TO_PORT);
 
 		if (inputPortHandle == null) {
-			throw new ComponentNotReadyException(MessageFormat.format(DBJoinMessages.getString("DBJoin_InputPortError"), READ_FROM_PORT, this.getId())); //$NON-NLS-1$
+			throw new ComponentNotReadyException(MessageFormat.format(ComponentMessages.getString("DBJoin_InputPortError"), READ_FROM_PORT, this.getId()));  //$NON-NLS-1$
 		} else
 			inMetadata = new DataRecordMetadata[] { inputPortHandle.getMetadata(), dbMetadata };
 
 		if (outputPortHandle == null) {
-			throw new ComponentNotReadyException(MessageFormat.format(DBJoinMessages.getString("DBJoin_OutputPortError"), WRITE_TO_PORT, this.getId())); //$NON-NLS-1$
+			throw new ComponentNotReadyException(MessageFormat.format(ComponentMessages.getString("DBJoin_OutputPortError"), WRITE_TO_PORT, this.getId()));  //$NON-NLS-1$
 		} else
 			outMetadata = new DataRecordMetadata[] { outputPortHandle.getMetadata() };
 
