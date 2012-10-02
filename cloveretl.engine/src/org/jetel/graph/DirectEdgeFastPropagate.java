@@ -237,7 +237,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
 
     @Override
     public boolean isEOF() {
-        return !recordsBuffer.isOpen();
+        return recordsBuffer.isEOF();
     }
     
     @Override
@@ -328,6 +328,12 @@ public class DirectEdgeFastPropagate extends EdgeBase {
             return isOpen;
         }
 
+        /**
+         * @return true if EOF flag was reached
+         */
+        synchronized boolean isEOF() {
+            return eofWasRead;
+        }
 
         /**
          *  Gets buffer which can be used for writing record or
