@@ -19,6 +19,9 @@
 package org.jetel.component.fileoperation.result;
 
 /**
+ * The FileManager and related classes
+ * are considered internal and may change in the future.
+ * 
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *

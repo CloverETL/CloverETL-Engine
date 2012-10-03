@@ -62,6 +62,10 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 
+/**
+ * The FileManager and related classes
+ * are considered internal and may change in the future.
+ */
 public class FileManager {
 	
 	/**
