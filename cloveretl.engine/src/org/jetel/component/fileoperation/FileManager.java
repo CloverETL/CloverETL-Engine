@@ -64,16 +64,20 @@ import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 
 public class FileManager {
 	
-	private static FileManager instance;
+	/**
+	 * @see <a href="http://en.wikipedia.org/wiki/Initialization_on_demand_holder_idiom#Example_Java_Implementation">http://en.wikipedia.org/wiki/Initialization_on_demand_holder_idiom#Example_Java_Implementation</a>
+	 * 
+	 * @created Oct 3, 2012
+	 */
+	private static class SingletonHolder {
+        private static final FileManager INSTANCE = new FileManager();
+	}
 	
 	/**
 	 * @return the instance
 	 */
-	public synchronized static FileManager getInstance() {
-		if (instance == null) {
-			instance = new FileManager();
-		}
-		return instance;
+	public static FileManager getInstance() { // no synchronization needed
+		return SingletonHolder.INSTANCE;
 	}
 	
 	private final Collection<IOperationHandler> handlers = new ArrayList<IOperationHandler>();
@@ -104,7 +108,8 @@ public class FileManager {
 	
 	private static final int MAX_CACHE_SIZE = 50;
 	
-	private final Map<Operation, List<IOperationHandler>> cachedHandlers = new MRUCache<Operation, List<IOperationHandler>>(MAX_CACHE_SIZE);
+	// the map must be synchronized, even map.get() causes a structural modification
+	private final Map<Operation, List<IOperationHandler>> cachedHandlers = Collections.synchronizedMap(new MRUCache<Operation, List<IOperationHandler>>(MAX_CACHE_SIZE));
 	
 	private URI currentWorkingDir = null;
 	
@@ -132,7 +137,13 @@ public class FileManager {
 		return findHandler(operation) != null;
 	}
 	
-	public List<IOperationHandler> listHandlers(Operation operation) {
+	/*
+	 * This method is synchronized to prevent 
+	 * unpredictable behavior of file operations
+	 * after the list of handlers has been modified 
+	 * from a different thread than the one performing the operation. 
+	 */
+	public synchronized List<IOperationHandler> listHandlers(Operation operation) {
 		ArrayList<IOperationHandler> candidates = new ArrayList<IOperationHandler>();
 		for (IOperationHandler handler: handlers) {
 			if (handler.canPerform(operation)) {
@@ -150,10 +161,13 @@ public class FileManager {
 	
 	public IOperationHandler findNextHandler(Operation operation, IOperationHandler previousHandler) {
 		
-		List<IOperationHandler> handlers = null;
-		if (cachedHandlers.containsKey(operation)) {
-			handlers = cachedHandlers.get(operation);
-		} else {
+		/*
+		 * no synchronization needed here
+		 * - if two threads compute the list of handlers concurrently
+		 * and store it, the result will still be correct 
+		 */
+		List<IOperationHandler> handlers = cachedHandlers.get(operation);
+		if (handlers == null) {
 			handlers = listHandlers(operation);
 			cachedHandlers.put(operation, handlers);
 		}
@@ -186,23 +200,30 @@ public class FileManager {
 		return operation;
 	}
 
-	public void registerHandler(IOperationHandler handler) {
+	public synchronized void registerHandler(IOperationHandler handler) {
 		cachedHandlers.clear();
 		handlers.add(handler);
 	}
 	
+	/**
+	 * Registers the default handlers.
+	 * 
+	 * Should be called just once!
+	 */
 	public static void init() {
 		FileManager manager = FileManager.getInstance();
-		manager.registerHandler(new LocalOperationHandler());
-		manager.registerHandler(new FTPOperationHandler());
-		manager.registerHandler(new URLOperationHandler());
-		manager.registerHandler(new DefaultOperationHandler());
-		manager.registerHandler(new WebdavOperationHandler());
-		manager.registerHandler(new S3OperationHandler());
-		manager.registerHandler(new SFTPOperationHandler());
+		synchronized (manager) {
+			manager.registerHandler(new LocalOperationHandler());
+			manager.registerHandler(new FTPOperationHandler());
+			manager.registerHandler(new URLOperationHandler());
+			manager.registerHandler(new DefaultOperationHandler());
+			manager.registerHandler(new WebdavOperationHandler());
+			manager.registerHandler(new S3OperationHandler());
+			manager.registerHandler(new SFTPOperationHandler());
+		}
 	}
 	
-	void clear() {
+	synchronized void clear() {
 		cachedHandlers.clear();
 		handlers.clear();
 	}
