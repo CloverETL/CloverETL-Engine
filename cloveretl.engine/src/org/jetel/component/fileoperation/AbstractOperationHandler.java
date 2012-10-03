@@ -361,6 +361,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Boolean isDirectory = params.isDirectory();
 		boolean createDirectory = Boolean.TRUE.equals(isDirectory);
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
+		Date lastModified = params.getLastModified();
 		Info fileInfo = simpleHandler.info(uri);
 		boolean success = true;
 		if (fileInfo == null) { // does not exist
@@ -373,16 +374,18 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 			} else {
 				success = simpleHandler.createFile(uri);
 			}
+			if (lastModified != null) {
+				success &= simpleHandler.setLastModified(uri, lastModified);
+			}
 		} else {
 			if ((isDirectory != null) && (!isDirectory.equals(fileInfo.isDirectory()))) {
 				throw new IOException(MessageFormat.format(isDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-		}
-		Date lastModified = params.getLastModified();
-		if (lastModified != null) {
-			success &= simpleHandler.setLastModified(uri, lastModified);
-		} else {
-			simpleHandler.setLastModified(uri, new Date());
+			if (lastModified != null) {
+				success &= simpleHandler.setLastModified(uri, lastModified);
+			} else {
+				simpleHandler.setLastModified(uri, new Date());
+			}
 		}
 		return success;
 	}
