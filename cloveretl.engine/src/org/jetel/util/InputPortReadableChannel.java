@@ -98,9 +98,8 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 		
 		readRecord();
 		
-		buffer.flip();
 		//count of read bytes (limited by the size of given buffer)
-		int read = Math.min(buffer.remaining(), dst.remaining());
+		int read = isBufferEmpty() ? 0 : Math.min(buffer.limit(), dst.remaining());
 		//check limit of the buffer (count of bytes at the buffer)
 		int limit = buffer.limit();
 		if (limit > read) {
@@ -109,12 +108,15 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 		
 		//fill given buffer
 		dst.put(buffer.buf());
-		//remove copied bytes
-		buffer.compact();
 		
 		if (read > 0 && limit > read) {
 			//adjust internal buffer position (there are some more bytes)
-			buffer.position(limit - read);
+			buffer.limit(limit);
+		}
+		buffer.compact();
+		if (read > 0 && limit > read) {
+			buffer.rewind();
+			buffer.limit(limit - read);
 		}
 		return read > 0 ? read : -1;
 	}
@@ -123,7 +125,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	 * @return True if and only if there are no more data to be read from input port, false otherwise.
 	 */
 	public synchronized boolean isEOF() {
-		return eof && buffer.position() == 0 && buffer.limit() == buffer.capacity();
+		return eof && isBufferEmpty();
 	}
 	
 	/**
@@ -133,7 +135,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	 */
 	private void readRecord() throws IOException {
 		
-		if (buffer.position() == 0 && buffer.limit() == buffer.capacity()) {
+		if (isBufferEmpty()) {
 			try {
 				record = inputPort.readRecord(record);
 			} catch (InterruptedException e) {
@@ -147,12 +149,22 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 				if (value != null) {
 					//some value read
 					buffer.put(value instanceof byte[] ? (byte[]) value : value.toString().getBytes(charset));
+					buffer.flip();
+				} else {
+					eof = true;
 				}
 			} else {
 				//eof reached
 				eof = true;
 			}
 		}
+	}
+	
+	/**
+	 * @return True if internal buffer is empty.
+	 */
+	private boolean isBufferEmpty() {
+		return buffer.position() == 0 && buffer.capacity() == buffer.limit();
 	}
 
 }
