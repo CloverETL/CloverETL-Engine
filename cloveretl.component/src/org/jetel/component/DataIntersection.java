@@ -33,8 +33,8 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.data.reader.DriverReader;
-import org.jetel.data.reader.InputReader;
-import org.jetel.data.reader.InputReader.InputOrdering;
+import org.jetel.data.reader.IInputReader;
+import org.jetel.data.reader.IInputReader.InputOrdering;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.exception.ComponentNotReadyException;
@@ -204,7 +204,7 @@ public class DataIntersection extends Node {
 
 	private DriverReader driverReader;
 
-	private InputReader slaveReader;
+	private IInputReader slaveReader;
 
 	private InputOrdering driverReaderOrdering;
 	
@@ -296,7 +296,7 @@ public class DataIntersection extends Node {
 	 * @exception  InterruptedException  Description of the Exception
 	 * @throws TransformException 
 	 */
-	private final boolean flushCombinations(DriverReader driver, InputReader slave, 
+	private final boolean flushCombinations(DriverReader driver, IInputReader slave, 
 			DataRecord out, OutputPort port)
 	throws IOException, InterruptedException, TransformException {
 	    outRecords[0]= out;
@@ -392,7 +392,7 @@ public class DataIntersection extends Node {
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
 	 */
-	private final boolean flush(InputReader reader, OutputPort port) 
+	private final boolean flush(IInputReader reader, OutputPort port) 
 			throws IOException,InterruptedException{
 		if (keyDuplicates) {
 			while ((tmp = reader.next()) != null) {
@@ -487,10 +487,10 @@ public class DataIntersection extends Node {
 			}
 			//all input data has to be in ascending order
 			if (!isDriverStreamAscending()) {
-				throw new RuntimeException("Data input A is not sorted in ascending order.");
+				throw new RuntimeException("Data input 0 is not sorted in ascending order. "+driverReader.getInfo());
 			}
 			if (!isSlaveStreamAscending()) {
-				throw new RuntimeException("Data input B is not sorted in ascending order.");
+				throw new RuntimeException("Data input 1 is not sorted in ascending order. "+slaveReader.getInfo());
 			}
 		}while (runIt && (driverReader.hasData() || slaveReader.hasData()));
 		 
