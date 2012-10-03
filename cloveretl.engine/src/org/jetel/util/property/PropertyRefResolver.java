@@ -370,14 +370,14 @@ public class PropertyRefResolver {
 			
 			// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
 			if (resolvedReference == null) {
-				String preferredReference = new String(reference);
-				preferredReference = reference.replace('_', '.');
+				String preferredReference = reference.replace('_', '.');
 				resolvedReference = System.getProperty(preferredReference);
 				if (resolvedReference == null) {
 					resolvedReference = System.getProperty(reference);
-				}
-				else {
-					if (!reference.equals(preferredReference) && System.getProperty(reference) != null) logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+				} else {
+					if (!reference.equals(preferredReference) && System.getProperty(reference) != null) {
+						logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+					}
 				}
 			}
 
