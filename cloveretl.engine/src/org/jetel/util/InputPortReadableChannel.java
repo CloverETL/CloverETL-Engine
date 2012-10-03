@@ -28,6 +28,7 @@ import java.nio.charset.Charset;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.graph.InputPort;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -47,7 +48,7 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	private boolean eof = false;
 	private boolean opened;
 	
-	private CloverBuffer buffer = CloverBuffer.allocate(org.jetel.data.Defaults.Record.FIELD_INITIAL_SIZE);
+	private CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	private DataRecord record;
     
 	/**
@@ -76,7 +77,8 @@ public class InputPortReadableChannel implements ReadableByteChannel {
     	record = DataRecordFactory.newRecord(inputPort.getMetadata());
     	record.init();
     	
-    	readRecord();
+    	//buffer should look like empty at the start of processing
+    	buffer.flip();
     }
     
 	@Override
@@ -91,41 +93,56 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	
 	@Override
 	public synchronized int read(ByteBuffer dst) throws IOException {
-		
 		if (!opened) {
 			throw new ClosedChannelException();
 		}
 		
 		readRecord();
 		
-		//count of read bytes (limited by the size of given buffer)
-		int read = isBufferEmpty() ? 0 : Math.min(buffer.limit(), dst.remaining());
-		//check limit of the buffer (count of bytes at the buffer)
-		int limit = buffer.limit();
-		if (limit > read) {
-			buffer.limit(read);
+		//do we have something to return?
+		if (eof) {
+			return -1;
 		}
 		
-		//fill given buffer
-		dst.put(buffer.buf());
+		int bufferRemaining = buffer.remaining();
+		int dstRemaining = dst.remaining();
 		
-		if (read > 0 && limit > read) {
-			//adjust internal buffer position (there are some more bytes)
-			buffer.limit(limit);
+		//is the internal buffer bigger than the destination buffer?
+		if (bufferRemaining > dstRemaining) {
+			//persist the current limit
+			int bufferLimit = buffer.limit();
+			
+			//set limit of the buffer to fit to destination buffer
+			buffer.limit(buffer.position() + dstRemaining);
+
+			//fill given buffer
+			dst.put(buffer.buf());
+			
+			//set the limit back to former position
+			buffer.limit(bufferLimit);
+			
+			return dstRemaining;
+		} else {
+			//fill given buffer
+			dst.put(buffer.buf());
+			
+			return bufferRemaining;
 		}
-		buffer.compact();
-		if (read > 0 && limit > read) {
-			buffer.rewind();
-			buffer.limit(limit - read);
-		}
-		return read > 0 ? read : -1;
+		
 	}
 	
 	/**
 	 * @return True if and only if there are no more data to be read from input port, false otherwise.
+	 * @throws IOException 
 	 */
-	public synchronized boolean isEOF() {
-		return eof && isBufferEmpty();
+	public synchronized boolean isEOF() throws IOException {
+		if (eof) {
+			return true;
+		} else {
+			//look ahead if the data are available
+			readRecord();
+			return eof;
+		}
 	}
 	
 	/**
@@ -134,8 +151,9 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 	 * @throws IOException
 	 */
 	private void readRecord() throws IOException {
-		
-		if (isBufferEmpty()) {
+		if (!eof && buffer.remaining() == 0) {
+			buffer.clear();
+			
 			try {
 				record = inputPort.readRecord(record);
 			} catch (InterruptedException e) {
@@ -149,7 +167,6 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 				if (value != null) {
 					//some value read
 					buffer.put(value instanceof byte[] ? (byte[]) value : value.toString().getBytes(charset));
-					buffer.flip();
 				} else {
 					eof = true;
 				}
@@ -157,14 +174,8 @@ public class InputPortReadableChannel implements ReadableByteChannel {
 				//eof reached
 				eof = true;
 			}
+	    	buffer.flip();
 		}
 	}
 	
-	/**
-	 * @return True if internal buffer is empty.
-	 */
-	private boolean isBufferEmpty() {
-		return buffer.position() == 0 && buffer.capacity() == buffer.limit();
-	}
-
 }
