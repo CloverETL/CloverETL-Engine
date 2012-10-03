@@ -96,7 +96,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		assertFalse(channel.isEOF());
 		assertTrue(channel.read(buffer) > 0);
 		assertTrue(channel.isOpen());
-		assertFalse(channel.isEOF());
+		assertTrue(channel.isEOF());
 		assertTrue(channel.read(buffer) <= 0);
 		assertTrue(channel.isOpen());
 		assertTrue(channel.isEOF());
@@ -159,15 +159,19 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		//null field is read first, some field with value as second
 		String[] data = getSampleData(SampleDataType.NULL_FIRST);
 		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-		channel = new InputPortReadableChannel(new InputPortMock(data), FIELD_NAME, "UTF-8");
+		InputPort mockInputPort = new InputPortMock(data);
+		channel = new InputPortReadableChannel(mockInputPort, FIELD_NAME, "UTF-8");
 		assertTrue(channel.isOpen());
+		assertTrue(channel.isEOF());
+		assertTrue(channel.read(buffer) <= 0);
 		assertTrue(channel.isEOF());
 		channel.close();
 		
-		channel = new InputPortReadableChannel(new InputPortMock(data), FIELD_NAME, "UTF-8");
+		channel = new InputPortReadableChannel(mockInputPort, FIELD_NAME, "UTF-8");
 		assertTrue(channel.isOpen());
-		assertTrue(channel.isEOF());
+		assertFalse(channel.isEOF());
 		assertTrue(channel.read(buffer) > 0);
+		assertTrue(channel.isEOF());
 		buffer.flip();
 		byte[] byteArray = new byte[buffer.limit()];
 		buffer.get(byteArray);
@@ -265,7 +269,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 
 		@Override
 		public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
-			if (record != null && i < 3) {
+			if (record != null && i < data.length) {
 				record.getField(FIELD_NAME).setValue(data[i]);
 				i++;
 				return record;
