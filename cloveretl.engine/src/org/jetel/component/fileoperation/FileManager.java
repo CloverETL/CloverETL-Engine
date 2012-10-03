@@ -106,6 +106,8 @@ public class FileManager {
 	
 	private final Map<Operation, List<IOperationHandler>> cachedHandlers = new MRUCache<Operation, List<IOperationHandler>>(MAX_CACHE_SIZE);
 	
+	private URI currentWorkingDir = null;
+	
 	private FileManager() {
 	}
 	
@@ -220,7 +222,11 @@ public class FileManager {
 				} else {
 					if (graph.getAuthorityProxy() instanceof PrimitiveAuthorityProxy) {
 						// locally running graph
-						return new File(URIUtils.CURRENT_DIR_NAME).toURI();
+						if (currentWorkingDir == null) {
+							// the current working dir cannot change at runtime
+							currentWorkingDir = new File(URIUtils.CURRENT_DIR_NAME).toURI();
+						}
+						return currentWorkingDir;
 					}
 				}
 			}
