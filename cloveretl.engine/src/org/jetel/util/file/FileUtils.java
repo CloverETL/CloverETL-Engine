@@ -526,7 +526,8 @@ public class FileUtils {
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
             	return new FileInputStream(url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url));
         	} else if (archiveType == null && SandboxUrlUtils.isSandboxUrl(url)) {
-            	return url.openConnection().getInputStream();
+        		TransformationGraph graph = ContextProvider.getGraph();
+        		return graph.getAuthorityProxy().getSandboxResourceInput(url.getHost(), getUrlFile(url));
         	}
         	
         	try {
