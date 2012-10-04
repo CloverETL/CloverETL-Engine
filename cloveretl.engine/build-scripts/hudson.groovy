@@ -116,6 +116,7 @@ if( !runTests ){
 		"-Dhudson.link=job/${jobName}/${buildNumber}",
 		"-Dhudson.engine.link=job/${engineJobName}/${engineBuildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
+		"-Dtestenv.etlenvironment=engine",
 	]
 
 	antTarget = "run-scenarios-with-engine-build-with-testdb"
