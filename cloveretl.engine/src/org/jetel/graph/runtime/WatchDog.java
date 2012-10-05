@@ -52,7 +52,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.tracker.TokenTracker;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.primitive.DuplicateKeyMap;
 import org.jetel.util.string.StringUtils;
 
@@ -514,6 +513,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		CURRENT_PHASE_LOCK.lock();
 		//only running or waiting graph can be aborted
 		if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
+			//if the graph status is not final, so the graph was aborted
+			if (!watchDogStatus.isStop()) {
+		        watchDogStatus = Result.ABORTED;
+			}
 			CURRENT_PHASE_LOCK.unlock();
 			return;
 		}
