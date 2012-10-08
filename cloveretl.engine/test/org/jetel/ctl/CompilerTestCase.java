@@ -2889,6 +2889,35 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("matches5", false);
 	}
 	
+	public void test_stringlib_matchGroups() {
+		doCompile("test_stringlib_matchGroups");
+		check("result1", null);
+		check("result2", Arrays.asList(
+				//"(([^:]*)([:])([\\(]))(.*)(\\))(((#)(.*))|($))"
+				"zip:(zip:(/path/name?.zip)#innerfolder/file.zip)#innermostfolder?/filename*.txt",
+				"zip:(",
+				"zip",
+				":",
+				"(",
+				"zip:(/path/name?.zip)#innerfolder/file.zip",
+				")",
+				"#innermostfolder?/filename*.txt",
+				"#innermostfolder?/filename*.txt",
+				"#",
+				"innermostfolder?/filename*.txt",
+				null
+			)
+		);
+	}
+	
+	public void test_stringlib_matchGroups_unmodifiable() {
+		try {
+			doCompile("test_stringlib_matchGroups_unmodifiable");
+			fail();
+		} catch (RuntimeException re) {
+		};
+	}
+	
 	public void test_stringlib_metaphone() {
 		doCompile("test_stringlib_metaphone");
 		check("metaphone1", "XRS");
