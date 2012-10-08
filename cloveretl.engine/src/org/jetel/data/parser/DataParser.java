@@ -445,9 +445,7 @@ public class DataParser extends AbstractTextParser {
 								}
 								
 								// if we should consume the longest possible delimiter, try to stretch the match
-								if (tryToFindLongerDelimiter && delimiterSearcher.canUpdateWithoutFail()) {
-									stretchRecordDelimiter(fieldCounter);
-								}
+								stretchDelimiter(fieldCounter);
 								
 								if(cfg.isTreatMultipleDelimitersAsOne())
 									while(followFieldDelimiter(fieldCounter));
@@ -774,8 +772,14 @@ public class DataParser extends AbstractTextParser {
 	 * @return
 	 */
 	private boolean recordDelimiterFound() {
-		if(hasRecordDelimiter) {
-			return delimiterSearcher.isPattern(RECORD_DELIMITER_IDENTIFIER);
+		if (hasRecordDelimiter) {
+			if (delimiterSearcher.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
+				//in case a record delimiter was found, lets take the longest one
+				stretchDelimiter(RECORD_DELIMITER_IDENTIFIER);
+				return true;
+			} else {
+				return false;
+			}
 		} else {
 			return false;
 		}
@@ -844,31 +848,33 @@ public class DataParser extends AbstractTextParser {
 		return -1;
 	}
 
-	private void stretchRecordDelimiter(int patternID) {
-		StringBuffer temp = new StringBuffer();
-		try {
-			int character;
-			while (delimiterSearcher.canUpdateWithoutFail() && (character = readChar()) != -1) {
-				// always append a character to a temp buffer
-				temp.append((char)character);
-				
-				// if fail occurs - the string can no more be stretched to a pattern:
-				// just finish stretching and update temp read buffer
-				if (!delimiterSearcher.update((char) character)) {
-					break;
+	private void stretchDelimiter(int patternID) {
+		if (tryToFindLongerDelimiter && delimiterSearcher.canUpdateWithoutFail()) {
+			StringBuffer temp = new StringBuffer();
+			try {
+				int character;
+				while (delimiterSearcher.canUpdateWithoutFail() && (character = readChar()) != -1) {
+					// always append a character to a temp buffer
+					temp.append((char)character);
+					
+					// if fail occurs - the string can no more be stretched to a pattern:
+					// just finish stretching and update temp read buffer
+					if (!delimiterSearcher.update((char) character)) {
+						break;
+					}
+					
+					// we have moved in the tree - do we have a node, that is final?
+					// if yes, clear the buffer - this is the stretched delimiter. 
+					if (delimiterSearcher.isPattern(patternID)) {
+						temp.setLength(0);
+					}
 				}
-				
-				// we have moved in the tree - do we have a node, that is final?
-				// if yes, clear the buffer - this is the stretched delimiter. 
-				if (delimiterSearcher.isPattern(patternID)) {
-					temp.setLength(0);
-				}
+			} catch (IOException e) {
+				throw new RuntimeException(getErrorMessage(e.getMessage(), null, null));
+			} finally {
+				//end of file or longest delimiter found
+				tempReadBuffer.append(temp);
 			}
-		} catch (IOException e) {
-			throw new RuntimeException(getErrorMessage(e.getMessage(), null, null));
-		} finally {
-			//end of file or longest delimiter found
-			tempReadBuffer.append(temp);
 		}
 	}
 	
