@@ -24,6 +24,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -77,6 +78,7 @@ public class StringLib extends TLFunctionLibrary {
 			"countChar".equals(functionName) ? new CountCharFunction() : //$NON-NLS-1$
 			"find".equals(functionName) ? new FindFunction() : //$NON-NLS-1$
 			"matches".equals(functionName) ? new MatchesFunction() : //$NON-NLS-1$
+			"matchGroups".equals(functionName) ? new MatchGroupsFunction() : //$NON-NLS-1$
 			"chop".equals(functionName) ? new ChopFunction() : //$NON-NLS-1$
 			"cut".equals(functionName) ? new CutFunction() : //$NON-NLS-1$
 			"isUrl".equals(functionName) ? new IsUrlFunction() : //$NON-NLS-1$
@@ -879,6 +881,50 @@ public class StringLib extends TLFunctionLibrary {
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 			stack.push(matches(context, input, pattern));
+			return;
+		}
+	}
+	
+	// MATCH GROUPS
+	@TLFunctionInitAnnotation
+	public static final void matchGroupsInit(TLFunctionCallContext context) {
+		context.setCache(new TLRegexpCache(context, 1));
+	}
+	
+	@TLFunctionAnnotation("Tries to match entire input with specified pattern.")
+	public static final List<String> matchGroups(TLFunctionCallContext context, String input, String pattern) {
+		final Matcher m = ((TLRegexpCache)context.getCache()).getCachedPattern(context, pattern).matcher(input);
+		if (m.matches()) {
+			return new AbstractList<String>() {
+
+				@Override
+				public String get(int index) {
+					return m.group(index);
+				}
+
+				@Override
+				public int size() {
+					return m.groupCount() + 1; // group 0 is not included in groupCount()
+				}
+				
+			};
+		} else {
+			return null;
+		}
+	}
+
+	class MatchGroupsFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+			matchGroupsInit(context);
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String pattern = stack.popString();
+			final String input = stack.popString();
+			stack.push(matchGroups(context, input, pattern));
 			return;
 		}
 	}
