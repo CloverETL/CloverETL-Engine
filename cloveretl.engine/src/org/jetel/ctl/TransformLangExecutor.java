@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -565,7 +566,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		} else if (node.getType().isMap()) {
 			final Map<Object,Object> rhs = stack.popMap();
 			final Map<Object,Object> lhs = stack.popMap();
-			Map<Object,Object> result = new HashMap<Object,Object>();
+			Map<Object,Object> result = new LinkedHashMap<Object,Object>();
 			result.putAll(lhs);
 			result.putAll(rhs);
 			stack.push(result);
@@ -1562,7 +1563,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		} else if (varType.isDecimal()) {
 			setVariable(node,new BigDecimal(0));
 		}  else if (varType.isMap()) {
-			setVariable(node,new HashMap<Object,Object>());
+			setVariable(node,new LinkedHashMap<Object,Object>());
 		}  else if (varType.isRecord()) {
 			setVariable(node, createNewRecord((TLTypeRecord) varType));
 		} 
@@ -2741,7 +2742,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @return deep copy of the input Map
 	 */
 	private static final <K, V> Map<K, V> copyOf(Map<K, V> input) {
-		Map<K, V> copy = new HashMap<K, V>(input.size());
+		Map<K, V> copy = new LinkedHashMap<K, V>(input.size());
 		
 		for (Map.Entry<K, V> item: input.entrySet()) {
 			K newKey = getDeepCopy(item.getKey()); // maybe not necessary

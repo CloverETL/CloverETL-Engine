@@ -2851,7 +2851,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_join() {
 		doCompile("test_stringlib_join");
 		//check("joinedString", "Bagr,3,3.5641,-87L,CTL2");
-		check("joinedString1", "3=0.1\"80=5455.987\"-5=5455.987");
+		check("joinedString1", "80=5455.987\"-5=5455.987\"3=0.1");
 		check("joinedString2", "5.0♫54.65♫67.0♫231.0");
 		//check("joinedString3", "5☺54☺65☺67☺231☺80=5455.987☺-5=5455.987☺3=0.1☺CTL2☺42");
 	}
