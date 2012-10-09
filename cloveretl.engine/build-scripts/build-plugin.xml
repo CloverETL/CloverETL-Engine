@@ -23,7 +23,6 @@
 	<property name="dir.build-scripts" value="${dir.engine}/build-scripts"/>
 	<property name="dir.engine.classes" value="${dir.engine}/build-tmp/classes" />
 	<property name="engine.mapping.all" value="${dir.engine}/build-tmp/obfuscate/proGuard-mapping-all.txt" />
-	<property name="dir.license" value="${basedir}/../cloveretl.license"/>
 	
 	<property name="dir.build" value="${basedir}/build"/>
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
