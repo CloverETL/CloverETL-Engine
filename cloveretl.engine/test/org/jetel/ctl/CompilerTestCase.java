@@ -1776,6 +1776,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("Wednesday", ((Map<Date, String>) getVariable("wednesday")).get(c.getTime()));
 		assertEquals("Wednesday", dayInWeekCopy.get(c.getTime()));
 		assertFalse(dayInWeek.equals(dayInWeekCopy));
+		
+		{
+			Map<?, ?> preservedOrder = (Map<?, ?>) getVariable("preservedOrder");
+			assertEquals(100, preservedOrder.size());
+			int i = 0;
+			for (Map.Entry<?, ?> entry: preservedOrder.entrySet()) {
+				assertEquals("key" + i, entry.getKey());
+				assertEquals("value" + i, entry.getValue());
+				i++;
+			}
+		}
 	}
 	
 	public void test_type_record_list() {

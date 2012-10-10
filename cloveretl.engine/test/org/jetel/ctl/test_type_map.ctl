@@ -4,6 +4,8 @@ map[date,string] tuesday;
 map[date,string] dayInWeekCopy;
 map[date,string] wednesday;
 
+map[string, string] preservedOrder;
+
 function integer transform() {
 	testMap['zero'] = 1; 
 	testMap['one'] = 2;
@@ -20,6 +22,14 @@ function integer transform() {
 
 	wednesday[2009-03-04] = 'Wednesday';
 	dayInWeekCopy = dayInWeekCopy + wednesday;
+
+	map[string, string] firstMap;
+	for (integer i = 0; i < 100; i++) {
+		firstMap["key" + i] = "value" + i;
+	}
+	map[string, string] secondMap = firstMap;
+	map[string, string] thirdMap;
+	preservedOrder = secondMap;
 
 	return 0;
 }
