@@ -173,7 +173,7 @@ public class SpeedLimiter extends Node {
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		try {
-			return new SpeedLimiter(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getLong(XML_DELAY_ATTRIBUTE));
+			return new SpeedLimiter(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getTimeInterval(XML_DELAY_ATTRIBUTE));
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
