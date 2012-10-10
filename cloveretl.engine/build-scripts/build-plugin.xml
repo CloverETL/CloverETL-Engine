@@ -25,6 +25,7 @@
 	<property name="engine.mapping.all" value="${dir.engine}/build-tmp/obfuscate/proGuard-mapping-all.txt" />
 	
 	<property name="dir.build" value="${basedir}/build"/>
+	<property name="dir.license" value=""/>
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
 	<property name="dir.classes" value="${dir.build}/classes"/>
 	<property name="dir.classestest" value="${dir.build}/classes-test"/>
