@@ -174,14 +174,4 @@ public class TimeIntervalUtils {
 		return formatter.print(new Duration(interval).toPeriod().normalizedStandard());
 	}
 
-	public static void main(String[] args) {
-		String example = "1w 15h 1m 70s 123ms";
-
-		long millis = parseInterval(example);
-		System.out.println(formatInterval(millis));
-
-		System.out.println("period in milliseconds: " + millis);
-	}
-	
-
 }
