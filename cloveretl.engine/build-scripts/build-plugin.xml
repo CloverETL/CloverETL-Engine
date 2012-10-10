@@ -263,7 +263,7 @@
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.classes}"/>
 
-		<echo message="Compile classes from ${dir.src.improved} with classpath ${cp.compile}"/>
+		<echo message="Compile classes from ${dir.src.improved} with classpath ${cp.compile}, dir.license ${dir.license}"/>
 		<!-- Compile sources -->
 		<javac 
 				debug="true" 
