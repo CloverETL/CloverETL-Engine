@@ -43,6 +43,7 @@ public class TimeIntervalUtilsTest extends TestCase {
 	 * Test method for {@link org.jetel.util.formatter.TimeIntervalUtils#parseInterval(java.lang.String)}.
 	 */
 	public void testParseInterval() {
+		assertEquals(3*w + 4*d + 12*h + 35*m + 16*s + 320*ms, parseInterval("3w 4d 12h 35m 16s 320ms"));
 		assertEquals(1*w + 15*h + 2*m + 10*s + 123*ms, parseInterval("1w 15h 2m 10s 123ms"));
 		assertEquals(1*w + 23*m, parseInterval("1w 23m"));
 		assertEquals(1*h + 3*m + 23*ms, parseInterval("1h 3m 23ms"));
