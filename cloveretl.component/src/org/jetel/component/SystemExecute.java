@@ -649,7 +649,7 @@ public class SystemExecute extends Node{
 				sysExec.setEnvironment(xattribs.getString(XML_ENVIRONMENT_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_WORKERS_TIMEOUT_ATTRIBUTE)) {
-				sysExec.setWorkersTimeout(xattribs.getLong(XML_WORKERS_TIMEOUT_ATTRIBUTE));
+				sysExec.setWorkersTimeout(xattribs.getTimeInterval(XML_WORKERS_TIMEOUT_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				sysExec.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
