@@ -36,8 +36,7 @@
 	<property name="dir.obfuscate" value="${dir.build}/obfuscate"/>
 	<property name="dir.obfuscate.classes" value="${dir.obfuscate}/classes"/>
 	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
-	<property name="required.plugins.file" value="${dir.build}/required-plugins.txt"/>
-	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib.txt"/>
+	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
 	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
 	<property file="${basedir}/build-plugin.properties"/>
@@ -61,7 +60,7 @@
 		<include name="**/*.jar"/>
 	</fileset>
 
-	<fileset id="license-libs" dir="${dir.license}">
+	<fileset id="license-libs" dir="${dir.license}" erroronmissingdir="false">
 		<include name="dist/*.jar"/>
 	</fileset>
 
@@ -161,47 +160,45 @@
 </echo>
   </target>
 
-    <target name="save-required-plugins">
-        <if>
-            <available file="${basedir}/../${plugin.name}/plugin.xml" />
-            <then>
-                <xslt 
-                    style="${dir.engine}/build-scripts/required-plugins.xsl"
-                    in="${basedir}/../${plugin.name}/plugin.xml"
-                    out="${basedir}/../${plugin.name}/required-plugins.txt"
-                    >
-                    <param name="separator" expression=","/>
-                    <param name="dist" expression="${dir.dist.other.plugins}"/>
-                    <param name="home" expression="${basedir}/.."/>
-                </xslt>
+	<target name="save-required-plugins">
+		<if>
+			<available file="${basedir}/../${plugin.name}/plugin.xml" />
+		<then>
+			<xslt 
+				style="${dir.engine}/build-scripts/required-plugins.xsl"
+				in="${basedir}/../${plugin.name}/plugin.xml"
+				out="${basedir}/../${plugin.name}/required-plugins.txt"
+				>
+				<param name="separator" expression=","/>
+				<param name="dist" expression="${dir.dist.other.plugins}"/>
+				<param name="home" expression="${basedir}/.."/>
+			</xslt>
 
-                <property file="${basedir}/../${plugin.name}/required-plugins.txt" 
-                          prefix="${plugin.name}"/>
-                <delete file="${basedir}/../${plugin.name}/required-plugins.txt" />
+			<property file="${basedir}/../${plugin.name}/required-plugins.txt" prefix="${plugin.name}"/>
+			<delete file="${basedir}/../${plugin.name}/required-plugins.txt" />
 
-                <propertycopy name="property.classes" from="${plugin.name}.required.plugins.classes" />
+			<propertycopy name="property.classes" from="${plugin.name}.required.plugins.classes" />
 
-                <echo file="${required.plugins.collected}" append="true">${property.classes}
+      <echo file="${required.plugins.collected}" append="true">${property.classes}
 </echo>
-          
-                <if>
-                    <available file="${basedir}/../${plugin.name}/lib" type="dir" />
-                    <then>
-                        <foreach param="lib.file" target="save-required-plugins-lib">
-                            <fileset dir="${basedir}/../${plugin.name}/lib" includes="*.jar" />
-                        </foreach>
-                    </then>
-                </if>
+      
+			<if>
+				<available file="${basedir}/../${plugin.name}/lib" type="dir" />
+			<then>
+				<foreach param="lib.file" target="save-required-plugins-lib">
+					<fileset dir="${basedir}/../${plugin.name}/lib" includes="*.jar" />
+				</foreach>
+			</then>
+			</if>
 
 
-                <propertycopy name="list.property" from="${plugin.name}.required.plugins.dirs" />
+			<propertycopy name="list.property" from="${plugin.name}.required.plugins.dirs" />
 
-                <foreach list="${list.property}" param="plugin.name" 
-                         target="save-required-plugins-recursive">
-                    <param name="echo.recursive.property" value="1" />
-                </foreach>
-            </then>
-        </if>
+      <foreach list="${list.property}" param="plugin.name" target="save-required-plugins-recursive">
+          <param name="echo.recursive.property" value="1" />
+      </foreach>
+		</then>
+		</if>
   </target>
 
     <target name="save-required-plugins-recursive">
@@ -216,50 +213,50 @@
         </antcall>
     </target>
 
-	<target name="find-required-plugins" depends="init">
-		<xslt 
-			style="${dir.engine}/build-scripts/required-plugins.xsl"
-			in="${basedir}/plugin.xml"
-			out="${required.plugins.file}"
-			>
-			<param name="separator" expression=","/>
-			<param name="dist" expression="${dir.dist.other.plugins}"/>
-			<param name="home" expression="${basedir}/.."/>
-		</xslt>
-		<property file="${required.plugins.file}"/>
+    <target name="find-required-plugins" depends="init">
+        <echo message="plugin.name ${plugin.name}" />
+        <antcall target="save-required-plugins">
+                <param name="plugin.name" value="${plugin.name}" />
+        </antcall>
 
-    <antcall target="save-required-plugins">
-        <param name="plugin.name" value="${plugin.name}" />
-    </antcall>
+        <loadfile property="required.plugins.classes.junit"
+                 srcFile="${required.plugins.collected}">
+        </loadfile>
+        <delete file="${required.plugins.collected}" />
 
-    <!-- libs -->
-    <if>
-        <available file="${required.plugins.lib.collected}" />
-        <then>
-            <loadfile property="required.plugins.lib" srcFile="${required.plugins.lib.collected}" />
-        </then>
-        <else>
-            <property name="required.plugins.lib" value="" />
-        </else>
-    </if>
-    <!-- classes -->
-    <if>
-        <available file="${required.plugins.collected}" />
-        <then>
-            <loadfile property="required.plugins.cp" srcFile="${required.plugins.collected}" />
-        </then>
-        <else>
-            <property name="required.plugins.cp" value="" />
-        </else>
-    </if>
-		
-		<property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
-		<property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.cp}${required.plugins.lib}" />
-		
-		<echo>required.plugins=${required.plugins}</echo>
-		<echo>required.plugins.lib=${required.plugins.lib}</echo>
-		<echo>required.plugins.cp=${required.plugins.cp}</echo>
-	</target>
+        <if>
+            <available file="${required.plugins.lib.collected}" />
+            <then>
+                <loadfile property="required.plugins.lib"
+                          srcFile="${required.plugins.lib.collected}">
+                </loadfile>
+                <delete file="${required.plugins.lib.collected}" />
+
+            </then>
+            <else>
+                <property name="required.plugins.lib" value="" />
+            </else>
+        </if>
+
+        <property name="cp.compile.junit" value="${dir.engine.classes}${required.plugins.classes.junit}${required.plugins.lib}" />
+      
+        <xslt 
+            style="${dir.engine}/build-scripts/required-plugins.xsl"
+            in="${basedir}/plugin.xml"
+            out="${required.plugins.file}"
+        >
+            <param name="separator" expression=","/>
+            <param name="dist" expression="${dir.dist.other.plugins}"/>
+            <param name="home" expression="${basedir}/.."/>
+        </xslt>
+        <property file="${required.plugins.file}"/>
+      
+        <property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
+
+        <echo>cp.compile=${cp.compile}</echo>
+        <echo>cp.compile.junit=${cp.compile.junit}</echo>
+        <echo>required.plugins=${required.plugins}</echo>
+    </target>
 	
 	<target name="compile" depends="init,improve-java-sources,find-required-plugins" description="Compile sources">
 		<!-- Create directory for binaries. -->
