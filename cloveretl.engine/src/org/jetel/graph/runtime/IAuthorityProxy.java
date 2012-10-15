@@ -107,6 +107,7 @@ public abstract class IAuthorityProxy {
 		public DictionaryValuesContainer dictionaryOut;
 		public GraphTracking tracking;
 		public JobType jobType;
+		public String executionGroup;
 		
 		@Override
 		public String toString() {
