@@ -89,10 +89,11 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 		if (token != null && token.getTokenId() >= 0) { 
 			result.append(String.format("Token [%s] ", token.getLabel()));
 		}
-		result.append(String.format("started %s:%s:%s%s.",
+		result.append(String.format("started %s:%s:%s%s%s.",
 				jobType,
 				runStatus.runId,
 				runStatus.jobUrl,
+				StringUtils.isEmpty(runStatus.executionGroup) ? "" : " in execution group \"" + runStatus.executionGroup + "\"", 
 				StringUtils.isEmpty(runStatus.clusterNodeId) ? "" : " on node " + runStatus.clusterNodeId));
 		if (runStatus.graphParameters != null && !runStatus.graphParameters.isEmpty()) {
 			result.append(String.format("\nGraph parameters:\n%s",
