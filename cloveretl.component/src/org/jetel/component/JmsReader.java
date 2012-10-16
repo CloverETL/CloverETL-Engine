@@ -370,9 +370,7 @@ public class JmsReader extends Node {
 							XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE,
 							XML_MAXMSGCNT_ATTRIBUTE, XML_TIMEOUT_ATTRIBUTE
 					}));
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
+			jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}

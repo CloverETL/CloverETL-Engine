@@ -28,6 +28,7 @@ import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.MetadataErrorDetail;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.TransformLangExecutor;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -156,6 +157,9 @@ public class TransformFactory<T> {
 	        if (!StringUtils.isEmpty(transform)) {
 	        	checkTransform = transform;
 	        } else if (!StringUtils.isEmpty(transformUrl)) {
+	        	if (charset == null) {
+	        		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;
+	        	}
 	        	checkTransform = FileUtils.getStringFromURL(component.getGraph().getRuntimeContext().getContextURL(), transformUrl, charset);
 	        }
 	        // only the transform and transformURL parameters are checked, transformClass is ignored
@@ -193,6 +197,9 @@ public class TransformFactory<T> {
     		transformation = createTransformFromCode(transform);
     	} else if (!StringUtils.isEmpty(transformUrl)) {
     		//load transformation code from an URL
+    		if (charset == null) {
+        		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;
+        	}
         	String transformCode = FileUtils.getStringFromURL(component.getGraph().getRuntimeContext().getContextURL(), transformUrl, charset);
         	PropertyRefResolver refResolver= new PropertyRefResolver(component.getGraph().getGraphProperties());
         	transformCode = refResolver.resolveRef(transformCode, RefResFlag.SPEC_CHARACTERS_OFF);
@@ -229,8 +236,11 @@ public class TransformFactory<T> {
         	transformation = transformDescriptor.createCTL1Transform(transformCode, component.getLog());
             break;
         case CTL2:
+        	if (charset == null) {
+        		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;
+        	}
         	final ITLCompiler compiler = 
-        		TLCompilerFactory.createCompiler(component.getGraph(), inMetadata, outMetadata, "UTF-8");
+        		TLCompilerFactory.createCompiler(component.getGraph(), inMetadata, outMetadata, charset);
         	List<ErrorMessage> msgs = compiler.compile(transformCode, transformDescriptor.getCompiledCTL2TransformClass(), component.getId());
         	if (compiler.errorCount() > 0) {
         		String report = ErrorMessage.listToString(msgs, component.getLog());
@@ -302,6 +312,7 @@ public class TransformFactory<T> {
 
 	/**
 	 * Sets charset of external definition of transformation code defined in transformUrl
+	 * or charset that should be used for import 
 	 */
 	public void setCharset(String charset) {
 		this.charset = charset;

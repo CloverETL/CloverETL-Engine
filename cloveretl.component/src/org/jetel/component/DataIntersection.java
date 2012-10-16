@@ -736,9 +736,7 @@ public class DataIntersection extends Node {
                     xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
         	intersection.setSlaveDuplicates(xattribs.getBoolean(
         			XML_KEY_DUPLICATES_ATTRIBUTE, true));
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				intersection.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
+			intersection.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				intersection.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));

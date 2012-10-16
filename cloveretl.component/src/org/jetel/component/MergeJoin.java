@@ -796,9 +796,7 @@ public class MergeJoin extends Node {
 			if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
 				join.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
+			join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
 				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
 			}

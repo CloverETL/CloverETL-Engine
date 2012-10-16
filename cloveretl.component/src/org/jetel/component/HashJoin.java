@@ -883,10 +883,7 @@ public class HashJoin extends Node {
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-
+			join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
 				join.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
 			}

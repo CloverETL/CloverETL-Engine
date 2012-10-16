@@ -874,13 +874,18 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
     		String importFileUrl = problemReporter.getImportFileUrl();
     		ErrorLocation errorLocation = problemReporter.getErrorLocation();
 
-			try {				String importSourceCode = FileUtils.getStringFromURL(projectURL, filenameURL, encoding);
-
+			try {
+				String importSourceCode = null;
+				try {
+					importSourceCode = FileUtils.getStringFromURL(projectURL, filenameURL, encoding);
+				} catch (Exception e) {
+					throw new IOException(e.getMessage());
+				}
 				if (propertyRefResolver != null) {
 					importSourceCode = propertyRefResolver.resolveRef(importSourceCode, RefResFlag.SPEC_CHARACTERS_OFF);
 				}
 
-				stream = new ByteArrayInputStream(importSourceCode.getBytes("UTF-8"));
+				stream = new ByteArrayInputStream(importSourceCode.getBytes(encoding));
 				addParsedImport(filenameURL); // the above will handle invalid URL etc.
                 // set new "import context", propagate error location if already defined
         		problemReporter.setImportFileUrl(filenameURL);
@@ -898,7 +903,7 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
         		problemReporter.setImportFileUrl(importFileUrl);
         		problemReporter.setErrorLocation(errorLocation);
 			}
-		} else {                        warn(jjtn000, "Multiple import of \u005c""+filenameURL+"\u005c": ignoring redundant occurrences", "Try to remove multiple occurrences of import of the same file");
+		} else {                        warn(jjtn000, "Multiple import of \""+filenameURL+"\": ignoring redundant occurrences", "Try to remove multiple occurrences of import of the same file");
 		}		  
 
 	}}
