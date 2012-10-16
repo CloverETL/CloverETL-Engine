@@ -67,6 +67,9 @@ DataParser.DEFAULT_CHARSET_DECODER = ISO-8859-1
 #Default charset used when parsing data from text representation
 DataFormatter.DEFAULT_CHARSET_ENCODER = ISO-8859-1
 
+#Default charset used when parsing source code (CTL or Java)
+DEFAULT_SOURCE_CODE_CHARSET = UTF-8
+
 #the initial capacity of lookup table when created without specifying
 #the size			
 Lookup.LOOKUP_INITIAL_CAPACITY = 512

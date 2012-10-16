@@ -539,10 +539,7 @@ public class Denormalizer extends Node {
 					parseKeyList(xattribs.getString(XML_KEY_ATTRIBUTE, null)),
 					order
 					);
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				denorm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-
+			denorm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			denorm.setTransformationParameters(xattribs.attributes2Properties(
 					new String[] { XML_ID_ATTRIBUTE,
 							XML_TRANSFORM_ATTRIBUTE,

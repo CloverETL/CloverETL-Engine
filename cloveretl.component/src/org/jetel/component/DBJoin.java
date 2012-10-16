@@ -562,9 +562,7 @@ public class DBJoin extends Node {
                     xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
                     xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				dbjoin.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
+			dbjoin.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			dbjoin.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
 			if (xattribs.exists(XML_DB_METADATA_ATTRIBUTE)){
 				dbjoin.setDbMetadata(xattribs.getString(XML_DB_METADATA_ATTRIBUTE));

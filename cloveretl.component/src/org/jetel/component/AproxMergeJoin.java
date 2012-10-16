@@ -996,10 +996,8 @@ public class AproxMergeJoin extends Node {
                     xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,null),
                     xattribs.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
                     xattribs.getStringEx(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-            	join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            }
-			if (xattribs.exists(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE)) {
+            join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+            if (xattribs.exists(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 

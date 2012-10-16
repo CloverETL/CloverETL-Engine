@@ -457,9 +457,7 @@ public class Reformat extends Node {
                             xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null,RefResFlag.SPEC_CHARACTERS_OFF));
 			reformat.setTransformationParameters(xattribs.attributes2Properties(
 					new String[]{XML_ID_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE}));
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				reformat.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
+			reformat.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
 				reformat.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
 			}

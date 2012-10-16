@@ -29,6 +29,7 @@ import java.util.List;
 import org.jetel.ctl.ASTnode.CLVFBlock;
 import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
+import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangParser;
@@ -317,9 +318,12 @@ public final class TLUtils {
    
     
     public static boolean isSimpleFunction(TransformationGraph graph, DataRecordMetadata[] inMeta,
-    		DataRecordMetadata[] outMeta, String code, String functionName) {
+    		DataRecordMetadata[] outMeta, String code, String functionName, String charset) {
     	
-    	TLCompiler compiler = new TLCompiler(graph,inMeta,outMeta);
+    	if (charset == null) {
+    		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;
+    	}
+    	TLCompiler compiler = new TLCompiler(graph,inMeta,outMeta,charset);
     	List<ErrorMessage> msgs = compiler.validate(code);
     	if (compiler.errorCount() > 0) {
     		for (ErrorMessage msg : msgs) {

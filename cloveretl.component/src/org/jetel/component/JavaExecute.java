@@ -264,9 +264,7 @@ public class JavaExecute extends Node {
                     xattribs.getStringEx(XML_RUNNABLEURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
                     internalProperties);
 
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {            	
-            	javaExecute.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            }
+            javaExecute.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}

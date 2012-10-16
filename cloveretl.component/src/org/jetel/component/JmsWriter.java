@@ -308,9 +308,7 @@ public class JmsWriter extends Node {
 							XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE,
 							XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE
 					}));
-					if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-						jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-					}
+					jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}

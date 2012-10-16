@@ -228,6 +228,7 @@ public final class Defaults {
         DEFAULT_REGEXP_TRUE_STRING = getStringProperties("DEFAULT_REGEXP_TRUE_STRING", "T|TRUE|YES|Y||t|true|1|yes|y");
         DEFAULT_REGEXP_FALSE_STRING = getStringProperties("DEFAULT_REGEXP_FALSE_STRING", "F|FALSE|NO|N||f|false|0|no|n");
         DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
+        DEFAULT_SOURCE_CODE_CHARSET = getStringProperties("DEFAULT_SOURCE_CODE_CHARSET", "UTF-8");
         DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", ";");
         DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = getIntProperties("DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE", 2048);
         DEFAULT_PLUGINS_DIRECTORY = getStringProperties("DEFAULT_PLUGINS_DIRECTORY", "./plugins");
@@ -271,6 +272,10 @@ public final class Defaults {
 	 */
 	public static String DEFAULT_BINARY_PATH;// = "./bin/";
 
+	/**
+	 * Default charset used when parsing source code (CTL or Java)
+	 */
+	public static String DEFAULT_SOURCE_CODE_CHARSET;// = "UTF-8";
 	/**
 	 * Regex for separator of filenames in list of filenames - path separator.
 	 */
