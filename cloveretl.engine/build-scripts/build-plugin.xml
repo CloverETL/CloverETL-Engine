@@ -62,7 +62,7 @@
 		<include name="**/*.jar"/>
 	</fileset>
 
-	<fileset id="license-libs" dir="${dir.license}">
+	<fileset id="license-libs" dir="${dir.license}" erroronmissingdir="false">
 		<include name="dist/*.jar"/>
 	</fileset>
 
