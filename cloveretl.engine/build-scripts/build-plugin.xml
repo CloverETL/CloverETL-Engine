@@ -23,9 +23,9 @@
 	<property name="dir.build-scripts" value="${dir.engine}/build-scripts"/>
 	<property name="dir.engine.classes" value="${dir.engine}/build-tmp/classes" />
 	<property name="engine.mapping.all" value="${dir.engine}/build-tmp/obfuscate/proGuard-mapping-all.txt" />
+	<property name="dir.license" value="${basedir}/../cloveretl.license"/>
 	
 	<property name="dir.build" value="${basedir}/build"/>
-	<property name="dir.license" value=""/>
 	<property name="dir.testsresult" value="${dir.build}/testsresult"/>
 	<property name="dir.classes" value="${dir.build}/classes"/>
 	<property name="dir.classestest" value="${dir.build}/classes-test"/>
@@ -62,7 +62,7 @@
 		<include name="**/*.jar"/>
 	</fileset>
 
-	<fileset id="license-libs" dir="${dir.license}" erroronmissingdir="false">
+	<fileset id="license-libs" dir="${dir.license}">
 		<include name="dist/*.jar"/>
 	</fileset>
 
@@ -264,7 +264,7 @@
 		<!-- Create directory for binaries. -->
 		<mkdir dir="${dir.classes}"/>
 
-		<echo message="Compile classes from ${dir.src.improved} with classpath ${cp.compile}, dir.license ${dir.license}"/>
+		<echo message="Compile classes from ${dir.src.improved} with classpath ${cp.compile}"/>
 		<!-- Compile sources -->
 		<javac 
 				debug="true" 
