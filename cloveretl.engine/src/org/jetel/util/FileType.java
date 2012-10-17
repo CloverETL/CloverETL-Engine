@@ -30,11 +30,11 @@ package org.jetel.util;
  */
 public enum FileType {
 
-	ETL_GRAPH(".grf"), //$NON-NLS-1$
-	JOBFLOW(".jbf"), //$NON-NLS-1$
-	PROFILER_JOB(".cpj"), //$NON-NLS-1$
-	METADATA(".fmt"), //$NON-NLS-1$
-	CTL_TRANSFORMATION(".ctl"); //$NON-NLS-1$
+	ETL_GRAPH("grf"), //$NON-NLS-1$
+	JOBFLOW("jbf"), //$NON-NLS-1$
+	PROFILER_JOB("cpj"), //$NON-NLS-1$
+	METADATA("fmt"), //$NON-NLS-1$
+	CTL_TRANSFORMATION("ctl"); //$NON-NLS-1$
 	
 	public final String extension;
 	
@@ -82,7 +82,7 @@ public enum FileType {
 		}
 		fileName = fileName.toLowerCase();
 		for (FileType jobType: values()) {
-			if (fileName.endsWith(jobType.extension)) {
+			if (fileName.endsWith("." + jobType.extension)) {
 				return jobType;
 			}
 		}

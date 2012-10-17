@@ -18,6 +18,7 @@
  */
 package org.jetel.graph;
 
+import org.jetel.util.FileType;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -34,21 +35,22 @@ import org.jetel.util.string.StringUtils;
 public enum JobType {
 
 	/** This type represents regular ETL graphs */
-	ETL_GRAPH("etlGraph", "grf"),
+	ETL_GRAPH("etlGraph", FileType.ETL_GRAPH),
 	/** This type represents jobflows */
-	JOBFLOW("jobflow", "jbf");
+	JOBFLOW("jobflow", FileType.JOBFLOW);
 
 	/** This type is used in case the type is not specified in different way. */
 	public static JobType DEFAULT = ETL_GRAPH;
 
 	private String id;
 	
-	/** Associated file extenstion. */
-	private String fileExtension;
+	/** Associated file type. */
+	private FileType fileType;
 	
-	private JobType(String id, String fileExtension) {
+	private JobType(String id, FileType fileType) {
 		this.id = id;
-		this.fileExtension = fileExtension;
+		this.fileType = fileType;
+		
 	}
 	
 	@Override
@@ -57,10 +59,10 @@ public enum JobType {
 	}
 	
 	/**
-	 * @return the fileExtension
+	 * @return the fileType
 	 */
-	public String getFileExtension() {
-		return fileExtension;
+	public FileType getFileType() {
+		return fileType;
 	}
 
 	/**
@@ -85,8 +87,9 @@ public enum JobType {
 		if (StringUtils.isEmpty(fileName)) {
 			return DEFAULT;
 		}
+		fileName = fileName.toLowerCase();
 		for (JobType jobType: values()) {
-			if (fileName.endsWith(jobType.fileExtension)) {
+			if (fileName.endsWith("." + jobType.fileType.getExtension())) {
 				return jobType;
 			}
 		}
