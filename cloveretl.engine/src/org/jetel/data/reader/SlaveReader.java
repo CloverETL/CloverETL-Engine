@@ -33,13 +33,8 @@ import org.jetel.graph.InputPort;
  * @author Agata Vackova, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class SlaveReader implements InputReader {
-	private static final int CURRENT = 0;
-	private static final int NEXT = 1;
-
+public class SlaveReader extends InputReader {
 	private InputPort inPort;
-	protected RecordKey key;
-	private DataRecord[] rec = new DataRecord[2];
 	private boolean firstRun;
 	private boolean needsRewind;
 	private boolean keepLast;
@@ -62,6 +57,7 @@ public class SlaveReader implements InputReader {
 		this.rec[CURRENT].init();
 		this.rec[NEXT].init();
 		this.firstRun = true;
+		recCounter = 0;
 		this.needsRewind = true;
 	}
 	
@@ -72,6 +68,7 @@ public class SlaveReader implements InputReader {
 		this.rec[CURRENT].init();
 		this.rec[NEXT].init();
 		this.firstRun = true;
+		recCounter = 0;
 		this.needsRewind = true;
 	}
 	
@@ -92,6 +89,7 @@ public class SlaveReader implements InputReader {
 			return false;
 		} 
 		while(inPort.readRecord(rec[NEXT]) != null) {
+			recCounter++;
 			needsRewind = false;
 			if (firstRun) {
 				firstRun = false;
@@ -119,18 +117,6 @@ public class SlaveReader implements InputReader {
 		return false;
 	}
 
-	protected static InputOrdering updateOrdering(int comparison, InputOrdering inputOrdering) {
-		if (comparison > 0){
-			if (inputOrdering!=InputOrdering.DESCENDING)
-				inputOrdering = (inputOrdering==InputOrdering.UNDEFINED ? InputOrdering.DESCENDING : InputOrdering.UNSORTED ) ;
-		} 
-		if (comparison < 0){
-			if (inputOrdering!=InputOrdering.ASCENDING)
-				inputOrdering = (inputOrdering==InputOrdering.UNDEFINED ? InputOrdering.ASCENDING : InputOrdering.UNSORTED ) ;
-		}
-		return inputOrdering;
-	}
-
 	private boolean loadNextRunKeepLast() throws InterruptedException, IOException {
 		if (inPort == null) {
 			rec[CURRENT] = rec[NEXT] = null;
@@ -143,18 +129,20 @@ public class SlaveReader implements InputReader {
 				rec[CURRENT] = rec[NEXT] = null;
 				return false;
 			}
+			recCounter++;
 		}
 		swap();
 		while (true) {
 		// current record is now the first one from the run to be loaded
 		// set current record to the last one from the run to be loaded and next record to the first one
 		// from the following run
-		needsRewind = false;
+			needsRewind = false;
 			rec[NEXT].reset();
 			if (inPort.readRecord(rec[NEXT]) == null) {
 				rec[NEXT] = null;
 				return true;
 			}
+			recCounter++;
 
 			int comparison = key.compare(rec[CURRENT], rec[NEXT]);
 			if (comparison != 0) {	// beginning of new run
@@ -193,7 +181,7 @@ public class SlaveReader implements InputReader {
 	}
 	
 	@Override
-	public int compare(InputReader other) {
+	public int compare(IInputReader other) {
 		DataRecord rec1 = getSample();
 		DataRecord rec2 = other.getSample();
 //		if (rec1 == null) {
@@ -227,6 +215,15 @@ public class SlaveReader implements InputReader {
 
 	@Override
 	public InputOrdering getOrdering() {
-		return inputOrdering;
+        return inputOrdering;
+	}
+	
+	@Override
+	public String getInfo() {
+		// because swap() was already called, records would be in wrong sequence
+		if (!keepLast) {
+			swap();
+		}
+		return super.getInfo();
 	}
 }

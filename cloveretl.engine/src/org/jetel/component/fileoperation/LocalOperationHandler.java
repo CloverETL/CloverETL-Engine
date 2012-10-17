@@ -519,6 +519,7 @@ public class LocalOperationHandler implements IOperationHandler {
 		boolean success = true;
 		Boolean isDirectory = params.isDirectory();
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents()); 
+		Date lastModified = params.getLastModified();
 		if (!file.exists()) {
 			boolean createDirectory = Boolean.TRUE.equals(isDirectory);
 			if (createDirectory && createParents) {
@@ -534,15 +535,18 @@ public class LocalOperationHandler implements IOperationHandler {
 				}
 				success = file.createNewFile();
 			}
-		}
-		Date lastModified = params.getLastModified();
-		if (lastModified != null) {
-			success &= file.setLastModified(lastModified.getTime());
+			if (lastModified != null) {
+				success &= file.setLastModified(lastModified.getTime());
+			}
 		} else {
-			file.setLastModified(System.currentTimeMillis());
-		}
-		if ((isDirectory != null) && (!isDirectory.equals(file.isDirectory()))) {
-			throw new IOException(MessageFormat.format(isDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), file)); //$NON-NLS-1$ //$NON-NLS-2$
+			if ((isDirectory != null) && (!isDirectory.equals(file.isDirectory()))) {
+				throw new IOException(MessageFormat.format(isDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), file)); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+			if (lastModified != null) {
+				success &= file.setLastModified(lastModified.getTime());
+			} else {
+				file.setLastModified(System.currentTimeMillis());
+			}
 		}
 		return success; 
 	}

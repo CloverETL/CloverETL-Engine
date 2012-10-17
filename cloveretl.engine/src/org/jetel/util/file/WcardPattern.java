@@ -44,6 +44,7 @@ import org.jetel.util.protocols.ftp.FTPConnection;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
+import org.jetel.util.string.StringUtils;
 
 import com.googlecode.sardine.DavResource;
 import com.googlecode.sardine.Sardine;
@@ -158,7 +159,8 @@ public class WcardPattern {
 		filePat.setLength(0);
 
 		File f = new File(pat);
-		dir.append(f.getParent());
+		String parent = f.getParent();
+		dir.append(StringUtils.isEmpty(parent) ? "." : parent); // CLD-4114: When parent == null, dir would be "null"
 		filePat.append(f.getName());
 	}
 	

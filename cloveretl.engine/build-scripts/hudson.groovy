@@ -9,7 +9,7 @@ def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
-jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-after-commit-java-1.7-Sun|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
@@ -57,7 +57,7 @@ if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
 	antArgs = [
-		"-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial",
+		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial",
 		"-Dcte.logpath=/data/cte-logs",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
@@ -116,6 +116,7 @@ if( !runTests ){
 		"-Dhudson.link=job/${jobName}/${buildNumber}",
 		"-Dhudson.engine.link=job/${engineJobName}/${engineBuildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
+		"-Dtestenv.etlenvironment=engine",
 	]
 
 	antTarget = "run-scenarios-with-engine-build-with-testdb"

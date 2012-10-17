@@ -25,72 +25,94 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
- * Interface specifying operations for reading ordered record input.
- * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+ * @author kuglerm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
  *
+ * @created 2.10.2012
  */
-public interface InputReader {
+public abstract class InputReader implements IInputReader {
 	
-	public enum InputOrdering {
-		UNDEFINED,
-		ASCENDING, 
-		DESCENDING,
-		UNSORTED
+	protected static final int CURRENT = 0;
+	protected static final int NEXT = 1;
+	
+	protected int recCounter;
+	protected RecordKey key;
+	protected DataRecord[] rec = new DataRecord[2];
+	
+	protected static InputOrdering updateOrdering(int comparison, InputOrdering inputOrdering) {
+		if (comparison > 0){
+			if (inputOrdering!=InputOrdering.DESCENDING)
+				inputOrdering = (inputOrdering==InputOrdering.UNDEFINED ? InputOrdering.DESCENDING : InputOrdering.UNSORTED ) ;
+		} 
+		if (comparison < 0){
+			if (inputOrdering!=InputOrdering.ASCENDING)
+				inputOrdering = (inputOrdering==InputOrdering.UNDEFINED ? InputOrdering.ASCENDING : InputOrdering.UNSORTED ) ;
+		}
+		return inputOrdering;
 	}
 	
-	/**
-	 * Returns recognized ordering of input data. It may change during data processing.
-	 * i.e. at first it's UNDEFINED, 
-	 * when greater value is loaded it's ASCENDING and 
-	 * if some of next value is lower it may change to UNSORTED.
-	 * @return
-	 */
-	public InputOrdering getOrdering();
-	
-	/**
-	 * Loads next run (set of records with identical keys)  
-	 * @return
-	 * @throws InterruptedException
-	 * @throws IOException
-	 */
-	public boolean loadNextRun() throws InterruptedException, IOException;
+	@Override
+	abstract public InputOrdering getOrdering();
 
-	public void free();
+	@Override
+	abstract public boolean loadNextRun() throws InterruptedException, IOException;
 
-	public void reset() throws ComponentNotReadyException;
+	@Override
+	abstract public void free();
 
-	/**
-	 * Retrieves one record from current run. Modifies internal data so that next call
-	 * of this operation will return following record. 
-	 * @return null on end of run, retrieved record otherwise
-	 * @throws IOException
-	 * @throws InterruptedException
-	 */
-	public DataRecord next() throws IOException, InterruptedException;
+	@Override
+	abstract public void reset() throws ComponentNotReadyException;;
 
-	/**
-	 * Resets current run so that it can be read again.  
-	 */
-	public void rewindRun();
-	
-	/**
-	 * Retrieves one record from current run. Doesn't affect results of sebsequent next() operations.
-	 * @return
-	 */
-	public DataRecord getSample();
+	@Override
+	abstract public DataRecord next() throws IOException, InterruptedException;
 
-	/**
-	 * Returns key used to compare data records. 
-	 * @return
-	 */
-	public RecordKey getKey();
-	
-	/**
-	 * Compares reader with another one. The comparison is based on key values of record in the current run
-	 * @param other
-	 * @return
-	 */
-	public int compare(InputReader other);
-	
-	public boolean hasData();
+	@Override
+	abstract public void rewindRun();
+
+	@Override
+	abstract public DataRecord getSample();
+
+	@Override
+	abstract public RecordKey getKey();
+
+	@Override
+	abstract public int compare(IInputReader other);
+
+	@Override
+	abstract public boolean hasData();
+
+	@Override
+	public String getInfo() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Record #");
+		sb.append(recCounter).append(": Key field");
+		if (key.getKeyFields().length > 1) {
+			sb.append("s");
+		}
+		sb.append("=\"");
+		for (String index : key.getKeyFieldNames()) {
+			sb.append(index).append(":"); 
+		}
+		sb.replace(sb.length()-1, sb.length(), "\"").append(". ");
+		if (rec[NEXT] == null) {
+			sb.append("Current=null; ");
+		} else {
+			sb.append("Current=\"");
+			for (String index : key.getKeyFieldNames()) {
+				sb.append(index).append(":").append(rec[NEXT].getField(index)).append(" "); 
+			}
+			sb.replace(sb.length()-1, sb.length(), "\"").append("; ");
+		}
+		if (rec[CURRENT] == null) {
+			sb.append("Previous=null.");
+		} else {
+			sb.append("Previous=\"");
+			for (String index : key.getKeyFieldNames()) {
+				sb.append(index).append(":").append(rec[CURRENT].getField(index)).append(" "); 
+			}
+			sb.replace(sb.length()-1, sb.length(), "\"").append(".");
+		}
+		return sb.toString();
+	}
+
 }

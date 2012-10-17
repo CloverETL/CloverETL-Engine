@@ -183,10 +183,10 @@ public class CTLMappingTest extends CloverTestCase {
     public void testComplex() throws Exception {
     	CTLMapping mapping = createCTLMapping();
     	
-    	DataRecordMetadata inMetadata = createMetadata("inMetadata", "field1_in", "field2_in", "field3_in");
+    	DataRecordMetadata inMetadata = createMetadata("inMetadata", "field1_in", "field2_in", "field3_in", "field4_out");
     	DataRecord inRecord = mapping.addInputMetadata("firstIn", inMetadata);
     	
-    	DataRecordMetadata outMetadata = createMetadata("outMetadata", "field1_out", "field2_out", "field3_out");
+    	DataRecordMetadata outMetadata = createMetadata("outMetadata", "field1_out", "field2_out", "field3_out", "field4_out");
     	DataRecord outRecord = mapping.addOutputMetadata("firstOut", outMetadata);
 
     	mapping.setTransformation("//#CTL2\n" +
@@ -194,6 +194,7 @@ public class CTLMappingTest extends CloverTestCase {
     			"$out.0.field1_out = $in.0.field1_in;" +
     			"$out.0.field2_out = $in.0.field2_in;" +
     			"$out.0.field3_out = $in.0.field3_in;" +
+    			"string tmp = $in.0.field4_out;" +
     			"return ALL;" +
     			"}");
     	
@@ -207,7 +208,8 @@ public class CTLMappingTest extends CloverTestCase {
     	
     	assertEquals("neco1", mapping.getOutput("firstOut", "field1_out").toString());
     	assertTrue(mapping.isOutputOverridden(outRecord, outRecord.getField("field1_out")));
-    	assertFalse(mapping.isOutputOverridden(outRecord, outRecord.getField("field2_out")));
+    	assertTrue(mapping.isOutputOverridden(outRecord, outRecord.getField("field2_out")));
+    	assertFalse(mapping.isOutputOverridden(outRecord, outRecord.getField("field4_out")));
     	
     	try {
     		mapping.isOutputOverridden(inRecord, inRecord.getField("field1_in"));
@@ -226,10 +228,10 @@ public class CTLMappingTest extends CloverTestCase {
     public void testComplex1() throws Exception {
     	CTLMapping mapping = createCTLMapping();
     	
-    	DataRecordMetadata metadata = createMetadata("inMetadata", "field1", "field2", "field3");
-    	DataRecord inRecord = mapping.addInputMetadata("firstIn", metadata);
+    	DataRecordMetadata inMetadata = createMetadata("inMetadata", "field1", "field2", "field3");
+    	DataRecord inRecord = mapping.addInputMetadata("firstIn", inMetadata);
     	
-    	DataRecord outRecord = mapping.addOutputMetadata("firstOut", metadata);
+    	DataRecord outRecord = mapping.addOutputMetadata("firstOut", inMetadata);
 
     	mapping.setTransformation("//#CTL2\n" +
     			"function integer transform() {" +
@@ -249,7 +251,7 @@ public class CTLMappingTest extends CloverTestCase {
     	
     	assertEquals("neco1", mapping.getOutput("firstOut", "field1").toString());
     	assertTrue(mapping.isOutputOverridden(outRecord, outRecord.getField("field1")));
-    	assertFalse(mapping.isOutputOverridden(outRecord, outRecord.getField("field2")));
+    	assertTrue(mapping.isOutputOverridden(outRecord, outRecord.getField("field2")));
     	
     	try {
     		mapping.isOutputOverridden(inRecord, inRecord.getField("field1"));
@@ -274,10 +276,10 @@ public class CTLMappingTest extends CloverTestCase {
     	DataRecordMetadata inMetadata1 = createMetadata("inMetadata2", "field1", "field2", "field3");
     	DataRecord inRecord1 = mapping.addInputMetadata("secondIn", inMetadata1);
     	
-    	DataRecordMetadata outMetadata0 = createMetadata("outMetadata1", "field1", "field2", "field3");
+    	DataRecordMetadata outMetadata0 = createMetadata("outMetadata1", "field1", "field2", "field3", "field4");
     	DataRecord outRecord0 = mapping.addOutputMetadata("firstOut", outMetadata0);
 
-    	DataRecordMetadata outMetadata1 = createMetadata("outMetadata2", "field1", "field2", "field3");
+    	DataRecordMetadata outMetadata1 = createMetadata("outMetadata2", "field1", "field2", "field3", "field4");
     	DataRecord outRecord1 = mapping.addOutputMetadata("secondOut", outMetadata1);
 
     	mapping.addAutoMapping("firstIn", "firstOut");
@@ -306,9 +308,11 @@ public class CTLMappingTest extends CloverTestCase {
     	assertEquals("neco1", mapping.getOutput("secondOut", "field1").toString());
     	assertEquals("neco2", mapping.getOutput("firstOut", "field2").toString());
     	assertTrue(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field2")));
-    	assertFalse(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field1")));
+    	assertTrue(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field1")));
+    	assertFalse(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field4")));
     	assertTrue(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field1")));
-    	assertFalse(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field3")));
+    	assertTrue(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field3")));
+    	assertFalse(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field4")));
 
     	assertEquals("neco1", mapping.getOutputRecord("secondOut").getField(0).getValue().toString());
     	assertNull(mapping.getOutputRecord("secondOut").getField(1).getValue());
@@ -330,10 +334,10 @@ public class CTLMappingTest extends CloverTestCase {
     	DataRecordMetadata inMetadata1 = createMetadata("inMetadata2", "field1", "field2", "field3");
     	DataRecord inRecord1 = mapping.addInputMetadata("secondIn", inMetadata1);
     	
-    	DataRecordMetadata outMetadata0 = createMetadata("outMetadata1", "field1", "field2", "field3");
+    	DataRecordMetadata outMetadata0 = createMetadata("outMetadata1", "field1", "field2", "field3", "field4");
     	DataRecord outRecord0 = mapping.addOutputMetadata("firstOut", outMetadata0);
 
-    	DataRecordMetadata outMetadata1 = createMetadata("outMetadata2", "field1", "field2", "field3");
+    	DataRecordMetadata outMetadata1 = createMetadata("outMetadata2", "field1", "field2", "field3", "field4");
     	DataRecord outRecord1 = mapping.addOutputMetadata("secondOut", outMetadata1);
 
     	mapping.addAutoMapping("firstIn", "secondOut");
@@ -351,9 +355,11 @@ public class CTLMappingTest extends CloverTestCase {
     	assertEquals("neco1", mapping.getOutput("secondOut", "field1").toString());
     	assertEquals("neco2", mapping.getOutput("firstOut", "field2").toString());
     	assertTrue(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field2")));
-    	assertFalse(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field1")));
+    	assertTrue(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field1")));
+    	assertFalse(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field4")));
     	assertTrue(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field1")));
-    	assertFalse(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field3")));
+    	assertTrue(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field3")));
+    	assertFalse(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field4")));
 
     	assertEquals("neco1", mapping.getOutputRecord("secondOut").getField(0).getValue().toString());
     	assertNull(mapping.getOutputRecord("secondOut").getField(1).getValue());
@@ -370,9 +376,11 @@ public class CTLMappingTest extends CloverTestCase {
     	assertEquals("neco1", mapping.getOutput("secondOut", "field1").toString());
     	assertEquals("neco2", mapping.getOutput("firstOut", "field2").toString());
     	assertTrue(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field2")));
-    	assertFalse(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field1")));
+    	assertTrue(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field1")));
+    	assertFalse(mapping.isOutputOverridden(outRecord0, outRecord0.getField("field4")));
     	assertTrue(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field1")));
-    	assertFalse(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field3")));
+    	assertTrue(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field3")));
+    	assertFalse(mapping.isOutputOverridden(outRecord1, outRecord1.getField("field4")));
 
     	assertEquals("neco1", mapping.getOutputRecord("secondOut").getField(0).getValue().toString());
     	assertNull(mapping.getOutputRecord("secondOut").getField(1).getValue());

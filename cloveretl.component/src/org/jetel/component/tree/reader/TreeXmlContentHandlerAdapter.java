@@ -40,7 +40,6 @@ public class TreeXmlContentHandlerAdapter implements TreeContentHandler {
 	public void startTree() {
 		try {
 			contentHandler.startDocument();
-			contentHandler.startElement("", DUMMY_ROOT_ELEMENT_NAME, DUMMY_ROOT_ELEMENT_NAME, EMPTY_ATTRIBUTES);
 		} catch (SAXException e) {
 			throw new JetelRuntimeException("transformation to XML failed", e);
 		}
@@ -85,7 +84,6 @@ public class TreeXmlContentHandlerAdapter implements TreeContentHandler {
 	@Override
 	public void endTree() {
 		try {
-			contentHandler.endElement("", DUMMY_ROOT_ELEMENT_NAME, DUMMY_ROOT_ELEMENT_NAME);
 			contentHandler.endDocument();
 		} catch (SAXException e) {
 			throw new JetelRuntimeException("transformation to XML failed", e);

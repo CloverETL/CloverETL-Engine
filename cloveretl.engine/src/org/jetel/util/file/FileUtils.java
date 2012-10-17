@@ -526,7 +526,11 @@ public class FileUtils {
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
             	return new FileInputStream(url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url));
         	} else if (archiveType == null && SandboxUrlUtils.isSandboxUrl(url)) {
-            	return url.openConnection().getInputStream();
+        		TransformationGraph graph = ContextProvider.getGraph();
+        		if (graph == null) {
+					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+        		}
+        		return graph.getAuthorityProxy().getSandboxResourceInput(url.getHost(), getUrlFile(url));
         	}
         	
         	try {
