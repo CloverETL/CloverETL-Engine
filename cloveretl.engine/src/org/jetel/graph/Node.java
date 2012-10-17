@@ -1255,7 +1255,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @param childThreads
      */
     protected void registerChildThreads(List<Thread> childThreads) {
-    	childThreads.addAll(childThreads);
+    	this.childThreads.addAll(childThreads);
     }
 
     /**
