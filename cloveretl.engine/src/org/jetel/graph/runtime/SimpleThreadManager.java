@@ -77,6 +77,21 @@ public class SimpleThreadManager implements IThreadManager {
 	}
 	
 	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IThreadManager#execute(java.lang.Runnable)
+	 */
+	@Override
+	public <T> Future<T> execute(Runnable runnable, T result) {
+		FutureTask<T> futureTask = new FutureTask<T>(runnable, result); 
+		Thread thread = new Thread(futureTask, runnable.getClass().getName());
+		thread.setContextClassLoader(runnable.getClass().getClassLoader());
+		thread.setPriority(Thread.MIN_PRIORITY);
+		thread.setDaemon(false);
+		thread.start();
+		
+		return futureTask;
+	}
+	
+	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#getFreeThreadsCount()
 	 */
 	@Override

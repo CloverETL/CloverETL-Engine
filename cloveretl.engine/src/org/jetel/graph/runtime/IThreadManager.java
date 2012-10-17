@@ -58,6 +58,15 @@ public interface IThreadManager {
 	public void execute(Runnable runnable);
 	
 	/**
+	 * Runs arbitrary runnable code and return a Future object,
+	 * which can be used for waiting to the end of the task.
+	 * @param runnable task specification
+	 * @param result object which will be returned by {@link Future#get()} method
+	 * @return {@link Future} of executed task
+	 */
+	public <T> Future<T> execute(Runnable runnable, T result);
+
+	/**
 	 * Returns the approximate number of available free threads.
 	 * @return number of threads
 	 */
