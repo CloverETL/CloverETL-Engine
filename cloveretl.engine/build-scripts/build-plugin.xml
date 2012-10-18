@@ -36,6 +36,7 @@
 	<property name="dir.obfuscate" value="${dir.build}/obfuscate"/>
 	<property name="dir.obfuscate.classes" value="${dir.obfuscate}/classes"/>
 	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
+	<property name="required.plugins.file" value="required-plugins.txt"/>
 	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
 	<property name="required.plugins.collected" value="${dir.build}/required-plugins-collected.txt" />
 	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
@@ -252,7 +253,8 @@
             <param name="home" expression="${basedir}/.."/>
         </xslt>
         <property file="${required.plugins.file}"/>
-      
+        <delete file="${required.plugins.file}"/>
+        
         <property name="cp.compile" value="${dir.engine.classes}${required.plugins.classes}" />
 
         <echo>cp.compile=${cp.compile}</echo>
