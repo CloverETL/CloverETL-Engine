@@ -249,7 +249,8 @@ public class FileManager {
 						// locally running graph
 						if (currentWorkingDir == null) {
 							// the current working dir cannot change at runtime
-							currentWorkingDir = new File(URIUtils.CURRENT_DIR_NAME).toURI();
+							// empty path means the current working directory
+							currentWorkingDir = new File("").toURI(); //$NON-NLS-1$
 						}
 						return currentWorkingDir;
 					}
