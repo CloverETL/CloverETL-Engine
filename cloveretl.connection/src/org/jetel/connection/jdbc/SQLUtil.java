@@ -578,7 +578,8 @@ public class SQLUtil {
 	 * @return
 	 */
 	static String SELECT_KW = "select";
-	static Pattern FROM_KW = Pattern.compile("\\s+from\\s+");
+	//we need to ignore case
+	static Pattern FROM_KW = Pattern.compile("(?i)\\s+from\\s+");
 	static String selectDelim = ",";
 	public static String removeUnnamedFields(String select, JdbcSpecific specific) {
 		if (select == null) {
@@ -608,11 +609,8 @@ public class SQLUtil {
 			StringBuilder newSelectPart = new StringBuilder();
 			for(int i = 0; parts != null && i < parts.length; i++) {
 				
-				if (
-						parts[i].trim().endsWith(")")
-						||
-						(specific != null && specific.isLiteral(parts[i]))
-					) {
+				if (parts[i].trim().endsWith(")") || (specific != null && specific.isLiteral(parts[i])) || 
+						specific.isCaseStatement(parts[i])) {
 					parts[i] += " as AUTOCOLUMN" + String.valueOf(Math.round(Math.random() * 100000));
 				}
 				

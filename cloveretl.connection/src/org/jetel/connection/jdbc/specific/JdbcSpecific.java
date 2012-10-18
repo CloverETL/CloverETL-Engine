@@ -207,6 +207,12 @@ public interface JdbcSpecific {
 	public boolean isLiteral(String s);
 	
 	/**
+	 * @param statement
+	 * @return True if given statement is SQL CASE statement, false otherwise.
+	 */
+	public boolean isCaseStatement(String statement);
+	
+	/**
 	 * Returns a ResultSet representing schemas
 	 * @param dbMeta
 	 * @return ArrayList<String[]> Returns arraylist of rows, each contains a pair of strings CATALOG, SCHEMA

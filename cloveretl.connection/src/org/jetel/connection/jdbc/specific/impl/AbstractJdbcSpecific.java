@@ -449,6 +449,15 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return s.startsWith("'");
 		
 	}
+	
+	@Override
+	public boolean isCaseStatement(String statement) {
+		if (statement != null) {
+			String s = statement.trim().toLowerCase();
+			return s.startsWith("case") && s.endsWith("end");
+		}
+		return false;
+	}
 
 	/**
 	 * A static method that retrieves schemas from dbMeta objects.
