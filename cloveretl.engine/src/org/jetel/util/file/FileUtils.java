@@ -64,6 +64,9 @@ import java.util.zip.ZipInputStream;
 
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.FileManager;
+import org.jetel.component.fileoperation.Operation;
+import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -1259,6 +1262,45 @@ public class FileUtils {
 			throw new ComponentNotReadyException("Can't write to: " + fileURL);
 		}
 		return true;
+	}
+	
+	/**
+	 * Creates the parent dirs of the target file,
+	 * if necessary. It is assumed that the target
+	 * is a regular file, not a directory.
+	 * 
+	 * The parent directories may not have been created,
+	 * even if the method does not throw any exception.
+	 * 
+	 * @param contextURL
+	 * @param fileURL
+	 * @throws ComponentNotReadyException
+	 */
+	public static void createParentDirs(URL contextURL, String fileURL) throws ComponentNotReadyException {
+		try {
+			URL innerMostURL = FileUtils.getFileURL(contextURL, FileURLParser.getMostInnerAddress(fileURL));
+	    	String innerMostURLString = innerMostURL.toString();
+			boolean isFile = !innerMostURLString.endsWith("/") && !innerMostURLString.endsWith("\\");
+        	if (FileUtils.isLocalFile(contextURL, innerMostURLString)) {
+        		File file = FileUtils.getJavaFile(contextURL, innerMostURLString);
+        		String sFile = isFile ? file.getParent() : file.getPath();
+        		FileUtils.makeDirs(contextURL, sFile);
+        	} else if (SandboxUrlUtils.isSandboxUrl(innerMostURLString)) {
+        		File file = new File(innerMostURL.getPath()); // a hack to get the parent directory
+        		String sFile = isFile ? file.getParent() : file.getPath();
+        		FileUtils.makeDirs(contextURL, sFile);
+        	} else {
+        		Operation operation = Operation.create(innerMostURL.getProtocol());
+        		FileManager manager = FileManager.getInstance();
+        		String sFile = isFile ? URIUtils.getParentURI(URI.create(innerMostURLString)).toString() : innerMostURLString;
+        		if (manager.canPerform(operation)) {
+        			manager.create(CloverURI.createURI(sFile), new CreateParameters().setDirectory(true).setMakeParents(true));
+        			// ignore the result
+        		}
+        	}
+		} catch (MalformedURLException e) {
+			log.debug(e.getMessage());
+		}
 	}
 	
 	/**
