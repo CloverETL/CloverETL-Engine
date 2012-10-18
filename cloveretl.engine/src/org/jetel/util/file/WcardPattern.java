@@ -631,7 +631,7 @@ public class WcardPattern {
 	}
 
 	/**
-	 * Gets files from fileName that can contain wildcards or returns absolute path to given file.
+	 * Gets files from fileName that can contain wildcards or returns original name.
 	 * @param fileName
 	 * @return
 	 */
@@ -643,12 +643,12 @@ public class WcardPattern {
 		StringBuffer dirName = new StringBuffer();
 		StringBuffer filePat = new StringBuffer();
 		
-		// if no wildcards, return absolute path to given file name
+		// if no wildcards, return original filename
 		splitFilePattern(fileName, dirName, filePat);
 		int idxFileWildCard = getWildCardIndex(filePat.toString());
 		int idxPathWildCard = getWildCardIndex(dirName.toString());
 		if (idxFileWildCard < 0 && idxPathWildCard < 0) {	// no wildcards
-			mfiles.add(FileUtils.getJavaFile(parent, fileName).getAbsolutePath());
+			mfiles.add(fileName);
 			return mfiles;
 		}
 
