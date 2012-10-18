@@ -673,7 +673,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 		for (int i = 0; i < fields.length; i++) {
 			str.append("#").append(i).append("|");
 			str.append(fields[i].getMetadata().getName()).append("|");
-			str.append(fields[i].getMetadata().getDataType().getName());
+			str.append(fields[i].getMetadata().getDataType().getShortName());
 			str.append("->");
 			str.append(fields[i].toString());
 			str.append("\n");
