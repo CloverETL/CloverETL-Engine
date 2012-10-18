@@ -3,6 +3,14 @@
 *******************************************************************************
 
 
+REL 3-3-0
+---------
+
+- UniversalDataReader does not open as many connections to SFTP
+- Partition correctly uses charset attribute
+- escape values in defaultProperties
+- input port reading in stream mode - process data progressibely without waiting for EOF
+
 REL 3-3-0-M3
 ------------
 * DBFDataWriter component

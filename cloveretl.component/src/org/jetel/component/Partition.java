@@ -442,7 +442,7 @@ public class Partition extends Node {
 							XML_PARTITIONKEY_ATTRIBUTE, XML_RANGES_ATTRIBUTE, 
 							XML_CHARSET_ATTRIBUTE}));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				partition.setCharset(XML_CHARSET_ATTRIBUTE);
+				partition.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
 			partition.setUseI18N(xattribs.getBoolean(XML_USE_I18N_ATTRIBUTE, false));
 			if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {

@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.connection.jdbc.specific.DBConnectionInstance;
@@ -18,6 +19,8 @@ import org.jetel.test.CloverTestCase;
 
 public class DBLookupTest extends CloverTestCase {
 
+	private static final Logger log = Logger.getLogger(DBLookupTest.class);
+	
 	Lookup lookup;
 	DataRecord customer, employee = null;
 	SQLDataParser parser;
@@ -63,19 +66,23 @@ public class DBLookupTest extends CloverTestCase {
 		inRecord.init();
 		Lookup lookup2 = lookupTable.createLookup(key, inRecord);
 		DataRecord record;
+		long start = System.currentTimeMillis();
+		int seeks = 0;
 		while ((parser.getNext(customer)) != null) {
 			inRecord.copyFrom(customer);
-//			 System.out.println("Looking pair for :\n" + customer);
+//			 log.info("Looking pair for :\n" + customer);
 			lookup.seek();
 			lookup2.seek();
+			seeks += 2;
 			while (lookup.hasNext()) {
 				employee = lookup.next();
 				record = lookup2.next();
-//				System.out.println("Found record:\n" + employee);
+//				log.info("Found record:\n" + employee);
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 				assertEquals(customer.getField("lname"), record.getField("last_name"));
 			}
 		}
+		log.info("Processed " + seeks + " seeks in " + (System.currentTimeMillis() - start) + " ms");
 		lookupTable.postExecute();
 	}
 	
@@ -85,40 +92,37 @@ public class DBLookupTest extends CloverTestCase {
 		lookup = lookupTable.createLookup(recordKey, customer);
 		long start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-//			 System.out.println("Looking pair for :\n" + customer);
 			lookup.seek();
 			while (lookup.hasNext()) {
 				employee =  lookup.next();
-//				System.out.println("Found record:\n" + employee);
+//				log.info("Found record:\n" + employee);
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
-		System.out.println("Without cashing:");
-		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
-		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
-		System.out.println("Timing: " + (System.currentTimeMillis() - start));
+		log.info("Without caching:");
+		log.info("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
+		log.info("From cache found: " + ((DBLookup) lookup).getCacheNumber());
+		log.info("Timing: " + (System.currentTimeMillis() - start));
 		lookupTable.postExecute();
-//		lookupTable.free();
 
 		lookupTable.preExecute();
 		parser.setDataSource(aDBConnection);
 		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-			// System.out.println("Looking pair for :\n" + customer);
+			// log.info("Looking pair for :\n" + customer);
 			lookup.seek();
 			while (lookup.hasNext()) {
 				employee =  lookup.next();
-				// System.out.println("Found record:\n" + employee);
+				// log.info("Found record:\n" + employee);
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
-		System.out.println("Without cashing:");
-		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
-		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
-		System.out.println("Timing: " + (System.currentTimeMillis() - start));
+		log.info("Without caching:");
+		log.info("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
+		log.info("From cache found: " + ((DBLookup) lookup).getCacheNumber());
+		log.info("Timing: " + (System.currentTimeMillis() - start));
 		lookupTable.postExecute();
-//		lookupTable.free();
 
 		lookupTable.preExecute();
 		parser.setDataSource(aDBConnection);
@@ -128,20 +132,19 @@ public class DBLookupTest extends CloverTestCase {
 		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-//			 System.out.println("Looking pair for :\n" + customer);
+//			 log.info("Looking pair for :\n" + customer);
 			lookup.seek();
 			while (lookup.hasNext()) {
 				employee = lookup.next();
-//				 System.out.println("Found record:\n" + employee);
+//				 log.info("Found record:\n" + employee);
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
-		System.out.println("Cashing=1000, storeNulls=false:");
-		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
-		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
-		System.out.println("Timing: " + (System.currentTimeMillis() - start));
+		log.info("caching=1000, storeNulls=false:");
+		log.info("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
+		log.info("From cache found: " + ((DBLookup) lookup).getCacheNumber());
+		log.info("Timing: " + (System.currentTimeMillis() - start));
 		lookupTable.postExecute();
-//		lookupTable.free();
 
 		lookupTable.preExecute();
 		parser.setDataSource(aDBConnection);
@@ -151,18 +154,18 @@ public class DBLookupTest extends CloverTestCase {
 		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-//			 System.out.println("Looking pair for :\n" + customer);
+//			 log.info("Looking pair for :\n" + customer);
 			lookup.seek();
 			while (lookup.hasNext()) {
 				employee = lookup.next();
-//				 System.out.println("Found record:\n" + employee);
+//				 log.info("Found record:\n" + employee);
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
-		System.out.println("Cashing=1000, storeNulls=true:");
-		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
-		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
-		System.out.println("Timing: " + (System.currentTimeMillis() - start));
+		log.info("caching=1000, storeNulls=true:");
+		log.info("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
+		log.info("From cache found: " + ((DBLookup) lookup).getCacheNumber());
+		log.info("Timing: " + (System.currentTimeMillis() - start));
 		lookupTable.postExecute();
 //		lookupTable.free();
 
@@ -174,18 +177,18 @@ public class DBLookupTest extends CloverTestCase {
 		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-			// System.out.println("Looking pair for :\n" + customer);
+			// log.info("Looking pair for :\n" + customer);
 			lookup.seek();
 			while (lookup.hasNext()) {
 				employee = lookup.next();
-				// System.out.println("Found record:\n" + employee);
+				// log.info("Found record:\n" + employee);
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
-		System.out.println("Cashing=3000, storeNulls=false:");
-		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
-		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
-		System.out.println("Timing: " + (System.currentTimeMillis() - start));
+		log.info("caching=3000, storeNulls=false:");
+		log.info("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
+		log.info("From cache found: " + ((DBLookup) lookup).getCacheNumber());
+		log.info("Timing: " + (System.currentTimeMillis() - start));
 		lookupTable.postExecute();
 //		lookupTable.free();
 
@@ -197,19 +200,19 @@ public class DBLookupTest extends CloverTestCase {
 		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
-			// System.out.println("Looking pair for :\n" + customer);
+			// log.info("Looking pair for :\n" + customer);
 			lookup.seek();
 			while (lookup.hasNext()) {
 				employee = lookup.next();
-				// System.out.println("Found record:\n" + employee);
+				// log.info("Found record:\n" + employee);
 				assertEquals(customer.getField("lname"), employee.getField("last_name"));
 			}
 		}
 		lookupTable.postExecute();
-		System.out.println("Cashing=3000, storeNulls=true:");
-		System.out.println("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
-		System.out.println("From cache found: " + ((DBLookup) lookup).getCacheNumber());
-		System.out.println("Timing: " + (System.currentTimeMillis() - start));
+		log.info("caching=3000, storeNulls=true:");
+		log.info("Total number searched: " + ((DBLookup) lookup).getTotalNumber());
+		log.info("From cache found: " + ((DBLookup) lookup).getCacheNumber());
+		log.info("Timing: " + (System.currentTimeMillis() - start));
 	}
 
 }

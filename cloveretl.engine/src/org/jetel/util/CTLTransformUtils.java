@@ -21,8 +21,10 @@ package org.jetel.util;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFUNCTIONDECLARATION;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTIMPORTSOURCE;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.jetel.component.RecordTransformTL;
 import org.jetel.ctl.ErrorMessage;
@@ -57,7 +59,7 @@ public class CTLTransformUtils {
     	private final org.jetel.ctl.ASTnode.Node ast;
     	public DataRecordMetadata[] inputMetadata;
     	public DataRecordMetadata[] outputMetadata;
-    	public List<DataFieldMetadata> assignedFields = new ArrayList<DataFieldMetadata>();
+    	public Set<Field> assignedFields = new HashSet<Field>();
     	
     	/**
     	 * Allocates verifier which will verify that the <code>functionName</code>
@@ -77,7 +79,7 @@ public class CTLTransformUtils {
     	 * 
     	 * @return	true if function is simple, false otherwise
     	 */
-    	public List<DataFieldMetadata> visit() {
+    	public Set<Field> visit() {
     		assignedFields.clear();
     		ast.jjtAccept(this, null);
     		return assignedFields;
@@ -109,16 +111,16 @@ public class CTLTransformUtils {
 
     	@Override
 		public Object visit(CLVFFieldAccessExpression fieldAccess, Object data) {
-			if (!fieldAccess.isOutput()
-					&& fieldAccess.getRecordId() != null
+    		DataRecordMetadata[] metaList = fieldAccess.isOutput() ? outputMetadata : inputMetadata;
+			if (fieldAccess.getRecordId() != null
 					&& fieldAccess.getRecordId() >= 0
-					&& fieldAccess.getRecordId() < inputMetadata.length
+					&& fieldAccess.getRecordId() < metaList.length
 					&& !StringUtils.isEmpty(fieldAccess.getFieldName())) {
-				DataRecordMetadata inputRecordMetadata = inputMetadata[fieldAccess.getRecordId()] ;
-				if (inputRecordMetadata != null) {
-					DataFieldMetadata assignedFieldMetadata = inputRecordMetadata.getField(fieldAccess.getFieldName());
-					if (assignedFieldMetadata!=null) {
-	    				assignedFields.add(assignedFieldMetadata);
+				DataRecordMetadata recordMetadata = metaList[fieldAccess.getRecordId()] ;
+				if (recordMetadata != null) {
+					DataFieldMetadata assignedFieldMetadata = recordMetadata.getField(fieldAccess.getFieldName());
+					if (assignedFieldMetadata != null) {
+	    				assignedFields.add(new Field(assignedFieldMetadata.getName(), fieldAccess.getRecordId(), fieldAccess.isOutput()));
 					}
 				}
 			}
@@ -139,13 +141,17 @@ public class CTLTransformUtils {
     				rhs.getId() == TransformLangParserTreeConstants.JJTFIELDACCESSEXPRESSION) {
     			final CLVFFieldAccessExpression leftNode = (CLVFFieldAccessExpression) lhs;
     			final CLVFFieldAccessExpression rightNode = (CLVFFieldAccessExpression) rhs;
-    			if (leftNode.isWildcard() && leftNode.isOutput()
-    					&& rightNode.isWildcard() && !rightNode.isOutput()) {
-        			final DataRecordMetadata leftRecordMetadata = outputMetadata[leftNode.getRecordId()];
-        			final DataRecordMetadata rightRecordMetadata = inputMetadata[rightNode.getRecordId()];
+    			DataRecordMetadata[] leftMetaList = leftNode.isOutput() ? outputMetadata : inputMetadata;
+    			DataRecordMetadata[] rightMetaList = rightNode.isOutput() ? outputMetadata : inputMetadata;
+    			
+    			if (leftNode.isWildcard() && rightNode.isWildcard()) {
+        			final DataRecordMetadata leftRecordMetadata = leftMetaList[leftNode.getRecordId()];
+        			final DataRecordMetadata rightRecordMetadata = rightMetaList[rightNode.getRecordId()];
     				for (DataFieldMetadata rightField : rightRecordMetadata) {
-    					if (leftRecordMetadata.getField(rightField.getName()) != null) {
-    						assignedFields.add(rightField);
+    					DataFieldMetadata leftField;
+    					if ((leftField = leftRecordMetadata.getField(rightField.getName())) != null) {
+    						assignedFields.add(new Field(rightField.getName(), rightNode.getRecordId(), rightNode.isOutput()));
+    						assignedFields.add(new Field(leftField.getName(), leftNode.getRecordId(), leftNode.isOutput()));
     					}
     				}
     			}
@@ -156,17 +162,7 @@ public class CTLTransformUtils {
     	}
     }
 
-    /**
-     * The method returns all fields used on right sides of assignments in a CTL transformation.
-     * Note: See class description for limitations.
-     * 
-     * @param graph
-     * @param inMeta
-     * @param outMeta
-     * @param code
-     * @return
-     */
-    static public List<DataFieldMetadata> findUsedInputFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
+    public static Set<Field> findUsedFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String code) {
     	TLCompiler compiler = new TLCompiler(graph,inMeta,outMeta);
     	List<ErrorMessage> msgs = compiler.validate(code);
@@ -184,5 +180,81 @@ public class CTLTransformUtils {
     	return ctlAssignmentFinder.visit();
     }
 	
-	
+    private static Set<Field> findUsedOutputFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String code, boolean output) {
+    	Set<Field> result = findUsedFields(graph, inMeta, outMeta, code);
+    	for (Iterator<Field> it = result.iterator(); it.hasNext(); ) {
+    		Field f = it.next();
+    		if (f.output != output) {
+    			it.remove();
+    		}
+    	}
+    	return result;
+    }
+    
+    public static Set<Field> findUsedOutputFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String code) {
+    	return findUsedOutputFields(graph, inMeta, outMeta, code, true);
+    }
+    
+    public static Set<Field> findUsedInputFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String code) {
+    	return findUsedOutputFields(graph, inMeta, outMeta, code, false);
+    }
+    
+    /**
+     * A field is determined by:
+     * <ul>
+     * 	<li>input/output</li>
+     * 	<li>record ID</li>
+     *	<li>field name</li>
+     * </ul>
+     */
+	public static class Field {
+		public final String name;
+		public final int recordId;
+		public final boolean output;
+		
+		public Field(String name, int recordId, boolean output) {
+			this.name = name;
+			this.recordId = recordId;
+			this.output = output;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((name == null) ? 0 : name.hashCode());
+			result = prime * result + (output ? 1231 : 1237);
+			result = prime * result + recordId;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Field other = (Field) obj;
+			if (name == null) {
+				if (other.name != null)
+					return false;
+			} else if (!name.equals(other.name))
+				return false;
+			if (output != other.output)
+				return false;
+			if (recordId != other.recordId)
+				return false;
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return (output ? "$out." : "$in.") + recordId + "." + name;
+		}
+	}
 }

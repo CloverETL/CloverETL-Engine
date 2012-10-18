@@ -598,14 +598,44 @@ public class SQLUtil {
 	}
 
 	/**
-	 * Searches select clause for function calls or other unnamed fields and generates
-	 * names for them
-	 * @param select
-	 * @return
+	 * method checks if text contains only closed pairs of bars.
+	 * for example: "(select 1)), (select " return false;
+	 * @param text
+	 * @return true if only closed pairs are contained in text
 	 */
+	private static boolean isAllBarPairsClosed(String text) {
+		int currentOpen = 0;
+		for (int i = 0; i < text.length(); i++) {
+			char current = text.charAt(i);
+			switch (current) {
+			case '(': {
+				currentOpen++;
+				break;
+			}
+			case ')': {
+				if (currentOpen > 0) {
+					currentOpen --;
+					break;
+				} else {
+					return false;
+				}
+			}
+			}
+		}
+		
+		return currentOpen == 0;
+	}
+
 	static String SELECT_KW = "select";
 	static Pattern FROM_KW = Pattern.compile("\\s+from\\s+");
 	static String selectDelim = ",";
+	/**
+	 * Searches select clause for function calls or other unnamed fields and generates
+	 * names for them
+	 * @param select
+	 * @param specific
+	 * @return
+	 */
 	public static String removeUnnamedFields(String select, JdbcSpecific specific) {
 		if (select == null) {
 			return null;
@@ -625,16 +655,47 @@ public class SQLUtil {
 			contentOffset = selectKwOffset + SELECT_KW.length();
 			newQuery.append(select.substring(starti, contentOffset));
 			selectPart = select.substring(contentOffset);
-			Matcher m = FROM_KW.matcher(selectPart);
-			if (m.find()) {
-				selectPart = selectPart.substring(0, m.start());
+			Matcher m = FROM_KW.matcher(selectPart.toLowerCase());
+			boolean founded = false;
+			while (m.find()) {
+				// we can't just cut it there, it breaks up this case: select a, (select b from t2 ) from t1;
+				if (isAllBarPairsClosed(selectPart.substring(0, m.start()))) {	
+					selectPart = selectPart.substring(0, m.start());
+					founded = true;
+					break;
+				}
+			}
+			
+			// select without from ? could be something like: select (select 1) from ... - inner select 
+			if (!founded) {
+				int inPosition;
+				inPosition = selectPart.indexOf(')');
+				while (inPosition > -1 ) {
+					
+					if (isAllBarPairsClosed(selectPart.substring(0, inPosition))) {	
+						selectPart = selectPart.substring(0, inPosition);	
+						break;
+					}			
+					inPosition = selectPart.indexOf(')',inPosition+1);	
+				}
+			}
+			
+			// from original string - select what from ... - what contains another select !
+			String innerSelectPart;
+			if (selectPart.indexOf(SELECT_KW) != -1) {
+				innerSelectPart = removeUnnamedFields(selectPart, specific);
+			} else {
+				innerSelectPart = selectPart;
 			}
 
-			parts = selectPart.split(selectDelim);
+			parts = innerSelectPart.split(selectDelim);
 			StringBuilder newSelectPart = new StringBuilder();
 			for(int i = 0; parts != null && i < parts.length; i++) {
 				
-				if (parts[i].trim().endsWith(")")) {
+				// we can't just add it on ')', it breaks up this case: func1(func2(aaa),bbb,ccc);
+				// ignoring delimiter as it is not important for bars
+				if (parts[i].trim().endsWith(")") 
+						&& isAllBarPairsClosed(newSelectPart.toString()+parts[i])) {
 					parts[i] += " as AUTOCOLUMN" + String.valueOf(Math.round(Math.random() * 100000));
 				}
 				
@@ -647,8 +708,8 @@ public class SQLUtil {
 
 			newQuery.append(newSelectPart);
 			
-			selectKwOffset++;
 			starti = contentOffset + selectPart.length();
+			selectKwOffset = starti;
 		}
 		newQuery.append(select.substring(starti));
 		
@@ -769,5 +830,119 @@ public class SQLUtil {
 		}
 	}
 
+	/**
+	 * The purpose of this class is to split
+	 * a string into individual queries,
+	 * but unlike query.split(";"), it should
+	 * ignore semicolons within strings and comments.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Sep 18, 2012
+	 */
+	private static class SQLSplitter {
+		
+		private enum State {
+			DEFAULT,
+			STRING,
+			ONELINE_COMMENT,
+			MULTILINE_COMMENT
+		}
+		
+		private final String input;
+		
+		private StringBuilder sb = new StringBuilder();
+		
+		private List<String> result = new ArrayList<String>();
+		
+		private State state = State.DEFAULT;
+		
+		private char previous = 0;
+		
+		public SQLSplitter(String input) {
+			this.input = input;
+		}
+		
+		private void flush() {
+			if (sb.length() > 0) {
+				result.add(sb.toString());
+			}
+		}
+		
+		private void setState(State state) {
+			this.state = state;
+			this.previous = 0; // reset the previous character
+		}
+		
+		private void run() {
+			int length = input.length();
+			for (int i = 0; i < length; i++) {
+				char c = input.charAt(i);
+				switch (state) {
+				case DEFAULT:
+					switch (c) {
+					case ';':
+						flush();
+						sb.setLength(0);
+						previous = 0;
+						continue; // stay in the DEFAULT state, do not append ';' to the StringBuilder
+					case '-':
+						if (previous == '-') {
+							setState(State.ONELINE_COMMENT);
+						}
+						break;
+					case '*':
+						if (previous == '/') {
+							setState(state = State.MULTILINE_COMMENT);
+						}
+						break;
+					case '\'':
+						setState(State.STRING);
+						break;
+					}
+					break;
+				case STRING:
+					if (c == '\'') {
+						setState(State.DEFAULT);
+					}
+					break;
+				case ONELINE_COMMENT:
+					if ((c == '\r') || (c == '\n')) {
+						setState(State.DEFAULT);
+					}
+					break;
+				case MULTILINE_COMMENT:
+					if ((c == '/') && (previous == '*')) {
+						setState(State.DEFAULT);
+					}
+					break;
+				}
+				sb.append(c);
+				previous = c;
+			}
+			flush();
+		}
+
+		private String[] getResult() {
+			return result.toArray(new String[result.size()]);
+		}
+
+	}
+	
+	/**
+	 * Splits a string into individual queries,
+	 * ignores semicolons within strings and comments.
+
+	 * @param sql
+	 * @return individual queries
+	 */
+	public static String[] split(String sql) {
+		SQLSplitter splitter = new SQLSplitter(sql);
+		splitter.run();
+		return splitter.getResult();
+	}
+	
+	
 }
 

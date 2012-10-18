@@ -28,6 +28,10 @@ import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
 
+/**
+ * The FileManager and related classes
+ * are considered internal and may change in the future.
+ */
 public abstract class CloverURI {
 	
 	public static final String SEPARATOR = Defaults.DEFAULT_PATH_SEPARATOR_REGEX;

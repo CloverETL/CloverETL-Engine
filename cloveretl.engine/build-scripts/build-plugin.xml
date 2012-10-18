@@ -37,6 +37,8 @@
 	<property name="dir.obfuscate.classes" value="${dir.obfuscate}/classes"/>
 	<property name="dir.obfuscate.manifest" value="${dir.obfuscate}/manifest"/>
 	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
+	<property name="required.plugins.collected" value="${dir.build}/required-plugins-collected.txt" />
+	<property name="required.plugins.lib.collected" value="${dir.build}/required-plugins-lib-collected.txt" />
 	<property name="cobertura.ser" value="${dir.build}/plugin-cobertura.ser"/>
 
 	<property file="${basedir}/build-plugin.properties"/>
@@ -331,6 +333,7 @@
 			</else>
 		</if>
 		
+    <echo message="DEBUG: user.dir ${user.dir} cp.compile ${cp.compile}" />
 		<proguard 
 			shrink="false" 
 			verbose="true"
@@ -643,8 +646,7 @@
 			</classpath>
 			<batchtest todir="${dir.testsresult}">
 				<fileset dir="${dir.src.test}">
-					<include name="**/*Test.java"/>
-					<include name="**/Test*.java" />
+					<include name="**/*Test.java" />
 				</fileset>
 			</batchtest>
 			<formatter type="plain"/>
