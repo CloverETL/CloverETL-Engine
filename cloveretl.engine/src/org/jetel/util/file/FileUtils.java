@@ -945,13 +945,7 @@ public class FileUtils {
 	
 	@java.lang.SuppressWarnings("unchecked")
 	private static String getFirstFileInZipArchive(URL context, String filePath) throws NullPointerException, FileNotFoundException, ZipException, IOException {
-		File file;
-		if (context != null) {
-			file = new File(context.getPath(), filePath);
-		}
-		else {
-			file = new File(filePath);
-		}
+		File file = getJavaFile(context, filePath); // CLS-537
 		de.schlichtherle.util.zip.ZipFile zipFile = new de.schlichtherle.util.zip.ZipFile(file);
 		Enumeration<de.schlichtherle.util.zip.ZipEntry> zipEnmr;
 		de.schlichtherle.util.zip.ZipEntry entry;
