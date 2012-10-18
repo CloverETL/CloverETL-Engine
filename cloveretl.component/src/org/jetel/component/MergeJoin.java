@@ -38,8 +38,8 @@ import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordOrderedKey;
 import org.jetel.data.reader.DriverReader;
-import org.jetel.data.reader.InputReader;
-import org.jetel.data.reader.InputReader.InputOrdering;
+import org.jetel.data.reader.IInputReader;
+import org.jetel.data.reader.IInputReader.InputOrdering;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.enums.OrderEnum;
@@ -235,9 +235,9 @@ public class MergeJoin extends Node {
 	private RecordOrderedKey driverKey;
 	private RecordOrderedKey[] slaveKeys;
 
-	InputReader[] reader;
+	IInputReader[] reader;
 	boolean anyInputEmpty;
-	InputReader minReader;
+	IInputReader minReader;
 	boolean[] minIndicator;
 	int minCnt;
 
@@ -300,7 +300,7 @@ public class MergeJoin extends Node {
 
 				// check inputs ordering 
 				if (reader[i].getOrdering() == InputOrdering.UNSORTED) 		
-					throw new IllegalStateException("input "+i+" is unsorted");
+					throw new IllegalStateException("Data input "+i+" is not sorted in ascending order. "+reader[i].getInfo());
 				if (reader[i].getOrdering() == InputOrdering.DESCENDING)
 					throw new IllegalStateException("input " + i + " has wrong ordering; change ordering on field or ordering of input "+i);
 			}
@@ -551,7 +551,7 @@ public class MergeJoin extends Node {
 			slaveKeys[idx] = buildRecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
 			slaveKeys[idx].init();
 		}		
-		reader = new InputReader[inputCnt];
+		reader = new IInputReader[inputCnt];
 		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
 		if (slaveDuplicates) {
 			for (int i = 0; i < slaveCnt; i++) {
@@ -885,7 +885,7 @@ public class MergeJoin extends Node {
 				RecordOrderedKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
 						XML_JOINKEY_ATTRIBUTE, status, this);
 			}
-			reader = new InputReader[inputCnt];
+			reader = new IInputReader[inputCnt];
 			reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
 			if (slaveDuplicates) {
 				for (int i = 0; i < slaveCnt; i++) {

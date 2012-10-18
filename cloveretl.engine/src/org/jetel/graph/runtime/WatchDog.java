@@ -516,6 +516,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		CURRENT_PHASE_LOCK.lock();
 		//only running or waiting graph can be aborted
 		if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
+			//if the graph status is not final, so the graph was aborted
+			if (!watchDogStatus.isStop()) {
+		        watchDogStatus = Result.ABORTED;
+			}
 			CURRENT_PHASE_LOCK.unlock();
 			return;
 		}

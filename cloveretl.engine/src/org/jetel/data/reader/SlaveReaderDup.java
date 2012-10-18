@@ -35,13 +35,9 @@ import org.jetel.util.bytes.CloverBuffer;
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class SlaveReaderDup implements InputReader {
-	private static final int CURRENT = 0;
-	private static final int NEXT = 1;
+public class SlaveReaderDup extends InputReader {
 
 	private InputPort inPort;
-	protected RecordKey key;
-	private DataRecord[] rec = new DataRecord[2];
 	private FileRecordBuffer recBuf;
 	private CloverBuffer rawRec = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	private boolean firstRun;
@@ -59,6 +55,7 @@ public class SlaveReaderDup implements InputReader {
 		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[CURRENT].init();
 		this.rec[NEXT].init();
+		recCounter = 0;
 		this.recBuf = new FileRecordBuffer();
 		this.firstRun = true;
 	}
@@ -69,6 +66,7 @@ public class SlaveReaderDup implements InputReader {
 		this.rec[NEXT] = DataRecordFactory.newRecord(inPort.getMetadata());
 		this.rec[CURRENT].init();
 		this.rec[NEXT].init();
+		recCounter = 0;
 		recBuf.clear();
 		this.firstRun = true;
 	}
@@ -105,6 +103,7 @@ public class SlaveReaderDup implements InputReader {
 				rec[CURRENT] = rec[NEXT] = null;
 				return false;
 			}
+			recCounter++;
 		}
 		recBuf.clear();
 		swap();
@@ -114,9 +113,10 @@ public class SlaveReaderDup implements InputReader {
 				rec[NEXT] = null;
 				return true;
 			}
+			recCounter++;
 			int comparison = key.compare(rec[CURRENT], rec[NEXT]);
 			if (comparison != 0) {	// beginning of new run
-				inputOrdering = SlaveReader.updateOrdering(comparison, inputOrdering);
+				inputOrdering = InputReader.updateOrdering(comparison, inputOrdering);
 				return true;
 			}
 			// move record to buffer
@@ -165,7 +165,7 @@ public class SlaveReaderDup implements InputReader {
 	}
 	
 	@Override
-	public int compare(InputReader other) {
+	public int compare(IInputReader other) {
 		DataRecord rec1 = getSample();
 		DataRecord rec2 = other.getSample();
 //		if (rec1 == null) {

@@ -112,6 +112,17 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		}
 	}
 	
+	protected void checkSubdir(URI source, URI target) throws IOException {
+		String sourcePath = source.normalize().toString();
+		String targetPath = target.normalize().toString();
+		if (!sourcePath.endsWith(URIUtils.PATH_SEPARATOR)) {
+			sourcePath = sourcePath + URIUtils.PATH_SEPARATOR;
+		}
+		if (targetPath.startsWith(sourcePath)) {
+			throw new IOException(MessageFormat.format("{0} is a subdirectory of {1}", target, source));
+		}
+	}
+	
 	protected SingleCloverURI copy(URI sourceUri, URI targetUri, CopyParameters params) throws IOException {
 		Info sourceInfo = simpleHandler.info(sourceUri);
 		if (sourceInfo == null) {
@@ -126,6 +137,9 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 			} else if (!sourceInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 			}
+		}
+		if (sourceInfo.isDirectory()) {
+			checkSubdir(sourceUri, targetUri);
 		}
 		return copyInternal(sourceUri, targetUri, params) ? CloverURI.createSingleURI(targetUri) : null;
 	}
@@ -210,6 +224,9 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 			} else if (!sourceInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), targetUri)); //$NON-NLS-1$
 			}
+		}
+		if (sourceInfo.isDirectory()) {
+			checkSubdir(sourceUri, targetUri);
 		}
 		return moveInternal(sourceUri, targetUri, params) ? SingleCloverURI.createSingleURI(targetUri) : null;
 	}
@@ -344,6 +361,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Boolean isDirectory = params.isDirectory();
 		boolean createDirectory = Boolean.TRUE.equals(isDirectory);
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
+		Date lastModified = params.getLastModified();
 		Info fileInfo = simpleHandler.info(uri);
 		boolean success = true;
 		if (fileInfo == null) { // does not exist
@@ -356,16 +374,18 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 			} else {
 				success = simpleHandler.createFile(uri);
 			}
+			if (lastModified != null) {
+				success &= simpleHandler.setLastModified(uri, lastModified);
+			}
 		} else {
 			if ((isDirectory != null) && (!isDirectory.equals(fileInfo.isDirectory()))) {
 				throw new IOException(MessageFormat.format(isDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-		}
-		Date lastModified = params.getLastModified();
-		if (lastModified != null) {
-			success &= simpleHandler.setLastModified(uri, lastModified);
-		} else {
-			simpleHandler.setLastModified(uri, new Date());
+			if (lastModified != null) {
+				success &= simpleHandler.setLastModified(uri, lastModified);
+			} else {
+				simpleHandler.setLastModified(uri, new Date());
+			}
 		}
 		return success;
 	}

@@ -370,28 +370,14 @@ public class SQLDataParser extends AbstractParser {
 	public void close() {
 		if (dbConnection == null) return;//not initialized yet
 		try {
+			if (resultSet != null) {
+				resultSet.close();
+			}
 			// try to commit (as some DBs apparently need commit even when data is read only
 			Connection conn = dbConnection.getSqlConnection();
 			if (!conn.isClosed() && !conn.getAutoCommit() && autoCommit) {
 				conn.commit();
-			}
-			try {
-				if (!conn.isClosed()) {
-					// may be called only after commit
-					conn.setReadOnly(false);
-				}
-			} catch (SQLException e) {
-	            logger.warn("SQLException when resetting RO", e);
-			}
-
-			if (resultSet != null) {
-				try {
-					resultSet.close(); // connection can't be in RO mode in some cases 
-				} catch (SQLException e) {
-		            logger.warn("SQLException when closing resultSet", e);
-				}
-			}
-			
+			}            
 			// close statement
 			sqlCloverStatement.close();
 		}

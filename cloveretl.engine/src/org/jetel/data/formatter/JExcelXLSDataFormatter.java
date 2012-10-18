@@ -118,6 +118,14 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	public void close() {
 		if (!open) return;
 		
+		finishWriting();
+		deleteTempDir();
+		
+		open = false;
+	}
+	
+	private void finishWriting() {
+		
 		try {
 			if (wb.getNumberOfSheets() == 0) {
 				// Fix of issue #5567: If there's nothing in the workbook, write empty sheet so that resulting file is readable.
@@ -134,7 +142,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		}
 
 		sheet = null;
-		open = false;
 		
 		try {
 			if (os != null) {
@@ -266,7 +273,8 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 */
 	@Override
 	public void setDataTarget(Object outputDataTarget) {
-		close();
+		finishWriting();
+		
 		Workbook oldWb = null;
         try{
             WorkbookSettings settings = new WorkbookSettings();
@@ -337,12 +345,17 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 				sheet = null;
 				open = false;
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.warn("Failed to close workbook.", e);
 			}
 		}		
 		if (sheets != null){
 			sheets.clear();
 		}
+		deleteTempDir();
+	}
+	
+	private void deleteTempDir() {
+		
 		if (tmpDir != null) {
 			try {
 				FileUtils.deleteRecursively(tmpDir);

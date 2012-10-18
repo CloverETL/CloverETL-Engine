@@ -553,6 +553,11 @@ public class SFTPOperationHandler implements IOperationHandler {
 	private void createFile(ChannelSftp ftp, String path) throws SftpException {
 		ftp.put(new ByteArrayInputStream(new byte[0]), path);
 	}
+	
+	private void setLastModified(ChannelSftp channel, String path, long millis) throws SftpException {
+		long secs = millis / 1000;
+		channel.setMtime(path, (int) secs);
+	}
 
 	private void create(ChannelSftp channel, URI uri, CreateParameters params) throws IOException, SftpException {
 		if (Thread.currentThread().isInterrupted()) {
@@ -562,6 +567,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
 		Info fileInfo = info(uri, channel);
 		String path = getPath(uri);
+		Date lastModified = params.getLastModified();
 		if (fileInfo == null) { // does not exist
 			if (createParents) {
 				URI parentUri = URIUtils.getParentURI(uri);
@@ -572,15 +578,15 @@ public class SFTPOperationHandler implements IOperationHandler {
 			} else {
 				createFile(channel, path);
 			}
+			if (lastModified != null) {
+				setLastModified(channel, path, lastModified.getTime());
+			}
 		} else {
 			if (createDirectory != fileInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(createDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
+			setLastModified(channel, path, lastModified != null ? lastModified.getTime() : System.currentTimeMillis());
 		}
-		Date lastModified = params.getLastModified();
-		long millis = (lastModified != null) ? lastModified.getTime() : System.currentTimeMillis();
-		long secs = millis / 1000;
-		channel.setMtime(path, (int) secs);
 	}
 
 	@Override

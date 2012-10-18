@@ -33,7 +33,10 @@ import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 
-
+/**
+ * The FileManager and related classes
+ * are considered internal and may change in the future.
+ */
 public interface IOperationHandler {
 	
 	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params) throws IOException;
