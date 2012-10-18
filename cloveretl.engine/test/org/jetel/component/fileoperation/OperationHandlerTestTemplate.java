@@ -70,7 +70,7 @@ import org.jetel.util.file.FileUtils;
  */
 public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	
-	protected static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	protected final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 	
 	protected static final Charset charset = Charset.forName("UTF-8");
 
