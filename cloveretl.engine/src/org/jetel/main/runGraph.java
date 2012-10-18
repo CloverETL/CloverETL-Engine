@@ -138,6 +138,7 @@ public class runGraph {
     public final static String MBEAN_NAME = "-mbean";
     public final static String DICTIONARY_VALUE_DEFINITION_SWITCH = "-V:";
     public final static String CLOVER_CLASS_PATH = "-classpath";
+    public final static String CLOVER_COMPILE_CLASS_PATH = "-compileclasspath";
 	
 	/**
 	 *  Description of the Method
@@ -165,6 +166,7 @@ public class runGraph {
         String debugDirectory = null;
         URL contextURL = null;
         String classPathString = null;
+        String compileClassPathString = null;
         
         List<SerializedDictionaryValue> dictionaryValues = new ArrayList<SerializedDictionaryValue>();
         
@@ -204,6 +206,9 @@ public class runGraph {
             } else if (args[i].startsWith(CLOVER_CLASS_PATH)){
                 i++;
                 classPathString = args[i];
+            } else if (args[i].startsWith(CLOVER_COMPILE_CLASS_PATH)){
+                i++;
+                compileClassPathString = args[i];
             } else if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)) {
                 // String[]
                 // nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
@@ -313,6 +318,14 @@ public class runGraph {
 				runtimeContext.setRuntimeClassPath(FileUtils.getFileUrls(contextURL, classPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
 			} catch (MalformedURLException e) {
 				logger.error("Given classpath is not valid URL. " + e.getMessage(), e);
+				System.exit(-1);
+			}
+    	}
+    	if (compileClassPathString != null) {
+    		try {
+				runtimeContext.setCompileClassPath(FileUtils.getFileUrls(contextURL, compileClassPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
+			} catch (MalformedURLException e) {
+				logger.error("Given compile classpath is not valid URL. " + e.getMessage(), e);
 				System.exit(-1);
 			}
     	}
