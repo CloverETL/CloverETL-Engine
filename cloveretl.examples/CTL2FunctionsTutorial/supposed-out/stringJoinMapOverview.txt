@@ -1,5 +1,5 @@
-{his=apple, hers=butter, mine=meat, yours=milk};|,;join($0.Delimiter, myMap);his=apple|,hers=butter|,mine=meat|,yours=milk
-{his=apple, hers=butter, mine=meat, yours=milk};||;join($0.Delimiter, myMap);his=apple||hers=butter||mine=meat||yours=milk
-{his=apple, hers=butter, mine=meat, yours=milk};,;join($0.Delimiter, myMap);his=apple,hers=butter,mine=meat,yours=milk
-{his=apple, hers=butter, mine=meat, yours=milk};/;join($0.Delimiter, myMap);his=apple/hers=butter/mine=meat/yours=milk
-{his=apple, hers=butter, mine=meat, yours=milk};\/;join($0.Delimiter, myMap);his=apple\/hers=butter\/mine=meat\/yours=milk
+{mine=meat, yours=milk, his=apple, hers=butter};|,;join($0.Delimiter, myMap);mine=meat|,yours=milk|,his=apple|,hers=butter
+{mine=meat, yours=milk, his=apple, hers=butter};||;join($0.Delimiter, myMap);mine=meat||yours=milk||his=apple||hers=butter
+{mine=meat, yours=milk, his=apple, hers=butter};,;join($0.Delimiter, myMap);mine=meat,yours=milk,his=apple,hers=butter
+{mine=meat, yours=milk, his=apple, hers=butter};/;join($0.Delimiter, myMap);mine=meat/yours=milk/his=apple/hers=butter
+{mine=meat, yours=milk, his=apple, hers=butter};\/;join($0.Delimiter, myMap);mine=meat\/yours=milk\/his=apple\/hers=butter
