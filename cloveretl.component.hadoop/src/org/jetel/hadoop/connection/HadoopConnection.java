@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.Defaults;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
@@ -45,16 +46,17 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginClassLoader;
+import org.jetel.util.FileConstrains;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
-
 
 /**
  * @author dpavlis (info@cloveretl.com)
@@ -86,6 +88,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		
 		public static final String XML_CONFIG_ATTRIBUTE = "config";
 		public static final String XML_HADOOP_CORE_LIBRARY_ATTRIBUTE = "hadoopJar";
+		public static final String XML_HADOOP_PARAMETERS = "hadoopParams"; 
 		public static final String XML_HADOOP_HOST = "host";
 		public static final String XML_HADOOP_PORT = "port";
 		public static final String XML_HADOOP_USER = "user";
@@ -109,6 +112,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		private ClassLoader classLoader;
 		private URL[] loaderJars;
 		private String hadoopCoreJar;
+		private String hadoopParameters;
 		private URL hadoopModuleImplementationPath;
 		private IHadoopConnection connection;
 		
@@ -150,10 +154,26 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		synchronized public void init() throws ComponentNotReadyException {
 			if (isInitialized()) return;
 			super.init();
-				
-				initExternal(); // must be called first
-				initPassword();
-				initClassLoading();
+
+			initExternal(); // must be called first
+			
+			// init properties - additional Hadoop config parameters
+			try {
+				if (!StringUtils.isEmpty(this.hadoopParameters)) {
+					if (this.properties==null) this.properties=new Properties();
+					String[] multiParamsDef = this.hadoopParameters
+							.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+					for (String paramDef : multiParamsDef) {
+						this.properties.putAll(PropertiesUtils.parseProperties(paramDef));
+					}
+				}
+			} catch (Exception ex) {
+				logger.debug(ex);
+			} 
+		
+
+			initPassword();
+			initClassLoading();
 					
 		}
 			
@@ -326,6 +346,9 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					if (config.containsKey(XML_NAME_ATTRIBUTE))
 						con.setName(config.getProperty(XML_NAME_ATTRIBUTE));
 					
+					if (config.containsKey(XML_HADOOP_PARAMETERS))
+						con.setHadoopParams(config.getProperty(XML_HADOOP_PARAMETERS));
+					
 				} else {
 					con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE),
 							xattribs.getString(XML_HADOOP_HOST),
@@ -338,6 +361,9 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					
 					if (xattribs.exists(XML_NAME_ATTRIBUTE))
 						con.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
+					
+					if (xattribs.exists(XML_HADOOP_PARAMETERS))
+						con.setHadoopParams(xattribs.getString(XML_HADOOP_PARAMETERS));
 					
 				}
 				
@@ -410,6 +436,14 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			this.passwordEncrypt = passwordEncrypt;
 		}
 		
+		public void setHadoopParams(String params){
+			this.hadoopParameters=params;
+		}
+		
+		public String getHadoopParams(){
+			return this.hadoopParameters;
+		}
+		
 		public URL getHadoopModuleImplementationPath() {
 			return hadoopModuleImplementationPath;
 		}
@@ -435,6 +469,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			this.hadoopCoreJar=properties.getStringProperty(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE);
 			this.password=properties.getStringProperty(XML_PASSWORD_ATTRIBUTE);
 			this.passwordEncrypt=properties.getBooleanProperty(XML_PASSWORD_ENCRYPTED, false);
+			this.hadoopParameters=properties.getStringProperty(XML_HADOOP_PARAMETERS,null);
 			
 		}
 		
@@ -457,19 +492,22 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			List<URL> additionalJars = new ArrayList<URL>();
 
 			if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
-				URL hadoopJar;
-				try {
-					hadoopJar = new URL(hadoopCoreJar);
-				} catch (MalformedURLException e) {
+				String urls[] = hadoopCoreJar.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+				for (String url:urls){
+					URL hadoopJar;
 					try {
-						hadoopJar = new URL("file:" + hadoopCoreJar);
-					} catch (MalformedURLException ex) {
-						throw new ComponentNotReadyException(
-								"Cannot load hadoop-core.jar from '"
-										+ hadoopCoreJar + "'", ex);
+						hadoopJar = new URL(url);
+					} catch (MalformedURLException e) {
+						try {
+							hadoopJar = new URL("file:" + url);
+						} catch (MalformedURLException ex) {
+							throw new ComponentNotReadyException(
+									"Cannot load library from '"
+											+ url + "'", ex);
+						}
 					}
+					additionalJars.add(hadoopJar);
 				}
-				additionalJars.add(hadoopJar);
 			}
 
 			ClassLoader thisClassLoader = this.getClass().getClassLoader();
