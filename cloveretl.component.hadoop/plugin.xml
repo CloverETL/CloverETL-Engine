@@ -7,6 +7,7 @@
 		<library path="bin/"/>
 		<library path="lib/commons-configuration-1.8.jar"/>
 		<library path="lib/commons-lang-2.6.jar"/>
+		<library path="lib/lzo-java.jar"/>
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">
@@ -30,6 +31,11 @@
 		<parameter id="type" value="HADOOP_READER"/>
 	</extension>
 	
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.hadoop.component.LZOPDecompressor"/>
+		<parameter id="type" value="LZOP_DECOMPRESSOR"/>
+	</extension>
+
 	<extension point-id="urlResolver">
 		<parameter id="className" value="org.jetel.hadoop.connection.HadoopPathResolver"/>
 		<parameter id="type" value="HADOOP_HDFS"/>
