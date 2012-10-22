@@ -467,11 +467,17 @@ public class XMLExtract extends Node {
 			if (stream == null)
 				continue; // if record no record found
 			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
-			File tmpFile = new File(autoFilling.getFilename());
-			long timestamp = tmpFile.lastModified();
-			autoFilling.setFileSize(tmpFile.length());
-			autoFilling.setFileTimestamp(timestamp == 0 ? null : new Date(timestamp));
-			m_inputSource = new InputSource(Channels.newReader(stream, charset));
+			long fileSize = 0;
+			Date fileTimestamp = null;
+			if (autoFilling.getFilename() != null && FileUtils.isLocalFile(null, autoFilling.getFilename()) && !readableChannelIterator.isGraphDependentSource()) {
+				File tmpFile = new File(autoFilling.getFilename());
+				long timestamp = tmpFile.lastModified();
+				fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
+				fileSize = tmpFile.length();
+			}
+			autoFilling.setFileSize(fileSize);
+			autoFilling.setFileTimestamp(fileTimestamp);				
+			m_inputSource = new InputSource(Channels.newInputStream(stream));
 			return true;
 		}
 		readableChannelIterator.blankRead();
