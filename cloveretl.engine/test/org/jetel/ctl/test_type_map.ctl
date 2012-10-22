@@ -21,5 +21,11 @@ function integer transform() {
 	wednesday[2009-03-04] = 'Wednesday';
 	dayInWeekCopy = dayInWeekCopy + wednesday;
 
+	map[string, string] fieldAsKey;
+	fieldAsKey[$in.0.Name] = $in.0.Name;
+
+	$out.firstMultivalueOutput.stringMapField = fieldAsKey;
+	$out.firstMultivalueOutput.stringMapField[$in.0.Name] = $in.0.Name;
+
 	return 0;
 }
