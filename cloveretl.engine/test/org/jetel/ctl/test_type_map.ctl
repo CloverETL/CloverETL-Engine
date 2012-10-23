@@ -31,5 +31,11 @@ function integer transform() {
 	map[string, string] thirdMap;
 	preservedOrder = secondMap;
 
+	map[string, string] fieldAsKey;
+	fieldAsKey[$in.0.Name] = $in.0.Name;
+
+	$out.firstMultivalueOutput.stringMapField = fieldAsKey;
+	$out.firstMultivalueOutput.stringMapField[$in.0.Name] = $in.0.Name;
+
 	return 0;
 }

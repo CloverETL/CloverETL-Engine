@@ -18,7 +18,6 @@
  */
 package org.jetel.util;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.WritableByteChannel;
@@ -40,7 +39,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -176,10 +174,8 @@ public class MultiFileWriter {
     private void prepareTargets() throws ComponentNotReadyException {
     	// creates necessary directories
         if (mkDir) {
-        	boolean isFile = !fileURL.endsWith("/") && !fileURL.endsWith("\\");
-        	File file = new File(FileURLParser.getMostInnerAddress(fileURL));
-        	String sFile = isFile ? file.getParent() : file.getPath();
-        	FileUtils.makeDirs(contextURL, sFile);
+        	// CL-2478
+        	FileUtils.createParentDirs(contextURL, fileURL);
         }
         
     	// prepare type of targets: lookup/keyValue
