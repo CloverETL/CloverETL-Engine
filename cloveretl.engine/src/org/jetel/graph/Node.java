@@ -1241,7 +1241,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
     /**
      * The given thread is registered as a child thread of this component.
-     * The child threads are exploited for grabing of tracking information - CPU usage of this component
+     * The child threads are exploited for gathering of tracking information - CPU usage of this component
      * is sum of all threads.
      * @param childThread
      */
@@ -1251,7 +1251,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
     /**
      * The given threads are registered as child threads of this component.
-     * The child threads are exploited for grabing of tracking information - for instance 
+     * The child threads are exploited for gathering of tracking information - for instance 
      * CPU usage of this component is sum of all threads.
      * @param childThreads
      */
