@@ -56,5 +56,15 @@ function integer transform() {
 	integer tmpInt;
 	intList4 = [tmpInt = 1, tmpInt = 2, tmpInt = 3];
 	
+	string[] fieldAsIndex;
+	integer tmpValue = $in.0.Value; 
+	// use reflection to set the Value field to 0 to prevent OutOfMemoryError
+	setIntValue($in.0, "Value", 0); 
+	fieldAsIndex[$in.0.Value] = $in.0.Name;
+	
+	$out.firstMultivalueOutput.stringListField = fieldAsIndex;
+	$out.firstMultivalueOutput.stringListField[$in.0.Value] = $in.0.Name;
+	setIntValue($in.0, "Value", tmpValue); // restore the original Value
+	
 	return 0;
 }

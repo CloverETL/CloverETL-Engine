@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jetel.ctl.ASTnode.CLVFArrayAccessExpression;
 import org.jetel.ctl.ASTnode.CLVFAssignment;
 import org.jetel.ctl.ASTnode.CLVFBlock;
 import org.jetel.ctl.ASTnode.CLVFCaseStatement;
@@ -220,6 +221,13 @@ public class ASTBuilder extends NavigatingVisitor {
 		problemReporter.setErrorLocation(errorLocation);
 
 		return result;
+	}
+
+	@Override
+	public CLVFArrayAccessExpression visit(CLVFArrayAccessExpression node, Object data) {
+		node.jjtGetChild(0).jjtAccept(this, data);
+		node.jjtGetChild(1).jjtAccept(this, false); // CL-2562: the index must not be treated as the LHS of the assignment
+		return node;
 	}
 
 	/**
