@@ -88,6 +88,7 @@ import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
 import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.string.StringUtils;
 
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
@@ -1672,9 +1673,17 @@ public class FileUtils {
 			try {
 				return new File(url.toURI());
 			} catch(URISyntaxException e) {
-				return new File(url.getPath());
+				StringBuilder path = new StringBuilder(url.getFile());
+				if (!StringUtils.isEmpty(url.getRef())) {
+					path.append('#').append(url.getRef());
+				}
+				return new File(path.toString());
 			} catch(IllegalArgumentException e2) {
-				return new File(url.getPath());
+				StringBuilder path = new StringBuilder(url.getFile());
+				if (!StringUtils.isEmpty(url.getRef())) {
+					path.append('#').append(url.getRef());
+				}
+				return new File(path.toString());
 			}
 		} else if (protocol.equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
 			try {
