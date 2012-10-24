@@ -488,6 +488,12 @@ public class SystemExecute extends Node{
 		if (ok) {
 			return Result.FINISHED_OK;
 		}else{
+			if (getData.getResultException() != null) {
+				logger.error("Exception in thread writing to std-in of executed system process:", getData.getResultException());
+			}
+			if (sendData.getResultException() != null) {
+				logger.error("Exception in thread reading std-out of executed system process", getData.getResultException());
+			}
 			throw new JetelException(resultMsg);
 		}
 	}
@@ -827,10 +833,19 @@ public class SystemExecute extends Node{
 				try {
 					formatter.close();
 				} catch (IOException e) {
-					resultMsg = e.getMessage();
-					resultCode = Result.ERROR;
-					resultException = e;
-					waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
+					// Original code considered this to be an error
+					//resultMsg = e.getMessage();
+					//resultCode = Result.ERROR;
+					//resultException = e;
+					//waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
+
+					// Just log a warning rather. The process may have terminated successfully (it closes its stdin), but something may still be left in the formatter buffer.
+					// In such a case formatter.close() (which calls flush()) fails with something like IOException: The pipe has been ended.
+					// This happens when a binary file is read using UDR into fixed-length byte field, this component then stream-reads this field.
+					// In this situation, the last record will (most likely) contain "incomplete" byte field -- its start will contain the end of read binary file
+					// and the rest of the field will contain zeros. This is the case when system process (observer with lzop decompressor) terminates after it read all bytes
+					// of the file, but there may still be those zeros waiting in the buffer of the formatter to be written into the stdin of the process.
+					logger.warn("Failed to close formatter writing to the std-in of executed system process:", e);
 				}
 			}
 			if (resultCode==Result.RUNNING){
