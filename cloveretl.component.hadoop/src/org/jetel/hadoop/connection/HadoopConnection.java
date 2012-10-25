@@ -46,6 +46,7 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginClassLoader;
+import org.jetel.util.FileConstrains;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -99,7 +100,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		public static final String XML_PASSWORD_ENCRYPTED = "passwordEncrypted";
 
 		public static final String HADOOP_DEFAULT_HDFS_PORT = "8020";
-		public static final String HADOOP_DEFAULT_JOBTRACKER_PORT = "8021";
+		public static final String HADOOP_DEFAULT_MAPRED_PORT = "8021";
 		public static final String HADOOP_URI_STR_FORMAT = "hdfs://%s:%s/";
 		public static final String CONNECTION_TYPE_ID = "HADOOP";
 		
@@ -293,7 +294,9 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					throw new ComponentNotReadyException(this,e);
 				} catch (URISyntaxException e) {
 					throw new IOException("Invalid HDFS host/port definition.",e);
-				} 
+				} catch (Throwable e){
+					throw new ComponentNotReadyException(this,"Can't instantiate Hadoop exception",e);
+				}
 			}
 			return connection;
 
@@ -338,25 +341,27 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					Properties config = readConfig(graph.getRuntimeContext().getContextURL(), 
 							xattribs.getString(XML_CONFIG_ATTRIBUTE), graph);
 					
+					TypedProperties prop = new TypedProperties(config, graph);
+					
 					con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE),
-							config.getProperty(XML_HADOOP_HDFS_HOST), 
-							config.getProperty(XML_HADOOP_HDFS_PORT, HADOOP_DEFAULT_HDFS_PORT),
-							config.getProperty(XML_USERNAME_ATTRIBUTE, null),
-							config.getProperty(XML_PASSWORD_ATTRIBUTE, null),
-							Boolean.valueOf(config.getProperty(XML_PASSWORD_ENCRYPTED, "false")), 
-							config.getProperty(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE, null),config);
+							prop.getStringProperty(XML_HADOOP_HDFS_HOST), 
+							prop.getStringProperty(XML_HADOOP_HDFS_PORT, HADOOP_DEFAULT_HDFS_PORT),
+							prop.getStringProperty(XML_USERNAME_ATTRIBUTE, null),
+							prop.getStringProperty(XML_PASSWORD_ATTRIBUTE, null),
+							prop.getBooleanProperty(XML_PASSWORD_ENCRYPTED, false), 
+							prop.getStringProperty(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE, null),prop);
 					
-					if (config.containsKey(XML_NAME_ATTRIBUTE))
-						con.setName(config.getProperty(XML_NAME_ATTRIBUTE));
+					if (prop.containsKey(XML_NAME_ATTRIBUTE))
+						con.setName(prop.getStringProperty(XML_NAME_ATTRIBUTE));
 					
-					if (config.containsKey(XML_HADOOP_PARAMETERS))
-						con.setHadoopParams(config.getProperty(XML_HADOOP_PARAMETERS));
+					if (prop.containsKey(XML_HADOOP_PARAMETERS))
+						con.setHadoopParams(prop.getStringProperty(XML_HADOOP_PARAMETERS));
 					
-					if (config.containsKey(XML_HADOOP_MAPRED_HOST))
-						con.setHostMapred(config.getProperty(XML_HADOOP_MAPRED_HOST));
+					if (prop.containsKey(XML_HADOOP_MAPRED_HOST))
+						con.setHostMapred(prop.getStringProperty(XML_HADOOP_MAPRED_HOST));
 					
-					if (config.containsKey(XML_HADOOP_MAPRED_PORT))
-						con.setPortMapred(config.getProperty(XML_HADOOP_MAPRED_PORT));
+					if (prop.containsKey(XML_HADOOP_MAPRED_PORT))
+						con.setPortMapred(prop.getStringProperty(XML_HADOOP_MAPRED_PORT));
 					
 				} else {
 					con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE),
@@ -488,14 +493,16 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		}
 
 		
-		public void loadFromProperties(Properties properties) throws ComponentNotReadyException {
-			loadFromTypedProperties(new TypedProperties(properties));
+		public void loadFromProperties(Properties properties, Properties refProperties) throws ComponentNotReadyException {
+			loadFromTypedProperties(new TypedProperties(properties,refProperties));
 		}
 		
 		private void loadFromTypedProperties(TypedProperties properties) throws ComponentNotReadyException {
 			this.host=properties.getStringProperty(XML_HADOOP_HDFS_HOST);
 			this.port=properties.getStringProperty(XML_HADOOP_HDFS_PORT, HADOOP_DEFAULT_HDFS_PORT);
 			this.user=properties.getStringProperty(XML_HADOOP_USER,null);
+			this.hostMapred=properties.getStringProperty(XML_HADOOP_MAPRED_HOST,null);
+			this.portMapred=properties.getStringProperty(XML_HADOOP_MAPRED_PORT, HADOOP_DEFAULT_MAPRED_PORT);
 			
 			if (!properties.containsKey(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE))
 				throw new ComponentNotReadyException("Hadoop core library jar not defined.");
@@ -592,9 +599,10 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				throw new HadoopConnectionException(ERROR_LOADING_IMPL_MOD, e);
 			} catch (InstantiationException e) {
 				throw new HadoopConnectionException(ERROR_LOADING_IMPL_MOD, e);
-			} catch (IllegalAccessException e) {
-				throw new HadoopConnectionException(ERROR_LOADING_IMPL_MOD, e);
+			} catch (Throwable e) {
+				throw new HadoopConnectionException(ERROR_LOADING_IMPL_MOD, new Exception(e));
 			}
+			
 			return conn;
 		}
 		
