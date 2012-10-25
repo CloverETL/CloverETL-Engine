@@ -1287,8 +1287,9 @@ public class FileUtils {
         		String sFile = isFile ? file.getParent() : file.getPath();
         		FileUtils.makeDirs(contextURL, sFile);
         	} else if (SandboxUrlUtils.isSandboxUrl(innerMostURLString)) {
-        		File file = new File(innerMostURL.getPath()); // a hack to get the parent directory
-        		String sFile = isFile ? file.getParent() : file.getPath();
+        		// SandboxUrlUtils.getRelativeUrl() ensures that the path won't start with a slash, which causes problems on Linux
+        		File file = new File(SandboxUrlUtils.getRelativeUrl(innerMostURLString));
+        		String sFile = isFile ? file.getParent() : file.getPath(); // a hack to get the parent directory
         		FileUtils.makeDirs(contextURL, sFile);
         	} else {
         		Operation operation = Operation.create(innerMostURL.getProtocol());
