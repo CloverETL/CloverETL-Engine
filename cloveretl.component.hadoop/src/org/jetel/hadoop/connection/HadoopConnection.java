@@ -89,22 +89,27 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		public static final String XML_CONFIG_ATTRIBUTE = "config";
 		public static final String XML_HADOOP_CORE_LIBRARY_ATTRIBUTE = "hadoopJar";
 		public static final String XML_HADOOP_PARAMETERS = "hadoopParams"; 
-		public static final String XML_HADOOP_HOST = "host";
-		public static final String XML_HADOOP_PORT = "port";
+		public static final String XML_HADOOP_HDFS_HOST = "host";
+		public static final String XML_HADOOP_HDFS_PORT = "port";
 		public static final String XML_HADOOP_USER = "user";
+	    public static final String XML_HADOOP_MAPRED_HOST = "hostMapred";
+	    public static final String XML_HADOOP_MAPRED_PORT = "portMapred";
 		
 		public static final String XML_USERNAME_ATTRIBUTE = "username";
 		public static final String XML_PASSWORD_ATTRIBUTE = "password";
 		public static final String XML_PASSWORD_ENCRYPTED = "passwordEncrypted";
 
-		public static final String HADOOP_DEFAULT_PORT = "8020";
+		public static final String HADOOP_DEFAULT_HDFS_PORT = "8020";
+		public static final String HADOOP_DEFAULT_JOBTRACKER_PORT = "8021";
 		public static final String HADOOP_URI_STR_FORMAT = "hdfs://%s:%s/";
 		public static final String CONNECTION_TYPE_ID = "HADOOP";
 		
 		private String user;
 		private String pwd;
 		private String host;
+		private String hostMapred;
 		private String port;
+		private String portMapred;
 		private String password;
 		private boolean passwordEncrypt;
 		
@@ -160,12 +165,11 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			// init properties - additional Hadoop config parameters
 			try {
 				if (!StringUtils.isEmpty(this.hadoopParameters)) {
-					if (this.properties==null) this.properties=new Properties();
-					String[] multiParamsDef = this.hadoopParameters
-							.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-					for (String paramDef : multiParamsDef) {
-						this.properties.putAll(PropertiesUtils.parseProperties(paramDef));
-					}
+					Properties prop=PropertiesUtils.parseProperties(this.hadoopParameters);
+				if (this.properties == null)
+					this.properties = prop;
+				else
+					this.properties.putAll(prop);
 				}
 			} catch (Exception ex) {
 				logger.debug(ex);
@@ -336,8 +340,8 @@ public class HadoopConnection extends GraphElement implements IConnection {
 							xattribs.getString(XML_CONFIG_ATTRIBUTE), graph);
 					
 					con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE),
-							config.getProperty(XML_HADOOP_HOST), 
-							config.getProperty(XML_HADOOP_PORT, HADOOP_DEFAULT_PORT),
+							config.getProperty(XML_HADOOP_HDFS_HOST), 
+							config.getProperty(XML_HADOOP_HDFS_PORT, HADOOP_DEFAULT_HDFS_PORT),
 							config.getProperty(XML_USERNAME_ATTRIBUTE, null),
 							config.getProperty(XML_PASSWORD_ATTRIBUTE, null),
 							Boolean.valueOf(config.getProperty(XML_PASSWORD_ENCRYPTED, "false")), 
@@ -349,15 +353,21 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					if (config.containsKey(XML_HADOOP_PARAMETERS))
 						con.setHadoopParams(config.getProperty(XML_HADOOP_PARAMETERS));
 					
+					if (config.containsKey(XML_HADOOP_MAPRED_HOST))
+						con.setHostMapred(config.getProperty(XML_HADOOP_MAPRED_HOST));
+					
+					if (config.containsKey(XML_HADOOP_MAPRED_PORT))
+						con.setPortMapred(config.getProperty(XML_HADOOP_MAPRED_PORT));
+					
 				} else {
 					con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE),
-							xattribs.getString(XML_HADOOP_HOST),
-							xattribs.getString(XML_HADOOP_PORT,HADOOP_DEFAULT_PORT),
+							xattribs.getString(XML_HADOOP_HDFS_HOST),
+							xattribs.getString(XML_HADOOP_HDFS_PORT,HADOOP_DEFAULT_HDFS_PORT),
 							xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
 							xattribs.getString(XML_PASSWORD_ATTRIBUTE, null),
 							xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false),
 							xattribs.getString(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE, null),
-							xattribs.attributes2Properties(new String[]{XML_HADOOP_HOST, XML_HADOOP_PORT}, RefResFlag.REGULAR));
+							xattribs.attributes2Properties(new String[]{XML_HADOOP_HDFS_HOST, XML_HADOOP_HDFS_PORT}, RefResFlag.REGULAR));
 					
 					if (xattribs.exists(XML_NAME_ATTRIBUTE))
 						con.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
@@ -365,6 +375,11 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					if (xattribs.exists(XML_HADOOP_PARAMETERS))
 						con.setHadoopParams(xattribs.getString(XML_HADOOP_PARAMETERS));
 					
+					if (xattribs.exists(XML_HADOOP_MAPRED_HOST))
+						con.setHostMapred(xattribs.getString(XML_HADOOP_MAPRED_HOST));
+					
+					if (xattribs.exists(XML_HADOOP_MAPRED_PORT))
+						con.setPortMapred(xattribs.getString(XML_HADOOP_MAPRED_PORT));
 				}
 				
 				
@@ -417,6 +432,26 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		}
 
 
+		public String getHostMapred() {
+			return hostMapred;
+		}
+
+
+		public void setHostMapred(String hostMapred) {
+			this.hostMapred = hostMapred;
+		}
+
+
+		public String getPortMapred() {
+			return portMapred;
+		}
+
+
+		public void setPortMapred(String portMapred) {
+			this.portMapred = portMapred;
+		}
+
+
 		public String getPassword() {
 			return password;
 		}
@@ -459,8 +494,8 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		}
 		
 		private void loadFromTypedProperties(TypedProperties properties) throws ComponentNotReadyException {
-			this.host=properties.getStringProperty(XML_HADOOP_HOST);
-			this.port=properties.getStringProperty(XML_HADOOP_PORT, HADOOP_DEFAULT_PORT);
+			this.host=properties.getStringProperty(XML_HADOOP_HDFS_HOST);
+			this.port=properties.getStringProperty(XML_HADOOP_HDFS_PORT, HADOOP_DEFAULT_HDFS_PORT);
 			this.user=properties.getStringProperty(XML_HADOOP_USER,null);
 			
 			if (!properties.containsKey(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE))
@@ -492,7 +527,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			List<URL> additionalJars = new ArrayList<URL>();
 
 			if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
-				String urls[] = hadoopCoreJar.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+				String urls[] = hadoopCoreJar.split("\\n|"+Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
 				for (String url:urls){
 					URL hadoopJar;
 					try {
