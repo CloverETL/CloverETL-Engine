@@ -46,7 +46,6 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginClassLoader;
-import org.jetel.util.FileConstrains;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -209,14 +208,14 @@ public class HadoopConnection extends GraphElement implements IConnection {
 
 			Enigma enigma = getGraph().getEnigma();
 			if (enigma == null) {
-				throw new ComponentNotReadyException(this,"Can't decrypt password on DominoConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+				throw new ComponentNotReadyException(this,"Can't decrypt password on HadoopConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
 			}
 
 			String decryptedPassword = null;
 			try {
 				decryptedPassword = enigma.decrypt(password);
 			} catch (JetelException e) {
-				throw new ComponentNotReadyException(this,"Can't decrypt password on DominoConnection (id=" + this.getId() + "). Incorrect password.", e);
+				throw new ComponentNotReadyException(this,"Can't decrypt password on HadoopConnection (id=" + this.getId() + "). Incorrect password.", e);
 			}
 			// If password decryption fails, try to use the unencrypted password
 			if (decryptedPassword != null) {
