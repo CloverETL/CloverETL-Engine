@@ -85,7 +85,9 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 			}
 		} catch (InterruptedException e) {
 			throw new IOException(e);
-		} finally {
+		} catch (Throwable e){ 
+			throw new IOException("Class loading error !",e);
+		}finally {
 			Thread.currentThread().setContextClassLoader(formerCCL);
 		}
 
