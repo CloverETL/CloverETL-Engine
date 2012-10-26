@@ -33,6 +33,7 @@ import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.SocketAddress;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -431,9 +432,16 @@ public class FileUtils {
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
+			String proxyUserInfo = null;
+			if (proxy != null) {
+				try {
+					proxyUserInfo = new URI(innerSource).getUserInfo();
+				} catch (URISyntaxException ex) {
+				}
+			}
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
 			innerStream = proxy == null ? getInputStream(contextURL, innerSource) 
-					: getAuthorizedConnection(getFileURL(contextURL, input), proxy).getInputStream();
+					: getAuthorizedConnection(getFileURL(contextURL, input), proxy, proxyUserInfo).getInputStream();
 		}
 		
 		// get archive type
@@ -711,14 +719,31 @@ public class FileUtils {
     /**
      * Creates an authorized stream.
      * @param url
+     * @param proxy
+     * @param proxyUserInfo username and password to access the proxy
+     * 
      * @return
      * @throws IOException
      */
-    public static URLConnection getAuthorizedConnection(URL url, Proxy proxy) throws IOException {
+    public static URLConnection getAuthorizedConnection(URL url, Proxy proxy, String proxyUserInfo) throws IOException {
         return URLConnectionRequest.getAuthorizedConnection(
         		url.openConnection(proxy),
-        		url.getUserInfo(), 
+        		proxyUserInfo, 
         		URLConnectionRequest.URL_CONNECTION_PROXY_AUTHORIZATION);
+    }
+
+    /**
+     * Creates an authorized stream.
+     * @param url
+     * @return
+     * @throws IOException
+     * 
+     * @deprecated Use {@link #getAuthorizedConnection(URL, Proxy, String)} instead
+     */
+    @Deprecated
+    public static URLConnection getAuthorizedConnection(URL url, Proxy proxy) throws IOException {
+    	// user info is obtained from the URL, most likely different from proxy user info 
+        return getAuthorizedConnection(url, proxy, url.getUserInfo());
     }
 
     /**
@@ -992,8 +1017,15 @@ public class FileUtils {
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
+			String proxyUserInfo = null;
+			if (proxy != null) {
+				try {
+					proxyUserInfo = new URI(innerSource).getUserInfo();
+				} catch (URISyntaxException ex) {
+				}
+			}
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
-			os = proxy == null ? getOutputStream(contextURL, innerSource, appendData, compressLevel) : getAuthorizedConnection(getFileURL(contextURL, input), proxy).getOutputStream();
+			os = proxy == null ? getOutputStream(contextURL, innerSource, appendData, compressLevel) : getAuthorizedConnection(getFileURL(contextURL, input), proxy, proxyUserInfo).getOutputStream();
 		}
 		
 		// get archive type
