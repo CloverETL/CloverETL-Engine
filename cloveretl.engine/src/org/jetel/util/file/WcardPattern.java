@@ -190,7 +190,9 @@ public class WcardPattern {
 
 	/**
 	 * Generates filenames matching current set of patterns.
-	 * @return Set of matching filenames.
+	 * 
+	 * @return Set of matching filenames. Absolute path is returned for URL with wildcard. Relative path is returned 
+	 * for URL without wildcard.
 	 * @throws IOException 
 	 */
 	public List<String> filenames() throws IOException {
