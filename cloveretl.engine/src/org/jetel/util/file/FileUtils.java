@@ -79,6 +79,7 @@ import org.jetel.util.protocols.sandbox.SandboxStreamHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
+import org.jetel.util.string.StringUtils;
 
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
@@ -702,6 +703,36 @@ public class FileUtils {
             throw new IOException("Wrong anchor (" + anchor + ") to tar file.");
         }
     }
+    
+    /**
+     * Reads default proxy credentials from the System properties.
+     * For example, for -Dhttp.proxyUser=user -Dhttp.proxyPassword=pass
+     * returns "user:pass".
+     * 
+     * @param url
+     * @return proxy credentials
+     */
+    public static String getDefaultProxyUserInfo(URL url) {
+    	String protocol = url.getProtocol();
+    	if (protocol != null) {
+    		protocol = protocol.toLowerCase();
+    		String user = System.getProperty(protocol + ".proxyUser");
+    		String password = System.getProperty(protocol + ".proxyPassword");
+    		if (user != null || password != null) {
+    			StringBuilder result = new StringBuilder();
+    			if (user != null) {
+    				result.append(user);
+    			}
+    			result.append(':');
+    			if (password != null) {
+    				result.append(password);
+    			}
+    			return result.toString();
+    		}
+    	}
+    	
+    	return null;
+    }
 
 	/**
      * Creates authorized url connection.
@@ -710,10 +741,17 @@ public class FileUtils {
      * @throws IOException
      */
     public static URLConnection getAuthorizedConnection(URL url) throws IOException {
-        return URLConnectionRequest.getAuthorizedConnection(
-        		url.openConnection(), 
-        		url.getUserInfo(), 
-        		URLConnectionRequest.URL_CONNECTION_AUTHORIZATION);
+    	String proxyUserInfo = getDefaultProxyUserInfo(url);
+    	URLConnection connection = url.openConnection();
+    	connection = URLConnectionRequest.getAuthorizedConnection( // set authentication
+    			connection, 
+    			url.getUserInfo(), 
+    			URLConnectionRequest.URL_CONNECTION_AUTHORIZATION);
+    	connection = URLConnectionRequest.getAuthorizedConnection( // set proxy authentication
+        		connection,
+        		proxyUserInfo, 
+        		URLConnectionRequest.URL_CONNECTION_PROXY_AUTHORIZATION);
+        return connection;
     }
 
     /**
@@ -726,10 +764,19 @@ public class FileUtils {
      * @throws IOException
      */
     public static URLConnection getAuthorizedConnection(URL url, Proxy proxy, String proxyUserInfo) throws IOException {
-        return URLConnectionRequest.getAuthorizedConnection(
-        		url.openConnection(proxy),
+    	if ((proxy != null) && (proxyUserInfo == null)) {
+    		proxyUserInfo = getDefaultProxyUserInfo(url);
+    	}
+    	URLConnection connection = url.openConnection(proxy);
+    	connection = URLConnectionRequest.getAuthorizedConnection( // set authentication
+    			connection, 
+    			url.getUserInfo(), 
+    			URLConnectionRequest.URL_CONNECTION_AUTHORIZATION);
+    	connection = URLConnectionRequest.getAuthorizedConnection( // set proxy authentication
+        		connection,
         		proxyUserInfo, 
         		URLConnectionRequest.URL_CONNECTION_PROXY_AUTHORIZATION);
+        return connection;
     }
 
     /**
