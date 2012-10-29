@@ -44,6 +44,7 @@ public class DefaultConservativeJdbcSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
+	@Override
 	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		DefaultConnection connection = super.prepareSQLConnection(dbConnection, operationType);
 		connection.setConservative(true);

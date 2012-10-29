@@ -56,6 +56,7 @@ public class ListResult extends AbstractResult implements Iterable<Info> {
 		parts.add(null);
 	}
 	
+	@Override
 	public ListResult setException(Exception exception) {
 		return (ListResult) super.setException(exception);
 	}
@@ -64,10 +65,12 @@ public class ListResult extends AbstractResult implements Iterable<Info> {
 		return result.isEmpty();
 	}
 	
+	@Override
 	public int successCount() {
 		return result.size();
 	}
 	
+	@Override
 	public int totalCount() {
 		return uris.size();
 	}

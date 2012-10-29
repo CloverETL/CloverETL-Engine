@@ -64,6 +64,7 @@ public abstract class AbstractComponentTokenTrackerTestBase extends CloverTestCa
 		}
 	};
 
+	@Override
 	@Before
 	protected void setUp() throws Exception {
 		initEngine();

@@ -38,6 +38,7 @@ public class DeleteResult extends AbstractResult implements Iterable<SingleClove
 	
 	private final List<SingleCloverURI> deletedFiles = new ArrayList<SingleCloverURI>(); 
 	
+	@Override
 	public DeleteResult setException(Exception exception) {
 		return (DeleteResult) super.setException(exception);
 	}
@@ -55,6 +56,7 @@ public class DeleteResult extends AbstractResult implements Iterable<SingleClove
 		deletedFiles.add(null);
 	}
 	
+	@Override
 	public int successCount() {
 		return result.size();
 	}
@@ -63,6 +65,7 @@ public class DeleteResult extends AbstractResult implements Iterable<SingleClove
 		return result.isEmpty();
 	}
 	
+	@Override
 	public int totalCount() {
 		return uris.size();
 	}
