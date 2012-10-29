@@ -1060,7 +1060,7 @@ public class FileUtils {
 		
 		// get inner source
 		Matcher matcher = getInnerInput(input);
-		String innerSource;
+		String innerSource = null;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
@@ -1072,7 +1072,16 @@ public class FileUtils {
 				}
 			}
 			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
-			os = proxy == null ? getOutputStream(contextURL, innerSource, appendData, compressLevel) : getAuthorizedConnection(getFileURL(contextURL, input), proxy, proxyUserInfo).getOutputStream();
+			if (proxy == null) {
+				os = getOutputStream(contextURL, innerSource, appendData, compressLevel);
+			} else {
+				// this could work even for WebDAV via an authorized proxy, 
+				// but getInnerInput() above would have to be replaced with FileURLParser.getURLMatcher().
+				// In addition, WebdavOutputStream creates parent directories (which is wrong, but we don't have anything better yet).
+				URLConnection connection = getAuthorizedConnection(getFileURL(contextURL, input), proxy, proxyUserInfo);
+				connection.setDoOutput(true);
+				os = connection.getOutputStream();
+			}
 		}
 		
 		// get archive type
