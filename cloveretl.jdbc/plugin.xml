@@ -45,6 +45,12 @@
 	</extension>
 	
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="HIVE"/>
+		<parameter id="name" value="Hive"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.HiveSpecific"/>
+	</extension>
+	
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="INFORMIX"/>
 		<parameter id="name" value="Informix"/>
 		<!--parameter id="majorVersion" value="x"/-->
