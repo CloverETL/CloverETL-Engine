@@ -88,6 +88,7 @@ import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
 import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.string.StringUtils;
 
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
@@ -1280,8 +1281,9 @@ public class FileUtils {
         		String sFile = isFile ? file.getParent() : file.getPath();
         		FileUtils.makeDirs(contextURL, sFile);
         	} else if (SandboxUrlUtils.isSandboxUrl(innerMostURLString)) {
-        		File file = new File(innerMostURL.getPath()); // a hack to get the parent directory
-        		String sFile = isFile ? file.getParent() : file.getPath();
+        		// SandboxUrlUtils.getRelativeUrl() ensures that the path won't start with a slash, which causes problems on Linux
+        		File file = new File(SandboxUrlUtils.getRelativeUrl(innerMostURLString));
+        		String sFile = isFile ? file.getParent() : file.getPath(); // a hack to get the parent directory
         		FileUtils.makeDirs(contextURL, sFile);
         	} else {
         		Operation operation = Operation.create(innerMostURL.getProtocol());
@@ -1666,9 +1668,17 @@ public class FileUtils {
 			try {
 				return new File(url.toURI());
 			} catch(URISyntaxException e) {
-				return new File(url.getPath());
+				StringBuilder path = new StringBuilder(url.getFile());
+				if (!StringUtils.isEmpty(url.getRef())) {
+					path.append('#').append(url.getRef());
+				}
+				return new File(path.toString());
 			} catch(IllegalArgumentException e2) {
-				return new File(url.getPath());
+				StringBuilder path = new StringBuilder(url.getFile());
+				if (!StringUtils.isEmpty(url.getRef())) {
+					path.append('#').append(url.getRef());
+				}
+				return new File(path.toString());
 			}
 		} else if (protocol.equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
 			try {
