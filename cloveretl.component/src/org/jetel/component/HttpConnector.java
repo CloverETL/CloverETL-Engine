@@ -185,10 +185,6 @@ import org.w3c.dom.Element;
  */
 
 public class HttpConnector extends Node {
-	/**
-	 * 
-	 */
-	private static final String DUMMY_DELIMITER = ";";
 
 	private final static Log logger = LogFactory.getLog(HttpConnector.class);
 	
@@ -3081,10 +3077,10 @@ public class HttpConnector extends Node {
 	public static DataRecordMetadata createUIInputParametersMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(ATTRIBUTES_RECORD_NAME);
 		
-		metadata.addField(new DataFieldMetadata(IP_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(new DataFieldMetadata(IP_REQUEST_METHOD_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(new DataFieldMetadata(IP_REQUEST_CONTENT_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(new DataFieldMetadata(IP_INPUT_FILE_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(new DataFieldMetadata(IP_URL_NAME, DataFieldType.STRING, null));
+		metadata.addField(new DataFieldMetadata(IP_REQUEST_METHOD_NAME, DataFieldType.STRING, null));
+		metadata.addField(new DataFieldMetadata(IP_REQUEST_CONTENT_NAME, DataFieldType.STRING, null));
+		metadata.addField(new DataFieldMetadata(IP_INPUT_FILE_URL_NAME, DataFieldType.STRING, null));
 		
 		return metadata;
 	}
@@ -3096,29 +3092,29 @@ public class HttpConnector extends Node {
 	public static DataRecordMetadata createInputParametersMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(ATTRIBUTES_RECORD_NAME);
 		
-		metadata.addField(IP_URL_INDEX, new DataFieldMetadata(IP_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-//		metadata.addField(IP_URL_FIELD_INDEX, new DataFieldMetadata(IP_URL_FIELD_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_REQUEST_METHOD_INDEX, new DataFieldMetadata(IP_REQUEST_METHOD_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_INDEX, new DataFieldMetadata(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
-		metadata.addField(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_INDEX, new DataFieldMetadata(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_IGNORED_FIELDS_INDEX, new DataFieldMetadata(IP_IGNORED_FIELDS_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_ADDITIONAL_REQUEST_HEADERS_INDEX, new DataFieldMetadata(IP_ADDITIONAL_REQUEST_HEADERS_NAME, DataFieldType.STRING, DUMMY_DELIMITER, DataFieldContainerType.MAP));
-		metadata.addField(IP_CHARSET_INDEX, new DataFieldMetadata(IP_CHARSET_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_REQUEST_CONTENT_INDEX, new DataFieldMetadata(IP_REQUEST_CONTENT_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_INPUT_FILE_URL_INDEX, new DataFieldMetadata(IP_INPUT_FILE_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-//		metadata.addField(IP_INPUT_FIELD_NAME_INDEX, new DataFieldMetadata(IP_INPUT_FIELD_NAME_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-//		metadata.addField(IP_OUTPUT_FIELD_NAME_INDEX, new DataFieldMetadata(IP_OUTPUT_FIELD_NAME_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_OUTPUT_FILE_URL_INDEX, new DataFieldMetadata(IP_OUTPUT_FILE_URL_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_APPEND_OUTPUT_INDEX, new DataFieldMetadata(IP_APPEND_OUTPUT_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
-		metadata.addField(IP_AUTHENTICATION_METHOD_INDEX, new DataFieldMetadata(IP_AUTHENTICATION_METHOD_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_USERNAME_INDEX, new DataFieldMetadata(IP_USERNAME_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_PASSWORD_INDEX, new DataFieldMetadata(IP_PASSWORD_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_CONSUMER_KEY_INDEX, new DataFieldMetadata(IP_CONSUMER_KEY_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_CONSUMER_SECRET_INDEX, new DataFieldMetadata(IP_CONSUMER_SECRET_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_STORE_RESPONSE_TO_TEMP_INDEX, new DataFieldMetadata(IP_STORE_RESPONSE_TO_TEMP_NAME, DataFieldType.BOOLEAN, DUMMY_DELIMITER));
-		metadata.addField(IP_TEMP_FILE_PREFIX_INDEX, new DataFieldMetadata(IP_TEMP_FILE_PREFIX_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_MULTIPART_ENTITIES_INDEX, new DataFieldMetadata(IP_MULTIPART_ENTITIES_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(IP_RAW_HTTP_HEADERS_INDEX, new DataFieldMetadata(IP_RAW_HTTP_HEADERS_NAME, DataFieldType.STRING, DUMMY_DELIMITER, DataFieldContainerType.LIST));
+		metadata.addField(IP_URL_INDEX, new DataFieldMetadata(IP_URL_NAME, DataFieldType.STRING, null));
+//		metadata.addField(IP_URL_FIELD_INDEX, new DataFieldMetadata(IP_URL_FIELD_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_REQUEST_METHOD_INDEX, new DataFieldMetadata(IP_REQUEST_METHOD_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_INDEX, new DataFieldMetadata(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_NAME, DataFieldType.BOOLEAN, null));
+		metadata.addField(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_INDEX, new DataFieldMetadata(IP_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_IGNORED_FIELDS_INDEX, new DataFieldMetadata(IP_IGNORED_FIELDS_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_ADDITIONAL_REQUEST_HEADERS_INDEX, new DataFieldMetadata(IP_ADDITIONAL_REQUEST_HEADERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.MAP));
+		metadata.addField(IP_CHARSET_INDEX, new DataFieldMetadata(IP_CHARSET_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_REQUEST_CONTENT_INDEX, new DataFieldMetadata(IP_REQUEST_CONTENT_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_INPUT_FILE_URL_INDEX, new DataFieldMetadata(IP_INPUT_FILE_URL_NAME, DataFieldType.STRING, null));
+//		metadata.addField(IP_INPUT_FIELD_NAME_INDEX, new DataFieldMetadata(IP_INPUT_FIELD_NAME_NAME, DataFieldType.STRING, null));
+//		metadata.addField(IP_OUTPUT_FIELD_NAME_INDEX, new DataFieldMetadata(IP_OUTPUT_FIELD_NAME_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_OUTPUT_FILE_URL_INDEX, new DataFieldMetadata(IP_OUTPUT_FILE_URL_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_APPEND_OUTPUT_INDEX, new DataFieldMetadata(IP_APPEND_OUTPUT_NAME, DataFieldType.BOOLEAN, null));
+		metadata.addField(IP_AUTHENTICATION_METHOD_INDEX, new DataFieldMetadata(IP_AUTHENTICATION_METHOD_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_USERNAME_INDEX, new DataFieldMetadata(IP_USERNAME_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_PASSWORD_INDEX, new DataFieldMetadata(IP_PASSWORD_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_CONSUMER_KEY_INDEX, new DataFieldMetadata(IP_CONSUMER_KEY_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_CONSUMER_SECRET_INDEX, new DataFieldMetadata(IP_CONSUMER_SECRET_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_STORE_RESPONSE_TO_TEMP_INDEX, new DataFieldMetadata(IP_STORE_RESPONSE_TO_TEMP_NAME, DataFieldType.BOOLEAN, null));
+		metadata.addField(IP_TEMP_FILE_PREFIX_INDEX, new DataFieldMetadata(IP_TEMP_FILE_PREFIX_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_MULTIPART_ENTITIES_INDEX, new DataFieldMetadata(IP_MULTIPART_ENTITIES_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_RAW_HTTP_HEADERS_INDEX, new DataFieldMetadata(IP_RAW_HTTP_HEADERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.LIST));
 		
 		return metadata;
 	}
@@ -3127,7 +3123,7 @@ public class HttpConnector extends Node {
 		DataRecordMetadata metadata = new DataRecordMetadata(metadataName);
 		
 		for (Object variableName : requestCookies.keySet()) {
-			DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, DUMMY_DELIMITER);
+			DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
 			field.setLabel((String) variableName);
 			metadata.addField(field);
 		}
@@ -3144,7 +3140,7 @@ public class HttpConnector extends Node {
 		for (String c : cookies) {
 			String cookie = c.trim();
 			if (!cookie.isEmpty()) {
-				DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, DUMMY_DELIMITER);
+				DataFieldMetadata field = new DataFieldMetadata("xxx", DataFieldType.STRING, null);
 				field.setLabel(cookie);
 				metadata.addField(field);
 			}
@@ -3161,12 +3157,12 @@ public class HttpConnector extends Node {
 	public static DataRecordMetadata createResultMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(HttpConnector.RESULT_RECORD_NAME);
 		
-		metadata.addField(RP_CONTENT_INDEX, new DataFieldMetadata(RP_CONTENT_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(RP_OUTPUTFILE_INDEX, new DataFieldMetadata(RP_OUTPUTFILE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
-		metadata.addField(RP_STATUS_CODE_INDEX, new DataFieldMetadata(RP_STATUS_CODE_NAME, DataFieldType.INTEGER, DUMMY_DELIMITER));
-		metadata.addField(RP_HEADER_INDEX, new DataFieldMetadata(RP_HEADER_NAME, DataFieldType.STRING, DUMMY_DELIMITER, DataFieldContainerType.MAP));
-		metadata.addField(RP_RAW_HTTP_HAEDERS_INDEX, new DataFieldMetadata(RP_RAW_HTTP_HAEDERS_NAME, DataFieldType.STRING, DUMMY_DELIMITER, DataFieldContainerType.LIST));
-		metadata.addField(RP_MESSAGE_INDEX, new DataFieldMetadata(RP_MESSAGE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(RP_CONTENT_INDEX, new DataFieldMetadata(RP_CONTENT_NAME, DataFieldType.STRING, null));
+		metadata.addField(RP_OUTPUTFILE_INDEX, new DataFieldMetadata(RP_OUTPUTFILE_NAME, DataFieldType.STRING, null));
+		metadata.addField(RP_STATUS_CODE_INDEX, new DataFieldMetadata(RP_STATUS_CODE_NAME, DataFieldType.INTEGER, null));
+		metadata.addField(RP_HEADER_INDEX, new DataFieldMetadata(RP_HEADER_NAME, DataFieldType.STRING, null, DataFieldContainerType.MAP));
+		metadata.addField(RP_RAW_HTTP_HAEDERS_INDEX, new DataFieldMetadata(RP_RAW_HTTP_HAEDERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.LIST));
+		metadata.addField(RP_MESSAGE_INDEX, new DataFieldMetadata(RP_MESSAGE_NAME, DataFieldType.STRING, null));
 
 		return metadata;
 	}
@@ -3178,7 +3174,7 @@ public class HttpConnector extends Node {
 	public static DataRecordMetadata createErrorMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(ERROR_RECORD_NAME);
 		
-		metadata.addField(EP_MESSAGE_INDEX, new DataFieldMetadata(EP_MESSAGE_NAME, DataFieldType.STRING, DUMMY_DELIMITER));
+		metadata.addField(EP_MESSAGE_INDEX, new DataFieldMetadata(EP_MESSAGE_NAME, DataFieldType.STRING, null));
 
 		return metadata;
 	}
