@@ -130,6 +130,7 @@ public class JobflowEdge extends Edge {
 		getWriter().getTokenTracker().eofOutputPort(getOutputPortNumber());
 	}
 	
+	@Override
 	public EdgeTypeEnum getEdgeType() {
 		//jobflow prefers fast propagate edge type 
 		return edgeType != null ? edgeType : EdgeTypeEnum.DIRECT_FAST_PROPAGATE;

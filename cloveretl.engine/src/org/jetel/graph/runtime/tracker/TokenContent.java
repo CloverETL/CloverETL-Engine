@@ -66,6 +66,7 @@ public class TokenContent extends DataRecordContent {
 	/**
 	 * Even basic record can be used for initialization. TokenId is negative.
 	 */
+	@Override
 	public void setRecord(DataRecord record) {
 		super.setRecord(record);
 		

@@ -40,6 +40,7 @@ public class MoveResult extends AbstractResult implements Iterable<SingleCloverU
 	
 	private final List<SingleCloverURI> results = new ArrayList<SingleCloverURI>(); 
 
+	@Override
 	public MoveResult setException(Exception exception) {
 		return (MoveResult) super.setException(exception);
 	}
@@ -59,10 +60,12 @@ public class MoveResult extends AbstractResult implements Iterable<SingleCloverU
 		this.results.add(null);
 	}
 	
+	@Override
 	public int successCount() {
 		return aggregatedResult.size();
 	}
 	
+	@Override
 	public int totalCount() {
 		return sources.size();
 	}

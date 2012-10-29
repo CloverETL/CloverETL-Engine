@@ -55,6 +55,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 	
 	private InputPortReadableChannel channel;
 	
+	@Override
 	@Before
 	public void setUp() throws Exception {
 		initEngine();
@@ -63,6 +64,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 	/**
 	 * @throws java.lang.Exception
 	 */
+	@Override
 	@After
 	public void tearDown() throws Exception {
 		channel = null;

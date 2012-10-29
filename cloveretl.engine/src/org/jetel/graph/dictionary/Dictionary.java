@@ -277,6 +277,7 @@ public class Dictionary extends GraphElement {
 		return dictionary.isEmpty();
 	}
 	
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Dictionary#").append(this.hashCode());

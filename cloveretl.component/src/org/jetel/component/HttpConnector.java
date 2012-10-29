@@ -2707,6 +2707,7 @@ public class HttpConnector extends Node {
 		
 		// Set cookie policy to send all cookies in a request regardless of CookieOrigin (because we don't set it anyway)
 		CookieSpecFactory csf = new CookieSpecFactory() {
+			@Override
 			public CookieSpec newInstance(HttpParams params) {
 				return new BestMatchSpec() {
 					@Override

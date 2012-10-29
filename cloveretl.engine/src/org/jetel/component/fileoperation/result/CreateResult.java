@@ -38,6 +38,7 @@ public class CreateResult extends AbstractResult implements Iterable<SingleClove
 	
 	private final List<SingleCloverURI> newFiles = new ArrayList<SingleCloverURI>(); 
 	
+	@Override
 	public CreateResult setException(Exception exception) {
 		return (CreateResult) super.setException(exception);
 	}
@@ -55,6 +56,7 @@ public class CreateResult extends AbstractResult implements Iterable<SingleClove
 		newFiles.add(null);
 	}
 	
+	@Override
 	public int successCount() {
 		return result.size();
 	}
@@ -63,6 +65,7 @@ public class CreateResult extends AbstractResult implements Iterable<SingleClove
 		return result.isEmpty();
 	}
 	
+	@Override
 	public int totalCount() {
 		return uris.size();
 	}
