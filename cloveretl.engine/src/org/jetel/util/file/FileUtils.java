@@ -160,12 +160,6 @@ public class FileUtils {
 
 	public static final Map<String, URLStreamHandler> handlers;
 
-	private static final String FTP_PROTOCOL = "ftp";
-
-	private static final String SFTP_PROTOCOL = "sftp";
-
-	private static final String SCP_PROTOCOL = "scp";
-	
 	private static final String HTTP_PROTOCOL = "http";
 	private static final String HTTPS_PROTOCOL = "https";
 	
