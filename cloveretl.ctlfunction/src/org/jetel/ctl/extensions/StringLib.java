@@ -370,7 +370,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Replaces matches of a regular expression")
 	public static final String replace(TLFunctionCallContext context, String input, String regex, String replacement) {
 		Matcher m; 
-		m = ((TLRegexpCache)context.getCache()).getCachedPattern(context, regex).matcher(input);
+		m = ((TLRegexpCache)context.getCache()).getCachedMatcher(context, regex).reset(input);
 		return m.replaceAll(replacement);
 	}
 
@@ -827,9 +827,10 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Finds and returns all occurences of regex in specified string")
+	@TLFunctionParametersAnnotation({"input","regex_pattern"})
 	public static final List<String> find(TLFunctionCallContext context, String input, String pattern) {
 		
-		Matcher m = ((TLRegexpCache)context.getCache()).getCachedPattern(context, pattern).matcher(input);
+		Matcher m = ((TLRegexpCache)context.getCache()).getCachedMatcher(context, pattern).reset(input);
 		
 		final List<String> ret = new ArrayList<String>();
 
@@ -839,6 +840,24 @@ public class StringLib extends TLFunctionLibrary {
 
 		return ret;
 	}
+	
+	@TLFunctionAnnotation("Finds and returns n-th group(s) of regex occurence(s) in specified string.")
+	@TLFunctionParametersAnnotation({"input","regex_pattern","groupNum"})
+	public static final List<String> find(TLFunctionCallContext context, String input, String pattern, int groupNo) {
+		Matcher m = ((TLRegexpCache)context.getCache()).getCachedMatcher(context, pattern).reset(input);
+		
+		final List<String> ret = new ArrayList<String>();
+
+		if (m.groupCount()>= groupNo){
+			while (m.find()) {
+				ret.add(m.group(groupNo));
+			}
+		}
+		return ret;
+		
+	}
+
+	
 
 	class FindFunction implements TLFunctionPrototype {
 
@@ -849,9 +868,22 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			final String pattern = stack.popString();
-			final String input = stack.popString();
-			stack.push(find(context, input, pattern));
+			switch(context.getParams().length){
+			case 2:
+			{
+				final String pattern = stack.popString();
+				final String input = stack.popString();
+				stack.push(find(context, input, pattern));
+			}
+				break;
+			case 3:
+			{
+				final Integer group = stack.popInt();
+				final String pattern = stack.popString();
+				final String input = stack.popString();
+				stack.push(find(context, input, pattern,group));
+			}
+			}
 			return;
 		}
 	}
@@ -863,9 +895,10 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Tries to match entire input with specified pattern.")
+	@TLFunctionParametersAnnotation({"input","regex_pattern"})
 	public static final Boolean matches(TLFunctionCallContext context, String input, String pattern) {
 		
-		Matcher m = ((TLRegexpCache)context.getCache()).getCachedPattern(context, pattern).matcher(input);
+		Matcher m = ((TLRegexpCache)context.getCache()).getCachedMatcher(context, pattern).reset(input);
 		return m.matches();
 	}
 
