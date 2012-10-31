@@ -79,7 +79,6 @@ import org.jetel.util.protocols.sandbox.SandboxStreamHandler;
 import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
-import org.jetel.util.string.StringUtils;
 
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
@@ -482,7 +481,7 @@ public class FileUtils {
 
         // create archive streams
         if (archiveType == ArchiveType.ZIP) {
-        	List<InputStream> lIs = getZipInputStreamsInner(innerStream, sbAnchor.toString(), 0, null);
+        	List<InputStream> lIs = getZipInputStreamsInner(innerStream, sbAnchor.toString(), 0, null, true);
         	return lIs.size() > 0 ? lIs.get(0) : null;
         } else if (archiveType == ArchiveType.GZIP) {
             return new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
@@ -544,36 +543,54 @@ public class FileUtils {
      * @throws IOException
      */
     public static List<InputStream> getZipInputStreams(InputStream innerStream, String anchor, List<String> resolvedAnchors) throws IOException {
-    	return getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors);
+    	return getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors, true);
     }
 
     /**
-     * Creates list of zip input streams.
+     * Creates a list of names of sub entries.
+     * @param innerStream
+     * @param anchor
+     * 
+     * @return resolved anchors
+     * @throws IOException
+     */
+    public static List<String> getZipInputStreamNames(InputStream innerStream, String anchor) throws IOException {
+    	List<String> resolvedAnchors = new ArrayList<String>();
+    	getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors, false);
+    	return resolvedAnchors; 
+    }
+
+    /**
+     * Creates list of zip input streams (only if <code>needInputStream</code> is true).
+     * Also stores their names in <code>resolvedAnchors</code>.
+     * 
      * @param innerStream
      * @param anchor
      * @param matchFilesFrom
      * @param resolvedAnchors
+     * @param needInputStream if <code>true</code>, input streams for individual entries will be created (costly operation)
+     * 
      * @return
      * @throws IOException
      */
     private static List<InputStream> getZipInputStreamsInner(InputStream innerStream, String anchor, 
-    		int matchFilesFrom, List<String> resolvedAnchors) throws IOException {
+    		int matchFilesFrom, List<String> resolvedAnchors, boolean needInputStream) throws IOException {
     	// result list of input streams
     	List<InputStream> streams = new ArrayList<InputStream>();
 
     	// check and prepare support for wild card matching
         Matcher matcher;
         Pattern WILDCARD_PATTERS = null;
-        boolean bWildsCardedAnchor = anchor.contains("?") || anchor.contains("*");
-        if (bWildsCardedAnchor) 
+        boolean bWildcardedAnchor = anchor.contains("?") || anchor.contains("*");
+        if (bWildcardedAnchor) 
         	WILDCARD_PATTERS = Pattern.compile(anchor.replaceAll("\\\\", "\\\\\\\\").replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
 
     	// the input stream must support a buffer for wild cards.
-        if (bWildsCardedAnchor) {
+        if (bWildcardedAnchor && needInputStream) {
         	if (!innerStream.markSupported()) {
         		innerStream = new BufferedInputStream(innerStream);
         	}
-    		innerStream.mark(Integer.MAX_VALUE);
+        	innerStream.mark(Integer.MAX_VALUE);
         }
     	
         //resolve url format for zip files
@@ -584,15 +601,19 @@ public class FileUtils {
         int iMatched = 0;
         while((entry = zin.getNextEntry()) != null) {	// zin is changing -> recursion !!!
             // wild cards
-            if (bWildsCardedAnchor) {
+            if (bWildcardedAnchor) {
            		matcher = WILDCARD_PATTERS.matcher(entry.getName());
-           		if (matcher.find() && iMatched++ == matchFilesFrom) {
-                	streams.add(zin);
-                	if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
-                	innerStream.reset();
-                	streams.addAll(getZipInputStreamsInner(innerStream, anchor, ++matchFilesFrom, resolvedAnchors));
-                	innerStream.reset();
-                	return streams;
+           		if (matcher.find()) { // TODO replace find() with matches()
+           			if (needInputStream && iMatched++ == matchFilesFrom) { // CL-2576 - only create streams when necessary, not when just resolving wildcards
+                    	streams.add(zin);
+                    	if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
+                    	innerStream.reset();
+                    	streams.addAll(getZipInputStreamsInner(innerStream, anchor, ++matchFilesFrom, resolvedAnchors, needInputStream));
+                    	innerStream.reset();
+                    	return streams;
+           			} else { // if we don't need input streams for individual entries, there is no need for recursion 
+           				if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
+           			}
                 }
             
         	// without wild cards
@@ -605,20 +626,20 @@ public class FileUtils {
             //finish up with entry
             zin.closeEntry();
         }
-        if (matchFilesFrom > 0 || streams.size() > 0) return streams;
+        if (matchFilesFrom > 0 || streams.size() > 0) {
+        	return streams;
+        }
         
         // if no wild carded entry found, it is ok, return null
-        if (bWildsCardedAnchor) return null;
+        if (bWildcardedAnchor || !needInputStream) {
+        	return null;
+        }
         
         //close the archive
         zin.close();
         
         //no channel found report
-        if(anchor == null) {
-            throw new IOException("Zip file is empty.");
-        } else {
-            throw new IOException("Wrong anchor (" + anchor + ") to zip file.");
-        }
+        throw new IOException("Wrong anchor (" + anchor + ") to zip file.");
     }
 
     /**

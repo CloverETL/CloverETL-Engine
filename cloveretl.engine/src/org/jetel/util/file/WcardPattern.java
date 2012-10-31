@@ -34,6 +34,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPFile;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
@@ -61,7 +63,10 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  */
 public class WcardPattern {
 
-	// for embedded source
+	// logger
+    private static Log logger = LogFactory.getLog(WcardPattern.class);
+
+    // for embedded source
 	//     "[zip|gzip|tar]     :       ^(       something   )          [[#|$]something]?
 	//      ((zip|gzip|tar)    :       ([^\\(]  .*          [^\\)])    #(.*))|((zip|gzip|tar):([^\\(].*[^\\)])$)
 	private final static Pattern ARCHIVE_SOURCE = Pattern.compile("((zip|gzip|tar):([^\\(].*[^\\)])#(.*))|((zip|gzip|tar):([^\\(].*[^\\)])$)");
@@ -276,7 +281,7 @@ public class WcardPattern {
         for (FileStreamName fileStreamName: fileStreamNames) {
             // zip archive
             if (archiveType == ArchiveType.ZIP) {
-            	processZipArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
+            	processZipArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames, outherPathNeedsInputStream);
             
             // gzip archive
             } else if (archiveType == ArchiveType.GZIP) {
@@ -322,24 +327,37 @@ public class WcardPattern {
      * @param newFileStreamNames
      * @throws IOException
      */
-    private void processZipArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames) throws IOException {
+    private void processZipArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames, boolean needInputStream) throws IOException {
 		// add original name
     	if (fileStreamName.getInputStream() == null) {
     		newFileStreamNames.add(new FileStreamName(originalFileName));
     		return;
     	}
     	
-		// look into an archive and check the anchor
-		List<String> mfiles = new ArrayList<String>();
-    	List<InputStream> lis = FileUtils.getZipInputStreams(fileStreamName.getInputStream(), anchor, mfiles);
-    	
-    	// create list of new names generated from the anchor
-    	for (int i=0; lis != null && i<lis.size(); i++) {
-    		newFileStreamNames.add(
-    				new FileStreamName(
-    					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
-    						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
-    					lis.get(i)));
+    	if (needInputStream) {
+    		// look into an archive and check the anchor
+    		List<String> mfiles = new ArrayList<String>();
+        	List<InputStream> lis = FileUtils.getZipInputStreams(fileStreamName.getInputStream(), anchor, mfiles);
+        	
+        	// create list of new names generated from the anchor
+        	for (int i=0; lis != null && i<lis.size(); i++) {
+        		newFileStreamNames.add(
+        				new FileStreamName(
+        					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
+        						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
+        					lis.get(i)));
+        	}
+    	} else {
+    		// look into an archive and check the anchor
+    		List<String> mfiles = FileUtils.getZipInputStreamNames(fileStreamName.getInputStream(), anchor);
+        	// create list of new names generated from the anchor
+        	for (String file: mfiles) {
+        		newFileStreamNames.add(
+        				new FileStreamName(
+        					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
+        						originalFileName.substring(iPostName)).replace(anchor, file), 
+        					null)); // return null as the input stream
+        	}
     	}
     }
     
@@ -578,6 +596,9 @@ public class WcardPattern {
 			}
 		} catch (IOException e) {
 			// it was not possible to connect using WebDAV, let's presume it's a normal HTTP request
+			if (logger.isDebugEnabled()) {
+				logger.debug(url + " - WebDAV wildcard resolution failed", e);
+			}
 			mfiles.add(url.toString());
 			return mfiles;
 		}
@@ -841,6 +862,12 @@ public class WcardPattern {
 		public InputStream getInputStream() {
 			return inputStream;
 		}
+
+		@Override
+		public String toString() {
+			return fileName;
+		}
+		
 	}
 
 	/**
