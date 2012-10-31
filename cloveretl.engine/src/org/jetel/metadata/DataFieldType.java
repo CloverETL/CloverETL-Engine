@@ -212,15 +212,15 @@ public enum DataFieldType {
 	private boolean isNumeric;
 	//should be trimmed by default
 	private boolean isTrimType;
-	//old fashion character identification of a type
-	private char obsoleteIdentifier;
+	//short data type identification (it is identical with old fashion character identification of a type)
+	private char shortName;
 	
-	private DataFieldType(String name, Class<?> clazz, boolean isNumeric, boolean isTrimType, char obsoleteIdentifier) {
+	private DataFieldType(String name, Class<?> clazz, boolean isNumeric, boolean isTrimType, char shortName) {
 		this.name = name;
 		this.clazz = clazz;
 		this.isNumeric = isNumeric;
 		this.isTrimType = isTrimType;
-		this.obsoleteIdentifier = obsoleteIdentifier;
+		this.shortName = shortName;
 	}
 
 	/**
@@ -296,14 +296,21 @@ public enum DataFieldType {
 	}
 	
 	/**
-	 * @return obsolete characted identification
-	 * @deprecated
+	 * @return obsolete character identification
+	 * @deprecated use {@link #getShortName()} instead
 	 */
 	@Deprecated
 	public char getObsoleteIdentifier() {
-		return obsoleteIdentifier;
+		return getShortName();
 	}
 
+	/**
+	 * @return short data type identification
+	 */
+	public char getShortName() {
+		return shortName;
+	}
+	
 	/**
 	 * @param charIdentifier
 	 * @return type based on obsolete character identification

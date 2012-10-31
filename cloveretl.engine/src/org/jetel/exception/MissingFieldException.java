@@ -27,7 +27,7 @@ package org.jetel.exception;
  *
  * @created Jul 3, 2012
  */
-public class MissingFieldException extends ComponentNotReadyException {
+public class MissingFieldException extends JetelRuntimeException {
 
 	private static final long serialVersionUID = -4595828225287715756L;
 

@@ -44,8 +44,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.compile.DynamicJavaClass;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -150,19 +148,25 @@ public class JmsWriter extends Node {
 		if (c == null || !(c instanceof JmsConnection)) {
 			throw new ComponentNotReadyException("Specified connection '" + conId + "' doesn't seem to be a JMS connection");
 		}
-
 		connection = (JmsConnection)c;
+		
 		inPort = getInputPort(0);
+		
 		if (psor == null) {
-			if (psorClass == null && psorCode == null) {
-				psorCode = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), psorURL, charset);
-			}
-			psor = psorClass == null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
+	    	psor = getTransformFactory().createTransform();
 		}
 		psor.setNode(this);
 	}
 	
-	
+	private TransformFactory<DataRecord2JmsMsg> getTransformFactory() {
+    	TransformFactory<DataRecord2JmsMsg> transformFactory = TransformFactory.createTransformFactory(DataRecord2JmsMsg.class);
+    	transformFactory.setTransform(psorCode);
+    	transformFactory.setTransformClass(psorClass);
+    	transformFactory.setTransformUrl(psorURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	return transformFactory;
+	}
 
     @Override
 	public void preExecute() throws ComponentNotReadyException {
@@ -202,27 +206,6 @@ public class JmsWriter extends Node {
         closeConnection();
 	}
     
-    
-	/** Creates processor instance of a class specified by its name.
-	 * @param psorClass
-	 * @return
-	 * @throws ComponentNotReadyException
-	 */
-	private DataRecord2JmsMsg createProcessor(String psorClass) throws ComponentNotReadyException {
-    	return RecordTransformFactory.loadClassInstance(psorClass, DataRecord2JmsMsg.class, this);
-	}
-
-	/**
-	 * Creates processor instance of a class specified by its source code.
-	 * @param psorCode
-	 * @return
-	 * @throws ComponentNotReadyException
-	 */
-	private DataRecord2JmsMsg createProcessorDynamic(String psorCode) throws ComponentNotReadyException {
-		
-		return DynamicJavaClass.instantiate(psorCode, DataRecord2JmsMsg.class, this);
-    }
-
 	@Override
 	public Result execute() throws Exception {
 		DataRecord nextRecord = DataRecordFactory.newRecord(inPort.getMetadata());
@@ -325,9 +308,7 @@ public class JmsWriter extends Node {
 							XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE,
 							XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE
 					}));
-					if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-						jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-					}
+					jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -348,44 +329,15 @@ public class JmsWriter extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
-		
-		// TODO Labels:
-		//InputPort inputPort = getInputPort(INPUT_PORT);
-		//if (inputPort != null) {
-		//	new UniqueLabelsValidator(status, this).validateMetadata(inputPort.getMetadata());
-		//}
-		// TODO Labels end
-
-//        try {
-        	
-//    		if (psor == null && psorClass == null && psorCode == null) {
-//    			throw new ComponentNotReadyException("Message processor not specified");
-//    		}
-//    		IConnection c = getGraph().getConnection(conId);
-//    		if (c == null || !(c instanceof JmsConnection)) {
-//    			throw new ComponentNotReadyException("Specified connection '" + conId + "' doesn't seem to be a JMS connection");
-//    		}
-//
-//    		connection = (JmsConnection)c;
-//    		inPort = getInputPort(0);
-//     		try {
-//    			connection.init();
-//    			producer = connection.createProducer();
-//    		} catch (Exception e) {
-//    			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
-//    		}
-        	
-        	
-//            init();
-//            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
         
+		//check transformation
+		if (psor == null) {
+			TransformFactory<DataRecord2JmsMsg> factory = getTransformFactory();
+			if (factory.isTransformSpecified()) {
+				getTransformFactory().checkConfig(status);
+			}
+		}
+		
         return status;
 	}
 

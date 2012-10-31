@@ -765,14 +765,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			
 			recordMetadata.addField(field);
 		}
-		// check that at least one valid field definition has been found
-		if (recordMetadata.getNumFields() == 0) {
-			throw new DOMException(DOMException.NOT_FOUND_ERR,
-					"No Field elements have been found ! ");
-		}
-
-		// change delimiter for autofilling
-//		changeDefaultDelimiter(recordMetadata);
 		
 		return recordMetadata;
 	}

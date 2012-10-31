@@ -23,20 +23,13 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.normalize.CTLRecordNormalize;
-import org.jetel.component.normalize.CTLRecordNormalizeAdapter;
 import org.jetel.component.normalize.RecordNormalize;
-import org.jetel.component.normalize.RecordNormalizeTL;
-import org.jetel.ctl.ErrorMessage;
-import org.jetel.ctl.ITLCompiler;
-import org.jetel.ctl.TLCompilerFactory;
-import org.jetel.ctl.TransformLangExecutor;
+import org.jetel.component.normalize.RecordNormalizeDescriptor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -193,16 +186,7 @@ public class Normalizer extends Node {
 		outMetadata = outPort.getMetadata();
 
 		if (norm == null) {
-			if (xformClass != null) {
-				norm = (RecordNormalize) RecordTransformFactory.loadClassInstance(xformClass, this);
-			}else if (xform == null) {
-				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
-			}
-			if (xformClass == null) {
-				norm = createTransform(xform);
-			}
-        	// set graph instance to transformation (if CTL it can access lookups etc.)
-        	norm.setNode(this);
+        	norm = getTransformFactory().createTransform();
 		}
 		if (!norm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + norm.getMessage());
@@ -210,35 +194,16 @@ public class Normalizer extends Node {
         errorActions = ErrorAction.createMap(errorActionsString);
 	}
 
-	private RecordNormalize createTransform(String sourceCode) throws ComponentNotReadyException {
-		switch (RecordTransformFactory.guessTransformType(sourceCode)) {
-			case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
-				return createNormalizerDynamic(sourceCode);
-			case RecordTransformFactory.TRANSFORM_CLOVER_TL:
-				return new RecordNormalizeTL(logger, sourceCode, getGraph());
-			case RecordTransformFactory.TRANSFORM_CTL:
-				ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),
-						new DataRecordMetadata[] { getInputPort(IN_PORT).getMetadata() },
-						new DataRecordMetadata[] { getOutputPort(OUT_PORT).getMetadata() }, "UTF-8");
-				List<ErrorMessage> msgs = compiler.compile(sourceCode, CTLRecordNormalize.class, getId());
-				if (compiler.errorCount() > 0) {
-					String report = ErrorMessage.listToString(msgs, logger);
-					throw new ComponentNotReadyException("CTL code compilation finished with "
-							+ compiler.errorCount() + " errors" + report);
-				}
-				Object ret = compiler.getCompiledCode();
-				if (ret instanceof TransformLangExecutor) {
-					// setup interpreted runtime
-					return new CTLRecordNormalizeAdapter((TransformLangExecutor) ret, logger);
-				} else if (ret instanceof CTLRecordNormalize) {
-					return (CTLRecordNormalize) ret;
-				}
-	
-				// this should never happen as compiler always generates correct interface
-				throw new ComponentNotReadyException("Invalid type of record transformation");
-			default:
-				throw new ComponentNotReadyException("Can't determine transformation code type at component ID: " + getId());
-		}
+	private TransformFactory<RecordNormalize> getTransformFactory() {
+    	TransformFactory<RecordNormalize> transformFactory = TransformFactory.createTransformFactory(RecordNormalizeDescriptor.newInstance());
+    	transformFactory.setTransform(xform);
+    	transformFactory.setTransformClass(xformClass);
+    	transformFactory.setTransformUrl(xformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(getInputPort(IN_PORT).getMetadata());
+    	transformFactory.setOutMetadata(getOutputPort(OUT_PORT).getMetadata());
+    	return transformFactory;
 	}
 
 	/**
@@ -417,29 +382,10 @@ public class Normalizer extends Node {
 			}
         }
 		
-        // transformation source for checkconfig
-        String checkTransform = null;
-        if (xform != null) {
-        	checkTransform = xform;
-        } else if (xformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
-        }
-        // only the transform and transformURL parameters are checked, transformClass is ignored
-        if (checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-			if (transformType != RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
-    			try {
-    				RecordNormalize norm = createTransform(checkTransform);
-    				norm.setNode(this);
-    				norm.init(transformationParameters, getInputPort(IN_PORT).getMetadata(), getOutputPort(OUT_PORT).getMetadata());
-    			} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = xform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-        	}
-        }
+        //check transformation
+		if (norm == null) {
+			getTransformFactory().checkConfig(status);
+		}
 
         return status;
    }
@@ -469,11 +415,9 @@ public class Normalizer extends Node {
 					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-            	norm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            }
+            norm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 
-			norm.setTransformationParameters(xattribs.attributes2Properties(
+            norm.setTransformationParameters(xattribs.attributes2Properties(
 					new String[] { XML_ID_ATTRIBUTE,
 							XML_TRANSFORM_ATTRIBUTE,
 							XML_TRANSFORMCLASS_ATTRIBUTE, }));

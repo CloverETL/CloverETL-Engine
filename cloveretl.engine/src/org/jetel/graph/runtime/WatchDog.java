@@ -21,6 +21,7 @@ import java.lang.management.ManagementFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.BrokenBarrierException;
@@ -52,8 +53,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.tracker.TokenTracker;
-import org.jetel.util.MiscUtils;
-import org.jetel.util.primitive.DuplicateKeyMap;
+import org.jetel.util.primitive.MultiValueMap;
 import org.jetel.util.string.StringUtils;
 
 
@@ -92,7 +92,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	private TransformationGraph graph;
 	private Phase currentPhase;
     private BlockingQueue <Message<?>> inMsgQueue;
-    private DuplicateKeyMap outMsgMap;
+    private MultiValueMap<IGraphElement, Message<?>> outMsgMap;
     private volatile Throwable causeException;
     private volatile IGraphElement causeGraphElement;
     private CloverJMX cloverJMX;
@@ -121,7 +121,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		watchDogStatus = Result.N_A;
         
 		inMsgQueue = new LinkedBlockingQueue<Message<?>>();
-		outMsgMap = new DuplicateKeyMap(Collections.synchronizedMap(new HashMap<GraphElement, Message<?>>()));
+		outMsgMap = new MultiValueMap<IGraphElement, Message<?>>(Collections.synchronizedMap(new HashMap<IGraphElement, List<Message<?>>>()));
         
         //is JMX turned on?
         provideJMX = runtimeContext.useJMX();
@@ -184,7 +184,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     		long startTimestamp = System.currentTimeMillis();
     		
     		//print graph properties
-    		graph.getGraphProperties().print(logger, "Graph properties:");
+    		graph.getGraphProperties().print(logger, "Graph parameters:");
     		
     		//print out runtime context
     		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());
@@ -374,6 +374,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		case ERROR:
 			cloverJMX.graphError(getErrorMessage());
 			break;
+		default:
+			break;
 		}
 	}
 	
@@ -468,7 +470,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {
 						if (message.getRecipient() != null) {
-							outMsgMap.put(message.getRecipient(), message);
+							outMsgMap.putValue(message.getRecipient(), message);
 						}
 					}
 					break;
@@ -514,6 +516,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		CURRENT_PHASE_LOCK.lock();
 		//only running or waiting graph can be aborted
 		if (watchDogStatus != Result.RUNNING && watchDogStatus != Result.WAITING) {
+			//if the graph status is not final, so the graph was aborted
+			if (!watchDogStatus.isStop()) {
+		        watchDogStatus = Result.ABORTED;
+			}
 			CURRENT_PHASE_LOCK.unlock();
 			return;
 		}
@@ -674,7 +680,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	public Message<?>[] receiveMessage(GraphElement recipient, final long wait) {
         Message<?>[] msg = null;
         synchronized (_MSG_LOCK) {
-            msg=(Message[])outMsgMap.getAll(recipient, new Message[0]);
+            msg=(Message[])outMsgMap.get(recipient).toArray(new Message<?>[0]);
             if (msg!=null) {
                 outMsgMap.remove(recipient);
             }

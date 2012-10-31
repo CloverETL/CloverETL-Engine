@@ -18,12 +18,16 @@
  */
 package org.jetel.component.fileoperation;
 
+import static org.junit.Assume.assumeTrue;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
+import org.jetel.component.fileoperation.result.CreateResult;
+import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
@@ -31,8 +35,9 @@ import org.jetel.component.fileoperation.result.ResolveResult;
 public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 	
 	private static final String testingUri = "ftp://test:test@koule/tmp/file_operation_tests/";
+//	private static final String testingUri = "ftp://test:test@localhost/";
 	
-	private FTPOperationHandler handler = null;
+	protected FTPOperationHandler handler = null;
 	
 	@Override
 	protected IOperationHandler createOperationHandler() {
@@ -44,7 +49,8 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		try {
 			URI base = new URI(testingUri);
 			CloverURI tmpDirUri = CloverURI.createURI(base.resolve(String.format("CloverTemp%d/", System.nanoTime())));
-			manager.create(tmpDirUri, new CreateParameters().setDirectory(true));
+			CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true));
+			assumeTrue(result.success());
 			return tmpDirUri.getSingleURI().toURI();
 		} catch (URISyntaxException ex) {
 			return null;
@@ -61,14 +67,17 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 	@Override
 	protected void tearDown() throws Exception {
 		Thread.interrupted(); // reset the interrupted flag of the current thread
-		manager.delete(CloverURI.createURI(baseUri), new DeleteParameters().setRecursive(true));
+		DeleteResult result = manager.delete(CloverURI.createURI(baseUri), new DeleteParameters().setRecursive(true));
+		if (!result.success()) {
+			System.err.println("Failed to delete " + result.getURI(0));
+		}
 		super.tearDown();
 		handler = null;
 	}
 
 	@Override
 	public void testGetPriority() {
-//		assertEquals(Integer.MAX_VALUE, handler.getSpeed(Operation.copy(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
+//		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.copy(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
 		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.move(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
 		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.delete(FTPOperationHandler.FTP_SCHEME)));
 		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.create(FTPOperationHandler.FTP_SCHEME)));
@@ -112,10 +121,7 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		}
 	}
 
-	@Override
-	public void testList() throws Exception {
-		super.testList();
-		
+	public void testRootList() throws Exception {
 		CloverURI uri;
 		ListResult result;
 		
@@ -129,11 +135,8 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(result.success());
 		System.out.println(result.getResult());
 	}
-
-	@Override
-	public void testInfo() throws Exception {
-		super.testInfo();
-
+	
+	public void testRootInfo() throws Exception {
 		CloverURI uri;
 		InfoResult result;
 		
@@ -149,11 +152,8 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(result.isDirectory());
 		System.out.println(result.getResult());
 	}
-
-	@Override
-	public void testResolve() throws Exception {
-		super.testResolve();
-
+	
+	public void testRootResolve() throws Exception {
 		CloverURI uri;
 		ResolveResult result;
 		
@@ -168,7 +168,5 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertEquals(1, result.totalCount());
 		System.out.println(result.getResult());
 	}
-	
-	
-	
+
 }

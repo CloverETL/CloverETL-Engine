@@ -303,6 +303,15 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	}
 
 	/**
+	 * Gets the metadata on output ports of the Node object
+	 *
+	 * @return array of output ports metadata
+	 */
+	public DataRecordMetadata[] getOutMetadataArray() {
+		return getOutMetadata().toArray(new DataRecordMetadata[0]);
+	}
+
+	/**
 	 *  Gets the metadata on input ports of the Node object
 	 *
 	 *@return    Collection of input ports metadata
@@ -315,6 +324,15 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	    return ret;
 	}
 
+	/**
+	 * Gets the metadata on input ports of the Node object
+	 *
+	 * @return array of input ports metadata
+	 */
+	public DataRecordMetadata[] getInMetadataArray() {
+		return getInMetadata().toArray(new DataRecordMetadata[0]);
+	}
+	
 	/**
 	 *  Gets the number of records passed through specified port type and number
 	 *
@@ -412,8 +430,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         runResult = Result.READY;
         
         //initialise component token tracker if necessary
-        if ((getGraph().getJobType() == JobType.JOBFLOW) &&
-        		getGraph().getRuntimeContext().isTokenTracking()) {
+        if (getGraph() != null
+        		&& getGraph().getJobType() == JobType.JOBFLOW
+        		&& getGraph().getRuntimeContext().isTokenTracking()) {
         	tokenTracker = createComponentTokenTracker();
         } else {
         	tokenTracker = new PrimitiveComponentTokenTracker(this);
@@ -1222,7 +1241,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
     /**
      * The given thread is registered as a child thread of this component.
-     * The child threads are exploited for grabing of tracking information - CPU usage of this component
+     * The child threads are exploited for gathering of tracking information - CPU usage of this component
      * is sum of all threads.
      * @param childThread
      */
@@ -1232,12 +1251,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
     /**
      * The given threads are registered as child threads of this component.
-     * The child threads are exploited for grabing of tracking information - for instance 
+     * The child threads are exploited for gathering of tracking information - for instance 
      * CPU usage of this component is sum of all threads.
      * @param childThreads
      */
     protected void registerChildThreads(List<Thread> childThreads) {
-    	childThreads.addAll(childThreads);
+    	this.childThreads.addAll(childThreads);
     }
 
     /**

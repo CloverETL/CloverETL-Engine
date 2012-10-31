@@ -44,10 +44,10 @@ Record.DEFAULT_COMPRESSION_LEVEL=5
 DEFAULT_INTERNAL_IO_BUFFER_SIZE = 32768
 
 DEFAULT_DATE_FORMAT = yyyy-MM-dd
-DEFAULT_TIME_FORMAT = HH:mm:ss
+DEFAULT_TIME_FORMAT = HH\:mm\:ss
 #uncomment this property when locale should be independent on underlying platform otherwise system default locale is used
 #DEFAULT_LOCALE = en.US
-DEFAULT_DATETIME_FORMAT = yyyy-MM-dd HH:mm:ss
+DEFAULT_DATETIME_FORMAT = yyyy-MM-dd HH\:mm\:ss
 DEFAULT_REGEXP_TRUE_STRING = true|T|TRUE|YES|Y|t|1|yes|y
 DEFAULT_REGEXP_FALSE_STRING = false|F|FALSE|NO|N|f|0|no|n
 
@@ -66,6 +66,9 @@ DataParser.DEFAULT_CHARSET_DECODER = ISO-8859-1
 
 #Default charset used when parsing data from text representation
 DataFormatter.DEFAULT_CHARSET_ENCODER = ISO-8859-1
+
+#Default charset used when parsing source code (CTL or Java)
+DEFAULT_SOURCE_CODE_CHARSET = UTF-8
 
 #the initial capacity of lookup table when created without specifying
 #the size			
@@ -91,7 +94,7 @@ OracleConnection.ROW_PREFETCH = 100
 DataFormatter.DELIMITER_DELIMITERS_REGEX = \\\\\\|
 			
 # ; or | or : , but not := - this is ASSIGN_SIGN
-Component.KEY_FIELDS_DELIMITER_REGEX = \\s*([|;]|:(?!=))\\s*
+Component.KEY_FIELDS_DELIMITER_REGEX = \\s*([|;]|\:(?\!\=))\\s*
 Component.KEY_FIELDS_DELIMITER = ;
 					
 WatchDog.WATCHDOG_SLEEP_INTERVAL = 1000
@@ -99,7 +102,7 @@ WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL = 5000
 WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 1
 			
 GraphProperties.EXPRESSION_EVALUATION_ENABLED = true
-GraphProperties.EXPRESSION_PLACEHOLDER_REGEX = (?<!\\\\)`(.*?)(?<!\\\\)`
+GraphProperties.EXPRESSION_PLACEHOLDER_REGEX = (?<\!\\\\)`(.*?)(?<\!\\\\)`
 GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
 GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH = 1000
 
@@ -135,7 +138,7 @@ CLOVER_FIELD_INDICATOR = $
 CLOVER_FIELD_REGEX = \\$[\\w]+
 
 # Assignation sign in the mappings
-ASSIGN_SIGN = :=
+ASSIGN_SIGN = \:\=
 
 #the key name used for incremental reading if the pointer shouldn't be stored
 #in example for view data with grid mode

@@ -18,7 +18,10 @@
  */
 package org.jetel.ctl;
 
+import java.util.List;
 import java.util.Map;
+
+import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 
 
 /**
@@ -30,5 +33,5 @@ import java.util.Map;
  */
 public abstract class ExpParser {
 
-    public abstract Map getFunctions();
+    public abstract Map<String, List<CLVFFunctionDeclaration>> getFunctions();
 }

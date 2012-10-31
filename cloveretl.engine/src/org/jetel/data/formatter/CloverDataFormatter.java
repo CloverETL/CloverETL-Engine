@@ -189,7 +189,8 @@ public class CloverDataFormatter extends AbstractFormatter {
 		}
 	}
 	
-    @Override
+    @SuppressWarnings("resource")
+	@Override
 	public void finish() throws IOException{
     	if (!isOpen) return;
     	

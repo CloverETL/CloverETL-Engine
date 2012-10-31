@@ -2481,6 +2481,29 @@ public class StringUtils {
 		return s1.equals(s2);
 	}
 	
+	/**
+	 * Given string elements are concatenated and the given delimiter is used to separate them. 
+	 * @param elements string elements to be concatenated
+	 * @param delimiter string delimiter
+	 * @return concatenation of elements separated by delimiter
+	 */
+	public static String join(List<String> elements, String delimiter) {
+		StringBuilder result = new StringBuilder();
+		if (elements == null) {
+			return null;
+		}
+		boolean first = true;
+		for (String element : elements) {
+			if (!first) {
+				result.append(delimiter);
+			} else {
+				first = false;
+			}
+			result.append(element);
+		}
+		return result.toString();
+	}
+	
 	private static String toStringInternalBytes(byte[] bytes) {
 		try {
 			return new String(bytes, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);

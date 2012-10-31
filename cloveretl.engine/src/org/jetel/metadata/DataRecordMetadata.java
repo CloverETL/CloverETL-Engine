@@ -105,7 +105,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	@SuppressWarnings("Se")
 	private Map<String, Integer> fieldLabelsMap = new HashMap<String, Integer>();
 	@SuppressWarnings("Se")
-	private Map<Integer, String> fieldTypes = new HashMap<Integer, String>();
+	private Map<Integer, DataFieldType> fieldTypes = new HashMap<Integer, DataFieldType>();
 	@SuppressWarnings("Se")
 	private Map<String, Integer> fieldOffset = new HashMap<String, Integer>();
 	
@@ -544,9 +544,48 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @param fieldNumber the ordinal number of the requested field
 	 *
 	 * @return the type of the field
+	 * @deprecated use {@link #getDataFieldType(int)} instead
 	 */
+	@Deprecated
 	public char getFieldType(int fieldNumber) {
 		DataFieldMetadata field = getField(fieldNumber);
+
+		if (field != null) {
+			return field.getType();
+		}
+
+		return DataFieldMetadata.UNKNOWN_FIELD;
+	}
+
+	/**
+	 * Returns the type of a field based on the field's position within a data record.
+	 *
+	 * @param fieldNumber the ordinal number of the requested field
+	 *
+	 * @return the type of the field
+	 */
+	public DataFieldType getDataFieldType(int fieldNumber) {
+		DataFieldMetadata field = getField(fieldNumber);
+
+		if (field != null) {
+			return field.getDataType();
+		}
+
+		return DataFieldType.UNKNOWN;
+		
+	}
+	
+	/**
+	 * Returns the type of a field based on the field's name.
+	 * 
+	 * @param fieldName the name of the requested field
+	 *
+	 * @return the type of the field
+	 * @deprecated use {@link #getDataFieldType(String)} instead
+	 */
+	@Deprecated
+	public char getFieldType(String fieldName) {
+		DataFieldMetadata field = getField(fieldName);
 
 		if (field != null) {
 			return field.getType();
@@ -562,14 +601,15 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 *
 	 * @return the type of the field
 	 */
-	public char getFieldType(String fieldName) {
+	@Deprecated
+	public DataFieldType getDataFieldType(String fieldName) {
 		DataFieldMetadata field = getField(fieldName);
 
 		if (field != null) {
-			return field.getType();
+			return field.getDataType();
 		}
 
-		return DataFieldMetadata.UNKNOWN_FIELD;
+		return DataFieldType.UNKNOWN;
 	}
 
 	/**
@@ -578,7 +618,9 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @param fieldNumber the ordinal number of the requested field
 	 *
 	 * @return the type of the field as a string
+	 * @deprecated use {@link #getFieldDataType(int)} and {@link DataFieldType#getName()} instead
 	 */
+	@Deprecated
 	public String getFieldTypeAsString(int fieldNumber) {
 		DataFieldMetadata field = getField(fieldNumber);
 
@@ -733,7 +775,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		fieldTypes.clear();
 
 		for (int i = 0; i < fields.size(); i++) {
-			fieldTypes.put(i, Character.toString(fields.get(i).getType()));
+			fieldTypes.put(i, fields.get(i).getDataType());
 		}
 	}
 
@@ -809,8 +851,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 *
 	 * @since 2nd May 2002
 	 */
-	public Map<Integer, String> getFieldTypes() {
-		return new HashMap<Integer, String>(fieldTypes);
+	public Map<Integer, DataFieldType> getFieldTypes() {
+		return new HashMap<Integer, DataFieldType>(fieldTypes);
 	}
 
 	/**
@@ -1457,7 +1499,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	public boolean hasFieldOfUnknownType() {
 		for (DataFieldMetadata dataFieldMetadata : getFields()) {
-			if (dataFieldMetadata.getType() == DataFieldMetadata.UNKNOWN_FIELD) {
+			if (dataFieldMetadata.getDataType() == DataFieldType.UNKNOWN) {
 				return true;
 			}
 		}

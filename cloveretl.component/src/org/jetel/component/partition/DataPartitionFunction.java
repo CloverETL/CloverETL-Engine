@@ -19,12 +19,14 @@
 package org.jetel.component.partition;
 
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
 import org.jetel.component.AbstractDataTransform;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -41,11 +43,23 @@ public abstract class DataPartitionFunction extends AbstractDataTransform implem
 	protected int numPartitions;
 	/** a set of fields composing key based on which should the partition be determined */
 	protected RecordKey partitionKey;
-
+	/** user-specified parameters passed via custom component attributes */
+	protected Properties parameters;
+	/** metadata of partitioned data */
+	protected DataRecordMetadata metadata;
+	
 	@Override
-	public final void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
+	@Deprecated
+	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException {
+		init(numPartitions, partitionKey, null, null);
+	}
+	
+	@Override
+	public final void init(int numPartitions, RecordKey partitionKey, Properties parameters, DataRecordMetadata metadata) throws ComponentNotReadyException {
 		this.numPartitions = numPartitions;
 		this.partitionKey = partitionKey;
+		this.parameters = parameters;
+		this.metadata = metadata;
 
 		init();
 	}

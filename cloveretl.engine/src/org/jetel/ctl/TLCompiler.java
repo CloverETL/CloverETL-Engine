@@ -31,6 +31,7 @@ import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.extensions.TLFunctionCallContext;
 import org.jetel.ctl.extensions.TLFunctionPluginRepository;
+import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -78,7 +79,7 @@ public class TLCompiler implements ITLCompiler {
 	 * @param outMetadata	Component's output metadata
 	 */
 	public TLCompiler(TransformationGraph graph, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata) {
-		this(graph,inMetadata,outMetadata,"UTF-8");
+		this(graph,inMetadata,outMetadata,Defaults.DEFAULT_SOURCE_CODE_CHARSET);
 	}
 	
 	
@@ -107,16 +108,16 @@ public class TLCompiler implements ITLCompiler {
 
 	/**
 	 * Validate given (Filter) expression. 
-	 * Result of this method is identical to {@link #validate(InputStream)} with UTF-8 encoding
+	 * Result of this method is identical to {@link #validate(InputStream)} with encoding of this compiler
 	 * @param code
 	 * @return list of error messages (empty when no errors)
 	 */
 	@Override
 	public List<ErrorMessage> validateExpression(String code) {
 		try {
-			return validateExpression(new ByteArrayInputStream(code.getBytes("UTF-8")));
+			return validateExpression(new ByteArrayInputStream(code.getBytes(encoding)));
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("UTF-8 encoding not availabe for conversion");
+			throw new RuntimeException(encoding + " encoding not availabe for conversion");
 		}
 	}
 	
@@ -172,9 +173,9 @@ public class TLCompiler implements ITLCompiler {
 	@Override
 	public List<ErrorMessage> validate(String code) {
 		try {
-			return validate(new ByteArrayInputStream(code.getBytes("UTF-8")));
+			return validate(new ByteArrayInputStream(code.getBytes(encoding)));
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("UTF-8 encoding not available for conversion");
+			throw new RuntimeException(encoding+" encoding not available for conversion");
 		}
 	}
 	
@@ -231,14 +232,14 @@ public class TLCompiler implements ITLCompiler {
 	/**
 	 * Compiles the code into target interface.
 	 * The result is identical to calling {@link #compile(InputStream, Class)} 
-	 * with encoding=UTF-8
+	 * with encoding of this component
 	 */
 	@Override
 	public List<ErrorMessage> compile(String code, Class<?> targetInterface, String componentId) {
 		try {
-			return compile(new ByteArrayInputStream(code.getBytes("UTF-8")), targetInterface, componentId);
+			return compile(new ByteArrayInputStream(code.getBytes(encoding)), targetInterface, componentId);
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("UTF-8 encoding not availabe for conversion");
+			throw new RuntimeException(encoding + " encoding not availabe for conversion");
 		}
 	}
 	

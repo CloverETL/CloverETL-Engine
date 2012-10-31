@@ -23,6 +23,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -47,7 +48,9 @@ public class NullRecord extends DataRecord {
 	/**
 	 * Creates NullRecord object based on NullMetadata
 	 */
+	@SuppressWarnings("deprecation")
 	private NullRecord(){
+		//constructor should not be deprecated, just protected
 		super(NullMetadata.NULL_METADATA);
 	}
 	
@@ -147,16 +150,19 @@ final class NullMetadata extends DataRecordMetadata{
 	}
 	
 	@Override
+	@Deprecated
 	public char getFieldType(int fieldNo) {
 		return DataFieldMetadata.NULL_FIELD;
 	}
 	
 	@Override
+	@Deprecated
 	public char getFieldType(String fieldName) {
 		return DataFieldMetadata.NULL_FIELD;
 	}
 	
 	@Override
+	@Deprecated
 	public String getFieldTypeAsString(int fieldNo) {
 		return DataFieldMetadata.type2Str(DataFieldMetadata.NULL_FIELD);
 	}
@@ -239,6 +245,7 @@ final class NullField extends DataField{
 	}
 
 	@Override
+	@Deprecated
 	public char getType() {
 		return DataFieldMetadata.NULL_FIELD;
 	}
@@ -274,7 +281,7 @@ final class NullField extends DataField{
 	@Override
 	public void setNull(boolean isNull) {
 		if (!isNull) throw new IllegalArgumentException(
-				"Can't set nullable=false for " + DataFieldMetadata.type2Str(DataFieldMetadata.NULL_FIELD) + " data field!!!");
+				"Can't set nullable=false for " + DataFieldType.NULL.getName() + " data field!!!");
 		super.setNull(isNull);
 	}
 }

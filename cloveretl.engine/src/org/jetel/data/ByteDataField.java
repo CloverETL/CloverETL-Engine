@@ -234,6 +234,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 *@since     October 29, 2002
 	 */
 	@Override
+	@Deprecated
 	public char getType() {
 		return DataFieldMetadata.BYTE_FIELD;
 	}
@@ -348,7 +349,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 			this.value = seq.toString().getBytes(charset);
 		} catch (UnsupportedEncodingException ex) {
 			throw new RuntimeException(ex.toString() + " when calling fromString() on field \""
-					+ this.metadata.getName() + "\" (" + DataFieldMetadata.type2Str(getType()) + ") ", ex);
+					+ this.metadata.getName() + "\" (" + getMetadata().getDataType().getName() + ") ", ex);
 		}
 
 		setNull(false);

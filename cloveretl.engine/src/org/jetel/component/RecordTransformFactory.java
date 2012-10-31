@@ -24,7 +24,6 @@ import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFUNCTIONDECLARAT
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTIMPORTSOURCE;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTRETURNSTATEMENT;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,14 +31,18 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
+import org.jetel.component.TransformLanguageDetector.TransformLanguage;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.MetadataErrorDetail;
 import org.jetel.ctl.NavigatingVisitor;
 import org.jetel.ctl.TLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
+import org.jetel.ctl.TLUtils;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.ASTnode.CLVFBlock;
+import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.MissingFieldException;
@@ -64,21 +67,72 @@ import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.CommentsProcessor;
 
+/**
+ * @deprecated use {@link TransformFactory} instead
+ * @deprecated use {@link TransformLanguageDetector} instead
+ * @deprecated use {@link TLUtils} instead
+ * @deprecated use {@link ClassLoaderUtils} instead
+ */
+@Deprecated
 public class RecordTransformFactory {
 
     
+	/**
+	 * @deprecated use {@link TransformLanguage#JAVA} instead
+	 */
+	@Deprecated
     public static final int TRANSFORM_JAVA_SOURCE=1;
+	/**
+	 * @deprecated use {@link TransformLanguage#CTL1} instead
+	 */
+	@Deprecated
     public static final int TRANSFORM_CLOVER_TL=2;
+	/**
+	 * @deprecated use {@link TransformLanguage#JAVA_PREPROCESS} instead
+	 */
+	@Deprecated
     public static final int TRANSFORM_JAVA_PREPROCESS=3;
+	/**
+	 * @deprecated use {@link TransformLanguage#CTL2} instead
+	 */
+	@Deprecated
     public static final int TRANSFORM_CTL = 4;
     
+	/**
+	 * @deprecated use {@link TransformLanguageDetector#PATTERN_CLASS} instead
+	 */
+	@Deprecated
     public static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+"); 
+	/**
+	 * @deprecated use {@link TransformLanguageDetector#PATTERN_TL_CODE} instead
+	 */
+	@Deprecated
     public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+((transform)|(generate))");
+	/**
+	 * @deprecated use {@link TransformLanguageDetector#PATTERN_CTL_CODE} instead
+	 */
+	@Deprecated
     public static final Pattern PATTERN_CTL_CODE = Pattern.compile("function\\s+[a-z]*\\s+((transform)|(generate))");
+	/**
+	 * @deprecated use {@link TransformLanguageDetector#PATTERN_PARTITION_CODE} instead
+	 */
+	@Deprecated
     public static final Pattern PATTERN_PARTITION_CODE = Pattern.compile("function\\s+getOutputPort"); 
+	/**
+	 * @deprecated use {@link TransformLanguageDetector#PATTERN_CTL_PARTITION_CODE} instead
+	 */
+	@Deprecated
     public static final Pattern PATTERN_CTL_PARTITION_CODE = Pattern.compile("function\\s+[a-z]*\\s+getOutputPort");
     
+	/**
+	 * @deprecated use {@link TransformLanguageDetector#PATTERN_PREPROCESS_1} instead
+	 */
+	@Deprecated
     public static final Pattern PATTERN_PREPROCESS_1 = Pattern.compile("\\$\\{out\\."); 
+	/**
+	 * @deprecated use {@link TransformLanguageDetector#PATTERN_PREPROCESS_2} instead
+	 */
+	@Deprecated
     public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\.");
     
     /**
@@ -156,6 +210,10 @@ public class RecordTransformFactory {
 	    				// not a mapping
 	    				return false;
 	    			}
+	    			if (!((CLVFFieldAccessExpression) lhs).isOutput()) {
+	    				// lhs must be an output field
+	    				return false;
+	    			}
     			}
     		}
     		
@@ -164,6 +222,10 @@ public class RecordTransformFactory {
     	}
     }
 
+	/**
+	 * @deprecated use {@link TransformFactory#createTransform()} instead
+	 */
+	@Deprecated
     public static RecordTransform createTransform(String transform, String transformClass, String transformUrl,
     		String charset, Node node, DataRecordMetadata inMetaData[], DataRecordMetadata outMetadata[])
     	throws ComponentNotReadyException, MissingFieldException {
@@ -199,7 +261,8 @@ public class RecordTransformFactory {
     	
     	// create transformation
         RecordTransform transformation = null;
-        Log logger = LogFactory.getLog(node.getClass());
+        Log log = LogFactory.getLog(node.getClass());
+        Logger logger = Logger.getLogger(node.getClass());
         
         //without these parameters we cannot create transformation
         if (transform == null && transformClass == null && transformURL == null) {
@@ -227,7 +290,7 @@ public class RecordTransformFactory {
                 // try compile transform parameter as java code
 				// try preprocessing if applicable
                 transformation = RecordTransformFactory.loadClassDynamic(
-                        logger, null, transform, inMetadata, outMetadata, node, false);
+                        log, null, transform, inMetadata, outMetadata, node, false);
                 break;
             case TRANSFORM_CLOVER_TL:
                 transformation = new RecordTransformTL(transform, logger);
@@ -259,7 +322,7 @@ public class RecordTransformFactory {
             	}
                 break;
             case TRANSFORM_JAVA_PREPROCESS:
-                transformation = RecordTransformFactory.loadClassDynamic(logger,
+                transformation = RecordTransformFactory.loadClassDynamic(log,
                 		"Transform" + node.getId(), transform, inMetadata, outMetadata, node, true);
                 break;
             default:
@@ -281,7 +344,9 @@ public class RecordTransformFactory {
      * @param loader  class loader to lookup class by name
      * @return
      * @throws ComponentNotReadyException
-     */
+	 * @deprecated use {@link ClassLoaderUtils#loadClassInstance(String, ClassLoader)} instead
+	 */
+	@Deprecated
     public static Object loadClassInstance(String transformClassName, ClassLoader loader)
     	throws ComponentNotReadyException {
     	try {
@@ -302,6 +367,10 @@ public class RecordTransformFactory {
     	}
     }
     
+	/**
+	 * @deprecated use {@link ClassLoaderUtils#loadClassInstance(String, Node)} instead
+	 */
+	@Deprecated
     public static Object loadClassInstance(String transformClassName) throws ComponentNotReadyException {
     	
     	Node node = ContextProvider.getNode();
@@ -320,7 +389,9 @@ public class RecordTransformFactory {
      * @param node
      * @return
      * @throws ComponentNotReadyException
-     */
+	 * @deprecated use {@link ClassLoaderUtils#loadClassInstance(String, Node)} instead
+	 */
+	@Deprecated
     public static Object loadClassInstance(String transformClassName, Node node) throws ComponentNotReadyException {
     	
     	ClassLoader loader = new MultiParentClassLoader(
@@ -330,6 +401,10 @@ public class RecordTransformFactory {
     	return loadClassInstance(transformClassName, loader);
     }
     
+	/**
+	 * @deprecated use {@link ClassLoaderUtils#loadClassInstance(Class, String, Node)} instead
+	 */
+	@Deprecated
     public static <T> T loadClassInstance(String transformClassName, Class<T> expectedType, Node node)
     	throws ComponentNotReadyException {
     	
@@ -358,7 +433,9 @@ public class RecordTransformFactory {
      * @param outMetadata
      * @return
      * @throws ComponentNotReadyException
-     */
+	 * @deprecated use {@link TransformFactory#createTransform()} instead
+	 */
+	@Deprecated
     public static RecordTransform loadClassDynamic(Log logger, String className, String transformCode,
             DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, Node node, boolean addTransformCodeStub) throws ComponentNotReadyException {
         // creating dynamicTransformCode from internal transformation format
@@ -380,7 +457,9 @@ public class RecordTransformFactory {
      * @param dynamicTransformCode
      * @return
      * @throws ComponentNotReadyException
-     */
+	 * @deprecated use {@link TransformFactory#createTransform()} instead
+	 */
+	@Deprecated
     public static RecordTransform loadClassDynamic(String sourceCode, Node node)
             throws ComponentNotReadyException {
     	
@@ -397,7 +476,9 @@ public class RecordTransformFactory {
      * 
      * @param transform
      * @return  guessed transformation type or -1 if can't determine
-     */
+	 * @deprecated use {@link TransformLanguageDetector#guessLanguage(String)} instead
+	 */
+	@Deprecated
     public static int guessTransformType(String transform){
     	
     	String commentsStripped = CommentsProcessor.stripComments(transform);
@@ -469,6 +550,9 @@ public class RecordTransformFactory {
 		return false;
 	}
     
+    /**
+	 * @deprecated use {@link TLUtils#isTLSimpleTransform(DataRecordMetadata[], DataRecordMetadata[], String)} instead
+	 */
 	@Deprecated
     public static boolean isTLSimpleTransform(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform) {
@@ -476,7 +560,10 @@ public class RecordTransformFactory {
     	return isTLSimpleFunction(inMeta, outMeta, transform, "transform");
     }
     
-    @Deprecated
+    /**
+	 * @deprecated use {@link TLUtils#isTLSimpleFunction(DataRecordMetadata[], DataRecordMetadata[], String, String)} instead
+	 */
+	@Deprecated
     public static boolean isTLSimpleFunction(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform, String funtionName) {
     	
@@ -493,7 +580,10 @@ public class RecordTransformFactory {
     	return isTLSimpleTransformFunctionNode(record, funtionName, 0);
     }
 
-    @Deprecated
+    /**
+	 * @deprecated use {@link TLUtils#isTLSimpleDenormalizer(DataRecordMetadata[], DataRecordMetadata[], String)} instead
+	 */
+	@Deprecated
     public static boolean isTLSimpleDenormalizer(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform) {
     	
@@ -510,7 +600,10 @@ public class RecordTransformFactory {
     	return isTLSimpleTransformFunctionNode(record, "transform", 0);
     }
     
-    @Deprecated
+    /**
+	 * @deprecated use {@link TLUtils#isTLSimpleNormalizer(DataRecordMetadata[], DataRecordMetadata[], String)} instead
+	 */
+	@Deprecated
     public static boolean isTLSimpleNormalizer(DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String transform) {
     	
@@ -528,6 +621,10 @@ public class RecordTransformFactory {
     }
    
     
+    /**
+	 * @deprecated use {@link TLUtils#isSimpleFunction(TransformationGraph, DataRecordMetadata[], DataRecordMetadata[], String, String)} instead
+	 */
+	@Deprecated
     public static boolean isSimpleFunction(TransformationGraph graph, DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String code, String functionName) {
     	

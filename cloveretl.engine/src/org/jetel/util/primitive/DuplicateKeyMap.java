@@ -34,8 +34,10 @@ import java.util.Set;
  * 
  * @author david pavlis
  * @since  15.5.2006
- *
+ * @deprecated use {@link MultiValueMap} instead
  */
+@Deprecated
+@SuppressWarnings("all")
 public class DuplicateKeyMap implements Map {
 
     private static final int DEFAULT_CONTAINER_INITIAL_SIZE=1; /* used when 1st value

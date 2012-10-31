@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.Arrays;
 
 /**
  * URLHandler for proxy.
@@ -41,7 +42,7 @@ public class ProxyHandler extends URLStreamHandler {
     	super.parseURL(u, spec, start, limit);
     	String protocol = u.getProtocol();
     	if (ProxyProtocolEnum.fromString(protocol) == null) {
-    		throw new RuntimeException("Parse error: The URL protocol have to be one of " + ProxyProtocolEnum.values());
+    		throw new RuntimeException("Parse error: The URL protocol have to be one of " + Arrays.toString(ProxyProtocolEnum.values()));
     	}
     }
 

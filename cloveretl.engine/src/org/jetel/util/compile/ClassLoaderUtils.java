@@ -29,13 +29,16 @@ import java.net.URLDecoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
-import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.LoadClassException;
 import org.jetel.graph.Node;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -145,10 +148,8 @@ public class ClassLoaderUtils {
 	 * @param contextURL
 	 * @param libraryPaths
 	 * @return
-	 * @throws ComponentNotReadyException
 	 */
-	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths)
-			throws ComponentNotReadyException {
+	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths) {
 		return new GreedyURLClassLoader(libraryPaths, parentCl);
 	}
 	
@@ -159,16 +160,19 @@ public class ClassLoaderUtils {
 	 * @return
 	 */
 	public static ClassLoader createNodeClassLoader(Node node) {
+		Set<ClassLoader> classLoaders = DynamicCompiler.getCTLLibsClassLoaders();
+		classLoaders.add(node.getClass().getClassLoader());
+		
+		ClassLoader parentClassLoader = new MultiParentClassLoader(classLoaders.toArray(new ClassLoader[0]));
 		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
 		if (runtimeClasspath != null && runtimeClasspath.length > 0) {
-			return new GreedyURLClassLoader(node.getGraph().getRuntimeContext().getRuntimeClassPath(),
-					node.getClass().getClassLoader());
+			return new GreedyURLClassLoader(node.getGraph().getRuntimeContext().getRuntimeClassPath(), parentClassLoader);
 		} else {
-			return node.getClass().getClassLoader();
+			return parentClassLoader;
 		}
 	}
 
-	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) throws ComponentNotReadyException {
+	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) {
 		ClassLoader classLoader;
 		if (StringUtils.isEmpty(classpath)) {
 			classLoader = Thread.currentThread().getContextClassLoader();
@@ -183,9 +187,9 @@ public class ClassLoaderUtils {
 					}
 				});
 			} catch (MalformedURLException e) {
-				throw new ComponentNotReadyException(e);
+				throw new JetelRuntimeException(e);
 			} catch (PrivilegedActionException e) {
-				throw new ComponentNotReadyException(e);
+				throw new JetelRuntimeException(e);
 			}
 		}
 
@@ -216,4 +220,49 @@ public class ClassLoaderUtils {
 		}
 		return urls;
 	}
+	
+    /**
+     * Instantiates class from the given className.
+     * @throws LoadClassException
+     */
+    public static <T> T loadClassInstance(Class<T> expectedType, String className, Node node) {
+    	Object instance = loadClassInstance(className, node);
+    	try {
+    		return expectedType.cast(instance);
+    	} catch (ClassCastException e) {
+    		throw new LoadClassException("Provided class '" + className + "' does not extend/implement " + expectedType.getName(), e);
+    	}
+    }
+
+    /**
+     * Instantiates class from the given className.
+     * @throws LoadClassException
+     */
+    public static Object loadClassInstance(String className, Node node) {
+    	return loadClassInstance(className, ClassLoaderUtils.createNodeClassLoader(node));
+    }
+    
+    /**
+     * Instantiates class from the given className.
+     * @throws LoadClassException
+     */
+    public static Object loadClassInstance(String className, ClassLoader loader) {
+    	try {
+    		Class<?> klass = Class.forName(className, true, loader);
+    		return klass.newInstance();
+    	} catch (ClassNotFoundException e) {
+    		throw new LoadClassException("Cannot find class: " + className, e);
+    	} catch (IllegalAccessException e) {
+    		throw new LoadClassException("Cannot instantiate class: " + className, e);
+    	} catch (InstantiationException e) {
+    		throw new LoadClassException("Cannot instantiate class: " + className, e);
+    	} catch (ExceptionInInitializerError e) {
+    		throw new LoadClassException("Cannot initialize class: " + className, e);
+    	} catch (LinkageError e) {
+    		throw new LoadClassException("Cannot link class: " + className, e);
+    	} catch (SecurityException e) {
+    		throw new LoadClassException("Cannot instantiate class: " + className, e);
+    	}
+    }
+
 }

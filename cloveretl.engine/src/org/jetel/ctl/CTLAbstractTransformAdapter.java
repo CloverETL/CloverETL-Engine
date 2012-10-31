@@ -19,6 +19,8 @@
 package org.jetel.ctl;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.jetel.component.Transform;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.ctl.data.TLType;
@@ -92,6 +94,18 @@ public class CTLAbstractTransformAdapter implements Transform {
 
 		this.executor = executor;
 		this.logger = logger;
+	}
+
+    /**
+     * Constructs a <code>CTLAbstractTransformAdapter</code> for a given CTL executor and logger.
+     *
+     * @param executor the CTL executor to be used by this transform adapter, may not be <code>null</code>
+     * @param executor the logger to be used by this transform adapter, may not be <code>null</code>
+     *
+     * @throws NullPointerException if either the executor or the logger is <code>null</code>
+     */
+    public CTLAbstractTransformAdapter(TransformLangExecutor executor, Logger logger) {
+    	this(executor, LogFactory.getLog(logger.getName()));
 	}
 
 	/**

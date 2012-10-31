@@ -40,7 +40,9 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 
@@ -74,7 +76,7 @@ public class DelimitedDataParser extends AbstractParser {
 	private int recordCounter;
 	private char[][] delimiters;
 	private boolean[] eofAsDelimiters;
-	private char[] fieldTypes;
+	private DataFieldType[] fieldTypes;
 	private boolean[] isAutoFilling;
 	private boolean isEof;
 	private int bytesProcessed;
@@ -198,7 +200,7 @@ public class DelimitedDataParser extends AbstractParser {
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-		if (metadata.getRecType() != DataRecordMetadata.DELIMITED_RECORD) {
+		if (metadata.getParsingType() != DataRecordParsingType.DELIMITED) {
 			throw new ComponentNotReadyException("Delimited data expected but not encountered");
 		}        
         DataFieldMetadata fieldMetadata;
@@ -206,7 +208,7 @@ public class DelimitedDataParser extends AbstractParser {
 		// create array of delimiters & initialize them
 		delimiters = new char[metadata.getNumFields()][];
 		eofAsDelimiters = new boolean[metadata.getNumFields()];
-		fieldTypes = new char[metadata.getNumFields()];
+		fieldTypes = new DataFieldType[metadata.getNumFields()];
 		isAutoFilling = new boolean[metadata.getNumFields()];
 		isSkipLeadingBlanks = new boolean[metadata.getNumFields()];
 		isSkipTrailingBlanks = new boolean[metadata.getNumFields()];
@@ -217,7 +219,7 @@ public class DelimitedDataParser extends AbstractParser {
 				delimiters[i] = tempDelimiters[0].toCharArray();
 			}
 			eofAsDelimiters[i] = fieldMetadata.isEofAsDelimiter();
-			fieldTypes[i] = fieldMetadata.getType();
+			fieldTypes[i] = fieldMetadata.getDataType();
 			isAutoFilling[i] = fieldMetadata.getAutoFilling() != null;
 			// we handle only one character delimiters
 			isSkipLeadingBlanks[i] = skipLeadingBlanks != null ? skipLeadingBlanks : trim != null ? trim : metadata.getField(i).isTrim();
@@ -575,8 +577,8 @@ public class DelimitedDataParser extends AbstractParser {
 	 *@return               String with quotes removed if specified
 	 */
 	private CharSequence buffer2String(StringBuilder buffer, int fieldNum) {
-		if (fieldTypes[fieldNum] != DataFieldMetadata.BYTE_FIELD &&
-			fieldTypes[fieldNum] != DataFieldMetadata.BYTE_FIELD_COMPRESSED	) {
+		if (fieldTypes[fieldNum] != DataFieldType.BYTE &&
+			fieldTypes[fieldNum] != DataFieldType.CBYTE) {
 			return qdecoder.decode(buffer);
 		}
 	    return buffer;	    

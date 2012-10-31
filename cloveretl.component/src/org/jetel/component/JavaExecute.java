@@ -33,8 +33,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.compile.DynamicJavaClass;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
@@ -98,63 +96,6 @@ public class JavaExecute extends Node {
 	static Log logger = LogFactory.getLog(JavaExecute.class);
 
 	/**
-	 * Helper method, which generates instance of JavaRunnable class from String, CLASS file or URL with
-	 * Java source. No matter, which of these forms is used, code must be instance of JavaRunnable class.
-	 *  
-     * @param runnable		String containing Java code to be executed
-     * @param runnableClass	Name of CLASS with code (e.g. org.jetel.test.DemoRunnable)
-     * @param runnableURL	URL of the source code with Java code to be executed
-	 * @param charset		Character set for reading Java source from file	
-	 * @param node			Reference to actual node, from where factory method is called  
-	 * @param runnableParameters	Properties, which should be passed to a class
-	 * @param classLoader	Reference to classLoader to be used
-	 * @param doInit 		Set to true to call init of Runnable instnace created
-	 * @return		Instance of JavaRunnable class
-	 * @throws ComponentNotReadyException
-	 */
-	private JavaRunnable createRunnable(String runnable,
-			String runnableClass, String runnableURL, String charset,
-			Node node, Properties runnableParameters, ClassLoader classLoader, boolean doInit) throws ComponentNotReadyException {
-		
-		JavaRunnable codeToRun = null;
-		
-		if(runnable == null && runnableClass == null && runnableURL == null) {
-            throw new ComponentNotReadyException("Runnable class is not defined.");
-        }
-		
-        if (runnableClass != null) {
-            //get runnable from link to the compiled class
-            codeToRun = loadClass(runnableClass);
-        } else if (runnable == null && runnableURL != null) {
-        	runnable = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), runnableURL, charset);
-        }
-        
-        if (runnableClass == null) {
-    		codeToRun = loadClassDynamic(runnable, classLoader);
-        }
-        
-        codeToRun.setNode(node); 
-        
-        if (doInit && !codeToRun.init(runnableParameters)) {
-            throw new ComponentNotReadyException("Error when initializing tranformation function !");        
-        }
-        
-		return codeToRun;
-	}
-	    
-    /**
-     * Creates new instance of class already loaded in memory
-     * 
-     * @param logger		Reference to a logger to use
-     * @param runnableClassName	Classname to load
-     * @param libraryPaths	Classpath
-     * @return
-     * @throws ComponentNotReadyException
-     */
-    private JavaRunnable loadClass(String runnableClassName) throws ComponentNotReadyException {
-    	return RecordTransformFactory.loadClassInstance(runnableClassName, JavaRunnable.class, this);
-    }
-    
     /* (non-Javadoc)
      * @see org.jetel.graph.Node#preExecute()
      */
@@ -173,19 +114,6 @@ public class JavaExecute extends Node {
     	codeToRun.postExecute();
     }
     
-    /**
-     * Dynamically creates instance of a given class - compilation and class loading occurs (used
-     * for reading code from String or from source .java file
-     * 
-     * @param logger	Logger to use
-     * @param dynamicRunnableCode	Class with info about source code
-     * @return	Instance of a class
-     * @throws ComponentNotReadyException
-     */
-    private JavaRunnable loadClassDynamic(String runnable, ClassLoader classLoader) throws ComponentNotReadyException {
-        return DynamicJavaClass.instantiate(runnable, JavaRunnable.class, this);
-    }
-	
     /**
      * Costruction of Java Execute component
      * 
@@ -234,15 +162,25 @@ public class JavaExecute extends Node {
 		super.init();
 
 		/* Init Parameters */
-		if (codeToRun != null) {
-			codeToRun.init(runnableParameters);
-		} else { 
-		
-		/* Create JavaRunnable instance to be executed by code */
-		codeToRun = createRunnable(runnable, runnableClass, 
-				runnableURL, charset, this,	runnableParameters, this.getClass().getClassLoader(), true);
+		if (codeToRun == null) {
+			codeToRun = getTransformFactory().createTransform();
 		}
-		
+
+		codeToRun.setNode(this); 
+        
+		if (!codeToRun.init(runnableParameters)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function !");        
+        }
+	}
+	
+	private TransformFactory<JavaRunnable> getTransformFactory() {
+		TransformFactory<JavaRunnable> transformFactory = TransformFactory.createTransformFactory(JavaRunnable.class);
+		transformFactory.setTransform(runnable);
+		transformFactory.setTransformClass(runnableClass);
+		transformFactory.setTransformUrl(runnableURL);
+		transformFactory.setCharset(charset);
+		transformFactory.setComponent(this);
+		return transformFactory;
 	}
 	
 	@Override
@@ -254,7 +192,11 @@ public class JavaExecute extends Node {
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
         }
-		// Nothing to check here - trying to create runnable class is too strict in this phase 
+		
+		//check JavaRunnable
+		if (codeToRun == null) {
+			getTransformFactory().checkConfig(status);
+		}
 		
         return status;
 	}
@@ -322,9 +264,7 @@ public class JavaExecute extends Node {
                     xattribs.getStringEx(XML_RUNNABLEURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
                     internalProperties);
 
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {            	
-            	javaExecute.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            }
+            javaExecute.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
@@ -345,14 +285,6 @@ public class JavaExecute extends Node {
 		this.charset = charset;
 	}
 	
-	// note: following two methods do nothing explicit as JavaExecute has got no internal state, that needs to
-	//		 be reset or freed.
-	
-	@Override	
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();  
-	}
-	
 	@Override
 	public synchronized void free() {	
 		super.free();
@@ -361,4 +293,5 @@ public class JavaExecute extends Node {
 			codeToRun.free();
 		}
 	}
+	
 }

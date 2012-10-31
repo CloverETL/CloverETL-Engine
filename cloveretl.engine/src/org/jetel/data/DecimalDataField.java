@@ -340,6 +340,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 *@since     March 28, 2002
 	 */
 	@Override
+	@Deprecated
 	public char getType() {
 		return DataFieldMetadata.DECIMAL_FIELD;
 	}
@@ -479,11 +480,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 			value.fromString(seq, numericFormatter);
 			setNull(value.isNaN());
 		} catch (Decimal.OutOfPrecisionException outOfPrecision) {
-			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\": %s", getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, outOfPrecision.getMessage()));
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\": %s", getMetadata().getName(), getMetadata().getDataType().getName(), seq, outOfPrecision.getMessage()));
 		} catch (Exception ex) {
 			throw new BadDataFormatException(
 					String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-							getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern()), seq.toString());
+							getMetadata().getName(), getMetadata().getDataType().getName(), seq, numericFormatter.getFormatPattern()), seq.toString());
 		}
 	}
 	

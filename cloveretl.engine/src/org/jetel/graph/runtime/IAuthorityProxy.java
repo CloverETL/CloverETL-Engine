@@ -107,6 +107,7 @@ public abstract class IAuthorityProxy {
 		public DictionaryValuesContainer dictionaryOut;
 		public GraphTracking tracking;
 		public JobType jobType;
+		public String executionGroup;
 		
 		@Override
 		public String toString() {
@@ -228,27 +229,31 @@ public abstract class IAuthorityProxy {
 	public abstract RunStatus getRunStatus(long runId, List<TrackingEvent> trackingEvents, Long timeout) throws InterruptedException;
 	
 	/**
-	 * Ask authority to kill graph specified by run identifier. It may be any run, not just child run.
-	 * @param runId graph to kill
-	 * @param recursive - true if daemon children graphs should be killed as well
-	 * @return final run status for killed graphs (graph finished/failed before this request aren't included)
+	 * Ask authority to kill job specified by run identifier. It may be any run, not just child run.
+	 * @param runId job to kill
+	 * @param recursive - true if daemon children jobs should be killed as well
+	 * @return List of killed jobs;
+	 *  	Specified job must be included in the list, however it's possible that it's not accessible. 
+	 *  	E.g. when it's not running any more and it's not persistent. Exception is thrown in such case.
+	 *  	List also may contain children jobs killed, but it doesn't contain children jobs finished/failed/killed before.
+	 * @throws throws exception when specified job can't be found - e.g. it's already finished and not-persistent  
 	 */
-	public abstract List<RunStatus> killGraph(long runId, boolean recursive);
+	public abstract List<RunStatus> killJob(long runId, boolean recursive);
 	
 	/**
-	 * Ask authority to kill all children graphs belonging to specified execution group.
-	 * @param executionGroup name of execution group with graphs to be killed 
-	 * @param recursive - true if daemon children graphs should be killed as well
-	 * @return final run status for all killed graphs (graph finished/failed before this request aren't included)
+	 * Ask authority to kill all children jobs belonging to specified execution group.
+	 * @param executionGroup name of execution group with jobs to be killed 
+	 * @param recursive - true if daemon children jobs should be killed as well
+	 * @return final run status for all killed jobs (job finished/failed before this request aren't included)
 	 */
 	public abstract List<RunStatus> killExecutionGroup(String executionGroup, boolean recursive);
 
 	/**
-	 * Ask authority to kill all children graphs.
-	 * @param recursive - true if daemon children graphs should be killed as well
-	 * @return final run status for all killed graphs (graph finished/failed before this request aren't included)
+	 * Ask authority to kill all children jobs.
+	 * @param recursive - true if daemon children jobs should be killed as well
+	 * @return final run status for all killed jobs (job finished/failed before this request aren't included)
 	 */
-	public abstract List<RunStatus> killChildrenGraphs(boolean recursive);
+	public abstract List<RunStatus> killChildrenJobs(boolean recursive);
 	
 	
 

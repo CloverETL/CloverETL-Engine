@@ -166,13 +166,16 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			if (p1.getIndex() < valueImage.length() - 1) {
 				throw new ParseException("Date literal '" + valueImage + "' has invalid format.", p1.getErrorIndex()); 
 			}
-			calendar.setTime(date);
-			// set all time fields to zero
-			calendar.set(Calendar.HOUR, 0);
-			calendar.set(Calendar.MINUTE, 0);
-			calendar.set(Calendar.SECOND,0);
-			calendar.set(Calendar.MILLISECOND,0);
-			valueObj = calendar.getTime();
+			//this code can be executed by multiple threads - so statically defined calendar has to be synchronised
+			synchronized (calendar) {
+				calendar.setTime(date);
+				// set all time fields to zero
+				calendar.set(Calendar.HOUR, 0);
+				calendar.set(Calendar.MINUTE, 0);
+				calendar.set(Calendar.SECOND,0);
+				calendar.set(Calendar.MILLISECOND,0);
+				valueObj = calendar.getTime();
+			}
 			setType(TLTypePrimitive.DATETIME);
 			break;
 		case DATETIME_LITERAL:

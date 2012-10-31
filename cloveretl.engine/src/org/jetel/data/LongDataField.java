@@ -345,6 +345,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	 * @since     March 28, 2002
 	 */
 	@Override
+	@Deprecated
 	public char getType() {
 		return DataFieldMetadata.LONG_FIELD;
 	}
@@ -465,7 +466,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 			BadDataFormatException e = new BadDataFormatException(String.format("Field %s(%s) cannot be set to " +
 					"value \"%s\"; doesn't match the specified format \"%s\"" + 
 					(!StringUtils.isEmpty(ex.getMessage()) ? " with reason \"%s\";" : ""), getMetadata().getName(), 
-					DataFieldMetadata.type2Str(getType()), seq, numericFormatter.getFormatPattern(), ex.getMessage()),
+					getMetadata().getDataType().getName(), seq, numericFormatter.getFormatPattern(), ex.getMessage()),
 					(new StringBuilder(seq)).toString());
 			e.setAdditionalMessage("(note that for ParallelReader or Server parallel transformation run the record " +
 					"number might be incorrect)");

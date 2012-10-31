@@ -257,6 +257,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since     April 23, 2002
 	 */
 	@Override
+	@Deprecated
 	public char getType() {
 		return DataFieldMetadata.STRING_FIELD;
 	}
@@ -279,7 +280,7 @@ public class StringDataField extends DataField implements CharSequence{
 
 		if (stringFormat != null && !stringFormat.matches(seq)) {
 			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-					getMetadata().getName(),DataFieldMetadata.type2Str(getType()),seq,stringFormat.getPattern()), seq.toString());
+					getMetadata().getName(), getMetadata().getDataType().getName(),seq,stringFormat.getPattern()), seq.toString());
 		}
 
 		setValue(seq);

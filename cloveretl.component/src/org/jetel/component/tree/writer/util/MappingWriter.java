@@ -223,6 +223,7 @@ public class MappingWriter implements MappingVisitor {
 	private void writePropertyAsCloverAttribute(AbstractNode element, MappingProperty property) throws XMLStreamException {
 		String attribute = element.getProperty(property);
 		if (attribute != null) {
+			checkCloverPrefix();
 			writer.writeAttribute(TreeWriterMapping.MAPPING_KEYWORDS_NAMESPACEURI, property.getName(), attribute);
 		}
 	}

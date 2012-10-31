@@ -129,6 +129,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 			  this.parserHelper=parent.parserHelper;
 			  this.hasEvalNode = false;              this.problemReporter = parent.problemReporter;
               this.parsedImports = parent.parsedImports;              this.isImported  = true;
+              this.encoding = parent.encoding;
       }
       
 	public void reset(java.io.InputStream stream) {
@@ -950,13 +951,18 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
     		String importFileUrl = problemReporter.getImportFileUrl();
     		ErrorLocation errorLocation = problemReporter.getErrorLocation();
 
-			try {				String importSourceCode = FileUtils.getStringFromURL(projectURL, filenameURL, encoding);
-
+			try {
+				String importSourceCode = null;
+				try {
+					importSourceCode = FileUtils.getStringFromURL(projectURL, filenameURL, encoding);
+				} catch (Exception e) {
+					throw new IOException(e.getMessage());
+				}
 				if (propertyRefResolver != null) {
 					importSourceCode = propertyRefResolver.resolveRef(importSourceCode, RefResFlag.SPEC_CHARACTERS_OFF);
 				}
 
-				stream = new ByteArrayInputStream(importSourceCode.getBytes("UTF-8"));
+				stream = new ByteArrayInputStream(importSourceCode.getBytes(encoding));
 				addParsedImport(filenameURL); // the above will handle invalid URL etc.
                 // set new "import context", propagate error location if already defined
         		problemReporter.setImportFileUrl(filenameURL);

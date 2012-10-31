@@ -351,9 +351,16 @@ public class LookupJoin extends Node {
     				DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
     				
     				// create the transformation
-    				transformation = RecordTransformFactory.createTransform(
-    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-    						outMetadata);
+    	        	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	        	transformFactory.setTransform(transformSource);
+    	        	transformFactory.setTransformClass(transformClassName);
+    	        	transformFactory.setTransformUrl(transformURL);
+    	        	transformFactory.setCharset(charset);
+    	        	transformFactory.setComponent(this);
+    	        	transformFactory.setInMetadata(inMetadata);
+    	        	transformFactory.setOutMetadata(outMetadata);
+    				transformation = transformFactory.createTransform();
+
     				// init transformation
     		        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
     		            throw new ComponentNotReadyException("Error when initializing tranformation function.");
@@ -486,33 +493,12 @@ public class LookupJoin extends Node {
 		if (lookupTable == null) {
 			status.add(new ConfigurationProblem("Lookup table \"" + lookupTableName + "\" not found.", Severity.ERROR,
 					this, Priority.NORMAL));
-		} else if (!runtimeMetadata(lookupTable)) {
-	        // transformation source for checkconfig
-	        String checkTransform = null;
-	        if (transformSource != null) {
-	        	checkTransform = transformSource;
-	        } else if (transformURL != null) {
-	        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
-	        }
-	        // only the transform and transformURL parameters are checked, transformClass is ignored
-	        if (checkTransform != null) {
-	        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-	        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-	        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-    				try {
-    					DataRecordMetadata inMetadata[] = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
-    					DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT).getMetadata() };
-	    				transformation = RecordTransformFactory.createTransform(
-	    						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-	    						outMetadata);
-					} catch (ComponentNotReadyException e) {
-						// find which component attribute was used
-						String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-						// report CTL error as a warning
-						status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-					}
-	        	}
-	        }
+		} else if (transformation == null && !runtimeMetadata(lookupTable)) {
+			DataRecordMetadata[] inMetadata = { getInputPort(READ_FROM_PORT).getMetadata(), lookupTable.getMetadata() };
+			DataRecordMetadata[] outMetadata = { getOutputPort(WRITE_TO_PORT).getMetadata() };
+		
+            //check transformation
+        	getTransformFactory(inMetadata, outMetadata).checkConfig(status);
         }
         
         return status;
@@ -541,9 +527,7 @@ public class LookupJoin extends Node {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
 			if (transformation == null && !runtimeMetadata(lookupTable)) {
-				transformation = RecordTransformFactory.createTransform(
-						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
-						outMetadata);
+				transformation = getTransformFactory(inMetadata, outMetadata).createTransform();
 			}
 			// init transformation
 	        if (transformation != null && !transformation.init(transformationParameters, inMetadata, outMetadata)) {
@@ -558,6 +542,18 @@ public class LookupJoin extends Node {
 					"while left outer join is switched on");
 		}
         errorActions = ErrorAction.createMap(errorActionsString);
+	}
+	
+	private TransformFactory<RecordTransform> getTransformFactory(DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata) {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setTransform(transformSource);
+    	transformFactory.setTransformClass(transformClassName);
+    	transformFactory.setTransformUrl(transformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(inMetadata);
+    	transformFactory.setOutMetadata(outMetadata);
+    	return transformFactory;
 	}
 	
 	/**
@@ -587,12 +583,10 @@ public class LookupJoin extends Node {
 
 			join = new LookupJoin(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), joinKey,
-					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), xattribs
+					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), xattribs
 							.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
 		      xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
+			join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			join.setTransformationParameters(xattribs
 							.attributes2Properties(new String[] { XML_TRANSFORM_CLASS_ATTRIBUTE }));
 			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {

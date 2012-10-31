@@ -1776,6 +1776,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("Wednesday", ((Map<Date, String>) getVariable("wednesday")).get(c.getTime()));
 		assertEquals("Wednesday", dayInWeekCopy.get(c.getTime()));
 		assertFalse(dayInWeek.equals(dayInWeekCopy));
+		
+		{
+			Map<?, ?> preservedOrder = (Map<?, ?>) getVariable("preservedOrder");
+			assertEquals(100, preservedOrder.size());
+			int i = 0;
+			for (Map.Entry<?, ?> entry: preservedOrder.entrySet()) {
+				assertEquals("key" + i, entry.getKey());
+				assertEquals("value" + i, entry.getValue());
+				i++;
+			}
+		}
 	}
 	
 	public void test_type_record_list() {
@@ -2526,6 +2537,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompileExpectError("test_return_incorrect", "Can't convert from 'string' to 'integer'");
 	}
 	
+	public void test_return_void() {
+		doCompile("test_return_void");
+	}
+	
 	public void test_overloading() {
 		doCompile("test_overloading");
 		check("res1", Integer.valueOf(3));
@@ -2851,7 +2866,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_join() {
 		doCompile("test_stringlib_join");
 		//check("joinedString", "Bagr,3,3.5641,-87L,CTL2");
-		check("joinedString1", "3=0.1\"80=5455.987\"-5=5455.987");
+		check("joinedString1", "80=5455.987\"-5=5455.987\"3=0.1");
 		check("joinedString2", "5.0♫54.65♫67.0♫231.0");
 		//check("joinedString3", "5☺54☺65☺67☺231☺80=5455.987☺-5=5455.987☺3=0.1☺CTL2☺42");
 	}
@@ -2887,6 +2902,35 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("matches3", false);
 		check("matches4", true);
 		check("matches5", false);
+	}
+	
+	public void test_stringlib_matchGroups() {
+		doCompile("test_stringlib_matchGroups");
+		check("result1", null);
+		check("result2", Arrays.asList(
+				//"(([^:]*)([:])([\\(]))(.*)(\\))(((#)(.*))|($))"
+				"zip:(zip:(/path/name?.zip)#innerfolder/file.zip)#innermostfolder?/filename*.txt",
+				"zip:(",
+				"zip",
+				":",
+				"(",
+				"zip:(/path/name?.zip)#innerfolder/file.zip",
+				")",
+				"#innermostfolder?/filename*.txt",
+				"#innermostfolder?/filename*.txt",
+				"#",
+				"innermostfolder?/filename*.txt",
+				null
+			)
+		);
+	}
+	
+	public void test_stringlib_matchGroups_unmodifiable() {
+		try {
+			doCompile("test_stringlib_matchGroups_unmodifiable");
+			fail();
+		} catch (RuntimeException re) {
+		};
 	}
 	
 	public void test_stringlib_metaphone() {

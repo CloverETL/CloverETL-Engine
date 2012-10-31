@@ -31,14 +31,8 @@ import org.jetel.graph.InputPort;
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class DriverReader implements InputReader {
-	private static final int CURRENT = 0;
-	private static final int NEXT = 1;
-
+public class DriverReader extends InputReader {
 	private InputPort inPort;
-	protected RecordKey key;
-	private DataRecord[] rec = new DataRecord[2];
-	private int recCounter;
 	private boolean blocked;
 	
 	private InputOrdering inputOrdering = InputOrdering.UNDEFINED;
@@ -98,7 +92,7 @@ public class DriverReader implements InputReader {
 			recCounter++;
 			lastCompare = key.compare(rec[CURRENT], rec[NEXT]);
 			if (lastCompare != 0){
-				inputOrdering = SlaveReader.updateOrdering(lastCompare, inputOrdering);
+				inputOrdering = InputReader.updateOrdering(lastCompare, inputOrdering);
 				break;
 			}
 		}
@@ -127,7 +121,7 @@ public class DriverReader implements InputReader {
 		} else {
 			recCounter++;
 			lastCompare = key.compare(rec[CURRENT], rec[NEXT]);
-			inputOrdering = SlaveReader.updateOrdering(lastCompare, inputOrdering);
+			inputOrdering = InputReader.updateOrdering(lastCompare, inputOrdering);
 			blocked = lastCompare != 0;
 		}
 		return rec[CURRENT];
@@ -154,7 +148,7 @@ public class DriverReader implements InputReader {
 	}
 
 	@Override
-	public int compare(InputReader other) {
+	public int compare(IInputReader other) {
 		DataRecord rec1 = getSample();
 		DataRecord rec2 = other.getSample();
 		if (rec1 == null) {
@@ -180,5 +174,4 @@ public class DriverReader implements InputReader {
 	public InputOrdering getOrdering() {
 		return inputOrdering;
 	}
-
 }

@@ -1144,8 +1144,6 @@ public class CharByteDataParser extends AbstractTextParser {
 		private boolean matchLongestDelimiter;
 		private boolean acceptEofAsDelim;
 		private boolean acceptEndOfRecord;
-		private boolean lTrim;
-		private boolean rTrim;
 		private int shift;
 		private boolean acceptDefaultFieldDelim = false;
 
@@ -1173,8 +1171,6 @@ public class CharByteDataParser extends AbstractTextParser {
 			this.multipleDelimiters = multipleDelimiters;
 			this.acceptEofAsDelim = acceptEofAsDelim;
 			this.acceptEndOfRecord = acceptEndOfRecord;
-			this.lTrim = lTrim;
-			this.rTrim = rTrim;
 			this.shift = shift;
 			this.acceptDefaultFieldDelim = acceptDefaultFieldDelim;
 			this.matchLongestDelimiter = matchLongestDelimiter;

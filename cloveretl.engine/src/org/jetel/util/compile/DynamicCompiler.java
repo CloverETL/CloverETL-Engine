@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,7 +49,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.ctl.TLCompilerDescription;
 import org.jetel.ctl.extensions.TLFunctionLibraryDescription;
-import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
 
@@ -162,6 +162,20 @@ public final class DynamicCompiler {
 		}
 		return result;
 	}
+
+    /**
+     * @return set of class loaders of plugins which contains CTL2 related code.
+     * @see #getExtraLibraries()
+     * @see #getCTLRelatedPlugins()
+     */
+    public static Set<ClassLoader> getCTLLibsClassLoaders() {
+    	Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
+    	for (PluginDescriptor plugin : DynamicCompiler.getCTLRelatedPlugins()) {
+    		loaders.add(plugin.getClassLoader());
+    	}
+    	return loaders;
+    }
+    
 
 	/**
 	 * Java source code wrapper used by {@link JavaCompiler}.

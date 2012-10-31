@@ -203,8 +203,8 @@ public class CodeParser {
 	public CodeParser(DataRecordMetadata[] inputMetadatas, DataRecordMetadata[] outputMetadatas) {
 	    
 	    //initialization metadata arrays based on given ports
-        this.inputRecordsMeta = inputMetadatas;
-        this.outputRecordsMeta = outputMetadatas;
+        this.inputRecordsMeta = inputMetadatas != null ? inputMetadatas : new DataRecordMetadata[0];
+        this.outputRecordsMeta = outputMetadatas != null ? outputMetadatas : new DataRecordMetadata[0];
 
         inputRecordsNames = new HashMap(inputRecordsMeta.length);
         outputRecordsNames = new HashMap(outputRecordsMeta.length);

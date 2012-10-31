@@ -143,7 +143,7 @@ public class AhoCorasick {
 		}
 		if(bb != null && bb.hasRemaining()) {
 			NodeTrie iterator = rootTrie;
-			for(int i = 0; bb.hasRemaining(); i++) {
+			while (bb.hasRemaining()) {
 				byte b = bb.get();
 				if(iterator.children[b] == null) {
 					iterator.children[b] = new NodeTrie(iterator, (char)b);

@@ -36,6 +36,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -98,7 +99,7 @@ public abstract class FixLenDataParser extends AbstractParser implements TextPar
 		if (metadata == null) {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
-		if (metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
+		if (metadata.getParsingType() != DataRecordParsingType.FIXEDLEN) {
 			throw new ComponentNotReadyException("Fixed length data format expected but not encountered");
 		}
 

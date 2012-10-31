@@ -19,12 +19,14 @@
 package org.jetel.component.partition;
 
 import java.nio.ByteBuffer;
+import java.util.Properties;
 
 import org.jetel.component.Transform;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -48,12 +50,22 @@ public interface PartitionFunction extends Transform {
 	public boolean supportsDirectRecord();
 
 	/**
+	 * Called before partition function is first used (getOutputPort is used).
+	 * 
+	 * @param numPartitions how many partitions we have
+	 * @param recordKey set of fields composing key based on which should the partition be determined
+	 * @deprecated use {@link #init(int, RecordKey, Properties, DataRecordMetadata)} instead
+	 */
+	@Deprecated
+	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException;
+
+	/**
 	 * Called befor partiton function is first used (getOutputPort is used).
 	 * 
 	 * @param numPartitions how many partitions we have
 	 * @param recordKey set of fields composing key based on which should the partition be determined
 	 */
-	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException;
+	public void init(int numPartitions, RecordKey partitionKey, Properties parameters, DataRecordMetadata metadata) throws ComponentNotReadyException;
 
 	/**
 	 * @param record data record which should be used for determining partition??? number

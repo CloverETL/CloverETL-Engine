@@ -272,6 +272,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @since     April 23, 2002
 	 */
 	@Override
+	@Deprecated
 	public char getType() {
 		return DataFieldMetadata.DATE_FIELD;
 	}
@@ -311,7 +312,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 			setNull(false);
 		} catch (IllegalArgumentException exception) {
 			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-					getMetadata().getName(), DataFieldMetadata.type2Str(getType()), seq, getMetadata().getFormatStr()),
+					getMetadata().getName(), getMetadata().getDataType().getName(), seq, getMetadata().getFormatStr()),
 					seq.toString(), exception);
 		}
 	}

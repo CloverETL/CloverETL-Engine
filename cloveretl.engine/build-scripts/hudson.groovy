@@ -9,7 +9,7 @@ def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
-jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-after-commit-java-1.7-Sun|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
@@ -57,7 +57,7 @@ if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
 	antArgs = [
-		"-Dadditional.plugin.list=cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial",
+		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial",
 		"-Dcte.logpath=/data/cte-logs",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
@@ -79,11 +79,11 @@ if( !runTests ){
 		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "tests-reset"){
-		antTarget = "runtests-with-testdb"
+		antTarget = "runtests-tests-reset"
 		antArgs += "-Druntests-plugins-dontrun=true"	
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
 		antCustomEnv["ANT_OPTS"] = antCustomEnv["ANT_OPTS"] + " -XX:MaxPermSize=128m"
-		antArgs += "-Druntests-target=runtests-scenario-after-commit"
+		// antArgs += "-Druntests-target=runtests-tests-reset"
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
@@ -116,6 +116,7 @@ if( !runTests ){
 		"-Dhudson.link=job/${jobName}/${buildNumber}",
 		"-Dhudson.engine.link=job/${engineJobName}/${engineBuildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
+		"-Dtestenv.etlenvironment=engine",
 	]
 
 	antTarget = "run-scenarios-with-engine-build-with-testdb"

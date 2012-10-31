@@ -34,8 +34,6 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -44,14 +42,14 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -351,27 +349,26 @@ public class Partition extends Node {
 				throw new ComponentNotReadyException(e.getMessage());
 			}
 		}
+		
 		//create partition function if still is not created
-		if (partitionFce != null) {
-			partitionClass = partitionFce.getClass().getName();
-			partitionFce.setNode(this);
-		} else {
-			PartitionFunctionFactory partitionFceFactory = new PartitionFunctionFactory();
-			partitionFceFactory.setNode(this);
-			partitionFceFactory.setMetadata(inMetadata);
-			partitionFceFactory.setPartitionKeyNames(partitionKeyNames);
-			partitionFceFactory.setPartitionRanges(partitionRanges);
-			partitionFceFactory.setAdditionalParameters(parameters);
-			partitionFceFactory.setCharset(charset);
-			partitionFceFactory.setLocale(locale);
-			partitionFceFactory.setUseI18N(useI18N);
-			partitionFceFactory.setLogger(logger);
-			partitionFce = partitionFceFactory.createPartitionFunction(partitionSource, partitionClass, partitionURL);
+		if (partitionFce == null) {
+			partitionFce = getPartitionFunctionFactory().createPartitionFunction(partitionSource, partitionClass, partitionURL);
 		}
 		
-		partitionFce.init(outPorts.size(),partitionKey);
+		partitionFce.init(outPorts.size(), partitionKey, parameters, inMetadata);
 	}
 
+	private PartitionFunctionFactory getPartitionFunctionFactory() {
+		PartitionFunctionFactory partitionFceFactory = new PartitionFunctionFactory();
+		partitionFceFactory.setNode(this);
+		partitionFceFactory.setMetadata(getInputPort(0).getMetadata());
+		partitionFceFactory.setPartitionKeyNames(partitionKeyNames);
+		partitionFceFactory.setPartitionRanges(partitionRanges);
+		partitionFceFactory.setCharset(charset);
+		partitionFceFactory.setLocale(locale);
+		partitionFceFactory.setUseI18N(useI18N);
+		return partitionFceFactory;
+	}
 
 	/**
 	 *  Description of the Method
@@ -435,9 +432,9 @@ public class Partition extends Node {
 					StringUtils.split(xattribs.getString(XML_RANGES_ATTRIBUTE), RANGES_DELIMITER) :
 						null;		
 		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE),
-		    		xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE, null, false),
+		    		xattribs.getStringEx(XML_PARTIONSOURCE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
 		    		xattribs.getString(XML_PARTITIONCLASS_ATTRIBUTE, null),
-		    		xattribs.getString(XML_PARTITIONURL_ATTRIBUTE, null), 
+		    		xattribs.getStringEx(XML_PARTITIONURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 		    		key, ranges);
 			partition.setFunctionParameters(xattribs.attributes2Properties(
 					new String[]{XML_ID_ATTRIBUTE,XML_PARTIONSOURCE_ATTRIBUTE,
@@ -445,7 +442,7 @@ public class Partition extends Node {
 							XML_PARTITIONKEY_ATTRIBUTE, XML_RANGES_ATTRIBUTE, 
 							XML_CHARSET_ATTRIBUTE}));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				partition.setCharset(XML_CHARSET_ATTRIBUTE);
+				partition.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
 			partition.setUseI18N(xattribs.getBoolean(XML_USE_I18N_ATTRIBUTE, false));
 			if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
@@ -510,38 +507,10 @@ public class Partition extends Node {
         }
 
         // transformation source for checkconfig
-        String checkTransform = null;
-        if (partitionSource != null) {
-        	checkTransform = partitionSource;
-        } else if (partitionURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), partitionURL, charset);
-        }
-        // partition class is checked only if is given specific CTL or TL code
-        if (partitionFce == null && partitionClass == null && checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-    		if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-    				|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-	        	try {
-					PartitionFunctionFactory partitionFceFactory = new PartitionFunctionFactory();
-					partitionFceFactory.setNode(this);
-					partitionFceFactory.setMetadata(inMetadata);
-					partitionFceFactory.setPartitionKeyNames(partitionKeyNames);
-					partitionFceFactory.setPartitionRanges(partitionRanges);
-					partitionFceFactory.setAdditionalParameters(parameters);
-					partitionFceFactory.setCharset(charset);
-					partitionFceFactory.setLocale(locale);
-					partitionFceFactory.setUseI18N(useI18N);
-					partitionFceFactory.setLogger(logger);
-					partitionFceFactory.createPartitionDynamic(checkTransform);
-				} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = partitionSource != null ? XML_PARTIONSOURCE_ATTRIBUTE : XML_PARTITIONURL_ATTRIBUTE;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-    		}
-        }
-       
+		if (partitionFce == null) {
+			getPartitionFunctionFactory().checkConfig(status, partitionSource, partitionClass, partitionURL);
+		}
+		
         return status;
     }
 	

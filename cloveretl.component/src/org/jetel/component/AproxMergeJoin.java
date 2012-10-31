@@ -41,8 +41,6 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
@@ -753,11 +751,9 @@ public class AproxMergeJoin extends Node {
 			throw new ComponentNotReadyException(
 					"Wrong metadata on output port no " + NOT_MATCH_SLAVE_OUT + " (NOT_MATCH_SLAVE_OUT)");
 		}
-		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT)
-				.getMetadata() };
+		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT).getMetadata() };
 		if (transformation == null) {
-			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
-					transformURL, charset, this, inMetadata, outMetadata);
+			transformation = getTransformationFactory().createTransform();
 		}
 		// init transformation
         if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
@@ -765,9 +761,7 @@ public class AproxMergeJoin extends Node {
         }
 		outMetadata = new DataRecordMetadata[] { getOutputPort(SUSPICIOUS_OUT).getMetadata() };
 		if (transformationForSuspicious == null) {
-			transformationForSuspicious = RecordTransformFactory.createTransform(transformSourceForSuspicious, 
-					transformClassNameForSuspicious, transformURLForsuspicious, charset, this, 
-					inMetadata, outMetadata);
+        	transformationForSuspicious = getTransformationForSuspiciousFactory().createTransform();
 		}
 		// init transformation
         if (!transformationForSuspicious.init(transformationParametersForSuspicious, inMetadata, outMetadata)) {
@@ -844,6 +838,30 @@ public class AproxMergeJoin extends Node {
 		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 	
+	private TransformFactory<RecordTransform> getTransformationFactory() {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setTransform(transformSource);
+    	transformFactory.setTransformClass(transformClassName);
+    	transformFactory.setTransformUrl(transformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(getInMetadata());
+    	transformFactory.setOutMetadata(getOutputPort(CONFORMING_OUT).getMetadata());
+    	return transformFactory;
+	}
+	
+	private TransformFactory<RecordTransform> getTransformationForSuspiciousFactory() {
+		TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+		transformFactory.setTransform(transformSourceForSuspicious);
+		transformFactory.setTransformClass(transformClassNameForSuspicious);
+		transformFactory.setTransformUrl(transformURLForsuspicious);
+		transformFactory.setCharset(charset);
+		transformFactory.setComponent(this);
+		transformFactory.setInMetadata(getInMetadata());
+		transformFactory.setOutMetadata(getOutputPort(SUSPICIOUS_OUT).getMetadata());
+		return transformFactory;
+	}
+
 	/**
 	 * Constructs a RecordComparator based on particular metadata and settings
 	 * 
@@ -972,16 +990,14 @@ public class AproxMergeJoin extends Node {
                     xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
                     xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
-                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+                    xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
-                    xattribs.getString(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,null),
+                    xattribs.getStringEx(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
                     xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,null),
                     xattribs.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
                     xattribs.getStringEx(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-            	join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            }
-			if (xattribs.exists(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE)) {
+            join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+            if (xattribs.exists(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
@@ -1206,50 +1222,18 @@ public class AproxMergeJoin extends Node {
             status.add(problem);
         }
         
-        checkCTL(status, transformSource, transformURL,  CONFORMING_OUT,
-        		XML_TRANSFORM_ATTRIBUTE, XML_TRANSFORM_URL_ATTRIBUTE);
-        checkCTL(status, transformSourceForSuspicious, transformURLForsuspicious, SUSPICIOUS_OUT, 
-        		XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE, XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE);
+        //check transformation
+		if (transformation == null) {
+			getTransformationFactory().checkConfig(status);
+		}
+
+        //check transformation
+		if (transformationForSuspicious == null) {
+			getTransformationForSuspiciousFactory().checkConfig(status);
+		}
 
         return status;
     }
-
-	private void checkCTL(ConfigurationStatus status,
-			String transform, String transformURL, int outputPort,
-			String transformAttribute, String transformURLAttribute) {
-		
-		// transformation source for checkconfig
-        String checkTransform = null;
-        if (transform != null) {
-        	checkTransform = transform;
-        } else if (transformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
-        }
-        // only the transform and transformURL parameters are checked, transformClass is ignored
-        if (checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-        		// only CTL is checked
-        		
-        		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
-        		inMetadata[0] = getInputPort(DRIVER_ON_PORT).getMetadata();
-        		inMetadata[1] = getInputPort(SLAVE_ON_PORT).getMetadata();
-        		DataRecordMetadata[] outMetadata = 
-        			new DataRecordMetadata[] { getOutputPort(outputPort).getMetadata() };
-
-    			try {
-    				RecordTransformFactory.createTransform(checkTransform, null, null, 
-    						charset, this, inMetadata, outMetadata);
-				} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = transform != null ? transformAttribute : transformURLAttribute;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-        	}
-        }
-	}
 
     @Override
 	public String getType(){

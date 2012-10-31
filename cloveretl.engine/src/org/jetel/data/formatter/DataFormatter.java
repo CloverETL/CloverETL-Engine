@@ -32,7 +32,7 @@ import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
@@ -111,8 +111,8 @@ public class DataFormatter extends AbstractFormatter {
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
 				quotedFields[i] = quotedStrings 
-						&& metadata.getField(i).getType() != DataFieldMetadata.BYTE_FIELD
-						&& metadata.getField(i).getType() != DataFieldMetadata.BYTE_FIELD_COMPRESSED;
+						&& metadata.getField(i).getDataType() != DataFieldType.BYTE
+						&& metadata.getField(i).getDataType() != DataFieldType.CBYTE;
                 try {
                 	String[] fDelimiters = metadata.getField(i).getDelimiters();
                 	if (fDelimiters != null) { //for eof delimiter

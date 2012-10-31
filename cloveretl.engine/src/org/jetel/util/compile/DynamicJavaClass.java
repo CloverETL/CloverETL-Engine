@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.LoadClassException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 
@@ -50,11 +50,9 @@ public final class DynamicJavaClass {
 	 * Instantiates class written in given source code.
 	 * @param sourceCode
 	 * @return
-	 * @throws ComponentNotReadyException
+	 * @throws LoadClassException if instantiation of loaded code fails
 	 */
-	public static Object instantiate(String sourceCode)
-		throws ComponentNotReadyException {
-		
+	public static Object instantiate(String sourceCode) {
 		Node node = ContextProvider.getNode();
 		if (node != null) {
 			return instantiate(sourceCode, node);
@@ -69,11 +67,9 @@ public final class DynamicJavaClass {
 	 * @param sourceCode
 	 * @param node
 	 * @return
-	 * @throws ComponentNotReadyException
+	 * @throws LoadClassException if instantiation of loaded code fails
 	 */
-	public static Object instantiate(String sourceCode, Node node)
-		throws ComponentNotReadyException {
-		
+	public static Object instantiate(String sourceCode, Node node) {
 		return instantiate(sourceCode, node.getClass().getClassLoader(),
 				node.getGraph().getRuntimeContext().getCompileClassPath());
 	}
@@ -85,16 +81,14 @@ public final class DynamicJavaClass {
 	 * @param expectedType
 	 * @param node
 	 * @return
-	 * @throws ComponentNotReadyException
+	 * @throws LoadClassException if instantiation of loaded code fails
 	 */
-	public static <T> T instantiate(String sourceCode, Class<T> expectedType, Node node)
-		throws ComponentNotReadyException {
-		
+	public static <T> T instantiate(String sourceCode, Class<T> expectedType, Node node) {
 		Object instance = instantiate(sourceCode, node);
 		try {
 			return expectedType.cast(instance);
 		} catch (ClassCastException e) {
-			throw new ComponentNotReadyException(node, "Provided class does not extend/implement " + expectedType.getName());
+			throw new LoadClassException("Provided class does not extend/implement " + expectedType.getName(), e);
 		}
 	}
 	
@@ -107,10 +101,9 @@ public final class DynamicJavaClass {
 	 *
 	 * @return instance of the class present within the source code
 	 *
-	 * @throws ComponentNotReadyException if instantiation of the class failed for some reason
+	 * @throws LoadClassException if instantiation of the class failed for some reason
 	 */
-	public static Object instantiate(String sourceCode, ClassLoader classLoader, URL ... compileClassPath)
-			throws ComponentNotReadyException {
+	public static Object instantiate(String sourceCode, ClassLoader classLoader, URL ... compileClassPath) {
 		DynamicCompiler compiler = new DynamicCompiler(classLoader, compileClassPath);
 		String className = extractClassName(sourceCode);
 
@@ -121,23 +114,23 @@ public final class DynamicJavaClass {
 			logger.info("Dynamic class " + className + " successfully compiled and instantiated.");
 
 			return result;
-		} catch (CompilationException exception) {
-        	logger.error("Compiler output:\\n" + exception.getCompilerOutput());
-        	logger.debug("Source code:\\n" + sourceCode);
+		} catch (CompilationException e) {
+        	logger.error("Compiler output:\n" + e.getCompilerOutput());
+        	logger.debug("Source code:\n" + sourceCode);
 
-        	throw new ComponentNotReadyException("Cannot compile the dynamic class!", exception);
-		} catch (IllegalAccessException exception) {
-            throw new ComponentNotReadyException("Cannot access the dynamic class!", exception);
-        } catch (InstantiationException exception) {
-            throw new ComponentNotReadyException("Cannot instantiate the dynamic class!", exception);
+        	throw new LoadClassException("Cannot compile the dynamic class!", e);
+		} catch (IllegalAccessException e) {
+            throw new LoadClassException("Cannot access the dynamic class!", e);
+        } catch (InstantiationException e) {
+            throw new LoadClassException("Cannot instantiate the dynamic class!", e);
 		}
 	}
 
-	private static String extractClassName(String sourceCode) throws ComponentNotReadyException {
+	private static String extractClassName(String sourceCode) {
 		Matcher classMatcher = CLASS_PATTERN.matcher(sourceCode);
 
 		if (!classMatcher.find()) {
-			throw new ComponentNotReadyException("Cannot find class name within sourceCode!");
+			throw new LoadClassException("Cannot find class name within sourceCode!");
 		}
 
 		Matcher packageMatcher = PACKAGE_PATTERN.matcher(sourceCode);

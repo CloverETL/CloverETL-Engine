@@ -30,6 +30,8 @@ package org.jetel.ctl;
  */
 public class ParseException extends Exception {
 
+  private static final long serialVersionUID = 9147306804253020563L;
+
   /**
    * This constructor is used by the method "generateParseException"
    * in the generated parser.  Calling this constructor generates

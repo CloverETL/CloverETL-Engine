@@ -161,5 +161,5 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	@Override
 	public boolean isSchemaRequired() {
 		return true;
-	}	
+	}
 }

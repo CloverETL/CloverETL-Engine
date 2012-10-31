@@ -28,7 +28,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jetel.component.RecordTransform;
-import org.jetel.component.RecordTransformFactory;
+import org.jetel.component.RecordTransformDescriptor;
+import org.jetel.component.TransformFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -41,6 +42,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CTLTransformUtils.Field;
 import org.jetel.util.primitive.IdentityArrayList;
 import org.jetel.util.string.StringUtils;
 
@@ -150,6 +152,12 @@ public class CTLMapping {
 	 * is the CTL mapping already initialized?
 	 */
 	private boolean isInitialized = false;
+	
+	/**
+	 * The set of definitely used output fields
+	 * determined by CTL or automapping analysis.
+	 */
+	private Set<Field> usedOutputFields = null;
 	
 	/**
 	 * Only constructor
@@ -413,8 +421,12 @@ public class CTLMapping {
 		//create CTL transformation
         if (!StringUtils.isEmpty(sourceCode)) {
 			try {
-				ctlTransformation = RecordTransformFactory.createTransform(sourceCode, null, 
-						null, null, component, inputRecordsMetadata, outputRecordsMetadata);
+	        	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+	        	transformFactory.setTransform(sourceCode);
+	        	transformFactory.setComponent(component);
+	        	transformFactory.setInMetadata(inputRecordsMetadata);
+	        	transformFactory.setOutMetadata(outputRecordsMetadata);
+	        	ctlTransformation = transformFactory.createTransform();
 			} catch (MissingFieldException mfe) {
 				if (mfe.isOutput()) {
 					DataRecord record = getOutputRecord(mfe.getRecordId());
@@ -445,7 +457,23 @@ public class CTLMapping {
 			} catch (Exception e) {
 				throw new JetelRuntimeException(name + " initialization failed.", e);
 			}
+			
+			usedOutputFields = CTLTransformUtils.findUsedOutputFields(component.getGraph(), inputRecordsMetadata, outputRecordsMetadata, sourceCode);
+        } else {
+        	// extract used output fields from the automapping
+    		usedOutputFields = new HashSet<CTLTransformUtils.Field>(0);
+        	for (DataRecord[] mapping: autoMapping) {
+        		DataRecord inRecord = mapping[0];
+        		DataRecord outRecord = mapping[1];
+        		for (DataFieldMetadata inputField: inRecord.getMetadata().getFields()) {
+        			String name = inputField.getName();
+        			if (outRecord.hasField(name)) {
+        				usedOutputFields.add(new Field(name, outputRecordsList.indexOf(outRecord), true));
+        			}
+        		}
+        	}
         }
+        
 	}
 	
 	/**
@@ -530,6 +558,9 @@ public class CTLMapping {
 		Object newValue = field.getValue();
 		int recordIndex = outputRecordsList.indexOf(record);
 		if (recordIndex != -1) {
+			if (usedOutputFields.contains(new Field(field.getMetadata().getName(), recordIndex, true))) {
+				return true; // detected by CTL analysis 
+			}
 			Object defaultValue = defaultOutputRecords[recordIndex].getField(field.getMetadata().getName()).getValue();
 			return !CompareUtils.equals(defaultValue, newValue);
 		} else {
@@ -578,18 +609,29 @@ public class CTLMapping {
 		}
 	}
 
-	private int indexOfInputRecord(String name) {
-		DataRecord inputRecord = inputRecordsMap.get(name);
-		if (inputRecord != null) {
-			return inputRecordsList.indexOf(inputRecord);
-		} else {
-			return -1;
-		}
-	}
-
+    /**
+     * The method returns all fields used on right sides of assignments in a CTL transformation.
+     * Note: See {@link CTLTransformUtils} for limitations.
+     * 
+     * @param graph
+     * @param inMeta
+     * @param outMeta
+     * @param code
+     * @return
+     */
+    private static List<DataFieldMetadata> findUsedInputFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
+    		DataRecordMetadata[] outMeta, String code) {
+    	Set<Field> usedFields = CTLTransformUtils.findUsedInputFields(graph, inMeta, outMeta, code);
+    	List<DataFieldMetadata> result = new ArrayList<DataFieldMetadata>(usedFields.size());
+    	for (Field f: usedFields) {
+    		result.add(inMeta[f.recordId].getField(f.name));
+    	}
+    	return result;
+    }
+    
 	public List<DataFieldMetadata> findUsedInputFields(TransformationGraph graph) {
 		if (!StringUtils.isEmpty(sourceCode)) {
-			return CTLTransformUtils.findUsedInputFields(graph, inputRecordsMetadata, outputRecordsMetadata, sourceCode);
+			return findUsedInputFields(graph, inputRecordsMetadata, outputRecordsMetadata, sourceCode);
 		} else {
 			List<DataFieldMetadata> autoMapped = new ArrayList<DataFieldMetadata>();
 			Set<String> outputMetadataNames = new HashSet<String>();

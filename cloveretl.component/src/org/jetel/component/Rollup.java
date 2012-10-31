@@ -23,20 +23,11 @@ import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jetel.component.rollup.CTLRecordRollup;
-import org.jetel.component.rollup.CTLRecordRollupAdapter;
 import org.jetel.component.rollup.RecordRollup;
-import org.jetel.component.rollup.RecordRollupTL;
-import org.jetel.ctl.ErrorMessage;
-import org.jetel.ctl.ITLCompiler;
-import org.jetel.ctl.TLCompilerFactory;
-import org.jetel.ctl.TransformLangExecutor;
+import org.jetel.component.rollup.RecordRollupDescriptor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -59,8 +50,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.compile.DynamicJavaClass;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -202,9 +191,6 @@ public class Rollup extends Node {
     /** the port index used for data record input */
     private static final int INPUT_PORT_NUMBER = 0;
 
-    /** the encoding to be used by CTL-to-Java compiler */
-    private static final String CTL_COMPILER_ENCODING = "UTF-8";
-
     /**
      * Creates an instance of the <code>Rollup</code> component from an XML element.
      *
@@ -235,7 +221,7 @@ public class Rollup extends Node {
             rollup.setGroupAccumulatorMetadataId(
                     componentAttributes.getString(XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, null));
 
-            rollup.setTransform(componentAttributes.getString(XML_TRANSFORM_ATTRIBUTE, null));
+            rollup.setTransform(componentAttributes.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
             rollup.setTransformUrl(componentAttributes.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null,
             		RefResFlag.SPEC_CHARACTERS_OFF));
             rollup.setTransformUrlCharset(componentAttributes.getString(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, null));
@@ -431,34 +417,9 @@ public class Rollup extends Node {
                     Severity.ERROR, this, Priority.NORMAL, XML_TRANSFORM_URL_CHARSET_ATTRIBUTE));
         }
         
-        // transformation source for checkconfig
-        String checkTransform = null;
-        if (transform != null) {
-        	checkTransform = transform;
-        } else if (transformUrl != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformUrl,
-        			transformUrlCharset);
-        }
-        // only the transform and transformURL parameters are checked, transformClass is ignored
-        if (checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-        		// only CTL is checked
-
-    			try {
-    				RecordRollup rollup = createTransformFromSourceCode(checkTransform);
-    				rollup.setNode(this);
-    				rollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
-    						getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
-    						getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
-				} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = transform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORM_URL_ATTRIBUTE;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-        	}
+        //check transformation
+        if (recordRollup == null) {
+        	getTransformFactory().checkConfig(status);
         }
 
         return status;
@@ -479,17 +440,9 @@ public class Rollup extends Node {
         }
 
         if (recordRollup == null) {
-            if (transform != null) {
-                recordRollup = createTransformFromSourceCode(transform);
-            } else if (transformUrl != null) {
-                recordRollup = createTransformFromSourceCode(FileUtils.getStringFromURL(
-                        getGraph().getRuntimeContext().getContextURL(), transformUrl, transformUrlCharset));
-            } else if (transformClassName != null) {
-                recordRollup = createTransformFromClassName(transformClassName);
-            }
+        	recordRollup = getTransformFactory().createTransform();
         }
 
-        recordRollup.setNode(this);
         recordRollup.init(transformParameters, getInputPort(INPUT_PORT_NUMBER).getMetadata(),
                 getGraph().getDataRecordMetadata(groupAccumulatorMetadataId),
                 getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]));
@@ -502,72 +455,17 @@ public class Rollup extends Node {
         }
     }
 
-    /**
-     * Creates a rollup transform using the given source code.
-     *
-     * @param sourceCode a Java or CTL source code to be used
-     *
-     * @return an instance of the <code>RecordRollup</code> transform
-     *
-     * @throws ComponentNotReadyException if an error occurred during the instantiation of the transform
-     * or if the type of the transformation code could not be determined
-     */
-    private RecordRollup createTransformFromSourceCode(String sourceCode) throws ComponentNotReadyException {
-    	int transformType = RecordTransformFactory.guessTransformType(sourceCode);
-
-    	if (transformType == RecordTransformFactory.TRANSFORM_CTL) {
-        	ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),
-        			getInMetadata().toArray(new DataRecordMetadata[getInPorts().size()]),
-        			getOutMetadata().toArray(new DataRecordMetadata[getOutPorts().size()]), CTL_COMPILER_ENCODING);
-        	List<ErrorMessage> msgs = compiler.compile(sourceCode, CTLRecordRollup.class, getId());
-
-        	if (compiler.errorCount() > 0) {
-        		Log logger = LogFactory.getLog(getClass());
-        		String report = ErrorMessage.listToString(msgs, logger);
-        		throw new ComponentNotReadyException("Compilation of CTL rollup transform finished with "
-        				+ compiler.errorCount() + " errors!" + report);
-        	}
-
-        	Object compiledTransform = compiler.getCompiledCode();
-
-        	if (compiledTransform instanceof TransformLangExecutor) {
-        		return new CTLRecordRollupAdapter((TransformLangExecutor) compiledTransform,
-        				LogFactory.getLog(getClass()));
-        	} else if (compiledTransform instanceof CTLRecordRollup){
-        		return (CTLRecordRollup) compiledTransform;
-        	}
-
-    		throw new ComponentNotReadyException("Invalid type of rollup transformation!");
-        }
-
-    	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL) {
-        	return new RecordRollupTL(sourceCode, LogFactory.getLog(getClass()));
-        }
-
-    	if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
-            return DynamicJavaClass.instantiate(sourceCode, RecordRollup.class, this);
-        }
-
-        throw new ComponentNotReadyException("Cannot determine the type of the transformation code!");
-    }
-
-    /**
-     * Creates a rollup transform using a Java class with the given class name.
-     *
-     * @param className a class name of a class to be instantiated
-     *
-     * @return an instance of the <code>RecordRollup</code> transform
-     *
-     * @throws ComponentNotReadyException if an error occurred during the instantiation of the transform
-     */
-    private RecordRollup createTransformFromClassName(String className) throws ComponentNotReadyException {
-    	Object recordRollup = RecordTransformFactory.loadClassInstance(className, this);
-    	if (recordRollup instanceof RecordRollup) {
-    		return (RecordRollup) recordRollup;
-    	} else {
-            throw new ComponentNotReadyException("The transformation class does not implement the RecordRollup interface!");
-        }
-    }
+	private TransformFactory<RecordRollup> getTransformFactory() {
+    	TransformFactory<RecordRollup> transformFactory = TransformFactory.createTransformFactory(RecordRollupDescriptor.newInstance());
+    	transformFactory.setTransform(transform);
+    	transformFactory.setTransformClass(transformClassName);
+    	transformFactory.setTransformUrl(transformUrl);
+    	transformFactory.setCharset(transformUrlCharset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(getInMetadata());
+    	transformFactory.setOutMetadata(getOutMetadata());
+    	return transformFactory;
+	}
 
     @Override
     @SuppressWarnings("deprecation")

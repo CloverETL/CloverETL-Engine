@@ -23,7 +23,7 @@
 	<classpathentry kind="lib" path="lib/icu4j-normalizer_transliterator-4.8.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/tar.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.1.jar" sourcepath="lib.src/joda-time-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/openxml4j-1.0-beta.jar"/>
 	<classpathentry kind="lib" path="lib/xmlbeans-2.5.0-modified-for-WSC.jar" sourcepath="lib.src/xmlbeans-2.5.0-modified-for-WSC-source.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-api.jar"/>

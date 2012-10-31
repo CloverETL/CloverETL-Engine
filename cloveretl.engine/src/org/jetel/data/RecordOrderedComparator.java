@@ -20,11 +20,10 @@ package org.jetel.data;
 
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
-import java.util.Comparator;
 
-import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 
-public class RecordOrderedComparator extends RecordComparator implements Comparator {
+public class RecordOrderedComparator extends RecordComparator {
 	
 	private boolean[] keyOrderings;
 
@@ -57,7 +56,6 @@ public class RecordOrderedComparator extends RecordComparator implements Compara
      * @param keyFields indexes of fields to be considered for sorting
      * @param collator  Collator which should be use for comparing String fields
      */
-	@Deprecated
 	private RecordOrderedComparator(int[] keyFields, RuleBasedCollator collator) {
 		super(keyFields, collator);
 		keyOrderings = new boolean[keyFields.length];
@@ -71,7 +69,6 @@ public class RecordOrderedComparator extends RecordComparator implements Compara
      * @param keyFields indexes of fields to be considered for sorting
      * @param collator  Collator which should be use for comparing String fields
      */
-	@Deprecated
 	public RecordOrderedComparator(int[] keyFields, boolean[] keyOrderings, RuleBasedCollator collator) {
 		super(keyFields, collator);
 		this.keyOrderings = keyOrderings;
@@ -85,10 +82,8 @@ public class RecordOrderedComparator extends RecordComparator implements Compara
 	 *@return          -1 ; 0 ; 1
 	 */
 	@Override
-	public int compare(Object o1, Object o2) {
+	public int compare(DataRecord record1, DataRecord record2) {
         int compResult;
-        final DataRecord record1 = (DataRecord) o1;
-        final DataRecord record2 = (DataRecord) o2;
         /*
          * by D.Pavlis following check has been "relaxed" to speed up
          * processing. if (record1.getMetadata() != record2.getMetadata()) {
@@ -98,7 +93,7 @@ public class RecordOrderedComparator extends RecordComparator implements Compara
         if (useCollator) {
             for (int i = 0; i < keyFields.length; i++) {
                 final DataField field1 = record1.getField(keyFields[i]);
-                if (collators[i] != null && field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                if (collators[i] != null && field1.getMetadata().getDataType() == DataFieldType.STRING) {
                     compResult = ((StringDataField) field1).compareTo(
                             record2.getField(keyFields[i]), collators[i]);
                 } else {
@@ -169,7 +164,7 @@ public class RecordOrderedComparator extends RecordComparator implements Compara
          if (useCollator) {
              for (int i = 0; i < keyFields.length; i++) {
                  final DataField field1 = record1.getField(keyFields[i]);
-                 if (collators[i] != null && field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                 if (collators[i] != null && field1.getMetadata().getDataType() == DataFieldType.STRING) {
                     compResult = ((StringDataField) field1).compareTo(
                              record2.getField(record2KeyFields[i]),collators[i]);
                  }else{

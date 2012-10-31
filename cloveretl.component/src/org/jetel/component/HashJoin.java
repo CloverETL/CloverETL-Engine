@@ -41,8 +41,6 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -50,7 +48,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.CloverClassPath;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
@@ -410,18 +407,11 @@ public class HashJoin extends Node {
 		}
 
 		// init transformation
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[1 + slaveCnt];
-		inMetadata[0] = getInputPort(DRIVER_ON_PORT).getMetadata();
-		for (int idx = 0; idx < slaveCnt; idx++) {
-			inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
-		}
 		if (transformation == null) {
-			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, transformURL,
-					charset, this, inMetadata, outMetadata);
+			transformation = getTransformFactory().createTransform();
 		}
 		// init transformation
-        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+        if (!transformation.init(transformationParameters, getInMetadataArray(), getOutMetadataArray())) {
             throw new ComponentNotReadyException("Error when initializing tranformation function.");
         }
 		errorActions = ErrorAction.createMap(errorActionsString);
@@ -434,6 +424,18 @@ public class HashJoin extends Node {
 		}
 	}
 
+	private TransformFactory<RecordTransform> getTransformFactory() {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setTransform(transformSource);
+    	transformFactory.setTransformClass(transformClassName);
+    	transformFactory.setTransformUrl(transformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(getInMetadata());
+    	transformFactory.setOutMetadata(getOutMetadata());
+    	return transformFactory;
+	}
+	
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
@@ -881,10 +883,7 @@ public class HashJoin extends Node {
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-
+			join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
 				join.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
 			}
@@ -1019,35 +1018,9 @@ public class HashJoin extends Node {
 			status.add(problem);
 		}
 
-		// transformation source for checkconfig
-		String checkTransform = null;
-		if (transformSource != null) {
-			checkTransform = transformSource;
-		} else if (transformURL != null) {
-			checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
-		}
-		// only the transform and transformURL parameters are checked, transformClass is ignored
-		if (checkTransform != null) {
-			int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-			if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL || transformType == RecordTransformFactory.TRANSFORM_CTL) {
-				// only CTL is checked
-
-				DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT).getMetadata() };
-				DataRecordMetadata[] inMetadata = new DataRecordMetadata[1 + slaveCnt];
-				inMetadata[0] = getInputPort(DRIVER_ON_PORT).getMetadata();
-				for (int idx = 0; idx < slaveCnt; idx++) {
-					inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
-				}
-
-				try {
-					RecordTransformFactory.createTransform(checkTransform, null, null, charset, this, inMetadata, outMetadata);
-				} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-			}
+        //check transformation
+		if (transformation == null) {
+			getTransformFactory().checkConfig(status);
 		}
 
 		return status;

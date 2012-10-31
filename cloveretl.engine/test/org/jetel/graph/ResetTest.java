@@ -145,7 +145,6 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
 							&& !pathname.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
 							&& !pathname.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
-							&& !pathname.getName().equals("testdata_intersection.grf") // remove after CL-1792 solved
 							&& !pathname.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
 							&& !pathname.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
 							&& !pathname.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
@@ -164,8 +163,11 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("XMLExtract_fileURL_not_exists.grf") // ok, is to fail
 							&& !pathname.getName().equals("XMLExtract_charset_not_default_fail.grf") // ok, is to fail
 							&& !pathname.getName().equals("RunGraph_differentOutputMetadataFail.grf") // ok, is to fail
+							&& !pathname.getName().equals("LUTPersistent_wrong_metadata.grf") // ok, is to fail
+							&& !pathname.getName().equals("UDW_nonExistingDir_fail_CL-2478.grf") // ok, is to fail
 							&& !pathname.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
-							&& !pathname.getName().equals("DenormalizerWithoutInputFile.grf"); // probably subgraph not supposed to be executed separately
+							&& !pathname.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
+							&& !pathname.getName().equals("BeanWriterReader_employees.grf"); // remove after CL-2474 solved
 					
 				}
 			});

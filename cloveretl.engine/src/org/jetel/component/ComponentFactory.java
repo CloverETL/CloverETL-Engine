@@ -49,7 +49,7 @@ public class ComponentFactory {
     private static Log logger = LogFactory.getLog(ComponentFactory.class);
 
 	private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
-	private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
+	private final static Class<?>[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
 	private final static Map<String, ComponentDescription> componentMap = new HashMap<String, ComponentDescription>();
 	
 	public static void init() {
@@ -85,7 +85,7 @@ public class ComponentFactory {
      * @param componentType
      * @return class from the given component type
      */
-    public final static Class getComponentClass(String componentType) {
+    public final static Class<? extends Node> getComponentClass(String componentType) {
         String className = null;
         ComponentDescription componentDescription = componentMap.get(componentType);
         
@@ -94,14 +94,14 @@ public class ComponentFactory {
                 //unknown component type, we suppose componentType as full class name classification
                 className = componentType;
                 //find class of component
-                return Class.forName(componentType); 
+                return Class.forName(componentType).asSubclass(Node.class); 
             } else {
                 className = componentDescription.getClassName();
 
                 PluginDescriptor pluginDescriptor = componentDescription.getPluginDescriptor();
                 
                 //find class of component
-                return Class.forName(className, true, pluginDescriptor.getClassLoader());
+                return Class.forName(className, true, pluginDescriptor.getClassLoader()).asSubclass(Node.class);
             }
         } catch(ClassNotFoundException ex) {
             logger.error("Unknown component: " + componentType + " class: " + className, ex);
@@ -123,7 +123,7 @@ public class ComponentFactory {
 	 * @since                 May 27, 2002
 	 */
 	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
-		Class tClass = getComponentClass(componentType);
+		Class<? extends Node> tClass = getComponentClass(componentType);
         
         try {
             //create instance of component
@@ -167,17 +167,17 @@ public class ComponentFactory {
      *  </code>
      * @param graph
      * @param componentType
-     * @param constructorParameters parameters passsed to component constructor
+     * @param constructorParameters parameters passed to component constructor
      * @param parametersType types of all constructor parameters
      * @return
      */
-    public final static Node createComponent(TransformationGraph graph, String componentType, Object[] constructorParameters, Class[] parametersType) {
-        Class tClass = getComponentClass(componentType);
+    public final static Node createComponent(TransformationGraph graph, String componentType, Object[] constructorParameters, Class<?>[] parametersType) {
+        Class<? extends Node> tClass = getComponentClass(componentType);
         
         try {
             //create instance of component
-            Constructor constructor = tClass.getConstructor(parametersType);
-            return (org.jetel.graph.Node) constructor.newInstance(constructorParameters);
+            Constructor<? extends Node> constructor = tClass.getConstructor(parametersType);
+            return constructor.newInstance(constructorParameters);
         } catch(InvocationTargetException e) {
             logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
             throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());

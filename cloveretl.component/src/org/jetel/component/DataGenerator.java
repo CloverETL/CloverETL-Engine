@@ -157,14 +157,12 @@ public abstract class DataGenerator extends Node {
 				xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE) ||
 				xattribs.exists(XML_SEQUENCE_FIELDS_ATTRIBUTE))) {
 				dataGenerator = new ExtDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
-						xattribs.getStringEx(XML_GENERATE_ATTRIBUTE, null, RefResFlag.ALL_OFF), 
+						xattribs.getStringEx(XML_GENERATE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 						xattribs.getString(XML_GENERATECLASS_ATTRIBUTE, null), 
 						xattribs.getStringEx(XML_GENERATEURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
 						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
 				
-				if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-					((ExtDataGenerator)dataGenerator).setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-				}
+				((ExtDataGenerator)dataGenerator).setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 				((ExtDataGenerator)dataGenerator).setTransformationParameters(xattribs.attributes2Properties(
 						new String[]{XML_ID_ATTRIBUTE, ExtDataGenerator.XML_GENERATE_ATTRIBUTE, ExtDataGenerator.XML_GENERATECLASS_ATTRIBUTE, 
 								ExtDataGenerator.XML_GENERATEURL_ATTRIBUTE}));

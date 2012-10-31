@@ -19,26 +19,19 @@
 package org.jetel.component.partition;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
 import java.util.regex.Pattern;
 
-import org.apache.commons.logging.Log;
-import org.jetel.component.RecordTransformFactory;
-import org.jetel.ctl.ErrorMessage;
-import org.jetel.ctl.ITLCompiler;
-import org.jetel.ctl.TLCompilerFactory;
-import org.jetel.ctl.TransformLangExecutor;
+import org.jetel.component.TransformFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.Node;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.compile.DynamicJavaClass;
-import org.jetel.util.file.FileUtils;
-import org.jetel.util.string.StringUtils;
+import org.jetel.metadata.DataRecordParsingType;
 
 /**
  * This factory provides PartitionFunction implementation based on various settings.
@@ -67,10 +60,6 @@ public class PartitionFunctionFactory {
 	
 	private String charset;
 	
-	private Properties additionalParameters;
-	
-	private Log logger;
-	
 	private String[] partitionRanges;
 	
 	private String[] partitionKeyNames;
@@ -86,20 +75,24 @@ public class PartitionFunctionFactory {
 	public PartitionFunction createPartitionFunction(String partitionSource, String partitionClass, String partitionURL) throws ComponentNotReadyException {
 		PartitionFunction partitionFunction;
 		
-		if (partitionClass != null) {
-			partitionFunction = createPartitionFce(partitionClass);
-		} else {
-			if (partitionURL != null && StringUtils.isEmpty(partitionSource)) {
-				partitionSource = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), partitionURL, charset);
-			}
-			if (!StringUtils.isEmpty(partitionSource)) {
-				partitionFunction = createPartitionDynamic(partitionSource);
-			} else if (partitionRanges != null) {
+		//directly defined source code of partition function has highest priority
+    	TransformFactory<PartitionFunction> transformFactory = TransformFactory.createTransformFactory(PartitionFunctionDescriptor.newInstance());
+    	transformFactory.setTransform(partitionSource);
+    	transformFactory.setTransformClass(partitionClass);
+    	transformFactory.setTransformUrl(partitionURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(node);
+    	transformFactory.setInMetadata(metadata);
+    	if (transformFactory.isTransformSpecified()) {
+    		partitionFunction = transformFactory.createTransform();
+    	} else {
+    		//if no source code is defined, let's analyze other attributes
+    		if (partitionRanges != null) {
 				//create RangePartition function from partitionKey and partitionRanges
 				String rangesData = analyzeRangesString(partitionRanges);
 				//create metadata for RangeLookupTable
-				DataRecordMetadata lookupMetadata = new DataRecordMetadata("lookup_metadata", DataRecordMetadata.DELIMITED_RECORD);
-				lookupMetadata.addField(new DataFieldMetadata(PORT_NO_FIELD_NAME, DataFieldMetadata.INTEGER_FIELD, String.valueOf(EQUAL)));
+				DataRecordMetadata lookupMetadata = new DataRecordMetadata("lookup_metadata", DataRecordParsingType.DELIMITED);
+				lookupMetadata.addField(new DataFieldMetadata(PORT_NO_FIELD_NAME, DataFieldType.INTEGER, String.valueOf(EQUAL)));
 				DataFieldMetadata keyField, startField, endField;
 				String[] startFields = new String[partitionKeyNames.length];
 				String[] endFields = new String[partitionKeyNames.length];
@@ -137,80 +130,13 @@ public class PartitionFunctionFactory {
 			} else {
 				partitionFunction = new RoundRobinPartition();
 			}
-		}
-
-		partitionFunction.setNode(node);
-
+	
+			partitionFunction.setNode(node);
+    	}
+			
 		return partitionFunction;
 	}
 	
-	/**
-	 * Creates partition function from given class name.
-	 * 
-	 * @param partitionClass
-	 * @return
-	 * @throws ComponentNotReadyException
-	 */
-	private PartitionFunction createPartitionFce(String partitionClass) throws ComponentNotReadyException {
-		return RecordTransformFactory.loadClassInstance(partitionClass, PartitionFunction.class, node);
-	}
-
-	/**
-	 * Method for creation partition function from CloverETL language or java source
-	 * 
-	 * @param partitionCode source code
-	 * @return Partition function
-	 * @throws ComponentNotReadyException
-	 */
-	public PartitionFunction createPartitionDynamic(String partitionSource) throws ComponentNotReadyException {
-		int transformType = RecordTransformFactory.guessTransformType(partitionSource);
-
-		//check if source code is in CloverETL format
-		if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL) {
-			PartitionTL function =  new PartitionTL(partitionSource, metadata, additionalParameters, logger);
-			function.setNode(node);
-			return function;
-		} else if (transformType == RecordTransformFactory.TRANSFORM_CTL) {
-			// compile the CTL code
-			ITLCompiler compiler = TLCompilerFactory.createCompiler(
-					node.getGraph(),
-					new DataRecordMetadata[] { metadata },
-					null,
-					"UTF-8");
-        	List<ErrorMessage> msgs = compiler.compile(partitionSource, CTLRecordPartition.class, node.getId());
-        	
-        	if (compiler.errorCount() > 0) {
-				String report = ErrorMessage.listToString(msgs, logger);
-        		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors" + report);
-        	}
-        	
-        	Object ret = compiler.getCompiledCode();
-        	PartitionFunction function = null;
-        	if (ret instanceof TransformLangExecutor) {
-        		// setup interpreted runtime
-        		function = new CTLRecordPartitionAdapter((TransformLangExecutor) ret, logger);
-        	} else if (ret instanceof CTLRecordPartition) {
-        		function = (CTLRecordPartition) ret;
-        	} else {
-        		// this should never happen as compiler always generates correct interface
-        		throw new ComponentNotReadyException("Invalid type of record transformation.");
-        	}
-        	// pass graph instance to transformation (if CTL it can use lookups etc.)
-			function.setNode(node);
-			return function;
-		} else if (transformType == RecordTransformFactory.TRANSFORM_JAVA_SOURCE) {
-			//get partition function form java code
-	        Object transObject = DynamicJavaClass.instantiate(partitionSource, node);
-	        if (transObject instanceof PartitionFunction) {
-				return (PartitionFunction) transObject;
-	        }
-
-	        throw new ComponentNotReadyException("Provided partition class doesn't implement required interface.");
-		}
-
-		throw new ComponentNotReadyException("Cannot determine the type of the transformation code!");
-    }
-
 	/**
 	 * @param ranges ranges defined by user
 	 * @return (0=start00,end00,start01,end01,...,start0n,end0n;1=start10,end10,start11,end11,...;m=startmn,endmn;)
@@ -252,7 +178,7 @@ public class PartitionFunctionFactory {
 					if (i == 0) {//first '(' - set startInclude to "false"
 						startInclude[intervalNumber] = false;
 					}else if (startInclude[intervalNumber]) {//there was "<" for this interval before
-						logger.warn("startInclude[" + intervalNumber + "] was set to \"true\" before");
+						node.getLog().warn("startInclude[" + intervalNumber + "] was set to \"true\" before");
 					}
 					if (intervalNumber != 0){
 						rangesData.append(COMMA);
@@ -260,7 +186,7 @@ public class PartitionFunctionFactory {
 					break;
 				case START_CLOSED:
 					if (!startInclude[intervalNumber]) {//there was "(" for this interval before
-						logger.warn("startInclude[" + intervalNumber + "] was set to \"false\" before");
+						node.getLog().warn("startInclude[" + intervalNumber + "] was set to \"false\" before");
 					}
 					if (intervalNumber != 0){
 						rangesData.append(COMMA);
@@ -268,7 +194,7 @@ public class PartitionFunctionFactory {
 					break;
 				case END_OPENED:
 					if (endInclude[intervalNumber]) {//there was ">" for this interval before
-						logger.warn("endInclude[" + intervalNumber + "] was set to \"true\" before");
+						node.getLog().warn("endInclude[" + intervalNumber + "] was set to \"true\" before");
 					}
 					intervalNumber++;
 					break;
@@ -276,7 +202,7 @@ public class PartitionFunctionFactory {
 					if (i == 0) {//first '>' - set endInclude to "true"
 						endInclude[intervalNumber] = true;
 					}else if (!endInclude[intervalNumber]) {//there was ")" for this interval before
-						logger.warn("endInclude[" + intervalNumber + "] was set to \"false\" before");
+						node.getLog().warn("endInclude[" + intervalNumber + "] was set to \"false\" before");
 					}
 					intervalNumber++;
 					break;
@@ -303,14 +229,6 @@ public class PartitionFunctionFactory {
 		this.charset = charset;
 	}
 
-	public void setAdditionalParameters(Properties additionalParameters) {
-		this.additionalParameters = additionalParameters;
-	}
-
-	public void setLogger(Log logger) {
-		this.logger = logger;
-	}
-
 	public void setPartitionRanges(String[] partitionRanges) {
 		this.partitionRanges = partitionRanges;
 	}
@@ -325,6 +243,24 @@ public class PartitionFunctionFactory {
 
 	public void setLocale(String locale) {
 		this.locale = locale;
+	}
+
+	/**
+	 * @param partitionSource
+	 * @param partitionClass
+	 * @param partitionURL
+	 */
+	public void checkConfig(ConfigurationStatus status, String partitionSource, String partitionClass, String partitionURL) {
+    	TransformFactory<PartitionFunction> transformFactory = TransformFactory.createTransformFactory(PartitionFunctionDescriptor.newInstance());
+    	transformFactory.setTransform(partitionSource);
+    	transformFactory.setTransformClass(partitionClass);
+    	transformFactory.setTransformUrl(partitionURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(node);
+    	transformFactory.setInMetadata(metadata);
+    	if (transformFactory.isTransformSpecified()) {
+    		transformFactory.checkConfig(status);
+    	}
 	}
 
 }

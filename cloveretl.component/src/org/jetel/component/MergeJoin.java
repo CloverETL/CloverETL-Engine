@@ -38,16 +38,14 @@ import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordOrderedKey;
 import org.jetel.data.reader.DriverReader;
-import org.jetel.data.reader.InputReader;
-import org.jetel.data.reader.InputReader.InputOrdering;
+import org.jetel.data.reader.IInputReader;
+import org.jetel.data.reader.IInputReader.InputOrdering;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.enums.OrderEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
@@ -237,9 +235,9 @@ public class MergeJoin extends Node {
 	private RecordOrderedKey driverKey;
 	private RecordOrderedKey[] slaveKeys;
 
-	InputReader[] reader;
+	IInputReader[] reader;
 	boolean anyInputEmpty;
-	InputReader minReader;
+	IInputReader minReader;
 	boolean[] minIndicator;
 	int minCnt;
 
@@ -302,7 +300,7 @@ public class MergeJoin extends Node {
 
 				// check inputs ordering 
 				if (reader[i].getOrdering() == InputOrdering.UNSORTED) 		
-					throw new IllegalStateException("input "+i+" is unsorted");
+					throw new IllegalStateException("Data input "+i+" is not sorted in ascending order. "+reader[i].getInfo());
 				if (reader[i].getOrdering() == InputOrdering.DESCENDING)
 					throw new IllegalStateException("input " + i + " has wrong ordering; change ordering on field or ordering of input "+i);
 			}
@@ -530,7 +528,7 @@ public class MergeJoin extends Node {
 			OrderedKey[][] tmp = JoinKeyUtils.parseMergeJoinOrderedKey(joinKeys, inMetadata);
 			if (joiners == null) {
 				joiners = tmp;
-			}else{//slave ovveride key was set by setSlaveOverrideKey(String[]) method
+			}else{//slave override key was set by setSlaveOverrideKey(String[]) method
 				joiners[0] = tmp[0];
 			}
 			if (joiners.length < inputCnt) {
@@ -553,7 +551,7 @@ public class MergeJoin extends Node {
 			slaveKeys[idx] = buildRecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
 			slaveKeys[idx].init();
 		}		
-		reader = new InputReader[inputCnt];
+		reader = new IInputReader[inputCnt];
 		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
 		if (slaveDuplicates) {
 			for (int i = 0; i < slaveCnt; i++) {
@@ -577,13 +575,10 @@ public class MergeJoin extends Node {
 		// init transformation
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
 				getOutputPort(WRITE_TO_PORT).getMetadata()};
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[inputCnt];
-		for (int idx = 0; idx < inputCnt; idx++) {
-			inMetadata[idx] = getInputPort(idx).getMetadata();
-		}
-		if (transformation == null){
-			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
-					transformURL, charset, this, inMetadata, outMetadata);
+		DataRecordMetadata[] inMetadata = getInMetadataArray();
+		
+		if (transformation == null) {
+			transformation = getTransformFactory(inMetadata, outMetadata).createTransform();
         }
         
 		// init transformation
@@ -594,6 +589,18 @@ public class MergeJoin extends Node {
         errorActions = ErrorAction.createMap(errorActionsString);
 	}
 	
+	private TransformFactory<RecordTransform> getTransformFactory(DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata) {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setTransform(transformSource);
+    	transformFactory.setTransformClass(transformClassName);
+    	transformFactory.setTransformUrl(transformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(inMetadata);
+    	transformFactory.setOutMetadata(outMetadata);
+    	return transformFactory;
+	}
+
 	/**
 	 * Constructs a RecordComparator based on particular metadata and settings
 	 * 
@@ -773,7 +780,7 @@ public class MergeJoin extends Node {
 
 			join = new MergeJoin(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_JOINKEY_ATTRIBUTE),
-					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
 					joinType,
@@ -789,9 +796,7 @@ public class MergeJoin extends Node {
 			if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
 				join.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
+			join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
 				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
 			}
@@ -880,7 +885,7 @@ public class MergeJoin extends Node {
 				RecordOrderedKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
 						XML_JOINKEY_ATTRIBUTE, status, this);
 			}
-			reader = new InputReader[inputCnt];
+			reader = new IInputReader[inputCnt];
 			reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
 			if (slaveDuplicates) {
 				for (int i = 0; i < slaveCnt; i++) {
@@ -913,38 +918,13 @@ public class MergeJoin extends Node {
 			status.add(problem);
 		}
 		
-		// transformation source for checkconfig
-		String checkTransform = null;
-		if (transformSource != null) {
-			checkTransform = transformSource;
-		} else if (transformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {getOutputPort(WRITE_TO_PORT).getMetadata()};
+
+        //check transformation
+		if (transformation == null) {
+			getTransformFactory(getInMetadataArray(), outMetadata).checkConfig(status);
 		}
-		// only the transform and transformURL parameters are checked, transformClass is ignored
-		if (checkTransform != null) {
-			int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-			if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-					|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-				// only CTL is checked
-				
-				DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
-						getOutputPort(WRITE_TO_PORT).getMetadata()};
-				DataRecordMetadata[] inMetadata = new DataRecordMetadata[inputCnt];
-				for (int idx = 0; idx < inputCnt; idx++) {
-					inMetadata[idx] = getInputPort(idx).getMetadata();
-				}
-				
-				try {
-					RecordTransformFactory.createTransform(checkTransform, null, null, 
-	        						charset, this, inMetadata, outMetadata);
-				} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-			}
-		}
+
 		return status;
 	}
 	

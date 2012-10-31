@@ -217,6 +217,8 @@ public class TransformationGraphXMLReaderWriter {
     
     private GraphRuntimeContext runtimeContext;
     
+    private boolean strictParsing = true;
+    
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
      * @param graphStream graph in XML form stored in character stream
@@ -296,11 +298,24 @@ public class TransformationGraphXMLReaderWriter {
 		return id;
 	}
 	
-	public TransformationGraph read(InputStream in) throws XMLConfigurationException,GraphConfigurationException {
+	public TransformationGraph read(InputStream in) throws XMLConfigurationException, GraphConfigurationException {
 		Document document = prepareDocument(in);
 
-		return read(document);
+		try {
+			read(document);
+		} catch (XMLConfigurationException e) {
+			if (isStrictParsing()) {
+				throw e;
+			}
+		} catch (GraphConfigurationException e) {
+			if (isStrictParsing()) {
+				throw e;
+			}
+		}
+		
+		return graph;
 	}
+	
 	/**
 	 *Constructor for the read object
 	 *
@@ -311,7 +326,7 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	public TransformationGraph read(Document document) throws XMLConfigurationException,GraphConfigurationException {
 		try {
-			Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
+			Map<String, Object> metadata = new HashMap<String, Object>(ALLOCATE_MAP_SIZE);
 			graph = null;
 			
 			// process document
@@ -327,17 +342,15 @@ public class TransformationGraphXMLReaderWriter {
 			graph.loadGraphProperties(runtimeContext.getAdditionalProperties());
 			// get graph name
 			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
-			try{
+			try {
 				graph.setName(grfAttributes.getString("name"));
-			}catch(AttributeNotFoundException ex){
-				throw new XMLConfigurationException("Attribute at Graph node is missing - "+ex.getMessage());
+			} catch (AttributeNotFoundException ex) {
+				throwXMLConfigurationException("Name attribute at Graph node is missing.", ex);
 			}
 	        
 	        grfAttributes.setResolveReferences(false);
 	        //get debug mode
 	        graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
-	//        //get debug directory
-	//        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
 	        //get debugMaxRecords
 	        graph.setDebugMaxRecords(grfAttributes.getInteger("debugMaxRecords", 0));
 	        
@@ -399,52 +412,53 @@ public class TransformationGraphXMLReaderWriter {
 	 * @exception  IOException   Description of Exception
 	 * @since                    May 24, 2002
 	 */
-	private void instantiateMetadata(NodeList metadataElements,Map metadata) throws XMLConfigurationException {
-		String metadataID;
+	private void instantiateMetadata(NodeList metadataElements, Map<String, Object> metadata) throws XMLConfigurationException {
+		String metadataID = null;
 		String fileURL=null;
-		Object recordMetadata;
+		Object recordMetadata = null;
 		//PropertyRefResolver refResolver=new PropertyRefResolver();
 
 		// loop through all Metadata elements & create appropriate Metadata objects
 		for (int i = 0; i < metadataElements.getLength(); i++) {
 			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)metadataElements.item(i), graph);
-			try{
-			// process metadata element attributes "id" & "fileURL"
-			metadataID = attributes.getString("id");
-			
-			// process metadata from file
-			if (attributes.exists("fileURL")){
-				fileURL = attributes.getStringEx("fileURL", RefResFlag.SPEC_CHARACTERS_OFF);
-				try{
-				    recordMetadata=MetadataFactory.fromFile(graph, fileURL);
-                }catch(IOException ex){
-                    logger.error("Error when reading/parsing record metadata definition file: "+fileURL);
-                    throw new XMLConfigurationException("Can't parse metadata: "+metadataID,ex);
-                }
-			}// metadata from analyzing DB table (JDBC) - will be resolved
-			// later during Edge init - just put stub now.
-			else if (attributes.exists(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR)){
-				IConnection connection = graph.getConnection(attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR));
-				if(connection == null) {
-					throw new XMLConfigurationException("Can't find Connection id - " + attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR) + ".");
+			try {
+				// process metadata element attributes "id" & "fileURL"
+				metadataID = attributes.getString("id");
+				
+				// process metadata from file
+				if (attributes.exists("fileURL")){
+					fileURL = attributes.getStringEx("fileURL", RefResFlag.SPEC_CHARACTERS_OFF);
+					try {
+					    recordMetadata=MetadataFactory.fromFile(graph, fileURL);
+	                } catch (IOException ex) {
+	                	throwXMLConfigurationException("Can't parse metadata '" + metadataID + "'. Error when reading/parsing record metadata definition file '" + fileURL +"'.", ex);
+	                }
+				}// metadata from analyzing DB table (JDBC) - will be resolved
+				// later during Edge init - just put stub now.
+				else if (attributes.exists(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR)){
+					IConnection connection = graph.getConnection(attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR));
+					if(connection == null) {
+						throwXMLConfigurationException("Can't find Connection id - " + attributes.getString(DataRecordMetadataXMLReaderWriter.CONNECTION_ATTR) + ".");
+					} else {
+						recordMetadata = new DataRecordMetadataStub(connection, attributes.attributes2Properties(null));
+					}
+				} // probably metadata inserted directly into graph
+				else {
+					recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.item(i),METADATA_RECORD_ELEMENT));
 				}
-				recordMetadata = new DataRecordMetadataStub(connection, attributes.attributes2Properties(null));
-			} // probably metadata inserted directly into graph
-			else {
-				recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.item(i),METADATA_RECORD_ELEMENT));
-			}
-			}catch(AttributeNotFoundException ex){
-				throw new XMLConfigurationException("Metadata - Attributes missing "+ex.getMessage());
+			} catch (AttributeNotFoundException ex) {
+				throwXMLConfigurationException("Metadata - Attributes missing", ex);
+			} catch (Exception e) {
+				throwXMLConfigurationException("Metadata cannot be instantiated.", e);
 			}
 			// register metadata object
-			if (metadata.put(metadataID, recordMetadata)!=null){
-				throw new XMLConfigurationException("Metadata "+metadataID+" already defined - duplicate ID detected!");
+			if (recordMetadata != null && metadataID != null && metadata.put(metadataID, recordMetadata) != null) {
+				throwXMLConfigurationException("Metadata '" + metadataID + "' already defined - duplicate ID detected!");
 			}
 		}
 		// we successfully instantiated all metadata
 	}
 
-	
 	private void instantiatePhases(NodeList phaseElements) throws XMLConfigurationException,GraphConfigurationException{
 		org.jetel.graph.Phase phase;
 		int phaseNum;
@@ -454,20 +468,22 @@ public class TransformationGraphXMLReaderWriter {
 		for (int i = 0; i < phaseElements.getLength(); i++) {
 			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)phaseElements.item(i), graph);
 			// process Phase element attribute "number"
-			try{
-			phaseNum = attributes.getInteger("number");
-			phase=new Phase(phaseNum);
-			graph.addPhase(phase);
+			try {
+				phaseNum = attributes.getInteger("number");
+				phase=new Phase(phaseNum);
+				graph.addPhase(phase);
+				// get all nodes defined in this phase and instantiate them
+				// we expect that all childern of phase are Nodes
+				//phaseElements.item(i).normalize();
+				nodeElements=phaseElements.item(i).getChildNodes();
+				instantiateNodes(phase,nodeElements);
 			}catch(AttributeNotFoundException ex) {
-				throw new XMLConfigurationException("Attribute is missing for phase - "+ex.getMessage());
+				throwXMLConfigurationException("Attribute is missing for phase.", ex);
 			}catch(NumberFormatException ex1){
-				throw new XMLConfigurationException("Phase attribute number is not a valid integer !",ex1);
+				throwXMLConfigurationException("Phase attribute number is not a valid integer.", ex1);
+			} catch (Exception e) {
+				throwXMLConfigurationException("Phase cannot be instantiated.", e);
 			}
-			// get all nodes defined in this phase and instantiate them
-			// we expect that all childern of phase are Nodes
-			//phaseElements.item(i).normalize();
-			nodeElements=phaseElements.item(i).getChildNodes();
-			instantiateNodes(phase,nodeElements);
 		}
 	}
 
@@ -514,12 +530,12 @@ public class TransformationGraphXMLReaderWriter {
                     graphNode.setPassThroughInputPort(nodePassThroughInputPort);
                     graphNode.setPassThroughOutputPort(nodePassThroughOutputPort);
 				} else {
-					throw new XMLConfigurationException(
-							"Error when creating Component type :" + nodeType);
+					throwXMLConfigurationException("Error when creating Component type '" + nodeType + "'.");
 				}
 			} catch (AttributeNotFoundException ex) {
-				throw new XMLConfigurationException("Missing attribute at node "+nodeID+" - "
-						+ ex.getMessage());
+				throwXMLConfigurationException("Missing attribute at node '" + nodeID + "'.", ex);
+			} catch (Exception e) {
+				throwXMLConfigurationException("Node cannot be instantiated.", e);
 			}
 		}
 	}
@@ -535,7 +551,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  nodes         Description of Parameter
 	 * @since                May 24, 2002
 	 */
-	private void instantiateEdges(NodeList edgeElements, Map metadata, boolean graphDebugMode, int graphDebugMaxRecords) throws XMLConfigurationException,GraphConfigurationException {
+	private void instantiateEdges(NodeList edgeElements, Map<String, Object> metadata, boolean graphDebugMode, int graphDebugMaxRecords) throws XMLConfigurationException,GraphConfigurationException {
 		String edgeID="unknown";
 		String edgeMetadataID;
 		String fromNodeAttr;
@@ -559,13 +575,14 @@ public class TransformationGraphXMLReaderWriter {
 
 			// process edge element attributes "id" & "fileURL"
 			try{
-			edgeID = attributes.getString(IGraphElement.XML_ID_ATTRIBUTE);
-			edgeMetadataID = attributes.getString("metadata", null); //metadata paramater on the edge can be empty for disabled edges
-			fromNodeAttr = attributes.getString("fromNode");
-			toNodeAttr = attributes.getString("toNode");
-			edgeType = attributes.getString("edgeType", null);
+				edgeID = attributes.getString(IGraphElement.XML_ID_ATTRIBUTE);
+				edgeMetadataID = attributes.getString("metadata", null); //metadata paramater on the edge can be empty for disabled edges
+				fromNodeAttr = attributes.getString("fromNode");
+				toNodeAttr = attributes.getString("toNode");
+				edgeType = attributes.getString("edgeType", null);
 			}catch(AttributeNotFoundException ex){
-				throw new XMLConfigurationException("Missing attribute at edge "+edgeID+" - "+ex.getMessage());
+				throwXMLConfigurationException("Missing attribute at edge '" + edgeID + "'.", ex);
+				continue;
 			}
 			debugMode = attributes.getBoolean("debugMode", false);
             
@@ -581,7 +598,7 @@ public class TransformationGraphXMLReaderWriter {
             fastPropagate = attributes.getBoolean("fastPropagate", false);
 			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
 			if (metadataObj == null && edgeMetadataID != null) {
-				throw new XMLConfigurationException("Can't find metadata ID: " + edgeMetadataID);
+				throwXMLConfigurationException("Can't find metadata ID '" + edgeMetadataID + "'.");
 			}
 			// do we have real metadata or stub only ??
 			if (metadataObj instanceof DataRecordMetadata){
@@ -604,21 +621,25 @@ public class TransformationGraphXMLReaderWriter {
             // assign edge to fromNode
 			specNodePort = fromNodeAttr.split(":");
 			if (specNodePort.length!=2){
-				throw new XMLConfigurationException("Wrong definition of \"fromNode\" ["+fromNodeAttr+"] <Node>:<Port> at "+edgeID+" edge !");
+				throwXMLConfigurationException("Wrong definition of \"fromNode\" ["+fromNodeAttr+"] <Node>:<Port> at "+edgeID+" edge !");
+				continue;
 			}
 			graphNode = graph.getNodes().get(specNodePort[0]);
 			if (graphNode == null) {
-				throw new XMLConfigurationException("Can't find node with ID: " + fromNodeAttr);
+				throwXMLConfigurationException("Can't find node with ID: " + fromNodeAttr);
+				continue;
 			}
             try{
                 fromPort=Integer.parseInt(specNodePort[1]);
             }catch(NumberFormatException ex){
-                throw new XMLConfigurationException("Can't parse \"fromNode\"  port number value at edge "+edgeID+" : "+specNodePort[1]);
+                throwXMLConfigurationException("Can't parse \"fromNode\"  port number value at edge "+edgeID+" : "+specNodePort[1]);
+                continue;
             }
             
 			// check whether port isn't already assigned
 			if (graphNode.getOutputPort(fromPort)!=null){
-				throw new XMLConfigurationException("Output port ["+fromPort+"] of "+graphNode.getId()+" already assigned !");
+				throwXMLConfigurationException("Output port ["+fromPort+"] of "+graphNode.getId()+" already assigned !");
+				continue;
 			}
 			graphNode.addOutputPort(fromPort, graphEdge);
 			// assign edge to toNode
@@ -629,16 +650,19 @@ public class TransformationGraphXMLReaderWriter {
 			// Node & port specified in form of: <nodeID>:<portNum>
 			graphNode = graph.getNodes().get(specNodePort[0]);
 			if (graphNode == null) {
-				throw new XMLConfigurationException("Can't find node ID: " + toNodeAttr);
+				throwXMLConfigurationException("Can't find node ID: " + toNodeAttr);
+				continue;
 			}
             try{
                 toPort=Integer.parseInt(specNodePort[1]);
             }catch(NumberFormatException ex){
-                throw new XMLConfigurationException("Can't parse \"toNode\" number value at edge "+edgeID+" : "+specNodePort[1]);
+                throwXMLConfigurationException("Can't parse \"toNode\" number value at edge "+edgeID+" : "+specNodePort[1]);
+                continue;
             }
 			// check whether port isn't already assigned
 			if (graphNode.getInputPort(toPort)!=null){
-				throw new XMLConfigurationException("Input port ["+toPort+"] of "+graphNode.getId()+" already assigned !");
+				throwXMLConfigurationException("Input port ["+toPort+"] of "+graphNode.getId()+" already assigned !");
+				continue;
 			}
 			graphNode.addInputPort(toPort, graphEdge);
 
@@ -661,22 +685,27 @@ public class TransformationGraphXMLReaderWriter {
         String connectionType;
         
         for (int i = 0; i < connectionElements.getLength(); i++) {
-            Element connectionElement = (Element) connectionElements.item(i);
-            ComponentXMLAttributes attributes = new ComponentXMLAttributes(connectionElement, graph);
-
-            // process IConnection element attributes "id" & "type"
-            try {
-                connectionType = attributes.getString("type");
-            } catch (AttributeNotFoundException ex) {
-                throw new XMLConfigurationException("Attribute type at Connection is missing - " + ex.getMessage());
-            }
-
-            //create connection
-            connection = ConnectionFactory.createConnection(graph, connectionType, connectionElement);
-            if (connection != null) {
-                //register connection in transformation graph
-                graph.addConnection(connection);
-            }
+        	try {
+	            Element connectionElement = (Element) connectionElements.item(i);
+	            ComponentXMLAttributes attributes = new ComponentXMLAttributes(connectionElement, graph);
+	
+	            // process IConnection element attributes "id" & "type"
+	            try {
+	                connectionType = attributes.getString("type");
+	            } catch (AttributeNotFoundException ex) {
+	                throwXMLConfigurationException("Attribute type at Connection is missing.", ex);
+	                continue;
+	            }
+	
+	            //create connection
+	            connection = ConnectionFactory.createConnection(graph, connectionType, connectionElement);
+	            if (connection != null) {
+	                //register connection in transformation graph
+	                graph.addConnection(connection);
+	            }
+        	} catch (Exception e) {
+        		throwXMLConfigurationException("Connection cannot be instantiated.", e);
+        	}
         }
 	}
 
@@ -692,22 +721,27 @@ public class TransformationGraphXMLReaderWriter {
         String sequenceType;
         
 		for (int i = 0; i < sequenceElements.getLength(); i++) {
-            Element sequenceElement = (Element) sequenceElements.item(i);
-            ComponentXMLAttributes attributes = new ComponentXMLAttributes(sequenceElement, graph);
-
-            // process Sequence element attributes "id" & "type"
-            try {
-                sequenceType = attributes.getString("type");
-            } catch (AttributeNotFoundException ex) {
-                throw new XMLConfigurationException("Attribute type at Sequence is missing - " + ex.getMessage());
-            }
-            
-            //create sequence
-            seq = SequenceFactory.createSequence(graph, sequenceType, sequenceElement);
-			if (seq != null) {
-                //register sequence in transformation graph
-				graph.addSequence(seq);
-			}
+			try {
+	            Element sequenceElement = (Element) sequenceElements.item(i);
+	            ComponentXMLAttributes attributes = new ComponentXMLAttributes(sequenceElement, graph);
+	
+	            // process Sequence element attributes "id" & "type"
+	            try {
+	                sequenceType = attributes.getString("type");
+	            } catch (AttributeNotFoundException ex) {
+	                throwXMLConfigurationException("Attribute type at Sequence is missing.", ex);
+	                continue;
+	            }
+	            
+	            //create sequence
+	            seq = SequenceFactory.createSequence(graph, sequenceType, sequenceElement);
+				if (seq != null) {
+	                //register sequence in transformation graph
+					graph.addSequence(seq);
+				}
+        	} catch (Exception e) {
+        		throwXMLConfigurationException("Sequence cannot be instantiated.", e);
+        	}
 		}
 	}
 
@@ -722,12 +756,16 @@ public class TransformationGraphXMLReaderWriter {
         LookupTable lookup = null;
         
         for (int i = 0; i < lookupElements.getLength(); i++) {
-            Element lookupElement = (Element) lookupElements.item(i);
-            lookup = LookupTableFactory.createLookupTable(graph, lookupElement);
-            if(lookup != null) {
-                //register lookup table in transformation graph
-                graph.addLookupTable(lookup);
-            }
+        	try {
+	            Element lookupElement = (Element) lookupElements.item(i);
+	            lookup = LookupTableFactory.createLookupTable(graph, lookupElement);
+	            if(lookup != null) {
+	                //register lookup table in transformation graph
+	                graph.addLookupTable(lookup);
+	            }
+        	} catch (Exception e) {
+        		throwXMLConfigurationException("Lookup table cannot be instantiated.", e);
+        	}
         }
 	}
 
@@ -746,12 +784,12 @@ public class TransformationGraphXMLReaderWriter {
 	        	try {
 	        		graph.loadGraphPropertiesSafe(fileURL);
 	        	} catch(IOException ex) {
-	        		throw new XMLConfigurationException("Can't load property definition from " + fileURL, ex);
+	        		throwXMLConfigurationException("Can't load property definition from " + fileURL, ex);
 	        	}
 	        } else if (propertyElement.hasAttribute("name")) {
 	        	graph.getGraphProperties().setPropertySafe(propertyElement.getAttribute("name"), propertyElement.getAttribute("value"));
 	        } else {
-	        	throw new XMLConfigurationException("Invalid property definition :" + propertyElement);
+	        	throwXMLConfigurationException("Invalid property definition :" + propertyElement);
 	        }
 	    }
 	    
@@ -771,13 +809,14 @@ public class TransformationGraphXMLReaderWriter {
 		        	try {
 		        		graph.loadGraphPropertiesSafe(resolvedUrl);
 		        	} catch(IOException ex) {
-		        		throw new XMLConfigurationException("Can't load property definition from " + resolvedUrl, ex);
+		        		throwXMLConfigurationException("Can't load property definition from " + resolvedUrl, ex);
 		        	}
 		    	}
 		    }
 		    
 		    if (unresolvedUrls.size() == stillUnresolvedUrls.size()) {
-		    	throw new XMLConfigurationException("Failed to resolve following propertis file URL(s): " + StringUtils.stringArraytoString(stillUnresolvedUrls.toArray(new String[0]), ", "));
+		    	throwXMLConfigurationException("Failed to resolve following propertis file URL(s): " + StringUtils.stringArraytoString(stillUnresolvedUrls.toArray(new String[0]), ", "));
+		    	break;
 		    }
 		    unresolvedUrls = stillUnresolvedUrls;
 	    }
@@ -840,13 +879,43 @@ public class TransformationGraphXMLReaderWriter {
 			        		dictionary.setContentType(name, attributes.getString(DICTIONARY_ENTRY_CONTENT_TYPE));
 			        	}
 			        } catch(AttributeNotFoundException ex){
-			            throw new XMLConfigurationException("Dictionary - Attributes missing " + ex.getMessage());
+			            throwXMLConfigurationException("Dictionary - Attributes missing.", ex);
 			        } catch (ComponentNotReadyException e) {
-			            throw new XMLConfigurationException("Dictionary initialization problem.", e);
+			            throwXMLConfigurationException("Dictionary initialization problem.", e);
+					} catch (Exception e) {
+			            throwXMLConfigurationException("Dictionary entry cannot be instantiated.", e);
 					}
 		    	}
 		    }
 	    }
+	}
+
+	private void throwXMLConfigurationException(String message) throws XMLConfigurationException {
+		throwXMLConfigurationException(message, null);
+	}
+
+	private void throwXMLConfigurationException(String message, Throwable cause) throws XMLConfigurationException {
+		if (isStrictParsing()) {
+			throw new XMLConfigurationException(message, cause);
+		}
+	}
+	
+	/**
+	 * @return the strictParsing
+	 */
+	public boolean isStrictParsing() {
+		return strictParsing;
+	}
+
+	/**
+	 * Strict mode of graph building can be turned off. So the transformation graph
+	 * is assembled with maximum effort. For example, missing external metadata
+	 * does not	cause failure of graph reading.
+	 * 
+	 * @param strictParsing the strictParsing to set
+	 */
+	public void setStrictParsing(boolean strictParsing) {
+		this.strictParsing = strictParsing;
 	}
 
 	@Deprecated
@@ -871,7 +940,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * 								element containing any attributes.
 	 * @return element satisfying requirements or null if none was find
 	 */
-	private Node xmlElementInDocument(String elementName, Map requiredAttributes) {
+	private Node xmlElementInDocument(String elementName, Map<String, String> requiredAttributes) {
 		NodeList xmlElements = this.outputXMLDocument.getElementsByTagName(elementName);
 		// check required attribute/value pairs on candidates
 		Element candidate = null;
@@ -892,10 +961,9 @@ public class TransformationGraphXMLReaderWriter {
 			
 			if (requiredAttributes.isEmpty() == false) {
 				// check required name-value pairs
-				for( Object entryObject:requiredAttributes.entrySet()){
-					final Map.Entry entry = (Entry) entryObject;
-					final String requiredName = (String)entry.getKey();
-					final String requiredValue = (String)entry.getValue();
+				for(Entry<String, String> entry : requiredAttributes.entrySet()) {
+					final String requiredName = entry.getKey();
+					final String requiredValue = entry.getValue();
 					if (!candidate.hasAttribute(requiredName) ||
 						!candidate.getAttribute(requiredName).equals(requiredValue)) {
 						// candidate is missing attribute/value
@@ -909,6 +977,7 @@ public class TransformationGraphXMLReaderWriter {
 	}
 	
 	
+	@SuppressWarnings("deprecation")
 	private boolean write() {
 		// initialize document to which all element will belong to
 		try {
@@ -922,7 +991,7 @@ public class TransformationGraphXMLReaderWriter {
 			
 			for (int i=0; i<phases.length; i++) {
 				// find element for this phase
-				HashMap phaseAtts = new HashMap();
+				HashMap<String, String> phaseAtts = new HashMap<String, String>();
 				phaseAtts.put("number",String.valueOf(i));
 				Element phaseElement = (Element)xmlElementInDocument(PHASE_ELEMENT,phaseAtts);
 				if (phaseElement == null) {
@@ -935,7 +1004,7 @@ public class TransformationGraphXMLReaderWriter {
 				Iterator<Node> iter = nodes.iterator();
 				while (iter.hasNext()) {
 					Node graphNode = iter.next();
-					HashMap nodeAtts = new HashMap();
+					HashMap<String, String> nodeAtts = new HashMap<String, String>();
 					nodeAtts.put(Node.XML_ID_ATTRIBUTE, graphNode.getId());
 					nodeAtts.put(Node.XML_TYPE_ATTRIBUTE, graphNode.getType());
 					Element xmlElement = (Element)xmlElementInDocument(NODE_ELEMENT,nodeAtts); 

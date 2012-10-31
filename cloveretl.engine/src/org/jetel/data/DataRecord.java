@@ -230,7 +230,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 */
 	public void delField(int _fieldNum) {
             DataField tmp_fields[]=new DataField[fields.length-1];
-            DataRecordMetadata tmp_metadata=new DataRecordMetadata(metadata.getName(),metadata.getRecType());
+            DataRecordMetadata tmp_metadata = new DataRecordMetadata(metadata.getName(),metadata.getParsingType());
             tmp_metadata.setLabel(metadata.getLabel());
             int counter=0;
             for(int i=0;i<fields.length;i++){
@@ -673,7 +673,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 		for (int i = 0; i < fields.length; i++) {
 			str.append("#").append(i).append("|");
 			str.append(fields[i].getMetadata().getName()).append("|");
-			str.append(fields[i].getType());
+			str.append(fields[i].getMetadata().getDataType().getShortName());
 			str.append("->");
 			str.append(fields[i].toString());
 			str.append("\n");

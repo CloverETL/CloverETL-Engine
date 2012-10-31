@@ -20,6 +20,7 @@
  */
 package org.jetel.util.string;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -747,6 +748,23 @@ public class StringUtilsTest extends CloverTestCase {
 		assertTrue(Arrays.equals(bytes, StringUtils.hexStringToBytes("010A0F107f81003F4041")));
 	}
 
+	public void testJoin() {
+		assertEquals(null, StringUtils.join(null, null));
+		assertEquals(null, StringUtils.join(null, ""));
+		assertEquals(null, StringUtils.join(null, "abc"));
+		assertEquals("", StringUtils.join(new ArrayList<String>(), null));
+		assertEquals("", StringUtils.join(new ArrayList<String>(), ""));
+		assertEquals("", StringUtils.join(new ArrayList<String>(), "abc"));
+		assertEquals("def", StringUtils.join(Arrays.asList("def"), null));
+		assertEquals("def", StringUtils.join(Arrays.asList("def"), ""));
+		assertEquals("def", StringUtils.join(Arrays.asList("def"), "abc"));
+		assertEquals("defnullghi", StringUtils.join(Arrays.asList("def", "ghi"), null));
+		assertEquals("defghi", StringUtils.join(Arrays.asList("def", "ghi"), ""));
+		assertEquals("defabcghi", StringUtils.join(Arrays.asList("def", "ghi"), "abc"));
+		assertEquals("ja nebojsa", StringUtils.join(Arrays.asList("ja", "nebojsa"), " "));
+		assertEquals("jedna;dva;;tri;null;ctyri", StringUtils.join(Arrays.asList("jedna", "dva", "", "tri", null, "ctyri"), ";"));
+	}
+	
 }
 
 /*

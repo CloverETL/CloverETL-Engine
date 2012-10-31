@@ -18,7 +18,6 @@
  */
 package org.jetel.util.formatter;
 
-import org.jetel.data.DataField;
 import org.jetel.metadata.DataFieldFormatType;
 
 /**

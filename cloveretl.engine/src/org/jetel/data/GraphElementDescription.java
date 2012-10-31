@@ -37,8 +37,6 @@ public class GraphElementDescription extends PluginableItemDescription {
     private final static String TYPE = "type";
     private final static String CLASS = "className";
 
-    private String extensionPointId;
-    
     private String type;
     
     private String className;

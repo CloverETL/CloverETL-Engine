@@ -55,10 +55,12 @@ public class ResolveResult extends AbstractResult implements Iterable<SingleClov
 		uris.add(uri);
 	}
 	
+	@Override
 	public ResolveResult setException(Exception exception) {
 		return (ResolveResult) super.setException(exception);
 	}
 
+	@Override
 	public int successCount() {
 		return result.size();
 	}
@@ -67,6 +69,7 @@ public class ResolveResult extends AbstractResult implements Iterable<SingleClov
 		return result.isEmpty();
 	}
 	
+	@Override
 	public int totalCount() {
 		return uris.size();
 	}

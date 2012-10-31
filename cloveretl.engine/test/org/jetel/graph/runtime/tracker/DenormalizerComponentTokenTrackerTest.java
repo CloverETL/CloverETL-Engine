@@ -121,6 +121,7 @@ public class DenormalizerComponentTokenTrackerTest extends AbstractComponentToke
 			);
 	}
 
+	@Override
 	protected void assertReadToken(Token lastInToken, Token currentInToken, int currentInPort, int actionsCountBefore) {
 		tokenTracker.assertLastActions(
 				actionsCountBefore,

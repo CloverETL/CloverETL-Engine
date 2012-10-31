@@ -23,20 +23,13 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.denormalize.CTLRecordDenormalize;
-import org.jetel.component.denormalize.CTLRecordDenormalizeAdapter;
 import org.jetel.component.denormalize.RecordDenormalize;
-import org.jetel.component.denormalize.RecordDenormalizeTL;
-import org.jetel.ctl.ErrorMessage;
-import org.jetel.ctl.ITLCompiler;
-import org.jetel.ctl.TLCompilerFactory;
-import org.jetel.ctl.TransformLangExecutor;
+import org.jetel.component.denormalize.RecordDenormalizeDescriptor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -160,7 +153,7 @@ public class Denormalizer extends Node {
 	protected String xformClass;
 	protected String xform;
 	protected String xformURL = null;
-	private String charset = null;
+	protected String charset = null;
 	private Order order;
 	protected String[] key;
 	RecordKey recordKey;
@@ -228,21 +221,24 @@ public class Denormalizer extends Node {
 		sharedInit();
 
 		if (denorm == null) {
-			if (xformClass != null) {
-				denorm = (RecordDenormalize) RecordTransformFactory.loadClassInstance(xformClass, this);
-			} else if (xform == null && xformURL != null) {
-				xform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
-			}
-			if (xformClass == null) {
-				denorm = createRecordDenormalizer(xform);
-			}
-			// set graph to transformation (if CTL it can use lookups etc.)
-			denorm.setNode(this);
+			denorm = createRecordDenormalizeFactory().createTransform();
 		}
 		if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + denorm.getMessage());
 		}
 		errorActions = ErrorAction.createMap(errorActionsString);
+	}
+
+	protected TransformFactory<? extends RecordDenormalize> createRecordDenormalizeFactory() {
+    	TransformFactory<RecordDenormalize> transformFactory = TransformFactory.createTransformFactory(RecordDenormalizeDescriptor.newInstance());
+    	transformFactory.setTransform(xform);
+    	transformFactory.setTransformClass(xformClass);
+    	transformFactory.setTransformUrl(xformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(inMetadata);
+    	transformFactory.setOutMetadata(outMetadata);
+    	return transformFactory;
 	}
 
 	private void sharedInit() {
@@ -256,34 +252,6 @@ public class Denormalizer extends Node {
 			recordKey = new RecordKey(key, inMetadata);
 			recordKey.setEqualNULLs(equalNULL);
 			recordKey.init();
-		}
-	}
-	
-	protected RecordDenormalize createRecordDenormalizer(String code) throws ComponentNotReadyException {
-		switch (RecordTransformFactory.guessTransformType(code)) {
-		case RecordTransformFactory.TRANSFORM_JAVA_SOURCE:
-			return createDenormalizerDynamic(code);
-		case RecordTransformFactory.TRANSFORM_CLOVER_TL:
-			return new RecordDenormalizeTL(logger, code, getGraph());
-		case RecordTransformFactory.TRANSFORM_CTL:
-			ITLCompiler compiler = TLCompilerFactory.createCompiler(getGraph(),new DataRecordMetadata[]{inMetadata}, new DataRecordMetadata[]{outMetadata},"UTF-8");
-        	List<ErrorMessage> msgs = compiler.compile(code, CTLRecordDenormalize.class, getId());
-        	if (compiler.errorCount() > 0) {
-				String report = ErrorMessage.listToString(msgs, logger);
-        		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors" + report);
-        	}
-        	Object ret = compiler.getCompiledCode();
-        	if (ret instanceof TransformLangExecutor) {
-        		// setup interpreted runtime
-        		return new CTLRecordDenormalizeAdapter((TransformLangExecutor)ret, logger);
-        	} else if (ret instanceof CTLRecordDenormalize){
-        		return (CTLRecordDenormalize) ret;
-        	} else {
-        		// this should never happen as compiler always generates correct interface
-        		throw new ComponentNotReadyException("Invalid type of record transformation");
-        	}
-		default:
-			throw new ComponentNotReadyException("Can't determine transformation code type at component ID :" + getId());
 		}
 	}
 	
@@ -516,31 +484,10 @@ public class Denormalizer extends Node {
 			}
         }
 
-        // transformation source for checkconfig
-        String checkTransform = null;
-        if (xform != null) {
-        	checkTransform = xform;
-        } else if (xformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), xformURL, charset);
-        }
-        // only the transform and transformURL parameters are checked, transformClass is ignored
-        if (checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-        	if (transformType != RecordTransformFactory.TRANSFORM_JAVA_SOURCE ) {
-    			try {
-    				RecordDenormalize denorm = createRecordDenormalizer(checkTransform);
-    				denorm.setNode(this);
-    				if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
-    					throw new ComponentNotReadyException("Transformation is invalid: " + denorm.getMessage());
-    				}
-    			} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = xform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-        	}
-        }
+        //check transformation
+		if (denorm == null) {
+			createRecordDenormalizeFactory().checkConfig(status);
+		}
 
         return status;
    }
@@ -592,10 +539,7 @@ public class Denormalizer extends Node {
 					parseKeyList(xattribs.getString(XML_KEY_ATTRIBUTE, null)),
 					order
 					);
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				denorm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-
+			denorm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			denorm.setTransformationParameters(xattribs.attributes2Properties(
 					new String[] { XML_ID_ATTRIBUTE,
 							XML_TRANSFORM_ATTRIBUTE,

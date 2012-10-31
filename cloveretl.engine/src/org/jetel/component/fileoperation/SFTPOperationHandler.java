@@ -20,11 +20,11 @@ package org.jetel.component.fileoperation;
 
 import static java.text.MessageFormat.format;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -553,6 +553,11 @@ public class SFTPOperationHandler implements IOperationHandler {
 	private void createFile(ChannelSftp ftp, String path) throws SftpException {
 		ftp.put(new ByteArrayInputStream(new byte[0]), path);
 	}
+	
+	private void setLastModified(ChannelSftp channel, String path, long millis) throws SftpException {
+		long secs = millis / 1000;
+		channel.setMtime(path, (int) secs);
+	}
 
 	private void create(ChannelSftp channel, URI uri, CreateParameters params) throws IOException, SftpException {
 		if (Thread.currentThread().isInterrupted()) {
@@ -560,8 +565,9 @@ public class SFTPOperationHandler implements IOperationHandler {
 		}
 		boolean createDirectory = Boolean.TRUE.equals(params.isDirectory());
 		boolean createParents = Boolean.TRUE.equals(params.isMakeParents());
-		Info fileInfo = info(uri);
+		Info fileInfo = info(uri, channel);
 		String path = getPath(uri);
+		Date lastModified = params.getLastModified();
 		if (fileInfo == null) { // does not exist
 			if (createParents) {
 				URI parentUri = URIUtils.getParentURI(uri);
@@ -572,15 +578,15 @@ public class SFTPOperationHandler implements IOperationHandler {
 			} else {
 				createFile(channel, path);
 			}
+			if (lastModified != null) {
+				setLastModified(channel, path, lastModified.getTime());
+			}
 		} else {
 			if (createDirectory != fileInfo.isDirectory()) {
 				throw new IOException(MessageFormat.format(createDirectory ? FileOperationMessages.getString("IOperationHandler.exists_not_directory") : FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri)); //$NON-NLS-1$ //$NON-NLS-2$
 			}
+			setLastModified(channel, path, lastModified != null ? lastModified.getTime() : System.currentTimeMillis());
 		}
-		Date lastModified = params.getLastModified();
-		long millis = (lastModified != null) ? lastModified.getTime() : System.currentTimeMillis();
-		long secs = millis / 1000;
-		channel.setMtime(path, (int) secs);
 	}
 
 	@Override
@@ -624,8 +630,9 @@ public class SFTPOperationHandler implements IOperationHandler {
 		case MOVE: // can be achieved by renaming, but only within a single host 
 			return operation.scheme(0).equalsIgnoreCase(SFTP_SCHEME) 
 					&& operation.scheme(1).equalsIgnoreCase(SFTP_SCHEME);
+		default:
+			return false;
 		}
-		return false;
 	}
 
 	@Override
@@ -633,7 +640,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		return "SFTPOperationHandler"; //$NON-NLS-1$
 	}
 	
-	private class SFTPOutputStream extends FilterOutputStream {
+	private class SFTPOutputStream extends BufferedOutputStream {
 		
 		private final SFTPSession session;
 
@@ -644,12 +651,15 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public void close() throws IOException {
-			super.close();
-			disconnect(session);
+			try {
+				super.close();
+			} finally {
+				disconnect(session);
+			}
 		}
 	}
 	
-	private class SFTPInputStream extends FilterInputStream {
+	private class SFTPInputStream extends BufferedInputStream {
 		
 		private final SFTPSession session;
 
@@ -660,8 +670,11 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public void close() throws IOException {
-			super.close();
-			disconnect(session);
+			try {
+				super.close();
+			} finally {
+				disconnect(session);
+			}
 		}
 	}
 

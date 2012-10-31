@@ -31,6 +31,7 @@ import javax.xml.namespace.QName;
 
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.formatter.TimeIntervalUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -841,6 +842,59 @@ public class ComponentXMLAttributes {
 	public void setURL(String key, URL value) throws AttributeNotFoundException {
 		nodeXML.setAttribute(key, value.toString());
 	}
+	
+	/**
+	 * Returns the time interval duration from the specified XML attribute.
+	 * Numbers without a unit are regarded as milliseconds.
+	 * 
+	 * @param key
+	 *            name of the attribute
+	 * @return The time interval value, default unit is millisecond
+	 * @throws AttributeNotFoundException
+	 */
+	public long getTimeInterval(String key) throws AttributeNotFoundException {
+        String value = getString(key);
+		if (value.equalsIgnoreCase(STR_MIN_LONG)) {
+			return Long.MIN_VALUE;
+		} else if (value.equalsIgnoreCase(STR_MAX_LONG)) {
+			return Long.MAX_VALUE;
+		}
+		
+		if (value.length() == 0) {
+			throw new AttributeNotFoundException(key);
+		}
+
+		try {
+			return TimeIntervalUtils.parseInterval(value);
+		} catch (IllegalArgumentException ex) {
+			throw new NumberFormatException(String.format("Parse error when converting value \"%s\" of property \"%s\" to a time interval.", value, key));
+		}
+	}
+	
+	/**
+	 * Returns the time interval duration from the specified XML attribute.
+	 * Numbers without a unit are regarded as milliseconds.
+	 * 
+	 * If the attribute is not found or the conversion fails,
+	 * the <code>defaultValue</code> is returned. 
+	 * 
+	 * @param key
+	 *            name of the attribute
+	 * @param defaultValue
+	 *            default value to be returned when attribute can't be found
+	 *            
+	 * @return The time interval value, default unit is millisecond
+	 */
+	public long getTimeInterval(String key, long defaultValue) {
+		try {
+			return getTimeInterval(key);
+		} catch (NumberFormatException ex) {
+			return defaultValue;
+		} catch (AttributeNotFoundException e) {
+			return defaultValue;
+		}
+	}
+	
 }
 /*
  *  End class StringUtils

@@ -48,6 +48,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	 * New token is registered and unique token identifier is generated.
 	 * This method should be called in case a new token is created.
 	 */
+	@Override
 	public void initToken(DataRecord token) {
 		validateToken(token);
 		
@@ -57,6 +58,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	/**
 	 * Token is released and no other token tracking is expected.
 	 */
+	@Override
 	public void freeToken(DataRecord token) {
 		validateToken(token);
 		
@@ -66,6 +68,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	/**
 	 * Given token was read by component from a port.
 	 */
+	@Override
 	public void readToken(int inputPort, DataRecord token) {
 		validateToken(token);
 		
@@ -75,6 +78,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	/**
 	 * Given token was written by component to a port.
 	 */
+	@Override
 	public void writeToken(int outputPort, DataRecord token) {
 		validateToken(token);
 		
@@ -85,6 +89,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	 * This method informs token tracker about EOF on an input port.
 	 * This method is invoked automatically by {@link JobflowEdge}.
 	 */
+	@Override
 	public void eofInputPort(int portNum) {
 		//DO NOTHING
 	}
@@ -93,6 +98,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	 * This method informs token tracker about EOF on an output port.
 	 * This method is invoked automatically by {@link JobflowEdge}.
 	 */
+	@Override
 	public void eofOutputPort(int portNum) {
 		//DO NOTHING
 	}
@@ -100,6 +106,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	/**
 	 * Two given tokens are considered with parent-child relationship.
 	 */
+	@Override
 	public void linkTokens(DataRecord sourceToken, DataRecord targetToken) {
 		validateToken(sourceToken);
 		validateToken(targetToken);
@@ -114,6 +121,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	 * @param runId run identifier of executed job
 	 * @param settings custom information about executed job
 	 */
+	@Override
 	public void executeJob(DataRecord token, JobType jobType, RunStatus runStatus) {
 		validateToken(token);
 		
@@ -127,6 +135,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	 * @param runId run identifier of finished job
 	 * @param result custom information about finished job
 	 */
+	@Override
 	public void jobFinished(DataRecord token, JobType jobType, RunStatus runStatus) {
 		validateToken(token);
 		
@@ -140,6 +149,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	 * @param message reported message
 	 * @param exception caused exception
 	 */
+	@Override
 	public void logMessage(DataRecord token, Level level, String message, Throwable exception) {
 		validateToken(token);
 		
@@ -149,6 +159,7 @@ public class BasicComponentTokenTracker implements ComponentTokenTracker {
 	/**
 	 * Token identification of two given tokens is synchronized. Both tokens are from now considered equal.  
 	 */
+	@Override
 	public void unifyTokens(DataRecord sourceToken, DataRecord targetToken) {
 		validateToken(sourceToken);
 		validateToken(targetToken);

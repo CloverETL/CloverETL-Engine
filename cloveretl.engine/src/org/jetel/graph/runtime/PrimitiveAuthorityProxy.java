@@ -421,7 +421,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
-	public List<RunStatus> killGraph(long runId, boolean recursive) {
+	public List<RunStatus> killJob(long runId, boolean recursive) {
 		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
 	}
 
@@ -431,7 +431,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
-	public List<RunStatus> killChildrenGraphs(boolean recursive) {
+	public List<RunStatus> killChildrenJobs(boolean recursive) {
 		throw new UnsupportedOperationException("Graph abortation is available only in CloverETL Server environment!");
 	}
 

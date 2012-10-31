@@ -20,7 +20,6 @@ package org.jetel.ctl;
 
 import org.jetel.data.GraphElementDescription;
 import org.jetel.plugin.Extension;
-import org.jetel.plugin.PluginDescriptor;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)

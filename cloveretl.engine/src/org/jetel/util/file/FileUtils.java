@@ -64,6 +64,9 @@ import java.util.zip.ZipInputStream;
 
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.FileManager;
+import org.jetel.component.fileoperation.Operation;
+import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
+import org.jetel.component.fileoperation.URIUtils;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -85,6 +88,7 @@ import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
 import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.string.StringUtils;
 
 import com.ice.tar.TarEntry;
 import com.ice.tar.TarInputStream;
@@ -136,13 +140,35 @@ public class FileUtils {
 	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
+	private static final URLStreamHandler HTTP_HANDLER = new CredentialsSerializingHandler() {
+
+		@Override
+		protected int getDefaultPort() {
+			return 80;
+		}
+	};
+    
+	private static final URLStreamHandler HTTPS_HANDLER = new CredentialsSerializingHandler() {
+
+		@Override
+		protected int getDefaultPort() {
+			return 443;
+		}
+	};
+
 	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
 
-	/**
-	 * Maps known URL protocols to their handlers
-	 */
 	public static final Map<String, URLStreamHandler> handlers;
 
+	private static final String FTP_PROTOCOL = "ftp";
+
+	private static final String SFTP_PROTOCOL = "sftp";
+
+	private static final String SCP_PROTOCOL = "scp";
+	
+	private static final String HTTP_PROTOCOL = "http";
+	private static final String HTTPS_PROTOCOL = "https";
+	
 	static {
 		Map<String, URLStreamHandler> h = new HashMap<String, URLStreamHandler>();
 		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
@@ -152,6 +178,8 @@ public class FileUtils {
 		h.put(FTP_PROTOCOL, ftpStreamHandler);
 		h.put(SFTP_PROTOCOL, sFtpStreamHandler);
 		h.put(SCP_PROTOCOL, sFtpStreamHandler);
+		h.put(HTTP_PROTOCOL, HTTP_HANDLER);
+		h.put(HTTPS_PROTOCOL, HTTPS_HANDLER);
 		for (ProxyProtocolEnum p: ProxyProtocolEnum.values()) {
 			h.put(p.toString(), proxyHandler);
 		}
@@ -256,7 +284,7 @@ public class FileUtils {
         	if( fileURL.startsWith("/") ){
                 return new URL(fileURL);
         	} else {
-        		return new URL(contextURL, fileURL);
+        		return getStandardUrlWeblogicHack(contextURL, fileURL);
         	}
         } catch(MalformedURLException ex) {}
 
@@ -293,6 +321,34 @@ public class FileUtils {
 			prefix += "/";
 		}
         return new URL(contextURL, prefix + fileURL);
+    }
+    
+    /**
+     * method created as workaround to issue https://bug.javlin.eu/browse/CLS-886
+     * 
+     * weblogic implementation of java.net.URLStreamHandler - weblogic.net.http.Handler
+     * does not print credentials in its toExternalForm(URL u) method.
+     * 
+     * On any non-weblogic platform this method can be replaced by 
+     * new URL(URL context, String spec);
+     * 
+     * Method enforce using the Sun handler implementation for http and https protocols
+     * @throws MalformedURLException 
+     */
+    private static URL getStandardUrlWeblogicHack(URL contextUrl, String fileUrl) throws MalformedURLException {
+    	if (contextUrl != null || fileUrl != null) {
+    		final URL resolvedInContextUrl = new URL(contextUrl, fileUrl);
+    		String protocol = resolvedInContextUrl.getProtocol();
+    		if (protocol != null) {
+    			protocol = protocol.toLowerCase();
+    			if (protocol.equals(HTTP_PROTOCOL)) {
+        	    	return new URL(contextUrl, fileUrl, FileUtils.HTTP_HANDLER);
+    			} else if (protocol.equals(HTTPS_PROTOCOL)) {
+        	    	return new URL(contextUrl, fileUrl, FileUtils.HTTPS_HANDLER);
+    			}
+    		}
+    	}
+    	return new URL(contextUrl, fileUrl);
     }
     
     /**
@@ -488,7 +544,11 @@ public class FileUtils {
         	if (archiveType == null && url.getProtocol().equals(FILE_PROTOCOL)) {
             	return new FileInputStream(url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url));
         	} else if (archiveType == null && SandboxUrlUtils.isSandboxUrl(url)) {
-            	return url.openConnection().getInputStream();
+        		TransformationGraph graph = ContextProvider.getGraph();
+        		if (graph == null) {
+					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
+        		}
+        		return graph.getAuthorityProxy().getSandboxResourceInput(url.getHost(), getUrlFile(url));
         	}
         	
         	try {
@@ -826,7 +886,7 @@ public class FileUtils {
 		return getWritableChannel(contextURL, input, appendData, -1);
 	}
 
-	private static boolean isArchive(String input) {
+	public static boolean isArchive(String input) {
 		return input.startsWith("zip:") || input.startsWith("tar:") || input.startsWith("gzip:") || input.startsWith("tgz:");
 	}
 
@@ -903,13 +963,7 @@ public class FileUtils {
 	
 	@java.lang.SuppressWarnings("unchecked")
 	private static String getFirstFileInZipArchive(URL context, String filePath) throws NullPointerException, FileNotFoundException, ZipException, IOException {
-		File file;
-		if (context != null) {
-			file = new File(context.getPath(), filePath);
-		}
-		else {
-			file = new File(filePath);
-		}
+		File file = getJavaFile(context, filePath); // CLS-537
 		de.schlichtherle.util.zip.ZipFile zipFile = new de.schlichtherle.util.zip.ZipFile(file);
 		Enumeration<de.schlichtherle.util.zip.ZipEntry> zipEnmr;
 		de.schlichtherle.util.zip.ZipEntry entry;
@@ -1117,7 +1171,7 @@ public class FileUtils {
             		if (graph == null) {
     					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
             		}
-                	return graph.getAuthorityProxy().getSandboxResourceOutput(url.getHost(), SandboxUrlUtils.getRelativeUrl(url.toString()), appendData);
+                	return graph.getAuthorityProxy().getSandboxResourceOutput(url.getHost(), getUrlFile(url), appendData);
     			}
     			// file input stream 
     			String filePath = url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url);
@@ -1217,6 +1271,46 @@ public class FileUtils {
 			throw new ComponentNotReadyException("Can't write to: " + fileURL);
 		}
 		return true;
+	}
+	
+	/**
+	 * Creates the parent dirs of the target file,
+	 * if necessary. It is assumed that the target
+	 * is a regular file, not a directory.
+	 * 
+	 * The parent directories may not have been created,
+	 * even if the method does not throw any exception.
+	 * 
+	 * @param contextURL
+	 * @param fileURL
+	 * @throws ComponentNotReadyException
+	 */
+	public static void createParentDirs(URL contextURL, String fileURL) throws ComponentNotReadyException {
+		try {
+			URL innerMostURL = FileUtils.getFileURL(contextURL, FileURLParser.getMostInnerAddress(fileURL));
+	    	String innerMostURLString = innerMostURL.toString();
+			boolean isFile = !innerMostURLString.endsWith("/") && !innerMostURLString.endsWith("\\");
+        	if (FileUtils.isLocalFile(contextURL, innerMostURLString)) {
+        		File file = FileUtils.getJavaFile(contextURL, innerMostURLString);
+        		String sFile = isFile ? file.getParent() : file.getPath();
+        		FileUtils.makeDirs(contextURL, sFile);
+        	} else if (SandboxUrlUtils.isSandboxUrl(innerMostURLString)) {
+        		// SandboxUrlUtils.getRelativeUrl() ensures that the path won't start with a slash, which causes problems on Linux
+        		File file = new File(SandboxUrlUtils.getRelativeUrl(innerMostURLString));
+        		String sFile = isFile ? file.getParent() : file.getPath(); // a hack to get the parent directory
+        		FileUtils.makeDirs(contextURL, sFile);
+        	} else {
+        		Operation operation = Operation.create(innerMostURL.getProtocol());
+        		FileManager manager = FileManager.getInstance();
+        		String sFile = isFile ? URIUtils.getParentURI(URI.create(innerMostURLString)).toString() : innerMostURLString;
+        		if (manager.canPerform(operation)) {
+        			manager.create(CloverURI.createURI(sFile), new CreateParameters().setDirectory(true).setMakeParents(true));
+        			// ignore the result
+        		}
+        	}
+		} catch (MalformedURLException e) {
+			log.debug(e.getMessage());
+		}
 	}
 	
 	/**
@@ -1588,9 +1682,17 @@ public class FileUtils {
 			try {
 				return new File(url.toURI());
 			} catch(URISyntaxException e) {
-				return new File(url.getPath());
+				StringBuilder path = new StringBuilder(url.getFile());
+				if (!StringUtils.isEmpty(url.getRef())) {
+					path.append('#').append(url.getRef());
+				}
+				return new File(path.toString());
 			} catch(IllegalArgumentException e2) {
-				return new File(url.getPath());
+				StringBuilder path = new StringBuilder(url.getFile());
+				if (!StringUtils.isEmpty(url.getRef())) {
+					path.append('#').append(url.getRef());
+				}
+				return new File(path.toString());
 			}
 		} else if (protocol.equals(SandboxUrlUtils.SANDBOX_PROTOCOL)) {
 			try {

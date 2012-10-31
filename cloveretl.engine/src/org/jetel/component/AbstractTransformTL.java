@@ -19,6 +19,8 @@
 package org.jetel.component;
 
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.Node;
@@ -76,6 +78,16 @@ public abstract class AbstractTransformTL implements Transform {
     public AbstractTransformTL(String sourceCode, Log logger) {
 		this.wrapper = new WrapperTL(sourceCode, logger);
 		this.logger = logger;
+    }
+
+    /**
+     * Creates an instance of the <code>AbstractTransformTL</code> class.
+     *
+     * @param sourceCode the source code of the transformation
+     * @param logger the logger to be used by this TL wrapper
+     */
+    public AbstractTransformTL(String sourceCode, Logger logger) {
+    	this(sourceCode, LogFactory.getLog(logger.getName()));
     }
 
     @Override

@@ -44,7 +44,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -363,30 +362,30 @@ public class Reformat extends Node {
         if(isInitialized()) return;
 		super.init();
         
-        //create input metadata
-        DataRecordMetadata inMetadata[] = {getInputPort(READ_FROM_PORT).getMetadata()};
-
-        //create output metadata
-        int outPortsNum = getOutPorts().size();
-        DataRecordMetadata outMetadata[] = new DataRecordMetadata[outPortsNum];
-        for(int i = 0; i < outPortsNum; i++) {
-            outMetadata[i] = getOutputPort(i).getMetadata();
-        }
-
 		//create instance of record transformation
         if (transformation == null) {
-			transformation = RecordTransformFactory.createTransform(transform, transformClass, 
-					transformURL, charset, this, inMetadata, outMetadata);
+			transformation = getTransformFactory().createTransform();
 		}
         
 		// init transformation
-        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+        if (!transformation.init(transformationParameters, getInMetadataArray(), getOutMetadataArray())) {
             throw new ComponentNotReadyException("Error when initializing tranformation function.");
         }
 
         errorActions = ErrorAction.createMap(errorActionsString);
 	}
 
+	private TransformFactory<RecordTransform> getTransformFactory() {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setTransform(transform);
+    	transformFactory.setTransformClass(transformClass);
+    	transformFactory.setTransformUrl(transformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(getInMetadata());
+    	transformFactory.setOutMetadata(getOutMetadata());
+    	return transformFactory;
+	}
 	
     /**
 	 * @param transformationParameters
@@ -458,9 +457,7 @@ public class Reformat extends Node {
                             xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null,RefResFlag.SPEC_CHARACTERS_OFF));
 			reformat.setTransformationParameters(xattribs.attributes2Properties(
 					new String[]{XML_ID_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE}));
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				reformat.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
+			reformat.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
 				reformat.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
 			}
@@ -517,40 +514,9 @@ public class Reformat extends Node {
 				}
             }
             
-            // transformation source for checkconfig
-            String checkTransform = null;
-            if (transform != null) {
-            	checkTransform = transform;
-            } else if (transformURL != null) {
-            	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
-            }
-            // only the transform and transformURL parameters are checked, transformClass is ignored
-            if (checkTransform != null) {
-            	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-            	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-            			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-            		// only CTL is checked
-            		
-                    //create input metadata
-                    DataRecordMetadata inMetadata[] = {getInputPort(READ_FROM_PORT).getMetadata()};
-
-                    //create output metadata
-                    int outPortsNum = getOutPorts().size();
-                    DataRecordMetadata outMetadata[] = new DataRecordMetadata[outPortsNum];
-                    for(int i = 0; i < outPortsNum; i++) {
-                        outMetadata[i] = getOutputPort(i).getMetadata();
-                    }
-
-        			try {
-						RecordTransformFactory.createTransform(checkTransform, null, null, 
-								charset, this, inMetadata, outMetadata);
-					} catch (ComponentNotReadyException e) {
-						// find which component attribute was used
-						String attribute = transform != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-						// report CTL error as a warning
-						status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-					}
-            	}
+            //check transformation
+            if (transformation == null) {
+            	getTransformFactory().checkConfig(status);
             }
             
             return status;

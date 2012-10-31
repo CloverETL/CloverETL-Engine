@@ -45,7 +45,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -300,6 +300,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public int write(DataRecord dataRecord) throws IOException {
 		if (dataRecord == null) {
@@ -325,31 +326,33 @@ public class XLSXDataFormatter extends XLSFormatter {
 			Cell newCell = newRow.createCell(firstColumn + i);
 			newCell.setCellStyle(cellStyles[i]);
 
-			switch (metadata.getField(includedFieldIndices[i]).getType()) {
-				case DataFieldMetadata.BYTE_FIELD:
-				case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
-				case DataFieldMetadata.STRING_FIELD:
-					newCell.setCellValue(fieldValue.toString());
-					break;
-				case DataFieldMetadata.DATE_FIELD:
-				case DataFieldMetadata.DATETIME_FIELD:
-					newCell.setCellValue((Date) fieldValue);
-					break;
-				case DataFieldMetadata.INTEGER_FIELD:
-					newCell.setCellValue((Integer) fieldValue);
-					break;
-				case DataFieldMetadata.LONG_FIELD:
-					newCell.setCellValue((Long) fieldValue);
-					break;
-				case DataFieldMetadata.DECIMAL_FIELD:
-					newCell.setCellValue(((Decimal) fieldValue).getDouble());
-					break;
-				case DataFieldMetadata.NUMERIC_FIELD:
-					newCell.setCellValue((Double) fieldValue);
-					break;
-				case DataFieldMetadata.BOOLEAN_FIELD:
-					newCell.setCellValue((Boolean) fieldValue);
-					break;
+			switch (metadata.getField(includedFieldIndices[i]).getDataType()) {
+			case BYTE:
+			case CBYTE:
+			case STRING:
+				newCell.setCellValue(fieldValue.toString());
+				break;
+			case DATE:
+			case DATETIME:
+				newCell.setCellValue((Date) fieldValue);
+				break;
+			case INTEGER:
+				newCell.setCellValue((Integer) fieldValue);
+				break;
+			case LONG:
+				newCell.setCellValue((Long) fieldValue);
+				break;
+			case DECIMAL:
+				newCell.setCellValue(((Decimal) fieldValue).getDouble());
+				break;
+			case NUMBER:
+				newCell.setCellValue((Double) fieldValue);
+				break;
+			case BOOLEAN:
+				newCell.setCellValue((Boolean) fieldValue);
+				break;
+			default:
+				break;
 			}
 		}
 
@@ -370,7 +373,7 @@ public class XLSXDataFormatter extends XLSFormatter {
 	@Override
 	public void close() {
 		if (workbook != null) {
-			if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD && sheetData != null) {
+			if (metadata.getParsingType() == DataRecordParsingType.DELIMITED && sheetData != null) {
 				for (SheetData aSheetData : sheetData.values()) {
 					for (int i = 0; i < includedFieldIndices.length; i++) {
 						aSheetData.sheet.autoSizeColumn(firstColumn + i);

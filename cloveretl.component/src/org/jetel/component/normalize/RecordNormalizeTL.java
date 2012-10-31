@@ -20,13 +20,12 @@ package org.jetel.component.normalize;
 
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.component.AbstractTransformTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLNumericValue;
 import org.jetel.interpreter.data.TLStringValue;
@@ -74,7 +73,7 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 	private int cleanFunction;
 
 	/** Constructor for the DataRecordTransform object */
-	public RecordNormalizeTL(Log logger, String srcCode, TransformationGraph graph) {
+	public RecordNormalizeTL(Logger logger, String srcCode) {
 		super(srcCode, logger);
 	}
 

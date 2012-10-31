@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -197,9 +198,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz>
 	 */
 	private class InterpretedRuntimeInitializer extends NavigatingVisitor {
-		
-		private HashMap<String,Integer> lkpNameToIndex = new HashMap<String,Integer>();
-		
 		
 		/**
 		 * Entry method for initialization
@@ -568,7 +566,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		} else if (node.getType().isMap()) {
 			final Map<Object,Object> rhs = stack.popMap();
 			final Map<Object,Object> lhs = stack.popMap();
-			Map<Object,Object> result = new HashMap<Object,Object>();
+			Map<Object,Object> result = new LinkedHashMap<Object,Object>();
 			result.putAll(lhs);
 			result.putAll(rhs);
 			stack.push(result);
@@ -1416,6 +1414,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 					}
 				}
 				
+				stack.exitedBlock(); // CL-2501
 				return data;
 			}
 		}
@@ -1490,9 +1489,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFReturnStatement node, Object data) {
 		if (node.jjtHasChildren()) {
 			node.jjtGetChild(0).jjtAccept(this, data);
+			// save return value of the function to avoid losing it when stack is cleared
+			this.lastReturnValue = stack.pop(); // CL-1864 - do it only if there is a child node
 		}
-		// save return value of the function to avoid losing it when stack is cleared
-		this.lastReturnValue = stack.pop();
 		
 		// set interrupt flag
 		breakFlag = true;
@@ -1564,7 +1563,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		} else if (varType.isDecimal()) {
 			setVariable(node,new BigDecimal(0));
 		}  else if (varType.isMap()) {
-			setVariable(node,new HashMap<Object,Object>());
+			setVariable(node,new LinkedHashMap<Object,Object>());
 		}  else if (varType.isRecord()) {
 			setVariable(node, createNewRecord((TLTypeRecord) varType));
 		} 
@@ -2615,31 +2614,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 	}
 	
-	
-	private List<?> createListFor(TLType varType) {
-		if (varType.isBoolean()) {
-			return new ArrayList<Boolean>();
-		} else if (varType.isDate()) {
-			return new ArrayList<Date>();
-		} else if (varType.isDecimal()) {
-			return new ArrayList<BigDecimal>();
-		} else if (varType.isString()) {
-			return new ArrayList<String>();
-		} else if (varType.isRecord()) {
-			return new ArrayList<DataRecord>();
-		} else if (varType.isInteger()) {
-			return new ArrayList<Integer>();
-		} else if (varType.isLong()){
-			return new ArrayList<Long>();
-		} else if (varType.isDouble()) {
-			return new ArrayList<Double>();
-		}
-	
-		
-		throw new IllegalArgumentException("Cannot create list for type " + varType.name());
-		
-	}
-
 	/**
 	 * Initialized lookup node. Key record and lookup has to be prepared before first usage.
 	 * @param node
@@ -2768,7 +2742,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @return deep copy of the input Map
 	 */
 	private static final <K, V> Map<K, V> copyOf(Map<K, V> input) {
-		Map<K, V> copy = new HashMap<K, V>(input.size());
+		Map<K, V> copy = new LinkedHashMap<K, V>(input.size());
 		
 		for (Map.Entry<K, V> item: input.entrySet()) {
 			K newKey = getDeepCopy(item.getKey()); // maybe not necessary

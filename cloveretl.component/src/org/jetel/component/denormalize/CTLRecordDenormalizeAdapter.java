@@ -20,7 +20,7 @@ package org.jetel.component.denormalize;
 
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -68,7 +68,7 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
      *
      * @throws NullPointerException if either the executor or the logger is <code>null</code>
      */
-	public CTLRecordDenormalizeAdapter(TransformLangExecutor executor, Log logger) {
+	public CTLRecordDenormalizeAdapter(TransformLangExecutor executor, Logger logger) {
 		super(executor, logger);
 	}
 

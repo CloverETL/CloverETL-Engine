@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.jetel.ctl.data.Scope;
 import org.jetel.data.DataRecord;
-import org.jetel.data.primitive.ByteArray;
 
 /**
  * @author David Palis <david.pavlis@javlin.cz>
@@ -114,10 +113,12 @@ public class Stack {
 		return (Date)pop();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public List<Object> popList() {
 		return (List<Object>)pop();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public Map<Object,Object> popMap() {
 		return (Map<Object,Object>)pop();
 	}

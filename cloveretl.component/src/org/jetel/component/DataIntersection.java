@@ -33,8 +33,8 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.data.reader.DriverReader;
-import org.jetel.data.reader.InputReader;
-import org.jetel.data.reader.InputReader.InputOrdering;
+import org.jetel.data.reader.IInputReader;
+import org.jetel.data.reader.IInputReader.InputOrdering;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.exception.ComponentNotReadyException;
@@ -204,7 +204,7 @@ public class DataIntersection extends Node {
 
 	private DriverReader driverReader;
 
-	private InputReader slaveReader;
+	private IInputReader slaveReader;
 
 	private InputOrdering driverReaderOrdering;
 	
@@ -296,7 +296,7 @@ public class DataIntersection extends Node {
 	 * @exception  InterruptedException  Description of the Exception
 	 * @throws TransformException 
 	 */
-	private final boolean flushCombinations(DriverReader driver, InputReader slave, 
+	private final boolean flushCombinations(DriverReader driver, IInputReader slave, 
 			DataRecord out, OutputPort port)
 	throws IOException, InterruptedException, TransformException {
 	    outRecords[0]= out;
@@ -392,7 +392,7 @@ public class DataIntersection extends Node {
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
 	 */
-	private final boolean flush(InputReader reader, OutputPort port) 
+	private final boolean flush(IInputReader reader, OutputPort port) 
 			throws IOException,InterruptedException{
 		if (keyDuplicates) {
 			while ((tmp = reader.next()) != null) {
@@ -487,10 +487,10 @@ public class DataIntersection extends Node {
 			}
 			//all input data has to be in ascending order
 			if (!isDriverStreamAscending()) {
-				throw new RuntimeException("Data input A is not sorted in ascending order.");
+				throw new RuntimeException("Data input 0 is not sorted in ascending order. "+driverReader.getInfo());
 			}
 			if (!isSlaveStreamAscending()) {
-				throw new RuntimeException("Data input B is not sorted in ascending order.");
+				throw new RuntimeException("Data input 1 is not sorted in ascending order. "+slaveReader.getInfo());
 			}
 		}while (runIt && (driverReader.hasData() || slaveReader.hasData()));
 		 
@@ -616,17 +616,12 @@ public class DataIntersection extends Node {
         recordKeys[1].setEqualNULLs(equalNULLs);
 
         // init transformation
-        DataRecordMetadata[] inMetadata = (DataRecordMetadata[]) getInMetadata()
-                .toArray(new DataRecordMetadata[0]);
-        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(
-                WRITE_TO_PORT_A_B).getMetadata() };
 		//create instance of record transformation
         if (transformation == null) {
-			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
-					transformURL, charset, this, inMetadata, outMetadata);
+			transformation = getTransformFactory().createTransform();
         }
 		// init transformation
-        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+        if (!transformation.init(transformationParameters, getInMetadataArray(), getTransformOutMetadata())) {
             throw new ComponentNotReadyException("Error when initializing tranformation function.");
         }
 
@@ -636,7 +631,22 @@ public class DataIntersection extends Node {
 			new SlaveReader(slavePort, recordKeys[SLAVE_ON_PORT], false);
 	}
 
+	private TransformFactory<RecordTransform> getTransformFactory() {
+    	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+    	transformFactory.setTransform(transformSource);
+    	transformFactory.setTransformClass(transformClassName);
+    	transformFactory.setTransformUrl(transformURL);
+    	transformFactory.setCharset(charset);
+    	transformFactory.setComponent(this);
+    	transformFactory.setInMetadata(getInMetadata());
+    	transformFactory.setOutMetadata(getTransformOutMetadata());
+    	return transformFactory;
+	}
 
+	private DataRecordMetadata[] getTransformOutMetadata() {
+        return new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT_A_B).getMetadata() };
+	}
+	
     /**
      * @param transformationParameters The transformationParameters to set.
      */
@@ -726,9 +736,7 @@ public class DataIntersection extends Node {
                     xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
         	intersection.setSlaveDuplicates(xattribs.getBoolean(
         			XML_KEY_DUPLICATES_ATTRIBUTE, true));
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				intersection.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
+			intersection.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				intersection.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -820,35 +828,9 @@ public class DataIntersection extends Node {
 			}
         }
 
-        // transformation source for checkconfig
-        String checkTransform = null;
-        if (transformSource != null) {
-        	checkTransform = transformSource;
-        } else if (transformURL != null) {
-        	checkTransform = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
-        }
-        // only the transform and transformURL parameters are checked, transformClass is ignored
-        if (checkTransform != null) {
-        	int transformType = RecordTransformFactory.guessTransformType(checkTransform);
-        	if (transformType == RecordTransformFactory.TRANSFORM_CLOVER_TL
-        			|| transformType == RecordTransformFactory.TRANSFORM_CTL) {
-        		// only CTL is checked
-        		
-        		DataRecordMetadata[] inMetadata = 
-        			(DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]);
-        		DataRecordMetadata[] outMetadata = 
-        			new DataRecordMetadata[] { getOutputPort(WRITE_TO_PORT_A_B).getMetadata() };
-
-    			try {
-    				RecordTransformFactory.createTransform(checkTransform, null, null, 
-    						charset, this, inMetadata, outMetadata);
-				} catch (ComponentNotReadyException e) {
-					// find which component attribute was used
-					String attribute = transformSource != null ? XML_TRANSFORM_ATTRIBUTE : XML_TRANSFORMURL_ATTRIBUTE;
-					// report CTL error as a warning
-					status.add(new ConfigurationProblem(e, Severity.WARNING, this, Priority.NORMAL, attribute));
-				}
-        	}
+        //check transformation
+        if (transformation == null) {
+        	getTransformFactory().checkConfig(status);
         }
 
         return status;

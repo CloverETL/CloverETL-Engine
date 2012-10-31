@@ -444,14 +444,17 @@ public class FlowControl {
 		problemReporter.error(node.getBegin(), node.getEnd(), error, null);
 	}
 
+	@SuppressWarnings("unused")
 	private void error(SimpleNode node, String error, String hint) {
 		problemReporter.error(node.getBegin(), node.getEnd(), error, hint);
 	}
 
+	@SuppressWarnings("unused")
 	private void warn(SimpleNode node, String error) {
 		problemReporter.warn(node.getBegin(), node.getEnd(), error, null);
 	}
 
+	@SuppressWarnings("unused")
 	private void warn(SimpleNode node, String error, String hint) {
 		problemReporter.warn(node.getBegin(), node.getEnd(), error, hint);
 	}
