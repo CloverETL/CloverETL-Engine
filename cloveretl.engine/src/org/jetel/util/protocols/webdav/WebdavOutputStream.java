@@ -193,13 +193,29 @@ public class WebdavOutputStream extends OutputStream {
 				error = new IOException(URL + ": " + e.getStatusCode() + " " + e.getResponsePhrase(), e);
 			} catch (Throwable e) {
 				error = e;
+			} finally {
+				// Closes the input stream both on error or after a successful run.
+				// If successful, the put() method has written all the data already, so the stream can be safely closed.
+				if (is != null) {
+					try {
+						is.close();
+					} catch (IOException ioe) {
+						if (error == null) {
+							error = ioe;
+						}
+					}
+				}
 			}
 		}
 	}
 
 	@Override
 	public void write(int b) throws IOException {
-		os.write(b);
+		try {
+			os.write(b);
+		} catch (IOException ioe) {
+			processException(ioe);
+		}
 	}
 	
 	@Override
@@ -218,17 +234,58 @@ public class WebdavOutputStream extends OutputStream {
 	
 	@Override
 	public void flush() throws IOException {
-		os.flush();
+		try {
+			os.flush();
+		} catch (IOException ioe) {
+			processException(ioe);
+		}
 	}
 	
 	@Override
 	public void write(byte[] b) throws IOException {
-		os.write(b);
+		try {
+			os.write(b);
+		} catch (IOException ioe) {
+			processException(ioe);
+		}
+	}
+	
+	/**
+	 * Waits for the sardine thread to die
+	 * and extracts the exception from it.
+	 * 
+	 * If there is one, throws it instead of the passed exception.
+	 * Otherwise, throws the passed exception.
+	 * 
+	 * @param ioe
+	 * @throws IOException
+	 */
+	private void processException(IOException ioe) throws IOException {
+		try {
+			sardineThread.join();
+		} catch (InterruptedException e) {
+			if ((ioe == null) && (e != null)) {
+				ioe = new IOException(e);
+			}
+		} finally {
+			Throwable sardineError = sardineThread.getError();
+			if (sardineError != null) {
+				ioe = sardineError instanceof IOException ? (IOException) sardineError : new IOException(sardineError);
+			}
+		}
+		
+		if (ioe != null) {
+			throw ioe;
+		}
 	}
 	
 	@Override
 	public void write(byte[] b, int off, int len) throws IOException {
-		os.write(b, off, len);
+		try {
+			os.write(b, off, len);
+		} catch (IOException ioe) {
+			processException(ioe);
+		}
 	}
 	
 	/**
