@@ -38,10 +38,8 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
-import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenByteDataParser;
-import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -322,12 +320,7 @@ public class SystemExecute extends Node{
 			DataRecordMetadata meta=outPort.getMetadata();
 			out_record= DataRecordFactory.newRecord(meta);
 			out_record.init();
-			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
-				parser= charset != null ? new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset) : new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
-			}else {
-				parser= meta.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false) ?
-						new FixLenByteDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset) : new FixLenCharDataParser(getOutputPort(OUTPUT_PORT).getMetadata(),charset);
-			}
+			parser = TextParserFactory.getParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset);
 		}else{
 			parser=null;
 		}
