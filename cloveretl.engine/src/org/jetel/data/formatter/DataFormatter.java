@@ -56,6 +56,7 @@ public class DataFormatter extends AbstractFormatter {
 	private int[] delimiterLength;
 	private int[] fieldLengths;
 	private boolean[] quotedFields;
+	private boolean[] byteBasedFields;
 	private CloverBuffer dataBuffer;
 	private String sFooter; 
 	private String sHeader; 
@@ -108,6 +109,7 @@ public class DataFormatter extends AbstractFormatter {
         delimiterLength = new int[metadata.getNumFields()];
 		fieldLengths = new int[metadata.getNumFields()];
 		quotedFields = new boolean[metadata.getNumFields()];
+		byteBasedFields = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
 				quotedFields[i] = quotedStrings 
@@ -124,6 +126,7 @@ public class DataFormatter extends AbstractFormatter {
 				delimiterLength[i] = delimiters[i] == null ? 0 : delimiters[i].length; //for eof delimiter
 			} else {
 				fieldLengths[i] = metadata.getField(i).getSize();
+				byteBasedFields[i] = metadata.getField(i).isByteBased();
 			}
 		}
 		try {
@@ -249,14 +252,15 @@ public class DataFormatter extends AbstractFormatter {
 					fieldBuffer.clear();
 					record.getField(i).toByteBuffer(fieldBuffer, encoder);
 					size = fieldBuffer.position();
-					if (size < fieldLengths[i]) {
+					if (size < fieldLengths[i] && !byteBasedFields[i]) {
 						fieldFiller.rewind();
 						fieldFiller.limit(fieldLengths[i] - size);
 						fieldBuffer.put(fieldFiller);
+						size = fieldLengths[i];
 					}
 					encLen += size;
 					fieldBuffer.flip();
-					fieldBuffer.limit(fieldLengths[i]);
+					fieldBuffer.limit(size);
 					dataBuffer.put(fieldBuffer);
 					if (i == metadata.getNumFields() -1 && recordDelimiter != null){
 						dataBuffer.put(recordDelimiter);
