@@ -160,6 +160,7 @@ public class SystemExecute extends Node{
 	private static final String XML_ENVIRONMENT_ATTRIBUTE = "environment";
 	private static final String XML_WORKERS_TIMEOUT_ATTRIBUTE= "workersTimeout";
 	private static final String XML_CHARSET_ATTRIBUTE= "charset";
+	private static final String XML_IGNORE_EXIT_VALUE_ATTRIBUTE= "ignoreExitValue";
 	
 	public static String COMPONENT_TYPE = "SYS_EXECUTE";
 
@@ -186,6 +187,9 @@ public class SystemExecute extends Node{
 	private ProcessBuilder processBuilder;
 	private long workersTimeout = 0;
 	private String charset = null;
+	/** Non-zero exit value of the executed process can be ignored.
+	 * By default SystemExecute component fails in case non-zero exit value. */
+	private boolean ignoreExitValue = false;
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
 	
@@ -471,12 +475,16 @@ public class SystemExecute extends Node{
 			return Result.ABORTED;
 		}
 		if (exitValue!=0){
-			if (outputFile!=null) {
-				logger.error("Process exit value not 0");
+			if (ignoreExitValue) {
+				logger.info("Process exit value is " + exitValue);
+			} else {
+				resultMsg = "Process exit value is " + exitValue;
+				if (outputFile!=null) {
+					logger.error(resultMsg);
+				}
+				ok = false;
+				throw new JetelException(resultMsg);
 			}
-			resultMsg = "Process exit value not 0";
-			ok = false;;
-			throw new JetelException(resultMsg);
 		}
 		if (ok) {
 			return Result.FINISHED_OK;
@@ -652,6 +660,9 @@ public class SystemExecute extends Node{
 			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				sysExec.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_IGNORE_EXIT_VALUE_ATTRIBUTE)) {
+				sysExec.setIgnoreExitValue(xattribs.getBoolean(XML_IGNORE_EXIT_VALUE_ATTRIBUTE));
 			}
 			return sysExec;
 		} catch (Exception ex) {
@@ -1150,6 +1161,21 @@ public class SystemExecute extends Node{
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
+	
+	/**
+	 * @return the ignoreExitValue
+	 */
+	public boolean isIgnoreExitValue() {
+		return ignoreExitValue;
+	}
+
+	/**
+	 * @param ignoreExitValue the ignoreExitValue to set
+	 */
+	public void setIgnoreExitValue(boolean ignoreExitValue) {
+		this.ignoreExitValue = ignoreExitValue;
+	}
+
 }
 
 
