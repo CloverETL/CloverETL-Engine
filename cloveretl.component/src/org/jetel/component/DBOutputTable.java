@@ -274,7 +274,6 @@ public class DBOutputTable extends Node {
 	private final static int WRITE_AUTO_KEY_TO_PORT = 1;
 	private final static int RECORDS_IN_COMMIT = 100;
 	private final static int RECORDS_IN_BATCH = 25;
-	private final static int MAX_BATCH_SIZE = 10000;
 	private final static int MAX_ALLOWED_ERRORS = 0;
 	private final static int MAX_WARNINGS = 3;
 	
@@ -558,11 +557,6 @@ public class DBOutputTable extends Node {
 				if (i == returnResult.length) {
 					keysRecord = null;
 				}
-			}
-
-			if (useBatch && batchSize > MAX_BATCH_SIZE) {
-				logger.warn("Batch size greater then MAX_BATCH_SIZE -> " + XML_BATCHSIZE_ATTRIBUTE + " set to " + MAX_BATCH_SIZE);
-				batchSize = MAX_BATCH_SIZE;
 			}
 
 			// it is probably wise to have COMMIT size multiplication of BATCH size
