@@ -134,7 +134,7 @@ public class HadoopCloverConvert {
 		}else if (data == BytesWritable.class){
 			return (new Hadoop2Clover() {
 				void copyValue(Writable src,DataField dst){
-					((ByteDataField)dst).setValue(((BytesWritable)src).getBytes());}
+					((ByteDataField)dst).setValue(((BytesWritable)src).getBytes(), 0, ((BytesWritable)src).getLength());}
 			});
 		}else if (data == LongWritable.class){
 			return (new Hadoop2Clover() {

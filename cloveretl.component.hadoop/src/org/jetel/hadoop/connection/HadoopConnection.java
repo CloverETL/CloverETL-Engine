@@ -295,7 +295,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				} catch (URISyntaxException e) {
 					throw new IOException("Invalid HDFS host/port definition.",e);
 				} catch (Throwable e){
-					throw new ComponentNotReadyException(this,"Can't instantiate Hadoop exception",e);
+					throw new ComponentNotReadyException(this,"Can't instantiate Hadoop connection",e);
 				}
 			}
 			return connection;
