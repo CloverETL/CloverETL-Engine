@@ -18,7 +18,11 @@
  */
 package org.jetel.data.parser;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.channels.ReadableByteChannel;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -34,6 +38,19 @@ import org.jetel.exception.PolicyType;
  * @see        OtherClasses
  */
 public interface Parser {
+
+	/**
+	 * This enumeration is used by #getPreferredDataSourceType() method to suggest preferred 
+	 * data source type by a {@link Parser}.
+	 */
+	public enum DataSourceType {
+		/** Data source represented by {@link ReadableByteChannel} or {@link InputStream} */
+		CHANNEL,
+		/** Data source represented by {@link File} */
+		FILE,
+		/** Data source represented by {@link URI} */
+		URI
+	}
 
 	/**
 	 *  An operation that produces next record from Input data or null
@@ -170,12 +187,11 @@ public interface Parser {
     public boolean nextL3Source();
 
     /**
-     * Parser should return true if preferred type of source passed into {@link #setDataSource(Object)}
-     * is {@link URI}. It is intended just a hint for source provider, so other types of source 
+     * Parser can request specific data source type, which is preferred to be passed into {@link #setDataSource(Object)} method.
+     * This is intended just a hint for source provider, so other types of source 
      * should be expected.
-     * @return true if {@link URI} type of source is preferred
      */
-    public boolean isURISourcePreferred();
+    public DataSourceType getPreferredDataSourceType();
 
 }
 /*

@@ -27,10 +27,11 @@ package org.jetel.data.parser;
  * @created 11 Jan 2012
  */
 public abstract class AbstractParser implements Parser {
-
+	
 	@Override
-	public boolean isURISourcePreferred() {
-		return false;
+	public DataSourceType getPreferredDataSourceType() {
+		//channel data source type is preferred by default
+		return DataSourceType.CHANNEL;
 	}
 	
 }

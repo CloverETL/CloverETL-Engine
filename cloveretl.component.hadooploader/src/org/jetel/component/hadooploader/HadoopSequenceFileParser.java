@@ -292,8 +292,8 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	}
 
 	@Override
-	public boolean isURISourcePreferred() {
-		return true;
+	public DataSourceType getPreferredDataSourceType() {
+		return DataSourceType.URI;
 	}
 
 	@Override

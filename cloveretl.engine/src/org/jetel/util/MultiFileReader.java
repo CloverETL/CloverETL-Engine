@@ -27,9 +27,9 @@ import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
@@ -139,7 +139,7 @@ public class MultiFileReader {
     	channelIterator.setCharset(charset);
     	channelIterator.setDictionary(dictionary);
     	channelIterator.setPropertyRefResolver(propertyRefResolve);
-		channelIterator.setURISourcePreferred(parser.isURISourcePreferred());
+		channelIterator.setPreferredDataSourceType(parser.getPreferredDataSourceType());
     }
     
     /**
@@ -182,11 +182,9 @@ public class MultiFileReader {
 				}
 				
 				//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
-				if (parser.isURISourcePreferred()) {
+				if (parser.getPreferredDataSourceType() == DataSourceType.URI) {
 					try {
-						//TODO: - use contextURL ??? parser.setDataSource(contextURL!=null ? CloverURI.createSingleURI(contextURL.toURI(), fName).toURI() : new URI(fName));
 						parser.setDataSource(new URI(fName));
-						
 					} catch (Exception e) {
 						//DO NOTHING - just try to open a stream based on the currentFileName in the next step
 						parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));

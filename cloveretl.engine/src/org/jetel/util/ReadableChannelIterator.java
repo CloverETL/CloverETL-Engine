@@ -34,6 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
@@ -93,7 +94,7 @@ public class ReadableChannelIterator {
 	private boolean bInputPort;
 
 	// true if java.net.URI is preferred as a source provided by this iterator
-	private boolean isURISourcePreferred = false;
+	private DataSourceType preferredDataSourceType = DataSourceType.CHANNEL;
 
 	// others
 	private int firstPortProtocolPosition;
@@ -226,14 +227,13 @@ public class ReadableChannelIterator {
 				ReadableByteChannel channel = portReadingIterator.getNextData();
 				currentFileName = portReadingIterator.getCurrentFileName();
 				//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
-				if (isURISourcePreferred) {
+				if (preferredDataSourceType == DataSourceType.URI) {
 					try {
-						//TODO: use contectURL ?? return  contextURL!=null ? CloverURI.createSingleURI(contextURL.toURI(), currentFileName).toURI() : new URI(currentFileName);  
-						return  new URI(currentFileName);
+						return new URI(currentFileName);
 	        		} catch(URISyntaxException ex){
 	        			throw new JetelException("Invalid fileURL - "+ex.getMessage(),ex);
 	        		} catch (Exception e) {
-						//DO NOTHING - just try to open a stream based on the currentFileName in the next step
+						//DO NOTHING - just use the regular channel
 					}
 				} 
 				return channel;
@@ -258,12 +258,20 @@ public class ReadableChannelIterator {
 			}
 			currentFileName = unificateFileName(currentFileName);
 
-			//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
-			if (isURISourcePreferred) {
+			
+			//sometimes source in form of 'java.io.File' is preferred instead of providing an anonymous channel
+			if (preferredDataSourceType == DataSourceType.FILE) {
 				try {
-					//TODO: use contectURL ?? return  contextURL!=null ? CloverURI.createSingleURI(contextURL.toURI(), currentFileName).toURI() : new URI(currentFileName);  
-					return  new URI(currentFileName);
-				
+					return FileUtils.getJavaFile(contextURL, currentFileName);
+				} catch (Exception e) {
+					//DO NOTHING - just try to prepare a data source in other way
+				}
+			}
+			
+			//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
+			if (preferredDataSourceType == DataSourceType.URI) {
+				try {
+					return new URI(currentFileName);
         		} catch(URISyntaxException ex){
         			throw new JetelException("Invalid fileURL - "+ex.getMessage(),ex);
         		} catch (Exception e) {
@@ -428,19 +436,12 @@ public class ReadableChannelIterator {
 	public void setPropertyRefResolver(PropertyRefResolver propertyRefResolve) {
 		this.propertyRefResolve = propertyRefResolve;
 	}
-	
-	/**
-	 * @return true if {@link URI} is preferred as a source provided by this iterator.
-	 */
-	public boolean isURISourcePreferred() {
-		return isURISourcePreferred;
-	}
 
 	/**
-	 * Set true if {@link URI} is preferred as a source provided by this iterator.
+	 * @param preferredDataSourceType
 	 */
-	public void setURISourcePreferred(boolean isFileSourcePreferred) {
-		this.isURISourcePreferred = isFileSourcePreferred;
+	public void setPreferredDataSourceType(DataSourceType preferredDataSourceType) {
+		this.preferredDataSourceType = preferredDataSourceType;
 	}
 
 }
