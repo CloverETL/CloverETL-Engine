@@ -220,15 +220,11 @@ public class WebdavOutputStream extends OutputStream {
 	
 	@Override
 	public void close() throws IOException {
-		os.close();
 		try {
-			sardineThread.join();
-			Throwable error = sardineThread.getError();
-			if (error != null) {
-				throw error instanceof IOException ? (IOException)error : new IOException(error);
-			}
-		} catch (InterruptedException e) {
-			throw new IOException(e.getCause());
+			os.close();
+			processException(null);
+		} catch (IOException ioe) {
+			processException(ioe);
 		}
 	}
 	
