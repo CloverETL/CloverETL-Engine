@@ -2026,6 +2026,8 @@ void LookupNode() :{}{	(	 ( "lookup"
 				jjtThis.setOperation(CLVFLookupNode.OP_NEXT);
 			} else if ("count".equals(opFunc.getName())) {
 				jjtThis.setOperation(CLVFLookupNode.OP_COUNT);
+			} else if ("put".equals(opFunc.getName())) {
+				jjtThis.setOperation(CLVFLookupNode.OP_PUT);
 			} else {
 	   			error(opFunc,"Illegal lookup manipulator","Use one of get(), next(), init(), free() or count()");
 	   		}

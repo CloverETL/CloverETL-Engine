@@ -2649,8 +2649,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
         doCompile("test_lookup");
 		check("alphaResult", Arrays.asList("Andorra la Vella","Andorra la Vella"));
 		check("bravoResult", Arrays.asList("Bruxelles","Bruxelles"));
-		check("charlieResult", Arrays.asList("Chamonix","Chomutov","Chamonix","Chomutov"));
-		check("countResult", Arrays.asList(2,2));
+		check("charlieResult", Arrays.asList("Chamonix","Chodov","Chomutov","Chamonix","Chodov","Chomutov"));
+		check("countResult", Arrays.asList(3,3));
+		check("charlieUpdatedCount", 5);
+		check("charlieUpdatedResult", Arrays.asList("Chamonix", "Cheb", "Chodov", "Chomutov", "Chrudim"));
+		check("putResult", true);
 	}
 	
 //------------------------- ContainerLib Tests---------------------
