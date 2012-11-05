@@ -1928,6 +1928,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			final Lookup l = lookup;
 			stack.push(l.hasNext() ? l.next() : null);
 			return data;
+		case CLVFLookupNode.OP_PUT: 
+			node.jjtGetChild(0).jjtGetChild(0).jjtAccept(this, data); // put the record to the stack
+			DataRecord record = stack.popRecord(); // pop the record
+			stack.push(node.getLookupTable().put(record));
+			return data;
 		default:
 			throw new TransformLangExecutorRuntimeException(node,"Illegal lookup operation '" + node.getOperation() + "'");
 		}
@@ -2619,6 +2624,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @param node
 	 */
 	private void initializeLookupNode(CLVFLookupNode node) {
+		if (node.getOperation() == CLVFLookupNode.OP_PUT) {
+			return; // no need to initialize for PUT
+		}
 		CLVFLookupNode relatedNode;
 		//did we already initialize a node with the same lookup table name?
 		if ((relatedNode = lookupCache.get(node.getLookupName())) != null) {

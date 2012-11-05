@@ -558,6 +558,23 @@ public class ASTBuilder extends NavigatingVisitor {
 			node.setType(TLType.forRecord(ret));
 			break;
 			
+		case CLVFLookupNode.OP_PUT:
+			if (!node.getLookupTable().isPutSupported()) {
+				error(node,"Lookup table does not support the put() operation");
+				node.setType(TLType.ERROR);
+				return node;
+			}
+			// extract parameter type
+			ret = node.getLookupTable().getMetadata();
+			if (ret == null) {
+				error(node,"Lookup table has no metadata specified");
+				node.setType(TLType.ERROR);
+				return node;
+			}
+			node.setFormalParameters(new TLType[] {TLType.forRecord(ret)});
+			node.setType(TLTypePrimitive.BOOLEAN);
+			break;
+			
 		}
 
 		return node;
