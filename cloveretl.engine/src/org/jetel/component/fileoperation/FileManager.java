@@ -833,7 +833,7 @@ public class FileManager {
 		
 	}
 
-	private List<Info> expand(Info base, String part, boolean directory) {
+	private List<Info> expand(Info base, String part, boolean directory) throws IOException {
 		if (base == null) {
 			throw new NullPointerException("base"); //$NON-NLS-1$
 		}
@@ -842,7 +842,11 @@ public class FileManager {
 		}
 		if (hasWildcards(part)) {
 			part = URIUtils.urlDecode(part);
-			List<Info> children = list(CloverURI.createSingleURI(base.getURI())).getResult();
+			ListResult listResult = list(CloverURI.createSingleURI(base.getURI()));
+			if (!listResult.success()) {
+				throw new IOException(listResult.getFirstErrorMessage());
+			}
+			List<Info> children = listResult.getResult();
 			List<Info> result = new ArrayList<Info>();
 			WildcardInfoFilter filter = new WildcardInfoFilter(part, directory);
 			for (Info child: children) {
@@ -852,8 +856,12 @@ public class FileManager {
 			}
 			return result; 
 		} else {
-			URI child = URIUtils.getChildURI(base.getURI(), URI.create(part)); 
-			Info info = getInstance().info(CloverURI.createSingleURI(child)).getInfo();
+			URI child = URIUtils.getChildURI(base.getURI(), URI.create(part));
+			InfoResult infoResult = this.info(CloverURI.createSingleURI(child));
+			if (!infoResult.success()) {
+				throw new IOException(infoResult.getFirstErrorMessage());
+			}
+			Info info = infoResult.getInfo();
 			if (info != null) {
 				return Arrays.asList(info);
 			} else {
@@ -862,14 +870,18 @@ public class FileManager {
 		}
 	}
 
-	public List<SingleCloverURI> defaultResolve(SingleCloverURI wildcards) {
+	public List<SingleCloverURI> defaultResolve(SingleCloverURI wildcards) throws IOException {
 		String uriString = wildcards.toString();
 		if (wildcards.isRelative() || !hasWildcards(uriString)) {
 			return Arrays.asList(wildcards);
 		}
 		
 		List<String> parts = getParts(uriString);
-		Info base = info((SingleCloverURI) CloverURI.createURI(parts.get(0))).getInfo();
+		InfoResult infoResult = info((SingleCloverURI) CloverURI.createURI(parts.get(0)));
+		if (!infoResult.success()) {
+			throw new IOException(infoResult.getFirstErrorMessage());
+		}
+		Info base = infoResult.getInfo();
 		if (base == null) {
 			return new ArrayList<SingleCloverURI>(0);
 		}

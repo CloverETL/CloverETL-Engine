@@ -235,7 +235,7 @@ public class DefaultOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public List<SingleCloverURI> resolve(SingleCloverURI wildcards, ResolveParameters params) {
+	public List<SingleCloverURI> resolve(SingleCloverURI wildcards, ResolveParameters params) throws IOException {
 		return manager.defaultResolve(wildcards);
 	}
 
