@@ -36,13 +36,11 @@ import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.util.HttpURLConnection;
+import com.googlecode.sardine.impl.SardineException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.util.file.FileUtils;
-
 import com.googlecode.sardine.Sardine;
 import com.googlecode.sardine.SardineFactory;
-import com.googlecode.sardine.impl.SardineException;
 
 public class WebdavOutputStream extends OutputStream {
 	
@@ -196,28 +194,19 @@ public class WebdavOutputStream extends OutputStream {
 				error = new IOException(URL + ": " + e.getStatusCode() + " " + e.getResponsePhrase(), e);
 			} catch (Throwable e) {
 				error = e;
-				// close the input stream, so that IOException is thrown when writing to the corresponding OutputStream
-				FileUtils.closeQuietly(is); 
+			} finally {
+				// Closes the input stream both on error or after a successful run.
+				// If successful, the put() method has written all the data already, so the stream can be safely closed.
+				if (is != null) {
+					try {
+						is.close();
+					} catch (IOException ioe) {
+						if (error == null) {
+							error = ioe;
+						}
+					}
+				}
 			}
-		}
-	}
-	
-	/*
-	 * The exception may have been caused by an exception 
-	 * thrown in the sardine thread.
-	 */
-	private void processException(IOException ioe) throws IOException {
-		try {
-			sardineThread.join();
-			Throwable error = sardineThread.getError();
-			if (error != null) {
-				throw error instanceof IOException ? (IOException)error : new IOException(error);
-			}
-		} catch (InterruptedException e) {
-			throw new IOException(e.getCause());
-		}
-		if (ioe != null) {
-			throw ioe;
 		}
 	}
 
@@ -232,11 +221,15 @@ public class WebdavOutputStream extends OutputStream {
 	
 	@Override
 	public void close() throws IOException {
+		os.close();
 		try {
-			os.close();
-			processException(null);
-		} catch (IOException ioe) {
-			processException(ioe);
+			sardineThread.join();
+			Throwable error = sardineThread.getError();
+			if (error != null) {
+				throw error instanceof IOException ? (IOException)error : new IOException(error);
+			}
+		} catch (InterruptedException e) {
+			throw new IOException(e.getCause());
 		}
 	}
 	
@@ -255,6 +248,35 @@ public class WebdavOutputStream extends OutputStream {
 			os.write(b);
 		} catch (IOException ioe) {
 			processException(ioe);
+		}
+	}
+	
+	/**
+	 * Waits for the sardine thread to die
+	 * and extracts the exception from it.
+	 * 
+	 * If there is one, throws it instead of the passed exception.
+	 * Otherwise, throws the passed exception.
+	 * 
+	 * @param ioe
+	 * @throws IOException
+	 */
+	private void processException(IOException ioe) throws IOException {
+		try {
+			sardineThread.join();
+		} catch (InterruptedException e) {
+			if ((ioe == null) && (e != null)) {
+				ioe = new IOException(e);
+			}
+		} finally {
+			Throwable sardineError = sardineThread.getError();
+			if (sardineError != null) {
+				ioe = sardineError instanceof IOException ? (IOException) sardineError : new IOException(sardineError);
+			}
+		}
+		
+		if (ioe != null) {
+			throw ioe;
 		}
 	}
 	
