@@ -511,13 +511,13 @@ public class FileUtils {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
 			String proxyUserInfo = null;
-			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
 			if (proxy != null) {
 				try {
 					proxyUserInfo = new URI(innerSource).getUserInfo();
 				} catch (URISyntaxException ex) {
 				}
 			}
+			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
 
 			innerStream = proxy == null ? getInputStream(contextURL, innerSource) 
 					: getAuthorizedConnection(getFileURL(contextURL, input), proxy, proxyUserInfo).getInputStream();
@@ -564,7 +564,7 @@ public class FileUtils {
 
         // create archive streams
         if (archiveType == ArchiveType.ZIP) {
-        	List<InputStream> lIs = getZipInputStreamsInner(innerStream, sbAnchor.toString(), 0, null);
+        	List<InputStream> lIs = getZipInputStreamsInner(innerStream, sbAnchor.toString(), 0, null, true);
         	return lIs.size() > 0 ? lIs.get(0) : null;
         } else if (archiveType == ArchiveType.GZIP) {
             return new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
@@ -636,36 +636,54 @@ public class FileUtils {
      * @throws IOException
      */
     public static List<InputStream> getZipInputStreams(InputStream innerStream, String anchor, List<String> resolvedAnchors) throws IOException {
-    	return getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors);
+    	return getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors, true);
     }
 
     /**
-     * Creates list of zip input streams.
+     * Creates a list of names of sub entries.
+     * @param innerStream
+     * @param anchor
+     * 
+     * @return resolved anchors
+     * @throws IOException
+     */
+    public static List<String> getZipInputStreamNames(InputStream innerStream, String anchor) throws IOException {
+    	List<String> resolvedAnchors = new ArrayList<String>();
+    	getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors, false);
+    	return resolvedAnchors; 
+    }
+
+    /**
+     * Creates list of zip input streams (only if <code>needInputStream</code> is true).
+     * Also stores their names in <code>resolvedAnchors</code>.
+     * 
      * @param innerStream
      * @param anchor
      * @param matchFilesFrom
      * @param resolvedAnchors
+     * @param needInputStream if <code>true</code>, input streams for individual entries will be created (costly operation)
+     * 
      * @return
      * @throws IOException
      */
     private static List<InputStream> getZipInputStreamsInner(InputStream innerStream, String anchor, 
-    		int matchFilesFrom, List<String> resolvedAnchors) throws IOException {
+    		int matchFilesFrom, List<String> resolvedAnchors, boolean needInputStream) throws IOException {
     	// result list of input streams
     	List<InputStream> streams = new ArrayList<InputStream>();
 
     	// check and prepare support for wild card matching
         Matcher matcher;
         Pattern WILDCARD_PATTERS = null;
-        boolean bWildsCardedAnchor = anchor.contains("?") || anchor.contains("*");
-        if (bWildsCardedAnchor) 
+        boolean bWildcardedAnchor = anchor.contains("?") || anchor.contains("*");
+        if (bWildcardedAnchor) 
         	WILDCARD_PATTERS = Pattern.compile(anchor.replaceAll("\\\\", "\\\\\\\\").replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
 
     	// the input stream must support a buffer for wild cards.
-        if (bWildsCardedAnchor) {
+        if (bWildcardedAnchor && needInputStream) {
         	if (!innerStream.markSupported()) {
         		innerStream = new BufferedInputStream(innerStream);
         	}
-    		innerStream.mark(Integer.MAX_VALUE);
+        	innerStream.mark(Integer.MAX_VALUE);
         }
     	
         //resolve url format for zip files
@@ -676,15 +694,19 @@ public class FileUtils {
         int iMatched = 0;
         while((entry = zin.getNextEntry()) != null) {	// zin is changing -> recursion !!!
             // wild cards
-            if (bWildsCardedAnchor) {
+            if (bWildcardedAnchor) {
            		matcher = WILDCARD_PATTERS.matcher(entry.getName());
-           		if (matcher.find() && iMatched++ == matchFilesFrom) {
-                	streams.add(zin);
-                	if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
-                	innerStream.reset();
-                	streams.addAll(getZipInputStreamsInner(innerStream, anchor, ++matchFilesFrom, resolvedAnchors));
-                	innerStream.reset();
-                	return streams;
+           		if (matcher.find()) { // TODO replace find() with matches()
+           			if (needInputStream && iMatched++ == matchFilesFrom) { // CL-2576 - only create streams when necessary, not when just resolving wildcards
+                    	streams.add(zin);
+                    	if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
+                    	innerStream.reset();
+                    	streams.addAll(getZipInputStreamsInner(innerStream, anchor, ++matchFilesFrom, resolvedAnchors, needInputStream));
+                    	innerStream.reset();
+                    	return streams;
+           			} else { // if we don't need input streams for individual entries, there is no need for recursion 
+           				if (resolvedAnchors != null) resolvedAnchors.add(entry.getName());
+           			}
                 }
             
         	// without wild cards
@@ -697,14 +719,19 @@ public class FileUtils {
             //finish up with entry
             zin.closeEntry();
         }
-        if (matchFilesFrom > 0 || streams.size() > 0) return streams;
+        if (matchFilesFrom > 0 || streams.size() > 0) {
+        	return streams;
+        }
         
         // if no wild carded entry found, it is ok, return null
-        if (bWildsCardedAnchor) return null;
+        if (bWildcardedAnchor || !needInputStream) {
+        	return null;
+        }
         
         //close the archive
         zin.close();
         
+        //no channel found report
         throw new IOException("Wrong anchor (" + anchor + ") to zip file.");
     }
 
@@ -809,10 +836,16 @@ public class FileUtils {
      * @throws IOException
      */
     public static URLConnection getAuthorizedConnection(URL url, Proxy proxy, String proxyUserInfo) throws IOException {
-        return URLConnectionRequest.getAuthorizedConnection(
-        		url.openConnection(proxy),
+    	URLConnection connection = url.openConnection(proxy);
+    	connection = URLConnectionRequest.getAuthorizedConnection( // set authentication
+    			connection, 
+    			url.getUserInfo(), 
+    			URLConnectionRequest.URL_CONNECTION_AUTHORIZATION);
+    	connection = URLConnectionRequest.getAuthorizedConnection( // set proxy authentication
+        		connection,
         		proxyUserInfo, 
         		URLConnectionRequest.URL_CONNECTION_PROXY_AUTHORIZATION);
+        return connection;
     }
 
     /**
@@ -1107,19 +1140,28 @@ public class FileUtils {
 		
 		// get inner source
 		Matcher matcher = getInnerInput(input);
-		String innerSource;
+		String innerSource = null;
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			// get and set proxy and go to inner source
 			Proxy proxy = getProxy(innerSource);
 			String proxyUserInfo = null;
-			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
 			if (proxy != null) {
 				try {
 					proxyUserInfo = new URI(innerSource).getUserInfo();
 				} catch (URISyntaxException ex) {
 				}
 			}
-			os = proxy == null ? getOutputStream(contextURL, innerSource, appendData, compressLevel) : getAuthorizedConnection(getFileURL(contextURL, input), proxy, proxyUserInfo).getOutputStream();
+			input = matcher.group(2) + matcher.group(3) + matcher.group(7);
+			if (proxy == null) {
+				os = getOutputStream(contextURL, innerSource, appendData, compressLevel);
+			} else {
+				// this could work even for WebDAV via an authorized proxy, 
+				// but getInnerInput() above would have to be replaced with FileURLParser.getURLMatcher().
+				// In addition, WebdavOutputStream creates parent directories (which is wrong, but we don't have anything better yet).
+				URLConnection connection = getAuthorizedConnection(getFileURL(contextURL, input), proxy, proxyUserInfo);
+				connection.setDoOutput(true);
+				os = connection.getOutputStream();
+			}
 		}
 		
 		// get archive type

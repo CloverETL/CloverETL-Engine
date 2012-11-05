@@ -1133,6 +1133,32 @@ public class TypeChecker extends NavigatingVisitor {
 			
 			// return type already set in AST builder
 			break;
+
+		case CLVFLookupNode.OP_PUT:
+			opName = "put";
+			args = (CLVFArguments)node.jjtGetChild(0);
+			actual = new TLType[args.jjtGetNumChildren()];
+			for (int i = 0; i < actual.length; i++) {
+				actual[i] = ((SimpleNode)args.jjtGetChild(i)).getType();
+			}
+			formal = node.getFormalParameters();
+			if (formal.length != actual.length) {
+				error(node,functionErrorMessage(opName, formal, actual));
+				node.setType(TLType.ERROR);
+				return data;
+			}
+			for (int i = 0; i < formal.length; i++) {
+				if (! formal[i].canAssign(actual[i])) {
+					error(node,functionErrorMessage(opName, formal, actual));
+					node.setType(TLType.ERROR);
+					return data;
+				} else {
+					castIfNeeded(args, i, formal[i]);
+				}
+			}
+			
+			// return type already set in AST builder
+			break;
 		}
 		
 		return data;
