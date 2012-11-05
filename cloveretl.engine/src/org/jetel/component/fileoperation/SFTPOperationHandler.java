@@ -342,7 +342,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		
 		@Override
 		public Boolean isLink() {
-			return file.getAttrs().isDir();
+			return file.getAttrs().isLink();
 		}
 
 		@Override
