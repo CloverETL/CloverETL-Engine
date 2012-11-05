@@ -627,7 +627,8 @@ public class SQLUtil {
 	}
 
 	static String SELECT_KW = "select";
-	static Pattern FROM_KW = Pattern.compile("\\s+from\\s+");
+	//we need to ignore case
+	static Pattern FROM_KW = Pattern.compile("(?i)\\s+from\\s+");
 	static String selectDelim = ",";
 	/**
 	 * Searches select clause for function calls or other unnamed fields and generates
@@ -694,8 +695,8 @@ public class SQLUtil {
 				
 				// we can't just add it on ')', it breaks up this case: func1(func2(aaa),bbb,ccc);
 				// ignoring delimiter as it is not important for bars
-				if (parts[i].trim().endsWith(")") 
-						&& isAllBarPairsClosed(newSelectPart.toString()+parts[i])) {
+				if (parts[i].trim().endsWith(")") && 
+						(isAllBarPairsClosed(newSelectPart.toString()+parts[i]) || specific.isCaseStatement(parts[i]))) {
 					parts[i] += " as AUTOCOLUMN" + String.valueOf(Math.round(Math.random() * 100000));
 				}
 				
