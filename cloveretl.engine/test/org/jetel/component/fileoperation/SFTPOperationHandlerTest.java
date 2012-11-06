@@ -164,6 +164,11 @@ public class SFTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(result.success());
 		assertEquals(1, result.totalCount());
 		System.out.println(result.getResult());
+		
+		uri = CloverURI.createURI("sftp://badUser:badPassword@badserver/home/test/*.txt");
+		result = manager.resolve(uri);
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
 	}
 
 	@Override
