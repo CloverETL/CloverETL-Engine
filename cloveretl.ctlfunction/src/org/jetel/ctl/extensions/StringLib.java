@@ -891,15 +891,15 @@ public class StringLib extends TLFunctionLibrary {
 	// MATCHES
 	@TLFunctionInitAnnotation
 	public static final void matchesInit(TLFunctionCallContext context) {
-		context.setCache(new TLRegexpCache(context, 1));
+		// moved to IntegralLib, so that it can be called from the interpreter and compiler
+		IntegralLib.matchesInit(context);
 	}
 	
 	@TLFunctionAnnotation("Tries to match entire input with specified pattern.")
 	@TLFunctionParametersAnnotation({"input","regex_pattern"})
 	public static final Boolean matches(TLFunctionCallContext context, String input, String pattern) {
-		
-		Matcher m = ((TLRegexpCache)context.getCache()).getCachedMatcher(context, pattern).reset(input);
-		return m.matches();
+		// moved to IntegralLib, so that it can be called from the interpreter and compiler
+		return IntegralLib.matches(context, input, pattern);
 	}
 
 	class MatchesFunction implements TLFunctionPrototype {

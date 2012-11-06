@@ -359,8 +359,10 @@ public class TypeChecker extends NavigatingVisitor {
 			return data;
 		}
 
-		TLType lhs = ((SimpleNode) node.jjtGetChild(0)).getType();
-		TLType rhs = ((SimpleNode) node.jjtGetChild(1)).getType();
+		SimpleNode lhsNode = (SimpleNode) node.jjtGetChild(0);
+		SimpleNode rhsNode = (SimpleNode) node.jjtGetChild(1); 
+		TLType lhs = lhsNode.getType();
+		TLType rhs = rhsNode.getType();
 
 		TLType ret = null;
 		
@@ -372,6 +374,38 @@ public class TypeChecker extends NavigatingVisitor {
 				if (rhs.isString()) {
 					node.setType(TLTypePrimitive.BOOLEAN);
 					node.setOperationType(TLTypePrimitive.STRING);
+
+					int paramCount = 2;
+					boolean[] isLiteral = new boolean[paramCount];
+					Object[] paramValues = new Object[paramCount];
+					
+					for (int i = 0; i < paramCount; i++) {
+						SimpleNode iNode = (SimpleNode) node.jjtGetChild(i);
+						isLiteral[i] = (iNode instanceof CLVFLiteral);
+						if (isLiteral[i]) {
+							paramValues[i] = ((CLVFLiteral) iNode).getValue();
+						}
+					}
+					
+					// prepare function call context used to cache the regex
+					TLFunctionCallContext context = new TLFunctionCallContext(transformationID);		
+					context.setParams(new TLType[] { TLTypePrimitive.STRING, TLTypePrimitive.STRING });
+					context.setLiterals(isLiteral);
+					context.setParamValues(paramValues);
+					context.setIndex(functionCallIndex++);
+					context.setHasInit(true);
+					context.setLibClassName("org.jetel.ctl.extensions.IntegralLib");
+					switch (node.getOperator()) {
+					case TransformLangParserConstants.REGEX_CONTAINS:
+						context.setInitMethodName("containsMatchInit");
+						break;
+					case TransformLangParserConstants.REGEX_EQUAL:
+						context.setInitMethodName("matchesInit");
+						break;
+					}
+
+					getFunctionCalls().add(context);
+					node.setComparisonContext(context);
 				}
 			} else {
 				node.setType(TLType.ERROR);

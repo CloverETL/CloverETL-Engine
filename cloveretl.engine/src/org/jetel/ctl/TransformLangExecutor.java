@@ -31,7 +31,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -239,6 +238,24 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			//integral function copyByName is used for this copying 
 			if (node.getCopyByNameCallContext() != null) {
 				IntegralLib.copyByNameInit(node.getCopyByNameCallContext());
+			}
+			
+			return data;
+		}
+		
+		@Override
+		public Object visit(CLVFComparison node, Object data) {
+			super.visit(node, data);
+			
+			if (node.getComparisonContext() != null) {
+				switch (node.getOperator()) {
+				case TransformLangParserConstants.REGEX_EQUAL:
+					IntegralLib.containsMatchInit(node.getComparisonContext());
+					break;
+				case TransformLangParserConstants.REGEX_CONTAINS:
+					IntegralLib.containsMatchInit(node.getComparisonContext());
+					break;
+				}
 			}
 			
 			return data;
@@ -599,13 +616,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	public Object visit(CLVFComparison node, Object data) {
 		switch (node.getOperator()) {
 		case REGEX_EQUAL:
-			// TODO: optimize by compiling literals
 			node.jjtGetChild(0).jjtAccept(this, data);
 			String input = stack.popString();
 			node.jjtGetChild(1).jjtAccept(this, data);
 			String pattern = stack.popString();
-			
-			stack.push(Pattern.matches(pattern, input));
+
+			stack.push(IntegralLib.matches(node.getComparisonContext(), input, pattern));
 			break;
 		case REGEX_CONTAINS:
 			node.jjtGetChild(0).jjtAccept(this, data);
@@ -613,9 +629,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			node.jjtGetChild(1).jjtAccept(this, data);
 			pattern = stack.popString();
 			
-			Pattern p = Pattern.compile(pattern);
-			stack.push(p.matcher(input).find());
-
+			stack.push(IntegralLib.containsMatch(node.getComparisonContext(), input, pattern));
 			break;
 		default:
 			node.jjtGetChild(0).jjtAccept(this, data);

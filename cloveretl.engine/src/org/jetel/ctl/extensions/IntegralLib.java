@@ -18,6 +18,8 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.util.regex.Matcher;
+
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.data.DataRecord;
@@ -140,4 +142,45 @@ public class IntegralLib extends TLFunctionLibrary {
 		}
 	}
 
+	/**
+	 * This function should NOT be annotated.
+	 * The code is here so that it can be called from the interpreter and compiler
+	 * in CLVFComparison.
+	 * 
+	 * The annotated function is in StringLib.
+	 */
+	public static final void matchesInit(TLFunctionCallContext context) {
+		context.setCache(new TLRegexpCache(context, 1));
+	}
+
+	/**
+	 * This function should NOT be annotated.
+	 * The code is here so that it can be called from the interpreter and compiler
+	 * in CLVFComparison.
+	 * 
+	 * The annotated function is in StringLib.
+	 */
+	public static final Boolean matches(TLFunctionCallContext context, String input, String pattern) {
+		Matcher m = ((TLRegexpCache) context.getCache()).getCachedMatcher(context, pattern).reset(input);
+		return m.matches();
+	}
+
+	/**
+	 * This function should NOT be annotated.
+	 * The code is here so that it can be called from the interpreter and compiler
+	 * in CLVFComparison.
+	 */
+	public static final void containsMatchInit(TLFunctionCallContext context) {
+		context.setCache(new TLRegexpCache(context, 1));
+	}
+
+	/**
+	 * This function should NOT be annotated.
+	 * The code is here so that it can be called from the interpreter and compiler
+	 * in CLVFComparison.
+	 */
+	public static final Boolean containsMatch(TLFunctionCallContext context, String input, String pattern) {
+		Matcher m = ((TLRegexpCache) context.getCache()).getCachedMatcher(context, pattern).reset(input);
+		return m.find();
+	}
 }
