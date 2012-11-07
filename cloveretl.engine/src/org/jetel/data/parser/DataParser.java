@@ -761,6 +761,7 @@ public class DataParser extends AbstractTextParser {
 					while((character = readChar()) != -1) {
 						delimiterSearcher.update((char) character);
 						if(delimiterSearcher.isPattern(i)) {
+							stretchDelimiter(i);
 							break;
 						}
 					}
@@ -833,6 +834,8 @@ public class DataParser extends AbstractTextParser {
 				temp.append((char) character);
 				delimiterSearcher.update((char) character);
 				if(delimiterSearcher.isPattern(fieldNum)) {
+					//in case a record delimiter was found, lets take the longest one
+					stretchDelimiter(fieldNum);
 					return true;
 				}
 				if(delimiterSearcher.getMatchLength() == 0) {
@@ -869,6 +872,9 @@ public class DataParser extends AbstractTextParser {
 		return -1;
 	}
 
+	/**
+	 * Tries to greedy eat the longest delimiter. Useful for alternative delimiters, specially for "\r\n\\|\n\\|\r\\|\n\r" 
+	 */
 	private void stretchDelimiter(int patternID) {
 		if (tryToFindLongerDelimiter && delimiterSearcher.canUpdateWithoutFail()) {
 			StringBuffer temp = new StringBuffer();

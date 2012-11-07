@@ -102,6 +102,19 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 	}
 
 	@Override
+	public void testResolve() throws Exception {
+		super.testResolve();
+
+		CloverURI uri;
+		ResolveResult result;
+		
+		uri = CloverURI.createURI("ftp://badUser:badPassword@badserver/home/test/*.txt");
+		result = manager.resolve(uri);
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
+	}
+
+	@Override
 	public void testCreateDated() throws Exception {
 		// FIXME overridden - setting last modified date is not supported
 	}
