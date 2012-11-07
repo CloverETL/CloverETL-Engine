@@ -18,6 +18,7 @@
 		<import plugin-id="org.jetel.connection"/>
 		<import plugin-id="org.jetel.lookup"/>
 		<import plugin-id="org.jetel.sequence"/>
+		<import plugin-id="org.jetel.license"/>
 	</requires>
 
 	<extension point-id="component">
