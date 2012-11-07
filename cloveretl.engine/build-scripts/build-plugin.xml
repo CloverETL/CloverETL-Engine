@@ -522,6 +522,8 @@
 			<keep name="com.cloveretl.profiler.engine.utils.ModelUtils"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.components.Profiler"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.components.MappingMetadataFactory"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.ProfilerLauncherImpl"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.PreviewGraphGeneratorImpl"><field access="protected public"/><method access="protected public"/></keep>
 
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>

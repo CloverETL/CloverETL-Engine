@@ -621,7 +621,12 @@ public class GraphRuntimeContext {
 			}
 		},
 		CLEAR_OBSOLETE_TEMP_FILES("clearObsoleteTempFiles", Boolean.class) {
-			
+			@Override
+			public Object parseValue(String s) {
+				return parseBoolean(s);
+			}
+		},
+		DEBUG_MODE("debugMode", Boolean.class) {
 			@Override
 			public Object parseValue(String s) {
 				return parseBoolean(s);
