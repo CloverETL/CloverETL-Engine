@@ -698,10 +698,15 @@ public class FileUtils {
                 }
             
         	// without wild cards
-            } else if(anchor == null || anchor.equals("") || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
-               	streams.add(zin);
-               	if (resolvedAnchors != null) resolvedAnchors.add(anchor);
-               	return streams;
+            } else if (StringUtils.isEmpty(anchor) || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
+            	while ((entry != null) && entry.isDirectory()) { // CLS-537: skip directories, we want to read the first file
+            		entry = zin.getNextEntry();
+            	}
+            	if (entry != null) {
+            		streams.add(zin);
+            		if (resolvedAnchors != null) resolvedAnchors.add(anchor);
+            		return streams;
+            	}
             }
             
             //finish up with entry
