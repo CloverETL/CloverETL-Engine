@@ -99,7 +99,7 @@ public class DataFieldMetadata implements Serializable {
 	/** Format of Number, Date, DateTime, String (RegExp) or empty if not applicable. */
 	private String formatStr = null;
 	/** Length of the field (in bytes) if the field belongs to fixLength record. */
-	private short size = 0;
+	private int size = 0;
 
 	/** Relative shift of the beginning of the field. */
 	private short shift = 0;
@@ -205,10 +205,10 @@ public class DataFieldMetadata implements Serializable {
 	 * @param name the name of the field
 	 * @param fieldType the type of this field
 	 * @param size the size of the field (in bytes)
-	 * @deprecated use {@link DataFieldMetadata#DataFieldMetadata(String, DataFieldType, short)} instead
+	 * @deprecated use {@link DataFieldMetadata#DataFieldMetadata(String, DataFieldType, int)} instead
 	 */
 	@Deprecated
-	public DataFieldMetadata(String name, char fieldType, short size) {
+	public DataFieldMetadata(String name, char fieldType, int size) {
 		this(name, DataFieldType.fromChar(fieldType), size);
 	}
 
@@ -218,7 +218,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param fieldType
 	 * @param size
 	 */
-	public DataFieldMetadata(String name, DataFieldType fieldType, short size) {
+	public DataFieldMetadata(String name, DataFieldType fieldType, int size) {
 		setName(name);
 
 		this.type = fieldType;
@@ -237,7 +237,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param name the name of the field
 	 * @param size the size of the field (in bytes)
 	 */
-	public DataFieldMetadata(String name, short size) {
+	public DataFieldMetadata(String name, int size) {
 		this(name, DataFieldType.STRING, size);
 	}
 
@@ -627,14 +627,14 @@ public class DataFieldMetadata implements Serializable {
 	 *
 	 * @param size the new size of the data field
 	 */
-	public void setSize(short size) {
+	public void setSize(int size) {
 		this.size = size;
 	}
 
 	/**
 	 * @return the specified maximum field size (used only when dealing with a fixed-size type of record)
 	 */
-	public short getSize() {
+	public int getSize() {
 		return size;
 	}
 
