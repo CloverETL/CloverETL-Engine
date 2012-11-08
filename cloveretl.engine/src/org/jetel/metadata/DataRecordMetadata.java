@@ -1309,7 +1309,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	public String getFieldNamesHeader(String[] excludedFieldNames, boolean quotedString, Character quoteChar) {
 		StringBuilder ret = new StringBuilder();
 		DataFieldMetadata dataFieldMetadata;
-		short fieldSize;
+		int fieldSize;
 		int headerSize;
 		char blank = ' ';
 		String label;

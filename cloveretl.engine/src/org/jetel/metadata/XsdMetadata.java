@@ -252,7 +252,7 @@ public class XsdMetadata extends MXAbstract {
 		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 			if (field.getSize() > 0) {
 				typeRestr = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_LENGHT);
-				typeRestr.setAttribute(VALUE, Short.toString(field.getSize()));
+				typeRestr.setAttribute(VALUE, Integer.toString(field.getSize()));
 				restr.appendChild(typeRestr);
 			}
 			break;
@@ -267,7 +267,7 @@ public class XsdMetadata extends MXAbstract {
 		case DataFieldMetadata.STRING_FIELD:
 			if (field.getSize() > 0) {
 				typeRestr = doc.createElement(NAMESPACES[0] + NAMESPACE_DELIMITER + XSD_LENGHT);
-				typeRestr.setAttribute(VALUE, Short.toString(field.getSize()));
+				typeRestr.setAttribute(VALUE, Integer.toString(field.getSize()));
 				restr.appendChild(typeRestr);
 			}
 			if (field.getFormatStr() != null) {
