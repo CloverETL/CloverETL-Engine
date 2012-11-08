@@ -16,8 +16,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
-
 package org.jetel.hadoop.component;
 
 import java.io.IOException;
@@ -95,15 +93,6 @@ public class HadoopWriter extends Node {
 
 	private static Log logger = LogFactory.getLog(HadoopWriter.class);
 
-	/**
-	 * Constructor
-	 * 
-	 * @param id
-	 * @param fileURL
-	 * @param charset
-	 * @param appendData
-	 * @param fields
-	 */
 	public HadoopWriter(String id, String fileURL, String connectionID, String keyField, String valueField, 
 			boolean appendData) {
 		super(id);
@@ -114,10 +103,6 @@ public class HadoopWriter extends Node {
 		this.valueField=valueField;
 	}
 	
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
 	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
@@ -179,9 +164,6 @@ public class HadoopWriter extends Node {
 			}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig()
-	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
@@ -211,9 +193,6 @@ public class HadoopWriter extends Node {
 		this.connection= (HadoopConnection)conn;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
 		  if(isInitialized()) return;
@@ -273,9 +252,6 @@ public class HadoopWriter extends Node {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#fromXML(org.jetel.graph.TransformationGraph, org.w3c.dom.Element)
-	 */
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
 		HadoopWriter aDataWriter = null;
@@ -322,9 +298,6 @@ public class HadoopWriter extends Node {
 		return aDataWriter;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
 	@Override
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
@@ -404,7 +377,7 @@ public class HadoopWriter extends Node {
 	}
 
 	/**
-	 * Gets partition (lookup table id) for data partition.
+	 * Sets partition (lookup table id) for data partition.
 	 * 
 	 * @param partition
 	 */

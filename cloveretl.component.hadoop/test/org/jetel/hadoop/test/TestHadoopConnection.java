@@ -1,30 +1,29 @@
 package org.jetel.hadoop.test;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Date;
-import java.util.Properties;
 
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
 import org.jetel.hadoop.component.IHadoopSequenceFileParser;
-import org.jetel.hadoop.connection.*;
+import org.jetel.hadoop.connection.HadoopConnection;
+import org.jetel.hadoop.connection.HadoopFileStatus;
+import org.jetel.hadoop.connection.IHadoopConnection;
+import org.jetel.hadoop.connection.IHadoopInputStream;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 
 public class TestHadoopConnection {
@@ -64,7 +63,7 @@ public class TestHadoopConnection {
 		metadata = new DataRecordMetadata("test");
 		metadata.addField(new DataFieldMetadata("key", DataFieldType.STRING, (short)20));
 		metadata.addField(new DataFieldMetadata("value", DataFieldType.STRING, (short)20));
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 		record.getField("key").fromString("1");
 		record.getField("value").fromString("1");

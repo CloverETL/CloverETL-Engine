@@ -16,7 +16,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
 package org.jetel.hadoop.connection;
 
 import java.io.IOException;
@@ -46,7 +45,6 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginClassLoader;
-import org.jetel.util.FileConstrains;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -74,12 +72,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		private final static String HADOOP_CONNECTION_IMPLEMENTATION_JAR =
 			"./lib/" + HADOOP_CONNECTION_IMPLEMENTATION_JAR_NAME;	
 		
-		private static final String HADOOP_LOAD_ERROR = 
-				"Cannot load Hadoop java implementation. Make sure you specify correct hadoop-core.jar " +
-				"or that your system classpath contains them.";
-		
-		private static final String HADOOP_LOAD_CHECKING_CLASS = "org.apache.hadoop.fs.FileAlreadyExistsException";
-			
 		private static final String ERROR_LOADING_IMPL_MOD =
 				"Internal Error. (Could not find CloverETL Hadoop Implementation module.)";
 			
@@ -226,10 +218,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		}
 		
 		
-		
-		/* (non-Javadoc)
-		 * @see org.jetel.graph.GraphElement#free()
-		 */
 		@Override
 		synchronized public void free() {
 	        if(!isInitialized()) return;
@@ -308,9 +296,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			throw new UnsupportedOperationException("Hadoop connection doesn't support operation 'createMetadata()'");
 		}
 
-		/* (non-Javadoc)
-		 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
-		 */
 		@Override
 		public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 	        super.checkConfig(status);

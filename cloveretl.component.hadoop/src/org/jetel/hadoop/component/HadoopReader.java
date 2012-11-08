@@ -16,7 +16,6 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
 package org.jetel.hadoop.component;
 
 import java.io.IOException;
@@ -165,11 +164,6 @@ public class HadoopReader extends Node {
 		//TODO: storeValues();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.jetel.graph.GraphElement#free()
-	 */
 	@Override
 	public synchronized void free() {
 		super.free();
@@ -283,12 +277,6 @@ public class HadoopReader extends Node {
 		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
-	/**
-	 * Description of the Method
-	 * 
-	 * @return Description of the Returned Value
-	 * @since May 21, 2002
-	 */
 	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
@@ -312,14 +300,6 @@ public class HadoopReader extends Node {
 		}
 	}
 
-	/**
-	 * Description of the Method
-	 * 
-	 * @param nodeXML
-	 *            Description of Parameter
-	 * @return Description of the Returned Value
-	 * @since May 21, 2002
-	 */
 	public static Node fromXML(TransformationGraph graph, Element xmlElement)
 			throws XMLConfigurationException {
 		HadoopReader hadoopReader = null;
@@ -377,7 +357,7 @@ public class HadoopReader extends Node {
 	}
 
 	/**
-	 * /** Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
+	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
 	 * 
 	 * @param handler
 	 */
@@ -385,7 +365,6 @@ public class HadoopReader extends Node {
 		exceptionHandler = handler;
 	}
 
-	/**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
@@ -437,16 +416,14 @@ public class HadoopReader extends Node {
 	}
 
 	/**
-	 * @param how
-	 *            many rows to skip for every source
+	 * @param skipSourceRows how many rows to skip for every source
 	 */
 	public void setSkipSourceRows(int skipSourceRows) {
 		this.skipSourceRows = Math.max(skipSourceRows, 0);
 	}
 
 	/**
-	 * @param how
-	 *            many rows to process for every source
+	 * @param numSourceRecords how many rows to process for every source
 	 */
 	public void setNumSourceRecords(int numSourceRecords) {
 		this.numSourceRecords = Math.max(numSourceRecords, 0);
@@ -456,11 +433,6 @@ public class HadoopReader extends Node {
 		setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
 	}
 
-	/**
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 * 
-	 * @param handler
-	 */
 	public void setPolicyType(PolicyType policyType) {
 		this.policyType = policyType;
 		setExceptionHandler(ParserExceptionHandlerFactory
