@@ -100,18 +100,9 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(handler.canPerform(Operation.read(FTPOperationHandler.FTP_SCHEME)));
 		assertTrue(handler.canPerform(Operation.write(FTPOperationHandler.FTP_SCHEME)));
 	}
-
-	@Override
-	public void testResolve() throws Exception {
-		super.testResolve();
-
-		CloverURI uri;
-		ResolveResult result;
-		
-		uri = CloverURI.createURI("ftp://badUser:badPassword@badserver/home/test/*.txt");
-		result = manager.resolve(uri);
-		assertFalse(result.success());
-		assertEquals(1, result.totalCount());
+	
+	public URI getUnreachableUri() {
+		return URI.create("ftp://badUser:badPassword@badserver/");
 	}
 
 	@Override

@@ -84,13 +84,13 @@ public class LocalOperationHandler implements IOperationHandler {
 			source = source.getCanonicalFile();
 			target = target.getCanonicalFile();
 		} catch (IOException ioe) {
-			throw new IOException(MessageFormat.format("Failed to check that {0} is not a subdirectory of {1}", target, source), ioe);
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("LocalOperationHandler.subdirectory_check_failed"), target, source), ioe); //$NON-NLS-1$
 		}
 
 		File parent = target;
 		while (parent != null) {
 			if (source.equals(parent)) {
-				throw new IOException(MessageFormat.format("{0} is a subdirectory of {1}", target, source));
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.subdirectory"), target, source)); //$NON-NLS-1$
 			}
 			parent = parent.getParentFile();
 		}
