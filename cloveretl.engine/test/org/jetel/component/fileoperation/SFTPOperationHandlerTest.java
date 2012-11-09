@@ -47,10 +47,10 @@ public class SFTPOperationHandlerTest extends OperationHandlerTestTemplate {
 	protected URI createBaseURI() {
 		try {
 			URI base = new URI(testingUri);
-			CloverURI tmpDirUri = CloverURI.createURI(base.resolve(String.format("CloverTemp%d/", System.nanoTime())));
+			SingleCloverURI tmpDirUri = CloverURI.createSingleURI(base, String.format("CloverTemp%d/", System.nanoTime()));
 			CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true));
 			assumeTrue(result.success());
-			return tmpDirUri.getSingleURI().toURI();
+			return tmpDirUri.getAbsoluteURI().toURI();
 		} catch (URISyntaxException ex) {
 			return null;
 		}

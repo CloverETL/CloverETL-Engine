@@ -1197,7 +1197,8 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	}
 
 	protected CloverURI relativeURI(String commonPart, String uri) throws URISyntaxException {
-		return CloverURI.createRelativeURI(baseUri.resolve(commonPart), uri);
+		URI base = CloverURI.createSingleURI(baseUri, commonPart).getAbsoluteURI().toURI();
+		return CloverURI.createRelativeURI(base, uri);
 	}
 
 	public void testCreate() throws Exception {
