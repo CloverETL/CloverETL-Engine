@@ -23,7 +23,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Authenticator;
 import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
@@ -138,6 +140,7 @@ public class runGraph {
     public final static String MBEAN_NAME = "-mbean";
     public final static String DICTIONARY_VALUE_DEFINITION_SWITCH = "-V:";
     public final static String CLOVER_CLASS_PATH = "-classpath";
+    public final static String INIT_PROXY_AUTHENTICATOR_SWITCH = "-proxyauth";
 	
 	/**
 	 *  Description of the Method
@@ -271,6 +274,28 @@ public class runGraph {
                     System.err.println("Invalid dictionary value format: " + value);
                     System.exit(-1);
             	}
+            } else if (args[i].equals(INIT_PROXY_AUTHENTICATOR_SWITCH)) {
+            	// Java ignores http.proxyUser. Here come's the workaround.
+            	Authenticator.setDefault(new Authenticator() {
+            	    @Override
+            	    protected PasswordAuthentication getPasswordAuthentication() {
+            	        if (getRequestorType() == RequestorType.PROXY) {
+            	            String prot = getRequestingProtocol().toLowerCase();
+            	            String host = System.getProperty(prot + ".proxyHost", "");
+            	            String port = System.getProperty(prot + ".proxyPort", "");
+            	            String user = System.getProperty(prot + ".proxyUser", "");
+            	            String password = System.getProperty(prot + ".proxyPassword", "");
+
+            	            if (getRequestingHost().equalsIgnoreCase(host)) {
+            	                if (Integer.parseInt(port) == getRequestingPort()) {
+            	                    // Seems to be OK.
+            	                    return new PasswordAuthentication(user, password.toCharArray());
+            	                }
+            	            }
+            	        }
+            	        return null;
+            	    }
+            	});            
             } else if (args[i].startsWith("-")) {
                 System.err.println("Unknown option: " + args[i]);
                 System.exit(-1);
