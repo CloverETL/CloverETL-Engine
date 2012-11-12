@@ -31,7 +31,6 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.Defaults;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
@@ -90,6 +89,8 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		public static final String XML_USERNAME_ATTRIBUTE = "username";
 		public static final String XML_PASSWORD_ATTRIBUTE = "password";
 		public static final String XML_PASSWORD_ENCRYPTED = "passwordEncrypted";
+		
+		public static final String LIB_PATH_SEPARATOR = ";";
 
 		public static final String HADOOP_DEFAULT_HDFS_PORT = "8020";
 		public static final String HADOOP_DEFAULT_MAPRED_PORT = "8021";
@@ -518,7 +519,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			List<URL> additionalJars = new ArrayList<URL>();
 
 			if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
-				String urls[] = hadoopCoreJar.split("\\n|"+Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+				String[] urls = parseHadoopJarsList(hadoopCoreJar);
 				for (String url:urls){
 					URL hadoopJar;
 					try {
@@ -562,6 +563,14 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			}
 
 			loaderJars = (URL[]) additionalJars.toArray(new URL[0]);
+		}
+
+
+		public static String[] parseHadoopJarsList(String jarsList) {
+			if (jarsList == null) {
+				return null;
+			}
+			return jarsList.split(LIB_PATH_SEPARATOR);
 		}
 		
 		private IHadoopConnection instantiateConnection() throws HadoopConnectionException {
