@@ -57,6 +57,10 @@
 			<xsl:value-of select="substring-after(@plugin-id,'org.jetel.')"/>
 		</xsl:if>
 
+		<xsl:if test="starts-with(@plugin-id,'org.jetel.license')">
+		  <xsl:text>.engine</xsl:text>
+		</xsl:if>
+
 		<xsl:if test="starts-with(@plugin-id,'com.opensys.clover.')">
 			<xsl:value-of select="substring-after(@plugin-id,'com.opensys.clover.')"/>
 			<xsl:text>.commercial</xsl:text>
