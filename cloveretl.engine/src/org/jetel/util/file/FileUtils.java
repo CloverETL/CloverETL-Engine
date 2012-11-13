@@ -134,6 +134,8 @@ public class FileUtils {
 
 	private static final String SCP_PROTOCOL = "scp";
 	
+	private static final String UTF8 = "UTF-8";
+	
 	static {
 		Map<String, URLStreamHandler> h = new HashMap<String, URLStreamHandler>();
 		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
@@ -481,7 +483,7 @@ public class FileUtils {
 
         // create archive streams
         if (archiveType == ArchiveType.ZIP) {
-        	List<InputStream> lIs = getZipInputStreamsInner(innerStream, sbAnchor.toString(), 0, null, true);
+        	List<InputStream> lIs = getZipInputStreamsInner(innerStream, URLDecoder.decode(sbAnchor.toString(), UTF8), 0, null, true); // CL-2579
         	return lIs.size() > 0 ? lIs.get(0) : null;
         } else if (archiveType == ArchiveType.GZIP) {
             return new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
@@ -543,6 +545,7 @@ public class FileUtils {
      * @throws IOException
      */
     public static List<InputStream> getZipInputStreams(InputStream innerStream, String anchor, List<String> resolvedAnchors) throws IOException {
+    	anchor = URLDecoder.decode(anchor, UTF8); // CL-2579
     	return getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors, true);
     }
 
@@ -556,6 +559,7 @@ public class FileUtils {
      */
     public static List<String> getZipInputStreamNames(InputStream innerStream, String anchor) throws IOException {
     	List<String> resolvedAnchors = new ArrayList<String>();
+    	anchor = URLDecoder.decode(anchor, UTF8); // CL-2579
     	getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors, false);
     	return resolvedAnchors; 
     }
@@ -1252,7 +1256,7 @@ public class FileUtils {
         private static String getUrlFile(URL url) {
             try {
                 final String fixedFileUrl = handleSpecialCharacters(url);
-                return URLDecoder.decode(fixedFileUrl, "UTF-8");
+                return URLDecoder.decode(fixedFileUrl, UTF8);
             } catch (UnsupportedEncodingException ex) {
                 throw new RuntimeException("Encoding not supported!", ex);
             }
