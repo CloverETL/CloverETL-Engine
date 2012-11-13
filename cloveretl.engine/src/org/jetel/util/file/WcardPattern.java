@@ -269,10 +269,17 @@ public class WcardPattern {
 		List<String> newFileNames = resolveAndSetFileNames(fileName); // returns simple file names
         if (fileStreamNames.size() == 0) {
         	for (String newFileName: newFileNames) {
-                URL url = FileUtils.getFileURL(parent, newFileName);
-            	if ((outherPathNeedsInputStream || (anchor.contains("" + WCARD_CHAR[0]) || anchor.contains("" + WCARD_CHAR[1]))))
-            		fileStreamNames.add(new FileStreamName(newFileName, FileUtils.getAuthorizedConnection(url).getInputStream()));
-            	else fileStreamNames.add(new FileStreamName(newFileName));
+        		
+        		InputStream is = null;
+            	if ((outherPathNeedsInputStream || (anchor.contains("" + WCARD_CHAR[0]) || anchor.contains("" + WCARD_CHAR[1])))) {
+            		URL url = FileUtils.getFileURL(parent, newFileName);
+            		if (S3InputStream.isS3File(url)) {
+            			is = FileUtils.getInputStream(parent, newFileName);
+            		} else {
+            			is = FileUtils.getAuthorizedConnection(url).getInputStream();
+            		}
+            	}
+            	fileStreamNames.add(new FileStreamName(newFileName, is));
         	}
         }
         
