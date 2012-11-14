@@ -87,7 +87,7 @@ public class TransformLanguageDetector {
             return TransformLanguage.JAVA_PREPROCESS;
         }
         
-        throw new JetelRuntimeException("unknown transformation language");
+        return null;
     }
 
     private static Pattern getPattern(String hashBang) {
