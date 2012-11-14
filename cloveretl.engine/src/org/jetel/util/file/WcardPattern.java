@@ -272,12 +272,7 @@ public class WcardPattern {
         		
         		InputStream is = null;
             	if ((outherPathNeedsInputStream || (anchor.contains("" + WCARD_CHAR[0]) || anchor.contains("" + WCARD_CHAR[1])))) {
-            		URL url = FileUtils.getFileURL(parent, newFileName);
-            		if (S3InputStream.isS3File(url)) {
-            			is = FileUtils.getInputStream(parent, newFileName);
-            		} else {
-            			is = FileUtils.getAuthorizedConnection(url).getInputStream();
-            		}
+            		is = FileUtils.getInputStream(parent, newFileName);
             	}
             	fileStreamNames.add(new FileStreamName(newFileName, is));
         	}
