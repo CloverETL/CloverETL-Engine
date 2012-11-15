@@ -29,12 +29,12 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
- *
+ *         
  */
 public interface IHadoopConnection {
 
 	public boolean connect(URI host, Properties config) throws IOException;
-	public boolean connect(URI host, Properties config,String user) throws IOException;
+	public boolean connect(URI host, Properties config, String user) throws IOException;
 	public boolean connect() throws IOException;
 	
 	public long getUsedSpace() throws IOException;
@@ -42,7 +42,6 @@ public interface IHadoopConnection {
 	public void close() throws IOException;
 	
 	public Object getDFS();
-	
 	
 	public IHadoopInputStream open(URI file) throws IOException;
 	public IHadoopInputStream open(URI file, int bufferSize) throws IOException;
@@ -55,19 +54,14 @@ public interface IHadoopConnection {
 	
 	public IHadoopSequenceFileParser createParser(String keyFieldName, String valueFieldName, DataRecordMetadata metadata) throws IOException;
 	
-	
-	
 	public IHadoopOutputStream append(URI file) throws IOException;
 	public IHadoopOutputStream append(URI f, int bufferSize) throws IOException;
 	
-	
-	
 	public boolean delete(URI file, boolean recursive) throws IOException;
 	public boolean exists(URI file) throws IOException;
-    public boolean mkdir(URI file) throws IOException;
+	public boolean mkdir(URI file) throws IOException;
 	public boolean rename(URI src, URI dst) throws IOException;
 	public HadoopFileStatus[] listStatus(URI path) throws IOException;
 	public HadoopFileStatus getStatus(URI path) throws IOException;
 	public HadoopFileStatus getExtendedStatus(URI path) throws IOException;
-	
 }
