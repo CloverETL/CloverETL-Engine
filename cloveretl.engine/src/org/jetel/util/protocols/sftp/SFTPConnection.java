@@ -31,6 +31,8 @@ import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.util.Vector;
 
+import org.jetel.util.protocols.ProxyAuthenticable;
+
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -50,7 +52,7 @@ import com.jcraft.jsch.UserInfo;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz) (c) Javlin
  *         Consulting (www.javlinconsulting.cz)
  */
-public class SFTPConnection extends URLConnection {
+public class SFTPConnection extends URLConnection implements ProxyAuthenticable {
 
 	private static final JSch jsch = new JSch();
 	
@@ -60,7 +62,7 @@ public class SFTPConnection extends URLConnection {
 	protected int mode;
 
 	private Proxy proxy;
-	private Proxy proxy4;
+	private ProxySOCKS4 proxy4;
 	
 	private final SFTPStreamHandler handler;
 	private int openedStreams = 0;
@@ -410,5 +412,19 @@ public class SFTPConnection extends URLConnection {
 	
 	void setURL(URL url) {
 		super.url = url;
+	}
+
+	@Override
+	public void setProxyCredentials(org.jetel.util.protocols.UserInfo userInfo) {
+		String user = userInfo.getUser();
+		String password = userInfo.getPassword();
+		if (proxy4 != null) {
+			proxy4.setUserPasswd(user, password);
+		}
+		if (proxy instanceof ProxyHTTP) {
+			((ProxyHTTP) proxy).setUserPasswd(user, password);
+		} else if (proxy instanceof ProxySOCKS5) {
+			((ProxySOCKS5) proxy).setUserPasswd(user, password);
+		}
 	}
 }

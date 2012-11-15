@@ -70,6 +70,8 @@ import org.jetel.logger.SafeLogFactory;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.exec.PlatformUtils;
+import org.jetel.util.protocols.ProxyAuthenticable;
+import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.amazon.S3OutputStream;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
@@ -753,6 +755,9 @@ public class FileUtils {
      */
     public static URLConnection getAuthorizedConnection(URL url, Proxy proxy, String proxyUserInfo) throws IOException {
     	URLConnection connection = url.openConnection(proxy);
+    	if (connection instanceof ProxyAuthenticable) {
+    		((ProxyAuthenticable) connection).setProxyCredentials(new UserInfo(proxyUserInfo));
+    	}
     	connection = URLConnectionRequest.getAuthorizedConnection( // set authentication
     			connection, 
     			url.getUserInfo(), 
