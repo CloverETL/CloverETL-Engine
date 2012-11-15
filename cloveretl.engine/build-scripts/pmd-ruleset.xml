@@ -11,7 +11,10 @@
 	<rule ref="rulesets/basic.xml" />
 	<rule ref="rulesets/clone.xml" />
 	<rule ref="rulesets/codesize.xml" />
-	<rule ref="rulesets/controversial.xml" />
+	<rule ref="rulesets/controversial.xml">
+		<exclude name="OnlyOneReturn" /> <!-- we don't want to follow this rule -->
+		<exclude name="AvoidLiteralsInIfCondition" /> <!-- reports nulls, empty strings, etc. -->
+	</rule>
 	<rule ref="rulesets/coupling.xml" />
 	<rule ref="rulesets/design.xml" />
 	<rule ref="rulesets/finalizers.xml" />
@@ -20,8 +23,13 @@
 	<rule ref="rulesets/javabeans.xml" />
 	<rule ref="rulesets/junit.xml" />
 	<rule ref="rulesets/logging-java.xml" />
-	<rule ref="rulesets/naming.xml" />
-	<rule ref="rulesets/optimizations.xml" />
+	<rule ref="rulesets/naming.xml">
+		<exclude name="LongVariable" /> <!-- we don't want to follow this rule -->
+	</rule>
+	<rule ref="rulesets/optimizations.xml">
+		<exclude name="MethodArgumentCouldBeFinal" /> <!-- too many reported warnings -->
+		<exclude name="LocalVariableCouldBeFinal" /> <!-- too many reported warnings -->
+	</rule>
 	<rule ref="rulesets/strictexception.xml" />
 	<rule ref="rulesets/sunsecure.xml" />
 	<rule ref="rulesets/strings.xml">
