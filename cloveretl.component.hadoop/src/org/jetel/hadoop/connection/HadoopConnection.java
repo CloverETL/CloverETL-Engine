@@ -114,6 +114,9 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		private URL hadoopModuleImplementationPath;
 		private IHadoopConnection connection;
 		
+		/** relative paths (in XML_HADOOP_CORE_LIBRARY_ATTRIBUTE property) are within this context; used from Designer */
+		private URL contextURL;
+		
 		
 		public HadoopConnection(String id, String host, String port,
 				String user, String pwd, boolean passwordEncrypt, String hadoopCoreJar,Properties properties) {
@@ -523,15 +526,10 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				for (String url:urls){
 					URL hadoopJar;
 					try {
-						hadoopJar = new URL(url);
+						hadoopJar = FileUtils.getFileURL(contextURL, url);
 					} catch (MalformedURLException e) {
-						try {
-							hadoopJar = new URL("file:" + url);
-						} catch (MalformedURLException ex) {
-							throw new ComponentNotReadyException(
-									"Cannot load library from '"
-											+ url + "'", ex);
-						}
+						throw new ComponentNotReadyException(
+								"Cannot load library from '" + url + "'", e);
 					}
 					additionalJars.add(hadoopJar);
 				}
@@ -599,5 +597,13 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			
 			return conn;
 		}
-		
+
+		public URL getContextURL() {
+			return contextURL;
+		}
+
+		public void setContextURL(URL contextURL) {
+			this.contextURL = contextURL;
+		}
+
 }
