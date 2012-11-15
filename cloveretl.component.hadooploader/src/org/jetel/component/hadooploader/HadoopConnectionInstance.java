@@ -21,8 +21,8 @@ package org.jetel.component.hadooploader;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map.Entry;
-import java.util.Map;
 import java.util.Properties;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -36,8 +36,9 @@ import org.jetel.hadoop.connection.IHadoopOutputStream;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author dpavlis (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * 
+ * @author dpavlis (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
  * @created Mar 14, 2012
  * 
  * @see org.apache.hadoop.fs.FileSystem
@@ -45,180 +46,240 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public class HadoopConnectionInstance implements IHadoopConnection {
 
-	// private static final Log logger =
-	// LogFactory.getLog(HadoopConnectionInstance.class);
+	
+	// private static final Log logger = LogFactory.getLog(HadoopConnectionInstance.class);
 	private FileSystem dfs;
+	
+	
+	public HadoopConnectionInstance(){
+	}
 
-	public HadoopConnectionInstance() {}
+	private static Configuration property2Configuration(Properties prop){
+		Configuration config = new Configuration();
+		if (prop!=null){
+			for(@SuppressWarnings("rawtypes") Entry entry : prop.entrySet()){
+				config.set(entry.getKey().toString(), entry.getValue().toString());
+			}
+		}
+		return config;
+	}
+
 
 	@Override
 	public boolean connect(URI host, Properties config) throws IOException {
-		return connect(host, config, null);
+		return connect(host,config,null);
 	}
 
 	@Override
-	public boolean connect(URI host, Properties config, String user) throws IOException {
-		// logger.debug(host);
-		// logger.debug(user);
+	public boolean connect(URI host, Properties config,String user) throws IOException {
+		//logger.debug(host);
+		//logger.debug(user);
 		ClassLoader formerCCL = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-		try {
+		try{
 			if (user != null) {
-				dfs = FileSystem.get(host, HadoopConfigurationUtil.property2Configuration(config), user);
+				dfs = FileSystem
+						.get(host, property2Configuration(config), user);
 			} else {
-				dfs = FileSystem.get(host, HadoopConfigurationUtil.property2Configuration(config));
+				dfs = FileSystem.get(host, property2Configuration(config));
 			}
 		} catch (InterruptedException e) {
 			throw new IOException(e);
-		} catch (Throwable e) {
-			throw new IOException("Class loading error !", e);
-		} finally {
+		} catch (Throwable e){ 
+			throw new IOException("Class loading error !",e);
+		}finally {
 			Thread.currentThread().setContextClassLoader(formerCCL);
 		}
 
 		return true;
 	}
 
+
+
 	@Override
 	public long getUsedSpace() throws IOException {
-		if (dfs != null) {
+		if (dfs!=null)
 			return dfs.getUsed();
-		} else {
+		else
 			throw new IOException("Not connected to HDFS.");
-		}
+		
 	}
+
+
+
 
 	@Override
 	public void close() throws IOException {
-		if (dfs != null) {
+		if (dfs!=null)
 			dfs.close();
-		}
-		dfs = null;
+		dfs=null;
 	}
+
+
+
 
 	@Override
 	public IHadoopInputStream open(URI file) throws IOException {
-		if (dfs != null) {
+		if (dfs!=null){
 			return new HadoopInputStream(dfs.open(new Path(file)));
-		} else {
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
-
+		
 	}
+
+
+
 
 	@Override
 	public IHadoopInputStream open(URI file, int bufferSize) throws IOException {
-		if (dfs != null) {
-			return new HadoopInputStream(dfs.open(new Path(file), bufferSize));
-		} else {
+		if (dfs!=null){
+			return new HadoopInputStream(dfs.open(new Path(file),bufferSize));
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
 
+
+
+
 	@Override
-	public IHadoopOutputStream create(URI file, boolean overwrite) throws IOException {
-		if (dfs != null) {
+	public IHadoopOutputStream create(URI file, boolean overwrite)
+			throws IOException {
+		if (dfs!=null){
 			return new HadoopOutputStream(dfs.create(new Path(file), overwrite));
-		} else {
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
 
+
+
+
 	@Override
-	public IHadoopOutputStream create(URI file, boolean overwrite, int bufferSize) throws IOException {
-		if (dfs != null) {
-			return new HadoopOutputStream(dfs.create(new Path(file), overwrite, bufferSize));
-		} else {
+	public IHadoopOutputStream create(URI file, boolean overwrite,
+			int bufferSize) throws IOException {
+		if (dfs!=null){
+			return new HadoopOutputStream(dfs.create(new Path(file), overwrite,bufferSize));
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
 
+
+
+
 	@Override
-	public IHadoopOutputStream create(URI file, boolean overwrite, int bufferSize, short replication, long blockSize)
+	public IHadoopOutputStream create(URI file, boolean overwrite,
+			int bufferSize, short replication, long blockSize)
 			throws IOException {
-		if (dfs != null) {
-			return new HadoopOutputStream(dfs.create(new Path(file), overwrite, bufferSize, replication, blockSize));
-		} else {
+		if (dfs!=null){
+			return new HadoopOutputStream(dfs.create(new Path(file), overwrite,bufferSize,replication,blockSize));
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
 
+
+
+
 	@Override
-	public IHadoopSequenceFileFormatter createFormatter(String keyFieldName, String valueFieldName, boolean overwrite)
-			throws IOException {
+	public IHadoopSequenceFileFormatter createFormatter(String keyFieldName, String valueFieldName, boolean overwrite) throws IOException {
 		ClassLoader formerCCL = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
-
-		IHadoopSequenceFileFormatter formatter = new HadoopSequenceFileFormatter(this.dfs, keyFieldName, valueFieldName);
-
+		
+		IHadoopSequenceFileFormatter formatter= new HadoopSequenceFileFormatter(this.dfs,keyFieldName, valueFieldName);
+		
 		Thread.currentThread().setContextClassLoader(formerCCL);
-
+		
 		return formatter;
 	}
 
+
+
+
+
 	@Override
 	public IHadoopOutputStream append(URI file) throws IOException {
-		if (dfs != null) {
+		if (dfs!=null){
 			return new HadoopOutputStream(dfs.append(new Path(file)));
-		} else {
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
+
+
+
 
 	@Override
 	public IHadoopOutputStream append(URI f, int bufferSize) throws IOException {
-		if (dfs != null) {
-			return new HadoopOutputStream(dfs.append(new Path(f), bufferSize));
-		} else {
+		if (dfs!=null){
+			return new HadoopOutputStream(dfs.append(new Path(f),bufferSize));
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
+
+
+
 
 	@Override
 	public boolean delete(URI file, boolean recursive) throws IOException {
-		if (dfs != null) {
-			return dfs.delete(new Path(file), recursive);
-		} else {
+		if (dfs!=null){
+			return dfs.delete(new Path(file),recursive);
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
+
+
+
 
 	@Override
 	public boolean exists(URI file) throws IOException {
-		if (dfs != null) {
+		if (dfs!=null){
 			return dfs.exists(new Path(file));
-		} else {
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
+
+
+
 
 	@Override
 	public boolean mkdir(URI file) throws IOException {
-		if (dfs != null) {
+		if (dfs!=null){
 			return dfs.mkdirs(new Path(file));
-		} else {
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
 
+
+
+
 	@Override
 	public boolean rename(URI src, URI dst) throws IOException {
-		if (dfs != null) {
+		if (dfs!=null){
 			return dfs.rename(new Path(src), new Path(dst));
-		} else {
+		}else{
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
+
+
+
 
 	@Override
 	public HadoopFileStatus[] listStatus(URI path) throws IOException {
 		if (dfs != null) {
 			FileStatus[] status = dfs.listStatus(new Path(path));
-			if (status == null)
-				throw new IOException("Can't get HDFS file(s) status for: " + path.toString());
+			if (status==null) throw new IOException("Can't get HDFS file(s) status for: "+path.toString());
 			HadoopFileStatus[] hStatus = new HadoopFileStatus[status.length];
 			for (int i = 0; i < status.length; i++) {
-				hStatus[i] = new HadoopFileStatus(status[i].getPath().toUri(), status[i].getLen(), status[i].isDir(),
+				hStatus[i] = new HadoopFileStatus(status[i].getPath().toUri(),
+						status[i].getLen(), status[i].isDir(),
 						status[i].getModificationTime());
 			}
 			return hStatus;
@@ -228,34 +289,40 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 		}
 	}
 
+
+
+
 	@Override
 	public boolean connect() throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public IHadoopSequenceFileParser createParser(String keyFieldName, String valueFieldName,
-			DataRecordMetadata metadata) throws IOException {
-		return new HadoopSequenceFileParser(dfs, metadata, keyFieldName, valueFieldName);
+	public IHadoopSequenceFileParser createParser(String keyFieldName,
+			String valueFieldName, DataRecordMetadata metadata)
+			throws IOException {
+		return new HadoopSequenceFileParser(dfs,metadata, keyFieldName, valueFieldName);
 	}
 
 	@Override
 	public HadoopFileStatus getStatus(URI path) throws IOException {
 		FileStatus status = dfs.getFileStatus(new Path(path));
-		return new HadoopFileStatus(status.getPath().toUri(), status.getLen(), status.isDir(),
+		return new HadoopFileStatus(status.getPath().toUri(),
+				status.getLen(), status.isDir(),
 				status.getModificationTime());
 	}
-
+	
 	@Override
 	public HadoopFileStatus getExtendedStatus(URI path) throws IOException {
 		FileStatus status = dfs.getFileStatus(new Path(path));
-		return new HadoopFileStatus(status.getPath().toUri(), status.getLen(), status.isDir(),
-				status.getModificationTime(), status.getBlockSize(), status.getGroup(), status.getOwner(),
-				status.getReplication());
+		return new HadoopFileStatus(status.getPath().toUri(),
+				status.getLen(), status.isDir(),
+				status.getModificationTime(), status.getBlockSize(),status.getGroup(),status.getOwner(),status.getReplication());
 	}
 
 	@Override
 	public Object getDFS() {
 		return dfs;
 	}
+
 }

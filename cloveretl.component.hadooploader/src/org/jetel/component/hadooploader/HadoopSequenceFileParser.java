@@ -31,6 +31,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	private SequenceFile.Reader reader;
 	private int keyField;
 	private int valueField;
+	long counter;
 	private String keyFieldName;
 	private String valueFieldName;
 	private Writable keyValue;
@@ -80,6 +81,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+		counter=0;
 		if (metadata==null)
 			throw new ComponentNotReadyException("No metadata defined");
 		
@@ -318,6 +320,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	@Override
 	public void setGraph(TransformationGraph graph) {
 		this.graph=graph;
+		
 	}
 
 }

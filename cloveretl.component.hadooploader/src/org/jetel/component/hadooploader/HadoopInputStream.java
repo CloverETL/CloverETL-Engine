@@ -8,7 +8,7 @@ import org.jetel.hadoop.connection.IHadoopInputStream;
 
 public class HadoopInputStream implements IHadoopInputStream {
 
-	private FSDataInputStream stream;
+	FSDataInputStream stream;
 	
 	public HadoopInputStream(FSDataInputStream stream){
 		this.stream=stream;

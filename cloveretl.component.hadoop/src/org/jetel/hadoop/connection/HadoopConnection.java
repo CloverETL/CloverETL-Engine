@@ -26,23 +26,19 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.dom4j.dom.DOMElement;
-import org.dom4j.tree.DefaultElement;
-import org.jetel.data.Defaults;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -60,368 +56,471 @@ import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * @author dpavlis (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * 
+ * @author dpavlis (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
  * @see org.apache.hadoop.fs.FileSystem
- */
+ */        
+
 public class HadoopConnection extends GraphElement implements IConnection {
+	
+		public final static String HADOOP_CONNECTION_IMPLEMENTATION_JAR_NAME =
+			"cloveretl.component.hadooploader.jar";
+		private final static String HADOOP_CONNECTION_IMPLEMENTATION_CLASS =
+			"org.jetel.component.hadooploader.HadoopConnectionInstance";
+		private final static String HADOOP_CONNECTION_IMPLEMENTATION_JAR =
+			"./lib/" + HADOOP_CONNECTION_IMPLEMENTATION_JAR_NAME;	
+		
+		private static final String ERROR_LOADING_IMPL_MOD =
+				"Internal Error. (Could not find CloverETL Hadoop Implementation module.)";
+			
+	
+	    private static final Log logger = LogFactory.getLog(HadoopConnection.class);
+		
+		public static final String XML_CONFIG_ATTRIBUTE = "config";
+		public static final String XML_HADOOP_CORE_LIBRARY_ATTRIBUTE = "hadoopJar";
+		public static final String XML_HADOOP_PARAMETERS = "hadoopParams"; 
+		public static final String XML_HADOOP_HDFS_HOST = "host";
+		public static final String XML_HADOOP_HDFS_PORT = "port";
+		public static final String XML_HADOOP_USER = "user";
+	    public static final String XML_HADOOP_MAPRED_HOST = "hostMapred";
+	    public static final String XML_HADOOP_MAPRED_PORT = "portMapred";
+		
+		public static final String XML_USERNAME_ATTRIBUTE = "username";
+		public static final String XML_PASSWORD_ATTRIBUTE = "password";
+		public static final String XML_PASSWORD_ENCRYPTED = "passwordEncrypted";
+		
+		public static final String LIB_PATH_SEPARATOR = ";";
 
-	public static final String HADOOP_CONNECTION_PROVIDER_CLASS = "org.jetel.component.hadooploader.HadoopConnectionInstance";
-	public static final String HADOOP_MAPREDUCE_PROVIDER_CLASS = "org.jetel.component.hadooploader.HadoopMapReduceJobSender";
-	public static final String HADOOP_CONNECTION_PROVIDER_JAR = "./lib/cloveretl.component.hadooploader.jar";
+		public static final String HADOOP_DEFAULT_HDFS_PORT = "8020";
+		public static final String HADOOP_DEFAULT_MAPRED_PORT = "8021";
+		public static final String HADOOP_URI_STR_FORMAT = "hdfs://%s:%s/";
+		public static final String CONNECTION_TYPE_ID = "HADOOP";
+		
+		private String user;
+		private String pwd;
+		private String host;
+		private String hostMapred;
+		private String port;
+		private String portMapred;
+		private String password;
+		private boolean passwordEncrypt;
+		
+		private Properties properties;
+		private ClassLoader classLoader;
+		private URL[] loaderJars;
+		private String hadoopCoreJar;
+		private String hadoopParameters;
+		private URL hadoopModuleImplementationPath;
+		private IHadoopConnection connection;
+		
+		/** relative paths (in XML_HADOOP_CORE_LIBRARY_ATTRIBUTE property) are within this context; used from Designer */
+		private URL contextURL;
+		
+		
+		public HadoopConnection(String id, String host, String port,
+				String user, String pwd, boolean passwordEncrypt, String hadoopCoreJar,Properties properties) {
+			super(id);
+			setName(id);
+			this.host=host;
+			this.port=port;
+			this.user = user;
+			this.pwd = pwd;
+			this.passwordEncrypt = passwordEncrypt;
+			this.hadoopCoreJar = hadoopCoreJar;
+			this.properties=properties;
+		}
+		
+		
+		public HadoopConnection(String id){
+			super(id);
+			setName(id);
+		}
+		
+		private static Properties readConfig(URL contextURL, String cfgFile, TransformationGraph graph) {
+			Properties config = new Properties();
+			try {
+	            InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, cfgFile));
+				config.load(stream);
+				stream.close();
+			} catch (Exception ex) {
+				throw new RuntimeException("Config file for Hadoop connection not found (" + cfgFile +")", ex);
+			}
+			(new PropertyRefResolver(graph.getGraphProperties())).resolveAll(config);
+			return config;
+		}
 
-	public static final String LIB_PATH_SEPARATOR = ";";
 
-	// XML key constants
-	public static final String HADOOP_CONFIG_KEY = "config";
-	public static final String HADOOP_CORE_LIBRARY_KEY = "hadoopJar";
-	public static final String HADOOP_CUSTOM_PARAMETERS_KEY = "hadoopParams";
-	public static final String HADOOP_FS_HOST_KEY = "host";
-	public static final String HADOOP_FS_PORT_KEY = "port";
-	public static final String HADOOP_MAPRED_HOST_KEY = "hostMapred";
-	public static final String HADOOP_MAPRED_PORT_KEY = "portMapred";
-	public static final String HADOOP_USER_NAME_KEY = "username";
-	public static final String HADOOP_PASSWORD_KEY = "password";
-	public static final String HADOOP_PASSWORD_ENCRYPTED_KEY = "passwordEncrypted";
+		@Override
+		synchronized public void init() throws ComponentNotReadyException {
+			if (isInitialized()) return;
+			super.init();
 
-	public static final String[] HADOOP_USED_PROPERTIES_KEYS = new String[] { HADOOP_FS_HOST_KEY, HADOOP_FS_PORT_KEY,
-			HADOOP_MAPRED_HOST_KEY, HADOOP_MAPRED_PORT_KEY, HADOOP_USER_NAME_KEY, HADOOP_PASSWORD_KEY };
-
-	private static Log logger = LogFactory.getLog(HadoopConnection.class);
-
-	// default connection settings constants
-	public static final Map<String, Object> PROPERTIES_DEFAULT = Collections
-			.unmodifiableMap(new HashMap<String, Object>() {
-				{
-					put(HADOOP_FS_PORT_KEY, 8020);
-					put(HADOOP_MAPRED_PORT_KEY, 8021);
+			initExternal(); // must be called first
+			
+			// init properties - additional Hadoop config parameters
+			try {
+				if (!StringUtils.isEmpty(this.hadoopParameters)) {
+					Properties prop=PropertiesUtils.parseProperties(this.hadoopParameters);
+				if (this.properties == null)
+					this.properties = prop;
+				else
+					this.properties.putAll(prop);
 				}
-			});
-	public static final String CONNECTION_TYPE_ID = "HADOOP";
-	public static final String HADOOP_URI_STR_FORMAT = "hdfs://%s:%s/";
+			} catch (Exception ex) {
+				logger.debug(ex);
+			} 
+		
 
-	// values of user inputs for the connection
-	private boolean encryptPassword;
-	private String hadoopCoreJar;
-	private Properties prop;
+			initPassword();
+			initClassLoading();
+					
+		}
+			
 
-	// if the connection is loaded or linked this holds configuration location
-	private String configurationLocation;
+		public void close(){
+			if (connection!=null){
+				try{
+					connection.close();
+				}catch(Exception ex){
+					// do nothing
+				}
+				connection=null;
+			}
+		}
+		
+		private void initExternal() throws ComponentNotReadyException {
+			if (this.properties!=null && this.properties.isEmpty() ) {
+				loadFromTypedProperties(new TypedProperties(this.properties));
+			}else{
+				if (StringUtils.isEmpty(this.host))
+				throw new ComponentNotReadyException(this,"Can not initialize from external config file - file is empty");
+			}
+		}
+		
+		private void initPassword() throws ComponentNotReadyException {
+			if (!passwordEncrypt) {
+				return;
+			}
 
-	// services of Hadoop file system and map/reduce API
-	private IHadoopConnection fsConnection;
-	private IHadoopMapReduceJobSender mapReduceJobSender;
+			Enigma enigma = getGraph().getEnigma();
+			if (enigma == null) {
+				throw new ComponentNotReadyException(this,"Can't decrypt password on HadoopConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+			}
 
-	// relative paths (in XML_HADOOP_CORE_LIBRARY_ATTRIBUTE property) are within this context; used from Designer
-	private URL contextURL;
+			String decryptedPassword = null;
+			try {
+				decryptedPassword = enigma.decrypt(password);
+			} catch (JetelException e) {
+				throw new ComponentNotReadyException(this,"Can't decrypt password on HadoopConnection (id=" + this.getId() + "). Incorrect password.", e);
+			}
+			// If password decryption fails, try to use the unencrypted password
+			if (decryptedPassword != null) {
+				password = decryptedPassword;
+				passwordEncrypt = false;
+			}
+		}
+		
+		
+		@Override
+		synchronized public void free() {
+	        if(!isInitialized()) return;
+	        super.free();
 
-	/**
-	 * Description of the Method
-	 * 
-	 * @param nodeXML
-	 *            Description of the Parameter
-	 * @return Description of the Return Value
-	 * @throws Exception
-	 */
-	public static HadoopConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
-		try {
-			if (xattribs.exists(HADOOP_CONFIG_KEY)) {
-				return new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(HADOOP_CONFIG_KEY));
+	        try {
+	        	if (connection != null)
+	        		connection.close();
+	        	connection = null;
+			} catch (IOException e1) {
+				// ignore it, the connection is probably already closed
+			}
+		}
+
+
+
+		@Override
+		public synchronized void preExecute() throws ComponentNotReadyException {
+			super.preExecute();
+			if (firstRun()) {
+				init();
 			} else {
-				HadoopConnection con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE), null);
-				try {
-					con.setConnectionParameters(xattribs.attributes2Properties(new String[0]));
-				} catch (ComponentNotReadyException ex) {
-					throw new XMLConfigurationException("Hadoop connection " + con.getId() + " could not be loaded "
-							+ "from XML. Required attribute probably missing.", ex);
+				if (getGraph().getRuntimeContext().isBatchMode()) {
+					init();
 				}
-				return con;
-			}
-		} catch (AttributeNotFoundException ex) {
-			throw new XMLConfigurationException("HadoopConnection: "
-					+ xattribs.getString(XML_ID_ATTRIBUTE, "unknown ID") + ":" + ex.getMessage(), ex);
-		}
-	}
-
-	public HadoopConnection(String id) {
-		this(id, null);
-	}
-
-	protected HadoopConnection(String id, String configurationFileLocation) {
-		super(id);
-		this.configurationLocation = configurationFileLocation;
-	}
-
-	// Must fail atomically!
-	private void setConnectionParameters(Properties propertiesToSet) throws ComponentNotReadyException {
-		if (!propertiesToSet.containsKey(HADOOP_FS_HOST_KEY)) {
-			throw new ComponentNotReadyException(
-					"Cannot initialize Hadoop connection, Hadoop file system host is missing.");
-		}
-		if (!propertiesToSet.containsKey(HADOOP_CORE_LIBRARY_KEY)) {
-			throw new ComponentNotReadyException(
-					"Cannot initialize Hadoop connection, Hadoop .jar libraries are missing.");
-		}
-		// store in local variable first to ensure atomic fail
-		Properties localCopy = new Properties();
-		for (String key : HADOOP_USED_PROPERTIES_KEYS) {
-			if (propertiesToSet.containsKey(key)) {
-				localCopy.setProperty(key, propertiesToSet.get(key) == null ? null : propertiesToSet.get(key)
-						.toString());
-			} else if (PROPERTIES_DEFAULT.containsKey(key)) {
-				localCopy.setProperty(key, PROPERTIES_DEFAULT.get(key).toString());
 			}
 		}
-
-		// parse addition properties
-		String additionalParams = propertiesToSet.getProperty(HADOOP_CUSTOM_PARAMETERS_KEY, null);
-		if (additionalParams != null && !additionalParams.isEmpty()) {
-			Properties additionalProp = PropertiesUtils.parseProperties(additionalParams);
-			if (additionalProp != null) {
-				localCopy.putAll(additionalProp);
-			}
-		}
-		// set up this instance
-		encryptPassword = Boolean.parseBoolean(propertiesToSet.getProperty(HADOOP_PASSWORD_ENCRYPTED_KEY,
-				String.valueOf(false)));
-		hadoopCoreJar = propertiesToSet.getProperty(HADOOP_CORE_LIBRARY_KEY);
-		setName(propertiesToSet.getProperty(XML_NAME_ATTRIBUTE, getId()));
-		this.prop = localCopy;
-	}
-
-	@Override
-	public synchronized void init() throws ComponentNotReadyException {
-		if (isInitialized()) {
-			logger.debug("HadoopConnection has been initialized twice or more times. Not neccessary.");
-			return;
-		}
-		super.init();
-
-		if (configurationLocation != null) {
-			initConnFromProperties(readFileToProperties(configurationLocation), getGraph().getGraphProperties());
-		}
-		if (encryptPassword && getPassword() != null) {
+		
+		@Override
+		public synchronized void postExecute() throws ComponentNotReadyException {
+			super.postExecute();
 			try {
-				setPassword(decryptPassword(getPassword()));
-			} catch (JetelException ex) {
-				throw new ComponentNotReadyException(this, "Cannot decrypt encrypted user password of "
-						+ "Hadoop connection (id=" + getId() + ").", ex);
+				if (getGraph().getRuntimeContext().isBatchMode()) {
+					if (connection !=null) connection.close();
+					connection = null;
+				} else { //for now no difference between batch & non-batch
+					if (connection !=null) connection.close();
+					connection = null;
+				}
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
 			}
 		}
-
-		fsConnection = initLoadLibrariesAndCreateFsProvider();
-	}
-
-	public void initConnFromProperties(Properties initProperties, Properties graphProperties)
-			throws ComponentNotReadyException {
-		if (initProperties == null) {
-			throw new NullPointerException("initProperties");
-		}
-		Properties localPropCopy = new Properties();
-		localPropCopy.putAll(initProperties);
-		new PropertyRefResolver(graphProperties).resolveAll(localPropCopy);
-		setConnectionParameters(localPropCopy);
-	}
-
-	private Properties readFileToProperties(String configFileLocation) {
-		Properties config = new Properties();
-		URL contextURL = getGraph().getRuntimeContext().getContextURL();
-		InputStream stream = null;
-		try {
-			stream = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, configFileLocation));
-			config.load(stream);
-		} catch (IOException ex) {
-			throw new RuntimeException("Configuration file for Hadoop connection not found (" + configFileLocation
-					+ ") or could not be read.", ex);
-		} finally {
-			if (stream != null) {
+	
+		
+		/**
+		 * Get Hadoop filesystem to which this connection is attached.
+		 * 
+		 * @return Hadoop distributed filesystem object
+		 */
+		public IHadoopConnection getConnection() throws IOException, ComponentNotReadyException {
+			if(connection ==null){
 				try {
-					stream.close();
-				} catch (IOException ex) {
-					logger.warn("Could not close configuration file for Hadoop connection (" + configFileLocation
-							+ ").", ex);
+					connection = instantiateConnection();
+					URI hURI=new URI(String.format(HADOOP_URI_STR_FORMAT, this.host, this.port));
+					if (!StringUtils.isEmpty(this.user)){
+						connection.connect(hURI, this.properties, this.user);
+					}else{
+						connection.connect(hURI, this.properties);
+					}
+				} catch (HadoopConnectionException e) {
+					throw new ComponentNotReadyException(this,e);
+				} catch (URISyntaxException e) {
+					throw new IOException("Invalid HDFS host/port definition.",e);
+				} catch (Throwable e){
+					throw new ComponentNotReadyException(this,"Can't instantiate Hadoop connection",e);
 				}
 			}
-		}
-		return config;
-	}
+			return connection;
 
-	protected String decryptPassword(String encryptedPasword) throws JetelException {
-		if (encryptedPasword == null) {
-			throw new NullPointerException("encryptedPasword");
 		}
-		Enigma enigma = getGraph().getEnigma();
-		if (enigma == null) {
-			throw new JetelException("Can't decrypt password of HadoopConnection (id=" + getId()
-					+ "). Please set the decryption password as engine parameter -pass.");
+		
+		
+		@Override
+		public DataRecordMetadata createMetadata(Properties parameters) {
+			throw new UnsupportedOperationException("Hadoop connection doesn't support operation 'createMetadata()'");
 		}
 
-		String decryptedPassword;
-		try {
-			decryptedPassword = enigma.decrypt(encryptedPasword);
-		} catch (JetelException ex) {
-			throw new JetelException("Can't decrypt password of HadoopConnection (id=" + getId()
-					+ "). Probably incorrect decryption password (engine parameter -pass) .", ex);
-		}
-		if (decryptedPassword == null || decryptedPassword.isEmpty()) {
-			throw new JetelException("Can't decrypt password of HadoopConnection (id=" + getId() + ").");
-		}
-		return decryptedPassword;
-	}
-
-	private IHadoopConnection initLoadLibrariesAndCreateFsProvider() throws ComponentNotReadyException {
-		List<URL> providerClassPath = new ArrayList<URL>();
-
-		if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
-			String urls[] = parseHadoopJarsList(hadoopCoreJar);
-			for (String url : urls) {
-				try {
-					URL hadoopJar = FileUtils.getFileURL(contextURL, url);
-					providerClassPath.add(hadoopJar);
-				} catch (MalformedURLException ex) {
-					throw new ComponentNotReadyException("Cannot load library from '" + url + "'", ex);
-				}
-			}
+		@Override
+		public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+	        super.checkConfig(status);
+	        try{
+	        //  do not try to connecti.	
+	        //	init();
+	        //	connection.close();
+	        }catch(Exception ex){
+	        	status.add(new ConfigurationProblem("Error: "+ex.getMessage(), Severity.ERROR, this, Priority.NORMAL));
+	        }
+			return status;
 		}
 
-		try {
-			providerClassPath.add(ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor()
-					.getURL(HADOOP_CONNECTION_PROVIDER_JAR));
-			System.err.println(ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor()
-					.getURL(HADOOP_CONNECTION_PROVIDER_JAR));
-		} catch (MalformedURLException e) {
-			throw new ComponentNotReadyException("Incorrect file format for hadoop libraries", e);
-		}
-
-		// TODO if node is unreachable?
-		ClassLoader classLoader = providerClassPath.size() == 0 ?
-		/* for running in server where all jars are available on class path */getClass().getClassLoader()
-				: new GreedyURLClassLoader(providerClassPath.toArray(new URL[0]), getClass().getClassLoader());
-
-		try {
-			Class<?> hadoopImplementationClass = classLoader.loadClass(HADOOP_CONNECTION_PROVIDER_CLASS);
-			return (IHadoopConnection) hadoopImplementationClass.newInstance();
-		} catch (RuntimeException ex) {
-			throw ex; // runtime exceptions are not to be changed to ComponentNotReadyException
-		} catch (Exception ex) {
-			throw new ComponentNotReadyException(
-					"Internal Error. (Could not find CloverETL Hadoop Implementation module.)", ex);
-		}
-	}
-
-	public static String[] parseHadoopJarsList(String jarsList) {
-		if (jarsList == null) {
-			return null;
-		}
-		return jarsList.split(LIB_PATH_SEPARATOR);
-	}
-
-	// TODO rename to getFsProvider
-	public IHadoopConnection getConnection() throws IOException {
-		if (fsConnection == null) {
-			throw new IllegalStateException("File system provider is not ready. Method init() must be called "
-					+ "on this instance first. Instance: " + this);
-		}
-		URI hURI;
-		try {
-			hURI = new URI(String.format(HADOOP_URI_STR_FORMAT, getFsHost(), getFsPort()));
-		} catch (URISyntaxException ex) {
-			throw new RuntimeException("Invalid Hadoop file system host/port definition.", ex);
-		}
-
-		// TODO translate properties keys using mapping from properties bundle
-		if (!fsConnection.connect(hURI, this.prop, getUser())) {
-			throw new IOException("Could not connect to hadoop file system at " + hURI);
-		}
-		return fsConnection;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception. ConfigurationStatus)
-	 */
-	@Override
-	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		return super.checkConfig(status);
-	}
-
-	@Override
-	public synchronized void preExecute() throws ComponentNotReadyException {
-		super.preExecute();
-		if (firstRun() || getGraph().getRuntimeContext().isBatchMode()) {
-			init();
-		}
-	}
-
-	@Override
-	public synchronized void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
-		try {
-			if (getGraph().getRuntimeContext().isBatchMode()) {
-				close();
-			} else { // for now no difference between batch & non-batch
-				close();
-			}
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#free()
-	 */
-	@Override
-	public synchronized void free() {
-		if (isInitialized()) {
-			super.free();
+			
+		/**
+		 *  Description of the Method
+		 *
+		 * @param  nodeXML  Description of the Parameter
+		 * @return          Description of the Return Value
+		 * @throws XMLConfigurationException 
+		 */
+		public static HadoopConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+			ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+			HadoopConnection con;
 			try {
-				close();
-			} catch (IOException ex) {
-				logger.warn("There was a problem closing HDFS connection. The cluster might be disconected "
-						+ "or it could be already closed.", ex);
+				if (xattribs.exists(XML_CONFIG_ATTRIBUTE)) {
+					// TODO move readConfig() to init() method - fromXML shouldn't read anything from external files
+					Properties config = readConfig(graph.getRuntimeContext().getContextURL(), 
+							xattribs.getString(XML_CONFIG_ATTRIBUTE), graph);
+					
+					TypedProperties prop = new TypedProperties(config, graph);
+					
+					con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE),
+							prop.getStringProperty(XML_HADOOP_HDFS_HOST), 
+							prop.getStringProperty(XML_HADOOP_HDFS_PORT, HADOOP_DEFAULT_HDFS_PORT),
+							prop.getStringProperty(XML_USERNAME_ATTRIBUTE, null),
+							prop.getStringProperty(XML_PASSWORD_ATTRIBUTE, null),
+							prop.getBooleanProperty(XML_PASSWORD_ENCRYPTED, false), 
+							prop.getStringProperty(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE, null),prop);
+					
+					if (prop.containsKey(XML_NAME_ATTRIBUTE))
+						con.setName(prop.getStringProperty(XML_NAME_ATTRIBUTE));
+					
+					if (prop.containsKey(XML_HADOOP_PARAMETERS))
+						con.setHadoopParams(prop.getStringProperty(XML_HADOOP_PARAMETERS));
+					
+					if (prop.containsKey(XML_HADOOP_MAPRED_HOST))
+						con.setHostMapred(prop.getStringProperty(XML_HADOOP_MAPRED_HOST));
+					
+					if (prop.containsKey(XML_HADOOP_MAPRED_PORT))
+						con.setPortMapred(prop.getStringProperty(XML_HADOOP_MAPRED_PORT));
+					
+				} else {
+					con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE),
+							xattribs.getString(XML_HADOOP_HDFS_HOST),
+							xattribs.getString(XML_HADOOP_HDFS_PORT,HADOOP_DEFAULT_HDFS_PORT),
+							xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
+							xattribs.getString(XML_PASSWORD_ATTRIBUTE, null),
+							xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false),
+							xattribs.getString(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE, null),
+							xattribs.attributes2Properties(new String[]{XML_HADOOP_HDFS_HOST, XML_HADOOP_HDFS_PORT}, RefResFlag.REGULAR));
+					
+					if (xattribs.exists(XML_NAME_ATTRIBUTE))
+						con.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
+					
+					if (xattribs.exists(XML_HADOOP_PARAMETERS))
+						con.setHadoopParams(xattribs.getString(XML_HADOOP_PARAMETERS));
+					
+					if (xattribs.exists(XML_HADOOP_MAPRED_HOST))
+						con.setHostMapred(xattribs.getString(XML_HADOOP_MAPRED_HOST));
+					
+					if (xattribs.exists(XML_HADOOP_MAPRED_PORT))
+						con.setPortMapred(xattribs.getString(XML_HADOOP_MAPRED_PORT));
+				}
+				
+				
+			} catch (Exception e) {
+	            throw new XMLConfigurationException("HadoopConnection: " 
+	            		+ xattribs.getString(XML_ID_ATTRIBUTE, "unknown ID") + ":" + e.getMessage(), e);
+			}
+
+			
+			
+			return con;
+		}
+		
+		public String getUser() {
+			return user;
+		}
+
+		public void setUser(String user) {
+			this.user = user;
+		}
+
+
+		public String getPwd() {
+			return pwd;
+		}
+
+
+		public void setPwd(String pwd) {
+			this.pwd = pwd;
+		}
+
+
+		public String getHost() {
+			return host;
+		}
+
+
+		public void setHost(String host) {
+			this.host = host;
+		}
+
+
+		public String getPort() {
+			return port;
+		}
+
+
+		public void setPort(String port) {
+			this.port = port;
+		}
+
+
+		public String getHostMapred() {
+			return hostMapred;
+		}
+
+
+		public void setHostMapred(String hostMapred) {
+			this.hostMapred = hostMapred;
+		}
+
+
+		public String getPortMapred() {
+			return portMapred;
+		}
+
+
+		public void setPortMapred(String portMapred) {
+			this.portMapred = portMapred;
+		}
+
+
+		public String getPassword() {
+			return password;
+		}
+
+
+		public void setPassword(String password) {
+			this.password = password;
+		}
+
+
+		public boolean isPasswordEncrypt() {
+			return passwordEncrypt;
+		}
+
+
+		public void setPasswordEncrypt(boolean passwordEncrypt) {
+			this.passwordEncrypt = passwordEncrypt;
+		}
+		
+		public void setHadoopParams(String params){
+			this.hadoopParameters=params;
+		}
+		
+		public String getHadoopParams(){
+			return this.hadoopParameters;
+		}
+		
+		public URL getHadoopModuleImplementationPath() {
+			return hadoopModuleImplementationPath;
+		}
+
+
+		public void setHadoopModuleImplementationPath(URL hadoopModuleImplementationPath) {
+			this.hadoopModuleImplementationPath = hadoopModuleImplementationPath;
+		}
+
+		
+		public void loadFromProperties(Properties properties, Properties refProperties) throws ComponentNotReadyException {
+			loadFromTypedProperties(new TypedProperties(properties,refProperties));
+		}
+		
+		private void loadFromTypedProperties(TypedProperties properties) throws ComponentNotReadyException {
+			this.host=properties.getStringProperty(XML_HADOOP_HDFS_HOST);
+			this.port=properties.getStringProperty(XML_HADOOP_HDFS_PORT, HADOOP_DEFAULT_HDFS_PORT);
+			this.user=properties.getStringProperty(XML_HADOOP_USER,null);
+			this.hostMapred=properties.getStringProperty(XML_HADOOP_MAPRED_HOST,null);
+			this.portMapred=properties.getStringProperty(XML_HADOOP_MAPRED_PORT, HADOOP_DEFAULT_MAPRED_PORT);
+			
+			if (!properties.containsKey(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE))
+				throw new ComponentNotReadyException("Hadoop core library jar not defined.");
+				
+			this.hadoopCoreJar=properties.getStringProperty(XML_HADOOP_CORE_LIBRARY_ATTRIBUTE);
+			this.password=properties.getStringProperty(XML_PASSWORD_ATTRIBUTE);
+			this.passwordEncrypt=properties.getBooleanProperty(XML_PASSWORD_ENCRYPTED, false);
+			this.hadoopParameters=properties.getStringProperty(XML_HADOOP_PARAMETERS,null);
+			
+		}
+		
+		
+		private void initClassLoader() {
+			if (classLoader != null) {
+				return;
+			}
+			
+			if (loaderJars==null || loaderJars.length == 0) {
+				// for running in server where all jars are available on class path
+				classLoader = getClass().getClassLoader();
+			}
+			else {
+				classLoader = new GreedyURLClassLoader(loaderJars, getClass().getClassLoader());
 			}
 		}
-	}
+		
+		private void initClassLoading() throws ComponentNotReadyException {
+			List<URL> additionalJars = new ArrayList<URL>();
 
-	protected void close() throws IOException {
-		if (fsConnection != null) {
-			fsConnection.close();
-		}
-		fsConnection = null;
-	}
-
-	@Override
-	public DataRecordMetadata createMetadata(Properties parameters) {
-		throw new UnsupportedOperationException("Hadoop connection doesn't support operation 'createMetadata()'");
-	}
-
-	public String getUser() {
-		return prop.getProperty(HADOOP_USER_NAME_KEY, null);
-	}
-
-	public String getPassword() {
-		return getPassword(prop);
-	}
-
-	protected static String getPassword(Properties prop) {
-		return prop.getProperty(HADOOP_PASSWORD_KEY, null);
-	}
-
-	private void setPassword(String newPassword) {
-		prop.setProperty(HADOOP_PASSWORD_KEY, newPassword);
-	}
-
-	public String getFsHost() {
-		return prop.getProperty(HADOOP_FS_HOST_KEY);
-	}
-
-	public int getFsPort() {
-		return Integer.parseInt(prop.getProperty(HADOOP_FS_PORT_KEY));
-	}
-
-<<<<<<< .working
 			if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
 				String[] urls = parseHadoopJarsList(hadoopCoreJar);
 				for (String url:urls){
@@ -435,25 +534,36 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					additionalJars.add(hadoopJar);
 				}
 			}
-=======
-	public String getMapredHost() {
-		return prop.getProperty(HADOOP_MAPRED_HOST_KEY, null);
-	}
->>>>>>> .merge-right.r13194
 
-	public int getMapredPort() {
-		return Integer.parseInt(prop.getProperty(HADOOP_MAPRED_PORT_KEY));
-	}
+			ClassLoader thisClassLoader = this.getClass().getClassLoader();
 
-	public boolean isEncryptPassword() {
-		return encryptPassword;
-	}
+			if (thisClassLoader instanceof PluginClassLoader) {
+				PluginClassLoader thisPluginClassLoader = (PluginClassLoader) thisClassLoader;
+				try {
+					additionalJars.add(thisPluginClassLoader.getPluginDescriptor()
+							.getURL(HADOOP_CONNECTION_IMPLEMENTATION_JAR));
+				} catch (MalformedURLException e1) {
+					throw new ComponentNotReadyException(e1);
+				}
+			} else if (hadoopModuleImplementationPath != null) {
+				additionalJars.add(hadoopModuleImplementationPath);
+			} else {
+				try {
+					additionalJars.add(ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor().
+						getURL(HADOOP_CONNECTION_IMPLEMENTATION_JAR));
+				} catch (MalformedURLException e) {
+					throw new ComponentNotReadyException(e);
+				}
+			}
+			
+			if (additionalJars.size() == 0) {
+				throw new ComponentNotReadyException(ERROR_LOADING_IMPL_MOD);
+			}
 
-	public URL getContextURL() {
-		return contextURL;
-	}
+			loaderJars = (URL[]) additionalJars.toArray(new URL[0]);
+		}
 
-<<<<<<< .working
+
 		public static String[] parseHadoopJarsList(String jarsList) {
 			if (jarsList == null) {
 				return null;
@@ -497,8 +607,3 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		}
 
 }
-=======
-	public void setContextURL(URL contextURL) {
-		this.contextURL = contextURL;
-	}
-}>>>>>>> .merge-right.r13194
