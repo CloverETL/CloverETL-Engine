@@ -19,7 +19,6 @@
 package org.jetel.hadoop.component;
 
 import java.io.IOException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -47,12 +46,11 @@ import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
-* @author David Pavlis (info@cloveretl.com)
-*         (c) Javlin a.s. (www.javlin.eu)
-* 
-* @since 	
-* @revision    $Revision: $ 
-*/
+ * @author David Pavlis (info@cloveretl.com) (c) Javlin a.s. (www.javlin.eu)
+ * 
+ * @since
+ * @revision $Revision: $
+ */
 
 public class HadoopReader extends Node {
 
@@ -85,7 +83,7 @@ public class HadoopReader extends Node {
 	private int numSourceRecords = -1;
 	private String incrementalFile;
 	private String incrementalKey;
-	
+
 	private String keyFieldName;
 	private String valueFieldName;
 
@@ -102,12 +100,12 @@ public class HadoopReader extends Node {
 	 * @param fileURL
 	 *            Description of the Parameter
 	 */
-	public HadoopReader(String id, String fileURL,String connectionID,String keyFieldName, String valueFieldName) {
+	public HadoopReader(String id, String fileURL, String connectionID, String keyFieldName, String valueFieldName) {
 		super(id);
 		this.fileURL = fileURL;
-		this.connectionID=connectionID;
-		this.keyFieldName=keyFieldName;
-		this.valueFieldName=valueFieldName;
+		this.connectionID = connectionID;
+		this.keyFieldName = keyFieldName;
+		this.valueFieldName = valueFieldName;
 	}
 
 	@Override
@@ -150,35 +148,34 @@ public class HadoopReader extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-    	try {
+		try {
 			reader.postExecute();
-		}
-		catch (ComponentNotReadyException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+		} catch (ComponentNotReadyException e) {
+			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
 		}
 	}
 
 	@Override
 	public void commit() {
 		super.commit();
-		//TODO: storeValues();
+		// TODO: storeValues();
 	}
 
 	@Override
 	public synchronized void free() {
 		super.free();
-			try {
-				if (reader != null){
-					reader.free();
-					reader=null;
-				}
-				if (connection!=null) {
-					connection.close();
-					connection=null;
-				}
-			} catch(Throwable t) {
-				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+		try {
+			if (reader != null) {
+				reader.free();
+				reader = null;
 			}
+			if (connection != null) {
+				connection.free();
+				connection = null;
+			}
+		} catch (Throwable t) {
+			logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+		}
 	}
 
 	/**
@@ -186,8 +183,7 @@ public class HadoopReader extends Node {
 	 */
 	private void storeValues() {
 		try {
-			Object dictValue = getGraph().getDictionary().getValue(
-					Defaults.INCREMENTAL_STORE_KEY);
+			Object dictValue = getGraph().getDictionary().getValue(Defaults.INCREMENTAL_STORE_KEY);
 			if (dictValue != null && dictValue == Boolean.FALSE) {
 				return;
 			}
@@ -209,48 +205,45 @@ public class HadoopReader extends Node {
 		if (isInitialized())
 			return;
 		super.init();
-		if(connection==null)
+		if (connection == null)
 			prepareConnection();
 		prepareMultiFileReader();
 	}
 
-	
-	private void prepareConnection() throws ComponentNotReadyException{
+	private void prepareConnection() throws ComponentNotReadyException {
 		IConnection conn = getGraph().getConnection(connectionID);
 		if (conn == null) {
-			throw new ComponentNotReadyException(this,"Can't find HadoopConnection ID: " + connectionID);
+			throw new ComponentNotReadyException(this, "Can't find HadoopConnection ID: " + connectionID);
 		}
 		if (!(conn instanceof HadoopConnection)) {
-			throw new ComponentNotReadyException(this,"Connection with ID: " + connectionID + " isn't instance of the HadoopConnection class - "+conn.getClass().toString());
+			throw new ComponentNotReadyException(this, "Connection with ID: " + connectionID
+					+ " isn't instance of the HadoopConnection class - " + conn.getClass().toString());
 		}
-		
-		logger.debug(String.format("Connecting to HDFS via [%s].",conn.getId()));
-		
+
+		logger.debug(String.format("Connecting to HDFS via [%s].", conn.getId()));
+
 		conn.init();
-		this.connection= (HadoopConnection)conn;
+		this.connection = (HadoopConnection) conn;
 	}
-	
-	
+
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
 		TransformationGraph graph = getGraph();
-		
-		if (connection==null)
+
+		if (connection == null)
 			prepareConnection();
-		
+
 		try {
 			parser = connection.getConnection().createParser(this.keyFieldName, this.valueFieldName, metadata);
 		} catch (IOException e) {
-			throw new ComponentNotReadyException(this,e);
+			throw new ComponentNotReadyException(this, e);
 		}
-		
+
 		parser.setGraph(graph);
 		parser.setExceptionHandler(exceptionHandler);
 
-
 		// initialize multifile reader based on prepared parser
-		reader = new MultiFileReader(parser, graph != null ? graph
-				.getRuntimeContext().getContextURL() : null, fileURL);
+		reader = new MultiFileReader(parser, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
 		reader.setLogger(logger);
 		reader.setSkip(skipRows);
 		reader.setNumSourceRecords(numSourceRecords);
@@ -271,8 +264,7 @@ public class HadoopReader extends Node {
 		reader.setInputPort(getInputPort(INPUT_PORT)); // for port protocol:
 														// ReadableChannelIterator
 														// reads data
-		reader.setPropertyRefResolver(new PropertyRefResolver(graph
-				.getGraphProperties()));
+		reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
 		reader.setDictionary(graph.getDictionary());
 		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
@@ -283,74 +275,59 @@ public class HadoopReader extends Node {
 
 		xmlElement.setAttribute(XML_KEY_FIELD_NAME_ATTRIBUTE, this.keyFieldName);
 		xmlElement.setAttribute(XML_VALUE_FIELD_NAME_ATTRIBUTE, this.valueFieldName);
-		
+
 		PolicyType policyType = this.parser.getPolicyType();
 		if (policyType != null) {
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE,
-					policyType.toString());
+			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
 		}
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, this.fileURL);
 		if (skipRows != 0) {
-			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE,
-					String.valueOf(skipRows));
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skipRows));
 		}
 		if (numRecords != 0) {
-			xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE,
-					String.valueOf(numRecords));
+			xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE, String.valueOf(numRecords));
 		}
 	}
 
-	public static Node fromXML(TransformationGraph graph, Element xmlElement)
-			throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		HadoopReader hadoopReader = null;
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(
-				xmlElement, graph);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		try {
-			
-			hadoopReader = new HadoopReader(
-						xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILEURL_ATTRIBUTE),
-						xattribs.getString(XML_CONNECTION_ATTRIBUTE),
-						xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
-						xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE));
-			
+
+			hadoopReader = new HadoopReader(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_FILEURL_ATTRIBUTE), xattribs.getString(XML_CONNECTION_ATTRIBUTE),
+					xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
+					xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE));
+
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-				hadoopReader.setPolicyType(xattribs
-						.getString(XML_DATAPOLICY_ATTRIBUTE));
+				hadoopReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
 			} else {
 				// default policy type
 				hadoopReader.setPolicyType(PolicyType.STRICT);
 			}
 			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
-				hadoopReader.setSkipRows(xattribs
-						.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
+				hadoopReader.setSkipRows(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)) {
-				hadoopReader.setNumRecords(xattribs
-						.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+				hadoopReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-				hadoopReader.setIncrementalFile(xattribs.getStringEx(
-						XML_INCREMENTAL_FILE_ATTRIBUTE,
+				hadoopReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,
 						RefResFlag.SPEC_CHARACTERS_OFF));
 			}
 			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
-				hadoopReader.setIncrementalKey(xattribs
-						.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+				hadoopReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)) {
-				hadoopReader.setSkipSourceRows(xattribs
-						.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
+				hadoopReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)) {
-				hadoopReader.setNumSourceRecords(xattribs
-						.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+				hadoopReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":"
-					+ xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ")
-					+ ":" + ex.getMessage(), ex);
+					+ xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
 		}
 
 		return hadoopReader;
@@ -365,39 +342,40 @@ public class HadoopReader extends Node {
 		exceptionHandler = handler;
 	}
 
-    @Override
-    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        super.checkConfig(status);
-        
-        if(!checkInputPorts(status, 0, 1)
-        		|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
-        	return status;
-        }
-        
-        checkMetadata(status, getOutMetadata());
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
 
-        try { 
-            // check inputs
-            prepareMultiFileReader();
-            DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
-    		if (!metadata.hasFieldWithoutAutofilling()) {
-    			status.add(new ConfigurationProblem(
-                		"No field elements without autofilling for '" + getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!", 
-                		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
-    		}
-            reader.checkConfig(metadata);
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        } finally {
-        	free();
-        }
-        
-        return status;
-    }
+		if (!checkInputPorts(status, 0, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+			return status;
+		}
+
+		checkMetadata(status, getOutMetadata());
+
+		try {
+			// check inputs
+			prepareMultiFileReader();
+			DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
+			if (!metadata.hasFieldWithoutAutofilling()) {
+				status.add(new ConfigurationProblem("No field elements without autofilling for '"
+						+ getOutputPort(OUTPUT_PORT).getMetadata().getName() + "' have been found!",
+						ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			}
+			reader.checkConfig(metadata);
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
+					ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+			if (!StringUtils.isEmpty(e.getAttributeName())) {
+				problem.setAttributeName(e.getAttributeName());
+			}
+			status.add(problem);
+		} finally {
+			free();
+		}
+
+		return status;
+	}
+
 	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
@@ -416,14 +394,16 @@ public class HadoopReader extends Node {
 	}
 
 	/**
-	 * @param skipSourceRows how many rows to skip for every source
+	 * @param skipSourceRows
+	 *            how many rows to skip for every source
 	 */
 	public void setSkipSourceRows(int skipSourceRows) {
 		this.skipSourceRows = Math.max(skipSourceRows, 0);
 	}
 
 	/**
-	 * @param numSourceRecords how many rows to process for every source
+	 * @param numSourceRecords
+	 *            how many rows to process for every source
 	 */
 	public void setNumSourceRecords(int numSourceRecords) {
 		this.numSourceRecords = Math.max(numSourceRecords, 0);
@@ -435,8 +415,7 @@ public class HadoopReader extends Node {
 
 	public void setPolicyType(PolicyType policyType) {
 		this.policyType = policyType;
-		setExceptionHandler(ParserExceptionHandlerFactory
-				.getHandler(policyType));
+		setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 	}
 
 	public void setIncrementalFile(String incrementalFile) {

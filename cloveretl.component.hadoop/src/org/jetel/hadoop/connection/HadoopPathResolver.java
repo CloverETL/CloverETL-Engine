@@ -111,13 +111,10 @@ public class HadoopPathResolver implements CustomPathResolver {
 				if (!(conn instanceof HadoopConnection)){
 					throw new IOException(String.format("Connection [%s:%s] is not of HDFS type.",conn.getId(),conn.getName()));
 				}else{
-					try {
-						if(log.isDebugEnabled()) log.debug(String.format("Connecting to HDFS through [%s:%s] for writing.",conn.getId(),conn.getName()));
-						return ((HadoopConnection)conn).getConnection().create(new URI(inputURI.getPath()), !appendData).getDataOutputStream();
-					} catch (ComponentNotReadyException e) {
-						log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s",e.getGraphElement().getId(),e.getGraphElement().getName(),e.getMessage()));
-						throw new IOException("Cannot connect to HDFS - "+e.getMessage(),e);
-					} 
+					
+					if(log.isDebugEnabled()) log.debug(String.format("Connecting to HDFS through [%s:%s] for writing.",conn.getId(),conn.getName()));
+					return ((HadoopConnection)conn).getConnection().create(new URI(inputURI.getPath()), !appendData).getDataOutputStream();
+					 
 				}
 			}catch (URISyntaxException e) {
 				throw new IOException(String.format("Invalid file path: \"%s\"",input));
