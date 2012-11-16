@@ -281,8 +281,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		try {
 			providerClassPath.add(ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor()
 					.getURL(HADOOP_CONNECTION_PROVIDER_JAR));
-			System.err.println(ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor()
-					.getURL(HADOOP_CONNECTION_PROVIDER_JAR));
 		} catch (MalformedURLException e) {
 			throw new ComponentNotReadyException("Incorrect file format for hadoop libraries", e);
 		}
