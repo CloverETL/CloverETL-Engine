@@ -50,6 +50,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -159,9 +160,12 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		// store in local variable first to ensure atomic fail
 		Properties localCopy = new Properties();
 		for (String key : HADOOP_USED_PROPERTIES_KEYS) {
-			if (propertiesToSet.containsKey(key)) {
-				localCopy.setProperty(key, propertiesToSet.get(key) == null ? null : propertiesToSet.get(key)
-						.toString());
+			String value = (String) propertiesToSet.get(key);
+			if (value != null) {
+				value = value.trim();
+			}
+			if (!StringUtils.isEmpty(value)) {
+				localCopy.setProperty(key, value);
 			} else if (PROPERTIES_DEFAULT.containsKey(key)) {
 				localCopy.setProperty(key, PROPERTIES_DEFAULT.get(key).toString());
 			}
