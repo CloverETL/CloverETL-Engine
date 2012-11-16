@@ -1059,10 +1059,12 @@ public class DynamicCloverBuffer extends CloverBuffer {
 
     /**
      * {@inheritDoc}
+     * WARNING: the resulted slice is shallow copy as requested, but only until first expand of this buffer is performed
+     * ISSUE: CL-2597 Recapacity of this CloverBuffer is not allowed.
      */
     @Override
     public final CloverBuffer slice() {
-        recapacityAllowed = false;
+    	//recapacityAllowed = false; //see WARNING
         return new DynamicCloverBuffer(this, this.buf.slice());
     }
 

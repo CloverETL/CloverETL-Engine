@@ -209,7 +209,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		 */
 		public ByteInputReader(int maxBackMark) {
 			super();
-			byteBuffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
+			byteBuffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 			channel = null;
 			currentMark = INVALID_MARK;
 			endOfInput = false;
@@ -232,7 +232,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				}
 				numBytesToPreserve = Math.min(byteBuffer.position(), Math.max(markSpan, maxBackMark));
 				if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
-					byteBuffer.expand(MIN_BUFFER_OPERATION_SIZE);
+					byteBuffer.limit(numBytesToPreserve + MIN_BUFFER_OPERATION_SIZE);
 					if (byteBuffer.capacity() - numBytesToPreserve < MIN_BUFFER_OPERATION_SIZE) {
 						return BLOCKED_BY_MARK; // there's not enough space for buffer operations due to the span of the
 												// mark
