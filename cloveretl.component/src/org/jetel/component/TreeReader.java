@@ -235,7 +235,9 @@ public abstract class TreeReader extends Node {
 			if (!sourceIterator.isGraphDependentSource()) {
 				long fileSize = 0;
 				Date fileTimestamp = null;
-				if (FileUtils.isLocalFile(autoFilling.getFilename()) && !sourceIterator.isGraphDependentSource()) {
+				if (autoFilling.getFilename() != null && 
+						FileUtils.isLocalFile(autoFilling.getFilename()) && 
+						!sourceIterator.isGraphDependentSource()) {
 					File tmpFile = new File(autoFilling.getFilename());
 					long timestamp = tmpFile.lastModified();
 					fileTimestamp = timestamp == 0 ? null : new Date(timestamp);

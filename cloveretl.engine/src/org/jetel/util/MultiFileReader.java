@@ -275,7 +275,7 @@ public class MultiFileReader {
 					autoFilling.setFilename(channelIterator.getCurrentFileName());
 					long fileSize = 0;
 					Date fileTimestamp = null;
-					if (FileUtils.isLocalFile(autoFilling.getFilename())) {
+					if (autoFilling.getFilename() != null && FileUtils.isLocalFile(autoFilling.getFilename())) {
 						File tmpFile = new File(autoFilling.getFilename());
 						long timestamp = tmpFile.lastModified();
 						fileTimestamp = timestamp == 0 ? null : new Date(timestamp);

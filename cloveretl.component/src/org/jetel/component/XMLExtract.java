@@ -1899,7 +1899,9 @@ public class XMLExtract extends Node {
 			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
 			long fileSize = 0;
 			Date fileTimestamp = null;
-			if (FileUtils.isLocalFile(autoFilling.getFilename()) && !readableChannelIterator.isGraphDependentSource()) {
+			if (autoFilling.getFilename() != null && 
+					FileUtils.isLocalFile(autoFilling.getFilename()) && 
+					!readableChannelIterator.isGraphDependentSource()) {
 				File tmpFile = new File(autoFilling.getFilename());
 				long timestamp = tmpFile.lastModified();
 				fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
