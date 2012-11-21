@@ -454,7 +454,9 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			if (!sourceIterator.isGraphDependentSource()) {
 				long fileSize = 0;
 				Date fileTimestamp = null;
-				if (autoFilling.getFilename() != null && FileUtils.isLocalFile(null, autoFilling.getFilename()) && !sourceIterator.isGraphDependentSource()) {
+				if (autoFilling.getFilename() != null && 
+						FileUtils.isLocalFile(null, autoFilling.getFilename()) && 
+						!sourceIterator.isGraphDependentSource()) {
 					File tmpFile = new File(autoFilling.getFilename());
 					long timestamp = tmpFile.lastModified();
 					fileTimestamp = timestamp == 0 ? null : new Date(timestamp);

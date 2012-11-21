@@ -31,16 +31,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.methods.GetMethod;
-import org.apache.commons.httpclient.util.HttpURLConnection;
-import com.googlecode.sardine.impl.SardineException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import com.googlecode.sardine.Sardine;
-import com.googlecode.sardine.SardineFactory;
+import org.jetel.util.file.FileURLParser;
+
+import com.googlecode.sardine.impl.SardineException;
 
 public class WebdavOutputStream extends OutputStream {
 	
@@ -96,6 +92,11 @@ public class WebdavOutputStream extends OutputStream {
 	}
 	
 	public WebdavOutputStream(String url) throws IOException {
+		String proxyString = null;
+		Matcher matcher = FileURLParser.getURLMatcher(url);
+		if (matcher != null && (proxyString = matcher.group(5)) != null) {
+			url = matcher.group(2) + matcher.group(3) + matcher.group(7);
+		}
 		URL parsedUrl = new URL(url);
 		String username = getUsername(parsedUrl);
 		String password = getPassword(parsedUrl);
@@ -110,22 +111,24 @@ public class WebdavOutputStream extends OutputStream {
 			outputURL = stripUserinfo(parsedUrl).toString();
 		} catch (MalformedURLException e) {}
 		
-		sardineThread = new SardinePutThread(outputURL, is, username, password);
+		sardineThread = new SardinePutThread(outputURL, is, username, password, proxyString);
 		sardineThread.start();
 	}
 	
 	class SardinePutThread extends Thread {
 		private String URL;
+		private String proxyString;
 		private InputStream is;
 		private String username;
 		private String password;
 		private Throwable error;
 		
-		SardinePutThread(String URL, InputStream is, String username, String password) {
+		SardinePutThread(String URL, InputStream is, String username, String password, String proxyString) {
 			this.URL = URL;
 			this.is = is;
 			this.username = username;
 			this.password = password;
+			this.proxyString = proxyString;
 		}
 		
 		public Throwable getError() {
@@ -155,7 +158,9 @@ public class WebdavOutputStream extends OutputStream {
 		@Override
 		public void run() {
 			try {
-				Sardine sardine = SardineFactory.begin(username, password);
+
+				ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyString);
+				WebdavClientImpl sardine = new WebdavClientImpl(username, password, proxyConfiguration);
 				sardine.enableCompression();
 				
 				// This is a workaround needed for example for writing to CloverETL Server.
@@ -177,7 +182,7 @@ public class WebdavOutputStream extends OutputStream {
 						List<String> subDirectoriesPaths = getSubDirectoriesPaths(domain, relativePathToFile);
 						//check whether all directories exists (try to create missing directories)
 						for (String path : subDirectoriesPaths) {
-							if (!dirExists(path, username, password)) {
+							if (!sardine.dirExists(path)) { // does not exist
 								try {
 									sardine.createDirectory(path);
 									logger.info("webdav directory:" + path + " created.");
@@ -221,15 +226,11 @@ public class WebdavOutputStream extends OutputStream {
 	
 	@Override
 	public void close() throws IOException {
-		os.close();
 		try {
-			sardineThread.join();
-			Throwable error = sardineThread.getError();
-			if (error != null) {
-				throw error instanceof IOException ? (IOException)error : new IOException(error);
-			}
-		} catch (InterruptedException e) {
-			throw new IOException(e.getCause());
+			os.close();
+			processException(null);
+		} catch (IOException ioe) {
+			processException(ioe);
 		}
 	}
 	
@@ -289,28 +290,18 @@ public class WebdavOutputStream extends OutputStream {
 		}
 	}
 	
-	/**
-	 * Check whether remote directory exists with the help of GET method instead of HEAD used by Sardine.exists.
-	 * See http://code.google.com/p/sardine/issues/detail?id=48 for more information and motivation.
-	 * 
-	 * @param url
-	 *            Path to the directory.
-	 * @param user
-	 *            User name.
-	 * @param pass
-	 *            Password.
-	 * @return True if the directory exists.
-	 * @throws IOException
-	 */
-	private boolean dirExists(String url, String user, String pass) throws IOException {
-		
-		URL url2 = new URL(url);
-		HttpClient client = new HttpClient();
-		client.getState().setCredentials(new AuthScope(url2.getHost(), url2.getPort()), new UsernamePasswordCredentials(user, pass));
-		GetMethod get = new GetMethod(url);
-		get.setDoAuthentication(true);
-		int status = client.executeMethod(get);
-		get.releaseConnection();
-		return status == HttpURLConnection.HTTP_OK;
-	}
+
+// dirExists() has been refactored and moved to WebdavClientImpl
+	
+//	private boolean dirExists(String url, String user, String pass) throws IOException {
+//		
+//		URL url2 = new URL(url);
+//		org.apache.commons.httpclient.HttpClient client = new org.apache.commons.httpclient.HttpClient();
+//		client.getState().setCredentials(new org.apache.commons.httpclient.auth.AuthScope(url2.getHost(), url2.getPort()), new org.apache.commons.httpclient.UsernamePasswordCredentials(user, pass));
+//		org.apache.commons.httpclient.methods.GetMethod get = new org.apache.commons.httpclient.methods.GetMethod(url);
+//		get.setDoAuthentication(true);
+//		int status = client.executeMethod(get);
+//		get.releaseConnection();
+//		return status == org.apache.commons.httpclient.util.HttpURLConnection.HTTP_OK;
+//	}
 }
