@@ -5,6 +5,7 @@
 
 	<runtime>
 		<library path="bin/"/>
+		<library path="lib/cloveretl.component.hadooploader.jar"/>
 		<library path="lib/commons-configuration-1.8.jar"/>
 		<library path="lib/commons-lang-2.6.jar"/>
 		<library path="lib/lzo-java.jar"/>

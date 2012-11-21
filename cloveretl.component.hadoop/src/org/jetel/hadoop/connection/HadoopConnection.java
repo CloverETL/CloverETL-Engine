@@ -34,7 +34,6 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -105,6 +104,8 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	// services of Hadoop file system and map/reduce API
 	private IHadoopConnection fsConnection;
 	private IHadoopMapReduceJobSender mapReduceJobSender;
+	
+	private boolean fsConnected;
 
 	// relative paths (in XML_HADOOP_CORE_LIBRARY_ATTRIBUTE property) are within this context; used from Designer
 	private URL contextURL;
@@ -153,10 +154,11 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			throw new ComponentNotReadyException(
 					"Cannot initialize Hadoop connection, Hadoop file system host is missing.");
 		}
-		if (!propertiesToSet.containsKey(HADOOP_CORE_LIBRARY_KEY)) {
-			throw new ComponentNotReadyException(
-					"Cannot initialize Hadoop connection, Hadoop .jar libraries are missing.");
-		}
+// Setting with hadooop libraries is valid! There must be no libs set if running on the Server to avoid the PermGen space OutOfMemmoryError
+//		if (!propertiesToSet.containsKey(HADOOP_CORE_LIBRARY_KEY)) {
+//			throw new ComponentNotReadyException(
+//					"Cannot initialize Hadoop connection, Hadoop .jar libraries are missing.");
+//		}
 		// store in local variable first to ensure atomic fail
 		Properties localCopy = new Properties();
 		for (String key : HADOOP_USED_PROPERTIES_KEYS) {
@@ -282,14 +284,14 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			}
 		}
 
-		try {
-			providerClassPath.add(ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor()
-					.getURL(HADOOP_CONNECTION_PROVIDER_JAR));
-		} catch (MalformedURLException e) {
-			throw new ComponentNotReadyException("Incorrect file format for hadoop libraries", e);
-		}
+		// Dynamic loading of hadoop loader is currently unnecessary (we have only one version and it is on the class path)
+//		try {
+//			providerClassPath.add(ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor()
+//					.getURL(HADOOP_CONNECTION_PROVIDER_JAR));
+//		} catch (MalformedURLException e) {
+//			throw new ComponentNotReadyException("Incorrect file format for hadoop libraries", e);
+//		}
 
-		// TODO if node is unreachable?
 		ClassLoader classLoader = providerClassPath.size() == 0 ?
 		/* for running in server where all jars are available on class path */getClass().getClassLoader()
 				: new GreedyURLClassLoader(providerClassPath.toArray(new URL[0]), getClass().getClassLoader());
@@ -318,6 +320,11 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			throw new IllegalStateException("File system provider is not ready. Method init() must be called "
 					+ "on this instance first. Instance: " + this);
 		}
+		
+		if (fsConnected) {
+			return fsConnection;
+		}
+		
 		URI hURI;
 		try {
 			hURI = new URI(String.format(HADOOP_URI_STR_FORMAT, getFsHost(), getFsPort()));
@@ -329,13 +336,10 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		if (!fsConnection.connect(hURI, this.prop, getUser())) {
 			throw new IOException("Could not connect to hadoop file system at " + hURI);
 		}
+		fsConnected = true;
 		return fsConnection;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception. ConfigurationStatus)
-	 */
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		return super.checkConfig(status);
@@ -363,10 +367,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#free()
-	 */
 	@Override
 	public synchronized void free() {
 		if (isInitialized()) {
@@ -381,6 +381,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	}
 
 	protected void close() throws IOException {
+		fsConnected = false;
 		if (fsConnection != null) {
 			fsConnection.close();
 		}
