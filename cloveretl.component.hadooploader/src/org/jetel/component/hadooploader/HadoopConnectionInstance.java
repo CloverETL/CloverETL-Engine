@@ -19,12 +19,20 @@
 package org.jetel.component.hadooploader;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.URI;
 import java.util.Properties;
 
+import javax.net.SocketFactory;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.protocol.ClientProtocol;
+import org.apache.hadoop.net.NetUtils;
 import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
 import org.jetel.hadoop.component.IHadoopSequenceFileParser;
 import org.jetel.hadoop.connection.HadoopFileStatus;
@@ -43,6 +51,8 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public class HadoopConnectionInstance implements IHadoopConnection {
 
+	private static final int CONNECTION_TEST_TIMOUT = 10000; // ms
+	
 	// private static final Log logger =
 	// LogFactory.getLog(HadoopConnectionInstance.class);
 	private FileSystem dfs;
@@ -60,21 +70,42 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 		// logger.debug(user);
 		ClassLoader formerCCL = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
+		
+		Configuration hadoopConfiguration = HadoopConfigurationUtil.property2Configuration(config);
+		
+		// Just try to connect to host first (real connect to HDFS makes 45 socket-timeout attempts, each timeout's 20s long)
+		connectionTest(host, hadoopConfiguration);
+		
 		try {
 			if (user != null) {
-				dfs = FileSystem.get(host, HadoopConfigurationUtil.property2Configuration(config), user);
+				dfs = FileSystem.get(host, hadoopConfiguration, user);
 			} else {
-				dfs = FileSystem.get(host, HadoopConfigurationUtil.property2Configuration(config));
+				dfs = FileSystem.get(host, hadoopConfiguration);
 			}
 		} catch (InterruptedException e) {
 			throw new IOException(e);
 		} catch (Throwable e) {
-			throw new IOException("Class loading error !", e);
+			throw new IOException("Class loading error!", e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(formerCCL);
 		}
 
 		return true;
+	}
+
+	// code taken from org.apache.hadoop.ipc.Client.Connection.setupConnection()
+	private void connectionTest(URI host, Configuration hadoopConfiguration) throws IOException {
+		SocketFactory socketFactory = NetUtils.getSocketFactory(hadoopConfiguration, ClientProtocol.class);
+		Socket socket = socketFactory.createSocket();
+        socket.setTcpNoDelay(false);
+        SocketAddress address = new InetSocketAddress(host.getHost(), host.getPort());
+        try {
+        	NetUtils.connect(socket, address, CONNECTION_TEST_TIMOUT);
+		} finally {
+			try {
+				socket.close();
+			} catch (IOException e) {}
+		}
 	}
 
 	@Override
