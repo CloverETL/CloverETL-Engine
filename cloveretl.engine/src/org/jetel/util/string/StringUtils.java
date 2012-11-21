@@ -2373,6 +2373,25 @@ public class StringUtils {
 		return ret.toString();
 	}
 
+    /**
+     * Unlike {@link String#replace(CharSequence, CharSequence)},
+     * this method replaces only the last occurrence.
+     * 
+     * @param input
+     * @param substring
+     * @param replacement
+     * @return input with the last occurrence of substring replaced with replacement
+     */
+    public static String replaceLast(CharSequence input, CharSequence substring, CharSequence replacement) {
+    	StringBuilder sb = new StringBuilder(input);
+    	int index = sb.lastIndexOf(substring.toString());
+    	if (index >= 0) {
+    		sb.delete(index, input.length());
+    		sb.append(replacement);
+    	}
+    	return sb.toString();
+    }
+    
 	/**
 	 * Compares two string values. Similar to call s1.equals(s2), but s1 and s2 can be null.
 	 * Null values are considered equal. Null value does not equal non-null value.
