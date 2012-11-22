@@ -295,6 +295,8 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		ClassLoader classLoader = providerClassPath.size() == 0 ?
 		/* for running in server where all jars are available on class path */getClass().getClassLoader()
 				: new GreedyURLClassLoader(providerClassPath.toArray(new URL[0]), getClass().getClassLoader());
+		
+		logger.debug("Hadoop connection uses class loader " + classLoader + "\n  with additional classpath: " + providerClassPath);
 
 		try {
 			Class<?> hadoopImplementationClass = classLoader.loadClass(HADOOP_CONNECTION_PROVIDER_CLASS);
