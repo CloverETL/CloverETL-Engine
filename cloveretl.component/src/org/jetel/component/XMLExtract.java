@@ -254,7 +254,7 @@ public class XMLExtract extends Node {
 	private static final String XML_TRIM_ATTRIBUTE = "trim";
 	private static final String XML_VALIDATE_ATTRIBUTE = "validate";
 	private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
-	private static final String XML_NAMESPACE_BINDINGS_ATTRIBUTE = "namespaceBindings";
+	public static final String XML_NAMESPACE_BINDINGS_ATTRIBUTE = "namespaceBindings";
 
 	// from which input port to read
 	private final static int INPUT_PORT = 0;
