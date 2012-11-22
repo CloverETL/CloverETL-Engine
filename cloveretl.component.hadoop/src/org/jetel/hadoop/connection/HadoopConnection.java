@@ -34,6 +34,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -43,6 +44,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -284,14 +286,14 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			}
 		}
 
-		// Dynamic loading of hadoop loader is currently unnecessary (we have only one version and it is on the class path)
-//		try {
-//			providerClassPath.add(ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor()
-//					.getURL(HADOOP_CONNECTION_PROVIDER_JAR));
-//		} catch (MalformedURLException e) {
-//			throw new ComponentNotReadyException("Incorrect file format for hadoop libraries", e);
-//		}
+		try {
+			PluginDescriptor hadoopPluginDescriptor = ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor();
+			providerClassPath.add(hadoopPluginDescriptor.getURL(HADOOP_CONNECTION_PROVIDER_JAR));
+		} catch (MalformedURLException e) {
+			throw new ComponentNotReadyException("Incorrect file format for hadoop libraries", e);
+		}
 
+		// FIXME PermGen space OutOfMemoryError
 		ClassLoader classLoader = providerClassPath.size() == 0 ?
 		/* for running in server where all jars are available on class path */getClass().getClassLoader()
 				: new GreedyURLClassLoader(providerClassPath.toArray(new URL[0]), getClass().getClassLoader());
