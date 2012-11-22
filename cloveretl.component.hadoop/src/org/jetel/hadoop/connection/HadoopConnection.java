@@ -28,9 +28,11 @@ import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -95,7 +97,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			});
 	public static final String CONNECTION_TYPE_ID = "HADOOP";
 	public static final String HADOOP_URI_STR_FORMAT = "hdfs://%s:%s/";
-
+	
 	// values of user inputs for the connection
 	private boolean encryptPassword;
 	private String hadoopCoreJar;
@@ -112,6 +114,8 @@ public class HadoopConnection extends GraphElement implements IConnection {
 
 	// relative paths (in XML_HADOOP_CORE_LIBRARY_ATTRIBUTE property) are within this context; used from Designer (validate connection)
 	private URL contextURL;
+	
+	private static Map<Set<URL>, ClassLoader> classLoaderCache = new HashMap<Set<URL>, ClassLoader>();
 
 	/**
 	 * Description of the Method
@@ -299,15 +303,22 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			PluginDescriptor hadoopPluginDescriptor = ConnectionFactory.getConnectionDescription(CONNECTION_TYPE_ID).getPluginDescriptor();
 			providerClassPath.add(hadoopPluginDescriptor.getURL(HADOOP_CONNECTION_PROVIDER_JAR));
 		} catch (MalformedURLException e) {
-			throw new ComponentNotReadyException("Incorrect file format for hadoop libraries", e);
+			throw new ComponentNotReadyException("Invalid URL of Hadoop connection implementation module", e);
 		}
-
-		// FIXME PermGen space OutOfMemoryError
-		ClassLoader classLoader = providerClassPath.size() == 0 ?
-		/* for running in server where all jars are available on class path */getClass().getClassLoader()
-				: new GreedyURLClassLoader(providerClassPath.toArray(new URL[0]), getClass().getClassLoader());
 		
-		logger.debug("Hadoop connection uses class loader " + classLoader + "\n  with additional classpath: " + providerClassPath);
+		// Reuse classloader for equal classpaths; solves PermGen space OutOfMemoryError
+		HashSet<URL> classPathSet = new HashSet<URL>(providerClassPath);
+		ClassLoader classLoader = classLoaderCache.get(classPathSet);
+		
+		if (classLoader == null) {
+			classLoader = new GreedyURLClassLoader(providerClassPath.toArray(new URL[0]), getClass().getClassLoader());
+			classLoaderCache.put(classPathSet, classLoader);
+			
+			logger.debug("Hadoop connection " + getId() + " uses new classloader with additional classpath: " + providerClassPath);
+		} else {
+			logger.debug("Hadoop connection " + getId() + " uses cached classloader with additional classpath: " + providerClassPath);
+		}
+		
 
 		try {
 			Class<?> hadoopImplementationClass = classLoader.loadClass(HADOOP_CONNECTION_PROVIDER_CLASS);
