@@ -41,6 +41,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -109,7 +110,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	
 	private boolean fsConnected;
 
-	// relative paths (in XML_HADOOP_CORE_LIBRARY_ATTRIBUTE property) are within this context; used from Designer
+	// relative paths (in XML_HADOOP_CORE_LIBRARY_ATTRIBUTE property) are within this context; used from Designer (validate connection)
 	private URL contextURL;
 
 	/**
@@ -274,6 +275,14 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	private IHadoopConnection initLoadLibrariesAndCreateFsProvider() throws ComponentNotReadyException {
 		List<URL> providerClassPath = new ArrayList<URL>();
 
+		if (contextURL == null) {
+			// This may happen e.g. in checkConfig phase of a UDR
+			TransformationGraph graph = ContextProvider.getGraph();
+			if (graph != null) {
+				contextURL = graph.getRuntimeContext().getContextURL();
+			}
+		}
+		
 		if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
 			String urls[] = parseHadoopJarsList(hadoopCoreJar);
 			for (String url : urls) {
