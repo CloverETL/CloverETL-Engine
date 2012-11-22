@@ -352,11 +352,11 @@ public class WcardPattern {
             
             return newFileStreamNames;
         } else {
-        	assert fileStreamNames.size() == 1;
-        	String fileStreamName = fileStreamNames.get(0);
-        	processProxy(fileStreamName, originalFileName, fileStreamNames);
-            // return original names
-           	return fileStreamNames;
+        	List<String> newFileStreamNames = new ArrayList<String>();
+        	for (String resolvedName: fileStreamNames) {
+        		processProxy(resolvedName, originalFileName, newFileStreamNames);
+        	}
+           	return newFileStreamNames;
         }
         
     }
@@ -370,11 +370,10 @@ public class WcardPattern {
     private void processProxy(String fileStreamName, String originalFileName, List<String> fileStreamNames) {
     	try {
     		new URL(null, fileStreamName, new ProxyHandler());
-    	} catch(MalformedURLException e) {
-    		return;
+    		fileStreamNames.add(originalFileName); // fileStreamName is a proxy, return originalFileName
+    	} catch (MalformedURLException e) {
+    		fileStreamNames.add(fileStreamName); // not a proxy, return fileStreamName (why???)
     	}
-    	fileStreamNames.clear();
-    	fileStreamNames.add(originalFileName);
 	}
 
 	/**
