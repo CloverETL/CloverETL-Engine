@@ -25,17 +25,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 
 /***
  * Supports a port reading.
@@ -133,8 +139,9 @@ public class ReadableChannelPortIterator {
 	 */
 	public ReadableByteChannel getNextData() throws IOException, InterruptedException, JetelException {
 		
-		if (fieldDataWrapper.getPortHandler().getProcessingType() == ProcessingType.STREAM) {
-			//processing stream - do not read whole stream before processing starts but process data as they are coming
+		if (fieldDataWrapper.hasData()) {
+			// a) processing sources, previous record resolved into more than one file
+			// b) processing stream - do not read whole stream before processing starts but process data as they are coming
 			return fieldDataWrapper.getData();
 		} else {
 			//read next record
@@ -153,6 +160,7 @@ public class ReadableChannelPortIterator {
 				record = inputPort.readRecord(record);
 			}
 		}
+		
 		return null;
 	}
 
@@ -165,7 +173,7 @@ public class ReadableChannelPortIterator {
 	 * TODO to make hasData method for the InputPort that waits for new data if the edge is empty. Is it good solution???
 	 */
 	public boolean hasNext() {
-		return !inputPort.isEOF();
+		return fieldDataWrapper.hasData() || !inputPort.isEOF();
 	}
 	
 	/**
@@ -268,6 +276,21 @@ public class ReadableChannelPortIterator {
 		 * @throws IOException 
 		 */
 		public abstract ReadableByteChannel getData() throws IOException, JetelException;
+		
+		/**
+		 * Returns <code>true</code> if the wrapper
+		 * can provide another ReadableByteChannel
+		 * without reading from the input port.
+		 * 
+		 * Applies in {@link SourceFieldDataWrapper}
+		 * when the previous record contained a wildcard that
+		 * has been resolved to more than one source.
+		 * 
+		 * @return
+		 */
+		public boolean hasData() {
+			return false;
+		}
 	}
 	
 	/**
@@ -313,8 +336,9 @@ public class ReadableChannelPortIterator {
 	 */
 	private static class SourceFieldDataWrapper extends FieldDataWrapper {
 		// property resolver
-		private PropertyRefResolver propertyRefResolve;
+		private PropertyRefResolver propertyRefResolver;
 		private URL contextURL;
+		private Iterator<String> iterator = new ArrayList<String>(0).iterator();
 
 		/**
 		 * Constructor.
@@ -330,7 +354,7 @@ public class ReadableChannelPortIterator {
 		 * @param propertyRefResolve
 		 */
 		public void setPropertyRefResolver(PropertyRefResolver propertyRefResolve) {
-			this.propertyRefResolve = propertyRefResolve;
+			this.propertyRefResolver = propertyRefResolve;
 		}
 		
 		/**
@@ -344,9 +368,33 @@ public class ReadableChannelPortIterator {
 		@Override
 		public ReadableByteChannel getData() throws UnsupportedEncodingException, JetelException {
 			// urls processing
-			currentFileName = field.getValue().toString();
-			if (propertyRefResolve != null)	currentFileName = propertyRefResolve.resolveRef(currentFileName, false);
+			if (!hasData()) {
+				String pattern = field.getValue().toString();
+				if (propertyRefResolver != null) {
+					pattern = propertyRefResolver.resolveRef(pattern, RefResFlag.SPEC_CHARACTERS_OFF);
+				}
+				WcardPattern pat = new WcardPattern();
+				pat.setParent(contextURL);
+		        pat.addPattern(pattern, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+		        pat.resolveAllNames(true);
+		        try {
+					List<String> filenames = pat.filenames();
+					if (filenames.isEmpty()) {
+						return null;
+					}
+					iterator = filenames.iterator();
+				} catch (IOException e) {
+					throw new JetelException("Can't prepare file list from wildcard URL", e);
+				}
+			}
+			
+			currentFileName = iterator.next();
 			return createReadableByteChannel(currentFileName);
+		}
+		
+		@Override
+		public boolean hasData() {
+			return iterator.hasNext();
 		}
 		
 		/**
@@ -391,6 +439,13 @@ public class ReadableChannelPortIterator {
 			}
 			//all records were read
 			return null;
+		}
+
+		@Override
+		public boolean hasData() {
+			// a new channel can always be created
+			// if no data is available, the channel will be EOF and will be replaced with null
+			return true;
 		}
 	}
 
