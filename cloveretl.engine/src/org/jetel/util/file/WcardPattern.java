@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.http.HttpStatus;
 import org.jetel.enums.ArchiveType;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.ftp.FTPConnection;
@@ -48,6 +49,7 @@ import org.jetel.util.string.StringUtils;
 import com.googlecode.sardine.DavResource;
 import com.googlecode.sardine.Sardine;
 import com.googlecode.sardine.SardineFactory;
+import com.googlecode.sardine.impl.SardineException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -596,19 +598,23 @@ public class WcardPattern {
 			}
 		}
 		
-		if (!hasAsteriskWildcard(url)) {
+		if (!hasWildcard(url)) {
 			mfiles.add(url.toString());
 			return mfiles;
 		}
 		
-		// When there is asterisk wildcard, we will presume the user wants to use WebDAV access to list all the files.
+		String file = url.getFile();
+		int lastSlash = file.lastIndexOf('/');
+		if (lastSlash == -1) {
+			// no slash - there's probably a question mark, 
+			// but denotes a query string, not a wildcard
+			mfiles.add(url.toString());
+			return mfiles;
+		}
+		
+		// When there is a wildcard, we will presume the user wants to use WebDAV access to list all the files.
 		try {
 			Sardine sardine = SardineFactory.begin(WebdavOutputStream.getUsername(url), WebdavOutputStream.getPassword(url));
-			String file = url.getFile();
-			int lastSlash = file.lastIndexOf('/');
-			if (lastSlash == -1) {
-				throw new IllegalArgumentException("Unexpected format of URL");
-			}
 			// The issue with sardine is that user authorization must be passed in begin() of SardineFactory
 			// but cannot be kept as part of the URL for which we try to get resources.
 			// And finally, later we need the authorization details in the URL 
@@ -620,7 +626,7 @@ public class WcardPattern {
 			String dirURL = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + dir;
 			String pattern = url.getFile();
 			
-			List<DavResource> resources = sardine.getResources(dirURL);
+			List<DavResource> resources = sardine.list(dirURL);
 			for (DavResource res : resources) {
 				if (res.isDirectory()) {
 					continue;
@@ -631,7 +637,19 @@ public class WcardPattern {
 					mfiles.add(fullURL);
 				}
 			}
-		} catch (IOException e) {
+		} catch (SardineException se) {
+			switch (se.getStatusCode()) {
+			case HttpStatus.SC_NOT_IMPLEMENTED:
+			case HttpStatus.SC_METHOD_NOT_ALLOWED:
+				break; // "501: Not implemented" and "405: Method not allowed" are not errors, it just means it is not WebDAV
+			default:
+				if (logger.isDebugEnabled()) {
+					logger.debug(url + " - WebDAV wildcard resolution failed", se);
+				}
+			}
+			mfiles.add(url.toString());
+			return mfiles;
+		} catch (IOException e) { // some servers respond with other status codes to PROPFIND, even 200 (www.cloveretl.com)
 			// it was not possible to connect using WebDAV, let's presume it's a normal HTTP request
 			if (logger.isDebugEnabled()) {
 				logger.debug(url + " - WebDAV wildcard resolution failed", e);
