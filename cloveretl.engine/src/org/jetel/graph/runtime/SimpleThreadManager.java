@@ -18,6 +18,9 @@
  */
 package org.jetel.graph.runtime;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
@@ -89,6 +92,12 @@ public class SimpleThreadManager implements IThreadManager {
 		thread.start();
 		
 		return futureTask;
+	}
+
+	@Override
+	public <T> Future<T> execute(Callable<T> task) {
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		return executor.submit(task);
 	}
 	
 	/* (non-Javadoc)

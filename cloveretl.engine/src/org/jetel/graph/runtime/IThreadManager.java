@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.runtime;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.jetel.graph.Result;
@@ -66,6 +67,14 @@ public interface IThreadManager {
 	 */
 	public <T> Future<T> execute(Runnable runnable, T result);
 
+	/**
+	 * Runs arbitrary runnable code and return a Future object,
+	 * which can be used for waiting to the end of the task.
+	 * @param callable task specification
+	 * @return {@link Future} of executed task
+	 */
+	public <T> Future<T> execute(Callable<T> callable);
+	
 	/**
 	 * Returns the approximate number of available free threads.
 	 * @return number of threads
