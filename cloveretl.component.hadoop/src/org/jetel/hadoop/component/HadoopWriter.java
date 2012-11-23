@@ -19,6 +19,7 @@
 package org.jetel.hadoop.component;
 
 import java.io.IOException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -28,6 +29,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.database.IConnection;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -37,6 +39,7 @@ import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -61,11 +64,9 @@ public class HadoopWriter extends Node {
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_KEY_FIELD_NAME_ATTRIBUTE = "keyField";
 	private static final String XML_VALUE_FIELD_NAME_ATTRIBUTE = "valueField";
-	private static final String XML_CONNECTION_ATTRIBUTE = "connection";
 
 	private boolean mkDir;
 	private String fileURL;
-	private String connectionID;
 	private boolean appendData;
 	private String keyField;
 	private String valueField;
@@ -98,20 +99,15 @@ public class HadoopWriter extends Node {
 	 * @param appendData
 	 * @param fields
 	 */
-	public HadoopWriter(String id, String fileURL, String connectionID, String keyField, String valueField,
+	public HadoopWriter(String id, String fileURL, String keyField, String valueField,
 			boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
-		this.connectionID = connectionID;
 		this.appendData = appendData;
 		this.keyField = keyField;
 		this.valueField = valueField;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
 	@Override
 	public String getType() {
 		return COMPONENT_TYPE;
@@ -171,10 +167,6 @@ public class HadoopWriter extends Node {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#checkConfig()
-	 */
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
@@ -185,29 +177,28 @@ public class HadoopWriter extends Node {
 
 		/* can't easily check writability - would need also Hadoop connection */
 
+		try {
+			// well, at least try to get connection from file URL
+			prepareConnection();
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
+					ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+			if (!StringUtils.isEmpty(e.getAttributeName())) {
+				problem.setAttributeName(e.getAttributeName());
+			}
+			status.add(problem);
+		} finally {
+			free();
+		}
+		
 		return status;
 	}
 
 	private void prepareConnection() throws ComponentNotReadyException {
-		IConnection conn = getGraph().getConnection(connectionID);
-		if (conn == null) {
-			throw new ComponentNotReadyException(this, "Can't find HadoopConnection ID: " + connectionID);
-		}
-		if (!(conn instanceof HadoopConnection)) {
-			throw new ComponentNotReadyException(this, "Connection with ID: " + connectionID
-					+ " isn't instance of the HadoopConnection class - " + conn.getClass().toString());
-		}
-
-		logger.debug(String.format("Connecting to HDFS via [%s].", conn.getId()));
-
-		conn.init();
+		IConnection conn = HadoopReader.prepareGraphConnectionFromFileURL(fileURL, "output", this, getGraph(), logger);
 		this.connection = (HadoopConnection) conn;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#init()
-	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
 		if (isInitialized())
@@ -272,17 +263,13 @@ public class HadoopWriter extends Node {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#fromXML(org.jetel.graph.TransformationGraph, org.w3c.dom.Element)
-	 */
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		HadoopWriter aDataWriter = null;
 
 		try {
 			aDataWriter = new HadoopWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_FILEURL_ATTRIBUTE), xattribs.getString(XML_CONNECTION_ATTRIBUTE),
+					xattribs.getString(XML_FILEURL_ATTRIBUTE),
 					xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
 					xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE),
 					xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
@@ -320,45 +307,6 @@ public class HadoopWriter extends Node {
 		}
 
 		return aDataWriter;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	@Override
-	public void toXML(org.w3c.dom.Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, this.fileURL);
-		xmlElement.setAttribute(XML_CONNECTION_ATTRIBUTE, this.connectionID);
-		xmlElement.setAttribute(XML_KEY_FIELD_NAME_ATTRIBUTE, this.keyField);
-		xmlElement.setAttribute(XML_VALUE_FIELD_NAME_ATTRIBUTE, this.valueField);
-
-		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
-		if (skip != 0) {
-			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
-		}
-		if (numRecords != 0) {
-			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE, String.valueOf(numRecords));
-		}
-		if (recordsPerFile > 0) {
-			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
-		}
-		if (bytesPerFile > 0) {
-			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
-		}
-		if (partition != null) {
-			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, partition);
-		} else if (lookupTable != null) {
-			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, lookupTable.getId());
-		}
-		if (attrPartitionKey != null) {
-			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
-		}
-		if (attrPartitionOutFields != null) {
-			xmlElement.setAttribute(XML_PARTITION_OUTFIELDS_ATTRIBUTE, attrPartitionOutFields);
-		}
-		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 	}
 
 	/**

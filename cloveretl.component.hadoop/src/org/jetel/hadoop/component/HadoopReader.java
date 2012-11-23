@@ -19,6 +19,9 @@
 package org.jetel.hadoop.component;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -36,9 +39,11 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.connection.HadoopConnection;
+import org.jetel.hadoop.connection.HadoopURLUtils;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -64,7 +69,6 @@ public class HadoopReader extends Node {
 	private static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 	private static final String XML_KEY_FIELD_NAME_ATTRIBUTE = "keyField";
 	private static final String XML_VALUE_FIELD_NAME_ATTRIBUTE = "valueField";
-	private static final String XML_CONNECTION_ATTRIBUTE = "connection";
 
 	/** Description of the Field */
 	public final static String COMPONENT_TYPE = "HADOOP_READER";
@@ -76,7 +80,6 @@ public class HadoopReader extends Node {
 	private MultiFileReader reader;
 	private PolicyType policyType; // default value set in fromXML()
 	private String fileURL;
-	private String connectionID;
 	private int skipRows = -1; // do not skip rows by default
 	private int numRecords = -1;
 	private int skipSourceRows = -1;
@@ -100,10 +103,9 @@ public class HadoopReader extends Node {
 	 * @param fileURL
 	 *            Description of the Parameter
 	 */
-	public HadoopReader(String id, String fileURL, String connectionID, String keyFieldName, String valueFieldName) {
+	public HadoopReader(String id, String fileURL, String keyFieldName, String valueFieldName) {
 		super(id);
 		this.fileURL = fileURL;
-		this.connectionID = connectionID;
 		this.keyFieldName = keyFieldName;
 		this.valueFieldName = valueFieldName;
 	}
@@ -211,20 +213,44 @@ public class HadoopReader extends Node {
 	}
 
 	private void prepareConnection() throws ComponentNotReadyException {
-		IConnection conn = getGraph().getConnection(connectionID);
+		IConnection conn = prepareGraphConnectionFromFileURL(fileURL, "input", this, getGraph(), logger);
+		this.connection = (HadoopConnection) conn;
+	}
+
+	public static IConnection prepareGraphConnectionFromFileURL(String fileURL, String fileURLAdjective, Node component, TransformationGraph graph, Log log) throws ComponentNotReadyException {
+		if (StringUtils.isEmpty(fileURL)) {
+			throw new ComponentNotReadyException(component, "No " + fileURLAdjective + " file URL specified");
+		}
+		
+		if (!HadoopURLUtils.isHDFSUrl(fileURL)) {
+			throw new ComponentNotReadyException(component, "Only \"hdfs\" protocol can be used in the " + fileURLAdjective + " file URL");
+		}
+		
+		URL url;
+		try {
+			url = FileUtils.getFileURL(fileURL);
+		} catch (MalformedURLException e) {
+			throw new ComponentNotReadyException("Malformed " + fileURLAdjective + " file URL", e);
+		}
+		
+		String connectionID = url.getHost();
+		
+		IConnection conn = graph.getConnection(connectionID);
 		if (conn == null) {
-			throw new ComponentNotReadyException(this, "Can't find HadoopConnection ID: " + connectionID);
+			throw new ComponentNotReadyException(component, "Can't find HadoopConnection ID: " + connectionID);
 		}
 		if (!(conn instanceof HadoopConnection)) {
-			throw new ComponentNotReadyException(this, "Connection with ID: " + connectionID
+			throw new ComponentNotReadyException(component, "Connection with ID: " + connectionID
 					+ " isn't instance of the HadoopConnection class - " + conn.getClass().toString());
 		}
 
-		logger.debug(String.format("Connecting to HDFS via [%s].", conn.getId()));
+		log.debug(String.format("Connecting to HDFS via [%s].", conn.getId()));
 
 		conn.init();
-		this.connection = (HadoopConnection) conn;
+		return conn;
 	}
+	
+	
 
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
@@ -269,26 +295,6 @@ public class HadoopReader extends Node {
 		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-		xmlElement.setAttribute(XML_KEY_FIELD_NAME_ATTRIBUTE, this.keyFieldName);
-		xmlElement.setAttribute(XML_VALUE_FIELD_NAME_ATTRIBUTE, this.valueFieldName);
-
-		PolicyType policyType = this.parser.getPolicyType();
-		if (policyType != null) {
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		}
-		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, this.fileURL);
-		if (skipRows != 0) {
-			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skipRows));
-		}
-		if (numRecords != 0) {
-			xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE, String.valueOf(numRecords));
-		}
-	}
-
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		HadoopReader hadoopReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
@@ -296,7 +302,7 @@ public class HadoopReader extends Node {
 		try {
 
 			hadoopReader = new HadoopReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_FILEURL_ATTRIBUTE), xattribs.getString(XML_CONNECTION_ATTRIBUTE),
+					xattribs.getString(XML_FILEURL_ATTRIBUTE),
 					xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
 					xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE));
 
