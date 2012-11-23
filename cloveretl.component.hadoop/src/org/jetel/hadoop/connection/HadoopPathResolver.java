@@ -213,8 +213,8 @@ public class HadoopPathResolver implements CustomPathResolver {
 					throw new MalformedURLException();
 				}else{
 					conn.init();
-					String uriPath=inputURI.getPath();
-					String matchPattern= uriPath.replaceAll("\\?", ".?").replaceAll("\\*", ".*");
+					String uriPath = getPathWithQueryAndFragment(inputURI);
+					String matchPattern= uriPath.replaceAll("\\?", ".").replaceAll("\\*", ".*");
 					
 					HadoopFileStatus[] statuses=((HadoopConnection)conn).getConnection().listStatus(new URI(uriPath.substring(0,uriPath.lastIndexOf("/"))));
 					List<String> filenames=new ArrayList<String>(statuses.length);
@@ -231,6 +231,17 @@ public class HadoopPathResolver implements CustomPathResolver {
 			}
 		}
 		throw new MalformedURLException();
+	}
+
+	public String getPathWithQueryAndFragment(final URI inputURI) {
+		String uriPath = inputURI.getPath();
+		if (inputURI.getQuery() != null) {
+			uriPath += "?" + inputURI.getQuery();
+		}
+		if (inputURI.getFragment() != null) {
+			uriPath += "#" + inputURI.getFragment();
+		}
+		return uriPath;
 	}
 
 }
