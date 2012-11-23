@@ -55,11 +55,11 @@
 	</taskdef>
 		
 	<!-- =========================== LIBRARIES ============================= -->
-	<fileset id="engine-libs" dir="${dir.engine.lib}">
+	<fileset id="engine-libs" dir="${dir.engine.lib}" erroronmissingdir="false">
 		<include name="**/*.jar"/>
 	</fileset>
 
-	<fileset id="engine-tools" dir="${dir.engine.tools}">
+	<fileset id="engine-tools" dir="${dir.engine.tools}" erroronmissingdir="false">
 		<include name="**/*.jar"/>
 	</fileset>
 

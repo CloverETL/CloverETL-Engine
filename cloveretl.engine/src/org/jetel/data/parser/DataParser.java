@@ -860,8 +860,11 @@ public class DataParser extends AbstractTextParser {
 		try {
 			while ((character = readChar()) != -1) {
 				delimiterSearcher.update((char) character);
-				if(recordDelimiterFound()) {
-					return (count - delimiterSearcher.getMatchLength());
+				if (delimiterSearcher.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
+					int result = (count - delimiterSearcher.getMatchLength());
+					//in case a record delimiter was found, lets take the longest one
+					stretchDelimiter(RECORD_DELIMITER_IDENTIFIER);
+					return result;
 				}
 				count++;
 			}
