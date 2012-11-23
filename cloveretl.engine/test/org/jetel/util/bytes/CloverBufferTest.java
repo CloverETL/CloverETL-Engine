@@ -107,7 +107,7 @@ public class CloverBufferTest extends CloverTestCase {
         assertTrue("Should AutoExpand", buffer.isAutoExpand()); 
          
         CloverBuffer slice = buffer.slice(); 
-        assertFalse("Should *NOT* AutoExpand", buffer.isAutoExpand()); 
+        assertTrue("Should AutoExpand", buffer.isAutoExpand()); 
         assertFalse("Should *NOT* AutoExpand", slice.isAutoExpand()); 
     } 
 

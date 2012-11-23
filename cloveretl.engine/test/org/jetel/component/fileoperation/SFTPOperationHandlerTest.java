@@ -196,6 +196,11 @@ public class SFTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		// FIXME test succeeds, but the filenames are wrong
 		// maybe the culprit is koule, which does not have UTF8 locale
 	}
+
+	@Override
+	public URI getUnreachableUri() {
+		return URI.create("sftp://badUser:badPassword@badserver/");
+	}
 	
 	
 }

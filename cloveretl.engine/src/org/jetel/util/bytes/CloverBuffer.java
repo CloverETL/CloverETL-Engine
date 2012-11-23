@@ -371,6 +371,8 @@ public abstract class CloverBuffer {
 
     /**
      * @see ByteBuffer#slice()
+     * WARNING: the resulted slice is shallow copy as requested, but only until first expand of this buffer is performed
+     * ISSUE: CL-2597 Recapacity of this CloverBuffer is not allowed.
      */
     public abstract CloverBuffer slice();
 
