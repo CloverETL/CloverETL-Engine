@@ -139,9 +139,10 @@ public class ReadableChannelPortIterator {
 	 */
 	public ReadableByteChannel getNextData() throws IOException, InterruptedException, JetelException {
 		
-		if (fieldDataWrapper.hasData()) {
-			// a) processing sources, previous record resolved into more than one file
-			// b) processing stream - do not read whole stream before processing starts but process data as they are coming
+		if ((fieldDataWrapper.getPortHandler().getProcessingType() == ProcessingType.STREAM)
+				|| fieldDataWrapper.hasData()) {
+			// if processing stream - do not read whole stream before processing starts but process data as they are coming
+			// if processing sources, previous record resolved into more than one file
 			return fieldDataWrapper.getData();
 		} else {
 			//read next record
@@ -439,13 +440,6 @@ public class ReadableChannelPortIterator {
 			}
 			//all records were read
 			return null;
-		}
-
-		@Override
-		public boolean hasData() {
-			// a new channel can always be created
-			// if no data is available, the channel will be EOF and will be replaced with null
-			return true;
 		}
 	}
 
