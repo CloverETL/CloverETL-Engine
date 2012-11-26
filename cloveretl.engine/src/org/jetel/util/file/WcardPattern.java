@@ -19,6 +19,7 @@
 package org.jetel.util.file;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,12 +33,11 @@ import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPFile;
-import org.jetel.data.Defaults;
+import org.apache.http.HttpStatus;
 import org.jetel.enums.ArchiveType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -51,6 +51,7 @@ import org.jetel.util.string.StringUtils;
 import com.googlecode.sardine.DavResource;
 import com.googlecode.sardine.Sardine;
 import com.googlecode.sardine.SardineFactory;
+import com.googlecode.sardine.impl.SardineException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -209,13 +210,25 @@ public class WcardPattern {
 		// goes through filenames separated by ';'
 		for (int i = 0; i < patterns.size(); i++) {
 			fileName = patterns.get(i);
-			// returns list of names for filename that can have a wild card '?' or '*'
-			for (FileStreamName fileStreamName: innerFileNames(fileName, false)) {
-				if (fileStreamName.getInputStream() != null) fileStreamName.getInputStream().close();
-				mfiles.add(fileStreamName.getFileName());
-			}
+			mfiles.addAll(innerFileNames(fileName));
 		}
 		return mfiles;
+	}
+	
+	private static List<String> getNestedZipAnchors(String url) {
+		LinkedList<String> result = new LinkedList<String>();
+		StringBuilder innerInput = new StringBuilder();
+		StringBuilder anchor = new StringBuilder();
+		ArchiveType archiveType = FileUtils.getArchiveType(url, innerInput, anchor);
+		while (archiveType != null) {
+			result.push(anchor.toString());
+			url = innerInput.toString();
+			innerInput.setLength(0);
+			anchor.setLength(0);
+			archiveType = FileUtils.getArchiveType(url, innerInput, anchor);
+		}
+		
+		return result;
 	}
 
 	/**
@@ -225,9 +238,9 @@ public class WcardPattern {
 	 * @return
 	 * @throws IOException
 	 */
-    private List<FileStreamName> innerFileNames(String fileName, boolean outherPathNeedsInputStream) throws IOException {
+    private List<String> innerFileNames(String fileName) throws IOException {
     	// result list for non-archive files
-        List<FileStreamName> fileStreamNames = new ArrayList<FileStreamName>();
+        List<String> fileStreamNames = null;
         
 		// get inner source
 		String originalFileName = fileName;
@@ -238,21 +251,18 @@ public class WcardPattern {
 		if (matcher != null && (innerSource = matcher.group(5)) != null) {
 			iPreName = (matcher.group(2) + matcher.group(3)).length()+1;
 			iPostName = iPreName + innerSource.length();
-			fileStreamNames = innerFileNames(innerSource, outherPathNeedsInputStream 
-					|| fileName.contains("" + WCARD_CHAR[0]) || fileName.contains("" + WCARD_CHAR[1]));
+			fileStreamNames = innerFileNames(innerSource);
 		} else {
 			// for archives without ...:(......), just ...:......
 			Matcher archMatcher = getArchiveURLMatcher(fileName);
 			if (archMatcher != null && (innerSource = archMatcher.group(3)) != null) {
 				iPreName = archMatcher.group(2).length()+1;
 				iPostName = iPreName + innerSource.length();
-				fileStreamNames = innerFileNames(innerSource, outherPathNeedsInputStream 
-						|| fileName.contains("" + WCARD_CHAR[0]) || fileName.contains("" + WCARD_CHAR[1]));
+				fileStreamNames = innerFileNames(innerSource);
 			} else if (archMatcher != null && (innerSource = archMatcher.group(7)) != null) {
 				iPreName = archMatcher.group(6).length()+1;
 				iPostName = iPreName + innerSource.length();
-				fileStreamNames = innerFileNames(innerSource, outherPathNeedsInputStream 
-						|| fileName.contains("" + WCARD_CHAR[0]) || fileName.contains("" + WCARD_CHAR[1]));
+				fileStreamNames = innerFileNames(innerSource);
 			}
 		}
 		
@@ -267,42 +277,92 @@ public class WcardPattern {
 		}
 		fileName = sbInnerInput.toString();
 
-        //open channels for all filenames
-		List<String> newFileNames = resolveAndSetFileNames(fileName); // returns simple file names
-        if (fileStreamNames.size() == 0) {
-        	for (String newFileName: newFileNames) {
-        		
-        		InputStream is = null;
-            	if ((outherPathNeedsInputStream || (anchor.contains("" + WCARD_CHAR[0]) || anchor.contains("" + WCARD_CHAR[1])))) {
-            		is = FileUtils.getInputStream(parent, newFileName);
-            	}
-            	fileStreamNames.add(new FileStreamName(newFileName, is));
-        	}
+        if (fileStreamNames == null) { // fileName is NOT a nested URL
+        	fileStreamNames = resolveAndSetFileNames(fileName); // resolves simple file names
         }
         
-        // check sub-archives
-        List<FileStreamName> newFileStreamNames = new ArrayList<FileStreamName>();
-        for (FileStreamName fileStreamName: fileStreamNames) {
-            // zip archive
-            if (archiveType == ArchiveType.ZIP) {
-            	processZipArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames, outherPathNeedsInputStream);
+        if (archiveType != null) {
+            // check sub-archives
+            List<String> newFileStreamNames = new ArrayList<String>();
             
-            // gzip archive
-            } else if (archiveType == ArchiveType.GZIP) {
-            	processGZipArchive(fileStreamName, originalFileName, iPreName, iPostName, newFileStreamNames);
-            	
-            // tar archive
-            } else if (archiveType == ArchiveType.TAR) {
-            	processTarArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
-            
-            // return original names
-            } else {
-            	processProxy(fileStreamName, originalFileName, fileStreamNames);
-            	
-               	return fileStreamNames;
+    		boolean anchorContainsWildcards = (anchor.indexOf(WCARD_CHAR[0]) >= 0) || (anchor.indexOf(WCARD_CHAR[1]) >= 0);
+    		
+            for (String resolvedName: fileStreamNames) {
+            	InputStream is = null;
+            	FileStreamName fileStreamName = new FileStreamName(resolvedName);
+            	try {
+            		
+            		// no need to open input stream if there are no wildcards
+            		if (anchorContainsWildcards) {
+            			
+                		if (archiveType == ArchiveType.ZIP) {
+                			String localArchivePath = FileUtils.getLocalArchiveInputPath(parent, resolvedName);
+                			if (localArchivePath != null) {
+                				// for local ZIP archives, FileUtils.getInputStream must not be called
+                				// - it treats archives as folders, therefore it is impossible to open an InputStream to read from them
+                		    	de.schlichtherle.io.File root = FileUtils.getLocalZipArchive(parent, localArchivePath);
+                		    	if (root == null) {
+                		    		throw new IOException("Failed to open local ZIP archive");
+                		    	}
+                		    	
+                		    	// the loop sets root to the topmost archive
+                		    	while (root.getEnclArchive() != null) {
+                		    		root = root.getEnclArchive();
+                		    	}
+                		    	
+                		    	// open the root file input stream
+                		    	is = new FileInputStream(root);
+                		    	
+                				List<String> nestedAnchors = getNestedZipAnchors(resolvedName);
+                		    	// for every nested anchor, open a ZipInputStream 
+                		    	for (String entry: nestedAnchors) {
+                		    		is = FileUtils.getZipInputStream(is, entry);
+                		    	}
+                			}
+                		}
+                		
+                		// TARs or remote ZIPs - open input stream
+                		if ((archiveType != ArchiveType.GZIP)) {
+                			if (is == null) {
+                				is = FileUtils.getInputStream(parent, resolvedName);
+                			}
+                			fileStreamName = new FileStreamName(resolvedName, is);
+                		}
+            		}
+            		
+                	switch (archiveType) {
+                	case ZIP:
+                    	processZipArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
+                		break;
+                	case GZIP:
+                		// no need to open parent input stream
+                    	processGZipArchive(resolvedName, originalFileName, iPreName, iPostName, newFileStreamNames);
+                		break;
+                	case TAR:
+                    	processTarArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
+                		break;
+                	}
+                	
+            	} finally {
+            		if (is != null) {
+            			try {
+            				is.close();
+            			} catch (IOException ioe) {
+            				logger.debug("Failed to close input stream", ioe);
+            			}
+            		}
+            	}
             }
+            
+            return newFileStreamNames;
+        } else {
+        	List<String> newFileStreamNames = new ArrayList<String>();
+        	for (String resolvedName: fileStreamNames) {
+        		processProxy(resolvedName, originalFileName, newFileStreamNames);
+        	}
+           	return newFileStreamNames;
         }
-        return newFileStreamNames;
+        
     }
 
     /**
@@ -311,14 +371,13 @@ public class WcardPattern {
      * @param originalFileName
      * @param fileStreamNames 
      */
-    private void processProxy(FileStreamName fileStreamName, String originalFileName, List<FileStreamName> fileStreamNames) {
+    private void processProxy(String fileStreamName, String originalFileName, List<String> fileStreamNames) {
     	try {
-    		new URL(null, fileStreamName.getFileName(), new ProxyHandler());
-    	} catch(MalformedURLException e) {
-    		return;
+    		new URL(null, fileStreamName, new ProxyHandler());
+    		fileStreamNames.add(originalFileName); // fileStreamName is a proxy, return originalFileName
+    	} catch (MalformedURLException e) {
+    		fileStreamNames.add(fileStreamName); // not a proxy, return fileStreamName (why???)
     	}
-    	fileStreamNames.clear();
-    	fileStreamNames.add(new FileStreamName(originalFileName));
 	}
 
 	/**
@@ -331,37 +390,24 @@ public class WcardPattern {
      * @param newFileStreamNames
      * @throws IOException
      */
-    private void processZipArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames, boolean needInputStream) throws IOException {
-		// add original name
+    private void processZipArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<String> newFileStreamNames) throws IOException {
+		// no wildcards, just wrap the fileStreamName name into zip:()#anchor
     	if (fileStreamName.getInputStream() == null) {
-    		newFileStreamNames.add(new FileStreamName(originalFileName));
+    		newFileStreamNames.add(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() + originalFileName.substring(iPostName));
     		return;
     	}
     	
-    	if (needInputStream) {
-    		// look into an archive and check the anchor
-    		List<String> mfiles = new ArrayList<String>();
-        	List<InputStream> lis = FileUtils.getZipInputStreams(fileStreamName.getInputStream(), anchor, mfiles);
-        	
-        	// create list of new names generated from the anchor
-        	for (int i=0; lis != null && i<lis.size(); i++) {
-        		newFileStreamNames.add(
-        				new FileStreamName(
-        					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
-        						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
-        					lis.get(i)));
-        	}
-    	} else {
-    		// look into an archive and check the anchor
-    		List<String> mfiles = FileUtils.getZipInputStreamNames(fileStreamName.getInputStream(), anchor);
-        	// create list of new names generated from the anchor
-        	for (String file: mfiles) {
-        		newFileStreamNames.add(
-        				new FileStreamName(
-        					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
-        						originalFileName.substring(iPostName)).replace(anchor, file), 
-        					null)); // return null as the input stream
-        	}
+		// look into an archive and check the anchor
+		List<String> entries = FileUtils.getMatchingZipEntries(fileStreamName.getInputStream(), anchor);
+		
+    	// create list of new names generated from the anchor
+    	for (String entry: entries) {
+    		newFileStreamNames.add(
+    				StringUtils.replaceLast(
+    						originalFileName.substring(0, iPreName) + fileStreamName.getFileName() + originalFileName.substring(iPostName),
+    						anchor, entry
+					)
+			);
     	}
     }
     
@@ -375,24 +421,24 @@ public class WcardPattern {
      * @param newFileStreamNames
      * @throws IOException
      */
-    private void processTarArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames) throws IOException {
-		// add original name
+    private void processTarArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<String> newFileStreamNames) throws IOException {
+		// no wildcards, just wrap the fileStreamName name into tar:()#anchor
     	if (fileStreamName.getInputStream() == null) {
-    		newFileStreamNames.add(new FileStreamName(originalFileName));
+    		newFileStreamNames.add(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() + originalFileName.substring(iPostName));
     		return;
     	}
     	
 		// look into an archive and check the anchor
-		List<String> mfiles = new ArrayList<String>();
-    	List<InputStream> lis = FileUtils.getTarInputStreams(fileStreamName.getInputStream(), anchor, mfiles);
+		List<String> entries = FileUtils.getMatchingTarEntries(fileStreamName.getInputStream(), anchor);
     	
     	// create list of new names generated from the anchor
-    	for (int i=0; lis != null && i<lis.size(); i++) {
+    	for (String entry: entries) {
     		newFileStreamNames.add(
-    				new FileStreamName(
-    					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
-    						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
-    					lis.get(i)));
+    				StringUtils.replaceLast(
+    						originalFileName.substring(0, iPreName) + fileStreamName.getFileName() + originalFileName.substring(iPostName),
+    						anchor, entry
+    				)
+    		);
     	}
     }
 
@@ -405,20 +451,11 @@ public class WcardPattern {
      * @param newFileStreamNames
      * @throws IOException
      */
-    private void processGZipArchive(FileStreamName fileStreamName, String originalFileName, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames) throws IOException {
-		// add original name
-    	if (fileStreamName.getInputStream() == null) {
-    		newFileStreamNames.add(new FileStreamName(originalFileName));
-    		return;
-    	}
+    private void processGZipArchive(String fileStreamName, String originalFileName, int iPreName, int iPostName, List<String> newFileStreamNames) throws IOException {
+    	// GZIPs only contain one file, no need to look into the file
+    	// wrap the fileStreamName into gzip:()
     	
-		// create input stream
-    	InputStream is = new GZIPInputStream(fileStreamName.getInputStream(), Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-    	
-    	// create list of new names generated from the anchor
-    	newFileStreamNames.add(new FileStreamName(
-    			originalFileName.substring(0, iPreName) + fileStreamName.getFileName() + originalFileName.substring(iPostName), 
-				is));
+    	newFileStreamNames.add(originalFileName.substring(0, iPreName) + fileStreamName + originalFileName.substring(iPostName));
     }
     
 	private List<String> getSanboxNames(URL url) {
@@ -588,20 +625,24 @@ public class WcardPattern {
 			}
 		}
 		
-		if (!hasAsteriskWildcard(url)) {
+		if (!hasWildcard(url)) {
 			mfiles.add(url.toString());
 			return mfiles;
 		}
 		
-		// When there is asterisk wildcard, we will presume the user wants to use WebDAV access to list all the files.
+		String file = url.getFile();
+		int lastSlash = file.lastIndexOf('/');
+		if (lastSlash == -1) {
+			// no slash - there's probably a question mark, 
+			// but denotes a query string, not a wildcard
+			mfiles.add(url.toString());
+			return mfiles;
+		}
+		
+		// When there is a wildcard, we will presume the user wants to use WebDAV access to list all the files.
 		try {
 			Sardine sardine = SardineFactory.begin(WebdavOutputStream.getUsername(url), WebdavOutputStream.getPassword(url));
 			sardine.enableCompression();
-			String file = url.getFile();
-			int lastSlash = file.lastIndexOf('/');
-			if (lastSlash == -1) {
-				throw new IllegalArgumentException("Unexpected format of URL");
-			}
 			// The issue with sardine is that user authorization must be passed in begin() of SardineFactory
 			// but cannot be kept as part of the URL for which we try to get resources.
 			// And finally, later we need the authorization details in the URL 
@@ -613,7 +654,7 @@ public class WcardPattern {
 			String dirURL = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + dir;
 			String pattern = url.getFile();
 			
-			List<DavResource> resources = sardine.getResources(dirURL);
+			List<DavResource> resources = sardine.list(dirURL);
 			for (DavResource res : resources) {
 				if (res.isDirectory()) {
 					continue;
@@ -624,7 +665,19 @@ public class WcardPattern {
 					mfiles.add(fullURL);
 				}
 			}
-		} catch (IOException e) {
+		} catch (SardineException se) {
+			switch (se.getStatusCode()) {
+			case HttpStatus.SC_NOT_IMPLEMENTED:
+			case HttpStatus.SC_METHOD_NOT_ALLOWED:
+				break; // "501: Not implemented" and "405: Method not allowed" are not errors, it just means it is not WebDAV
+			default:
+				if (logger.isDebugEnabled()) {
+					logger.debug(url + " - WebDAV wildcard resolution failed", se);
+				}
+			}
+			mfiles.add(url.toString());
+			return mfiles;
+		} catch (IOException e) { // some servers respond with other status codes to PROPFIND, even 200 (www.cloveretl.com)
 			// it was not possible to connect using WebDAV, let's presume it's a normal HTTP request
 			if (logger.isDebugEnabled()) {
 				logger.debug(url + " - WebDAV wildcard resolution failed", e);
