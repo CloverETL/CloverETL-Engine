@@ -574,8 +574,7 @@ public class FileUtils {
         } else if (archiveType == ArchiveType.TAR) {
         	return getTarInputStream(innerStream, anchor);
         } else if (archiveType == ArchiveType.TGZ) {
-        	List<InputStream> lIs = getTarInputStreamsInner(new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE), sbAnchor.toString(), 0, null);
-        	return lIs.size() > 0 ? lIs.get(0) : null;
+        	return getTarInputStream(new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE), anchor);
         }
         
         return innerStream;
