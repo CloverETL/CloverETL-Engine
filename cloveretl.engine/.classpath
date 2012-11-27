@@ -24,10 +24,7 @@
 	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar"/>
 	<classpathentry kind="lib" path="lib/tar.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.1.jar" sourcepath="lib.src/joda-time-2.1-sources.jar"/>
-	<classpathentry kind="lib" path="lib/openxml4j-1.0-beta.jar"/>
 	<classpathentry kind="lib" path="lib/xmlbeans-2.5.0-modified-for-WSC.jar" sourcepath="lib.src/xmlbeans-2.5.0-modified-for-WSC-source.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-api.jar"/>
-	<classpathentry kind="lib" path="lib/jaxb-impl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-net-2.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
@@ -37,12 +34,12 @@
 	<classpathentry kind="lib" path="lib/truezip-6.8.1.jar"/>
 	<classpathentry kind="lib" path="lib/sardine.jar"/>
 	<classpathentry kind="lib" path="lib/jets3t-0.8.0.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/poi-3.8-beta4-20110826.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.8-beta4-20110826.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.8-beta4-20110826.jar"/>
 	<classpathentry kind="lib" path="lib/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.2.jar"/>
 	<classpathentry kind="lib" path="lib/httpcore-4.2.jar"/>
 	<classpathentry kind="lib" path="lib/httpmime-4.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/poi-3.8-20120326.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.8-20120326.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.8-20120326.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

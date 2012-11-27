@@ -41,6 +41,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
@@ -51,6 +53,7 @@ import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
+import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfo;
 import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfoIteractive;
 import org.jetel.util.string.StringUtils;
 
@@ -63,6 +66,8 @@ import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.UserInfo;
 
 public class SFTPOperationHandler implements IOperationHandler {
+
+	private static final Log log = LogFactory.getLog(SFTPOperationHandler.class);
 
 	public static final String SFTP_SCHEME = "sftp"; //$NON-NLS-1$
 	
@@ -260,21 +265,54 @@ public class SFTPOperationHandler implements IOperationHandler {
 		return decodeString(userInfo).split(":"); //$NON-NLS-1$
 	}
 
-	private SFTPSession connect(URI uri) throws IOException {
+	private Session getSession(JSch jsch, URI uri, UserInfo userInfo) throws IOException {
 		String[] user = getUserInfo(uri);
-		Session session = null;
-		ChannelSftp channel = null;
+		Session session;
 		try {
 			if (uri.getPort() == 0) session = jsch.getSession(user[0], uri.getHost());
 			else session = jsch.getSession(user[0], uri.getHost(), uri.getPort() == -1 ? 22 : uri.getPort());
 
 			// password will be given via UserInfo interface.
-			UserInfo aUserInfo = new URLUserInfoIteractive(user.length == 2 ? user[1] : null);
-			session.setUserInfo(aUserInfo);
-			//if (proxy != null) session.setProxy(proxy);
+			session.setUserInfo(userInfo);
+			// TODO proxy support
+//			if (proxy != null) {
+//				proxy.setUserPasswd(user, passwd);
+//				session.setProxy(proxy);
+//			}
 			session.connect();
+			return session;
+		} catch (Exception e) {
+//			if (proxy4 != null) {
+//				try {
+//					session.connect();
+//					return;
+//				} catch (JSchException e1) {}
+//			}
+			throw new IOException(e.getMessage());
+		}
+	}
+
+	private Session getSession(JSch jsch, URI uri) throws Exception {
+		// password will be given via UserInfo interface.
+		String[] user = getUserInfo(uri);
+		
+		try {
+			log.trace("Connecting with password authentication");
+			return getSession(jsch, uri, new URLUserInfo(user.length == 2 ? user[1] : null));
+		} catch (Exception e) {
+			log.trace("Connecting with keyboard-interactive authentication");
+			return getSession(jsch, uri, new URLUserInfoIteractive(user.length == 2 ? user[1] : null));
+		}
+	}
+
+	private SFTPSession connect(URI uri) throws IOException {
+		Session session = null;
+		ChannelSftp channel = null;
+		try {
+			session = getSession(jsch, uri);
 			channel = (ChannelSftp) session.openChannel(uri.getScheme());
 			channel.connect();
+			log.trace("Connection successful");
 			return new SFTPSession(session, channel);
 		} catch (Exception e) {
 			try {
@@ -342,7 +380,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		
 		@Override
 		public Boolean isLink() {
-			return file.getAttrs().isDir();
+			return file.getAttrs().isLink();
 		}
 
 		@Override
@@ -485,7 +523,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		try {
 			disconnect(sftp);
 		} catch (Exception ex) {
-			ex.printStackTrace(); // FIXME
+			log.trace(ex);
 		}
 	}
 	

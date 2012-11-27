@@ -559,9 +559,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			recordMetadata.setFieldDelimiter(fieldDelimiter);
 		}
 
-		short recSize = 0;
+		int recSize = 0;
 		try {
-			recSize = Short.parseShort(sizeStr);
+			recSize = Integer.parseInt(sizeStr);
 		} catch (NumberFormatException e) {
 			// ignore 
 		}
@@ -823,11 +823,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	 *                Description of Exception
 	 * @since May 6, 2002
 	 */
-	private short getFieldSize(String fieldSizeStr) {
+	private int getFieldSize(String fieldSizeStr) {
 		if (fieldSizeStr == null) {
 			return 0;
 		}
-		return Short.parseShort(fieldSizeStr);
+		return Integer.parseInt(fieldSizeStr);
 	}
 
 //	/**

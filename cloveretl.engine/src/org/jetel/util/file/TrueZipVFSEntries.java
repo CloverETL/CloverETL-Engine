@@ -18,8 +18,8 @@
  */
 package org.jetel.util.file;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +39,7 @@ import de.schlichtherle.io.File;
  * @created 22.6.2011
  */
 public class TrueZipVFSEntries {
-	private final List<File> rootArchives = new ArrayList<File>();
+	private final Collection<File> rootArchives = new HashSet<File>();
 	
 	static Log logger = LogFactory.getLog(TrueZipVFSEntries.class);
 	

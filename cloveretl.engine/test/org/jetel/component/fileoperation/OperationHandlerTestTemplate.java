@@ -55,6 +55,7 @@ import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.component.fileoperation.result.MoveResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
+import org.jetel.component.fileoperation.result.Result;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
 
@@ -1197,7 +1198,8 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 	}
 
 	protected CloverURI relativeURI(String commonPart, String uri) throws URISyntaxException {
-		return CloverURI.createRelativeURI(baseUri.resolve(commonPart), uri);
+		URI base = CloverURI.createSingleURI(baseUri, commonPart).getAbsoluteURI().toURI();
+		return CloverURI.createRelativeURI(base, uri);
 	}
 
 	public void testCreate() throws Exception {
@@ -1347,6 +1349,68 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		}
 	}
 	
+	/**
+	 * Override to enable {@link #testConnectionFailed()}.
+	 * 
+	 * @return
+	 */
+	public URI getUnreachableUri() {
+		return null;
+	}
+
+	public void testConnectionFailed() throws Exception {
+		URI unreachable = getUnreachableUri();
+		if (unreachable == null) {
+			return;
+		}
+		
+		CloverURI uri;
+		Result result;
+		
+		uri = CloverURI.createRelativeURI(unreachable, "home/test/a.txt");
+
+		result = manager.create(uri);
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
+		System.out.println(result.getFirstErrorMessage());
+
+		result = manager.info(uri);
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
+		System.out.println(result.getFirstErrorMessage());
+
+		uri = CloverURI.createRelativeURI(unreachable, "home/test/*.txt");
+		result = manager.resolve(uri);
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
+		System.out.println(result.getFirstErrorMessage());
+
+		result = manager.list(uri);
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
+		System.out.println(result.getFirstErrorMessage());
+		
+		result = manager.delete(uri);
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
+		System.out.println(result.getFirstErrorMessage());
+
+		CloverURI source;
+		CloverURI target;
+		
+		source = CloverURI.createRelativeURI(unreachable, "home/test/*.txt");
+		target = CloverURI.createRelativeURI(unreachable, "home/");
+		result = manager.copy(source, target, new CopyParameters().setMakeParents(true).setRecursive(true));
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
+		System.out.println(result.getFirstErrorMessage());
+		
+		result = manager.move(source, target, new MoveParameters().setMakeParents(true));
+		assertFalse(result.success());
+		assertEquals(1, result.totalCount());
+		System.out.println(result.getFirstErrorMessage());
+	}
+
 //	public void testInterruptCreate() throws Exception {
 //		assumeTrue(!Thread.currentThread().isInterrupted());
 //		

@@ -28,6 +28,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -297,15 +298,13 @@ public class FileManager {
 			handlers.add(handler);
 		}
 		int count = 0;
-		List<List<SingleCloverURI>> resolvedSources = new ArrayList<List<SingleCloverURI>>();
+		List<ResolveResult> resolvedSources = new ArrayList<ResolveResult>();
 		for (SingleCloverURI sourceExpression: sources) {
 			ResolveResult rr = resolve(sourceExpression);
-			if (!rr.success()) {
-				return result.setException(rr.getException());
+			if (rr.success()) {
+				count += rr.getResult().size();
 			}
-			List<SingleCloverURI> tmp = rr.getResult();
-			count += tmp.size();
-			resolvedSources.add(tmp);
+			resolvedSources.add(rr);
 		}
 		if (count > 1) {
 			if (resolvedTarget.size() < 1 || !info(resolvedTarget.get(0)).isDirectory()) {
@@ -333,21 +332,25 @@ public class FileManager {
 		
 		Iterator<IOperationHandler> h = handlers.iterator();
 		
-		for (List<SingleCloverURI> resolvedSource: resolvedSources) {
+		for (ResolveResult resolvedSource: resolvedSources) {
 			IOperationHandler handler = h.next();
-			for (SingleCloverURI source: resolvedSource) {
-				try {
-					SingleCloverURI copied = handler.copy(source, target, params); 
-					if (copied != null) {
-						result.add(source, target, copied);
-					} else {
-						result.addError(source, target, FileOperationMessages.getString("FileManager.copy_failed")); //$NON-NLS-1$
+			if (resolvedSource.success()) {
+				for (SingleCloverURI source: resolvedSource) {
+					try {
+						SingleCloverURI copied = handler.copy(source, target, params); 
+						if (copied != null) {
+							result.add(source, target, copied);
+						} else {
+							result.addError(source, target, FileOperationMessages.getString("FileManager.copy_failed")); //$NON-NLS-1$
+						}
+					} catch (FileNotFoundException fnfe) {
+						result.addError(source, target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
+					} catch (Exception ex) {
+						result.addError(source, target, ex.getMessage());
 					}
-				} catch (FileNotFoundException fnfe) {
-					result.addError(source, target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
-				} catch (Exception ex) {
-					result.addError(source, target, ex.getMessage());
 				}
+			} else {
+				result.addError(resolvedSource.getURI(0), target, MessageFormat.format(FileOperationMessages.getString("FileManager.resolve_failed_detail"), resolvedSource.getURI(0).getPath(), resolvedSource.getFirstErrorMessage())); //$NON-NLS-1$
 			}
 		}
 		
@@ -392,15 +395,13 @@ public class FileManager {
 		}
 
 		int count = 0;
-		List<List<SingleCloverURI>> resolvedSources = new ArrayList<List<SingleCloverURI>>();
+		List<ResolveResult> resolvedSources = new ArrayList<ResolveResult>();
 		for (SingleCloverURI sourceExpression: sources) {
 			ResolveResult rr = resolve(sourceExpression);
-			if (!rr.success()) {
-				return result.setException(rr.getException());
+			if (rr.success()) {
+				count += rr.getResult().size();
 			}
-			List<SingleCloverURI> tmp = rr.getResult();
-			count += tmp.size();
-			resolvedSources.add(tmp);
+			resolvedSources.add(rr);
 		}
 		if (count > 1) {
 			if (resolvedTarget.size() < 1 || !info(resolvedTarget.get(0)).isDirectory()) {
@@ -427,21 +428,25 @@ public class FileManager {
 //		}
 		
 		Iterator<IOperationHandler> h = handlers.iterator();
-		for (List<SingleCloverURI> resolvedSource: resolvedSources) {
+		for (ResolveResult resolvedSource: resolvedSources) {
 			IOperationHandler handler = h.next();
-			for (SingleCloverURI source: resolvedSource) {
-				try {
-					SingleCloverURI moved = handler.move(source, target, params); 
-					if (moved != null) {
-						result.add(source, target, moved);
-					} else {
-						result.addError(source, target, FileOperationMessages.getString("FileManager.move_failed")); //$NON-NLS-1$
+			if (resolvedSource.success()) {
+				for (SingleCloverURI source: resolvedSource) {
+					try {
+						SingleCloverURI moved = handler.move(source, target, params); 
+						if (moved != null) {
+							result.add(source, target, moved);
+						} else {
+							result.addError(source, target, FileOperationMessages.getString("FileManager.move_failed")); //$NON-NLS-1$
+						}
+					} catch (FileNotFoundException fnfe) {
+						result.addError(source, target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
+					} catch (Exception ex) {
+						result.addError(source, target, ex.getMessage());
 					}
-				} catch (FileNotFoundException fnfe) {
-					result.addError(source, target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
-				} catch (Exception ex) {
-					result.addError(source, target, ex.getMessage());
 				}
+			} else {
+				result.addError(resolvedSource.getURI(0), target, MessageFormat.format(FileOperationMessages.getString("FileManager.resolve_failed_detail"), resolvedSource.getURI(0).getPath(), resolvedSource.getFirstErrorMessage())); //$NON-NLS-1$
 			}
 		}
 
@@ -672,7 +677,7 @@ public class FileManager {
 			// resolve to deal with wildcards or maybe symbolic links etc.
 			ResolveResult resolveResult = resolve(target);
 			if (!resolveResult.success()) {
-				throw new RuntimeException(format(FileOperationMessages.getString("FileManager.resolve_failed"), target.getPath()));  //$NON-NLS-1$
+				throw new RuntimeException(format(FileOperationMessages.getString("FileManager.resolve_failed_detail"), target.getPath(), resolveResult.getFirstErrorMessage()));  //$NON-NLS-1$
 			}
 			List<SingleCloverURI> resolved = resolveResult.getResult();
 			if (resolved.size() > 1) {
@@ -698,27 +703,32 @@ public class FileManager {
 		return delete(targetCloverUri, params);
 	}
 
-	public DeleteResult delete(CloverURI targetList, DeleteParameters params) {
+	public DeleteResult delete(CloverURI arg, DeleteParameters params) {
 		DeleteResult result = new DeleteResult();
-		targetList = targetList.getAbsoluteURI();
-		List<SingleCloverURI> targets = targetList.split();
-		for (SingleCloverURI targetExpression: targets) {
-			Operation operation = getOperation(OperationKind.DELETE, targetExpression);
+		arg = arg.getAbsoluteURI();
+		List<SingleCloverURI> globs = arg.split();
+		for (SingleCloverURI glob: globs) {
+			Operation operation = getOperation(OperationKind.DELETE, glob);
 			IOperationHandler handler = findHandler(operation);
 			if (handler != null) {
-				for (SingleCloverURI target: resolve(targetExpression)) {
-					try {
-						SingleCloverURI deleted = handler.delete(target, params); 
-						if (deleted != null) {
-							result.add(deleted);
-						} else {
-							result.addError(target, FileOperationMessages.getString("FileManager.delete_failed")); //$NON-NLS-1$
+				ResolveResult resolved = resolve(glob);
+				if (resolved.success()) {
+					for (SingleCloverURI target: resolved) {
+						try {
+							SingleCloverURI deleted = handler.delete(target, params); 
+							if (deleted != null) {
+								result.add(deleted);
+							} else {
+								result.addError(target, FileOperationMessages.getString("FileManager.delete_failed")); //$NON-NLS-1$
+							}
+						} catch (FileNotFoundException fnfe) {
+							result.addError(target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
+						} catch (Exception ex) {
+							result.addError(target, ex.getMessage());
 						}
-					} catch (FileNotFoundException fnfe) {
-						result.addError(target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
-					} catch (Exception ex) {
-						result.addError(target, ex.getMessage());
 					}
+				} else {
+					result.addError(glob, MessageFormat.format(FileOperationMessages.getString("FileManager.resolve_failed_detail"), glob.getPath(), resolved.getFirstErrorMessage())); //$NON-NLS-1$
 				}
 			} else {
 				throw new UnsupportedOperationException(operation.toString());
@@ -834,7 +844,7 @@ public class FileManager {
 		
 	}
 
-	private List<Info> expand(Info base, String part, boolean directory) {
+	private List<Info> expand(Info base, String part, boolean directory) throws IOException {
 		if (base == null) {
 			throw new NullPointerException("base"); //$NON-NLS-1$
 		}
@@ -843,7 +853,11 @@ public class FileManager {
 		}
 		if (hasWildcards(part)) {
 			part = URIUtils.urlDecode(part);
-			List<Info> children = list(CloverURI.createSingleURI(base.getURI())).getResult();
+			ListResult listResult = list(CloverURI.createSingleURI(base.getURI()));
+			if (!listResult.success()) {
+				throw new IOException(listResult.getFirstErrorMessage());
+			}
+			List<Info> children = listResult.getResult();
 			List<Info> result = new ArrayList<Info>();
 			WildcardInfoFilter filter = new WildcardInfoFilter(part, directory);
 			for (Info child: children) {
@@ -853,8 +867,12 @@ public class FileManager {
 			}
 			return result; 
 		} else {
-			URI child = URIUtils.getChildURI(base.getURI(), URI.create(part)); 
-			Info info = getInstance().info(CloverURI.createSingleURI(child)).getInfo();
+			URI child = URIUtils.getChildURI(base.getURI(), URI.create(part));
+			InfoResult infoResult = this.info(CloverURI.createSingleURI(child));
+			if (!infoResult.success()) {
+				throw new IOException(infoResult.getFirstErrorMessage());
+			}
+			Info info = infoResult.getInfo();
 			if (info != null) {
 				return Arrays.asList(info);
 			} else {
@@ -863,14 +881,18 @@ public class FileManager {
 		}
 	}
 
-	public List<SingleCloverURI> defaultResolve(SingleCloverURI wildcards) {
+	public List<SingleCloverURI> defaultResolve(SingleCloverURI wildcards) throws IOException {
 		String uriString = wildcards.toString();
 		if (wildcards.isRelative() || !hasWildcards(uriString)) {
 			return Arrays.asList(wildcards);
 		}
 		
 		List<String> parts = getParts(uriString);
-		Info base = info((SingleCloverURI) CloverURI.createURI(parts.get(0))).getInfo();
+		InfoResult infoResult = info((SingleCloverURI) CloverURI.createURI(parts.get(0)));
+		if (!infoResult.success()) {
+			throw new IOException(infoResult.getFirstErrorMessage());
+		}
+		Info base = infoResult.getInfo();
 		if (base == null) {
 			return new ArrayList<SingleCloverURI>(0);
 		}
@@ -942,14 +964,14 @@ public class FileManager {
 		return list(targetCloverUri, params);
 	}
 
-	public ListResult list(CloverURI targetList, ListParameters params) {
+	public ListResult list(CloverURI arg, ListParameters params) {
 		ListResult result = new ListResult();
-		targetList = targetList.getAbsoluteURI();
-		List<SingleCloverURI> targets = targetList.split();
-		List<IOperationHandler> handlers = new ArrayList<IOperationHandler>(targets.size());
+		arg = arg.getAbsoluteURI();
+		List<SingleCloverURI> globs = arg.split();
+		List<IOperationHandler> handlers = new ArrayList<IOperationHandler>(globs.size());
 		
-		for (SingleCloverURI expression: targets) {
-			Operation listOperation = getOperation(OperationKind.LIST, expression);
+		for (SingleCloverURI glob: globs) {
+			Operation listOperation = getOperation(OperationKind.LIST, glob);
 			IOperationHandler listHandler = findHandler(listOperation);
 			if (listHandler == null) {
 				return result.setException(new UnsupportedOperationException(listOperation.toString()));
@@ -958,20 +980,24 @@ public class FileManager {
 			// TODO find resolve handlers
 		}
 		Iterator<IOperationHandler> h = handlers.iterator();
-		for (SingleCloverURI expression: targetList.split()) {
+		for (SingleCloverURI glob: arg.split()) {
 			IOperationHandler handler = h.next();
-			ResolveResult resolved = resolve(expression);
-			for (SingleCloverURI target: resolved) {
-				try {
-					List<Info> infos = handler.list(target, params); 
-					if (infos != null) {
-						result.add(target, infos);
+			ResolveResult resolved = resolve(glob);
+			if (resolved.success()) {
+				for (SingleCloverURI target: resolved) {
+					try {
+						List<Info> infos = handler.list(target, params); 
+						if (infos != null) {
+							result.add(target, infos);
+						}
+					} catch (FileNotFoundException fnfe) {
+						result.addError(target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
+					} catch (Exception ex) {
+						result.addError(target, ex.getMessage());
 					}
-				} catch (FileNotFoundException fnfe) {
-					result.addError(target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
-				} catch (Exception ex) {
-					result.addError(target, ex.getMessage());
 				}
+			} else {
+				result.addError(glob, MessageFormat.format(FileOperationMessages.getString("FileManager.resolve_failed_detail"), glob.getPath(), resolved.getFirstErrorMessage())); //$NON-NLS-1$
 			}
 		}
 		return result;

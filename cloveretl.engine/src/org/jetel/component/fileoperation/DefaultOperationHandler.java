@@ -147,7 +147,7 @@ public class DefaultOperationHandler implements IOperationHandler {
 			sourcePath = sourcePath + URIUtils.PATH_SEPARATOR;
 		}
 		if (targetPath.startsWith(sourcePath)) {
-			throw new IOException(MessageFormat.format("{0} is a subdirectory of {1}", target, source));
+			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.subdirectory"), target, source)); //$NON-NLS-1$
 		}
 	}
 	
@@ -235,7 +235,7 @@ public class DefaultOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public List<SingleCloverURI> resolve(SingleCloverURI wildcards, ResolveParameters params) {
+	public List<SingleCloverURI> resolve(SingleCloverURI wildcards, ResolveParameters params) throws IOException {
 		return manager.defaultResolve(wildcards);
 	}
 

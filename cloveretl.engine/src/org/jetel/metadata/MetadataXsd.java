@@ -197,7 +197,7 @@ public class MetadataXsd extends MXAbstract {
 		case DataFieldMetadata.BYTE_FIELD:
 		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 			if ((rest = getNode(restParent, NAMESPACES, XSD_LENGHT)) != null) {
-				dataFieldMetadata.setSize(Short.parseShort(getAttributeValue(rest, VALUE)));
+				dataFieldMetadata.setSize(Integer.parseInt(getAttributeValue(rest, VALUE)));
 			}
 			break;
 		case DataFieldMetadata.DECIMAL_FIELD:
@@ -210,12 +210,12 @@ public class MetadataXsd extends MXAbstract {
 				dataFieldMetadata.setProperty(SCALE, getAttributeValue(rest, VALUE));
 			}
 			if ((rest = getNode(restParent, NAMESPACES, XSD_LENGHT)) != null) {
-				dataFieldMetadata.setSize(Short.parseShort(getAttributeValue(rest, VALUE)));
+				dataFieldMetadata.setSize(Integer.parseInt(getAttributeValue(rest, VALUE)));
 			}
 			break;
 		case DataFieldMetadata.STRING_FIELD:
 			if ((rest = getNode(restParent, NAMESPACES, XSD_LENGHT)) != null) {
-				dataFieldMetadata.setSize(Short.parseShort(getAttributeValue(rest, VALUE)));
+				dataFieldMetadata.setSize(Integer.parseInt(getAttributeValue(rest, VALUE)));
 			}
 			if ((rest = getNode(restParent, NAMESPACES, XSD_PATTERN)) != null) {
 				dataFieldMetadata.setFormatStr(getAttributeValue(rest, VALUE));

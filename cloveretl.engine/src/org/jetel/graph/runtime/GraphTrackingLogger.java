@@ -87,7 +87,7 @@ public class GraphTrackingLogger extends TrackingLogger {
                 if (i == 0) {
                     cpuPrinted = true;
                     final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU()  : nodeDetail.getUsageCPU());
-                    portInfo = new Object[] {" %cpu:", cpuUsage >= 0.01f ? Float.toString(cpuUsage) : "..",
+                    portInfo = new Object[] {" %cpu:", Integer.toString((int) (cpuUsage * 100)),
                             "In:", Integer.toString(i), 
                             Long.toString(inputPortDetail.getTotalRecords()),
                             Long.toString(inputPortDetail.getTotalBytes() >> 10),
@@ -110,7 +110,7 @@ public class GraphTrackingLogger extends TrackingLogger {
                 if (i == 0 && !cpuPrinted) {
                     cpuPrinted = true;
                     final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU() : nodeDetail.getUsageCPU());
-                    portInfo = new Object[] {" %cpu:", cpuUsage > 0.01f ? Float.toString(cpuUsage) : "..",
+                    portInfo = new Object[] {" %cpu:", Integer.toString((int) (cpuUsage * 100)),
                             "Out:", Integer.toString(i), 
                             Long.toString(outputPortDetail.getTotalRecords()),
                             Long.toString(outputPortDetail.getTotalBytes() >> 10),
@@ -130,7 +130,7 @@ public class GraphTrackingLogger extends TrackingLogger {
             //CPU usage has to be printed also for components without ports
             if (!cpuPrinted) {
                 final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU() : nodeDetail.getUsageCPU());
-                portInfo = new Object[] {" %cpu:", cpuUsage > 0.01f ? Float.toString(cpuUsage) : ".."};
+                portInfo = new Object[] {" %cpu:", cpuUsage >= 0.01f ? Integer.toString((int) (cpuUsage * 100)) : ".."};
                 logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
             }
         }

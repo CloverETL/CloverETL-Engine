@@ -21,8 +21,10 @@ package org.jetel.component;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -252,7 +254,7 @@ public class XMLExtract extends Node {
 	private static final String XML_TRIM_ATTRIBUTE = "trim";
 	private static final String XML_VALIDATE_ATTRIBUTE = "validate";
 	private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
-	private static final String XML_NAMESPACE_BINDINGS_ATTRIBUTE = "namespaceBindings";
+	public static final String XML_NAMESPACE_BINDINGS_ATTRIBUTE = "namespaceBindings";
 
 	// from which input port to read
 	private final static int INPUT_PORT = 0;
@@ -469,7 +471,9 @@ public class XMLExtract extends Node {
 			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
 			long fileSize = 0;
 			Date fileTimestamp = null;
-			if (autoFilling.getFilename() != null && FileUtils.isLocalFile(null, autoFilling.getFilename()) && !readableChannelIterator.isGraphDependentSource()) {
+			if (autoFilling.getFilename() != null && 
+					FileUtils.isLocalFile(null, autoFilling.getFilename()) && 
+					!readableChannelIterator.isGraphDependentSource()) {
 				File tmpFile = new File(autoFilling.getFilename());
 				long timestamp = tmpFile.lastModified();
 				fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
@@ -504,8 +508,8 @@ public class XMLExtract extends Node {
 			InputSource is = null;
 			Document doc = null;
 			if (this.mappingURL != null) {
-				String filePath = FileUtils.getFile(graph.getRuntimeContext().getContextURL(), mappingURL);
-				is = new InputSource(new FileInputStream(new File(filePath)));
+				InputStream inputStream = FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), mappingURL);
+				is = new InputSource(inputStream);
 				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
 				doc = XmlUtils.createDocumentFromChannel(ch);
 			} else if (this.mapping != null) {

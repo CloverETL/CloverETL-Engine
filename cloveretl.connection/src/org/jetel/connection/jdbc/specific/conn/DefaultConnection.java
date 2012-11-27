@@ -532,7 +532,7 @@ public class DefaultConnection implements Connection {
         try {
             connection = driver.connect(dbConnection.getDbUrl(), connectionProperties);
         } catch (SQLException ex) {
-            throw new JetelRuntimeException("Can't connect to DB.", ex);
+            throw new JetelRuntimeException("Can't connect to DB: " + ex.getMessage(), ex);
         }
         if (connection == null) {
             throw new JetelRuntimeException("Not suitable driver for specified DB URL (" + driver + " / " + dbConnection.getDbUrl());

@@ -503,6 +503,11 @@ public class SystemExecute extends Node{
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
     	
+    	//print out batch file content if the component failed
+    	if (getResultCode() == Result.ERROR) {
+    		logger.info("SystemExecute component failed with batch file content:\n" + command);
+    	}
+    	
     	try {
     		if (outputFile!=null) {
     			outputFile.close();

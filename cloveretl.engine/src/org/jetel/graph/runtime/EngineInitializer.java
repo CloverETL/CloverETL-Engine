@@ -177,17 +177,12 @@ public class EngineInitializer {
 
         //init framework constants
         Defaults.init(defaultPropertiesFile);
-        
+
+        //file manager initialisation
         FileManager.init();
     }
     
     private static void internalInit(URL defaultPropertiesFile, String logHost) {
-        if (alreadyInitialized) {
-            //clover engine is already initialized
-            return;
-        }
-        alreadyInitialized = true;
-
         //init logging
         initLogging(logHost);
 
@@ -196,6 +191,9 @@ public class EngineInitializer {
 
         //init framework constants
         Defaults.init(defaultPropertiesFile);
+
+        //file manager initialisation
+        FileManager.init();
     }
     
     /**

@@ -473,4 +473,14 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		}
 	}
 	
+	@Override
+	public RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext) {
+		throw new UnsupportedOperationException("Profiler job execution is available only in CloverETL Server environment");
+	}
+	
+	@Override
+	public RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext) {
+		throw new UnsupportedOperationException("Profiler job execution is available only in CloverETL Server environment");
+	}
+	
 }

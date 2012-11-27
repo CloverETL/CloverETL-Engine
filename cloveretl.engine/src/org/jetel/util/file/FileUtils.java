@@ -78,6 +78,8 @@ import org.jetel.logger.SafeLogFactory;
 import org.jetel.util.MultiOutFile;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.exec.PlatformUtils;
+import org.jetel.util.protocols.ProxyAuthenticable;
+import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.amazon.S3OutputStream;
 import org.jetel.util.protocols.ftp.FTPStreamHandler;
@@ -162,7 +164,8 @@ public class FileUtils {
 
 	private static final String HTTP_PROTOCOL = "http";
 	private static final String HTTPS_PROTOCOL = "https";
-	
+	private static final String UTF8 = "UTF-8";
+
 	static {
 		Map<String, URLStreamHandler> h = new HashMap<String, URLStreamHandler>();
 		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
@@ -563,14 +566,13 @@ public class FileUtils {
         }
 
         // create archive streams
+        String anchor = URLDecoder.decode(sbAnchor.toString(), UTF8);
         if (archiveType == ArchiveType.ZIP) {
-        	List<InputStream> lIs = getZipInputStreamsInner(innerStream, sbAnchor.toString(), 0, null, true);
-        	return lIs.size() > 0 ? lIs.get(0) : null;
+        	return getZipInputStream(innerStream, anchor); // CL-2579
         } else if (archiveType == ArchiveType.GZIP) {
             return new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         } else if (archiveType == ArchiveType.TAR) {
-        	List<InputStream> lIs = getTarInputStreamsInner(innerStream, sbAnchor.toString(), 0, null);
-        	return lIs.size() > 0 ? lIs.get(0) : null;
+        	return getTarInputStream(innerStream, anchor);
         } else if (archiveType == ArchiveType.TGZ) {
         	List<InputStream> lIs = getTarInputStreamsInner(new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE), sbAnchor.toString(), 0, null);
         	return lIs.size() > 0 ? lIs.get(0) : null;
@@ -634,23 +636,179 @@ public class FileUtils {
      * @param resolvedAnchors - output parameter
      * @return
      * @throws IOException
+     * 
+     * @deprecated
+     * This method does not really work,
+     * it is not possible to open multiple ZipInputStreams 
+     * from one parent input stream without extensive buffering.
+     * 
+     * Use {@link #getMatchingZipEntries(InputStream, String)} to resolve wildcards
+     * or {@link #getZipInputStream(InputStream, String)} to open a TarInputStream.		
      */
+    @Deprecated
     public static List<InputStream> getZipInputStreams(InputStream innerStream, String anchor, List<String> resolvedAnchors) throws IOException {
+    	anchor = URLDecoder.decode(anchor, UTF8); // CL-2579
     	return getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors, true);
     }
-
+    
     /**
-     * Creates a list of names of sub entries.
-     * @param innerStream
-     * @param anchor
+     * Creates a list of names of matching entries.
+     * @param parentStream
+     * @param pattern
      * 
      * @return resolved anchors
      * @throws IOException
      */
-    public static List<String> getZipInputStreamNames(InputStream innerStream, String anchor) throws IOException {
+    public static List<String> getMatchingZipEntries(InputStream parentStream, String pattern) throws IOException {
+    	if (pattern == null) {
+    		pattern = "";
+    	}
+    	pattern = URLDecoder.decode(pattern, UTF8); // CL-2579
     	List<String> resolvedAnchors = new ArrayList<String>();
-    	getZipInputStreamsInner(innerStream, anchor, 0, resolvedAnchors, false);
+
+        Matcher matcher;
+        Pattern WILDCARD_PATTERN = null;
+        boolean containsWildcard = pattern.contains("?") || pattern.contains("*");
+        if (containsWildcard) {
+        	WILDCARD_PATTERN = Pattern.compile(pattern.replaceAll("\\\\", "\\\\\\\\").replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
+        }
+
+        //resolve url format for zip files
+        ZipInputStream zis = new ZipInputStream(parentStream) ;     
+        ZipEntry entry;
+
+        while ((entry = zis.getNextEntry()) != null) {
+        	if (entry.isDirectory()) {
+        		continue; // CLS-537: skip directories, we want to read the first file
+        	}
+            // wild cards
+            if (containsWildcard) {
+           		matcher = WILDCARD_PATTERN.matcher(entry.getName());
+           		if (matcher.matches()) {
+           			resolvedAnchors.add(entry.getName());
+                }
+        	// without wild cards
+            } else if (pattern.isEmpty() || entry.getName().equals(pattern)) { //url is given without anchor; first entry in zip file is used
+               	resolvedAnchors.add(pattern);
+            }
+        }
+        
+        // if no wild carded entry found, it is ok
+        if (!pattern.isEmpty() && !containsWildcard && resolvedAnchors.isEmpty()) {
+        	throw new IOException("Wrong anchor (" + pattern + ") to zip file.");
+        }
+
     	return resolvedAnchors; 
+    }
+
+    /**
+     * Creates a list of names of matching entries.
+     * @param parentStream
+     * @param pattern
+     * 
+     * @return resolved anchors
+     * @throws IOException
+     */
+    public static List<String> getMatchingTarEntries(InputStream parentStream, String pattern) throws IOException {
+    	if (pattern == null) {
+    		pattern = "";
+    	}
+    	pattern = URLDecoder.decode(pattern, UTF8); // CL-2579
+    	List<String> resolvedAnchors = new ArrayList<String>();
+
+        Matcher matcher;
+        Pattern WILDCARD_PATTERN = null;
+        boolean containsWildcard = pattern.contains("?") || pattern.contains("*");
+        if (containsWildcard) {
+        	WILDCARD_PATTERN = Pattern.compile(pattern.replaceAll("\\\\", "\\\\\\\\").replaceAll("\\.", "\\\\.").replaceAll("\\?", "\\.").replaceAll("\\*", ".*"));
+        }
+
+        //resolve url format for zip files
+        TarInputStream tis = new TarInputStream(parentStream) ;     
+        TarEntry entry;
+
+        while ((entry = tis.getNextEntry()) != null) {
+        	if (entry.isDirectory()) {
+        		continue; // CLS-537: skip directories, we want to read the first file
+        	}
+            // wild cards
+            if (containsWildcard) {
+           		matcher = WILDCARD_PATTERN.matcher(entry.getName());
+           		if (matcher.matches()) {
+           			resolvedAnchors.add(entry.getName());
+                }
+        	// without wild cards
+            } else if (pattern.isEmpty() || entry.getName().equals(pattern)) { //url is given without anchor; first entry in zip file is used
+               	resolvedAnchors.add(pattern);
+            }
+        }
+        
+        // if no wild carded entry found, it is ok
+        if (!pattern.isEmpty() && !containsWildcard && resolvedAnchors.isEmpty()) {
+        	throw new IOException("Wrong anchor (" + pattern + ") to zip file.");
+        }
+
+    	return resolvedAnchors; 
+    }
+
+    /**
+     * Wraps the parent stream into ZipInputStream 
+     * and positions it to read the given entry (no wildcards are applicable).
+     * 
+     * If no entry is given, the stream is positioned to read the first file entry.
+     * 
+     * @param parentStream
+     * @param entryName
+     * @return
+     * @throws IOException
+     */
+    public static ZipInputStream getZipInputStream(InputStream parentStream, String entryName) throws IOException {
+        ZipInputStream zis = new ZipInputStream(parentStream) ;     
+        ZipEntry entry;
+
+        // find a matching entry
+        while ((entry = zis.getNextEntry()) != null) {
+        	if (entry.isDirectory()) {
+        		continue; // CLS-537: skip directories, we want to read the first file
+        	}
+        	// when url is given without anchor; first entry in zip file is used
+            if (StringUtils.isEmpty(entryName) || entry.getName().equals(entryName)) {
+               	return zis;
+            }
+        }
+        
+        //no entry found report
+        throw new IOException("Wrong anchor (" + entryName + ") to zip file.");
+    }
+
+    /**
+     * Wraps the parent stream into TarInputStream 
+     * and positions it to read the given entry (no wildcards are applicable).
+     * 
+     * If no entry is given, the stream is positioned to read the first file entry.
+     * 
+     * @param parentStream
+     * @param entryName
+     * @return
+     * @throws IOException
+     */
+    public static TarInputStream getTarInputStream(InputStream parentStream, String entryName) throws IOException {
+        TarInputStream tis = new TarInputStream(parentStream) ;     
+        TarEntry entry;
+
+        // find a matching entry
+        while ((entry = tis.getNextEntry()) != null) {
+        	if (entry.isDirectory()) {
+        		continue; // CLS-537: skip directories, we want to read the first file
+        	}
+        	// when url is given without anchor; first entry in tar file is used
+            if (StringUtils.isEmpty(entryName) || entry.getName().equals(entryName)) {
+               	return tis;
+            }
+        }
+        
+        //no entry found report
+        throw new IOException("Wrong anchor (" + entryName + ") to tar file.");
     }
 
     /**
@@ -710,10 +868,15 @@ public class FileUtils {
                 }
             
         	// without wild cards
-            } else if(anchor == null || anchor.equals("") || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
-               	streams.add(zin);
-               	if (resolvedAnchors != null) resolvedAnchors.add(anchor);
-               	return streams;
+            } else if (StringUtils.isEmpty(anchor) || entry.getName().equals(anchor)) { //url is given without anchor; first entry in zip file is used
+            	while ((entry != null) && entry.isDirectory()) { // CLS-537: skip directories, we want to read the first file
+            		entry = zin.getNextEntry();
+            	}
+            	if (entry != null) {
+            		streams.add(zin);
+            		if (resolvedAnchors != null) resolvedAnchors.add(anchor);
+            		return streams;
+            	}
             }
             
             //finish up with entry
@@ -742,7 +905,16 @@ public class FileUtils {
      * @param resolvedAnchors - output parameter
      * @return
      * @throws IOException
+     * 
+     * @deprecated
+     * This method does not really work,
+     * it is not possible to open multiple TarInputStreams 
+     * from one parent input stream without extensive buffering.
+     * 
+     * Use {@link #getMatchingTarEntries(InputStream, String)} to resolve wildcards
+     * or {@link #getTarInputStream(InputStream, String)} to open a TarInputStream.		
      */
+    @Deprecated
     public static List<InputStream> getTarInputStreams(InputStream innerStream, String anchor, List<String> resolvedAnchors) throws IOException {
     	return getTarInputStreamsInner(innerStream, anchor, 0, resolvedAnchors);
     }
@@ -837,6 +1009,9 @@ public class FileUtils {
      */
     public static URLConnection getAuthorizedConnection(URL url, Proxy proxy, String proxyUserInfo) throws IOException {
     	URLConnection connection = url.openConnection(proxy);
+    	if (connection instanceof ProxyAuthenticable) {
+    		((ProxyAuthenticable) connection).setProxyCredentials(new UserInfo(proxyUserInfo));
+    	}
     	connection = URLConnectionRequest.getAuthorizedConnection( // set authentication
     			connection, 
     			url.getUserInfo(), 
@@ -1076,7 +1251,21 @@ public class FileUtils {
 			int compressLevel, StringBuilder path) throws IOException {
 		return getLocalArchivePath(contextURL, input, appendData, compressLevel, path, 0, true);
 	}
-
+	
+	static String getLocalArchiveInputPath(URL contextURL, String input)
+			throws IOException {
+		StringBuilder path = new StringBuilder();
+		return getLocalArchiveInputPath(contextURL, input, path) ? path.toString() : null;
+	}
+	
+	static de.schlichtherle.io.File getLocalZipArchive(URL contextURL, String localArchivePath) throws IOException {
+    	// apply the contextURL
+    	URL url = FileUtils.getFileURL(contextURL, localArchivePath);
+		String absolutePath = FileUtils.getUrlFile(url);
+		registerTrueZipVSFEntry(new de.schlichtherle.io.File(localArchivePath));
+		return new de.schlichtherle.io.File(absolutePath);
+	}
+		
 	private static boolean getLocalArchiveInputPath(URL contextURL, String input, StringBuilder path)
 		throws IOException {
 		return getLocalArchivePath(contextURL, input, false, 0, path, 0, false);
@@ -1411,7 +1600,7 @@ public class FileUtils {
         private static String getUrlFile(URL url) {
             try {
                 final String fixedFileUrl = handleSpecialCharacters(url);
-                return URLDecoder.decode(fixedFileUrl, "UTF-8");
+                return URLDecoder.decode(fixedFileUrl, UTF8);
             } catch (UnsupportedEncodingException ex) {
                 throw new RuntimeException("Encoding not supported!", ex);
             }
