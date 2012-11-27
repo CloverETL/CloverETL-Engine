@@ -55,6 +55,19 @@ public abstract class EdgeBase {
 	 */
 	public abstract void init() throws IOException, InterruptedException;
 
+	/**
+	 * @see GraphElement#preExecute()
+	 */
+	public void preExecute() {
+		//empty implementation
+    }
+    
+	/**
+	 * @see GraphElement#postExecute()
+	 */
+	public void postExecute() {
+		//empty implementation
+	}
 
 	/**
 	 * Resets all internal settings to the initial state.

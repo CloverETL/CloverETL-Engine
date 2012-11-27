@@ -41,7 +41,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.distribution.NodeAllocation;
+import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.CloverWorkerListener;
 import org.jetel.graph.runtime.ErrorMsgBody;
@@ -93,7 +93,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     /**
      * Distribution of this node processing at cluster environment.
      */
-    protected NodeAllocation allocation;
+    protected EngineComponentAllocation allocation;
     
     // buffered values
     protected OutputPort[] outPortsArray;
@@ -154,7 +154,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         phase = null;
         runResult=Result.N_A; // result is not known yet
         childThreads = new ArrayList<Thread>();
-        allocation = NodeAllocation.createBasedOnNeighbours();
+        allocation = EngineComponentAllocation.createBasedOnNeighbours();
 	}
 
 	/**
@@ -191,29 +191,16 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@since     April 4, 2002
 	 */
 	public boolean isLeaf() {
-		if (outPorts.size() == 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	/**
-	 * Returns True if this Node is Phase Leaf Node - i.e. only consumes data within
-	 * phase it belongs to (has only input ports connected or any connected output ports
-	 * connects this Node with Node in different phase)
-	 * 
-	 * @return True if this Node is Phase Leaf
-	 */
-	public boolean isPhaseLeaf() {
+		//this implementation is necessary for remote edges 
+		//even component with a connected edge can be leaf if the edge is the remote one
 		for (OutputPort outputPort : getOutPorts()) {
-			if (phase != outputPort.getReader().getPhase()) {
-				return true;
+			if (outputPort.getReader() != null) { 
+				return false;
 			}
 		}
-		return false;
+		return true;
 	}
-
+	
 	/**
 	 *  Returns True if this node is Root Node - i.e. it produces data (has only output ports
 	 * connected to id).
@@ -222,11 +209,14 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@since     April 4, 2002
 	 */
 	public boolean isRoot() {
-		if (inPorts.size() == 0) {
-			return true;
-		} else {
-			return false;
+		//this implementation is necessary for remote edges 
+		//even component with a connected edge can be root if the edge is the remote one
+		for (InputPort inputPort : getInPorts()) {
+			if (inputPort.getWriter() != null) { 
+				return false;
+			}
 		}
+		return true;
 	}
 
 	/**
@@ -994,6 +984,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     }
 
     /**
+     * @param enabled whether node is enabled
+     */
+    public void setEnabled(EnabledEnum enabled) {
+        this.enabled = (enabled != null ? enabled : EnabledEnum.ENABLED);
+    }
+    
+    /**
      * @return index of "pass through" input port
      */
     public int getPassThroughInputPort() {
@@ -1027,14 +1024,14 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     /**
      * @return node allocation in parallel processing (cluster environment)
      */
-    public NodeAllocation getAllocation() {
+    public EngineComponentAllocation getAllocation() {
     	return allocation;
     }
     
     /**
      * @param required node allocation in parallel processing (cluster environment)
      */
-    public void setAllocation(NodeAllocation alloc) {
+    public void setAllocation(EngineComponentAllocation alloc) {
     	this.allocation = alloc;
     }
     

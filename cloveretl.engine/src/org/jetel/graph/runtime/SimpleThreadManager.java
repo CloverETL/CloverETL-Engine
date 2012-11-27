@@ -19,8 +19,6 @@
 package org.jetel.graph.runtime;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
@@ -94,12 +92,21 @@ public class SimpleThreadManager implements IThreadManager {
 		return futureTask;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.runtime.IThreadManager#execute(java.lang.Runnable)
+	 */
 	@Override
-	public <T> Future<T> execute(Callable<T> task) {
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		return executor.submit(task);
+	public <T> Future<T> execute(Callable<T> callable) {
+		FutureTask<T> futureTask = new FutureTask<T>(callable); 
+		Thread thread = new Thread(futureTask, callable.getClass().getName());
+		thread.setContextClassLoader(callable.getClass().getClassLoader());
+		thread.setPriority(Thread.MIN_PRIORITY);
+		thread.setDaemon(false);
+		thread.start();
+		
+		return futureTask;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.IThreadManager#getFreeThreadsCount()
 	 */

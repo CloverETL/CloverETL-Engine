@@ -30,7 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.distribution.NodeAllocation;
+import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
@@ -136,7 +136,7 @@ public class ComponentFactory {
 			//hack for extracting of node layout information - Clover3 solves this issue
 			//it is the easiest way how to add new common attribute for all nodes
 			if (xattribs.exists(Node.XML_ALLOCATION_ATTRIBUTE)) {
-				NodeAllocation nodeAllocation = NodeAllocation.createFromString(xattribs.getString(Node.XML_ALLOCATION_ATTRIBUTE));
+				EngineComponentAllocation nodeAllocation = EngineComponentAllocation.createFromString(xattribs.getString(Node.XML_ALLOCATION_ATTRIBUTE));
 				result.setAllocation(nodeAllocation);
 			}
 			//name attribute parsing
@@ -151,10 +151,10 @@ public class ComponentFactory {
             throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage(), e);
         } catch(NoSuchMethodException e) {
             logger.error("Can't create object of type " + componentType + " with reason: " + e.getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage());
+            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage(), e);
 		} catch(Exception ex) {
-            logger.error("Can't create object of : " + componentType + " exception: " + ex);
-			throw new RuntimeException("Can't create object of : " + componentType + " exception: " + ex);
+            logger.error("Can't create object of : " + componentType);
+			throw new RuntimeException("Can't create object of : " + componentType, ex);
 		}
 	}
     
@@ -180,13 +180,13 @@ public class ComponentFactory {
             return constructor.newInstance(constructorParameters);
         } catch(InvocationTargetException e) {
             logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
+            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage(), e);
         } catch(NoSuchMethodException e) {
             logger.error("Can't create object of type " + componentType + " with reason: " + e.getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage());
+            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage(), e);
         } catch(Exception ex) {
             logger.error("Can't create object of : " + componentType + " exception: " + ex);
-            throw new RuntimeException("Can't create object of : " + componentType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + componentType, ex);
         }
     }
 }

@@ -21,8 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -56,7 +54,6 @@ public class Phase extends GraphElement implements Comparable {
 	 */
 	private Map<String, Node> nodes;
 	private Map<String, Edge> edges; //edges with the source component in this phase
-    private List<Node> leafNodes;
 
 	// specifies the order of this phase within graph
 	private int phaseNum;
@@ -137,9 +134,6 @@ public class Phase extends GraphElement implements Comparable {
         if(isInitialized()) return;
 		super.init();
 
-        // list of leaf nodes -will be filled later
-        leafNodes = new LinkedList<Node>();
-        
 		logger.info("[Clover] Initializing phase: " + phaseNum);
 
         //initialization of all edges
@@ -162,10 +156,6 @@ public class Phase extends GraphElement implements Comparable {
 			ContextProvider.registerNode(node);
 			try {
 				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
-                // is it a leaf node ?
-                if (node.isLeaf() || node.isPhaseLeaf()) {
-                    leafNodes.add(node);
-                }
 				node.init();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
@@ -420,7 +410,6 @@ public class Phase extends GraphElement implements Comparable {
         }
     }
 
-    //TODO this method should be removed; edges in a phase are determined by a set of nodes
 	public void addEdge(Edge edge) throws GraphConfigurationException{
 		Node writer = edge.getWriter();
 		if(writer == null) {
@@ -575,14 +564,6 @@ public class Phase extends GraphElement implements Comparable {
 
     public void setCheckPoint(boolean isCheckPoint) {
         this.isCheckPoint = isCheckPoint;
-    }
-
-    /**
-     * @return the leafNodes
-     * @since 10.1.2007
-     */
-    public List<Node> getLeafNodes() {
-        return leafNodes;
     }
 
 }

@@ -78,6 +78,8 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	/** Parent graph of this metadata */
 	private TransformationGraph graph;
+	/** Id of the data record. */
+	private String id;
 	/** Name of the data record. */
 	private String name;
 	/** Description of the data record. */
@@ -195,6 +197,21 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		this.parsingType = parsingType;
 	}
 	
+	/**
+	 * @return metadata identifier
+	 */
+	public String getId() {
+		return id;
+	}
+
+	/**
+	 * Sets new identifier for metadata.
+	 * @param id
+	 */
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	/**
 	 * Sets the name of the data record.
 	 *

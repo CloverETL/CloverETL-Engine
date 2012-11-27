@@ -76,6 +76,8 @@ public class BinaryDataParser extends AbstractParser {
 	
 	private boolean eofReached;
 
+	private long processedBytes;
+	
 	public BinaryDataParser(DataRecordMetadata metadata) {
 		this.metadata = metadata;
 	}
@@ -87,11 +89,7 @@ public class BinaryDataParser extends AbstractParser {
 	
 	public BinaryDataParser(DataRecordMetadata metadata, InputStream inputStream) {
 		this.metadata = metadata;
-		try {
-			setDataSource(inputStream);
-		} catch (ComponentNotReadyException e) {
-			throw new JetelRuntimeException(e);
-		}
+		setDataSource(inputStream);
 	}
 
 	public BinaryDataParser(DataRecordMetadata metadata, InputStream inputStream, int bufferLimit) {
@@ -101,11 +99,7 @@ public class BinaryDataParser extends AbstractParser {
 
 	public BinaryDataParser(DataRecordMetadata metadata, File file) {
 		this.metadata = metadata;
-		try {
-			setDataSource(file);
-		} catch (ComponentNotReadyException e) {
-			throw new JetelRuntimeException(e);
-		}
+		setDataSource(file);
 	}
 	
 	public int getBufferLimit() {
@@ -148,7 +142,7 @@ public class BinaryDataParser extends AbstractParser {
 	}
 
 	@Override
-	public DataRecord getNext(DataRecord record) throws JetelException {
+	public DataRecord getNext(DataRecord record){
 		try {
 			if (LEN_SIZE_SPECIFIER > buffer.remaining()) {
 				reloadBuffer(LEN_SIZE_SPECIFIER);
@@ -163,7 +157,7 @@ public class BinaryDataParser extends AbstractParser {
 			if (recordSize > buffer.remaining()) {
 				reloadBuffer(recordSize);
 				if (recordSize > buffer.remaining()) {
-					throw new JetelException("Invalid end of data stream.");
+					throw new JetelRuntimeException("Invalid end of data stream.");
 				}
 			}
 
@@ -171,11 +165,46 @@ public class BinaryDataParser extends AbstractParser {
 			
 			return record;
 		} catch (IOException e) {
-			throw new JetelException(e.getMessage(), e);
+			throw new JetelRuntimeException(e.getMessage(), e);
 		} catch (BufferUnderflowException e) {
-			throw new JetelException("Invalid end of stream.", e);
+			throw new JetelRuntimeException("Invalid end of stream.", e);
 		}
+	}
+	
+	public boolean getNext(CloverBuffer recordBuffer) {
+		try {
+			if (LEN_SIZE_SPECIFIER > buffer.remaining()) {
+				reloadBuffer(LEN_SIZE_SPECIFIER);
+				if (buffer.remaining() == 0) {
+					return false; //correct end of stream
+				}
+			}
+			
+			recordSize = ByteBufferUtils.decodeLength(buffer);
 
+			// check that internal buffer has enough data to read data record
+			if (recordSize > buffer.remaining()) {
+				reloadBuffer(recordSize);
+				if (recordSize > buffer.remaining()) {
+					throw new JetelRuntimeException("Invalid end of data stream.");
+				}
+			}
+
+			int sourceLimit = buffer.limit();
+			buffer.limit(buffer.position() + recordSize);
+			
+			recordBuffer.clear();
+			recordBuffer.put(buffer);
+			recordBuffer.flip();
+			
+			buffer.limit(sourceLimit);
+			
+			return true;
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e.getMessage(), e);
+		} catch (BufferUnderflowException e) {
+			throw new JetelRuntimeException("Invalid end of stream.", e);
+		}
 	}
 	
 	private void reloadBuffer(int requiredSize) throws IOException {
@@ -189,7 +218,7 @@ public class BinaryDataParser extends AbstractParser {
 			buffer.expand(0, requiredSize);
 		}
 		do {
-			size = reader.read(buffer.buf());
+			processedBytes += (size = reader.read(buffer.buf()));
 			if (buffer.position() >= requiredSize) {
 				break;
 			}
@@ -210,14 +239,14 @@ public class BinaryDataParser extends AbstractParser {
 	}
 
 	@Override
-	public Object getPosition() {
-		return null;
+	public Long getPosition() {
+		return processedBytes;
 	}
 
 	@Override
-	public void init() throws ComponentNotReadyException {
+	public void init() {
 		if (metadata == null) {
-			throw new ComponentNotReadyException("Metadata cannot be null");
+			throw new JetelRuntimeException("Metadata cannot be null");
 		}
 		int buffSize = bufferLimit > 0 ? Math.min(Defaults.Record.RECORDS_BUFFER_SIZE, bufferLimit)
 				: Defaults.Record.RECORDS_BUFFER_SIZE;
@@ -226,6 +255,7 @@ public class BinaryDataParser extends AbstractParser {
 		buffer.limit(0);
 
 		eofReached = false;
+		processedBytes = 0;
 	}
 
 	public DataRecordMetadata getMetadata() {
@@ -246,16 +276,17 @@ public class BinaryDataParser extends AbstractParser {
 		}
 		
 		eofReached = false;
+		processedBytes = 0;
 	}
 
 	@Override
-	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
+	public void setDataSource(Object inputDataSource) {
 		if (inputDataSource instanceof File) {
 			try {
 				backendStream = new FileInputStream((File) inputDataSource);
 				reader = Channels.newChannel(backendStream);
 			} catch (FileNotFoundException e) {
-				throw new ComponentNotReadyException(e);
+				throw new JetelRuntimeException(e);
 			}
 		} else if (inputDataSource instanceof InputStream) {
 			backendStream = (InputStream) inputDataSource;
@@ -316,5 +347,5 @@ public class BinaryDataParser extends AbstractParser {
 	public boolean nextL3Source() {
 		return false;
 	}
-	
+
 }

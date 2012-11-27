@@ -63,6 +63,14 @@ public class ContextProvider {
 //    	return nodesCache.get(Thread.currentThread());
     }
 
+	/**
+	 * Returns componentId from thread context. If it's missing, returns null.
+	 */
+	public static String getComponentId() {
+		Node component = ContextProvider.getNode();
+		return component==null ? null : component.getId();
+	}
+	
 	private static Context getContext() {
 		Stack<Context> threadCache = contextCache.get(Thread.currentThread());
 		if (threadCache != null) {

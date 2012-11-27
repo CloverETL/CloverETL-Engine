@@ -326,7 +326,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public InputStream getSandboxResourceInput(String storageCode, String path) {
+	public InputStream getSandboxResourceInput(String componentId, String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
@@ -335,7 +335,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceOutput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public OutputStream getSandboxResourceOutput(String storageCode, String path, boolean append) {
+	public OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
@@ -351,46 +351,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 */
 	public OutputStream[] getPartitionedSandboxResourceOutput(String storageCode, String path) {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterPartitionerOutputStreams(java.lang.String)
-	 */
-	@Override
-	public OutputStream[] getClusterPartitionerOutputStreams(String componentId) throws IOException {
-		throw new UnsupportedOperationException("ClusterPartitioner output streams are available only in CloverETL Server environment!");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterPartitionerInputStream(java.lang.String)
-	 */
-	@Override
-	public InputStream getClusterPartitionerInputStream(String componentId) throws IOException {
-		throw new UnsupportedOperationException("ClusterPartitioner input stream is available only in CloverETL Server environment!");
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherInputStreams(java.lang.String)
-	 */
-	@Override
-	public InputStream[] getClusterGatherInputStreams(String componentId) throws IOException {
-		throw new UnsupportedOperationException("ClusterGather input streams are available only in CloverETL Server environment!");
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#getClusterGatherOutputStream(java.lang.String)
-	 */
-	@Override
-	public OutputStream getClusterGatherOutputStream(String componentId) throws IOException {
-		throw new UnsupportedOperationException("ClusterGather output stream is available only in CloverETL Server environment!");
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.runtime.IAuthorityProxy#isPrimaryWorker()
-	 */
-	@Override
-	public boolean isPrimaryWorker() {
-		throw new UnsupportedOperationException("Primary worker does has sense only in CloverETL Server environment!");
 	}
 
 	@Override
@@ -476,6 +436,16 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext) {
 		throw new UnsupportedOperationException("Profiler job execution is available only in CloverETL Server environment");
+	}
+
+	@Override
+	public InputStream getRemoteEdgeInputStream(String edgeId) {
+		throw new UnsupportedOperationException("remote edges are not available for local graphs");
+	}
+
+	@Override
+	public OutputStream getRemoteEdgeOutputStream(String edgeId) {
+		throw new UnsupportedOperationException("remote edges are not available for local graphs");
 	}
 	
 	@Override
