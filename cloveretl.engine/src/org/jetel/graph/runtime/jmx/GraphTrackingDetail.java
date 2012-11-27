@@ -48,6 +48,8 @@ public class GraphTrackingDetail implements GraphTracking {
 
     private Result result;
 
+    private String nodeId;
+    
     private transient Result lastPhaseResult;
     
 	/**
@@ -174,6 +176,11 @@ public class GraphTrackingDetail implements GraphTracking {
 		return result;
 	}
 
+	@Override
+	public String getNodeId() {
+		return nodeId;
+	}
+	
 	private PhaseTrackingDetail getPhaseDetail(int phaseNum) {
 		for(PhaseTrackingDetail phaseTracking : phasesDetails) {
 			if(phaseTracking.getPhaseNum() == phaseNum) {
@@ -205,6 +212,10 @@ public class GraphTrackingDetail implements GraphTracking {
 
 	public void setResult(Result result) {
 		this.result = result;
+	}
+	
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
 	}
 
 	public void setLastPhaseResult(Result lastPhaseResult) {

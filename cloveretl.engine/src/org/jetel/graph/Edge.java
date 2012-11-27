@@ -293,6 +293,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
+		edge.preExecute();
+		
 		if (debugMode && getGraph().isDebugMode()) {
             String debugFileName = getDebugFileName();
             logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
@@ -320,6 +322,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
+		
+		edge.postExecute();
 		
         if (edgeDebuger != null) {
             edgeDebuger.close();
@@ -543,6 +547,16 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public void toXML(Element xmlElement) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	/**
+	 * Sets specific {@link EdgeBase} instance which is used as real edge algorithm.
+	 * By default, the {@link EdgeBase} instance is created in initialisation time
+	 * based on {@link EdgeTypeEnum}.
+	 * @param edge
+	 */
+	public void setEdge(EdgeBase edge) {
+		this.edge = edge;
 	}
 
 	/**

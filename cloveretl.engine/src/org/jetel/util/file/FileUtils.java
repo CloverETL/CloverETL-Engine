@@ -72,6 +72,7 @@ import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.logger.SafeLog;
 import org.jetel.logger.SafeLogFactory;
@@ -545,7 +546,7 @@ public class FileUtils {
         		if (graph == null) {
 					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
         		}
-        		return graph.getAuthorityProxy().getSandboxResourceInput(url.getHost(), getUrlFile(url));
+        		return graph.getAuthorityProxy().getSandboxResourceInput(ContextProvider.getComponentId(), url.getHost(), getUrlFile(url));
         	}
         	
         	try {
@@ -1386,7 +1387,7 @@ public class FileUtils {
 					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
         		}
     			URL url = FileUtils.getFileURL(contextURL, input);
-            	return graph.getAuthorityProxy().getSandboxResourceOutput(url.getHost(), SandboxUrlUtils.getRelativeUrl(url.toString()), appendData);
+            	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), SandboxUrlUtils.getRelativeUrl(url.toString()), appendData);
     		} else {
     			// file path or relative URL
     			URL url = FileUtils.getFileURL(contextURL, input);
@@ -1395,7 +1396,7 @@ public class FileUtils {
             		if (graph == null) {
     					throw new NullPointerException("Graph reference cannot be null when \"" + SandboxUrlUtils.SANDBOX_PROTOCOL + "\" protocol is used.");
             		}
-                	return graph.getAuthorityProxy().getSandboxResourceOutput(url.getHost(), getUrlFile(url), appendData);
+                	return graph.getAuthorityProxy().getSandboxResourceOutput(ContextProvider.getComponentId(), url.getHost(), getUrlFile(url), appendData);
     			}
     			// file input stream 
     			String filePath = url.getRef() != null ? getUrlFile(url) + "#" + url.getRef() : getUrlFile(url);
@@ -1519,10 +1520,8 @@ public class FileUtils {
         		String sFile = isFile ? file.getParent() : file.getPath();
         		FileUtils.makeDirs(contextURL, sFile);
         	} else if (SandboxUrlUtils.isSandboxUrl(innerMostURLString)) {
-        		// SandboxUrlUtils.getRelativeUrl() ensures that the path won't start with a slash, which causes problems on Linux
-        		File file = new File(SandboxUrlUtils.getRelativeUrl(innerMostURLString));
-        		String sFile = isFile ? file.getParent() : file.getPath(); // a hack to get the parent directory
-        		FileUtils.makeDirs(contextURL, sFile);
+        		String parentDirUrl = FileURLParser.getParentDirectory(innerMostURLString);
+        		FileUtils.makeDirs(null, parentDirUrl);
         	} else {
         		Operation operation = Operation.create(innerMostURL.getProtocol());
         		FileManager manager = FileManager.getInstance();

@@ -451,6 +451,12 @@ public class TransformationGraphXMLReaderWriter {
 			} catch (Exception e) {
 				throwXMLConfigurationException("Metadata cannot be instantiated.", e);
 			}
+			//set metadataId
+			if (recordMetadata instanceof DataRecordMetadata) {
+				((DataRecordMetadata) recordMetadata).setId(metadataID);
+			} else {
+				((DataRecordMetadataStub) recordMetadata).setId(metadataID);
+			}
 			// register metadata object
 			if (recordMetadata != null && metadataID != null && metadata.put(metadataID, recordMetadata) != null) {
 				throwXMLConfigurationException("Metadata '" + metadataID + "' already defined - duplicate ID detected!");

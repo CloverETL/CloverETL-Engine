@@ -53,6 +53,11 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 	 */
 	protected boolean runIt;
 	
+	/**
+	 * Exception thrown by user defined method {@link #work()}.
+	 */
+	protected Exception exception;
+	
 	private ArrayList<CloverWorkerListener> listeners = new ArrayList<CloverWorkerListener>();
 	
 	public CloverWorker(Node node, String name) {
@@ -77,7 +82,10 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 			work();
 			fireWorkerFinished(new CloverWorkerListener.Event(this));
 		} catch (InterruptedException e) {
-			// this is fine, we're not interested 
+			// this is fine, we're not interested
+		} catch (RuntimeException e) {
+			exception = e;
+			throw e;
 		} finally {
 			ContextProvider.unregister();
 			MDC.remove("runId");
@@ -137,6 +145,13 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		for(CloverWorkerListener l : listeners) {
 			l.workerCrashed(e);
 		}
+	}
+	
+	/**
+	 * @return exception thrown in {@link #work()} method if any
+	 */
+	public Exception getException() {
+		return exception;
 	}
 	
 	@Override

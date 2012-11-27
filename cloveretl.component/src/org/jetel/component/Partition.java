@@ -19,11 +19,8 @@
 package org.jetel.component;
 
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.component.partition.PartitionFunction;
 import org.jetel.component.partition.PartitionFunctionFactory;
 import org.jetel.component.partition.RangePartition;
@@ -31,6 +28,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -178,9 +176,6 @@ public class Partition extends Node {
     private static final String XML_USE_I18N_ATTRIBUTE = "useI18N";
     private static final String XML_LOCALE_ATTRIBUTE = "locale";
 
-	private static final Log logger = LogFactory.getLog(Partition.class);
-
-
     /**
 	 *  Constructor for the Partition object
 	 *
@@ -201,14 +196,8 @@ public class Partition extends Node {
 	 * @param partitionKey partition key
 	 * @param partitionRanges ranges for partition key
 	 */
-	public Partition(String id, String partition, String partitionClass, 
-			String partitionURL, String[] partitionKey, String[] partitionRanges) {
-		super(id);
-        this.partitionSource = partition;
-        this.partitionClass = partitionClass;
-        this.partitionURL = partitionURL;
-        this.partitionKeyNames = partitionKey;
-        this.partitionRanges = partitionRanges;
+	public Partition(String id, TransformationGraph graph) {
+		super(id, graph);
 	}
 
 	/**
@@ -370,88 +359,54 @@ public class Partition extends Node {
 		return partitionFceFactory;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
+    public static Node fromXML(TransformationGraph transformationGraph, Element xmlElement) throws XMLConfigurationException {
+        Partition partition = null;
 
-		if (partitionKeyNames != null) {
-			StringBuffer buf = new StringBuffer(partitionKeyNames[0]);
-			for (int i=1; i<partitionKeyNames.length; i++) {
-			buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + partitionKeyNames[i]);
-			}
-			
-			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE,buf.toString());
-		}else if (partitionClass != null){
-			xmlElement.setAttribute(XML_PARTITIONCLASS_ATTRIBUTE, partitionClass);
-		}else{
-			xmlElement.setAttribute(XML_PARTIONSOURCE_ATTRIBUTE, partitionSource);
-		}
-		
-		if (partitionRanges != null) {
-			StringBuffer buf = new StringBuffer(partitionRanges[0]);
-			for (int i=1; i<partitionRanges.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + partitionRanges[i]);
-			}
-			
-			xmlElement.setAttribute(XML_RANGES_ATTRIBUTE,buf.toString());
-		}
-		Enumeration<?> propertyAtts = parameters.propertyNames();
-		while (propertyAtts.hasMoreElements()) {
-			String attName = (String)propertyAtts.nextElement();
-			xmlElement.setAttribute(attName,parameters.getProperty(attName));
-		}
-		
-		xmlElement.setAttribute(XML_USE_I18N_ATTRIBUTE, String.valueOf(useI18N));
-		if (locale != null) {
-			xmlElement.setAttribute(XML_LOCALE_ATTRIBUTE, locale);
-		}
-	}
+        ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
+        try {
+        	partition = new Partition(componentAttributes.getString(XML_ID_ATTRIBUTE), transformationGraph);
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  nodeXML  Description of Parameter
-	 * @return          Description of the Returned Value
-	 * @since           May 21, 2002
-	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		Partition partition;
+        	partition.loadAttributesFromXML(componentAttributes);
+        } catch (AttributeNotFoundException exception) {
+            throw new XMLConfigurationException("Missing a required attribute!", exception);
+        } catch (Exception exception) {
+            throw new XMLConfigurationException("Error creating the component!", exception);
+        }
+
+        return partition;
+    }
+    
+	protected void loadAttributesFromXML(ComponentXMLAttributes xattribs) throws XMLConfigurationException {
 		try {
 			String[] key = xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE) ? 
 					StringUtils.split(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE)) :
-					null;		
+					null;
+			setPartitionKeyNames(key);
 			String[] ranges = xattribs.exists(XML_RANGES_ATTRIBUTE) ?
 					StringUtils.split(xattribs.getString(XML_RANGES_ATTRIBUTE), RANGES_DELIMITER) :
-						null;		
-		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE),
-		    		xattribs.getStringEx(XML_PARTIONSOURCE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
-		    		xattribs.getString(XML_PARTITIONCLASS_ATTRIBUTE, null),
-		    		xattribs.getStringEx(XML_PARTITIONURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-		    		key, ranges);
-			partition.setFunctionParameters(xattribs.attributes2Properties(
+						null;	
+			setPartitionRanges(ranges);
+			setPartitionSource(xattribs.getStringEx(XML_PARTIONSOURCE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+			setPartitionClass(xattribs.getString(XML_PARTITIONCLASS_ATTRIBUTE, null));
+			setPartitionURL(xattribs.getStringEx(XML_PARTITIONURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+			setFunctionParameters(xattribs.attributes2Properties(
 					new String[]{XML_ID_ATTRIBUTE,XML_PARTIONSOURCE_ATTRIBUTE,
 							XML_PARTITIONCLASS_ATTRIBUTE, XML_PARTITIONURL_ATTRIBUTE, 
 							XML_PARTITIONKEY_ATTRIBUTE, XML_RANGES_ATTRIBUTE, 
 							XML_CHARSET_ATTRIBUTE}));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				partition.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+				setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
-			partition.setUseI18N(xattribs.getBoolean(XML_USE_I18N_ATTRIBUTE, false));
+			setUseI18N(xattribs.getBoolean(XML_USE_I18N_ATTRIBUTE, false));
 			if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
-				partition.setLocale(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+				setLocale(xattribs.getString(XML_LOCALE_ATTRIBUTE));
 			}
-			return partition;
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-		}
+        } catch (AttributeNotFoundException exception) {
+            throw new XMLConfigurationException("Missing a required attribute!", exception);
+        } catch (Exception exception) {
+            throw new XMLConfigurationException("Error creating the component!", exception);
+        }
 	}
 
 	/**
@@ -471,7 +426,7 @@ public class Partition extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 	 
-		if(!checkInputPorts(status, 1, 1)
+		if (!checkInputPorts(status, 1, 1)
 				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
 			return status;
 		}
@@ -542,7 +497,77 @@ public class Partition extends Node {
 	public void setUseI18N(boolean useI18N) {
 		this.useI18N = useI18N;
 	}
-	
+
+	/**
+	 * @return the partitionSource
+	 */
+	public String getPartitionSource() {
+		return partitionSource;
+	}
+
+	/**
+	 * @param partitionSource the partitionSource to set
+	 */
+	public void setPartitionSource(String partitionSource) {
+		this.partitionSource = partitionSource;
+	}
+
+	/**
+	 * @return the partitionClass
+	 */
+	public String getPartitionClass() {
+		return partitionClass;
+	}
+
+	/**
+	 * @param partitionClass the partitionClass to set
+	 */
+	public void setPartitionClass(String partitionClass) {
+		this.partitionClass = partitionClass;
+	}
+
+	/**
+	 * @return the partitionKeyNames
+	 */
+	public String[] getPartitionKeyNames() {
+		return partitionKeyNames;
+	}
+
+	/**
+	 * @param partitionKeyNames the partitionKeyNames to set
+	 */
+	public void setPartitionKeyNames(String[] partitionKeyNames) {
+		this.partitionKeyNames = partitionKeyNames;
+	}
+
+	/**
+	 * @return the partitionRanges
+	 */
+	public String[] getPartitionRanges() {
+		return partitionRanges;
+	}
+
+	/**
+	 * @param partitionRanges the partitionRanges to set
+	 */
+	public void setPartitionRanges(String[] partitionRanges) {
+		this.partitionRanges = partitionRanges;
+	}
+
+	/**
+	 * @return the partitionURL
+	 */
+	public String getPartitionURL() {
+		return partitionURL;
+	}
+
+	/**
+	 * @param partitionURL the partitionURL to set
+	 */
+	public void setPartitionURL(String partitionURL) {
+		this.partitionURL = partitionURL;
+	}
+
 	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new BasicComponentTokenTracker(this);

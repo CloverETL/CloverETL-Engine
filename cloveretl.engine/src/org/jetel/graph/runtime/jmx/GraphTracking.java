@@ -69,6 +69,10 @@ public interface GraphTracking extends Serializable {
 	 */
 	Result getResult();
 
+	/**
+	 * @return identifier of cluster node, where the graph was executed; can be null for non-cluster runs
+	 */
+	String getNodeId();
 	
 	/**
 	 * @return tracking of all phases.

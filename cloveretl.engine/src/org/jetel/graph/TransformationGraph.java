@@ -1024,7 +1024,7 @@ public final class TransformationGraph extends GraphElement {
     	Node writer = edge.getWriter();
     	if(writer == null) {
     		throw new GraphConfigurationException("An edge without source node cannot be added into the graph.");
-    	}
+    		}
     	Phase phase = writer.getPhase();
     	if(phase == null) {
     		throw new GraphConfigurationException("An edge without strict phase definition cannot be added into the graph.");

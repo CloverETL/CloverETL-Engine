@@ -301,7 +301,7 @@ public abstract class IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public abstract InputStream getSandboxResourceInput(String storageCode, String path) throws IOException;
+	public abstract InputStream getSandboxResourceInput(String componentId, String storageCode, String path) throws IOException;
 
 	/**
 	 * Returns output stream for updating of specified sandbox resource.
@@ -315,66 +315,70 @@ public abstract class IAuthorityProxy {
 	 * 
 	 * @return
 	 */
-	public abstract OutputStream getSandboxResourceOutput(String storageCode, String path, boolean append) throws IOException;
+	public abstract OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) throws IOException;
 
-	/**
-	 * Returns true, if this worker instance is "primary" in curretn phase. 
-	 * 
-	 * MZa: will be removed
-	 * 
-	 * @param runId
-	 * @return 
-	 */
-	public abstract boolean isPrimaryWorker();
+//	/**
+//	 * Returns true, if this worker instance is "primary" in curretn phase. 
+//	 * 
+//	 * MZa: will be removed
+//	 * 
+//	 * @param runId
+//	 * @return 
+//	 */
+//	public abstract boolean isPrimaryWorker();
 	
-	/**
-	 * Called by Cluster Partitioner component on "primary" worker.
-	 * Returns list of output streams to "slave" workers.
-	 * 
-	 * MZa: will be removed
-	 * 
-	 * @param componentId
-	 * @return streams array of size workersCount-1
-	 * @throws IOException
-	 */
-	public abstract OutputStream[] getClusterPartitionerOutputStreams(String componentId) throws IOException;
-	
-	/**
-	 * Called by Cluster Partitioner component on "slave" worker.
-	 * Returns input stream with data from "primary" worker.  
-	 * 
-	 * MZa: will be removed
-	 * 
-	 * @param runId
-	 * @param componentId
-	 * @return 
-	 * @throws IOException
-	 */
-	public abstract InputStream getClusterPartitionerInputStream(String componentId) throws IOException;
-	
-	/**
-	 * Called by ClusterGather component on "primary" worker.
-	 * Returns list of input streams with data from "slave" workers.
-	 * 
-	 * MZa: will be removed
-	 *  
-	 * @param componentId
-	 * @return streams array of size workersCount-1
-	 * @throws IOException
-	 */
-	public abstract InputStream[] getClusterGatherInputStreams(String componentId) throws IOException;
-	
-	/**
-	 * Called by Cluster Gather component on "slave" worker. 
-	 * Returns output stream which will be fed by output data.
-	 * 
-	 * MZa: will be removed 
-	 * 
-	 * @param componentId
-	 * @return
-	 * @throws IOException
-	 */
-	public abstract OutputStream getClusterGatherOutputStream(String componentId) throws IOException;
+	public abstract InputStream getRemoteEdgeInputStream(String edgeId);
+
+	public abstract OutputStream getRemoteEdgeOutputStream(String edgeId);
+
+//	/**
+//	 * Called by Cluster Partitioner component on "primary" worker.
+//	 * Returns list of output streams to "slave" workers.
+//	 * 
+//	 * MZa: will be removed
+//	 * 
+//	 * @param componentId
+//	 * @return streams array of size workersCount-1
+//	 * @throws IOException
+//	 */
+//	public abstract OutputStream[] getClusterPartitionerOutputStreams(String componentId) throws IOException;
+//	
+//	/**
+//	 * Called by Cluster Partitioner component on "slave" worker.
+//	 * Returns input stream with data from "primary" worker.  
+//	 * 
+//	 * MZa: will be removed
+//	 * 
+//	 * @param runId
+//	 * @param componentId
+//	 * @return 
+//	 * @throws IOException
+//	 */
+//	public abstract InputStream getClusterPartitionerInputStream(String componentId) throws IOException;
+//	
+//	/**
+//	 * Called by ClusterGather component on "primary" worker.
+//	 * Returns list of input streams with data from "slave" workers.
+//	 * 
+//	 * MZa: will be removed
+//	 *  
+//	 * @param componentId
+//	 * @return streams array of size workersCount-1
+//	 * @throws IOException
+//	 */
+//	public abstract InputStream[] getClusterGatherInputStreams(String componentId) throws IOException;
+//	
+//	/**
+//	 * Called by Cluster Gather component on "slave" worker. 
+//	 * Returns output stream which will be fed by output data.
+//	 * 
+//	 * MZa: will be removed 
+//	 * 
+//	 * @param componentId
+//	 * @return
+//	 * @throws IOException
+//	 */
+//	public abstract OutputStream getClusterGatherOutputStream(String componentId) throws IOException;
 
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,
