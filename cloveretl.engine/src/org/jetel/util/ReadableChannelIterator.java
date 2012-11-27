@@ -21,6 +21,8 @@ package org.jetel.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
@@ -29,8 +31,10 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
@@ -89,8 +93,8 @@ public class ReadableChannelIterator {
 	// true if fileURL contains port protocol 
 	private boolean bInputPort;
 
-	// true if java.io.File is preferred as a source provided by this iterator
-	private boolean isFileSourcePreferred = false;
+	// true if java.net.URI is preferred as a source provided by this iterator
+	private DataSourceType preferredDataSourceType = DataSourceType.CHANNEL;
 
 	// others
 	private int firstPortProtocolPosition;
@@ -222,8 +226,16 @@ public class ReadableChannelIterator {
 			try {
 				ReadableByteChannel channel = portReadingIterator.getNextData();
 				currentFileName = portReadingIterator.getCurrentFileName();
-				
-				
+				//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
+				if (preferredDataSourceType == DataSourceType.URI) {
+					try {
+						return new URI(currentFileName);
+	        		} catch(URISyntaxException ex){
+	        			throw new JetelException("Invalid fileURL - "+ex.getMessage(),ex);
+	        		} catch (Exception e) {
+						//DO NOTHING - just use the regular channel
+					}
+				} 
 				return channel;
 			} catch (NullPointerException e) {
 				throw new JetelException("The field '" + portReadingIterator.getLastFieldName() + "' contain unsupported null value.");
@@ -246,11 +258,23 @@ public class ReadableChannelIterator {
 			}
 			currentFileName = unificateFileName(currentFileName);
 
+			
 			//sometimes source in form of 'java.io.File' is preferred instead of providing an anonymous channel
-			if (isFileSourcePreferred) {
+			if (preferredDataSourceType == DataSourceType.FILE) {
 				try {
 					return FileUtils.getJavaFile(contextURL, currentFileName);
 				} catch (Exception e) {
+					//DO NOTHING - just try to prepare a data source in other way
+				}
+			}
+			
+			//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
+			if (preferredDataSourceType == DataSourceType.URI) {
+				try {
+					return new URI(currentFileName);
+        		} catch(URISyntaxException ex){
+        			throw new JetelException("Invalid fileURL - "+ex.getMessage(),ex);
+        		} catch (Exception e) {
 					//DO NOTHING - just try to open a stream based on the currentFileName in the next step
 				}
 			}
@@ -281,8 +305,10 @@ public class ReadableChannelIterator {
 			if (FileURLParser.isServerURL(fileName) || FileURLParser.isArchiveURL(fileName)) return currentFileName;
 			
 			// unify only local files
-			URL fileURL = FileUtils.getFileURL(contextURL, currentFileName);
-			if (fileURL.getProtocol().equals(PROTOCOL_FILE)) {
+			//URL fileURL = FileUtils.getFileURL(contextURL, currentFileName);
+			URL fileURL = CloverURI.createSingleURI(contextURL.toURI(), currentFileName).toURI().toURL();
+			
+			if ( fileURL.getProtocol().equals(PROTOCOL_FILE)) {
 				String sPath = fileURL.getRef() != null ? fileURL.getFile() + "#" + fileURL.getRef() : fileURL.getFile();
 				currentFileName = new File(sPath).getCanonicalFile().toString();
 			}
@@ -410,19 +436,12 @@ public class ReadableChannelIterator {
 	public void setPropertyRefResolver(PropertyRefResolver propertyRefResolve) {
 		this.propertyRefResolve = propertyRefResolve;
 	}
-	
-	/**
-	 * @return true if {@link File} is preferred as a source provided by this iterator.
-	 */
-	public boolean isFileSourcePreferred() {
-		return isFileSourcePreferred;
-	}
 
 	/**
-	 * Set true if {@link File} is preferred as a source provided by this iterator.
+	 * @param preferredDataSourceType
 	 */
-	public void setFileSourcePreferred(boolean isFileSourcePreferred) {
-		this.isFileSourcePreferred = isFileSourcePreferred;
+	public void setPreferredDataSourceType(DataSourceType preferredDataSourceType) {
+		this.preferredDataSourceType = preferredDataSourceType;
 	}
 
 }

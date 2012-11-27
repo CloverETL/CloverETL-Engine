@@ -36,7 +36,7 @@ public abstract class AbstractFormatter implements Formatter {
 	}
 	
 	@Override
-	public boolean isFileTargetPreferred() {
+	public boolean isURITargetPreferred() {
 		return false;
 	}
 	

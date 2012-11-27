@@ -21,7 +21,9 @@ package org.jetel.util.file;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 /**
  * This class is intended to be implemented by third party applications. An implementation of this interface
@@ -41,8 +43,8 @@ public interface CustomPathResolver {
 	 * to given relative path and home directory specified in contextURL attribute.
 	 * If null is returned the other CustomPathResolver implementation are used and finally if none of them has
 	 * success the default clover implementation is used.
-	 * @param contextURL
-	 * @param input
+	 * @param contextURL working/home directory
+	 * @param input URL of the source file
 	 * @return
 	 */
 	public InputStream getInputStream(URL contextURL, String input) throws IOException;
@@ -52,10 +54,44 @@ public interface CustomPathResolver {
 	 * to given relative path and home directory specified in contextURL attribute.
 	 * If null is returned the other CustomPathResolver implementation are used and finally if none of them has
 	 * success the default clover implementation is used.
-	 * @param contextURL
-	 * @param input
+	 * @param contextURL working/home directory
+	 * @param output URL of the target file
 	 * @return
 	 */
-	public OutputStream getOutputStream(URL contextURL, String input, boolean appendData, int compressLevel) throws IOException;
+	public OutputStream getOutputStream(URL contextURL, String output, boolean appendData, int compressLevel) throws IOException;
+	
+	
+	
+	/**
+	 * Method should return URL object with proper URLStreamHandler &amp; URLConnection allowing to process openStream() and openConnection() methods 
+	 * 
+	 * @param contextURL working/home directory
+	 * @param input URL of the source file
+	 * @return
+	 * @throws MalformedURLException - thrown when this resolver does not support protocol defined in fileURL
+	 */
+	public URL getURL(URL contextURL, String fileURL) throws MalformedURLException;
+	
+	
+	
+	/**
+	 * Method should return true if this CustomPathResolver handles specified URL - protocol
+	 * 
+	 * @param contextURL working/home directory
+	 * @param fileURL URL of the source file
+	 * @return
+	 */
+	public boolean handlesURL(URL contextURL, String fileURL);
+	
+	
+	/**
+	 * Method should resolve wildcard URL - i.e. return list of concrete files/URLs
+	 * 
+	 * @param contextURL working/home directory
+	 * @param fileURL
+	 * @return list of resolved filenames 
+	 * @throws MalformedURLException if the the wildcard can't be resolved for whatever reason
+	 */
+	public List<String> resolveWildcardURL(URL contextURL, String fileURL) throws MalformedURLException;
 
 }

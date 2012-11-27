@@ -25,9 +25,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
-import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.OutputPort;
@@ -87,11 +86,7 @@ public class PortDataConsumer implements DataConsumer {
 	}
 
 	private void createParser() {
-		if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
-			parser = new DelimitedDataParser(metadata);
-		} else {
-			parser= FixLenDataParser.createParser(metadata, metadata.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
-		}
+		parser = TextParserFactory.getParser(metadata);
 	}
 
 	/**

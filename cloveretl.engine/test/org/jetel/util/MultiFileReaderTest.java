@@ -130,8 +130,8 @@ public class MultiFileReaderTest extends CloverTestCase {
 		}
 
 		@Override
-		public boolean isFileSourcePreferred() {
-			return true;
+		public DataSourceType getPreferredDataSourceType() {
+			return DataSourceType.CHANNEL;
 		}
 		
 	}

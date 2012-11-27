@@ -20,6 +20,7 @@ package org.jetel.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
@@ -137,7 +139,7 @@ public class MultiFileReader {
     	channelIterator.setCharset(charset);
     	channelIterator.setDictionary(dictionary);
     	channelIterator.setPropertyRefResolver(propertyRefResolve);
-		channelIterator.setFileSourcePreferred(parser.isFileSourcePreferred());
+		channelIterator.setPreferredDataSourceType(parser.getPreferredDataSourceType());
     }
     
     /**
@@ -178,7 +180,20 @@ public class MultiFileReader {
 					if (new File(path).exists()) continue;
 					throw new ComponentNotReadyException(UNREACHABLE_FILE + fName);
 				}
-				parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));
+				
+				//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
+				if (parser.getPreferredDataSourceType() == DataSourceType.URI) {
+					try {
+						parser.setDataSource(new URI(fName));
+					} catch (Exception e) {
+						//DO NOTHING - just try to open a stream based on the currentFileName in the next step
+						parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));
+					}
+				}else{
+					parser.setDataSource(FileUtils.getReadableChannel(contextURL, fName));
+				}
+				
+				
 				parser.setReleaseDataSource(closeLastStream = true);
 			} catch (IOException e) {
 				throw new ComponentNotReadyException(UNREACHABLE_FILE + fName, e);

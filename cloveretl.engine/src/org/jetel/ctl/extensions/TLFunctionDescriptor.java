@@ -41,6 +41,7 @@ package org.jetel.ctl.extensions;
  */
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import org.jetel.ctl.data.TLType;
 
@@ -51,18 +52,20 @@ public class TLFunctionDescriptor {
     protected final String description;
     protected final TLType[] formalParameters;
     protected final TLType returnType;
+    protected final String[] parametersNames;
 	private boolean isGeneric;
 	private boolean isVarArg;
 	private boolean hasInit; 
 	private boolean deprecated;
     
     protected TLFunctionDescriptor(TLFunctionLibrary library,String name,String description,TLType[] formalParameters,
-            TLType returnType, boolean isGeneric, boolean isVarArg, boolean hasInit) {
+            String[] paramNames, TLType returnType, boolean isGeneric, boolean isVarArg, boolean hasInit) {
         this.name=name;
         this.library=library;
         this.description=description;
         this.formalParameters=formalParameters;
         this.returnType=returnType;
+        this.parametersNames=paramNames;
         this.isGeneric = isGeneric;
         this.isVarArg = isVarArg;
         this.setHasInit(hasInit);

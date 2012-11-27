@@ -23,12 +23,17 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.ctl.TransformLangParserVisitor;
 import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.extensions.TLFunctionCallContext;
 
 public class CLVFComparison extends SimpleNode {
 
 	private int operator;
 	/** Type in which to perform the comparison */
 	private TLType operationType;
+
+	//this function context is used to cache regular expressions 
+	//for matches ( ~= or .regex. ) and contains ( ?= ) operators 
+	private TLFunctionCallContext comparisonContext;
 
 	public CLVFComparison(int id) {
 		super(id);
@@ -83,5 +88,13 @@ public class CLVFComparison extends SimpleNode {
 	@Override
 	public SimpleNode duplicate() {
 		return new CLVFComparison(this);
+	}
+
+	public TLFunctionCallContext getComparisonContext() {
+		return comparisonContext;
+	}
+
+	public void setComparisonContext(TLFunctionCallContext comparisonContext) {
+		this.comparisonContext = comparisonContext;
 	}
 }

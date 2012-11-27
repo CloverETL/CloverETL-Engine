@@ -202,6 +202,22 @@ public class ByteDataField extends DataField implements Comparable<Object> {
         }
 	}
 
+	/**
+	 * Sets subarray of a byte array as value of this field. 
+	 * @param value byte array whose subarray will be set as value of this field
+	 * @param fromOffset position of first byte of the subarray
+	 * @param length length of the subarray
+	 * @since November 2012
+	 */
+	public void setValue(byte[] value, int fromOffset, int length) {
+		if (value != null) {
+			this.value = new byte[length];
+			System.arraycopy(value, fromOffset, this.value, 0, length);
+			setNull(false);
+		} else {
+			setNull(true);
+		}
+	}
 
 	/**
 	 *  Sets the value of the field
