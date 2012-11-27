@@ -49,6 +49,7 @@ public class FileURLParser {
 	private final static String ZIP_DDOT = ArchiveType.ZIP.getId()+DOUBLE_DOT_DEL;
 	private final static String GZIP_DDOT = ArchiveType.GZIP.getId()+DOUBLE_DOT_DEL;
 	private final static String TAR_DDOT = ArchiveType.TAR.getId()+DOUBLE_DOT_DEL;
+	private final static String TGZ_DDOT = ArchiveType.TGZ.getId()+DOUBLE_DOT_DEL;
 	
 	/**
 	 * Finds embedded source.
@@ -181,7 +182,8 @@ public class FileURLParser {
 	public static boolean isArchiveURL(String sUrl) {
 		return sUrl.startsWith(ZIP_DDOT) || 
 		       sUrl.startsWith(GZIP_DDOT) || 
-		       sUrl.startsWith(TAR_DDOT);
+		       sUrl.startsWith(TAR_DDOT) || 
+		       sUrl.startsWith(TGZ_DDOT);
 	}
 	
 	/**
@@ -277,9 +279,10 @@ public class FileURLParser {
     	if (input.startsWith(ZIP_DDOT)) archiveType = ArchiveType.ZIP;
     	else if (input.startsWith(TAR_DDOT)) archiveType = ArchiveType.TAR;
     	else if (input.startsWith(GZIP_DDOT)) archiveType = ArchiveType.GZIP;
+    	else if (input.startsWith(TGZ_DDOT)) archiveType = ArchiveType.TGZ;
     	
     	// parse the archive
-        if((archiveType == ArchiveType.ZIP) || (archiveType == ArchiveType.TAR || archiveType == ArchiveType.GZIP)) {
+        if((archiveType == ArchiveType.ZIP) || (archiveType == ArchiveType.TAR || archiveType == ArchiveType.GZIP || archiveType == ArchiveType.TGZ)) {
         	String sTmp;
         	if ((sTmp = getAnchor(input)) != null) anchor.append(sTmp);
         	innerInput.append(getFileWithoutAnchor(input));

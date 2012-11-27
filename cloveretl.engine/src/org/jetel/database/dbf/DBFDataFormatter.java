@@ -21,6 +21,7 @@ package org.jetel.database.dbf;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
@@ -135,8 +136,8 @@ public class DBFDataFormatter extends AbstractFormatter {
         // create buffered input stream reader
         if (outputDataTarget == null) {
             writer = null;
-        } else if (outputDataTarget instanceof File) {
-            writer =  new RandomAccessFile(((File)outputDataTarget), FILE_ACCESS_MODE).getChannel();
+        } else if (outputDataTarget instanceof URI) {
+            writer =  new RandomAccessFile( new File((URI)outputDataTarget), FILE_ACCESS_MODE).getChannel();
 		} else if (outputDataTarget instanceof FileChannel) {
 			writer = (FileChannel) outputDataTarget;
 		}
@@ -351,7 +352,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 	}
 
 	@Override
-	public boolean isFileTargetPreferred() {
+	public boolean isURITargetPreferred() {
 		return true;
 	}
 	

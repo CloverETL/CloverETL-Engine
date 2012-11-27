@@ -212,7 +212,6 @@ public class DBFDataWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 		record.init();
-		int recordCount = 0;
 		while (record != null && runIt) {
 			record = inPort.readRecord(record);
 			if (record != null) {
@@ -225,7 +224,6 @@ public class DBFDataWriter extends Node {
 		        	formatterProvider.getCurrentFormatter().resetRecordCounter();
 		        }
 		        writer.write(record);
-		        recordCount++;
 			}
 			SynchronizeUtils.cloverYield();
 		}

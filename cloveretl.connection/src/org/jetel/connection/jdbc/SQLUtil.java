@@ -272,7 +272,7 @@ public class SQLUtil {
 	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata, JdbcSpecific jdbcSpecific, boolean failIfUknownType) throws SQLException {
 		DataFieldMetadata fieldMetadata;
 		DataRecordMetadata jetelMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
-		jetelMetadata.setLabel(dbMetadata.getTableName(1));
+		jetelMetadata.setLabel(getTableName(dbMetadata));
 		jetelMetadata.setFieldDelimiter(DEFAULT_DELIMITER);
 		jetelMetadata.setRecordDelimiter(END_RECORD_DELIMITER);
 		
@@ -285,6 +285,14 @@ public class SQLUtil {
 		jetelMetadata.normalize();
 		
 		return jetelMetadata;
+	}
+
+	private static String getTableName(ResultSetMetaData dbMetadata) {
+		try {
+			return dbMetadata.getTableName(1);
+		} catch (SQLException e) {
+			return null;
+		}
 	}
 
 	@Deprecated 

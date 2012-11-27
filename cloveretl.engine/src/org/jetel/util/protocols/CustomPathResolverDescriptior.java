@@ -16,50 +16,23 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.enums;
+package org.jetel.util.protocols;
+
+import org.jetel.data.GraphElementDescription;
+import org.jetel.plugin.Extension;
 
 /**
- * Used for file utils.
- * 
- * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
- *         (c) Javlin, a.s. (www.javlin.eu)
+ * @author dpavlis (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created Jun 21, 2012
  */
-public enum ArchiveType {
+public class CustomPathResolverDescriptior extends GraphElementDescription {
 	
-	// archive types
-	ZIP("zip"),
-	TAR("tar"),
-	GZIP("gzip"),
-	TGZ("tgz");
-
-	private String id;
+	public final static String EXTENSION_POINT_ID = "urlResolver";
     
-    /**
-     * Constructor.
-     * @param id
-     */
-    private ArchiveType(String id) {
-        this.id = id;
+    public CustomPathResolverDescriptior(Extension resolverExtension) {
+        super(EXTENSION_POINT_ID, resolverExtension);
     }
 
-    /**
-     * Gets archive type.
-     * @param id
-     * @return
-     */
-    public static ArchiveType fromString(String id) {
-        if(id == null) return null;
-        
-        for(ArchiveType item : values()) {
-            if(id.equalsIgnoreCase(item.id)) {
-                return item;
-            }
-        }
-        
-        return null;
-    }
-    
-    public String getId() {
-    	return id;
-    }
 }

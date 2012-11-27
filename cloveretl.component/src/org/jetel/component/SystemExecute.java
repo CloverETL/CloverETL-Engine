@@ -38,10 +38,8 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
-import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenByteDataParser;
-import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.TextParserFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -162,6 +160,7 @@ public class SystemExecute extends Node{
 	private static final String XML_ENVIRONMENT_ATTRIBUTE = "environment";
 	private static final String XML_WORKERS_TIMEOUT_ATTRIBUTE= "workersTimeout";
 	private static final String XML_CHARSET_ATTRIBUTE= "charset";
+	private static final String XML_IGNORE_EXIT_VALUE_ATTRIBUTE= "ignoreExitValue";
 	
 	public static String COMPONENT_TYPE = "SYS_EXECUTE";
 
@@ -188,6 +187,9 @@ public class SystemExecute extends Node{
 	private ProcessBuilder processBuilder;
 	private long workersTimeout = 0;
 	private String charset = null;
+	/** Non-zero exit value of the executed process can be ignored.
+	 * By default SystemExecute component fails in case non-zero exit value. */
+	private boolean ignoreExitValue = false;
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
 	
@@ -322,12 +324,7 @@ public class SystemExecute extends Node{
 			DataRecordMetadata meta=outPort.getMetadata();
 			out_record= DataRecordFactory.newRecord(meta);
 			out_record.init();
-			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
-				parser= charset != null ? new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset) : new DelimitedDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
-			}else {
-				parser= meta.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false) ?
-						new FixLenByteDataParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset) : new FixLenCharDataParser(getOutputPort(OUTPUT_PORT).getMetadata(),charset);
-			}
+			parser = TextParserFactory.getParser(getOutputPort(OUTPUT_PORT).getMetadata(), charset);
 		}else{
 			parser=null;
 		}
@@ -478,16 +475,26 @@ public class SystemExecute extends Node{
 			return Result.ABORTED;
 		}
 		if (exitValue!=0){
-			if (outputFile!=null) {
-				logger.error("Process exit value not 0");
+			if (ignoreExitValue) {
+				logger.info("Process exit value is " + exitValue);
+			} else {
+				resultMsg = "Process exit value is " + exitValue;
+				if (outputFile!=null) {
+					logger.error(resultMsg);
+				}
+				ok = false;
+				throw new JetelException(resultMsg);
 			}
-			resultMsg = "Process exit value not 0";
-			ok = false;;
-			throw new JetelException(resultMsg);
 		}
 		if (ok) {
 			return Result.FINISHED_OK;
 		}else{
+			if (getData.getResultException() != null) {
+				logger.error("Exception in thread writing to std-in of executed system process:", getData.getResultException());
+			}
+			if (sendData.getResultException() != null) {
+				logger.error("Exception in thread reading std-out of executed system process", getData.getResultException());
+			}
 			throw new JetelException(resultMsg);
 		}
 	}
@@ -658,6 +665,9 @@ public class SystemExecute extends Node{
 			}
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 				sysExec.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_IGNORE_EXIT_VALUE_ATTRIBUTE)) {
+				sysExec.setIgnoreExitValue(xattribs.getBoolean(XML_IGNORE_EXIT_VALUE_ATTRIBUTE));
 			}
 			return sysExec;
 		} catch (Exception ex) {
@@ -832,10 +842,19 @@ public class SystemExecute extends Node{
 				try {
 					formatter.close();
 				} catch (IOException e) {
-					resultMsg = e.getMessage();
-					resultCode = Result.ERROR;
-					resultException = e;
-					waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
+					// Original code considered this to be an error
+					//resultMsg = e.getMessage();
+					//resultCode = Result.ERROR;
+					//resultException = e;
+					//waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
+
+					// Just log a warning rather. The process may have terminated successfully (it closes its stdin), but something may still be left in the formatter buffer.
+					// In such a case formatter.close() (which calls flush()) fails with something like IOException: The pipe has been ended.
+					// This happens when a binary file is read using UDR into fixed-length byte field, this component then stream-reads this field.
+					// In this situation, the last record will (most likely) contain "incomplete" byte field -- its start will contain the end of read binary file
+					// and the rest of the field will contain zeros. This is the case when system process (observer with lzop decompressor) terminates after it read all bytes
+					// of the file, but there may still be those zeros waiting in the buffer of the formatter to be written into the stdin of the process.
+					logger.warn("Failed to close formatter writing to the std-in of executed system process:", e);
 				}
 			}
 			if (resultCode==Result.RUNNING){
@@ -1147,6 +1166,21 @@ public class SystemExecute extends Node{
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
+	
+	/**
+	 * @return the ignoreExitValue
+	 */
+	public boolean isIgnoreExitValue() {
+		return ignoreExitValue;
+	}
+
+	/**
+	 * @param ignoreExitValue the ignoreExitValue to set
+	 */
+	public void setIgnoreExitValue(boolean ignoreExitValue) {
+		this.ignoreExitValue = ignoreExitValue;
+	}
+
 }
 
 

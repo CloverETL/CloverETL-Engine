@@ -16,50 +16,16 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.enums;
+package org.jetel.ctl.extensions;
 
-/**
- * Used for file utils.
- * 
- * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
- *         (c) Javlin, a.s. (www.javlin.eu)
- */
-public enum ArchiveType {
-	
-	// archive types
-	ZIP("zip"),
-	TAR("tar"),
-	GZIP("gzip"),
-	TGZ("tgz");
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-	private String id;
-    
-    /**
-     * Constructor.
-     * @param id
-     */
-    private ArchiveType(String id) {
-        this.id = id;
-    }
-
-    /**
-     * Gets archive type.
-     * @param id
-     * @return
-     */
-    public static ArchiveType fromString(String id) {
-        if(id == null) return null;
-        
-        for(ArchiveType item : values()) {
-            if(id.equalsIgnoreCase(item.id)) {
-                return item;
-            }
-        }
-        
-        return null;
-    }
-    
-    public String getId() {
-    	return id;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface TLFunctionParametersAnnotation {
+	/** Function parameters description */
+	String[] value();
 }

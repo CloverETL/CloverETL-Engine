@@ -177,7 +177,7 @@ public class ReadableChannelDictionaryIterator {
 	 * @throws UnsupportedEncodingException 
 	 */
 	private ReadableByteChannel createReadableByteChannel(Object oValue) throws UnsupportedEncodingException {
-		if (oValue == null) throw new NullPointerException("The field contain unsupported null value.");
+		if (oValue == null) throw new NullPointerException("The field contains unsupported null value.");
 		ByteArrayInputStream str = oValue instanceof byte[] ? 
 				new ByteArrayInputStream((byte[])oValue) : new ByteArrayInputStream(oValue.toString().getBytes(charset));
 		return Channels.newChannel(str);

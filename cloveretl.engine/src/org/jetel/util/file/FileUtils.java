@@ -133,6 +133,12 @@ public class FileUtils {
 	private static final String TAR_PROTOCOL = "tar";
 	private static final String GZIP_PROTOCOL = "gzip";
 	private static final String ZIP_PROTOCOL = "zip";
+	private static final String TGZ_PROTOCOL = "tgz";
+
+	// FTP-like protocol names
+	private static final String FTP_PROTOCOL = "ftp";
+	private static final String SFTP_PROTOCOL = "sftp";
+	private static final String SCP_PROTOCOL = "scp";
 	
     private static final ArchiveURLStreamHandler ARCHIVE_URL_STREAM_HANDLER = new ArchiveURLStreamHandler();
     
@@ -156,12 +162,6 @@ public class FileUtils {
 
 	public static final Map<String, URLStreamHandler> handlers;
 
-	private static final String FTP_PROTOCOL = "ftp";
-
-	private static final String SFTP_PROTOCOL = "sftp";
-
-	private static final String SCP_PROTOCOL = "scp";
-	
 	private static final String HTTP_PROTOCOL = "http";
 	private static final String HTTPS_PROTOCOL = "https";
 	private static final String UTF8 = "UTF-8";
@@ -171,6 +171,7 @@ public class FileUtils {
 		h.put(GZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
 		h.put(ZIP_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
 		h.put(TAR_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
+		h.put(TGZ_PROTOCOL, ARCHIVE_URL_STREAM_HANDLER);
 		h.put(FTP_PROTOCOL, ftpStreamHandler);
 		h.put(SFTP_PROTOCOL, sFtpStreamHandler);
 		h.put(SCP_PROTOCOL, sFtpStreamHandler);
@@ -187,7 +188,7 @@ public class FileUtils {
 	 * Third-party implementation of path resolving - useful to make possible to run the graph inside of war file.
 	 */
     private static final List<CustomPathResolver> customPathResolvers = new ArrayList<CustomPathResolver>();
-    private static final String PLUS_CHAR_ENCODED = URLEncoder.encode("+");
+	private static final String PLUS_CHAR_ENCODED = URLEncoder.encode("+");
 
     /**
      * Used only to extract the protocol name in a generic manner
@@ -266,6 +267,13 @@ public class FileUtils {
     	// remove mark for absolute path
     	if (contextURL != null && fileURL.startsWith(FILE_PROTOCOL_ABSOLUTE_MARK)) {
     		fileURL = fileURL.substring((FILE_PROTOCOL+":").length());
+    	}
+
+    	 //first we try the custom path resolvers
+    	for (CustomPathResolver customPathResolver : customPathResolvers) {
+    		try{
+    			return customPathResolver.getURL(contextURL, fileURL);
+    		}catch(MalformedURLException ex) {}
     	}
     	
     	// standard url
@@ -565,6 +573,9 @@ public class FileUtils {
             return new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         } else if (archiveType == ArchiveType.TAR) {
         	return getTarInputStream(innerStream, anchor);
+        } else if (archiveType == ArchiveType.TGZ) {
+        	List<InputStream> lIs = getTarInputStreamsInner(new GZIPInputStream(innerStream, Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE), sbAnchor.toString(), 0, null);
+        	return lIs.size() > 0 ? lIs.get(0) : null;
         }
         
         return innerStream;
@@ -585,9 +596,10 @@ public class FileUtils {
     	if (input.startsWith("zip:")) archiveType = ArchiveType.ZIP;
     	else if (input.startsWith("tar:")) archiveType = ArchiveType.TAR;
     	else if (input.startsWith("gzip:")) archiveType = ArchiveType.GZIP;
+    	else if (input.startsWith("tgz:")) archiveType = ArchiveType.TGZ;
     	
     	// parse the archive
-        if((archiveType == ArchiveType.ZIP) || (archiveType == ArchiveType.TAR)) {
+        if((archiveType == ArchiveType.ZIP) || (archiveType == ArchiveType.TAR) ||  (archiveType == ArchiveType.TGZ)) {
         	if (input.contains(")#")) {
                 anchor.append(input.substring(input.lastIndexOf(")#") + 2));
                 innerInput.append(input.substring(input.indexOf(":(") + 2, input.lastIndexOf(")#")));
@@ -970,12 +982,7 @@ public class FileUtils {
         //close the archive
         tin.close();
         
-        //no channel found report
-        if(anchor == null) {
-            throw new IOException("Tar file is empty.");
-        } else {
-            throw new IOException("Wrong anchor (" + anchor + ") to tar file.");
-        }
+        throw new IOException("Wrong anchor (" + anchor + ") to tar file.");
     }
 
 	/**
@@ -1082,7 +1089,7 @@ public class FileUtils {
 	}
 
 	public static boolean isArchive(String input) {
-		return input.startsWith("zip:") || input.startsWith("tar:") || input.startsWith("gzip:");
+		return input.startsWith("zip:") || input.startsWith("tar:") || input.startsWith("gzip:") || input.startsWith("tgz:");
 	}
 
 	private static boolean isZipArchive(String input) {
@@ -1136,6 +1143,12 @@ public class FileUtils {
     	
     	return false;
 	}
+	
+	public static List<CustomPathResolver> getCustompathresolvers() {
+		return customPathResolvers;
+	}
+
+	
 	
 	private static boolean hasCustomPathInputResolver(URL contextURL, String input) throws IOException {	
 		InputStream innerStream;
@@ -1441,7 +1454,7 @@ public class FileUtils {
 		}
 		
 		String fileName;
-		if (fileURL.startsWith("zip:") || fileURL.startsWith("tar:")){
+		if (fileURL.startsWith("zip:") || fileURL.startsWith("tar:") || fileURL.startsWith("tgz:")){
 			int pos;
 			fileName = fileURL.substring(fileURL.indexOf(':') + 1, 
 					(pos = fileURL.indexOf('#')) == -1 ? fileURL.length() : pos);
@@ -1772,7 +1785,7 @@ public class FileUtils {
 		if (url.getRef() != null) return url.getRef();
 		else {
 			input = getUrlFile(url);
-			if (input.startsWith("zip:") || input.startsWith("tar:")) {
+			if (input.startsWith("zip:") || input.startsWith("tar:") || input.startsWith("tgz:")) {
 				input = input.contains("#") ? 
 					input.substring(input.lastIndexOf('#') + 1) : 
 					input.substring(input.indexOf(':') + 1);
@@ -1813,7 +1826,7 @@ public class FileUtils {
 		if (url != null) {
 			protocol = url.getProtocol();
 		}
-		return protocol.equals(TAR_PROTOCOL) || protocol.equals(GZIP_PROTOCOL) || protocol.equals(ZIP_PROTOCOL);
+		return protocol.equals(TAR_PROTOCOL) || protocol.equals(GZIP_PROTOCOL) || protocol.equals(ZIP_PROTOCOL) || protocol.equals(TGZ_PROTOCOL);
 	}
 	
 	/**
@@ -1858,7 +1871,7 @@ public class FileUtils {
 		}
 		
         //resolve url format for zip files
-        if(input.startsWith("zip:") || input.startsWith("tar:")) {
+        if(input.startsWith("zip:") || input.startsWith("tar:") || input.startsWith("tgz:")) {
             if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
             	input = input.substring(input.indexOf(':') + 1);
             } else {

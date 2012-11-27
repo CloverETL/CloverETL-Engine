@@ -141,6 +141,17 @@ public class ConnectionFactory {
         }
     }
 
+    
+    /**
+     * Method for querying map of descriptors for all registered connection types
+     * 
+     * @param conType connection type
+     * @return descriptor of connection type/plugin
+     */
+    public final static ConnectionDescription getConnectionDescription(String conType){
+    	return connectionMap.get(conType);
+    }
+    
 }
 
 

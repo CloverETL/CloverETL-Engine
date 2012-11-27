@@ -73,7 +73,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	
 	/** The default string value that is considered as null. */
 	public static final String DEFAULT_NULL_VALUE = "";
-	public static final String BYTE_MODE_ATTR = "byteMode";
 	
 	public static final String EMPTY_NAME = "_";
 

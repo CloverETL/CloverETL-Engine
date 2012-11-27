@@ -18,6 +18,7 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -33,6 +34,7 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 public class TLRegexpCache extends TLCache {
 
 	private Pattern cachedPattern = null;
+	private Matcher cachedMatcher = null;
 	private Object previousPatternString = null;
 
 	public TLRegexpCache(TLFunctionCallContext context, int position) {
@@ -44,6 +46,7 @@ public class TLRegexpCache extends TLCache {
 			String regexp = (String) context.getParamValue(position);
 			try {
 				cachedPattern = Pattern.compile(regexp);
+				cachedMatcher = cachedPattern.matcher("");
 			} catch (PatternSyntaxException ex) {
 				String message = String.format("Invalid regular expression: \"%s\" (%s)", regexp, ex.getMessage());
 				throw new TransformLangExecutorRuntimeException(message);
@@ -58,8 +61,20 @@ public class TLRegexpCache extends TLCache {
 			return cachedPattern; 
 		} else {
 			cachedPattern = Pattern.compile(pattern);
+			cachedMatcher = cachedPattern.matcher("");
 			previousPatternString = pattern;
 			return cachedPattern;
+		}
+	}
+	
+	public Matcher getCachedMatcher(TLFunctionCallContext context, String pattern) {
+		if (context.isLiteral(1) || (cachedPattern != null && pattern.equals(previousPatternString))) {
+			return cachedMatcher; 
+		} else {
+			cachedPattern = Pattern.compile(pattern);
+			cachedMatcher = cachedPattern.matcher("");
+			previousPatternString = pattern;
+			return cachedMatcher;
 		}
 	}
 	

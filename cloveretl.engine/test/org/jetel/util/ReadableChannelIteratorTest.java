@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.io.File;
 import java.net.MalformedURLException;
 
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.test.CloverTestCase;
@@ -42,14 +43,14 @@ public class ReadableChannelIteratorTest extends CloverTestCase {
 	
 	public void testFileSourcePreferred() throws JetelException, ComponentNotReadyException, MalformedURLException {
 		ReadableChannelIterator sourceIterator = new ReadableChannelIterator(null, FileUtils.getFileURL("."), "neco/neco.txt");
-		sourceIterator.setFileSourcePreferred(true);
+		sourceIterator.setPreferredDataSourceType(DataSourceType.FILE);
 		sourceIterator.init();
 		assertTrue(sourceIterator.next() instanceof File);
 	}
 
 	public void testNextChannel() throws JetelException, ComponentNotReadyException, MalformedURLException {
 		ReadableChannelIterator sourceIterator = new ReadableChannelIterator(null, FileUtils.getFileURL("."), "neco/neco.txt");
-		sourceIterator.setFileSourcePreferred(true);
+		sourceIterator.setPreferredDataSourceType(DataSourceType.FILE);
 		sourceIterator.init();
 		assertNull(sourceIterator.nextChannel());
 	}

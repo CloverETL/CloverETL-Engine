@@ -72,7 +72,7 @@ public class WcardPattern {
     // for embedded source
 	//     "[zip|gzip|tar]     :       ^(       something   )          [[#|$]something]?
 	//      ((zip|gzip|tar)    :       ([^\\(]  .*          [^\\)])    #(.*))|((zip|gzip|tar):([^\\(].*[^\\)])$)
-	private final static Pattern ARCHIVE_SOURCE = Pattern.compile("((zip|gzip|tar):([^\\(].*[^\\)])#(.*))|((zip|gzip|tar):([^\\(].*[^\\)])$)");
+	private final static Pattern ARCHIVE_SOURCE = Pattern.compile("((zip|gzip|tar|tgz):([^\\(].*[^\\)])#(.*))|((zip|gzip|tar|tgz):([^\\(].*[^\\)])$)");
 	
 	// Wildcard characters.
 	@SuppressWarnings("MS")
@@ -341,6 +341,9 @@ public class WcardPattern {
                 	case TAR:
                     	processTarArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
                 		break;
+                	case TGZ:
+                    	processTGZArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
+                    	break;
                 	}
                 	
             	} finally {
@@ -443,6 +446,31 @@ public class WcardPattern {
     }
 
     /**
+     * Gets list of tar/gzipped files with full anchor names.
+     * @throws IOException
+     */
+    private void processTGZArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames) throws IOException {
+		// add original name
+    	if (fileStreamName.getInputStream() == null) {
+    		newFileStreamNames.add(new FileStreamName(originalFileName));
+    		return;
+    	}
+    	
+		// look into an archive and check the anchor
+		List<String> mfiles = new ArrayList<String>();
+    	List<InputStream> lis = FileUtils.getTarInputStreams(new GZIPInputStream(fileStreamName.getInputStream()), anchor, mfiles);
+    	
+    	// create list of new names generated from the anchor
+		for (int i = 0; lis != null && i < lis.size(); i++) {
+    		newFileStreamNames.add(
+    				new FileStreamName(
+    					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
+    						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
+    					lis.get(i)));
+    	}
+    }
+    
+    /**
      * Gets gzip file.
      * @param fileStreamName
      * @param originalFileName
@@ -485,6 +513,17 @@ public class WcardPattern {
 			url = FileUtils.getFileURL(parent, fileName);
 		} catch (MalformedURLException e) {
 			// NOTHING
+		}
+		
+		// try CustomPathResolvers first
+		for (CustomPathResolver resolver : FileUtils.getCustompathresolvers()) {
+			if (resolver.handlesURL(parent, fileName)) {
+				try {
+					return resolver.resolveWildcardURL(parent, fileName);
+				} catch (MalformedURLException e) {
+					// NOTHING - will be handled the standard way below
+				}
+			}
 		}
 		
 		// wildcards for file protocol

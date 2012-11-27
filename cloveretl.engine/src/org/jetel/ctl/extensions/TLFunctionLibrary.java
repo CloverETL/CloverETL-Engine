@@ -87,8 +87,9 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     	Class<? extends TLFunctionLibrary> clazz = getClass();
     	HashSet<String> initMethods = new HashSet<String>();
     	
+    	TLFunctionInitAnnotation ia = null;
     	for (Method m : clazz.getMethods()) {
-    		if ( (m.getAnnotation(TLFunctionInitAnnotation.class)) != null) {
+    		if ( (ia = m.getAnnotation(TLFunctionInitAnnotation.class)) != null) {
         		Type[] parameters = m.getGenericParameterTypes();
         		if (parameters.length != 1 || !TLFunctionCallContext.class.equals(parameters[0])) {
         			throw new IllegalArgumentException("Init function definition must have exactly one parameter of type TLFunctionCallContext - method " + m.getName());			
@@ -99,6 +100,7 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     	}
     	
     	TLFunctionAnnotation a = null;
+    	TLFunctionParametersAnnotation p = null;
     	for (Method m : clazz.getMethods()) {
     		if ( (a = m.getAnnotation(TLFunctionAnnotation.class)) == null) {
         		if (logger.isTraceEnabled()) {
@@ -107,6 +109,16 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
     			continue;
     		}
     	
+    		String[] paramsDesc=null;
+    		try{
+    			p = m.getAnnotation(TLFunctionParametersAnnotation.class);
+    			paramsDesc = ( p!=null ? p.value() : null);
+    		}catch(Exception ex){
+    			if (logger.isDebugEnabled()) {
+        			logger.debug("Method " + m.toString() + " : "+ex.toString());
+        		}
+    		}
+
     		try {
 	    		final String functionName = m.getName();
 	    		
@@ -145,7 +157,7 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
 	    		TLType[] formal = new TLType[javaFormal.length-1]; // we're skipping first java formal parameter (with TLFunctionCallContext)
 	    		System.arraycopy(converted, 1, formal, 0, formal.length);
 	    		
-	    		TLFunctionDescriptor descriptor = new TLFunctionDescriptor(this,functionName,a.value(),formal,returnType,isGenericMethod,m.isVarArgs(), 
+	    		TLFunctionDescriptor descriptor = new TLFunctionDescriptor(this,functionName,a.value(),formal,paramsDesc,returnType,isGenericMethod,m.isVarArgs(), 
 	    				initMethods.contains(m.getName() + "Init"));
 	    		if (m.getAnnotation(Deprecated.class) != null) {
 	    			descriptor.setDeprecated(true);
