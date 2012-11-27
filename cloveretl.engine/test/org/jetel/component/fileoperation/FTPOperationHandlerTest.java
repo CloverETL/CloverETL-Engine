@@ -101,6 +101,7 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(handler.canPerform(Operation.write(FTPOperationHandler.FTP_SCHEME)));
 	}
 	
+	@Override
 	public URI getUnreachableUri() {
 		return URI.create("ftp://badUser:badPassword@badserver/");
 	}
