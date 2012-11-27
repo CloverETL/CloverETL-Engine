@@ -33,11 +33,13 @@ import java.util.List;
 import java.util.Vector;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.http.HttpStatus;
+import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -449,25 +451,13 @@ public class WcardPattern {
      * Gets list of tar/gzipped files with full anchor names.
      * @throws IOException
      */
-    private void processTGZArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<FileStreamName> newFileStreamNames) throws IOException {
-		// add original name
-    	if (fileStreamName.getInputStream() == null) {
-    		newFileStreamNames.add(new FileStreamName(originalFileName));
-    		return;
+    private void processTGZArchive(FileStreamName fileStreamName, String originalFileName, String anchor, int iPreName, int iPostName, List<String> newFileStreamNames) throws IOException {
+		// wrap the input stream in GZIPInputStream and call processTarArchive()
+    	if (fileStreamName.getInputStream() != null) {
+    		fileStreamName = new FileStreamName(fileStreamName.getFileName(), new GZIPInputStream(fileStreamName.getInputStream(), Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE));
     	}
     	
-		// look into an archive and check the anchor
-		List<String> mfiles = new ArrayList<String>();
-    	List<InputStream> lis = FileUtils.getTarInputStreams(new GZIPInputStream(fileStreamName.getInputStream()), anchor, mfiles);
-    	
-    	// create list of new names generated from the anchor
-		for (int i = 0; lis != null && i < lis.size(); i++) {
-    		newFileStreamNames.add(
-    				new FileStreamName(
-    					(originalFileName.substring(0, iPreName) + fileStreamName.getFileName() +
-    						originalFileName.substring(iPostName)).replace(anchor, mfiles.get(i)), 
-    					lis.get(i)));
-    	}
+    	processTarArchive(fileStreamName, originalFileName, anchor, iPreName, iPostName, newFileStreamNames);
     }
     
     /**
