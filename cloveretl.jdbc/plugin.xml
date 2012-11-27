@@ -118,7 +118,7 @@
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
 		<parameter id="dbDriver" value="org.gjt.mm.mysql.Driver"/>
-		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.15-bin.jar"/>
+		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.22-bin.jar"/>
 		<parameter id="urlHint" value="jdbc:mysql://hostname:3306/database"/>
 		<parameter id="jdbcSpecific" value="MYSQL"/>
 		<parameter id="jdbc.zeroDateTimeBehavior" value="convertToNull"/>
@@ -143,7 +143,7 @@
 		<parameter id="database" value="POSTGRE"/>
 		<parameter id="name" value="PostgreSQL"/>
 		<parameter id="dbDriver" value="org.postgresql.Driver"/>
-		<parameter id="driverLibrary" value="lib/postgre/postgresql-8.3-603.jdbc3.jar"/>
+		<parameter id="driverLibrary" value="lib/postgre/postgresql-9.2-1002.jdbc4.jar"/>
 		<parameter id="urlHint" value="jdbc:postgresql://hostname/database"/>
 		<parameter id="jdbcSpecific" value="POSTGRE"/>
 	</extension>
@@ -152,7 +152,7 @@
 		<parameter id="database" value="MSSQL"/>
 		<parameter id="name" value="Microsoft SQL Server"/>
 		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
+		<parameter id="driverLibrary" value="lib/jtds/jtds-1.3.0.jar"/>
 		<parameter id="urlHint" value="jdbc:jtds:sqlserver://hostname:1433/database"/>
 		<parameter id="jdbcSpecific" value="MSSQL"/>
 	</extension>
@@ -210,7 +210,7 @@
 		<parameter id="database" value="FIREBIRD"/>
 		<parameter id="name" value="Firebird"/>
 		<parameter id="dbDriver" value="org.firebirdsql.jdbc.FBDriver"/>
-		<parameter id="driverLibrary" value="lib/firebird/jaybird-full-2.1.6.jar"/>
+		<parameter id="driverLibrary" value="lib/firebird/jaybird-full-2.2.1.jar"/>
 		<parameter id="urlHint" value="jdbc:firebirdsql:localhost/3050:/firebird/test.gdb"/>
 		<parameter id="jdbcSpecific" value="FIREBIRD"/>
 	</extension>
