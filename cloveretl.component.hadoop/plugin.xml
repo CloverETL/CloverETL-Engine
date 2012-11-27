@@ -1,0 +1,38 @@
+<plugin
+   id="org.jetel.hadoop"
+   version="0.0.0.devel"
+   provider-name="Javlin a.s.">
+
+	<runtime>
+		<library path="bin/"/>
+		<library path="lib/commons-configuration-1.8.jar"/>
+		<library path="lib/commons-lang-2.6.jar"/>
+   	</runtime> 
+
+	<requires engine-version="0.0.0.devel">
+		<import plugin-id="org.jetel.component"/>
+		<import plugin-id="org.jetel.connection"/>
+	</requires>
+	
+
+	<extension point-id="connection">
+		<parameter id="className" value="org.jetel.hadoop.connection.HadoopConnection"/>
+		<parameter id="type" value="HADOOP"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.hadoop.component.HadoopWriter"/>
+		<parameter id="type" value="HADOOP_WRITER"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.hadoop.component.HadoopReader"/>
+		<parameter id="type" value="HADOOP_READER"/>
+	</extension>
+
+	<extension point-id="urlResolver">
+		<parameter id="className" value="org.jetel.hadoop.connection.HadoopPathResolver"/>
+		<parameter id="type" value="HADOOP_HDFS"/>
+	</extension>
+
+</plugin>
