@@ -85,15 +85,15 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 
 	@Override
 	public void testGetPriority() {
-		assertEquals(LocalOperationHandler.PRIORITY, handler.getPriority(Operation.copy(LocalOperationHandler.FILE_SCHEME, LocalOperationHandler.FILE_SCHEME)));
-		assertEquals(LocalOperationHandler.PRIORITY, handler.getPriority(Operation.move(LocalOperationHandler.FILE_SCHEME, LocalOperationHandler.FILE_SCHEME)));
-		assertEquals(LocalOperationHandler.PRIORITY, handler.getPriority(Operation.delete(LocalOperationHandler.FILE_SCHEME)));
-		assertEquals(LocalOperationHandler.PRIORITY, handler.getPriority(Operation.create(LocalOperationHandler.FILE_SCHEME)));
-		assertEquals(LocalOperationHandler.PRIORITY, handler.getPriority(Operation.resolve(LocalOperationHandler.FILE_SCHEME)));
-		assertEquals(LocalOperationHandler.PRIORITY, handler.getPriority(Operation.info(LocalOperationHandler.FILE_SCHEME)));
-		assertEquals(LocalOperationHandler.PRIORITY, handler.getPriority(Operation.list(LocalOperationHandler.FILE_SCHEME)));
-		assertEquals(LocalOperationHandler.PRIORITY, handler.getPriority(Operation.read(LocalOperationHandler.FILE_SCHEME)));
-		assertEquals(LocalOperationHandler.PRIORITY, handler.getPriority(Operation.write(LocalOperationHandler.FILE_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.copy(LocalOperationHandler.FILE_SCHEME, LocalOperationHandler.FILE_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.move(LocalOperationHandler.FILE_SCHEME, LocalOperationHandler.FILE_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.delete(LocalOperationHandler.FILE_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.create(LocalOperationHandler.FILE_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.resolve(LocalOperationHandler.FILE_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.info(LocalOperationHandler.FILE_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.list(LocalOperationHandler.FILE_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.read(LocalOperationHandler.FILE_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.write(LocalOperationHandler.FILE_SCHEME)));
 	}
 
 	@Override

@@ -73,15 +73,15 @@ public class SFTPOperationHandlerTest extends OperationHandlerTestTemplate {
 
 	@Override
 	public void testGetPriority() {
-//		assertEquals(Integer.MAX_VALUE, handler.getSpeed(Operation.copy(SFTPOperationHandler.SFTP_SCHEME, SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.move(SFTPOperationHandler.SFTP_SCHEME, SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.delete(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.create(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.resolve(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.info(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.list(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.read(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.write(SFTPOperationHandler.SFTP_SCHEME)));
+//		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getSpeed(Operation.copy(SFTPOperationHandler.SFTP_SCHEME, SFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.move(SFTPOperationHandler.SFTP_SCHEME, SFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.delete(SFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.create(SFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.resolve(SFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.info(SFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.list(SFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.read(SFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.write(SFTPOperationHandler.SFTP_SCHEME)));
 	}
 
 	@Override
