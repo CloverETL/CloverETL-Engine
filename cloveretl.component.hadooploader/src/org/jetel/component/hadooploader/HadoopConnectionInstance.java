@@ -287,4 +287,13 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 	public Object getDFS() {
 		return dfs;
 	}
+
+	@Override
+	public void setLastModified(URI path, long lastModified) throws IOException {
+		if (dfs != null) {
+			dfs.setTimes(new Path(path), lastModified, -1);
+		} else {
+			throw new IOException("Not connected to HDFS.");
+		}
+	}
 }
