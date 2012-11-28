@@ -64,4 +64,6 @@ public interface IHadoopConnection {
 	public HadoopFileStatus[] listStatus(URI path) throws IOException;
 	public HadoopFileStatus getStatus(URI path) throws IOException;
 	public HadoopFileStatus getExtendedStatus(URI path) throws IOException;
+	
+	public void setLastModified(URI path, long lastModified) throws IOException;
 }

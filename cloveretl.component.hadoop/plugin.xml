@@ -1,7 +1,8 @@
 <plugin
    id="org.jetel.hadoop"
    version="0.0.0.devel"
-   provider-name="Javlin a.s.">
+   provider-name="Javlin a.s."
+   class="org.jetel.hadoop.Activator">
 
 	<runtime>
 		<library path="bin/"/>
