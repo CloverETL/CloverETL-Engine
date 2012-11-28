@@ -51,11 +51,9 @@ public class LocalOperationHandler implements IOperationHandler {
 	
 	static final String FILE_SCHEME = "file"; //$NON-NLS-1$
 	
-	public static final int PRIORITY = Integer.MAX_VALUE - 100;
-	
 	@Override
 	public int getPriority(Operation operation) {
-		return PRIORITY;
+		return TOP_PRIORITY;
 	}
 
 	@Override
