@@ -48,7 +48,7 @@ public class SandboxConnection extends URLConnection {
 		String storageCode = url.getHost();
 		String path = url.getPath();
 		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
-		return authorityProxy.getSandboxResourceInput(ContextProvider.getNode().getId(), storageCode, path);
+		return authorityProxy.getSandboxResourceInput(ContextProvider.getComponentId(), storageCode, path);
 	}
 
 	/*
@@ -60,7 +60,7 @@ public class SandboxConnection extends URLConnection {
 		String storageCode = url.getHost();
 		String path = url.getPath();
 		IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
-		return authorityProxy.getSandboxResourceOutput(ContextProvider.getNode().getId(), storageCode, path, false);
+		return authorityProxy.getSandboxResourceOutput(ContextProvider.getComponentId(), storageCode, path, false);
 	}
 
 	/*
