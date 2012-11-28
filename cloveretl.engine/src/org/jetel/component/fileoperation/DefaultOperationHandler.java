@@ -127,8 +127,14 @@ public class DefaultOperationHandler implements IOperationHandler {
 				if (params.isNoOverwrite()) {
 					return true;
 				}
-				if (params.isUpdate() && (sourceInfo.getLastModified().compareTo(targetInfo.getLastModified()) <= 0)) {
-					return true;
+				if (params.isUpdate()) {
+					if (sourceInfo.getLastModified() == null) {
+						throw new IOException("Failed to obtain source modification date: " + source);
+					}
+					if (targetInfo.getLastModified() == null) {
+						throw new IOException("Failed to obtain target modification date: " + target);
+					}
+					return (sourceInfo.getLastModified().compareTo(targetInfo.getLastModified()) <= 0);
 				}
 			} else if (makeParents) {
 				URI parentUri = URIUtils.getParentURI(target.toURI());
