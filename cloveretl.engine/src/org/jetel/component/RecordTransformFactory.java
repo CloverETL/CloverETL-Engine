@@ -326,12 +326,7 @@ public class RecordTransformFactory {
      * @throws ComponentNotReadyException
      */
     public static Object loadClassInstance(String transformClassName, Node node) throws ComponentNotReadyException {
-    	
-    	ClassLoader loader = new MultiParentClassLoader(
-    		ClassLoaderUtils.createNodeClassLoader(node),
-    		getCTLLibsClassLoader()
-    	);
-    	return loadClassInstance(transformClassName, loader);
+    	return loadClassInstance(transformClassName, ClassLoaderUtils.createNodeClassLoader(node));
     }
     
     public static <T> T loadClassInstance(String transformClassName, Class<T> expectedType, Node node)

@@ -29,13 +29,17 @@ import java.net.URLDecoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
+import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -159,14 +163,29 @@ public class ClassLoaderUtils {
 	 * @return
 	 */
 	public static ClassLoader createNodeClassLoader(Node node) {
+		Set<ClassLoader> classLoaders = getCTLLibsClassLoaders();
+		classLoaders.add(node.getClass().getClassLoader());
+		
+		ClassLoader parentClassLoader = new MultiParentClassLoader(classLoaders.toArray(new ClassLoader[0]));
 		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
 		if (runtimeClasspath != null && runtimeClasspath.length > 0) {
-			return new GreedyURLClassLoader(node.getGraph().getRuntimeContext().getRuntimeClassPath(),
-					node.getClass().getClassLoader());
+			return new GreedyURLClassLoader(node.getGraph().getRuntimeContext().getRuntimeClassPath(), parentClassLoader);
 		} else {
-			return node.getClass().getClassLoader();
+			return parentClassLoader;
 		}
 	}
+
+    /**
+     * !!! this is non-mergable method !!!
+     * trunk-3-4 does not need this method (@see {@link DynamicCompiler#getCTLLibsClassLoaders()}
+     */
+    public static Set<ClassLoader> getCTLLibsClassLoaders() {
+    	Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
+    	for (PluginDescriptor plugin : DynamicCompiler.getCTLRelatedPlugins()) {
+    		loaders.add(plugin.getClassLoader());
+    	}
+    	return loaders;
+    }
 
 	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) throws ComponentNotReadyException {
 		ClassLoader classLoader;
