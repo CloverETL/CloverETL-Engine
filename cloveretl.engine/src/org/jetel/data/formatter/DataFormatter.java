@@ -252,11 +252,17 @@ public class DataFormatter extends AbstractFormatter {
 					fieldBuffer.clear();
 					record.getField(i).toByteBuffer(fieldBuffer, encoder);
 					size = fieldBuffer.position();
-					if (size < fieldLengths[i] && !byteBasedFields[i]) {
-						fieldFiller.rewind();
-						fieldFiller.limit(fieldLengths[i] - size);
-						fieldBuffer.put(fieldFiller);
+					if (!byteBasedFields[i]) { //byte fields are not auto-filled
+						if (size < fieldLengths[i]) {
+							fieldFiller.rewind();
+							fieldFiller.limit(fieldLengths[i] - size);
+							fieldBuffer.put(fieldFiller);
+						}
 						size = fieldLengths[i];
+					} else {
+						if (size > fieldLengths[i]) { //byte fields are just truncated if necessary
+							size = fieldLengths[i];
+						}
 					}
 					encLen += size;
 					fieldBuffer.flip();
