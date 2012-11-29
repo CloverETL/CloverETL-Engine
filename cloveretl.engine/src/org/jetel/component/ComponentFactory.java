@@ -136,7 +136,7 @@ public class ComponentFactory {
 			//hack for extracting of node layout information - Clover3 solves this issue
 			//it is the easiest way how to add new common attribute for all nodes
 			if (xattribs.exists(Node.XML_ALLOCATION_ATTRIBUTE)) {
-				EngineComponentAllocation nodeAllocation = EngineComponentAllocation.createFromString(xattribs.getString(Node.XML_ALLOCATION_ATTRIBUTE));
+				EngineComponentAllocation nodeAllocation = EngineComponentAllocation.fromString(xattribs.getString(Node.XML_ALLOCATION_ATTRIBUTE));
 				result.setAllocation(nodeAllocation);
 			}
 			//name attribute parsing

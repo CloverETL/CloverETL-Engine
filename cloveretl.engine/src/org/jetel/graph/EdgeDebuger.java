@@ -104,7 +104,7 @@ public class EdgeDebuger {
     	}
 
     	dataTape = new DataRecordTape(debugFile, !readMode, false);
-        dataTape.open(-1);
+        dataTape.open();
         dataTape.addDataChunk();
 
         if (readMode) {

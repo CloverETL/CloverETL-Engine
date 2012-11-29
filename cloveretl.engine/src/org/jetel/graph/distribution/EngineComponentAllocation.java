@@ -19,6 +19,7 @@
 package org.jetel.graph.distribution;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jetel.data.Defaults;
@@ -87,7 +88,7 @@ public class EngineComponentAllocation {
 		return componentAllocation;
 	}
 
-	public static EngineComponentAllocation createFromString(String rawAllocation) throws JetelException {
+	public static EngineComponentAllocation fromString(String rawAllocation) throws JetelException {
 		if (rawAllocation.startsWith(SANDBOX_PREFIX)) {
 			String sandboxId = rawAllocation.substring(SANDBOX_PREFIX.length());
 			if (StringUtils.isEmpty(sandboxId)) {
@@ -162,5 +163,29 @@ public class EngineComponentAllocation {
 	private void setClusterNodes(List<String> clusterNodes) {
 		this.clusterNodes = clusterNodes;
 	}
-
+	
+	@Override
+	public String toString() {
+		
+		if (isInferedFromSandbox()) {
+			return SANDBOX_PREFIX + sandboxId;
+		}
+		if (isInferedFromClusterNodes()) {
+			StringBuilder sb = new StringBuilder();
+			sb.append(CLUSTER_NODES_PREFIX);
+			if (clusterNodes != null) {
+				for (Iterator<String> i = clusterNodes.iterator(); i.hasNext();) {
+					sb.append(i.next());
+					if (i.hasNext()) {
+						sb.append(Defaults.Component.KEY_FIELDS_DELIMITER);
+					}
+				}
+			}
+			return sb.toString();
+		}
+		if (isInferedFromComponent()) {
+			return COMPONENT_PREFIX + componentId;
+		}
+		return super.toString();
+	}
 }
