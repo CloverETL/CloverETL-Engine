@@ -22,7 +22,6 @@ import javax.naming.NamingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.UniqueLabelsValidator;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -287,13 +286,13 @@ public class LdapWriter extends Node {
 		try{
 			int action = 0;
 			String action_value = xattribs.getString(XML_ACTION_ATTRIBUTE, null);
-			if(action_value.equalsIgnoreCase(XML_ADD_ENTRY_VALUE)) {
+			if(action_value != null && action_value.equalsIgnoreCase(XML_ADD_ENTRY_VALUE)) {
 				action = LdapFormatter.ADD_ENTRY;
-			} else if(action_value.equalsIgnoreCase(XML_REMOVE_ENTRY_VALUE)) {
+			} else if(action_value != null && action_value.equalsIgnoreCase(XML_REMOVE_ENTRY_VALUE)) {
 				action = LdapFormatter.REMOVE_ENTRY;
-			} else if(action_value.equalsIgnoreCase(XML_REPLACE_ATTRIBUTES_VALUE)) {
+			} else if(action_value != null && action_value.equalsIgnoreCase(XML_REPLACE_ATTRIBUTES_VALUE)) {
 				action = LdapFormatter.REPLACE_ATTRIBUTES;
-			} else if(action_value.equalsIgnoreCase(XML_REMOVE_ATTRIBUTES_VALUE)) {
+			} else if(action_value != null && action_value.equalsIgnoreCase(XML_REMOVE_ATTRIBUTES_VALUE)) {
 				action = LdapFormatter.REMOVE_ATTRIBUTES;
 			} else {
 				StringBuffer msg = new StringBuffer();
