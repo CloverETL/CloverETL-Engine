@@ -414,6 +414,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		
 		/*
 		 * TODO as soon as Java 1.7 will be required, use built-in facility.
+		 * Tracked under JIRA CLO-226 (https://bug.javlin.eu/browse/CLO-226)
 		 */
 		try {
 			File tmp = File.createTempFile(label, "");
