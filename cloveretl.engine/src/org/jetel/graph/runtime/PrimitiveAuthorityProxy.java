@@ -103,8 +103,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         runtimeContext.setContextURL(givenRuntimeContext.getContextURL());
         runtimeContext.setDictionaryContent(givenRuntimeContext.getDictionaryContent());
         
-        // TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
-		// after resolve issue CL-416 (https://bug.javlin.eu/browse/CL-416) next line should be removed
+        // debug mode has to be turned off, parallel edge debugging is not available for non-server graph processing 
         runtimeContext.setDebugMode(false);
         
         return runtimeContext;
