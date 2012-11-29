@@ -217,6 +217,11 @@ public class S3InputStream extends InputStream {
 	}
 	
 	@Override
+	public int hashCode() {
+		return is.hashCode();
+	}
+	
+	@Override
 	protected Object clone() throws CloneNotSupportedException {
 		return new S3InputStream(is);
 	}

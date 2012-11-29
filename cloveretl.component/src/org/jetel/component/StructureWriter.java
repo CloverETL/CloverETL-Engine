@@ -259,12 +259,12 @@ public class StructureWriter extends Node {
 		//prepare header
 		if (headerFormatter != null) {
 			headerProducer = new Producer(getInputPort(HEADER_PORT), headerFormatter);
-			headerProducer.run();
+			headerProducer.run(); // FIXME apparently we want to call start() here, but is it safe now?
 		}
 		//prepare footer
 		if (footerFormatter != null){
 			footerProducer = new Producer(getInputPort(FOOTER_PORT), footerFormatter);
-			footerProducer.run();
+			footerProducer.run(); // FIXME apparently we want to call start() here, but is it safe now?
 		}
 		//wait for header
 		if (headerProducer != null) {

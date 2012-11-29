@@ -41,7 +41,7 @@ public enum JobType {
 	PROFILER_JOB("profilerJob", FileType.PROFILER_JOB);
 
 	/** This type is used in case the type is not specified in different way. */
-	public static JobType DEFAULT = ETL_GRAPH;
+	public static final JobType DEFAULT = ETL_GRAPH;
 
 	private String id;
 	
