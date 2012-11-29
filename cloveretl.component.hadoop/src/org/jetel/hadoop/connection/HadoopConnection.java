@@ -59,6 +59,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author dpavlis (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * @author rmirek, tkramolis
  * 
  * @see org.apache.hadoop.fs.FileSystem
  */
@@ -314,9 +315,9 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			classLoader = new GreedyURLClassLoader(providerClassPath.toArray(new URL[0]), getClass().getClassLoader());
 			classLoaderCache.put(classPathSet, classLoader);
 			
-			logger.debug("Hadoop connection " + getId() + " uses new classloader with additional classpath: " + providerClassPath);
+			logger.debug("Hadoop connection " + getId() + " uses new classloader with classpath: " + providerClassPath);
 		} else {
-			logger.debug("Hadoop connection " + getId() + " uses cached classloader with additional classpath: " + providerClassPath);
+			logger.debug("Hadoop connection " + getId() + " uses cached classloader with classpath: " + providerClassPath);
 		}
 		
 
