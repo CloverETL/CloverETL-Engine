@@ -207,8 +207,7 @@ public class HadoopWriter extends Node {
 
 		initLookupTable();
 
-		if (connection == null)
-			prepareConnection();
+		prepareConnection();
 
 		try {
 			formatter = connection.getConnection().createFormatter(this.keyField, this.valueField, !this.appendData);

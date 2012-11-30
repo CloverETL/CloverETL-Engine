@@ -52,18 +52,9 @@ public class HadoopSequenceFileFormatter implements
 	private TransformationGraph graph;
 	
 	
-	public HadoopSequenceFileFormatter(FileSystem dfs) {
-		this.dfs=dfs;
-	}
-	
-	public HadoopSequenceFileFormatter(FileSystem dfs,String keyFieldName, String valueFieldName) {
-		this.dfs=dfs;
+	public HadoopSequenceFileFormatter(String keyFieldName, String valueFieldName) {
 		this.keyFieldName=keyFieldName;
 		this.valueFieldName=valueFieldName;
-	}
-	
-	public HadoopSequenceFileFormatter() {
-		this.dfs=null;
 	}
 	
 	@Override
@@ -97,7 +88,7 @@ public class HadoopSequenceFileFormatter implements
 
 	@Override
 	public void reset() {
-		// do nothing, we can't reset ?
+		dfs = null; // causes DFS to be recreated from fresh connection
 	}
 
 	@Override

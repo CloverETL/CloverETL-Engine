@@ -61,18 +61,10 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	private IParserExceptionHandler exceptionHandler;
 	
 	
-	public HadoopSequenceFileParser(FileSystem dfs) {
-		this.dfs=dfs;
-	}
-	
-	public HadoopSequenceFileParser() {
-	}
-	
-	public HadoopSequenceFileParser(FileSystem dfs,DataRecordMetadata metadata, String keyFieldName, String valueFieldName) {
-		this.dfs=dfs;
-		this.metadata=metadata;
-		this.keyFieldName=keyFieldName;
-		this.valueFieldName=valueFieldName;
+	public HadoopSequenceFileParser(DataRecordMetadata metadata, String keyFieldName, String valueFieldName) {
+		this.metadata = metadata;
+		this.keyFieldName = keyFieldName;
+		this.valueFieldName = valueFieldName;
 	}
 	
 	
@@ -293,8 +285,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
-		// TODO Auto-generated method stub
-
+		dfs = null;
 	}
 
 	@Override
