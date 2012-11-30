@@ -204,11 +204,10 @@ public class HadoopReader extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
-		if (isInitialized())
+		if (isInitialized()) {
 			return;
+		}
 		super.init();
-		if (connection == null)
-			prepareConnection();
 		prepareMultiFileReader();
 	}
 

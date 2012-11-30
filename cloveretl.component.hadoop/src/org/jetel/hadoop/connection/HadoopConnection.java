@@ -200,7 +200,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	@Override
 	public synchronized void init() throws ComponentNotReadyException {
 		if (isInitialized()) {
-			logger.debug("HadoopConnection has been initialized twice or more times. Not neccessary.");
+			logger.trace("HadoopConnection has been initialized twice or more times. Not neccessary.");
 			return;
 		}
 		super.init();
@@ -281,7 +281,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		List<URL> providerClassPath = new ArrayList<URL>();
 
 		if (contextURL == null) {
-			// This may happen e.g. in checkConfig phase of a UDR
 			TransformationGraph graph = ContextProvider.getGraph();
 			if (graph != null) {
 				contextURL = graph.getRuntimeContext().getContextURL();
@@ -371,24 +370,11 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	}
 
 	@Override
-	public synchronized void preExecute() throws ComponentNotReadyException {
-		super.preExecute();
-		if (firstRun() || getGraph().getRuntimeContext().isBatchMode()) {
-			init();
-		}
-	}
-
-	@Override
 	public synchronized void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
 		try {
-			if (getGraph().getRuntimeContext().isBatchMode()) {
-				close();
-			} else { // for now no difference between batch & non-batch
-				close();
-			}
+			close();
 		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
+			throw new ComponentNotReadyException("Failed to close connection", e);
 		}
 	}
 
@@ -402,6 +388,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				logger.warn("There was a problem closing HDFS connection. The cluster might be disconected "
 						+ "or it could be already closed.", ex);
 			}
+			fsConnection = null;
 		}
 	}
 
@@ -410,7 +397,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		if (fsConnection != null) {
 			fsConnection.close();
 		}
-		fsConnection = null;
 	}
 
 	@Override

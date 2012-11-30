@@ -178,7 +178,7 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 		ClassLoader formerCCL = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
-		IHadoopSequenceFileFormatter formatter = new HadoopSequenceFileFormatter(this.dfs, keyFieldName, valueFieldName);
+		IHadoopSequenceFileFormatter formatter = new HadoopSequenceFileFormatter(keyFieldName, valueFieldName);
 
 		Thread.currentThread().setContextClassLoader(formerCCL);
 
@@ -265,7 +265,7 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 	@Override
 	public IHadoopSequenceFileParser createParser(String keyFieldName, String valueFieldName,
 			DataRecordMetadata metadata) throws IOException {
-		return new HadoopSequenceFileParser(dfs, metadata, keyFieldName, valueFieldName);
+		return new HadoopSequenceFileParser(metadata, keyFieldName, valueFieldName);
 	}
 
 	@Override
