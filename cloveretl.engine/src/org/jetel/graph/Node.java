@@ -480,7 +480,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             if (runResult == Result.FINISHED_OK) {
             	if (runIt == false) { //component returns ok tag, but the component was actually aborted
             		runResult = Result.ABORTED;
-            	} else {
+            	} else if (checkEofOnInputPorts()) { // true by default
 	            	//check whether all input ports are already closed
 	            	for (InputPort inputPort : getInPorts()) {
 	            		if (!inputPort.isEOF()) {
@@ -1338,6 +1338,18 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 */
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new ComplexComponentTokenTracker(this);
+	}
+
+	/**
+	 * Can be overridden by components to avoid default checking of input ports -
+	 * all input ports are checked whether EOF flag was reached
+	 * after the component finish processing.
+	 * 
+	 * @see com.cloveretl.server.graph.RemoteEdgeDataTransmitter
+	 * @return
+	 */
+	protected boolean checkEofOnInputPorts() {
+		return true;
 	}
 	
 }

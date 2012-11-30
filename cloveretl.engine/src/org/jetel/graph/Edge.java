@@ -567,6 +567,13 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public Edge getEdge() {
 		return this;
 	}
+
+	/**
+	 * @return internal edge implementation
+	 */
+	public EdgeBase getEdgeBase() {
+		return edge;
+	}
 	
 }
 /*
