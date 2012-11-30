@@ -27,6 +27,8 @@ package org.jetel.util;
 public class ClusterUtils {
 
 	public static final String CLUSTER_PARTITION_TYPE = "CLUSTER_PARTITION";
+	public static final String CLUSTER_LOAD_BALANCING_PARTITION_TYPE = "CLUSTER_LOAD_BALANCING_PARTITION";
+	
 	public static final String CLUSTER_SIMPLE_GATHER_TYPE = "CLUSTER_SIMPLE_GATHER";
 	public static final String CLUSTER_MERGE_TYPE = "CLUSTER_MERGE";
 	
