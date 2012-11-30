@@ -218,7 +218,7 @@ public abstract class IAuthorityProxy {
 	
 	public abstract RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext);
 	
-	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext);
+	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
 	
 	/**
 	 * This method is used for tracking a running graphs. For already finished graphs this method returns
