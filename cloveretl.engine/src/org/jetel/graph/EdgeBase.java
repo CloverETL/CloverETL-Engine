@@ -72,7 +72,10 @@ public abstract class EdgeBase {
 	/**
 	 * Resets all internal settings to the initial state.
 	 */
-	public abstract void reset();
+	@Deprecated
+	public void reset() {
+		//empty
+	}
 	
 	// Operations
 	/**
