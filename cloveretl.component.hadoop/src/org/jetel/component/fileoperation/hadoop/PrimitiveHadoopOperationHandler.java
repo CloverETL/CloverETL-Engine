@@ -50,7 +50,7 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 	
 	private IHadoopConnection getConnection(URI uri) throws IOException {
 		TransformationGraph graph = ContextProvider.getGraph();
-		String connectionId = uri.getHost();
+		String connectionId = uri.getAuthority();
 		IConnection connection = graph.getConnection(connectionId);
 		if (!(connection instanceof HadoopConnection)) {
 			throw new IOException(MessageFormat.format("Not a Hadoop connection: {0}", connectionId));
@@ -145,7 +145,7 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 		IHadoopConnection connection = getConnection(target);
 		URI path = URI.create(target.getRawPath());
 		if (connection.exists(path)) {
-			return new HadoopInfo(connection.getStatus(path), target.getHost()); 
+			return new HadoopInfo(connection.getStatus(path), target.getAuthority()); 
 		}
 		
 		return null;
@@ -156,7 +156,7 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 		HadoopFileStatus[] files = getConnection(target).listStatus(URI.create(target.getRawPath()));
 		List<URI> result = new ArrayList<URI>(files.length);
 		for (HadoopFileStatus file: files) {
-			result.add(new HadoopInfo(file, target.getHost()).getURI());
+			result.add(new HadoopInfo(file, target.getAuthority()).getURI());
 		}
 		return result;
 	}
