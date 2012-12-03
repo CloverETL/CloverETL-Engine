@@ -151,9 +151,9 @@ public class ConfigurationProblem {
 	/**
 	 * @return exception derived from this problem or null if the problem is not error
 	 */
-	public Exception toException() {
+	public ConfigurationException toException() {
 		if (getSeverity() == Severity.ERROR) {
-			return new ConfigurationException(createMessage(), getCauseException());
+			return new ConfigurationException(createMessage(), getCauseException(), getGraphElementID());
 		} else {
 			return null;
 		}

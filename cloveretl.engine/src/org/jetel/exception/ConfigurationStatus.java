@@ -101,7 +101,7 @@ public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
 	/**
 	 * @return exception derived from first error in status or null if no error is in status
 	 */
-	public Exception toException() {
+	public ConfigurationException toException() {
 		if (isError()) {
 			return firstError().toException();
 		} else {

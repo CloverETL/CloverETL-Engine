@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jetel.data.sequence.Sequence;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Result;
@@ -161,9 +163,20 @@ public abstract class IAuthorityProxy {
 		public void setException(Exception e) {
 			errMessage = MiscUtils.exceptionChainToMessage(null, e);
 			errException = MiscUtils.stackTraceToString(e);
+			
+			//try to find caused graph element id
+			Throwable t = e;
+			while (true) {
+				if (t instanceof ConfigurationException) {
+					errComponent = ((ConfigurationException) t).getCausedGraphElementId();
+				} else if (t instanceof ComponentNotReadyException) {
+					errComponent = ((ComponentNotReadyException) t).getGraphElement().getId();
+				} else {
+					break;
+				}
+				t = t.getCause();
+			}
 		}
-
-		
 	}
 
 	/**
