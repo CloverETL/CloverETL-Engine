@@ -393,7 +393,12 @@ public class RecordTransformFactory {
 	 */
 	@Deprecated
     public static Object loadClassInstance(String transformClassName, Node node) throws ComponentNotReadyException {
-    	return loadClassInstance(transformClassName, ClassLoaderUtils.createNodeClassLoader(node));
+    	
+    	ClassLoader loader = new MultiParentClassLoader(
+    		ClassLoaderUtils.createNodeClassLoader(node),
+    		getCTLLibsClassLoader()
+    	);
+    	return loadClassInstance(transformClassName, loader);
     }
     
 	/**
