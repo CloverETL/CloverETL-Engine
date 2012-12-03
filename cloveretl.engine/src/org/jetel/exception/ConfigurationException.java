@@ -33,8 +33,19 @@ public class ConfigurationException extends Exception {
 
 	private static final long serialVersionUID = -4610905816299033384L;
 	
-	public ConfigurationException(String message, Throwable cause) {
-		super(message, cause);
-	}
+	private String causedGraphElementId;
 	
+	public ConfigurationException(String message, Throwable cause, String causedGraphElementId) {
+		super(message, cause);
+		
+		this.causedGraphElementId = causedGraphElementId;
+	}
+
+	/**
+	 * @return the causedGraphElementId
+	 */
+	public String getCausedGraphElementId() {
+		return causedGraphElementId;
+	}
+
 }
