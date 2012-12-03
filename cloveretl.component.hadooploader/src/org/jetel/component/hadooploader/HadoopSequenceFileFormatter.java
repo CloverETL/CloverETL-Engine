@@ -161,7 +161,9 @@ public class HadoopSequenceFileFormatter implements
 
 	@Override
 	public void close() throws IOException {
-		writer.close();
+		if (writer != null) {
+			writer.close();
+		}
 	}
 
 	@Override
