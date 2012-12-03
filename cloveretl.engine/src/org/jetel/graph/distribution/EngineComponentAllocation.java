@@ -108,7 +108,7 @@ public class EngineComponentAllocation {
 			}
 			return EngineComponentAllocation.createBasedOnClusterNodes(Arrays.asList(clusterNodeIds.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX)));
 		}
-		throw new JetelException("Ivalid component allocation format: " + rawAllocation + ".");
+		throw new JetelException("Ivalid component allocation format: " + rawAllocation);
 	}
 	
 	/**
