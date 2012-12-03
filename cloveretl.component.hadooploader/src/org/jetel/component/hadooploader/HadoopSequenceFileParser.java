@@ -150,7 +150,7 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 		if (inputDataSource instanceof URI) {
 			if (!HadoopURLUtils.isHDFSUri((URI)inputDataSource))
 				throw new IOException("Not a valid HDFS/Hadoop URL - "+inputDataSource);
-			final String connectionName = ((URI) inputDataSource).getHost();
+			final String connectionName = ((URI) inputDataSource).getAuthority();
 
 			if (graph==null) graph = ContextProvider.getGraph();
 			if (graph == null) {

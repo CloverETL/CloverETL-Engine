@@ -104,7 +104,7 @@ public class HadoopSequenceFileFormatter implements
 			if (!HadoopURLUtils.isHDFSUri((URI)outputDataTarget))
 				throw new IOException("Not a valid HDFS/Hadoop URL - "+outputDataTarget);
 			
-			final String connectionName = ((URI) outputDataTarget).getHost();
+			final String connectionName = ((URI) outputDataTarget).getAuthority();
 
 			if(graph==null) graph = ContextProvider.getGraph();
 			if (graph == null) {
