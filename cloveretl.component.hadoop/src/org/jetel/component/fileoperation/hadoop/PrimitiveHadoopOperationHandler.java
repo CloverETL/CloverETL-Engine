@@ -26,6 +26,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -65,48 +66,77 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 		IHadoopConnection result = ((HadoopConnection) connection).getConnection();
 		return result;
 	}
+	
+	private URI getPath(URI uri) {
+		// Cloudera 3u4 does not deal with "." and ".." in paths => normalize()
+		StringBuilder sb = new StringBuilder();
+		String path = uri.getRawPath();
+		if (path != null) {
+			sb.append(path);
+		}
+		String query = uri.getRawQuery();
+		if (query != null) {
+			sb.append('?').append(query);
+		}
+		return URI.create(sb.toString()).normalize();
+	}
+
+	public boolean createFile(URI target, boolean makeParents) throws IOException {
+		URI path = getPath(target);
+		IHadoopConnection connection = getConnection(target);
+		if (!makeParents) {
+			URI parent = URIUtils.getParentURI(path);
+			if ((parent != null) && !connection.exists(parent)) {
+				throw new IOException(parent.toString());
+			}
+		}
+		return connection.createNewFile(path);
+	}
 
 	@Override
 	public boolean createFile(URI target) throws IOException {
-		URI path = URI.create(target.getRawPath());
-		IHadoopConnection connection = getConnection(target);
-		URI parent = URIUtils.getParentURI(path);
-		if ((parent != null) && !connection.exists(parent)) {
-			throw new IOException(parent.toString());
-		}
-		connection.create(path, false).getDataOutputStream().close();
-		return true;
+		return createFile(target, false);
 	}
 
 	@Override
 	public boolean setLastModified(URI target, Date date) throws IOException {
-//		IHadoopConnection connection = getConnection(target);
-//		URI path = URI.create(target.getRawPath());
-//		if (!connection.getStatus(path).isDir()) { // not supported for directories
-//			connection.setLastModified(path, date.getTime());
-//		}
+		IHadoopConnection connection = getConnection(target);
+		URI path = getPath(target);
+		if (!connection.getStatus(path).isDir()) { // not supported for directories
+			connection.setLastModified(path, date.getTime());
+		}
 		return true;
 	}
 
-	@Override
-	public boolean makeDir(URI target) throws IOException {
-		URI path = URI.create(target.getRawPath());
+	public boolean makeDir(URI target, boolean makeParents) throws IOException {
+		URI path = getPath(target);
 		IHadoopConnection connection = getConnection(target);
-		URI parent = URIUtils.getParentURI(path);
-		if ((parent != null) && !connection.exists(parent)) {
-			throw new IOException(parent.toString());
+		if (!makeParents) {
+			URI parent = URIUtils.getParentURI(path);
+			if ((parent != null) && !connection.exists(parent)) {
+				throw new IOException(parent.toString());
+			}
 		}
 		return connection.mkdir(path);
 	}
 
 	@Override
+	public boolean makeDir(URI target) throws IOException {
+		return makeDir(target, false);
+	}
+
+	@Override
 	public boolean deleteFile(URI target) throws IOException {
-		return getConnection(target).delete(URI.create(target.getRawPath()), false);
+		return getConnection(target).delete(getPath(target), false);
 	}
 
 	@Override
 	public boolean removeDir(URI target) throws IOException {
-		return getConnection(target).delete(URI.create(target.getRawPath()), false);
+		return getConnection(target).delete(getPath(target), false);
+	}
+
+	public boolean removeDirRecursively(URI target) throws IOException {
+		return getConnection(target).delete(getPath(target), true);
 	}
 
 	@Override
@@ -121,29 +151,28 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 
 	@Override
 	public URI renameTo(URI source, URI target) throws IOException {
-		return getConnection(source).rename(URI.create(source.getRawPath()), URI.create(target.getRawPath())) ? target : null;
+		return getConnection(source).rename(getPath(source), getPath(target)) ? target : null;
 	}
 
 	@Override
 	public ReadableByteChannel read(URI source) throws IOException {
-		return Channels.newChannel(getConnection(source).open(URI.create(source.getRawPath())).getDataInputStream());
+		return Channels.newChannel(getConnection(source).open(getPath(source)).getDataInputStream());
 	}
 
 	@Override
 	public WritableByteChannel write(URI target) throws IOException {
-		return Channels.newChannel(getConnection(target).create(URI.create(target.getRawPath()), true).getDataOutputStream());
+		return Channels.newChannel(getConnection(target).create(getPath(target), true).getDataOutputStream());
 	}
 
 	@Override
 	public WritableByteChannel append(URI target) throws IOException {
-		return Channels.newChannel(getConnection(target).append(URI.create(target.getRawPath())).getDataOutputStream());
+		return Channels.newChannel(getConnection(target).append(getPath(target)).getDataOutputStream());
 	}
 
 	@Override
 	public Info info(URI target) throws IOException {
-		target = target.normalize();
 		IHadoopConnection connection = getConnection(target);
-		URI path = URI.create(target.getRawPath());
+		URI path = getPath(target);
 		if (connection.exists(path)) {
 			return new HadoopInfo(connection.getStatus(path), target.getAuthority()); 
 		}
@@ -153,10 +182,43 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 
 	@Override
 	public List<URI> list(URI target) throws IOException {
-		HadoopFileStatus[] files = getConnection(target).listStatus(URI.create(target.getRawPath()));
+		HadoopFileStatus[] files = getConnection(target).listStatus(getPath(target));
 		List<URI> result = new ArrayList<URI>(files.length);
 		for (HadoopFileStatus file: files) {
 			result.add(new HadoopInfo(file, target.getAuthority()).getURI());
+		}
+		return result;
+	}
+	
+	// FIXME not used
+	public List<URI> resolve(URI target) throws IOException {
+		URI normalized = target.normalize();
+		StringBuilder glob = new StringBuilder();
+		String path = normalized.getPath(); // decode escape sequences
+		if (path != null) {
+			glob.append(path);
+		}
+		String query = normalized.getQuery(); // decode escape sequences
+		if (query != null) {
+			glob.append('?').append(query);
+		}
+		HadoopFileStatus[] files = getConnection(target).globStatus(glob.toString());
+		if (files == null) {
+			return Arrays.asList(target); // no wildcard
+		}
+		List<URI> result = new ArrayList<URI>(files.length);
+		boolean directory = target.toString().endsWith(URIUtils.PATH_SEPARATOR);
+		String connectionId = target.getHost();
+		if (directory) {
+			for (HadoopFileStatus file: files) {
+				if (file.isDir()) {
+					result.add(new HadoopInfo(file, connectionId).getURI());
+				}
+			}
+		} else {
+			for (HadoopFileStatus file: files) {
+				result.add(new HadoopInfo(file, connectionId).getURI());
+			}
 		}
 		return result;
 	}
@@ -234,8 +296,7 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 
 		@Override
 		public Date getLastModified() {
-//			return new Date(file.getModificationTime());
-			return null; // FIXME
+			return new Date(file.getModificationTime());
 		}
 
 		@Override
@@ -245,7 +306,7 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 
 		@Override
 		public Date getLastAccessed() {
-			return null;
+			return null; // TODO
 		}
 
 		@Override

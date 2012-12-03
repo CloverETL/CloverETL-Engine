@@ -50,6 +50,8 @@ public interface IHadoopConnection {
 	public IHadoopOutputStream create(URI file,boolean overwrite, int bufferSize) throws IOException;
 	public IHadoopOutputStream create(URI file, boolean overwrite, int bufferSize, short replication, long blockSize) throws IOException;
 	
+	public boolean createNewFile(URI file) throws IOException;
+
 	public IHadoopSequenceFileFormatter createFormatter(String keyFieldName, String valueFieldName,boolean overwrite) throws IOException;
 	
 	public IHadoopSequenceFileParser createParser(String keyFieldName, String valueFieldName, DataRecordMetadata metadata) throws IOException;
@@ -62,6 +64,7 @@ public interface IHadoopConnection {
 	public boolean mkdir(URI file) throws IOException;
 	public boolean rename(URI src, URI dst) throws IOException;
 	public HadoopFileStatus[] listStatus(URI path) throws IOException;
+	public HadoopFileStatus[] globStatus(String glob) throws IOException;
 	public HadoopFileStatus getStatus(URI path) throws IOException;
 	public HadoopFileStatus getExtendedStatus(URI path) throws IOException;
 	
