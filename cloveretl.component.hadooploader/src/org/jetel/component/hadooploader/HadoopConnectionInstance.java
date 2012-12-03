@@ -296,4 +296,35 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 			throw new IOException("Not connected to HDFS.");
 		}
 	}
+
+	@Override
+	public HadoopFileStatus[] globStatus(String glob) throws IOException {
+		if (dfs != null) {
+			glob = glob.replace("\\", "%25");
+			Path path = new Path(glob);
+			
+			FileStatus[] status = dfs.globStatus(path);
+			if (status == null) {
+				return null;
+			}
+			HadoopFileStatus[] hStatus = new HadoopFileStatus[status.length];
+			for (int i = 0; i < status.length; i++) {
+				hStatus[i] = new HadoopFileStatus(status[i].getPath().toUri(), status[i].getLen(), status[i].isDir(),
+						status[i].getModificationTime());
+			}
+			return hStatus;
+
+		} else {
+			throw new IOException("Not connected to HDFS.");
+		}
+	}
+
+	@Override
+	public boolean createNewFile(URI path) throws IOException {
+		if (dfs != null) {
+			return dfs.createNewFile(new Path(path));
+		} else {
+			throw new IOException("Not connected to HDFS.");
+		}
+	}
 }
