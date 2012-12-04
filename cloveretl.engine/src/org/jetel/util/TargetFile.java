@@ -1,7 +1,7 @@
 /*
  * jETeL/CloverETL - Java based ETL application framework.
  * Copyright (c) Javlin, a.s. (info@cloveretl.com)
- *  
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -47,16 +47,17 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.RestrictedByteArrayOutputStream;
 import org.jetel.util.file.FileUtils;
 
+
 /**
  * TargetFile is used for basic operation over output files or streams and formatter. It support methods
  * for multifile record.
- * 
+ *
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class TargetFile {
     private static Log logger = LogFactory.getLog(TargetFile.class);
-    
+
 	private static final char NUM_CHAR='#';			// file markter that is replacet file tag.
 	private static final String EMPTY_STRING="";
 	private static final String PARAM_DELIMITER = ":";
@@ -64,7 +65,7 @@ public class TargetFile {
 	private static final String PORT_PROTOCOL = "port:";
 	private static final String DICT_PROTOCOL = "dict:";
 	private static final String DEFAULT_CHARSET = "UTF-8";
-	
+
 	private DecimalFormat format;					// it is used if the file tag is a number
 
 	private String fileURL;							// output file url
@@ -72,16 +73,16 @@ public class TargetFile {
     private Iterator<WritableByteChannel> channels; // output channel
 	private FormatterProvider formatterProvider;		// creates new formatter
 	private DataRecordMetadata metadata;			// metadata
-	
+
     private MultiOutFile fileNames;				// returns filename string
     private Formatter formatter;					// writes records into output
-	
+
     private int records;							// count of record sent to formatter
     private int bytes;								// count of bytes sent to formatter
     private boolean appendData;						// appends data to output
 	private boolean useChannel = true;				// if can be used a byteChannel
-    
-	private Object fileTag;							// string of marks '#' are replaced by this fileTag 
+
+	private Object fileTag;							// string of marks '#' are replaced by this fileTag
     private String before;							// string of fileURL before last string of marks '#'
     private String after;							// string of fileURL after last string of marks '#'
 	private String fileName;
@@ -90,7 +91,7 @@ public class TargetFile {
 
 	private OutputPort outputPort;
 	private DataRecord record;
-	private DataField field; 
+	private DataField field;
 	private boolean isStringDataField;
 	private ProcessingType fieldProcesstingType;
 
@@ -100,7 +101,7 @@ public class TargetFile {
 	private ProcessingType dictProcesstingType;
 	private WritableByteChannel dictOutChannel;
 	private ArrayList<byte[]> dictOutArray;
-	private ArrayList<Object> dictObjectArray;
+	private Object dictObjectArray;
 	private boolean fieldOrDictOutput;
 	private ByteArrayOutputStream bbOutputStream;
 
@@ -118,20 +119,20 @@ public class TargetFile {
     	this.formatter = formatter;
     	this.metadata = metadata;
     }
-    
+
     public TargetFile(Iterator<WritableByteChannel> channels, Formatter formatter, DataRecordMetadata metadata) {
     	this.channels = channels;
     	this.formatter = formatter;
     	this.metadata = metadata;
     }
-    
+
     public TargetFile(String fileURL, URL contextURL, FormatterProvider formatterProvider, DataRecordMetadata metadata) {
     	this.fileURL = fileURL;
     	this.contextURL = contextURL;
     	this.formatterProvider = formatterProvider;
     	this.metadata = metadata;
     }
-    
+
     public TargetFile(Iterator<WritableByteChannel> channels, FormatterProvider formatterProvider, DataRecordMetadata metadata) {
     	this.channels = channels;
     	this.formatterProvider = formatterProvider;
@@ -140,7 +141,7 @@ public class TargetFile {
 
     /**
      * Prepares file url string, initialize output and formatter.
-     * 
+     *
      * @throws IOException
      * @throws ComponentNotReadyException
      */
@@ -148,7 +149,7 @@ public class TargetFile {
     	if (charset == null) {
     		charset = DEFAULT_CHARSET;
     	}
-    	
+
     	if (fileURL != null && fileURL.startsWith(PORT_PROTOCOL)) {
         	initPortFields();
     	} else if (outputPort != null) {
@@ -171,47 +172,47 @@ public class TargetFile {
     	}
     	if (fileTag == null) {
     		initFileNames(null);
-    	} 
+    	}
     	else if (fileTag instanceof Number) {
     		initFileNames(format.format((Number)fileTag));
     	} else {
     		initFileNames(fileTag.toString());
     	}
     }
-    
+
     public void reset() {
     	if (fileNames != null) {
 			fileNames.reset();
 		}
 		formatter.reset();
 	}
-    
+
     /**
      * Output port if data should be write to an output field.
-     * 
+     *
      * @param outputPort
      */
     public void setOutputPort(OutputPort outputPort) {
     	this.outputPort = outputPort;
-    }    
+    }
 
     /**
      * FileURL can contains '#' mark, the string of marks is replaced the fileTag. If a file tag is Number,
-     * there is used NumberFormat for definition of minimal lenght of the fileTag. Ie: ## and 5 is "05". 
-     * 
+     * there is used NumberFormat for definition of minimal lenght of the fileTag. Ie: ## and 5 is "05".
+     *
      * @param fileTag
      */
     public void setFileTag(Object fileTag) {
     	this.fileTag = fileTag;
     }
-    
+
     public void setFileName(String fileName) {
     	this.fileName = fileName;
     }
 
     /**
      * Replaces '#' string of marks for value and creates MultiOutFile.
-     * 
+     *
      * @param value
      * @throws IOException
      * @throws ComponentNotReadyException
@@ -221,7 +222,7 @@ public class TargetFile {
     		fileNames = new MultiOutFile(value == null ? fileURL : before + value + after);
     	}
     }
-    
+
     /**
      * Divides fileURL to two string. The first one is a string before '#' mark, the second one is
      * after mark. If no mark found, before string is fileURL.
@@ -281,8 +282,13 @@ public class TargetFile {
 				dictOutArray = new ArrayList<byte[]>();
 				dictionary.setValue(aDict[0], dictOutArray);
 			} else {
-				dictObjectArray = new ArrayList<Object>();
-				dictionary.setValue(aDict[0], dictObjectArray);
+                ArrayList<Object> list = new ArrayList<Object>();
+                dictionary.setValue(aDict[0], list);
+                if(dictValue!= null){ //If dictValue != null use this as a default root element
+                    dictObjectArray = new Pair<ArrayList<Object>,Object>(list,dictValue);
+                } else{
+				    dictObjectArray = list;
+                }
 			}
 			break;
 		case SOURCE:
@@ -290,10 +296,10 @@ public class TargetFile {
 				//fileURL refers to a dictionary entry which is SOURCE type
 				//so dictionary entry content has to be a string which is real fileURL to be written
 				//fileURL variable is updated and false value returned to inform
-				//that writer has to write to file specified in fileURL variable 
-				fileURL = ((CharSequence) dictValue).toString();
+				//that writer has to write to file specified in fileURL variable
+				fileURL = dictValue.toString();
 				dictProcesstingType = null; //just to be sure that all other code will not be confused
-				return false; 
+				return false;
 			} else {
 				throw new IllegalStateException("Dictionary doesn't contain valid value for the key '" + aDict[0] + "' in source processing mode. " +
 						"Only charsequence are supported.");
@@ -303,7 +309,7 @@ public class TargetFile {
 		}
 		return true;
 	}
-    
+
 	private void initPortFields() throws ComponentNotReadyException {
 		if (outputPort == null) {
 			throw new ComponentNotReadyException("Output port is not connected.");
@@ -342,14 +348,14 @@ public class TargetFile {
 
     /**
      * The method writes footer and header and sets next output to the formatter.
-     * 
+     *
      * @throws IOException
      */
     public void setNextOutput() throws IOException {
     	if (field == null) {
         	checkOutput();
     	}
-    	
+
         //write footer to the previous destination if it is not first call of this method
         if(byteChannel != null || bbOutputStream != null || objectDictionaryInitialized) {
 //        	formatter.writeFooter();	// issue 1503
@@ -358,7 +364,7 @@ public class TargetFile {
         setOutput();
 
         bytes = records = 0;
-        
+
         formatter.writeHeader();
     }
 
@@ -367,7 +373,7 @@ public class TargetFile {
     	formatter.close();
     	write2FieldOrDict();
     }
-    
+
     private void write2FieldOrDict() throws IOException {
     	if (fieldOrDictOutput) {
         	if (bbOutputStream != null) {
@@ -383,7 +389,7 @@ public class TargetFile {
 			}
     	}
     }
-    
+
     /**
      * Write data to the output port or to the dictionary.
      * @param aData
@@ -422,13 +428,13 @@ public class TargetFile {
     	// the writing to port string field is not often operation than to the byte field I guess
     	// the new String is quicker than ByteCharBuffer in all cases but bigger memory is needed
     	String sData = new String(aData, charset);
-    	
+
 		// string field - stream mode
     	if (streamType) {
         	// repeat =0 is 1 record, =1 are 2 records, ...
         	int repeat = sData.length() / (streamType ? Defaults.PortReadingWriting.DATA_LENGTH : sData.length());
 			int size = Defaults.PortReadingWriting.DATA_LENGTH;
-			
+
 			// send all data to records, last record is null
     		for (int i=0; i<=repeat; i++) {
     			if (i == repeat) {
@@ -440,7 +446,7 @@ public class TargetFile {
     			//broadcast the record to the connected edge
     			writeRecord();
     		}
-    		
+
     		//null mark
 			field.setNull(true);
 
@@ -448,7 +454,7 @@ public class TargetFile {
     	} else {
    			field.setValue(sData);
     	}
-    	
+
     	//broadcast the record to the connected edge
 		writeRecord();
     }
@@ -471,7 +477,7 @@ public class TargetFile {
 			if (repeat > 0) {
 				subArray = new byte[size];
 			}
-			
+
 			// send all data to records, last record is null
     		for (int i=0; i<=repeat; i++) {
     			if (i == repeat) {
@@ -484,7 +490,7 @@ public class TargetFile {
     			//broadcast the record to the connected edge
     			writeRecord();
     		}
-    		
+
     		//null mark
 			field.setNull(true);
 
@@ -492,11 +498,11 @@ public class TargetFile {
 		} else {
 			field.setValue(aData);
 		}
-    	
+
 		//broadcast the record to the connected edge
 		writeRecord();
     }
-    
+
     /**
      * Writes record to the output port.
      */
@@ -509,27 +515,27 @@ public class TargetFile {
 		}
 		SynchronizeUtils.cloverYield();
     }
-    
+
     /**
      * Closes underlying formatter.
-     * @throws IOException 
+     * @throws IOException
      */
     public void close() throws IOException {
         formatter.close();
     }
-    
+
     /**
      * Prepares output file.
-     * 
-     * @throws IOException 
-     * @throws ComponentNotReadyException 
+     *
+     * @throws IOException
+     * @throws ComponentNotReadyException
      */
     private void initOutput() throws IOException, ComponentNotReadyException {
     	if (formatter == null) formatter = formatterProvider.getNewFormatter();
     	formatter.init(metadata);
     	setNextOutput();
     }
-    
+
     private void checkOutput() {
     	if (fileNames != null && !fileNames.hasNext()) {
             logger.warn("Unable to open new output file. This may be caused by missing wildcard in filename specification. "
@@ -544,7 +550,7 @@ public class TargetFile {
 
     /**
      * Prepares next output to the data formatter.
-     * 
+     *
      * @throws IOException
      */
     private void setOutput() throws IOException {
@@ -574,13 +580,13 @@ public class TargetFile {
             	}
         		setDataTarget(Channels.newChannel(bbOutputStream));
     		}
-    		
+
     	} else if (fileNames != null) {
             String fName = fileNames.next();
             if (fileName != null) {
             	fName = addUnassignedName(fName);
             }
-        	
+
         	if (isFileSourcePreferred()) {
         		//formatter request java.io.File as data target
         		try {
@@ -592,7 +598,7 @@ public class TargetFile {
         	}
             OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
         	byteChannel = Channels.newChannel(os);
-        	
+
         	if (useChannel) {
         		setDataTarget(byteChannel);
         	} else {
@@ -603,7 +609,7 @@ public class TargetFile {
         	setDataTarget(byteChannel);
         }
     }
-    
+
     private String addUnassignedName(String fName) throws IOException {
     	int hashIndex = fName.lastIndexOf('#');
     	if (hashIndex >= 0) {
@@ -616,7 +622,7 @@ public class TargetFile {
     		return fName + fileName;
     	}
     }
-    
+
     /**
      * @return <code>true</code> if java.io.File source type is preferred instead of channel
      */
@@ -626,7 +632,7 @@ public class TargetFile {
 
     /**
      * Sets logger.
-     * 
+     *
      * @param log
      */
     public static void setLogger(Log log) {
@@ -635,22 +641,22 @@ public class TargetFile {
 
     /**
      * Sets a output to the data formatter.
-     * 
+     *
      * @param outputDataTarget
      * @throws IOException previous target cannot be closed
      */
     public void setDataTarget(Object outputDataTarget) throws IOException {
     	formatter.setDataTarget(outputDataTarget);
     }
-    
+
     public Iterator<String> getFileNames() {
     	return fileNames;
     }
-    
+
     public Formatter getFormatter() {
     	return formatter;
     }
-    
+
     public int getRecords() {
     	return records;
     }
@@ -658,7 +664,7 @@ public class TargetFile {
     public void setRecords(int records) {
     	this.records = records;
     }
-    
+
     public int getBytes() {
     	return bytes;
     }
@@ -670,7 +676,7 @@ public class TargetFile {
     public void setAppendData(boolean appendData) {
         this.appendData = appendData;
     }
-    
+
 	public void setUseChannel(boolean useChannel) {
 		this.useChannel = useChannel;
 	}
