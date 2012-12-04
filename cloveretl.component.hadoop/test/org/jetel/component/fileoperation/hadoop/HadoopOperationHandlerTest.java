@@ -59,6 +59,8 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 	
 	protected HadoopOperationHandler handler = null;
 	
+	private TransformationGraph graph = null;
+	
 	@Override
 	protected IOperationHandler createOperationHandler() {
 		return handler = new HadoopOperationHandler();
@@ -96,13 +98,14 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 		InputStream is = null;
 		try {
 			is = getClass().getResourceAsStream(getTestingGraph()); // get .grf file as a resource
-			TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(is, context);
-			is.close();
-			// register the graph in ContextProvider, so that Hadoop connections can be obtained
-			ContextProvider.registerGraph(graph);
+			graph = TransformationGraphXMLReaderWriter.loadGraph(is, context);
 			graph.init();
 		} finally {
 			FileUtils.closeQuietly(is);
+			if (graph != null) {
+				// register the graph in ContextProvider, so that Hadoop connections can be obtained
+				ContextProvider.registerGraph(graph);
+			}
 		}
 		
 		super.setUp();
@@ -120,7 +123,10 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 		}
 		super.tearDown();
 		handler = null;
-		ContextProvider.unregister();
+		if (graph != null) {
+			ContextProvider.unregister();
+			graph = null;
+		}
 	}
 
 	@Override
