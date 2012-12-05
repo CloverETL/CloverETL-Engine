@@ -56,6 +56,8 @@ public abstract class PortTrackingDetail implements PortTracking {
 
 	protected int usedMemory;
 	
+	protected long remoteRunId;
+	
     protected PortTrackingDetail(NodeTrackingDetail parentNodeDetail, int index) {
     	this.parentNodeDetail = parentNodeDetail;
     	this.index = index;
@@ -152,6 +154,11 @@ public abstract class PortTrackingDetail implements PortTracking {
 		return usedMemory;
 	}
 	
+	@Override
+	public long getRemoteRunId() {
+		return remoteRunId;
+	}
+	
 	public void setLastGatherTime(long lastGatherTime) {
 		this.lastGatherTime = lastGatherTime;
 	}
@@ -192,6 +199,10 @@ public abstract class PortTrackingDetail implements PortTracking {
 		this.usedMemory = usedMemory;
 	}
 
+	public void setRemoteRunId(long remoteRunId) {
+		this.remoteRunId = remoteRunId;
+	}
+	
 	abstract void gatherTrackingDetails();
 	
 	protected void gatherTrackingDetails0(int newTotalRecords, long newTotalBytes, int waitingRecords) {
