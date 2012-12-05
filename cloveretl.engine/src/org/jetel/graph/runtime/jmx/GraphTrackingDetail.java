@@ -238,6 +238,7 @@ public class GraphTrackingDetail implements GraphTracking {
 		startTime = System.currentTimeMillis();
 		
 		result = Result.RUNNING;
+		runId = getGraph().getWatchDog().getGraphRuntimeContext().getRunId();
 	}
 
 
