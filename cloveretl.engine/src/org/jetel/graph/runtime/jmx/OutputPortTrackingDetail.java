@@ -20,6 +20,8 @@ package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
 
+import org.jetel.component.RemoteEdgeComponent;
+import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 
 /**
@@ -68,7 +70,14 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Outp
 				outputPort.getOutputByteCounter(),
 				(outputPort.getEdge()).getBufferedRecords());
 
+		//gather memory usage
 		setUsedMemory(outputPort.getUsedMemory());
+		
+		//define remote runId for remote edges
+		Node dataConsumer = outputPort.getReader();
+		if (dataConsumer instanceof RemoteEdgeComponent) {
+			remoteRunId = ((RemoteEdgeComponent) dataConsumer).getRemoteRunId();
+		}
 	}
-	
+
 }

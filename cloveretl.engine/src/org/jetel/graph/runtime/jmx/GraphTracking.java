@@ -75,6 +75,11 @@ public interface GraphTracking extends Serializable {
 	String getNodeId();
 	
 	/**
+	 * @return runId of this graph (identifier used on server environment) 
+	 */
+	long getRunId();
+	
+	/**
 	 * @return tracking of all phases.
 	 */
 	PhaseTracking[] getPhaseTracking();
