@@ -18,6 +18,7 @@
  */
 package org.jetel.hadoop.connection;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -36,6 +37,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.component.fileoperation.FileManager;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
@@ -51,6 +54,7 @@ import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -288,6 +292,22 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			for (String url : urls) {
 				try {
 					URL hadoopJar = FileUtils.getFileURL(contextURL, url);
+					if (SandboxUrlUtils.isSandboxUrl(hadoopJar)) { // CL-2638 - sandbox URLs cannot be used in a classpath
+						try {
+							File file = FileManager.getInstance().getFile(CloverURI.createSingleURI(hadoopJar.toURI()));
+							if (file != null) {
+								hadoopJar = file.toURI().toURL();
+							} else {
+								if (logger.isDebugEnabled()) {
+									logger.debug("Failed to convert " + hadoopJar + " to a local file");
+								}
+							}
+						} catch (Exception ex) {
+							if (logger.isDebugEnabled()) {
+								logger.debug("Failed to convert " + hadoopJar + " to a local file", ex);
+							}
+						}
+					}
 					providerClassPath.add(hadoopJar);
 				} catch (MalformedURLException ex) {
 					throw new ComponentNotReadyException("Cannot load library from '" + url + "'", ex);
