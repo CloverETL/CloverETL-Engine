@@ -121,5 +121,10 @@ public interface PortTracking extends Serializable {
 	 * @return size of memory footprint in bytes of attached edge (both ports of an edge return same number) - not guaranteed
 	 */
 	int getUsedMemory();
+
+	/**
+	 * @return null for regular edges; remote edges return run identifier of graph on the opposite side of the attached edge  
+	 */
+	long getRemoteRunId();
 	
 }

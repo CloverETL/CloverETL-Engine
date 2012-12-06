@@ -72,7 +72,6 @@ import org.jetel.enums.ArchiveType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
-import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.logger.SafeLog;
 import org.jetel.logger.SafeLogFactory;
@@ -1116,6 +1115,11 @@ public class FileUtils {
 		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input)) {
 			return false;
 		} else {
+			for (CustomPathResolver resolver: customPathResolvers) {
+				if (resolver.handlesURL(contextUrl, input)) {
+					return false;
+				}
+			}
 			try {
 				URL url = getFileURL(contextUrl, input);
 				return !isSandbox(url.toString());
@@ -1531,7 +1535,7 @@ public class FileUtils {
         			// ignore the result
         		}
         	}
-		} catch (MalformedURLException e) {
+		} catch (Exception e) {
 			log.debug(e.getMessage());
 		}
 	}

@@ -180,6 +180,58 @@ public abstract class IAuthorityProxy {
 	}
 
 	/**
+	 * This class represents data target of a remote edge -
+	 * pair of output stream and runId of remote job.
+	 * @see IAuthorityProxy#getRemoteEdgeDataTarget(String)
+	 */
+	public static class RemoteEdgeDataTarget {
+		private OutputStream outputStream;
+		private long dataTargetRunId;
+		public RemoteEdgeDataTarget(OutputStream outputStream, long dataTargetRunId) {
+			this.outputStream = outputStream;
+			this.dataTargetRunId = dataTargetRunId;
+		}
+		/**
+		 * @return outputStream where the data records should be sent
+		 */
+		public OutputStream getOutputStream() {
+			return outputStream;
+		}
+		/**
+		 * @return runId of remote job where the data records are sent
+		 */
+		public long getDataTargetRunId() {
+			return dataTargetRunId;
+		}
+	}
+
+	/**
+	 * This class represents data source of a remote edge -
+	 * pair of input stream and runId of remote job.
+	 * @see IAuthorityProxy#getRemoteEdgeDataSource(String)
+	 */
+	public static class RemoteEdgeDataSource {
+		private InputStream inputStream;
+		private long dataSourceRunId;
+		public RemoteEdgeDataSource(InputStream inputStream, long dataSourceRunId) {
+			this.inputStream = inputStream;
+			this.dataSourceRunId = dataSourceRunId;
+		}
+		/**
+		 * @return inputStream where the data records are received
+		 */
+		public InputStream getInputStream() {
+			return inputStream;
+		}
+		/**
+		 * @return runId of remote job where the data records are produced
+		 */
+		public long getDataSourceRunId() {
+			return dataSourceRunId;
+		}
+	}
+
+	/**
 	 * Context of the "parent" graph run.
 	 * May be null when the AuthorityProxy instance is related to the graph which is not intended to be executed.
 	 */
@@ -340,9 +392,19 @@ public abstract class IAuthorityProxy {
 //	 */
 //	public abstract boolean isPrimaryWorker();
 	
-	public abstract InputStream getRemoteEdgeInputStream(String edgeId);
+	/**
+	 * Takes an edge identifier of a remote edge and returns {@link RemoteEdgeDataSource},
+	 * which specified remote source of data records.
+	 * This is used by cluster remote edge implementations.
+	 */
+	public abstract RemoteEdgeDataSource getRemoteEdgeDataSource(String edgeId);
 
-	public abstract OutputStream getRemoteEdgeOutputStream(String edgeId);
+	/**
+	 * Takes an edge identifier of a remote edge and returns {@link RemoteEdgeDataTarget},
+	 * which specified remote target of data records.
+	 * This is used by cluster remote edge implementations.
+	 */
+	public abstract RemoteEdgeDataTarget getRemoteEdgeDataTarget(String edgeId) throws InterruptedException;
 
 //	/**
 //	 * Called by Cluster Partitioner component on "primary" worker.
