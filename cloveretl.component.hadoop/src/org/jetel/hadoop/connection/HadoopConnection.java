@@ -285,6 +285,23 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			if (graph != null) {
 				contextURL = graph.getRuntimeContext().getContextURL();
 			}
+			// CL-2638 - sandbox URLs cannot be used in a classpath
+			if ((contextURL != null) && SandboxUrlUtils.isSandboxUrl(contextURL)) {
+				try {
+					File file = FileManager.getInstance().getFile(CloverURI.createSingleURI(contextURL.toURI()));
+					if (file != null) {
+						contextURL = file.toURI().toURL();
+					} else {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Failed to convert " + contextURL + " to a local file");
+						}
+					}
+				} catch (Exception ex) {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Failed to convert " + contextURL + " to a local file", ex);
+					}
+				}
+			}
 		}
 		
 		if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
@@ -292,22 +309,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			for (String url : urls) {
 				try {
 					URL hadoopJar = FileUtils.getFileURL(contextURL, url);
-					if (SandboxUrlUtils.isSandboxUrl(hadoopJar)) { // CL-2638 - sandbox URLs cannot be used in a classpath
-						try {
-							File file = FileManager.getInstance().getFile(CloverURI.createSingleURI(hadoopJar.toURI()));
-							if (file != null) {
-								hadoopJar = file.toURI().toURL();
-							} else {
-								if (logger.isDebugEnabled()) {
-									logger.debug("Failed to convert " + hadoopJar + " to a local file");
-								}
-							}
-						} catch (Exception ex) {
-							if (logger.isDebugEnabled()) {
-								logger.debug("Failed to convert " + hadoopJar + " to a local file", ex);
-							}
-						}
-					}
 					providerClassPath.add(hadoopJar);
 				} catch (MalformedURLException ex) {
 					throw new ComponentNotReadyException("Cannot load library from '" + url + "'", ex);
