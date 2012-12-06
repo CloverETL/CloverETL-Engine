@@ -162,11 +162,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			throw new ComponentNotReadyException(
 					"Cannot initialize Hadoop connection, Hadoop file system host is missing.");
 		}
-// Setting with hadooop libraries is valid! There must be no libs set if running on the Server to avoid the PermGen space OutOfMemmoryError
-//		if (!propertiesToSet.containsKey(HADOOP_CORE_LIBRARY_KEY)) {
-//			throw new ComponentNotReadyException(
-//					"Cannot initialize Hadoop connection, Hadoop .jar libraries are missing.");
-//		}
 		// store in local variable first to ensure atomic fail
 		Properties localCopy = new Properties();
 		for (String key : HADOOP_USED_PROPERTIES_KEYS) {
@@ -180,6 +175,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				localCopy.setProperty(key, PROPERTIES_DEFAULT.get(key).toString());
 			}
 		}
+		// TODO this way, our GUI properties get into hadoop Configuration, which is useless
 
 		// parse addition properties
 		String additionalParams = propertiesToSet.getProperty(HADOOP_CUSTOM_PARAMETERS_KEY, null);
@@ -345,7 +341,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					+ "on this instance first. Instance: " + this);
 		}
 		
-		if (fsConnected) {
+		if (fsConnected) { // TODO this flag is suspicious; someone can close the fsConnection itself
 			return fsConnection;
 		}
 		
