@@ -100,7 +100,7 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 		try {
 			URI base = getTestingURI();
 			CloverURI tmpDirUri = CloverURI.createURI(base.resolve(String.format("CloverTemp%d/", System.nanoTime())));
-			CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true));
+			CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true).setMakeParents(true));
 			if (!result.success()) {
 				System.err.println(result.getFirstErrorMessage());
 			}
