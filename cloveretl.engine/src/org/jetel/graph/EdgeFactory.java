@@ -57,6 +57,16 @@ public class EdgeFactory {
     }
     
 	/**
+	 * Creates new edge (see {@link #newEdge(String, DataRecordMetadata)}) derived
+	 * from the given edge, with same setting (metadata, debug mode, ...).
+	 */
+	public static Edge newEdge(String id, Edge patternEdge) {
+		Edge result = newEdge(id, patternEdge.getMetadata());
+		result.copySettingsFrom(patternEdge);
+		return result;
+	}
+	
+	/**
 	 * Returns appropriate edge implementation for given parameters.
 	 * Either regular {@link Edge} or {@link JobflowEdge} is returned based on {@link ContextProvider#getJobType()}.
 	 */
