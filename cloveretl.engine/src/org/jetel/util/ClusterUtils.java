@@ -48,7 +48,8 @@ public class ClusterUtils {
 	 * @return true if the given component is a cluster partitioner
 	 */
 	public static boolean isClusterPartition(String componentType) {
-		return componentType.equals(CLUSTER_PARTITION_TYPE);
+		return componentType.equals(CLUSTER_PARTITION_TYPE) ||
+				componentType.equals(CLUSTER_LOAD_BALANCING_PARTITION_TYPE);
 	}
 
 }
