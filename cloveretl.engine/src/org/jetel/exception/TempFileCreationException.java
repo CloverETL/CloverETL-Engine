@@ -18,8 +18,11 @@
  */
 package org.jetel.exception;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jetel.graph.runtime.TempSpace;
 
@@ -94,7 +97,9 @@ public class TempFileCreationException extends Exception {
 	 */
 	public TempFileCreationException(Throwable cause, String label, int allocationHint, Long runId, TempSpace tempSpace) {
 		super(String.format("Creation of temp. space with label '%s', hint=%d failed for graph run id=%d", label, allocationHint, runId));
-		causes.put(tempSpace, cause);
+		if (cause != null) {
+			causes.put(tempSpace, cause);
+		}
 	}
 
 	/**
@@ -115,7 +120,7 @@ public class TempFileCreationException extends Exception {
 	 */
 	public void addCause(Throwable t, TempSpace tempSpace) {
 		if (t == null) {
-			throw new IllegalArgumentException("param. ex can not be null");
+			throw new IllegalArgumentException("param. Throwable t can not be null");
 		}
 		if (tempSpace == null) {
 			throw new IllegalArgumentException("param. tempSpace can not be null");
@@ -135,4 +140,37 @@ public class TempFileCreationException extends Exception {
 	public Reason getReason() {
 		return reason;
 	}
+	
+	@Override
+	public void printStackTrace(PrintStream s) {
+		synchronized (s) {
+			PrintWriter w = new PrintWriter(s);
+			printStackTrace(w);
+			w.flush();
+		}
+	}
+	
+	@Override
+	public void printStackTrace(PrintWriter s) {
+		synchronized (s) {
+			super.printStackTrace(s);
+			
+			if (!causes.isEmpty()) {
+				boolean multipleCauses = causes.size() > 1;
+				s.println("Temp file creation error has " + causes.size() + " cause" + (multipleCauses ? "s" : "") + ":");
+				int i = 1;
+				for (Entry<TempSpace, Throwable> cause : causes.entrySet()) {
+					printTempFileCreationCause(cause, i++, s, multipleCauses);
+				}
+			}
+		}
+	}
+	
+	private void printTempFileCreationCause(Entry<TempSpace, Throwable> cause, int index, PrintWriter s, boolean printCauseHeader) {
+		if (printCauseHeader) {
+			s.println("Temp file creation cause " + index + (cause.getKey() == null ? "" : "; in " + cause.getKey()) + ":");
+		}
+		cause.getValue().printStackTrace(s);
+	}
+	
 }

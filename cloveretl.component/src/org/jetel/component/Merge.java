@@ -27,8 +27,6 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -278,10 +276,11 @@ public class Merge extends Node {
 	    		|| !checkOutputPorts(status, 1, 1)) {
 	    	return status;
 	    }
-	    
-	    if (getInPorts().size() < 2) {
-	        status.add(new ConfigurationProblem("At least 2 input ports should be defined!", Severity.WARNING, this, Priority.NORMAL));
-	    }
+
+//this validation is commented out, because ClusterMerge component, which is descendant of this node, does not support multiple input edges 
+//	    if (getInPorts().size() < 2) {
+//	        status.add(new ConfigurationProblem("At least 2 input ports should be defined!", Severity.WARNING, this, Priority.NORMAL));
+//	    }
 	
 	    checkMetadata(status, getInMetadata(), getOutMetadata(), false);
 	

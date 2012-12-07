@@ -18,6 +18,7 @@
  */
 package org.jetel.hadoop.connection;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -36,6 +37,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.component.fileoperation.FileManager;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
@@ -51,6 +54,7 @@ import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -162,11 +166,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			throw new ComponentNotReadyException(
 					"Cannot initialize Hadoop connection, Hadoop file system host is missing.");
 		}
-// Setting with hadooop libraries is valid! There must be no libs set if running on the Server to avoid the PermGen space OutOfMemmoryError
-//		if (!propertiesToSet.containsKey(HADOOP_CORE_LIBRARY_KEY)) {
-//			throw new ComponentNotReadyException(
-//					"Cannot initialize Hadoop connection, Hadoop .jar libraries are missing.");
-//		}
 		// store in local variable first to ensure atomic fail
 		Properties localCopy = new Properties();
 		for (String key : HADOOP_USED_PROPERTIES_KEYS) {
@@ -180,6 +179,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				localCopy.setProperty(key, PROPERTIES_DEFAULT.get(key).toString());
 			}
 		}
+		// TODO this way, our GUI properties get into hadoop Configuration, which is useless
 
 		// parse addition properties
 		String additionalParams = propertiesToSet.getProperty(HADOOP_CUSTOM_PARAMETERS_KEY, null);
@@ -285,6 +285,23 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			if (graph != null) {
 				contextURL = graph.getRuntimeContext().getContextURL();
 			}
+			// CL-2638 - sandbox URLs cannot be used in a classpath
+			if ((contextURL != null) && SandboxUrlUtils.isSandboxUrl(contextURL)) {
+				try {
+					File file = FileManager.getInstance().getFile(CloverURI.createSingleURI(contextURL.toURI()));
+					if (file != null) {
+						contextURL = file.toURI().toURL();
+					} else {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Failed to convert " + contextURL + " to a local file");
+						}
+					}
+				} catch (Exception ex) {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Failed to convert " + contextURL + " to a local file", ex);
+					}
+				}
+			}
 		}
 		
 		if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
@@ -345,7 +362,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					+ "on this instance first. Instance: " + this);
 		}
 		
-		if (fsConnected) {
+		if (fsConnected) { // TODO this flag is suspicious; someone can close the fsConnection itself
 			return fsConnection;
 		}
 		

@@ -36,7 +36,8 @@ import org.jetel.util.string.StringUtils;
 public enum TrackingEvent {
 	// currently only 2 possible values
 	GRAPH_FINISHED("graphFinished", "GRAPH_FINISHED", "GRAPH_ABORTED", "GRAPH_ERROR", "GRAPH_TIMEOUT"),
-	JOBFLOW_FINISHED("jobflowFinished", "JOBFLOW_FINISHED", "JOBFLOW_ABORTED", "JOBFLOW_ERROR", "JOBFLOW_TIMEOUT");
+	JOBFLOW_FINISHED("jobflowFinished", "JOBFLOW_FINISHED", "JOBFLOW_ABORTED", "JOBFLOW_ERROR", "JOBFLOW_TIMEOUT"),
+	PROFILER_JOB_FINISHED("profilerJobFinished", "PROFILER_JOB_FINISHED", "PROFILER_JOB_ABORTED", "PROFILER_JOB_ERROR", "PROFILER_JOB_TIMEOUT");
 	
 	private String id;
 	
