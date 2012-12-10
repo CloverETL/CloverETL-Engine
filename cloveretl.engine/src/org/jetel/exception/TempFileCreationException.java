@@ -18,8 +18,6 @@
  */
 package org.jetel.exception;
 
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -142,35 +140,20 @@ public class TempFileCreationException extends Exception {
 	}
 	
 	@Override
-	public void printStackTrace(PrintStream s) {
-		synchronized (s) {
-			PrintWriter w = new PrintWriter(s);
-			printStackTrace(w);
-			w.flush();
-		}
-	}
-	
-	@Override
-	public void printStackTrace(PrintWriter s) {
-		synchronized (s) {
-			super.printStackTrace(s);
-			
-			if (!causes.isEmpty()) {
-				boolean multipleCauses = causes.size() > 1;
-				s.println("Temp file creation error has " + causes.size() + " cause" + (multipleCauses ? "s" : "") + ":");
-				int i = 1;
-				for (Entry<TempSpace, Throwable> cause : causes.entrySet()) {
-					printTempFileCreationCause(cause, i++, s, multipleCauses);
+	public String toString() {
+		StringBuilder sb = new StringBuilder(super.toString());
+		if (!causes.isEmpty()) {
+			boolean multipleCauses = causes.size() > 1;
+			sb.append("\n\tThe temp file creation error has " + causes.size() + " cause" + (multipleCauses ? "s" : "") + ":\n");
+			int i = 1;
+			for (Entry<TempSpace, Throwable> cause : causes.entrySet()) {
+				if (multipleCauses) {
+					sb.append("\t\tCause " + i++ + (cause.getKey() == null ? "" : "; in " + cause.getKey()) + ": ");
 				}
+				sb.append(cause.getValue() + "\n");
 			}
 		}
+		return sb.toString();
 	}
-	
-	private void printTempFileCreationCause(Entry<TempSpace, Throwable> cause, int index, PrintWriter s, boolean printCauseHeader) {
-		if (printCauseHeader) {
-			s.println("Temp file creation cause " + index + (cause.getKey() == null ? "" : "; in " + cause.getKey()) + ":");
-		}
-		cause.getValue().printStackTrace(s);
-	}
-	
+
 }
