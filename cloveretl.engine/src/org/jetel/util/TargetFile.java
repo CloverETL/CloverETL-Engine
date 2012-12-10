@@ -21,7 +21,6 @@ package org.jetel.util;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -34,7 +33,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -42,6 +40,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
 import org.jetel.data.formatter.Formatter;
+import org.jetel.data.formatter.Formatter.DataTargetType;
 import org.jetel.data.formatter.provider.FormatterProvider;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
@@ -590,29 +589,40 @@ public class TargetFile {
             if (fileName != null) {
             	fName = addUnassignedName(fName);
             }
+            
+			boolean exceptionThrown = false;
+			try {
+				if (getPreferredDataTargetType() == DataTargetType.FILE) {
+					setDataTarget(FileUtils.getJavaFile(contextURL, fName));
+				}
+				else if (getPreferredDataTargetType() == DataTargetType.URI) {
+					try {
+						// TODO: use contectURL ?? setDataTarget(CloverURI.createSingleURI(contextURL.toURI(),
+						// fName).toURI());
+						setDataTarget(new URI(fName));
+					} catch (IOException ex) {
+						throw ex;
+					} catch (URISyntaxException ex) {
+						throw new IOException(ex);
+					}
+				}
+			} catch (Exception e) {
+				logger.warn("Failed to set data target", e);
+				exceptionThrown = true;
+			}
 
-        	if (isURISourcePreferred()) {
-        		//formatter request java.io.File as data target
-        		try {
-        			//TODO: use contectURL ?? setDataTarget(CloverURI.createSingleURI(contextURL.toURI(), fName).toURI());
-        			setDataTarget(new URI(fName));
-        			return;
-        		} catch(IOException ex){
-        			throw ex;
-        		} catch(URISyntaxException ex){
-        			throw new IOException(ex);
-        		} catch (Exception e) {
-					//DO NOTHING - just try to open a stream based on the fName in the next step
-        		}
-        	}
-            OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
-        	byteChannel = Channels.newChannel(os);
+			// If steps for FILE and URI failed, try to open a stream based on the fName
+			if (getPreferredDataTargetType() == DataTargetType.CHANNEL || exceptionThrown) {
+				OutputStream os = FileUtils.getOutputStream(contextURL, fName, appendData, compressLevel);
+				byteChannel = Channels.newChannel(os);
 
-        	if (useChannel) {
-        		setDataTarget(byteChannel);
-        	} else {
-           		setDataTarget(new Object[] {contextURL, fName, os});
-        	}
+				if (useChannel) {
+					setDataTarget(byteChannel);
+				} else {
+					setDataTarget(new Object[] { contextURL, fName, os });
+				}
+			}
+            	
         } else {
         	byteChannel = channels.next();
         	setDataTarget(byteChannel);
@@ -635,8 +645,8 @@ public class TargetFile {
     /**
      * @return <code>true</code> if java.io.File source type is preferred instead of channel
      */
-    private boolean isURISourcePreferred() {
-    	return formatter.isURITargetPreferred();
+    private DataTargetType getPreferredDataTargetType() {
+    	return formatter.getPreferredDataTargetType();
     }
 
     /**
