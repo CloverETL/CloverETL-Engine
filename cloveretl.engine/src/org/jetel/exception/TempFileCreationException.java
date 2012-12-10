@@ -147,8 +147,9 @@ public class TempFileCreationException extends Exception {
 			sb.append("\n\tThe temp file creation error has " + causes.size() + " cause" + (multipleCauses ? "s" : "") + ":\n");
 			int i = 1;
 			for (Entry<TempSpace, Throwable> cause : causes.entrySet()) {
+				sb.append("\t\t");
 				if (multipleCauses) {
-					sb.append("\t\tCause " + i++ + (cause.getKey() == null ? "" : "; in " + cause.getKey()) + ": ");
+					sb.append("Cause " + i++ + (cause.getKey() == null ? "" : "; in " + cause.getKey()) + ": ");
 				}
 				sb.append(cause.getValue() + "\n");
 			}
