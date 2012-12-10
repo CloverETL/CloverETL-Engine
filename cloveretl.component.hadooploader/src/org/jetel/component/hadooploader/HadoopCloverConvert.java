@@ -97,40 +97,54 @@ public class HadoopCloverConvert {
 		switch (field.getDataType()){
 		case STRING: 
 			return (new Clover2Hadoop() {
+				@Override
 				Clover2Hadoop init(){ dest = new Text(); return this;}
+				@Override
 				void setValue(DataField src){ ((Text)dest).set(src.toString()); }
 			}).init();
 		case BYTE:
 		case CBYTE:
 			return (new Clover2Hadoop() {
+				@Override
 				Clover2Hadoop init(){ dest = new BytesWritable(); return this;}
+				@Override
 				void setValue(DataField src){
 							final byte val[] = ((ByteDataField)src).getValue();
 							((BytesWritable)dest).set(val,0,val.length); }
 			}).init();
 		case INTEGER:
 			return (new Clover2Hadoop(){
+				@Override
 				Clover2Hadoop init(){ dest = new IntWritable(); return this; }
+				@Override
 				void setValue(DataField src){ ((IntWritable)dest).set(((IntegerDataField)src).getInt());}
 			}).init();
 		case LONG:
 			return (new Clover2Hadoop(){
+				@Override
 				Clover2Hadoop init(){ dest = new LongWritable(); return this; }
+				@Override
 				void setValue(DataField src){ ((LongWritable)dest).set(((LongDataField)src).getLong());}
 			}).init();
 		case NUMBER:
 			return (new Clover2Hadoop(){
+				@Override
 				Clover2Hadoop init(){ dest = new DoubleWritable(); return this; }
+				@Override
 				void setValue(DataField src){ ((DoubleWritable)dest).set(((NumericDataField)src).getDouble());}
 			}).init();
 		case DATE:
 			return (new Clover2Hadoop(){
+				@Override
 				Clover2Hadoop init(){ dest = new LongWritable(); return this;}
+				@Override
 				void setValue(DataField src){ ((LongWritable)dest).set(((DateDataField)src).getValue().getTime());}
 			}).init();
 		case BOOLEAN:
 			return (new Clover2Hadoop(){
+				@Override
 				Clover2Hadoop init(){ dest = new BooleanWritable(); return this; }
+				@Override
 				void setValue(DataField src){ ((BooleanWritable)dest).set(((BooleanDataField)src).getBoolean());}
 			}).init();
 		default:
@@ -146,31 +160,37 @@ public class HadoopCloverConvert {
 	static Hadoop2Clover getH2CCopier(Class data) throws IOException {
 		if (data == BooleanWritable.class){
 			return (new Hadoop2Clover() {
+				@Override
 				void copyValue(Writable src,DataField dst){
 					((BooleanDataField)dst).setValue(((BooleanWritable)src).get());}
 			});
 		}else if (data == BytesWritable.class){
 			return (new Hadoop2Clover() {
+				@Override
 				void copyValue(Writable src,DataField dst){
 					((ByteDataField)dst).setValue(((BytesWritable)src).getBytes(), 0, ((BytesWritable)src).getLength());}
 			});
 		}else if (data == LongWritable.class){
 			return (new Hadoop2Clover() {
+				@Override
 				void copyValue(Writable src,DataField dst){
 					((LongDataField)dst).setValue(((LongWritable)src).get());}
 			});
 		}else if (data == IntWritable.class){
 			return (new Hadoop2Clover() {
+				@Override
 				void copyValue(Writable src,DataField dst){
 					((IntegerDataField)dst).setValue(((IntWritable)src).get());}
 			});
 		}else if (data == DoubleWritable.class){
 			return (new Hadoop2Clover() {
+				@Override
 				void copyValue(Writable src,DataField dst){
 					((NumericDataField)dst).setValue(((DoubleWritable)src).get());}
 			});
 		}else if (data == Text.class){
 			return (new Hadoop2Clover() {
+				@Override
 				void copyValue(Writable src,DataField dst){
 					((StringDataField)dst).setValue(((Text)src).toString());}
 			});

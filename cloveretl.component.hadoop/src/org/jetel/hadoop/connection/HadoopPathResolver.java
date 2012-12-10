@@ -180,6 +180,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 			return HadoopPathResolver.this.getInputStream(null, this.url.toString());		
 		}
 		
+		@Override
 		public OutputStream getOutputStream() throws IOException{
 			return HadoopPathResolver.this.getOutputStream(null, this.url.toString(), false, 0);
 		}
