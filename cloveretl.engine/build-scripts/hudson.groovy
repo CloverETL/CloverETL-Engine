@@ -9,7 +9,7 @@ def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
-jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-after-commit-java-1.7-Sun|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
+jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-after-commit-java-1.7-Sun|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail|martin)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
@@ -70,7 +70,7 @@ if( !runTests ){
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun_optimalized"
-		antArgs += "-Dobfuscate.plugin.pattern=cloveretl\\.(?!ctlfunction).*"
+		antArgs += "-Dobfuscate.plugin.pattern=cloveretl\\.(?!ctlfunction).*"b
 		antArgs += "-Druntests-dontrun=true"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit-with-engine-classes"
 	} else if( jobGoal == "detail"){
@@ -84,6 +84,11 @@ if( !runTests ){
 		antArgs += "-Dtest.include=org/jetel/graph/ResetTest.java"
 		antCustomEnv["ANT_OPTS"] = antCustomEnv["ANT_OPTS"] + " -XX:MaxPermSize=128m"
 		// antArgs += "-Druntests-target=runtests-tests-reset"
+	} else if( jobGoal == "martin"){ // temporary jobGoal needed for debugging
+		antTarget = "reports-hudson"
+		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java"
+		antArgs += "-Druntests-target=runtests-scenario-after-commit-martin"
 	} else {
 		println "ERROR: Unknown goal '${jobGoal}'"
 		exit 1
