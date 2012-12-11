@@ -90,6 +90,9 @@ public enum FileType {
 	}
 
 	/**
+	 * MVa: what is this for? Does it work?
+	 * TODO 
+	 * 
 	 * Returns the description of the file type (GUI).
 	 * 
 	 * @return the description

@@ -27,6 +27,7 @@ import java.nio.BufferUnderflowException;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -119,11 +120,15 @@ public class BinaryDataParser extends AbstractParser {
 					backendStream.close();
 				}
 				if (deleteOnClose != null) {
-					deleteOnClose.delete();
+					if (!deleteOnClose.delete()) {
+						LogFactory.getLog(BinaryDataParser.class).error("Failed to delete temp file: " + deleteOnClose.getAbsolutePath());
+					}
 				}
 			} catch (IOException e) {
 				throw new JetelRuntimeException(e);
 			}
+		} else {
+			LogFactory.getLog(BinaryDataParser.class).debug("Reader is already closed when closing parser: " + reader);
 		}
 		buffer.clear();
 		buffer.limit(0);

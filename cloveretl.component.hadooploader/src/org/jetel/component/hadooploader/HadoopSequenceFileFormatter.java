@@ -197,14 +197,13 @@ public class HadoopSequenceFileFormatter implements
 	}
 
 	@Override
-	public boolean isURITargetPreferred() {
-		return true;
+	public DataTargetType getPreferredDataTargetType() {
+		return DataTargetType.URI;
 	}
 
 	@Override
 	public void setAppend(boolean append) {
 		// TODO Auto-generated method stub
-
 	}
 	
 	

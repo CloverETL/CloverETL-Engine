@@ -79,6 +79,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 	private static final long ABORT_TIMEOUT = 5000L;
 	private static final long ABORT_WAIT = 2400L;
+
+	public static final String WATCHDOG_THREAD_NAME_PREFIX = "WatchDog_";
 	
     private int[] _MSG_LOCK=new int[0];
     
@@ -169,8 +171,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	public Result call() {
 		CURRENT_PHASE_LOCK.lock();
 		
+		String originalThreadName = null;
 		try {
-
+			
 			//thread context classloader is preset to a reasonable classloader
 			//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
 			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
@@ -180,6 +183,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			ContextProvider.registerGraph(graph);
 			
     		MDC.put("runId", runtimeContext.getRunId());
+    		
+    		Thread t = Thread.currentThread();
+    		originalThreadName = t.getName();
+			String newThreadName = WATCHDOG_THREAD_NAME_PREFIX + runtimeContext.getRunId();
+			if (logger.isTraceEnabled())
+					logger.trace("rename thread " + originalThreadName + " to " + newThreadName);
+		  	t.setName(newThreadName);
     		
     		long startTimestamp = System.currentTimeMillis();
     		
@@ -319,6 +329,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 			CURRENT_PHASE_LOCK.unlock();
 			
+			if (originalThreadName != null)
+				Thread.currentThread().setName(originalThreadName);
             MDC.remove("runId");
 		}
 
@@ -632,30 +644,32 @@ public class WatchDog implements Callable<Result>, CloverPost {
             //now we can notify all waiting phases for free threads
             synchronized(threadManager) {
             	threadManager.releaseNodeThreads(phase.getNodes().size());
-            	/////////////////
-            	//is this code really necessary? why?
-            	for (Node node : phase.getNodes().values()) {
-            		synchronized (node) { //this is the guard of Node.nodeThread variable
-	            		Thread t = node.getNodeThread();
-	            		long runId = this.getGraphRuntimeContext().getRunId();
-	            		if (t == null) {
-	            			continue;
-	            		}
-        				String newThreadName = "exNode_"+runId+"_"+getGraph().getId()+"_"+node.getId();
-						if (logger.isTraceEnabled())
-								logger.trace("rename thread "+t.getName()+" to " + newThreadName);
-      			  		t.setName(newThreadName);
-	            		// explicit interruption of threads of failed graph; (some nodes may be still running)
-	            		if (!node.getResultCode().isStop()) {
-		    				if (logger.isTraceEnabled())
-    								logger.trace("try to abort node "+node);
-	            			node.abort();
-	            		}
-            		}
-            	}// for
-            	/////////////////
                 threadManager.notifyAll();
             }
+            
+        	/////////////////
+        	//is this code really necessary? why?
+        	for (Node node : phase.getNodes().values()) {
+        		synchronized (node) { //this is the guard of Node.nodeThread variable
+            		Thread t = node.getNodeThread();
+            		long runId = this.getGraphRuntimeContext().getRunId();
+            		if (t == null) {
+            			continue;
+            		}
+    				String newThreadName = "exNode_"+runId+"_"+getGraph().getId()+"_"+node.getId();
+					if (logger.isTraceEnabled())
+							logger.trace("rename thread "+t.getName()+" to " + newThreadName);
+  			  		t.setName(newThreadName);
+            		// explicit interruption of threads of failed graph; (some nodes may be still running)
+            		if (!node.getResultCode().isStop()) {
+	    				if (logger.isTraceEnabled())
+								logger.trace("try to abort node "+node);
+            			node.abort();
+            		}
+        		}
+        	}// for
+        	/////////////////
+            
         	//postExecute() invocation
         	try {
         		phase.postExecute();

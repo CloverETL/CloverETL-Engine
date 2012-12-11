@@ -18,6 +18,7 @@
  */
 package org.jetel.data.formatter;
 import java.io.IOException;
+import java.net.URI;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -31,6 +32,19 @@ import org.jetel.metadata.DataRecordMetadata;
  *@see        OtherClasses
  */
 public interface Formatter {
+	
+	/**
+	 * This enumeration is used by #getPreferredDataSourceType() method to suggest preferred 
+	 * data source type by a {@link Parser}.
+	 */
+	public enum DataTargetType {
+		/** Data target represented by {@link WritableByteChannel} or {@link OutputStream} */
+		CHANNEL,
+		/** Data target represented by {@link File} */
+		FILE,
+		/** Data target represented by {@link URI} */
+		URI
+	}
 
 	// Attributes
 
@@ -96,12 +110,11 @@ public interface Formatter {
 	public void finish() throws IOException;
 	
     /**
-     * Formatter should return true if preferred type of data target passed into {@link #setDataTarget(Object)}
-     * is {@link URI}. It is intended just a hint for source provider, so other types of data targets 
+     * Formatter can request specific data target type, which is preferred to be passed into {@link #setDataTarget(Object)} method.
+     * This is intended just a hint for source provider, so other types of data targets 
      * should be expected.
-     * @return true if {@link URI} type of source is preferred
      */
-    public boolean isURITargetPreferred();
+    public DataTargetType getPreferredDataTargetType();
 
     /**
      * This method should be used to inform formatter about type of writing to data target.
