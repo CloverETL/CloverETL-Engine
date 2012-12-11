@@ -50,6 +50,8 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class BinaryDataParser extends AbstractParser {
 
+	private static int counter = 0;
+	
 	ReadableByteChannel reader;
 	/*
 	 * just remember the inputstream we used to create "reader" channel
@@ -113,7 +115,6 @@ public class BinaryDataParser extends AbstractParser {
 
 	@Override
 	public void close() {
-		LogFactory.getLog(BinaryDataParser.class).debug("Calling close on parser");
 		if (reader != null && reader.isOpen()) {
 			try {
 				reader.close();
@@ -121,6 +122,7 @@ public class BinaryDataParser extends AbstractParser {
 					backendStream.close();
 				}
 				if (deleteOnClose != null) {
+					System.out.println("### counter " + counter++);
 					if (!deleteOnClose.delete()) {
 						LogFactory.getLog(BinaryDataParser.class).error("Failed to delete temp file: " + deleteOnClose.getAbsolutePath());
 					} else {
