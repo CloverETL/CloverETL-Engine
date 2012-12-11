@@ -482,8 +482,11 @@ public class WcardPattern {
 			IAuthorityProxy authorityProxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
 			String storageCode = url.getHost();
 			String queryPart = url.getQuery() != null ? "?" + url.getQuery() : "";
-			for (String fileName : authorityProxy.resolveAllFiles(storageCode, url.getPath() + queryPart)) {
-				fileStreamNames.add(SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + fileName);
+			Collection<String> files = authorityProxy.resolveAllFiles(storageCode, url.getPath() + queryPart);
+			if (files != null) {
+				for (String fileName : files) {
+					fileStreamNames.add(SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + fileName);
+				}
 			}
 		} else {
 			fileStreamNames.add(url.toString());

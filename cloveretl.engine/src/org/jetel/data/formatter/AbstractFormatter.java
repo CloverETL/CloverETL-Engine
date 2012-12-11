@@ -36,8 +36,8 @@ public abstract class AbstractFormatter implements Formatter {
 	}
 	
 	@Override
-	public boolean isURITargetPreferred() {
-		return false;
+	public DataTargetType getPreferredDataTargetType() {
+		return DataTargetType.CHANNEL;
 	}
 	
 }

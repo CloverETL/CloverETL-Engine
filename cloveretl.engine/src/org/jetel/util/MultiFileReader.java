@@ -281,7 +281,8 @@ public class MultiFileReader {
 					long fileSize = 0;
 					Date fileTimestamp = null;
 					if (autoFilling.getFilename() != null && FileUtils.isLocalFile(contextURL, autoFilling.getFilename())) {
-						File tmpFile = new File(autoFilling.getFilename());
+						// CL-2631 - Use "FileUtils.getJavaFile()" instead of "new File()" to take context URL into account
+						File tmpFile = FileUtils.getJavaFile(contextURL, autoFilling.getFilename());
 						long timestamp = tmpFile.lastModified();
 						fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
 						fileSize = tmpFile.length();

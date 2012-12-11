@@ -124,6 +124,7 @@ public class HadoopOutputStream implements IHadoopOutputStream {
 		return stream.getPos();
 	}
 
+	@Override
 	public final void close() throws IOException {
 		stream.close();
 		
