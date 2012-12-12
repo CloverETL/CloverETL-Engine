@@ -94,7 +94,7 @@ public class TempFileCreationException extends Exception {
 	 *            temp space where temp file creation attempt has been performed
 	 */
 	public TempFileCreationException(Throwable cause, String label, int allocationHint, Long runId, TempSpace tempSpace) {
-		super(String.format("Creation of temp. space with label '%s', hint=%d failed for graph run id=%d", label, allocationHint, runId));
+		super(String.format("Creation of temp. space with label '%s', hint=%d failed for graph run id=%d", label, allocationHint, runId), cause);
 		if (cause != null) {
 			causes.put(tempSpace, cause);
 		}
