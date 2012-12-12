@@ -143,7 +143,7 @@ public class Phase extends GraphElement implements Comparable {
         		edge.init();
         	} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
-        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization faild.", e);
+        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization failed.", e);
         	}
         }
 		logger.debug(" all edges initialized successfully... ");
@@ -161,15 +161,15 @@ public class Phase extends GraphElement implements Comparable {
 			} catch (ComponentNotReadyException ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FAILED !", ex);
+				throw new ComponentNotReadyException(node, "FAILED !", ex);
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !", ex);
+				throw new ComponentNotReadyException(node, "FATAL ERROR !", ex);
 			} catch (Throwable ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !", new JetelRuntimeException(ex));
+				throw new ComponentNotReadyException(node, "FATAL ERROR !", new JetelRuntimeException(ex));
 			} finally {
 				Thread.currentThread().setContextClassLoader(formerClassLoader);
 				ContextProvider.unregister();
