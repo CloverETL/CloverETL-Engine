@@ -827,7 +827,7 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Finds and returns all occurences of regex in specified string")
-	@TLFunctionParametersAnnotation({"input","regex_pattern"})
+//	@TLFunctionParametersAnnotation({"input","regex_pattern"})
 	public static final List<String> find(TLFunctionCallContext context, String input, String pattern) {
 		
 		Matcher m = ((TLRegexpCache)context.getCache()).getCachedMatcher(context, pattern).reset(input);
@@ -842,7 +842,7 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Finds and returns n-th group(s) of regex occurence(s) in specified string.")
-	@TLFunctionParametersAnnotation({"input","regex_pattern","groupNum"})
+//	@TLFunctionParametersAnnotation({"input","regex_pattern","groupNum"})
 	public static final List<String> find(TLFunctionCallContext context, String input, String pattern, int groupNo) {
 		Matcher m = ((TLRegexpCache)context.getCache()).getCachedMatcher(context, pattern).reset(input);
 		
@@ -896,7 +896,7 @@ public class StringLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Tries to match entire input with specified pattern.")
-	@TLFunctionParametersAnnotation({"input","regex_pattern"})
+//	@TLFunctionParametersAnnotation({"input","regex_pattern"})
 	public static final Boolean matches(TLFunctionCallContext context, String input, String pattern) {
 		// moved to IntegralLib, so that it can be called from the interpreter and compiler
 		return IntegralLib.matches(context, input, pattern);
