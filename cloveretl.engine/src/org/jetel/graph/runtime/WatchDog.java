@@ -43,6 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
@@ -317,12 +318,16 @@ public class WatchDog implements Callable<Result>, CloverPost {
             }
             
             logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
-       	} catch (RuntimeException e) {
-       		causeException = e;
+       	} catch (Throwable t) {
+       		causeException = t;
        		causeGraphElement = null;
        		watchDogStatus = Result.ERROR;
-       		logger.error("Fatal error watchdog execution", e);
-       		throw e;
+       		logger.error("Fatal error watchdog execution", t);
+       		if (t instanceof RuntimeException) {
+       			throw (RuntimeException)t;
+       		} else {
+       			throw new JetelRuntimeException(t);
+       		}
 		} finally {
 			//we have to unregister current watchdog's thread from context provider
 			ContextProvider.unregister();

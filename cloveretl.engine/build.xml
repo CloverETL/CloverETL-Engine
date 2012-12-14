@@ -1025,22 +1025,6 @@ defined.version.suffix=release
 		</ant>
 	</target>
 	
-	<!-- temporary target - needed for debugging -->
-	<target name="runtests-scenario-after-commit-martin" if="cte.environment.config">
-			<echo message="Executing Clover Test Environment environment - after commit"/>
-			<ant target="run-scenarios-with-engine-build" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">
-				<property name="environment.config" value="${cte.environment.config}"/>
-				<property name="scenarios" value="after-commit-martin.ts" />
-				<property name="dir.engine.classes" value="${dir.package.classes}"/>
-				<property name="dir.engine.build" value="${dir.package}/lib"/>
-				<property name="dir.plugins" value="${dir.package}/plugins"/>
-				<property name="version.full" value="${version.full}"/>
-				<property name="hudson.link" value="${cte.hudson.link}"/>
-				<property name="logpath" value="${cte.logpath}"/>
-				<property name="testenv.etlenvironment" value="engine"/>
-			</ant>
-	</target>
-	
 	<target name="runtests-scenario-after-commit-with-engine-classes" if="cte.environment.config">
 		<echo message="Executing Clover Test Environment environment - after commit"/>
 		<ant target="runscenarios" dir="../cloveretl.test.environment" inheritAll="false" inheritrefs="false">

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Mon Dec 10 11:05:44 CET 2012" guiVersion="0.0.0.devel" id="1355134051184" licenseType="Commercial" modified="Thu Dec 13 17:22:25 CET 2012" modifiedBy="Pavel" name="BigDataGraph_HDFS" revision="1.27" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="metaKeyValueFields" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field eofAsDelimiter="false" label="NAMELAST" name="KEY_Last_Name" nullable="true" shift="0" size="0" type="string"/>
+<Field default="1" name="VALUE_Visit_Details" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field eofAsDelimiter="false" label="NAMELAST" name="NAMELAST" nullable="true" shift="0" size="0" type="string"/>
+<Field default="1" name="intCount" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachment="${DATAIN_DIR}/White_House_Visitor_Records_Requests.csv" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="," label="White_House_Visitor_Records_Requests.csv" name="White_House_Visitor_Records_Requests_csv" previewAttachment="${DATAIN_DIR}/White_House_Visitor_Records_Requests.csv" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\n" skipSourceRows="1" type="delimited">
+<Field label="NAMELAST" name="NAMELAST" type="string"/>
+<Field label="NAMEFIRST" name="NAMEFIRST" type="string"/>
+<Field label="NAMEMID" name="NAMEMID" type="string"/>
+<Field label="UIN" name="UIN" type="string"/>
+<Field label="BDGNBR" name="BDGNBR" type="string"/>
+<Field label="Type of Access" name="Type_of_Access" type="string"/>
+<Field label="TOA" name="TOA" type="string"/>
+<Field label="POA" name="POA" type="string"/>
+<Field label="TOD" name="TOD" type="string"/>
+<Field label="POD" name="POD" type="string"/>
+<Field label="APPT_MADE_DATE" name="APPT_MADE_DATE" type="string"/>
+<Field label="APPT_START_DATE" name="APPT_START_DATE" type="string"/>
+<Field label="APPT_END_DATE" name="APPT_END_DATE" type="string"/>
+<Field label="APPT_CANCEL_DATE" name="APPT_CANCEL_DATE" type="string"/>
+<Field label="Total_People" name="Total_People" type="string"/>
+<Field label="LAST_UPDATEDBY" name="LAST_UPDATEDBY" type="string"/>
+<Field label="POST" name="POST" type="string"/>
+<Field label="LastEntryDate" name="LastEntryDate" type="string"/>
+<Field label="TERMINAL_SUFFIX" name="TERMINAL_SUFFIX" type="string"/>
+<Field label="visitee_namelast" name="visitee_namelast" type="string"/>
+<Field label="visitee_namefirst" name="visitee_namefirst" type="string"/>
+<Field label="MEETING_LOC" name="MEETING_LOC" type="string"/>
+<Field label="MEETING_ROOM" name="MEETING_ROOM" type="string"/>
+<Field label="CALLER_NAME_LAST" name="CALLER_NAME_LAST" type="string"/>
+<Field label="CALLER_NAME_FIRST" name="CALLER_NAME_FIRST" type="string"/>
+<Field label="CALLER_ROOM" name="CALLER_ROOM" type="string"/>
+<Field label="Description" name="Description" type="string"/>
+<Field eofAsDelimiter="false" label="RELEASE_DATE" name="RELEASE_DATE" type="string"/>
+</Record>
+</Metadata>
+<Connection hadoopJar="C:/Big Data/version4/avro-1.7.1.cloudera.2.jar;C:/Big Data/version4/commons-cli-1.2.jar;C:/Big Data/version4/guava-11.0.2.jar;C:/Big Data/version4/hadoop-auth-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-common-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-hdfs-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/protobuf-java-2.4.0a.jar;C:/Big Data/version4/slf4j-api-1.6.1.jar;C:/Big Data/version4/slf4j-log4j12-1.6.1.jar" host="192.168.1.99" id="LOCAL_HADOOP" name="Local Hadoop" type="HADOOP"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="336" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="716" y="103">
+<attr name="text"><![CDATA[The bundled data file is only a sample.
+
+For performance testing you can download the full version (+500MB) here: 
+
+https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="336" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="233" x="20" y="103">
+<attr name="text"><![CDATA[To read and write key/value pairs in Hadoop HDFS using CloverETL
+
+Such pairing can be further processed in a MapReduce job
+
+In this example, we use the Last Name field as the Key and visit details as Value (phase 0)
+
+A MapReduce job can then be executed on this data set, e.g. to compute aggregated occurence counts of LastName.
+
+Alternatively in this graph, the same aggregation process is replicated using CloverETL components only(phase 1).
+
+]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data Example: HDFS Format for MapReduce Jobs" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="20" y="20">
+<attr name="text"><![CDATA[
+Demonstrates how CloverETL reads and writes key/value pairs in Hadoop HDFS]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="336" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Important" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="484" y="103">
+<attr name="text"><![CDATA[Be sure to configure and set the correct drivers (*.JAR) for your HDFS connection in Outline view prior to running this example!!
+
+Please also note that each Hadoop build requires a different set of jar support files - refer to Hadoop documentation to see which files you need.
+
+Check the libraries in
+Outline/Connections/HadoopLocal
+
+This example is tested with
+Cloudera 4.1.2 distribution]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="336" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="B. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="252" y="103">
+<attr name="text"><![CDATA[Using a publicly available data log, we read in the data for process
+
+Extract only the Key and Value fields. In this case, Last Name and visit details (date + location in one field)
+
+Write the Key/Value pair to a HDFS file. (phase 0)
+-----------------------
+(this file is now ready for a MapReduce job)
+------------------------
+Read the same file with the Key/Value pair from HDFS
+
+Sort Last Name field
+Aggregate field
+Sort counts to list most to least
+
+Write Last Name and counts to a CSV file]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="286" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="192" x="20" y="466">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+ the packaged public data file is a sample. please download the full version (+500MB) here:
+ 
+https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="410" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="IMPORTANT NOTE" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="267" x="682" y="466">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+- the Hadoop server version used in this example is Cloudera 4.1.2
+
+The jar files used in this HDFS connection are:
++ avro-1.7.1.cloudera.2.jar
++ commons-cli-1.2.jar
++ guava-11.0.2.jar
++ hadoop-auth-2.0.0-cdh4.1.1.jar
++ hadoop-common-2.0.0-cdh4.1.1.jar
++ hadoop-hdfs-2.0.0-cdh4.1.1.jar
++ protobuf-java-2.4.0a.jar
++ slf4j-api-1.6.1.jar
++ slf4j-log4j12.1.6.1.jar
+
+- please download the correct jar files for your Hadoop build]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="67" guiName="Extract Fields" guiWidth="128" guiX="383" guiY="503" id="EXTRACT_FIELDS" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.KEY_Last_Name = upperCase($in.0.NAMELAST);
+	$out.0.VALUE_Visit_Details = concat($in.0.APPT_START_DATE+" - "+$in.0.MEETING_LOC+"/"+$in.0.MEETING_ROOM);
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node dataPolicy="lenient" enabled="enabled" fileURL="zip:(${DATAIN_DIR}/White_House_Visitor_Records_Requests.zip)#White_House_Visitor_Records_Requests.csv" guiHeight="93" guiName="Read Log" guiWidth="128" guiX="52" guiY="503" id="READ_LOG" skipRows="1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="hdfs://LOCAL_HADOOP/tmp/bigdata_examples/file_for_mapreduce.log" guiHeight="93" guiName="Write to HDFS" guiWidth="128" guiX="752" guiY="503" id="WRITE_TO_HDFS" keyField="KEY_Last_Name" type="HADOOP_WRITER" valueField="VALUE_Visit_Details"/>
+<Edge debugMode="true" fromNode="EXTRACT_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITE_TO_HDFS:0"/>
+<Edge debugMode="true" fromNode="READ_LOG:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXTRACT_FIELDS:0"/>
+</Phase>
+<Phase number="1">
+<Node aggregateKey="KEY_Last_Name" enabled="enabled" guiHeight="67" guiName="Aggregate Field" guiWidth="128" guiX="440" guiY="935" id="AGGREGATE_FIELD" mapping="$NAMELAST:=$KEY_Last_Name;$intCount:=count();" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="hdfs://LOCAL_HADOOP/tmp/bigdata_examples/file_for_mapreduce.log" guiHeight="93" guiName="Read File from HDFS" guiWidth="145" guiX="20" guiY="935" id="READ_FILE_FROM_HDFS" keyField="KEY_Last_Name" type="HADOOP_READER" valueField="VALUE_Visit_Details"/>
+<Node enabled="enabled" guiHeight="93" guiName="Sort by Count" guiWidth="128" guiX="625" guiY="935" id="SORT_BY_COUNT" sortKey="intCount(d);NAMELAST(a)" type="FAST_SORT"/>
+<Node enabled="enabled" guiHeight="80" guiName="Sort Field" guiWidth="128" guiX="235" guiY="935" id="SORT_FIELD" sortKey="KEY_Last_Name(a)" type="FAST_SORT"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/lastname_count.csv" guiHeight="93" guiName="Write Count to File" guiWidth="135" guiX="814" guiY="935" id="WRITE_COUNT_TO_FILE" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="AGGREGATE_FIELD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SORT_BY_COUNT:0"/>
+<Edge debugMode="true" fromNode="READ_FILE_FROM_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SORT_FIELD:0"/>
+<Edge debugMode="true" fromNode="SORT_BY_COUNT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_COUNT_TO_FILE:0"/>
+<Edge debugMode="true" fromNode="SORT_FIELD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="AGGREGATE_FIELD:0"/>
+</Phase>
+</Graph>
