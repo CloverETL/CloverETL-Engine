@@ -87,7 +87,7 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 	}
 
 	public void push(char[] name) {
-		if (depth == needsEndTagStack.length) {
+		if (depth == needsEndTagStack.length - 1) {
 			int newLength = needsEndTagStack.length * 2 + 1;
 
 			needsEndTagStack = Arrays.copyOf(needsEndTagStack, newLength);
