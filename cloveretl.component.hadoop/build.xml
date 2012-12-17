@@ -2,7 +2,10 @@
 <project name="cloveretl.component.hadoop" default="build" basedir=".">
 
 	<property name="dir.engine" value="../cloveretl.engine"/>
-	<property name="dir.engine.tools" value="${dir.engine}/tools"/>		
+	<property name="dir.engine.tools" value="${dir.engine}/tools"/>	
+	
+	<property name="cloveretl.component.hadooploader" value="cloveretl.component.hadooploader" />
+	<property name="dir.hadooploader" value="../${cloveretl.component.hadooploader}"/>
 	
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 	  <classpath>
@@ -28,6 +31,17 @@
 		
 	<target name="dist.src">
 		<ant target="dist.src" dir="." antfile="${dir.engine}/build-scripts/build-plugin.xml" />
+		
+		<echo message="Copying ${cloveretl.component.hadooploader}"/>
+		
+		<copy todir="${dist.src}/${cloveretl.component.hadooploader}">
+			<fileset dir="${dir.hadooploader}" defaultexcludes="true">
+				<exclude name="bin/**"/>
+				<exclude name=".settings/**"/>
+				<exclude name=".classpath"/>
+				<exclude name=".project"/>
+			</fileset>
+		</copy>
 	</target>
 	
 	<target name="findbugs-xml">
