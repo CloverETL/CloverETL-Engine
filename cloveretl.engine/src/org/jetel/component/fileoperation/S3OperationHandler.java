@@ -50,6 +50,8 @@ public class S3OperationHandler implements IOperationHandler {
 	static final String HTTP_SCHEME = "http"; //$NON-NLS-1$
 	static final String HTTPS_SCHEME = "https"; //$NON-NLS-1$
 	
+	public static final int PRIORITY = WebdavOperationHandler.PRIORITY + 1;
+	
 	private FileManager manager = FileManager.getInstance();
 	
 	private static class S3Content implements Content {
@@ -149,7 +151,7 @@ public class S3OperationHandler implements IOperationHandler {
 
 	@Override
 	public int getPriority(Operation operation) {
-		return 1;
+		return PRIORITY;
 	}
 
 	@Override
