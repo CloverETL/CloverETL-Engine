@@ -57,7 +57,7 @@ if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
 	antArgs = [
-		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial,cloveretl.component.hadoop",
+		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial",
 		"-Dcte.logpath=/data/cte-logs",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
