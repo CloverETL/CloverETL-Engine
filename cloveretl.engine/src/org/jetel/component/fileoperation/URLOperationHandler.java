@@ -133,17 +133,17 @@ public class URLOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public ReadableContent getInput(SingleCloverURI source, ReadParameters params) {
+	public ReadableContent getInput(SingleCloverURI source, ReadParameters params) throws IOException {
 		return new URLContent(source.toURI());
 	}
 
 	@Override
-	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) {
+	public WritableContent getOutput(SingleCloverURI target, WriteParameters params) throws IOException {
 		return new URLContent(target.toURI());
 	}
 
 	@Override
-	public List<SingleCloverURI> resolve(SingleCloverURI uri, ResolveParameters params) {
+	public List<SingleCloverURI> resolve(SingleCloverURI uri, ResolveParameters params) throws IOException {
 		return Arrays.asList(uri);
 	}
 
@@ -180,7 +180,7 @@ public class URLOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) {
+	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 
@@ -195,7 +195,7 @@ public class URLOperationHandler implements IOperationHandler {
 	}
 
 	@Override
-	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) {
+	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
 		throw new UnsupportedOperationException();
 	}
 	
