@@ -33,6 +33,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.MiscUtils;
 
 
 /**
@@ -266,6 +267,7 @@ public class Phase extends GraphElement implements Comparable {
 		logger.debug(" post-execute nodes finalizing: ");
 		for (Node node : nodes.values()) {
 			try {
+				ContextProvider.registerNode(node);
 				node.postExecute();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
@@ -278,6 +280,8 @@ public class Phase extends GraphElement implements Comparable {
 				result = Result.ERROR;
 				failedElements.put(node, ex);
 				logger.error(node.getId() + " ...FATAL ERROR !\nReason: " + ex.getMessage(), ex);
+			} finally {
+				ContextProvider.unregister();
 			}
 		}
 		
@@ -287,11 +291,12 @@ public class Phase extends GraphElement implements Comparable {
 			logger.info("[Clover] phase: " + phaseNum + " post-execute finalization successfully.");
 		} else {
 			StringBuffer sb = new StringBuffer();
-			sb.append("[Clover] phase: ").append(phaseNum).append(" post-execute FAILED at following elements:\n");
+			sb.append("[Clover] phase: ").append(phaseNum).append(" post-execute FAILED at following elements:");
 			for (Entry<IGraphElement, Exception> element : failedElements.entrySet()) {
-				sb.append(element.getKey().getId()).append('\n').append(element.getValue());
+				sb.append('\n');
+				sb.append(element.getKey().getId()).append(": ").append(MiscUtils.exceptionChainToMessage(null, element.getValue()));
 			}
-			throw new ComponentNotReadyException(sb.toString());
+			throw new ComponentNotReadyException(this, sb.toString());
 		}
 	}
 	
@@ -483,9 +488,12 @@ public class Phase extends GraphElement implements Comparable {
         //free all nodes in this phase
         for(Node node : nodes.values()) {
         	try {
+    			ContextProvider.registerNode(node);
         		node.free();
         	} catch (Exception e) {
         		logger.error("Node " + node.getId() + " releasing failed.", e);
+        	} finally {
+        		ContextProvider.unregister();
         	}
         }
         
