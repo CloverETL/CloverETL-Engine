@@ -32,6 +32,9 @@ public class ClusterUtils {
 	public static final String CLUSTER_SIMPLE_GATHER_TYPE = "CLUSTER_SIMPLE_GATHER";
 	public static final String CLUSTER_MERGE_TYPE = "CLUSTER_MERGE";
 	
+	public static final String REMOTE_EDGE_DATA_TRANSMITTER_TYPE = "REMOTE_EDGE_DATA_TRANSMITTER";
+	public static final String REMOTE_EDGE_DATA_RECEIVER_TYPE = "REMOTE_EDGE_DATA_RECEIVER";
+	
 	/**
 	 * Check whether the given component type is one of cluster gathers.
 	 * @param componentType
@@ -52,4 +55,16 @@ public class ClusterUtils {
 				componentType.equals(CLUSTER_LOAD_BALANCING_PARTITION_TYPE);
 	}
 
+	/**
+	 * Check whether the given component type is one of the artificial components
+	 * dedicated to be opposite site of remote edge. For example, these components
+	 * are omitted in JMX tracking. 
+	 * @param componentType
+	 * @return true if the given component is 'remote edge' component 
+	 */
+	public static boolean isRemoteEdgeComponent(String componentType) {
+		return componentType.equals(REMOTE_EDGE_DATA_TRANSMITTER_TYPE) ||
+				componentType.equals(REMOTE_EDGE_DATA_RECEIVER_TYPE);
+	}
+	
 }
