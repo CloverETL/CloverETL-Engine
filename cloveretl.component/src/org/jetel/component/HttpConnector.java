@@ -39,7 +39,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -1815,7 +1814,7 @@ public class HttpConnector extends Node {
 			resultRecord.getField(RP_STATUS_CODE_INDEX).setValue(response.getStatusLine().getStatusCode());
 			
 			Header[] headers = response.getAllHeaders();
-			Map<String, String> headersMap = new HashMap<String, String>(headers.length);
+			Map<String, String> headersMap = new LinkedHashMap<String, String>(headers.length);
 			List<String> rawHeaders = new ArrayList<String>(headers.length);
 			for (Header header: headers) {
 				headersMap.put(header.getName(), header.getValue());
