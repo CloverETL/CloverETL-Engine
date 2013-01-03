@@ -118,6 +118,7 @@ public class GraphCycleInspector {
 				if (!bufferedEdgeFound) {
 					setEdgeAsBuffered(entryEdge);
 					bufferedEdgeFound = true;
+					break;
 				}
 			} else {
 				reverseEdgeFound = true;
@@ -128,9 +129,9 @@ public class GraphCycleInspector {
 				component = visitedComponents.peek(); //recursion stack is not changed, just check whether the cycle is not uniformly oriented 
 			}
 			theCycle.add(component);
-		} while (!component.equals(endOfCycle) || (bufferedEdgeFound && reverseEdgeFound));
+		} while (!component.equals(endOfCycle) && (!bufferedEdgeFound || !reverseEdgeFound));
 		
-		if (!bufferedEdgeFound || !reverseEdgeFound) {
+		if (!bufferedEdgeFound) {
 			throw new JetelRuntimeException("Oriented cycle found in the graph. " + theCycle);
 		}
 	}
