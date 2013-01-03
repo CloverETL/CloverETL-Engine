@@ -120,7 +120,6 @@ public class GraphCycleInspector {
 					setEdgeAsBuffered(entryEdge);
 					bufferedEdgeFound = true;
 					index = visitedComponents.size() - 1;
-					break;
 				}
 			} else {
 				reverseEdgeFound = true;
