@@ -373,7 +373,7 @@ public class Phase extends GraphElement implements Comparable {
      * @throws GraphConfigurationException in case node with the same ID has already
      * been registered withing graph
 	 */
-	public void addNode(Node node) throws GraphConfigurationException {
+	public void addNode(Node node) {
 		nodes.put(node.getId(), node);
         node.setPhase(this);
         node.setGraph(getGraph());
@@ -385,7 +385,7 @@ public class Phase extends GraphElement implements Comparable {
      * @param nodes
      * @throws GraphConfigurationException
      */
-    public void addNode(Node ... nodes) throws GraphConfigurationException{
+    public void addNode(Node ... nodes) {
     	for(int i=0;i<nodes.length;i++){
     		addNode(nodes[i]);
     	}
@@ -397,7 +397,7 @@ public class Phase extends GraphElement implements Comparable {
      * @param nodes
      * @throws GraphConfigurationException
      */
-    public void addAllNodes(Collection<Node> nodes) throws GraphConfigurationException{
+    public void addAllNodes(Collection<Node> nodes) {
     	for (Node node : nodes) {
     		addNode(node);
     	}

@@ -945,6 +945,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         return getId().hashCode();
     }
 
+    /**
+     * @return Object.hashCode(), which is based on identity
+     */
+    public int hashCodeIdentity() {
+    	return super.hashCode();
+    }
+    
 	/**
 	 *  Description of the Method
 	 *
