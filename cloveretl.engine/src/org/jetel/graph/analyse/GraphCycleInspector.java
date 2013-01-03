@@ -109,6 +109,7 @@ public class GraphCycleInspector {
 		theCycle.add(component);
 		boolean bufferedEdgeFound = false;
 		boolean reverseEdgeFound = false;
+		int index = 0;
 		//Go back in the cycle and find first regularly oriented edge, which can be changed to BUFFERED.
 		//The cycle is interrupted and recursive cycle detection can continue.
 		//Moreover the founded cycle is checked, whether is uniformly oriented - exception is thrown.
@@ -118,6 +119,7 @@ public class GraphCycleInspector {
 				if (!bufferedEdgeFound) {
 					setEdgeAsBuffered(entryEdge);
 					bufferedEdgeFound = true;
+					index = visitedComponents.size() - 1;
 					break;
 				}
 			} else {
@@ -126,12 +128,12 @@ public class GraphCycleInspector {
 			if (!bufferedEdgeFound) {
 				component = visitedComponents.pop(); //step back in recursion
 			} else {
-				component = visitedComponents.peek(); //recursion stack is not changed, just check whether the cycle is not uniformly oriented 
+				component = visitedComponents.get(index--); //recursion stack is not changed, just check whether the cycle is not uniformly oriented 
 			}
 			theCycle.add(component);
 		} while (!component.equals(endOfCycle) && (!bufferedEdgeFound || !reverseEdgeFound));
 		
-		if (!bufferedEdgeFound) {
+		if (!bufferedEdgeFound || !reverseEdgeFound) {
 			throw new JetelRuntimeException("Oriented cycle found in the graph. " + theCycle);
 		}
 	}
