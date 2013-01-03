@@ -22,13 +22,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.nio.channels.Channels;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -46,6 +44,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.analyse.TransformationAnalyser;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -458,14 +457,13 @@ public final class TransformationGraph extends GraphElement {
 			}
 
 	        // analyze graph's topology
-			List<Node> orderedNodeList;
 	        try {
-	            orderedNodeList = TransformationGraphAnalyzer.analyzeGraphTopology(new ArrayList<Node>(getNodes().values()));
-	    		TransformationGraphAnalyzer.analyzeEdges(new ArrayList<Edge>(getEdges().values()));
-	    		TransformationGraphAnalyzer.analyzeMultipleFeeds(orderedNodeList);
-			} catch (GraphConfigurationException ex) {
-				logger.error(ex.getMessage(),ex);
-				throw new ComponentNotReadyException(this, "Graph topology analyze failed: " + ex.getMessage(), ex);
+				TransformationAnalyser.analyseGraph(this);
+				for (Edge edge : getEdges().values()) {
+					logger.trace("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
+				}
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "Graph analyse failed.", e);
 			}
 			
 			//initialization of all phases

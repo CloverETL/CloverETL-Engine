@@ -1,0 +1,16 @@
+##Project path
+#Mon Oct 08 11:08:38 CEST 2012
+PROJECT=.
+
+
+#Mon Oct 08 11:08:38 CEST 2012
+CONN_DIR=${PROJECT}/conn
+name=value1123
+SEQ_DIR=${PROJECT}/seq
+DATAOUT_DIR=${PROJECT}/data-out
+GRAPH_DIR=${PROJECT}/graph
+TRANS_DIR=${PROJECT}/trans
+DATATMP_DIR=${PROJECT}/data-tmp
+META_DIR=${PROJECT}/meta
+DATAIN_DIR=${PROJECT}/data-in
+LOOKUP_DIR=${PROJECT}/lookup
