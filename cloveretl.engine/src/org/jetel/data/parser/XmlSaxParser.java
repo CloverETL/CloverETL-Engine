@@ -902,4 +902,9 @@ public class XmlSaxParser {
 	public void setInputRecord(DataRecord inputRecord) {
 		this.inputRecord = inputRecord;
 	}
+	
+	public AutoFilling getAutoFilling() {
+		return autoFilling;
+	}
+	
 }
