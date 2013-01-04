@@ -334,161 +334,168 @@ public class SystemExecute extends Node{
 
 		boolean ok = true;
 		Process process = processBuilder.start();
-		//get process input and output streams
-		BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
-		BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
-		// If there is input port read records and write them to input stream of the process
-		GetData getData=null; 
-		if (inPort!=null) {
-            formatter.init(getInputPort(INPUT_PORT).getMetadata());
-            formatter.setDataTarget(Channels.newChannel(process_in));
-            getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
-			getData.start();
-			registerChildThread(getData); //register worker as a child thread of this component
-		} else {
-			process_in.close(); // Fix of issue #5725
-		}
-		//If there is output port read output from process and send it to output port
-		SendData sendData=null;
-		SendDataToFile sendDataToFile = null;
-		SendDataToConsole sendDataToConsole = null;
-		if (outPort!=null){
-            parser.init();
-            parser.setDataSource(process_out);
-            sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
-			//send all out_records to output ports
-			sendData.start();
-			registerChildThread(sendData); //register worker as a child thread of this component
-		//If there is no output port, but there is defined output file read output
-		// and error from process and send it to the file	
-		}else if (outputFile!=null){
-			sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
-			sendDataToFile.start();
-			registerChildThread(sendDataToFile); //register worker as a child thread of this component
-		// neither output port nor output file is defined then read output
-		// and error from process and send it to the console
-		} else {
-			sendDataToConsole = new SendDataToConsole(Thread.currentThread(),logger,process_out);
-			sendDataToConsole.start();
-			registerChildThread(sendDataToConsole); //register worker as a child thread of this component
-		}
-
-		//if output is sent to output port log process error stream
-		if (sendData!=null){ 
-			BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
-			BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
-			String line;
-			StringBuffer errmes=new StringBuffer();
-			int i=0;
-			while (((line=err.readLine())!=null)&&i++<Math.max(capturedErrorLines,ERROR_LINES)){
-				if (i<=capturedErrorLines)
-					logger.warn(line);
-				if (i<=ERROR_LINES)
-					errmes.append(line+"\n");
+		try {
+			//get process input and output streams
+			BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
+			BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
+			// If there is input port read records and write them to input stream of the process
+			GetData getData=null; 
+			if (inPort!=null) {
+	            formatter.init(getInputPort(INPUT_PORT).getMetadata());
+	            formatter.setDataTarget(Channels.newChannel(process_in));
+	            getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
+				getData.start();
+				registerChildThread(getData); //register worker as a child thread of this component
+			} else {
+				process_in.close(); // Fix of issue #5725
 			}
-			if (ERROR_LINES<i) errmes.append(".......\n");
-			err.close();
-			process_err.close();
-			if (errmes.length() > 0) {
-				logger.error(errmes.toString());
-			}			
-		}            
-		
-		// wait for executed process to finish
-		// wait for SendData and/or GetData threads to finish work
-		try{
-			exitValue=process.waitFor();
-			if (sendData!=null) sendData.join(workersTimeout);
-			if (getData!=null) getData.join(workersTimeout);
-			if (sendDataToFile!=null){
-				sendDataToFile.join(workersTimeout);
+			//If there is output port read output from process and send it to output port
+			SendData sendData=null;
+			SendDataToFile sendDataToFile = null;
+			SendDataToConsole sendDataToConsole = null;
+			if (outPort!=null){
+	            parser.init();
+	            parser.setDataSource(process_out);
+	            sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
+				//send all out_records to output ports
+				sendData.start();
+				registerChildThread(sendData); //register worker as a child thread of this component
+			//If there is no output port, but there is defined output file read output
+			// and error from process and send it to the file	
+			}else if (outputFile!=null){
+				sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
+				sendDataToFile.start();
+				registerChildThread(sendDataToFile); //register worker as a child thread of this component
+			// neither output port nor output file is defined then read output
+			// and error from process and send it to the console
+			} else {
+				sendDataToConsole = new SendDataToConsole(Thread.currentThread(),logger,process_out);
+				sendDataToConsole.start();
+				registerChildThread(sendDataToConsole); //register worker as a child thread of this component
 			}
-			if (sendDataToConsole!=null){
-				sendDataToConsole.join(workersTimeout);
-			}
+	
+			//if output is sent to output port log process error stream
+			if (sendData!=null){ 
+				BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
+				BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
+				String line;
+				StringBuffer errmes=new StringBuffer();
+				int i=0;
+				while (((line=err.readLine())!=null)&&i++<Math.max(capturedErrorLines,ERROR_LINES)){
+					if (i<=capturedErrorLines)
+						logger.warn(line);
+					if (i<=ERROR_LINES)
+						errmes.append(line+"\n");
+				}
+				if (ERROR_LINES<i) errmes.append(".......\n");
+				err.close();
+				process_err.close();
+				if (errmes.length() > 0) {
+					logger.error(errmes.toString());
+				}			
+			}            
 			
-		}catch(InterruptedException ex){
-			logger.error("InterruptedException in "+this.getId(),ex);
+			// wait for executed process to finish
+			// wait for SendData and/or GetData threads to finish work
+			try{
+				exitValue=process.waitFor();
+				if (sendData!=null) sendData.join(workersTimeout);
+				if (getData!=null) getData.join(workersTimeout);
+				if (sendDataToFile!=null){
+					sendDataToFile.join(workersTimeout);
+				}
+				if (sendDataToConsole!=null){
+					sendDataToConsole.join(workersTimeout);
+				}
+				
+			}catch(InterruptedException ex){
+				logger.error("InterruptedException in "+this.getId(),ex);
 			process.destroy();
-			//interrupt threads if they run still
-			if (getData!=null) {
+				//interrupt threads if they run still
+				if (getData!=null) {
+					if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
+						throw new RuntimeException("Can't kill "+getData.getName());
+					}
+				}
+				if (sendData!=null) {
+					if (!kill(sendData,KILL_PROCESS_WAIT_TIME)){
+						throw new RuntimeException("Can't kill "+sendData.getName());
+					}
+				}
+				if (sendDataToFile!=null) {
+					if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
+						throw new RuntimeException("Can't kill "+sendDataToFile.getName());
+					}
+				}
+				if (sendDataToConsole!=null) {
+					if (!kill(sendDataToConsole,KILL_PROCESS_WAIT_TIME)){
+						throw new RuntimeException("Can't kill "+sendDataToConsole.getName());
+					}
+				}
+			}
+			//chek results of getting and sending data
+			String resultMsg = null;
+			if (getData!=null){
 				if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
 					throw new RuntimeException("Can't kill "+getData.getName());
 				}
+				if (getData.getResultCode()==Result.ERROR) {
+					ok = false;
+					resultMsg = getData.getResultMsg() + "\n" + getData.getResultException();
+				}
 			}
-			if (sendData!=null) {
+			
+			if (sendData!=null){
 				if (!kill(sendData,KILL_PROCESS_WAIT_TIME)){
 					throw new RuntimeException("Can't kill "+sendData.getName());
 				}
+				if (sendData.getResultCode()==Result.ERROR){
+					ok = false;
+					resultMsg = (resultMsg == null ? "" : resultMsg) + sendData.getResultMsg() + "\n" + sendData.getResultException();
+				}
 			}
-			if (sendDataToFile!=null) {
+	
+			if (sendDataToFile!=null){
 				if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
 					throw new RuntimeException("Can't kill "+sendDataToFile.getName());
 				}
+				if (sendDataToFile.getResultCode()==Result.ERROR){
+					ok = false;
+					resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToFile.getResultMsg() + "\n" + sendDataToFile.getResultException();
+				}
 			}
-			if (sendDataToConsole!=null) {
+			
+			if (sendDataToConsole!=null){
 				if (!kill(sendDataToConsole,KILL_PROCESS_WAIT_TIME)){
 					throw new RuntimeException("Can't kill "+sendDataToConsole.getName());
 				}
+				if (sendDataToConsole.getResultCode()==Result.ERROR){
+					ok = false;
+					resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToConsole.getResultMsg() + "\n" + sendDataToConsole.getResultException();
+				}
 			}
-		}
-		//chek results of getting and sending data
-		String resultMsg = null;
-		if (getData!=null){
-			if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
-				throw new RuntimeException("Can't kill "+getData.getName());
+	//		broadcastEOF();
+			if (!runIt) {
+				return Result.ABORTED;
 			}
-			if (getData.getResultCode()==Result.ERROR) {
-				ok = false;
-				resultMsg = getData.getResultMsg() + "\n" + getData.getResultException();
+			if (exitValue!=0){
+				if (outputFile!=null) {
+					logger.error("Process exit value not 0");
+				}
+				resultMsg = "Process exit value not 0";
+				ok = false;;
+				throw new JetelException(resultMsg);
 			}
-		}
-		
-		if (sendData!=null){
-			if (!kill(sendData,KILL_PROCESS_WAIT_TIME)){
-				throw new RuntimeException("Can't kill "+sendData.getName());
+			if (ok) {
+				return Result.FINISHED_OK;
+			}else{
+				throw new JetelException(resultMsg);
 			}
-			if (sendData.getResultCode()==Result.ERROR){
-				ok = false;
-				resultMsg = (resultMsg == null ? "" : resultMsg) + sendData.getResultMsg() + "\n" + sendData.getResultException();
+		} finally {
+			//this should be part of #postExecute() method, but the method is not invoked for interrupted graphs
+			if (process != null) {
+				process.destroy();
 			}
-		}
-
-		if (sendDataToFile!=null){
-			if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
-				throw new RuntimeException("Can't kill "+sendDataToFile.getName());
-			}
-			if (sendDataToFile.getResultCode()==Result.ERROR){
-				ok = false;
-				resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToFile.getResultMsg() + "\n" + sendDataToFile.getResultException();
-			}
-		}
-		
-		if (sendDataToConsole!=null){
-			if (!kill(sendDataToConsole,KILL_PROCESS_WAIT_TIME)){
-				throw new RuntimeException("Can't kill "+sendDataToConsole.getName());
-			}
-			if (sendDataToConsole.getResultCode()==Result.ERROR){
-				ok = false;
-				resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToConsole.getResultMsg() + "\n" + sendDataToConsole.getResultException();
-			}
-		}
-//		broadcastEOF();
-		if (!runIt) {
-			return Result.ABORTED;
-		}
-		if (exitValue!=0){
-			if (outputFile!=null) {
-				logger.error("Process exit value not 0");
-			}
-			resultMsg = "Process exit value not 0";
-			ok = false;;
-			throw new JetelException(resultMsg);
-		}
-		if (ok) {
-			return Result.FINISHED_OK;
-		}else{
-			throw new JetelException(resultMsg);
 		}
 	}
 	
