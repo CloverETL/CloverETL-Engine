@@ -264,9 +264,6 @@ public class XMLExtract extends Node {
 	private String inputFile;
 	private ReadableChannelIterator readableChannelIterator;
 
-	// autofilling support
-	private AutoFilling autoFilling = new AutoFilling();
-
 	private String mapping;
 	private String mappingURL;
 	private String charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
@@ -274,6 +271,9 @@ public class XMLExtract extends Node {
 	private NodeList mappingNodes;
 
 	private XmlSaxParser parser = new XmlSaxParser(null, this);
+
+	// autofilling support
+	private AutoFilling autoFilling = parser.getAutoFilling();
 
 	/**
 	 * Constructs an XML Extract node with the given id.
