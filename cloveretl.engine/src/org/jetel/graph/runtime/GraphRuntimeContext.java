@@ -85,6 +85,7 @@ public class GraphRuntimeContext {
 	private String clusterNodeId;
 	private ClassLoader classLoader;
 	private JobType jobType;
+	private String jobUrl;
 	private IAuthorityProxy authorityProxy;
 	
 	public GraphRuntimeContext() {
@@ -566,7 +567,7 @@ public class GraphRuntimeContext {
 	}
 
 	/**
-	 * Expected job type is confrontated with type defined in {@link TransformationGraph#getJobType()}.
+	 * Expected job type is confronted with type defined in {@link TransformationGraph#getJobType()}.
 	 * @return expected job type of executed graph
 	 * @see TransformationGraph#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
@@ -581,6 +582,22 @@ public class GraphRuntimeContext {
 	 */
 	public void setJobType(JobType jobType) {
 		this.jobType = jobType;
+	}
+	
+	/**
+	 * Sets the URL of this job (graph)
+	 * @return the jobUrl
+	 */
+	public String getJobUrl() {
+		return jobUrl;
+	}
+	
+	/**
+	 * 
+	 * @param jobUrl the jobUrl to set
+	 */
+	public void setJobUrl(String jobUrl) {
+		this.jobUrl = jobUrl;
 	}
 
 	/**

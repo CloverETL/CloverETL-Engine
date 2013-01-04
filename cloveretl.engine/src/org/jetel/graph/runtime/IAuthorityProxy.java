@@ -285,6 +285,8 @@ public abstract class IAuthorityProxy {
 	
 	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
 	
+	public abstract Properties getProfilerResultsDatabaseConnectionProperties();
+	
 	/**
 	 * This method is used for tracking a running graphs. For already finished graphs this method returns
 	 * final run status (tracking info included) of the graph.
