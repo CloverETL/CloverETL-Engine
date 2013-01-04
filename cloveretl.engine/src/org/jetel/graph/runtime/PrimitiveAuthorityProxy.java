@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -436,6 +437,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext) {
 		throw new UnsupportedOperationException("Profiler job execution is available only in CloverETL Server environment");
+	}
+	
+	@Override
+	public Properties getProfilerResultsDatabaseConnectionProperties() {
+		throw new UnsupportedOperationException("Profiler results storage is available only in CloverETL Server environment");
 	}
 	
 	@Override
