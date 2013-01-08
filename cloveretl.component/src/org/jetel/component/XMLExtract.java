@@ -469,13 +469,16 @@ public class XMLExtract extends Node {
 			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
 			long fileSize = 0;
 			Date fileTimestamp = null;
-			if (autoFilling.getFilename() != null && 
-					FileUtils.isLocalFile(null, autoFilling.getFilename()) && 
-					!readableChannelIterator.isGraphDependentSource()) {
-				File tmpFile = new File(autoFilling.getFilename());
-				long timestamp = tmpFile.lastModified();
-				fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
-				fileSize = tmpFile.length();
+			if (autoFilling.getFilename() != null
+					&& !readableChannelIterator.isGraphDependentSource()) {
+				try {
+					File tmpFile = FileUtils.getJavaFile(getGraph().getRuntimeContext().getContextURL(), autoFilling.getFilename());
+					long timestamp = tmpFile.lastModified();
+					fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
+					fileSize = tmpFile.length();
+				} catch (Exception e) {
+					//do nothing - the url is not regular file
+				}
 			}
 			autoFilling.setFileSize(fileSize);
 			autoFilling.setFileTimestamp(fileTimestamp);				
