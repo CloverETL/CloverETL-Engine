@@ -1535,7 +1535,7 @@ public class FileUtils {
         			// ignore the result
         		}
         	}
-		} catch (Exception e) {
+		} catch (Exception e) { // FIXME parent dir creation fails for proxies
 			log.debug(e.getMessage());
 		}
 	}
