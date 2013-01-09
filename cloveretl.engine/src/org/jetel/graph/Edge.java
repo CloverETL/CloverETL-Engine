@@ -31,6 +31,7 @@ import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
+import org.jetel.util.EdgeDebugUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.w3c.dom.Element;
 
@@ -101,6 +102,23 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public Edge(String id, DataRecordMetadataStub metadataStub, DataRecordMetadata metadata, boolean debugMode) {
 		this(id,metadata, debugMode);
 		this.metadataStub=metadataStub;
+	}
+	
+	/**
+	 * Copies settings from the given edge to this edge.
+	 * The otherEdge has to be from same graph as this edge. For example referenced metadata are not copied
+	 * from otherGraph to thisGraph. 
+	 * @param otherEdge
+	 */
+	public void copySettingsFrom(Edge otherEdge) {
+		this.metadata = otherEdge.metadata;
+		this.metadataStub = otherEdge.metadataStub;
+		this.debugMode = otherEdge.debugMode;
+		this.debugMaxRecords = otherEdge.debugMaxRecords;
+		this.debugLastRecords = otherEdge.debugLastRecords;
+		this.debugFilterExpression = otherEdge.debugFilterExpression;
+		this.debugSampleData = otherEdge.debugSampleData;
+		this.edgeType = otherEdge.edgeType;
 	}
 
     public void setDebugMode(boolean debugMode) {
@@ -293,6 +311,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
+		edge.preExecute();
+		
 		if (debugMode && getGraph().isDebugMode()) {
             String debugFileName = getDebugFileName();
             logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
@@ -321,6 +341,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		
+		edge.postExecute();
+		
         if (edgeDebuger != null) {
             edgeDebuger.close();
             edgeDebuger = null;
@@ -338,7 +360,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         if(!tmpFile.endsWith(System.getProperty("file.separator"))) {
             tmpFile += System.getProperty("file.separator");
         }
-        tmpFile += runtimeContext.getRunId() + "-" + getId() + ".dbg";
+        tmpFile += EdgeDebugUtils.getDebugFileName(runtimeContext.getRunId(), getId());
 
         return tmpFile;
     }
@@ -546,12 +568,29 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	}
 
 	/**
+	 * Sets specific {@link EdgeBase} instance which is used as real edge algorithm.
+	 * By default, the {@link EdgeBase} instance is created in initialisation time
+	 * based on {@link EdgeTypeEnum}.
+	 * @param edge
+	 */
+	public void setEdge(EdgeBase edge) {
+		this.edge = edge;
+	}
+
+	/**
 	 * @see InputPort#getEdge()
 	 * @see OutputPort#getEdge()
 	 */
 	@Override
 	public Edge getEdge() {
 		return this;
+	}
+
+	/**
+	 * @return internal edge implementation
+	 */
+	public EdgeBase getEdgeBase() {
+		return edge;
 	}
 	
 }

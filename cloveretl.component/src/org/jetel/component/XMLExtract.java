@@ -19,12 +19,10 @@
 package org.jetel.component;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
@@ -266,9 +264,6 @@ public class XMLExtract extends Node {
 	private String inputFile;
 	private ReadableChannelIterator readableChannelIterator;
 
-	// autofilling support
-	private AutoFilling autoFilling = new AutoFilling();
-
 	private String mapping;
 	private String mappingURL;
 	private String charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
@@ -276,6 +271,9 @@ public class XMLExtract extends Node {
 	private NodeList mappingNodes;
 
 	private XmlSaxParser parser = new XmlSaxParser(null, this);
+
+	// autofilling support
+	private AutoFilling autoFilling = parser.getAutoFilling();
 
 	/**
 	 * Constructs an XML Extract node with the given id.
@@ -508,7 +506,7 @@ public class XMLExtract extends Node {
 			InputSource is = null;
 			Document doc = null;
 			if (this.mappingURL != null) {
-				InputStream inputStream = FileUtils.getInputStream(graph.getRuntimeContext().getContextURL(), mappingURL);
+				InputStream inputStream = FileUtils.getInputStream(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
 				is = new InputSource(inputStream);
 				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
 				doc = XmlUtils.createDocumentFromChannel(ch);

@@ -61,10 +61,10 @@ import com.linagora.ldap.LdapManager.ReferralHandling;
 public class LdapParser extends AbstractParser {
 
 	/** timeout, in mili second. 0 means wait indefinitely */ 
-	public static int TIMEOUT = 0;
+	public static final int TIMEOUT = 0;
 	
 	/** Max number of result, 0 means no limit */
-	public static int LIMIT = 0;
+	public static final int LIMIT = 0;
 	
 	protected IParserExceptionHandler exceptionHandler;
 

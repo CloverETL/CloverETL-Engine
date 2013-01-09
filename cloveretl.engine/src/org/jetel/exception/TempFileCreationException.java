@@ -20,6 +20,7 @@ package org.jetel.exception;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.jetel.graph.runtime.TempSpace;
 
@@ -93,8 +94,10 @@ public class TempFileCreationException extends Exception {
 	 *            temp space where temp file creation attempt has been performed
 	 */
 	public TempFileCreationException(Throwable cause, String label, int allocationHint, Long runId, TempSpace tempSpace) {
-		super(String.format("Creation of temp. space with label '%s', hint=%d failed for graph run id=%d", label, allocationHint, runId));
-		causes.put(tempSpace, cause);
+		super(String.format("Creation of temp. space with label '%s', hint=%d failed for graph run id=%d", label, allocationHint, runId), cause);
+		if (cause != null) {
+			causes.put(tempSpace, cause);
+		}
 	}
 
 	/**
@@ -115,7 +118,7 @@ public class TempFileCreationException extends Exception {
 	 */
 	public void addCause(Throwable t, TempSpace tempSpace) {
 		if (t == null) {
-			throw new IllegalArgumentException("param. ex can not be null");
+			throw new IllegalArgumentException("param. Throwable t can not be null");
 		}
 		if (tempSpace == null) {
 			throw new IllegalArgumentException("param. tempSpace can not be null");
@@ -135,4 +138,23 @@ public class TempFileCreationException extends Exception {
 	public Reason getReason() {
 		return reason;
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(super.toString());
+		if (!causes.isEmpty()) {
+			boolean multipleCauses = causes.size() > 1;
+			sb.append("\n\tThe temp file creation error has " + causes.size() + " cause" + (multipleCauses ? "s" : "") + ":\n");
+			int i = 1;
+			for (Entry<TempSpace, Throwable> cause : causes.entrySet()) {
+				sb.append("\t\t");
+				if (multipleCauses) {
+					sb.append("Cause " + i++ + (cause.getKey() == null ? "" : "; in " + cause.getKey()) + ": ");
+				}
+				sb.append(cause.getValue() + "\n");
+			}
+		}
+		return sb.toString();
+	}
+
 }

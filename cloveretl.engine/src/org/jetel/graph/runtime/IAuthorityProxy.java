@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jetel.data.sequence.Sequence;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Result;
@@ -161,9 +163,72 @@ public abstract class IAuthorityProxy {
 		public void setException(Exception e) {
 			errMessage = MiscUtils.exceptionChainToMessage(null, e);
 			errException = MiscUtils.stackTraceToString(e);
+			
+			//try to find caused graph element id
+			Throwable t = e;
+			while (true) {
+				if (t instanceof ConfigurationException) {
+					errComponent = ((ConfigurationException) t).getCausedGraphElementId();
+				} else if (t instanceof ComponentNotReadyException) {
+					errComponent = ((ComponentNotReadyException) t).getGraphElement().getId();
+				} else {
+					break;
+				}
+				t = t.getCause();
+			}
 		}
+	}
 
-		
+	/**
+	 * This class represents data target of a remote edge -
+	 * pair of output stream and runId of remote job.
+	 * @see IAuthorityProxy#getRemoteEdgeDataTarget(String)
+	 */
+	public static class RemoteEdgeDataTarget {
+		private OutputStream outputStream;
+		private long dataTargetRunId;
+		public RemoteEdgeDataTarget(OutputStream outputStream, long dataTargetRunId) {
+			this.outputStream = outputStream;
+			this.dataTargetRunId = dataTargetRunId;
+		}
+		/**
+		 * @return outputStream where the data records should be sent
+		 */
+		public OutputStream getOutputStream() {
+			return outputStream;
+		}
+		/**
+		 * @return runId of remote job where the data records are sent
+		 */
+		public long getDataTargetRunId() {
+			return dataTargetRunId;
+		}
+	}
+
+	/**
+	 * This class represents data source of a remote edge -
+	 * pair of input stream and runId of remote job.
+	 * @see IAuthorityProxy#getRemoteEdgeDataSource(String)
+	 */
+	public static class RemoteEdgeDataSource {
+		private InputStream inputStream;
+		private long dataSourceRunId;
+		public RemoteEdgeDataSource(InputStream inputStream, long dataSourceRunId) {
+			this.inputStream = inputStream;
+			this.dataSourceRunId = dataSourceRunId;
+		}
+		/**
+		 * @return inputStream where the data records are received
+		 */
+		public InputStream getInputStream() {
+			return inputStream;
+		}
+		/**
+		 * @return runId of remote job where the data records are produced
+		 */
+		public long getDataSourceRunId() {
+			return dataSourceRunId;
+		}
 	}
 
 	/**
@@ -218,7 +283,9 @@ public abstract class IAuthorityProxy {
 	
 	public abstract RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext);
 	
-	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext);
+	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
+	
+	public abstract Properties getProfilerResultsDatabaseConnectionProperties();
 	
 	/**
 	 * This method is used for tracking a running graphs. For already finished graphs this method returns
@@ -301,7 +368,7 @@ public abstract class IAuthorityProxy {
 	 * @param path
 	 * @return
 	 */
-	public abstract InputStream getSandboxResourceInput(String storageCode, String path) throws IOException;
+	public abstract InputStream getSandboxResourceInput(String componentId, String storageCode, String path) throws IOException;
 
 	/**
 	 * Returns output stream for updating of specified sandbox resource.
@@ -315,66 +382,80 @@ public abstract class IAuthorityProxy {
 	 * 
 	 * @return
 	 */
-	public abstract OutputStream getSandboxResourceOutput(String storageCode, String path, boolean append) throws IOException;
+	public abstract OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) throws IOException;
+
+//	/**
+//	 * Returns true, if this worker instance is "primary" in curretn phase. 
+//	 * 
+//	 * MZa: will be removed
+//	 * 
+//	 * @param runId
+//	 * @return 
+//	 */
+//	public abstract boolean isPrimaryWorker();
+	
+	/**
+	 * Takes an edge identifier of a remote edge and returns {@link RemoteEdgeDataSource},
+	 * which specified remote source of data records.
+	 * This is used by cluster remote edge implementations.
+	 */
+	public abstract RemoteEdgeDataSource getRemoteEdgeDataSource(String edgeId);
 
 	/**
-	 * Returns true, if this worker instance is "primary" in curretn phase. 
-	 * 
-	 * MZa: will be removed
-	 * 
-	 * @param runId
-	 * @return 
+	 * Takes an edge identifier of a remote edge and returns {@link RemoteEdgeDataTarget},
+	 * which specified remote target of data records.
+	 * This is used by cluster remote edge implementations.
 	 */
-	public abstract boolean isPrimaryWorker();
-	
-	/**
-	 * Called by Cluster Partitioner component on "primary" worker.
-	 * Returns list of output streams to "slave" workers.
-	 * 
-	 * MZa: will be removed
-	 * 
-	 * @param componentId
-	 * @return streams array of size workersCount-1
-	 * @throws IOException
-	 */
-	public abstract OutputStream[] getClusterPartitionerOutputStreams(String componentId) throws IOException;
-	
-	/**
-	 * Called by Cluster Partitioner component on "slave" worker.
-	 * Returns input stream with data from "primary" worker.  
-	 * 
-	 * MZa: will be removed
-	 * 
-	 * @param runId
-	 * @param componentId
-	 * @return 
-	 * @throws IOException
-	 */
-	public abstract InputStream getClusterPartitionerInputStream(String componentId) throws IOException;
-	
-	/**
-	 * Called by ClusterGather component on "primary" worker.
-	 * Returns list of input streams with data from "slave" workers.
-	 * 
-	 * MZa: will be removed
-	 *  
-	 * @param componentId
-	 * @return streams array of size workersCount-1
-	 * @throws IOException
-	 */
-	public abstract InputStream[] getClusterGatherInputStreams(String componentId) throws IOException;
-	
-	/**
-	 * Called by Cluster Gather component on "slave" worker. 
-	 * Returns output stream which will be fed by output data.
-	 * 
-	 * MZa: will be removed 
-	 * 
-	 * @param componentId
-	 * @return
-	 * @throws IOException
-	 */
-	public abstract OutputStream getClusterGatherOutputStream(String componentId) throws IOException;
+	public abstract RemoteEdgeDataTarget getRemoteEdgeDataTarget(String edgeId) throws InterruptedException;
+
+//	/**
+//	 * Called by Cluster Partitioner component on "primary" worker.
+//	 * Returns list of output streams to "slave" workers.
+//	 * 
+//	 * MZa: will be removed
+//	 * 
+//	 * @param componentId
+//	 * @return streams array of size workersCount-1
+//	 * @throws IOException
+//	 */
+//	public abstract OutputStream[] getClusterPartitionerOutputStreams(String componentId) throws IOException;
+//	
+//	/**
+//	 * Called by Cluster Partitioner component on "slave" worker.
+//	 * Returns input stream with data from "primary" worker.  
+//	 * 
+//	 * MZa: will be removed
+//	 * 
+//	 * @param runId
+//	 * @param componentId
+//	 * @return 
+//	 * @throws IOException
+//	 */
+//	public abstract InputStream getClusterPartitionerInputStream(String componentId) throws IOException;
+//	
+//	/**
+//	 * Called by ClusterGather component on "primary" worker.
+//	 * Returns list of input streams with data from "slave" workers.
+//	 * 
+//	 * MZa: will be removed
+//	 *  
+//	 * @param componentId
+//	 * @return streams array of size workersCount-1
+//	 * @throws IOException
+//	 */
+//	public abstract InputStream[] getClusterGatherInputStreams(String componentId) throws IOException;
+//	
+//	/**
+//	 * Called by Cluster Gather component on "slave" worker. 
+//	 * Returns output stream which will be fed by output data.
+//	 * 
+//	 * MZa: will be removed 
+//	 * 
+//	 * @param componentId
+//	 * @return
+//	 * @throws IOException
+//	 */
+//	public abstract OutputStream getClusterGatherOutputStream(String componentId) throws IOException;
 
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,

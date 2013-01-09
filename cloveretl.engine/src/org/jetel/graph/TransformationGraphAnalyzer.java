@@ -319,9 +319,10 @@ public class TransformationGraphAnalyzer {
 		// edges connecting nodes from two different phases has to be put into both phases
 		for (Iterator<Edge> iterator = edges.iterator(); iterator.hasNext();) {
 			edge = (Edge) iterator.next();
-			readerPhase = edge.getReader().getPhase();
-			writerPhase = edge.getWriter().getPhase();
-			writerPhase.addEdge(edge);
+			Node reader = edge.getReader(); //can be null for remote edges
+			Node writer = edge.getWriter(); //can be null for remote edges
+			readerPhase = reader != null ? reader.getPhase() : null;
+			writerPhase = writer != null ? writer.getPhase() : null;
 			if (readerPhase != writerPhase) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered

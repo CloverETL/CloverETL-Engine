@@ -18,6 +18,7 @@
  */
 package org.jetel.hadoop.connection;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -36,6 +37,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.CloverURI;
+import org.jetel.component.fileoperation.FileManager;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
@@ -51,6 +54,7 @@ import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -59,6 +63,7 @@ import org.w3c.dom.Element;
 
 /**
  * @author dpavlis (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
+ * @author rmirek, tkramolis
  * 
  * @see org.apache.hadoop.fs.FileSystem
  */
@@ -161,11 +166,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			throw new ComponentNotReadyException(
 					"Cannot initialize Hadoop connection, Hadoop file system host is missing.");
 		}
-// Setting with hadooop libraries is valid! There must be no libs set if running on the Server to avoid the PermGen space OutOfMemmoryError
-//		if (!propertiesToSet.containsKey(HADOOP_CORE_LIBRARY_KEY)) {
-//			throw new ComponentNotReadyException(
-//					"Cannot initialize Hadoop connection, Hadoop .jar libraries are missing.");
-//		}
 		// store in local variable first to ensure atomic fail
 		Properties localCopy = new Properties();
 		for (String key : HADOOP_USED_PROPERTIES_KEYS) {
@@ -179,6 +179,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				localCopy.setProperty(key, PROPERTIES_DEFAULT.get(key).toString());
 			}
 		}
+		// TODO this way, our GUI properties get into hadoop Configuration, which is useless
 
 		// parse addition properties
 		String additionalParams = propertiesToSet.getProperty(HADOOP_CUSTOM_PARAMETERS_KEY, null);
@@ -199,7 +200,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	@Override
 	public synchronized void init() throws ComponentNotReadyException {
 		if (isInitialized()) {
-			logger.debug("HadoopConnection has been initialized twice or more times. Not neccessary.");
+			logger.trace("HadoopConnection has been initialized twice or more times. Not neccessary.");
 			return;
 		}
 		super.init();
@@ -280,10 +281,26 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		List<URL> providerClassPath = new ArrayList<URL>();
 
 		if (contextURL == null) {
-			// This may happen e.g. in checkConfig phase of a UDR
 			TransformationGraph graph = ContextProvider.getGraph();
 			if (graph != null) {
 				contextURL = graph.getRuntimeContext().getContextURL();
+			}
+			// CL-2638 - sandbox URLs cannot be used in a classpath
+			if ((contextURL != null) && SandboxUrlUtils.isSandboxUrl(contextURL)) {
+				try {
+					File file = FileManager.getInstance().getFile(CloverURI.createSingleURI(contextURL.toURI()));
+					if (file != null) {
+						contextURL = file.toURI().toURL();
+					} else {
+						if (logger.isDebugEnabled()) {
+							logger.debug("Failed to convert " + contextURL + " to a local file");
+						}
+					}
+				} catch (Exception ex) {
+					if (logger.isDebugEnabled()) {
+						logger.debug("Failed to convert " + contextURL + " to a local file", ex);
+					}
+				}
 			}
 		}
 		
@@ -314,9 +331,9 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			classLoader = new GreedyURLClassLoader(providerClassPath.toArray(new URL[0]), getClass().getClassLoader());
 			classLoaderCache.put(classPathSet, classLoader);
 			
-			logger.debug("Hadoop connection " + getId() + " uses new classloader with additional classpath: " + providerClassPath);
+			logger.debug("Hadoop connection " + getId() + " uses new classloader with classpath: " + providerClassPath);
 		} else {
-			logger.debug("Hadoop connection " + getId() + " uses cached classloader with additional classpath: " + providerClassPath);
+			logger.debug("Hadoop connection " + getId() + " uses cached classloader with classpath: " + providerClassPath);
 		}
 		
 
@@ -345,7 +362,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 					+ "on this instance first. Instance: " + this);
 		}
 		
-		if (fsConnected) {
+		if (fsConnected) { // TODO this flag is suspicious; someone can close the fsConnection itself
 			return fsConnection;
 		}
 		
@@ -370,24 +387,11 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	}
 
 	@Override
-	public synchronized void preExecute() throws ComponentNotReadyException {
-		super.preExecute();
-		if (firstRun() || getGraph().getRuntimeContext().isBatchMode()) {
-			init();
-		}
-	}
-
-	@Override
 	public synchronized void postExecute() throws ComponentNotReadyException {
-		super.postExecute();
 		try {
-			if (getGraph().getRuntimeContext().isBatchMode()) {
-				close();
-			} else { // for now no difference between batch & non-batch
-				close();
-			}
+			close();
 		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
+			throw new ComponentNotReadyException("Failed to close connection", e);
 		}
 	}
 
@@ -401,6 +405,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				logger.warn("There was a problem closing HDFS connection. The cluster might be disconected "
 						+ "or it could be already closed.", ex);
 			}
+			fsConnection = null;
 		}
 	}
 
@@ -409,7 +414,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		if (fsConnection != null) {
 			fsConnection.close();
 		}
-		fsConnection = null;
 	}
 
 	@Override

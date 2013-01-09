@@ -63,4 +63,6 @@ public interface IOperationHandler {
 	
 	public boolean canPerform(Operation operation);
 	
+	public static final int TOP_PRIORITY = Integer.MAX_VALUE - 100; // keep some reserve
+	
 }

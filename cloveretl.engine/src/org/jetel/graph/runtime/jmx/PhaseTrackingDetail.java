@@ -19,11 +19,13 @@
 package org.jetel.graph.runtime.jmx;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraphAnalyzer;
+import org.jetel.util.ClusterUtils;
 
 /**
  * This class represents tracking information about an phase.
@@ -60,14 +62,16 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	public PhaseTrackingDetail(GraphTrackingDetail parentGraphDetail, Phase phase) {
 		this.parentGraphDetail = parentGraphDetail;
 		this.phase = phase;
-		this.nodesDetails = new NodeTrackingDetail[phase.getNodes().size()];
 		this.phaseNum = phase.getPhaseNum();
 		this.result = Result.N_A;
 		
-		int i = 0;
+		List<NodeTrackingDetail> details = new ArrayList<NodeTrackingDetail>();
 		for (Node node : TransformationGraphAnalyzer.nodesTopologicalSorting(new ArrayList<Node>(phase.getNodes().values()))) {
-			nodesDetails[i++] = new NodeTrackingDetail(this, node); 
+			if (!ClusterUtils.isRemoteEdgeComponent(node.getType())) {
+				details.add(new NodeTrackingDetail(this, node));
+			}
 		}
+		this.nodesDetails = details.toArray(new NodeTrackingDetail[details.size()]);
 	}
 	
 	public PhaseTrackingDetail(GraphTrackingDetail parentGraphDetail) {

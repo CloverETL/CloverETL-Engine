@@ -137,7 +137,7 @@ import org.w3c.dom.Element;
  */
 public class XLSReader extends Node {
 
-    protected static Log logger = LogFactory.getLog(XLSReader.class);
+    protected static final Log logger = LogFactory.getLog(XLSReader.class);
 
     public static final String COMPONENT_TYPE = AdditionalComponentAttributes.XLS_READER.getComponentType();
 

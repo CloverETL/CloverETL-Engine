@@ -52,18 +52,9 @@ public class HadoopSequenceFileFormatter implements
 	private TransformationGraph graph;
 	
 	
-	public HadoopSequenceFileFormatter(FileSystem dfs) {
-		this.dfs=dfs;
-	}
-	
-	public HadoopSequenceFileFormatter(FileSystem dfs,String keyFieldName, String valueFieldName) {
-		this.dfs=dfs;
+	public HadoopSequenceFileFormatter(String keyFieldName, String valueFieldName) {
 		this.keyFieldName=keyFieldName;
 		this.valueFieldName=valueFieldName;
-	}
-	
-	public HadoopSequenceFileFormatter() {
-		this.dfs=null;
 	}
 	
 	@Override
@@ -97,7 +88,7 @@ public class HadoopSequenceFileFormatter implements
 
 	@Override
 	public void reset() {
-		// do nothing, we can't reset ?
+		dfs = null; // causes DFS to be recreated from fresh connection
 	}
 
 	@Override
@@ -113,7 +104,7 @@ public class HadoopSequenceFileFormatter implements
 			if (!HadoopURLUtils.isHDFSUri((URI)outputDataTarget))
 				throw new IOException("Not a valid HDFS/Hadoop URL - "+outputDataTarget);
 			
-			final String connectionName = ((URI) outputDataTarget).getHost();
+			final String connectionName = ((URI) outputDataTarget).getAuthority();
 
 			if(graph==null) graph = ContextProvider.getGraph();
 			if (graph == null) {
@@ -170,7 +161,9 @@ public class HadoopSequenceFileFormatter implements
 
 	@Override
 	public void close() throws IOException {
-		writer.close();
+		if (writer != null) {
+			writer.close();
+		}
 	}
 
 	@Override
@@ -204,14 +197,13 @@ public class HadoopSequenceFileFormatter implements
 	}
 
 	@Override
-	public boolean isURITargetPreferred() {
-		return true;
+	public DataTargetType getPreferredDataTargetType() {
+		return DataTargetType.URI;
 	}
 
 	@Override
 	public void setAppend(boolean append) {
 		// TODO Auto-generated method stub
-
 	}
 	
 	

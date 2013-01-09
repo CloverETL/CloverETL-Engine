@@ -27,16 +27,14 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -85,7 +83,7 @@ import org.w3c.dom.Element;
 public class Merge extends Node {
 	public final static String COMPONENT_TYPE = "MERGE";
 
-	private static final String XML_MERGEKEY_ATTRIBUTE = "mergeKey";
+	protected static final String XML_MERGEKEY_ATTRIBUTE = "mergeKey";
 
 	private final static int WRITE_TO_PORT = 0;
 
@@ -101,9 +99,8 @@ public class Merge extends Node {
 	 * @param  id         Description of the Parameter
 	 * @param  mergeKeys  Description of the Parameter
 	 */
-	public Merge(String id, String[] mergeKeys) {
-		super(id);
-		this.mergeKeys = mergeKeys;
+	public Merge(String id, TransformationGraph graph) {
+		super(id, graph);
 	}
 
 
@@ -247,24 +244,6 @@ public class Merge extends Node {
 		}
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		String mKeys = mergeKeys[0];
-		for (int i=1; i< mergeKeys.length; i++) {
-			mKeys += Defaults.Component.KEY_FIELDS_DELIMITER + mergeKeys[i]; 
-		}
-		xmlElement.setAttribute(XML_MERGEKEY_ATTRIBUTE, mKeys);
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *
@@ -272,72 +251,77 @@ public class Merge extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		try {
-			Merge merge = new Merge(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_MERGEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			Merge merge = new Merge(xattribs.getString(XML_ID_ATTRIBUTE),graph);
+			merge.setMergeKeys(xattribs.getString(XML_MERGEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             return merge;
 		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 	}
-
 
 	/**
 	 *  Description of the Method
 	 *
 	 * @return    Description of the Return Value
 	 */
-        @Override
-        public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-            super.checkConfig(status);
-            
-            if(!checkInputPorts(status, 1, Integer.MAX_VALUE)
-            		|| !checkOutputPorts(status, 1, 1)) {
-            	return status;
-            }
-            
-            if (getInPorts().size() < 2) {
-                status.add(new ConfigurationProblem("At least 2 input ports should be defined!", Severity.WARNING, this, Priority.NORMAL));
-            }
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+	    super.checkConfig(status);
+	    
+	    if(!checkInputPorts(status, 1, Integer.MAX_VALUE)
+	    		|| !checkOutputPorts(status, 1, 1)) {
+	    	return status;
+	    }
 
-            checkMetadata(status, getInMetadata(), getOutMetadata(), false);
-
-            try {
-                init();
-            } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-                if(!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-                status.add(problem);
-            } finally {
-            	free();
-            }
-            
-            return status;
-        }
+//this validation is commented out, because ClusterMerge component, which is descendant of this node, does not support multiple input edges 
+//	    if (getInPorts().size() < 2) {
+//	        status.add(new ConfigurationProblem("At least 2 input ports should be defined!", Severity.WARNING, this, Priority.NORMAL));
+//	    }
 	
+	    checkMetadata(status, getInMetadata(), getOutMetadata(), false);
+	
+	    try {
+	        init();
+	    } catch (ComponentNotReadyException e) {
+	        ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+	        if(!StringUtils.isEmpty(e.getAttributeName())) {
+	            problem.setAttributeName(e.getAttributeName());
+	        }
+	        status.add(problem);
+	    } finally {
+	    	free();
+	    }
+	    
+	    return status;
+	}
+
 	@Override
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
+	/**
+	 * @return the mergeKeys
 	 */
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		// no implementation needed
+	public String[] getMergeKeys() {
+		return mergeKeys;
+	}
+
+	/**
+	 * @param mergeKeys the mergeKeys to set
+	 */
+	public void setMergeKeys(String[] mergeKeys) {
+		this.mergeKeys = mergeKeys;
 	}
 
 	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new BasicComponentTokenTracker(this);
 	}
+	
 }
 

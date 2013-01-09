@@ -162,7 +162,7 @@ public class SystemExecute extends Node{
 	private static final String XML_CHARSET_ATTRIBUTE= "charset";
 	private static final String XML_IGNORE_EXIT_VALUE_ATTRIBUTE= "ignoreExitValue";
 	
-	public static String COMPONENT_TYPE = "SYS_EXECUTE";
+	public static final String COMPONENT_TYPE = "SYS_EXECUTE";
 
 	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;

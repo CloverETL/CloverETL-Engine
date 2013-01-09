@@ -77,15 +77,15 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 
 	@Override
 	public void testGetPriority() {
-//		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.copy(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.move(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.delete(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.create(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.resolve(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.info(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.list(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.read(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(Integer.MAX_VALUE, handler.getPriority(Operation.write(FTPOperationHandler.FTP_SCHEME)));
+//		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.copy(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.move(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.delete(FTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.create(FTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.resolve(FTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.info(FTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.list(FTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.read(FTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.write(FTPOperationHandler.FTP_SCHEME)));
 	}
 
 	@Override
@@ -101,6 +101,7 @@ public class FTPOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(handler.canPerform(Operation.write(FTPOperationHandler.FTP_SCHEME)));
 	}
 	
+	@Override
 	public URI getUnreachableUri() {
 		return URI.create("ftp://badUser:badPassword@badserver/");
 	}

@@ -136,6 +136,20 @@ public class BinaryDataFormatter extends AbstractFormatter {
         return recordSize + lengthSize;
 	}
 	
+	public int write(CloverBuffer record) throws IOException {
+		int recordSize = record.remaining();
+		int lengthSize = ByteBufferUtils.lengthEncoded(recordSize);
+		if (buffer.remaining() < recordSize + lengthSize) {
+			flush();
+		}
+        ByteBufferUtils.encodeLength(buffer, recordSize);
+        buffer.put(record);
+        
+        return recordSize + lengthSize;
+	}
+
+
+	
 	@Override
 	public int writeFooter() throws IOException {
 		// no header

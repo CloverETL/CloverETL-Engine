@@ -57,7 +57,6 @@ public class PostgreConnection extends DefaultConnection {
 	 */
 	@Override
 	public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
-		logger.warn("Postgre driver doesn't support auto generated columns");
 		return super.prepareStatement(sql, columnIndexes);
 	}
 	
@@ -66,7 +65,6 @@ public class PostgreConnection extends DefaultConnection {
 	 */
 	@Override
 	public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-		logger.warn("Postgre driver doesn't support auto generated columns");
 		return super.prepareStatement(sql, columnNames);
 	}
 	

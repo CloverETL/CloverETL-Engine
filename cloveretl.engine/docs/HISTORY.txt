@@ -2,6 +2,18 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL 3-4-0-M1
+---------
+
+* Hadoop support
+	- Hadoop connection
+	- HDFS protocol for readers & writers
+	- HadoopReader & HadoopWriter
+	- Hive JDBC specific
+* CTL2 wrapper for returning capturing groups from regex
+* CTL function for writing into lookup table
+* SystemExecute - new attribute “Ignore exit value”
+* Write binary data without padding with 0
 
 REL 3-3-0
 ---------

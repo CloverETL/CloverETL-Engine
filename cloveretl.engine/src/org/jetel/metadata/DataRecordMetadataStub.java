@@ -34,6 +34,8 @@ import org.jetel.exception.ComponentNotReadyException;
  * from XML.
  */
 public class DataRecordMetadataStub {
+
+	private String metadataId;
 	
 	private IConnection connection;
     
@@ -54,6 +56,16 @@ public class DataRecordMetadataStub {
     
     public DataRecordMetadata createMetadata() throws ComponentNotReadyException, SQLException {
         connection.init();
-        return connection.createMetadata(parameters);
+        DataRecordMetadata result = connection.createMetadata(parameters);
+        result.setId(metadataId);
+        return result;
     }
+
+	/**
+	 * Sets metadata identifier which will be used for metadata created by this stub.
+	 * @param metadataID
+	 */
+	public void setId(String metadataId) {
+		this.metadataId = metadataId;
+	}
 }

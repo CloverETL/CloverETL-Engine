@@ -25,13 +25,31 @@ import java.util.Stack;
 import org.jetel.graph.runtime.CloverWorker;
 
 /**
+ * <p>
  * This class should be able to provide org.jetel.graph.Node or org.jetel.graph.TransformationGraph
  * corresponding to the current thread. Both are provided via static methods - {@link #getNode()}
  * and {@link #getGraph()}.
- *
- * This functionality can work only when all threads working with graph elements are registered 
- * in this class.
- *
+ * <p>
+ * Complete stack of contexts is managed for each thread by this {@link ContextProvider}.
+ * So registering new context ({@link #registerGraph(TransformationGraph)}
+ * or {@link #registerNode(Node)}) is just adding new context to the thread corresponding stack.
+ * The last registered context is actual and provided be {@link #getGraph()} and {@link #getNode()} methods.
+ * Calling method {@link #unregister()} just remove the top context from the stack and the former context
+ * is taken into account.
+ * <p>
+ * Example of usage:
+ * <pre>
+ * Node component = ...
+ * try {
+ *   ContextProvider.registerNode(component);
+ *   doSomeWork(component);
+ * } finally {
+ *   ContextProvider.unregister();
+ * }
+ * </pre>
+ * <p>
+ * The {@link ContextProvider} can work only when all threads working with graph elements are registered.
+ * <p>
  * For this purpose it is recommended to use CloverWorker class instead Runnable every time 
  * you want to create separate thread inside a component.
  *
@@ -63,6 +81,14 @@ public class ContextProvider {
 //    	return nodesCache.get(Thread.currentThread());
     }
 
+	/**
+	 * Returns componentId from thread context. If it's missing, returns null.
+	 */
+	public static String getComponentId() {
+		Node component = ContextProvider.getNode();
+		return component==null ? null : component.getId();
+	}
+	
 	private static Context getContext() {
 		Stack<Context> threadCache = contextCache.get(Thread.currentThread());
 		if (threadCache != null) {
@@ -87,14 +113,14 @@ public class ContextProvider {
 	}
 	
 	/**
-	 * Associates the given component with current thread.
+	 * Add new component based context to thread corresponding stack of contexts.
 	 */
 	public static synchronized void registerNode(Node node) {
 		registerContext(new Context(node, node.getGraph()));
 	}
 
 	/**
-	 * Associates the given graph with current thread.
+	 * Add new graph based context to thread corresponding stack of contexts.
 	 */
 	public static synchronized void registerGraph(TransformationGraph graph) {
 		registerContext(new Context(null, graph));

@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jetel.graph.ContextProvider;
-import org.jetel.graph.Node;
 
 /**
  * URLStreamHandler for sftp connection.
@@ -50,7 +49,7 @@ public class SFTPStreamHandler extends URLStreamHandler {
 
 	@Override
 	public URLConnection openConnection(URL url, Proxy proxy) throws IOException {
-		String nodeId = getCurrentNodeId();
+		String nodeId = ContextProvider.getComponentId();
 		SFTPConnection connection = null;
 		if (!connectionExists(url)) {
 			connection = new SFTPConnection(url, proxy, this);
@@ -88,7 +87,7 @@ public class SFTPStreamHandler extends URLStreamHandler {
 	}
 
 	private boolean connectionExists(URL url) {
-		SFTPConnection connection = pool.get(getCurrentNodeId());
+		SFTPConnection connection = pool.get(ContextProvider.getComponentId());
 		if (connection != null) {
 			URL connectionURL = connection.getURL();
 			boolean connectionExists = connectionURL.getPort() == url.getPort();
@@ -109,8 +108,4 @@ public class SFTPStreamHandler extends URLStreamHandler {
 		return false;
 	}
 
-	private String getCurrentNodeId() {
-		Node node = ContextProvider.getNode();
-		return node == null ? null : node.getId();
-	}
 }

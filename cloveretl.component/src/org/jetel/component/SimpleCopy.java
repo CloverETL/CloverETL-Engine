@@ -161,30 +161,30 @@ public class SimpleCopy extends Node {
 
 
 	/**  Description of the Method */
-        @Override
-        public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-    		super.checkConfig(status);
-   		 
-    		if(!checkInputPorts(status, 1, 1)
-    				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE, false)) {
-    			return status;
-    		}
-            checkMetadata(status, getInMetadata(), getOutMetadata(), false);
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+	 
+		if(!checkInputPorts(status, 1, 1)
+				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE, false)) {
+			return status;
+		}
+        checkMetadata(status, getInMetadata(), getOutMetadata(), false);
 
-            try {
-                init();
-            } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-                if(!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-                status.add(problem);
-            } finally {
-            	free();
+        try {
+            init();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
             }
-            
-            return status;
+            status.add(problem);
+        } finally {
+        	free();
         }
+        
+        return status;
+    }
 	
 	@Override
 	public String getType(){

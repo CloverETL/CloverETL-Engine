@@ -66,7 +66,7 @@ public class FTPOperationHandler implements IOperationHandler {
 	
 	@Override
 	public int getPriority(Operation operation) {
-		return Integer.MAX_VALUE;
+		return TOP_PRIORITY;
 	}
 
 	@Override

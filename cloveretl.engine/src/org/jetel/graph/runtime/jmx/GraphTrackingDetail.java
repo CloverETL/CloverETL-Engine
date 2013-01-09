@@ -48,6 +48,10 @@ public class GraphTrackingDetail implements GraphTracking {
 
     private Result result;
 
+    private String nodeId;
+    
+    private long runId;
+    
     private transient Result lastPhaseResult;
     
 	/**
@@ -174,6 +178,16 @@ public class GraphTrackingDetail implements GraphTracking {
 		return result;
 	}
 
+	@Override
+	public String getNodeId() {
+		return nodeId;
+	}
+	
+	@Override
+	public long getRunId() {
+		return runId;
+	}
+
 	private PhaseTrackingDetail getPhaseDetail(int phaseNum) {
 		for(PhaseTrackingDetail phaseTracking : phasesDetails) {
 			if(phaseTracking.getPhaseNum() == phaseNum) {
@@ -206,7 +220,15 @@ public class GraphTrackingDetail implements GraphTracking {
 	public void setResult(Result result) {
 		this.result = result;
 	}
+	
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
+	}
 
+	public void setRunId(long runId) {
+		this.runId = runId;
+	}
+	
 	public void setLastPhaseResult(Result lastPhaseResult) {
 		this.lastPhaseResult = lastPhaseResult;
 	}
@@ -216,6 +238,7 @@ public class GraphTrackingDetail implements GraphTracking {
 		startTime = System.currentTimeMillis();
 		
 		result = Result.RUNNING;
+		runId = getGraph().getWatchDog().getGraphRuntimeContext().getRunId();
 	}
 
 
@@ -242,6 +265,5 @@ public class GraphTrackingDetail implements GraphTracking {
 		
 		endTime = System.currentTimeMillis();
 	}
-
 
 }

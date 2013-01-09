@@ -137,6 +137,7 @@ public class AbstractOperationHandlerTest extends LocalOperationHandlerTest {
 	public void testMoveWithoutRename() throws Exception {
 		handler.getPrimitiveHandler().setUseRename(false);
 		super.testMove(); // once again without renaming
+		handler.getPrimitiveHandler().setUseRename(true);
 	}
 
 	private static class PrimitiveFileOperationHandler implements PrimitiveOperationHandler {

@@ -21,8 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -35,6 +33,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.MiscUtils;
 
 
 /**
@@ -56,7 +55,6 @@ public class Phase extends GraphElement implements Comparable {
 	 */
 	private Map<String, Node> nodes;
 	private Map<String, Edge> edges; //edges with the source component in this phase
-    private List<Node> leafNodes;
 
 	// specifies the order of this phase within graph
 	private int phaseNum;
@@ -137,9 +135,6 @@ public class Phase extends GraphElement implements Comparable {
         if(isInitialized()) return;
 		super.init();
 
-        // list of leaf nodes -will be filled later
-        leafNodes = new LinkedList<Node>();
-        
 		logger.info("[Clover] Initializing phase: " + phaseNum);
 
         //initialization of all edges
@@ -149,7 +144,7 @@ public class Phase extends GraphElement implements Comparable {
         		edge.init();
         	} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
-        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization faild.", e);
+        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization failed.", e);
         	}
         }
 		logger.debug(" all edges initialized successfully... ");
@@ -162,24 +157,20 @@ public class Phase extends GraphElement implements Comparable {
 			ContextProvider.registerNode(node);
 			try {
 				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
-                // is it a leaf node ?
-                if (node.isLeaf() || node.isPhaseLeaf()) {
-                    leafNodes.add(node);
-                }
 				node.init();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FAILED !", ex);
+				throw new ComponentNotReadyException(node, "FAILED !", ex);
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !", ex);
+				throw new ComponentNotReadyException(node, "FATAL ERROR !", ex);
 			} catch (Throwable ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !", new JetelRuntimeException(ex));
+				throw new ComponentNotReadyException(node, "FATAL ERROR !", new JetelRuntimeException(ex));
 			} finally {
 				Thread.currentThread().setContextClassLoader(formerClassLoader);
 				ContextProvider.unregister();
@@ -276,6 +267,7 @@ public class Phase extends GraphElement implements Comparable {
 		logger.debug(" post-execute nodes finalizing: ");
 		for (Node node : nodes.values()) {
 			try {
+				ContextProvider.registerNode(node);
 				node.postExecute();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
@@ -288,6 +280,8 @@ public class Phase extends GraphElement implements Comparable {
 				result = Result.ERROR;
 				failedElements.put(node, ex);
 				logger.error(node.getId() + " ...FATAL ERROR !\nReason: " + ex.getMessage(), ex);
+			} finally {
+				ContextProvider.unregister();
 			}
 		}
 		
@@ -297,11 +291,12 @@ public class Phase extends GraphElement implements Comparable {
 			logger.info("[Clover] phase: " + phaseNum + " post-execute finalization successfully.");
 		} else {
 			StringBuffer sb = new StringBuffer();
-			sb.append("[Clover] phase: ").append(phaseNum).append(" post-execute FAILED at following elements:\n");
+			sb.append("[Clover] phase: ").append(phaseNum).append(" post-execute FAILED at following elements:");
 			for (Entry<IGraphElement, Exception> element : failedElements.entrySet()) {
-				sb.append(element.getKey().getId()).append('\n').append(element.getValue());
+				sb.append('\n');
+				sb.append(element.getKey().getId()).append(": ").append(MiscUtils.exceptionChainToMessage(null, element.getValue()));
 			}
-			throw new ComponentNotReadyException(sb.toString());
+			throw new ComponentNotReadyException(this, sb.toString());
 		}
 	}
 	
@@ -378,7 +373,7 @@ public class Phase extends GraphElement implements Comparable {
      * @throws GraphConfigurationException in case node with the same ID has already
      * been registered withing graph
 	 */
-	public void addNode(Node node) throws GraphConfigurationException {
+	public void addNode(Node node) {
 		nodes.put(node.getId(), node);
         node.setPhase(this);
         node.setGraph(getGraph());
@@ -390,7 +385,7 @@ public class Phase extends GraphElement implements Comparable {
      * @param nodes
      * @throws GraphConfigurationException
      */
-    public void addNode(Node ... nodes) throws GraphConfigurationException{
+    public void addNode(Node ... nodes) {
     	for(int i=0;i<nodes.length;i++){
     		addNode(nodes[i]);
     	}
@@ -402,7 +397,7 @@ public class Phase extends GraphElement implements Comparable {
      * @param nodes
      * @throws GraphConfigurationException
      */
-    public void addAllNodes(Collection<Node> nodes) throws GraphConfigurationException{
+    public void addAllNodes(Collection<Node> nodes) {
     	for (Node node : nodes) {
     		addNode(node);
     	}
@@ -420,7 +415,6 @@ public class Phase extends GraphElement implements Comparable {
         }
     }
 
-    //TODO this method should be removed; edges in a phase are determined by a set of nodes
 	public void addEdge(Edge edge) throws GraphConfigurationException{
 		Node writer = edge.getWriter();
 		if(writer == null) {
@@ -494,9 +488,12 @@ public class Phase extends GraphElement implements Comparable {
         //free all nodes in this phase
         for(Node node : nodes.values()) {
         	try {
+    			ContextProvider.registerNode(node);
         		node.free();
         	} catch (Exception e) {
         		logger.error("Node " + node.getId() + " releasing failed.", e);
+        	} finally {
+        		ContextProvider.unregister();
         	}
         }
         
@@ -575,14 +572,6 @@ public class Phase extends GraphElement implements Comparable {
 
     public void setCheckPoint(boolean isCheckPoint) {
         this.isCheckPoint = isCheckPoint;
-    }
-
-    /**
-     * @return the leafNodes
-     * @since 10.1.2007
-     */
-    public List<Node> getLeafNodes() {
-        return leafNodes;
     }
 
 }

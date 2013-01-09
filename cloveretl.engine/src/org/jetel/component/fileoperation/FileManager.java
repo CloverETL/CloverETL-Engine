@@ -626,7 +626,7 @@ public class FileManager {
 					try {
 						ReadableContent content = handler.getInput(sourceUri, params);
 						result.add(sourceUri.toURI(), content);
-					} catch (IOException ioe) {
+					} catch (Exception ex) {
 						result.add(sourceUri.toURI(), null);
 					}
 				}
@@ -653,7 +653,7 @@ public class FileManager {
 					try {
 						WritableContent content = handler.getOutput(targetUri, params);
 						result.add(targetUri.toURI(), content);
-					} catch (IOException ioe) {
+					} catch (Exception ex) {
 						result.add(targetUri.toURI(), null);
 					}
 				}

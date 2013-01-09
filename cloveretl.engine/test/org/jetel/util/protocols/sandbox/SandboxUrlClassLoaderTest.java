@@ -59,7 +59,7 @@ public class SandboxUrlClassLoaderTest extends TestCase {
 		IAuthorityProxy proxy = new PrimitiveAuthorityProxy() {
 			
 			@Override
-			public InputStream getSandboxResourceInput(String storageCode, String path) {
+			public InputStream getSandboxResourceInput(String componentId, String storageCode, String path) {
 				File file = new File(path);
 				try {
 					return new BufferedInputStream(new FileInputStream(file));

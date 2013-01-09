@@ -32,6 +32,7 @@ import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
@@ -252,11 +253,17 @@ public class DataFormatter extends AbstractFormatter {
 					fieldBuffer.clear();
 					record.getField(i).toByteBuffer(fieldBuffer, encoder);
 					size = fieldBuffer.position();
-					if (size < fieldLengths[i] && !byteBasedFields[i]) {
-						fieldFiller.rewind();
-						fieldFiller.limit(fieldLengths[i] - size);
-						fieldBuffer.put(fieldFiller);
+					if (!byteBasedFields[i]) { //byte fields are not auto-filled
+						if (size < fieldLengths[i]) {
+							fieldFiller.rewind();
+							fieldFiller.limit(fieldLengths[i] - size);
+							fieldBuffer.put(fieldFiller);
+						}
 						size = fieldLengths[i];
+					} else {
+						if (size > fieldLengths[i]) { //byte fields are just truncated if necessary
+							size = fieldLengths[i];
+						}
 					}
 					encLen += size;
 					fieldBuffer.flip();
@@ -290,14 +297,26 @@ public class DataFormatter extends AbstractFormatter {
 	 *  Initialization of the FieldFiller buffer
 	 */
 	private void initFieldFiller() {
-		// populate fieldFiller so it can be used later when need occures
-		char[] fillerArray = new char[Defaults.Record.FIELD_INITIAL_SIZE];
-		Arrays.fill(fillerArray, DEFAULT_FILLER_CHAR);
+		// CL-2607 - minor improvement
+		// allocate fieldFiller to the maximum size of fixed-length fields
+		int maxFieldSize = Integer.MIN_VALUE;
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			DataFieldMetadata field = metadata.getField(i);
+			if (field.isFixed() && field.getSize() > maxFieldSize) {
+				maxFieldSize = field.getSize();
+			}
+		}
+		
+		if (maxFieldSize >= 0) {
+			// populate fieldFiller so it can be used later when need comes
+			char[] fillerArray = new char[maxFieldSize];
+			Arrays.fill(fillerArray, DEFAULT_FILLER_CHAR);
 
-		try {
-			fieldFiller = CloverBuffer.wrap(encoder.encode(CharBuffer.wrap(fillerArray)));
-		} catch (Exception ex) {
-			throw new RuntimeException("Failed initialization of FIELD_FILLER buffer :" + ex);
+			try {
+				fieldFiller = CloverBuffer.wrap(encoder.encode(CharBuffer.wrap(fillerArray)));
+			} catch (Exception ex) {
+				throw new RuntimeException("Failed initialization of FIELD_FILLER buffer :" + ex);
+			}
 		}
 	}
 

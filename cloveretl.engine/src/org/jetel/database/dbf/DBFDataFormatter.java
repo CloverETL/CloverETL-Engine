@@ -136,8 +136,8 @@ public class DBFDataFormatter extends AbstractFormatter {
         // create buffered input stream reader
         if (outputDataTarget == null) {
             writer = null;
-        } else if (outputDataTarget instanceof URI) {
-            writer =  new RandomAccessFile( new File((URI)outputDataTarget), FILE_ACCESS_MODE).getChannel();
+        } else if (outputDataTarget instanceof File) {
+			writer = new RandomAccessFile(((File) outputDataTarget), FILE_ACCESS_MODE).getChannel();
 		} else if (outputDataTarget instanceof FileChannel) {
 			writer = (FileChannel) outputDataTarget;
 		}
@@ -352,8 +352,8 @@ public class DBFDataFormatter extends AbstractFormatter {
 	}
 
 	@Override
-	public boolean isURITargetPreferred() {
-		return true;
+	public DataTargetType getPreferredDataTargetType() {
+		return DataTargetType.FILE;
 	}
 	
 	public void setExcludedFieldNames(String[] excludedFieldNames) {

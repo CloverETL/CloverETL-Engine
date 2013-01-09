@@ -178,7 +178,7 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 		ClassLoader formerCCL = Thread.currentThread().getContextClassLoader();
 		Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
-		IHadoopSequenceFileFormatter formatter = new HadoopSequenceFileFormatter(this.dfs, keyFieldName, valueFieldName);
+		IHadoopSequenceFileFormatter formatter = new HadoopSequenceFileFormatter(keyFieldName, valueFieldName);
 
 		Thread.currentThread().setContextClassLoader(formerCCL);
 
@@ -265,7 +265,7 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 	@Override
 	public IHadoopSequenceFileParser createParser(String keyFieldName, String valueFieldName,
 			DataRecordMetadata metadata) throws IOException {
-		return new HadoopSequenceFileParser(dfs, metadata, keyFieldName, valueFieldName);
+		return new HadoopSequenceFileParser(metadata, keyFieldName, valueFieldName);
 	}
 
 	@Override
@@ -286,5 +286,45 @@ public class HadoopConnectionInstance implements IHadoopConnection {
 	@Override
 	public Object getDFS() {
 		return dfs;
+	}
+
+	@Override
+	public void setLastModified(URI path, long lastModified) throws IOException {
+		if (dfs != null) {
+			dfs.setTimes(new Path(path), lastModified, -1);
+		} else {
+			throw new IOException("Not connected to HDFS.");
+		}
+	}
+
+	@Override
+	public HadoopFileStatus[] globStatus(String glob) throws IOException {
+		if (dfs != null) {
+			glob = glob.replace("\\", "%25");
+			Path path = new Path(glob);
+			
+			FileStatus[] status = dfs.globStatus(path);
+			if (status == null) {
+				return null;
+			}
+			HadoopFileStatus[] hStatus = new HadoopFileStatus[status.length];
+			for (int i = 0; i < status.length; i++) {
+				hStatus[i] = new HadoopFileStatus(status[i].getPath().toUri(), status[i].getLen(), status[i].isDir(),
+						status[i].getModificationTime());
+			}
+			return hStatus;
+
+		} else {
+			throw new IOException("Not connected to HDFS.");
+		}
+	}
+
+	@Override
+	public boolean createNewFile(URI path) throws IOException {
+		if (dfs != null) {
+			return dfs.createNewFile(new Path(path));
+		} else {
+			throw new IOException("Not connected to HDFS.");
+		}
 	}
 }

@@ -24,6 +24,16 @@
      <Match>
        <Class name="~org\.jetel\.interpreter\.TransformLangParser[^.]*" />
      </Match>
+     
+     <Match>
+       <Package name="~com\.google.*" />
+     </Match>
+     <Match>
+       <Package name="~org\.apache.*" />
+     </Match>
+     <Match>
+       <Package name="~org\.slf4j.*" />
+     </Match>
 
      <Match>
      	<Bug code="PZLA" />

@@ -156,6 +156,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assumeTrue(manager.create(relativeURI("samefile/f.tmp;samefile/dir/"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("nonexisting/file.tmp;nonexisting/dir/content.tmp"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("into-itself/srcdir/subdir/file.tmp"), new CreateParameters().setMakeParents(true)).success());
+		assumeTrue(manager.create(relativeURI("normalization/file.tmp"), new CreateParameters().setMakeParents(true)).success());
 		
 		CloverURI source;
 		CloverURI target;
@@ -366,6 +367,14 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertFalse(manager.copy(source, target, params).success());
 			assertFalse(manager.exists(target));
 		}
+
+		{
+			String dir = "normalization/";
+			source = relativeURI(dir, "././file.tmp");
+			target = relativeURI(dir, "./../normalization/copy.tmp");
+			assertTrue(manager.copy(source, target).success());
+			assertTrue(manager.isFile(relativeURI(dir, "copy.tmp")));
+		}
 	}
 	
 	public void testSpecialCharacters() throws Exception {
@@ -482,6 +491,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assumeTrue(manager.create(relativeURI("u.tmp")).success());
 		assumeTrue(manager.create(relativeURI("samefile/f.tmp;samefile/dir/"), new CreateParameters().setMakeParents(true)).success());
 		assumeTrue(manager.create(relativeURI("into-itself/srcdir/subdir/file.tmp"), new CreateParameters().setMakeParents(true)).success());
+		assumeTrue(manager.create(relativeURI("normalization/file.tmp"), new CreateParameters().setMakeParents(true)).success());
 		
 		CloverURI source;
 		CloverURI target;
@@ -729,6 +739,14 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertFalse(manager.move(source, target).success());
 			assertFalse(manager.exists(target));
 		}
+
+		{
+			String dir = "normalization/";
+			source = relativeURI(dir, "././file.tmp");
+			target = relativeURI(dir, "./../normalization/moved.tmp");
+			assertTrue(manager.copy(source, target).success());
+			assertTrue(manager.isFile(relativeURI(dir, "moved.tmp")));
+		}
 	}
 	
 	protected String read(ReadableByteChannel channel) {
@@ -784,6 +802,17 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		for (String path: texts.keySet()) {
 			channel = manager.getInput(relativeURI(path)).channel();
 			assertEquals(texts.get(path), read(channel));
+		}
+		
+		{
+			String[] normalization = new String[] {
+					"srcdir/./file.tmp",
+					"srcdir/../srcdir/file.tmp"
+			};
+			for (String path: normalization) {
+				channel = manager.getInput(relativeURI(path)).channel();
+				assertEquals(texts.get(URI.create(path).normalize().toString()), read(channel));
+			}
 		}
 		
 		{
@@ -853,6 +882,17 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			uri = relativeURI(path);
 			write(manager.getOutput(uri).channel(), texts.get(path));
 			assertEquals(texts.get(path), read(manager.getInput(uri).channel()));
+		}
+		
+		{
+			String[] normalization = {"srcdir/./normalization1.tmp", "srcdir/../srcdir/normalization2.tmp"};
+			String content = "some content";
+			
+			for (String path: normalization) {
+				uri = relativeURI(path);
+				write(manager.getOutput(uri).channel(), content);
+				assertEquals(content, read(manager.getInput(relativeURI(URI.create(path).normalize().toString())).channel()));
+			}
 		}
 		
 		{
@@ -994,6 +1034,22 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			assertFalse(manager.delete(relativeURI(dir, "file/")).success());
 			assertTrue(manager.isFile(uri));
 		}
+
+		{
+			String dir = "normalization/";
+			
+			uri = relativeURI(dir, "file.tmp");
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			assertTrue(manager.isFile(uri));
+			assertTrue(manager.delete(relativeURI(dir, "././file.tmp")).success());
+			assertFalse(manager.exists(uri));
+
+			uri = relativeURI(dir, "dir/");
+			assertTrue(manager.create(uri, new CreateParameters().setMakeParents(true)).success());
+			assertTrue(manager.isDirectory(uri));
+			assertTrue(manager.delete(relativeURI(dir, "dir/../dir"), new DeleteParameters().setRecursive(true)).success());
+			assertFalse(manager.exists(uri));
+		}
 	}
 
 	public void testResolve() throws Exception {
@@ -1017,6 +1073,10 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertTrue(result.success());
 		assertEquals(6, result.successCount());
 		
+		result = manager.resolve(relativeURI("./e??ipse/eclipse*.tmp"));
+		System.out.println(result);
+		assertTrue(result.success());
+		assertEquals(6, result.successCount());
 		
 		result = manager.resolve(relativeURI("*\\ec?ipse-?.?\\eclipse.exe"));
 		System.out.println(result);
@@ -1124,6 +1184,21 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		List<Info> result;
 
 		result = manager.list(relativeURI("dir1")).getResult();
+		printInfo(baseUri.resolve("dir1"), result);
+		assertEquals("Different list result", new HashSet<String>(Arrays.asList("eclipse/;topdir/".split(";"))), new HashSet<String>(getRelativePaths(baseUri.resolve("dir1"), result)));
+		for (Info info: result) {
+			if (info.getName().equals("eclipse") 
+					|| info.getName().equals("topdir")
+					|| info.getName().equals("subdir")) {
+				assertTrue(String.format("%s is not a directory", info.getURI()), info.isDirectory());
+				assertFalse(String.format("%s should not be a file", info.getURI()), info.isFile());
+			} else {
+				assertTrue(String.format("%s is not a file", info.getURI()), info.isFile());
+				assertFalse(String.format("%s should not be a directory", info.getURI()), info.isDirectory());
+			}
+		}
+		
+		result = manager.list(relativeURI("./dir1/../dir1")).getResult();
 		printInfo(baseUri.resolve("dir1"), result);
 		assertEquals("Different list result", new HashSet<String>(Arrays.asList("eclipse/;topdir/".split(";"))), new HashSet<String>(getRelativePaths(baseUri.resolve("dir1"), result)));
 		for (Info info: result) {
@@ -1262,6 +1337,20 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			info = manager.info(uri);
 			assertTrue(String.format("%s is not a directory", uri), info.isDirectory());
 			assertEquals(dirName, info.getName());
+		}
+		
+		{
+			String uglyString = "topdir3/./subdir/../subdir/subsubdir/file";
+			URI uglyUri = URI.create(uglyString);
+			CloverURI ugly = relativeURI(uglyUri.toString());
+			CloverURI nice = relativeURI(uglyUri.normalize().toString());
+			
+			System.out.println(ugly.getAbsoluteURI());
+			assertFalse(String.format("%s already exists", nice), manager.exists(nice));
+			assertFalse(String.format("%s already exists", ugly), manager.exists(ugly));
+			assertTrue(String.format("Failed to create %s", ugly), manager.create(ugly, new CreateParameters().setMakeParents(true)).success());
+			assertTrue(String.format("%s is not a file", ugly), manager.isFile(ugly));
+			assertTrue(String.format("%s is not a file", nice), manager.isFile(nice));
 		}
 
 	}

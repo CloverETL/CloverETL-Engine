@@ -46,7 +46,7 @@ public class ConcurrentOutputPort implements OutputPortDirect {
 	}
 
 	@Override
-	public void close() throws InterruptedException, IOException {
+	public synchronized void close() throws InterruptedException, IOException {
 		outputPort.close();
 	}
 
@@ -56,12 +56,12 @@ public class ConcurrentOutputPort implements OutputPortDirect {
 	}
 
 	@Override
-	public void eof() throws InterruptedException, IOException {
+	public synchronized void eof() throws InterruptedException, IOException {
 		outputPort.eof();
 	}
 
 	@Override
-	public long getByteCounter() {
+	public synchronized long getByteCounter() {
 		return outputPort.getByteCounter();
 	}
 
@@ -71,17 +71,17 @@ public class ConcurrentOutputPort implements OutputPortDirect {
 	}
 
 	@Override
-	public long getOutputByteCounter() {
+	public synchronized long getOutputByteCounter() {
 		return outputPort.getOutputByteCounter();
 	}
 
 	@Override
-	public int getOutputPortNumber() {
+	public synchronized int getOutputPortNumber() {
 		return outputPort.getOutputPortNumber();
 	}
 
 	@Override
-	public int getOutputRecordCounter() {
+	public synchronized int getOutputRecordCounter() {
 		return outputPort.getOutputRecordCounter();
 	}
 
@@ -91,12 +91,12 @@ public class ConcurrentOutputPort implements OutputPortDirect {
 	}
 
 	@Override
-	public int getRecordCounter() {
+	public synchronized int getRecordCounter() {
 		return outputPort.getRecordCounter();
 	}
 
 	@Override
-	public void open() {
+	public synchronized void open() {
 		outputPort.open();
 	}
 
@@ -117,7 +117,7 @@ public class ConcurrentOutputPort implements OutputPortDirect {
 
 	@Override
 	@Deprecated
-	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	public synchronized void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
 		throw new UnsupportedOperationException();
 	}
 	

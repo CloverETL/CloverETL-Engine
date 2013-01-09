@@ -52,7 +52,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 			try{
 				final URI inputURI = URI.create(input);
 
-				final String hadoopConnName = inputURI.getHost();
+				final String hadoopConnName = inputURI.getAuthority();
 
 				TransformationGraph graph=ContextProvider.getGraph();
 				if (graph==null){
@@ -98,7 +98,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 			try{
 				final URI inputURI = URI.create(input);
 
-				final String hadoopConnName = inputURI.getHost();
+				final String hadoopConnName = inputURI.getAuthority();
 				
 				TransformationGraph graph=ContextProvider.getGraph();
 				if (graph==null){
@@ -180,6 +180,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 			return HadoopPathResolver.this.getInputStream(null, this.url.toString());		
 		}
 		
+		@Override
 		public OutputStream getOutputStream() throws IOException{
 			return HadoopPathResolver.this.getOutputStream(null, this.url.toString(), false, 0);
 		}
@@ -199,7 +200,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 			try{
 				final URI inputURI = URI.create(fileURL);
 
-				final String hadoopConnName = inputURI.getHost();
+				final String hadoopConnName = inputURI.getAuthority();
 
 				TransformationGraph graph=ContextProvider.getGraph();
 				if (graph==null){
