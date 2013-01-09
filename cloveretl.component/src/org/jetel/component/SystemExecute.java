@@ -331,6 +331,7 @@ public class SystemExecute extends Node{
 
 		boolean ok = true;
 		Process process = processBuilder.start();
+		try {
 		//get process input and output streams
 		BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
 		BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
@@ -496,6 +497,12 @@ public class SystemExecute extends Node{
 				logger.error("Exception in thread reading std-out of executed system process", getData.getResultException());
 			}
 			throw new JetelException(resultMsg);
+		}
+		} finally {
+			//this should be part of #postExecute() method, but the method is not invoked for interrupted graphs
+			if (process != null) {
+				process.destroy();
+	}
 		}
 	}
 	

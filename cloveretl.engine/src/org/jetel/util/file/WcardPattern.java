@@ -167,7 +167,7 @@ public class WcardPattern {
 		filePat.setLength(0);
 
 		File f = new File(pat);
-		String parent = f.getParent();
+		String parent = FileUtils.normalizeFilePath(f.getParent());
 		dir.append(StringUtils.isEmpty(parent) ? "." : parent); // CLD-4114: When parent == null, dir would be "null"
 		filePat.append(f.getName());
 	}
