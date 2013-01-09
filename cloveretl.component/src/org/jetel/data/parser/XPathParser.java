@@ -431,9 +431,6 @@ public class XPathParser extends AbstractParser {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		try {
-			// parse xml mapping
-			xpathContext = parseXPath(xpathDocument);
-			
 			// create and init factory
 		    SAXParserFactory factory = SAXParserFactory.newInstance();
 			initXmlFeatures(factory);
@@ -644,6 +641,12 @@ public class XPathParser extends AbstractParser {
 
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
+		try {
+			// parse xml mapping
+			xpathContext = parseXPath(xpathDocument);
+		} catch (Exception ex) {
+			throw new ComponentNotReadyException(ex);
+		}
 	}
 
 	@Override
