@@ -53,6 +53,8 @@ import org.jetel.util.crypto.Digest;
 import org.jetel.util.crypto.Digest.DigestType;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
+import org.joda.time.DateTime;
+import org.joda.time.Years;
 
 public abstract class CompilerTestCase extends CloverTestCase {
 
@@ -3292,12 +3294,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_datelib_dateDiff() {
 		doCompile("test_datelib_dateDiff");
-		Calendar cal = Calendar.getInstance();
 		
-		cal.setTime(BORN_VALUE);
-		long diffYears = cal.get(Calendar.YEAR);
-		cal.setTime(new Date());
-		diffYears -= cal.get(Calendar.YEAR);
+		long diffYears = Years.yearsBetween(new DateTime(), new DateTime(BORN_VALUE)).getYears();
 		check("ddiff", diffYears);
 		
 		long[] results = {1, 12, 52, 365, 8760, 525600, 31536000, 31536000000L};
