@@ -1190,8 +1190,8 @@ public class HttpConnector extends Node {
 			configuration.setTarget(target);
 			configuration.setProxy(proxy);
 			configuration.setContent(content);
-			configuration.setParameters(parameters);
-			configuration.setMultipartEntities(multipartEntities);
+			configuration.setParameters(new LinkedHashMap<String, String>(parameters));
+			configuration.setMultipartEntities(new LinkedHashMap<String, String>(multipartEntities));
 			
 			configuration.setProxyURL(proxyURL);
 			configuration.setTargetURL(targetURL);
