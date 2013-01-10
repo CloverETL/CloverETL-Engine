@@ -31,7 +31,10 @@ public class ClusterUtils {
 	
 	public static final String CLUSTER_SIMPLE_GATHER_TYPE = "CLUSTER_SIMPLE_GATHER";
 	public static final String CLUSTER_MERGE_TYPE = "CLUSTER_MERGE";
-	
+
+	public static final String CLUSTER_REPARTITION_TYPE = "CLUSTER_REPARTITION";
+	public static final String CLUSTER_REGATHER_TYPE = "CLUSTER_REGATHER";
+
 	public static final String REMOTE_EDGE_DATA_TRANSMITTER_TYPE = "REMOTE_EDGE_DATA_TRANSMITTER";
 	public static final String REMOTE_EDGE_DATA_RECEIVER_TYPE = "REMOTE_EDGE_DATA_RECEIVER";
 	
@@ -53,6 +56,24 @@ public class ClusterUtils {
 	public static boolean isClusterPartition(String componentType) {
 		return componentType.equals(CLUSTER_PARTITION_TYPE) ||
 				componentType.equals(CLUSTER_LOAD_BALANCING_PARTITION_TYPE);
+	}
+
+	/**
+	 * Check whether the given component type matches with cluster partitioner component.
+	 * @param componentType
+	 * @return true if the given component is a cluster partitioner
+	 */
+	public static boolean isClusterRepartition(String componentType) {
+		return componentType.equals(CLUSTER_REPARTITION_TYPE);
+	}
+
+	/**
+	 * Check whether the given component type matches cluster regather component.
+	 * @param componentType
+	 * @return true if the given component is a cluster gather
+	 */
+	public static boolean isClusterRegather(String componentType) {
+		return componentType.equals(CLUSTER_REGATHER_TYPE);
 	}
 
 	/**

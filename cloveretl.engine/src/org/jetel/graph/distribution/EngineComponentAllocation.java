@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.string.StringUtils;
 
 
@@ -40,6 +41,8 @@ public class EngineComponentAllocation {
 	public static final String CLUSTER_NODES_PREFIX = "clusterNodes:";
 	
 	public static final String COMPONENT_PREFIX = "component:";
+
+	public static final String INFERRED_FROM_NEIGHBOURS_PREFIX = "neighbours:";
 	
 	private static final EngineComponentAllocation INFERED_FROM_NEIGHBOURS;
 	
@@ -107,6 +110,8 @@ public class EngineComponentAllocation {
 				throw new JetelException("Ivalid component allocation format: " + rawAllocation + ".");
 			}
 			return EngineComponentAllocation.createBasedOnClusterNodes(Arrays.asList(clusterNodeIds.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX)));
+		} else if (rawAllocation.startsWith(INFERRED_FROM_NEIGHBOURS_PREFIX)) {
+			return INFERED_FROM_NEIGHBOURS;
 		}
 		throw new JetelException("Ivalid component allocation format: " + rawAllocation);
 	}
@@ -166,7 +171,6 @@ public class EngineComponentAllocation {
 	
 	@Override
 	public String toString() {
-		
 		if (isInferedFromSandbox()) {
 			return SANDBOX_PREFIX + sandboxId;
 		}
@@ -186,6 +190,18 @@ public class EngineComponentAllocation {
 		if (isInferedFromComponent()) {
 			return COMPONENT_PREFIX + componentId;
 		}
-		return super.toString();
+		if (isInferedFromNeighbours()) {
+			return INFERRED_FROM_NEIGHBOURS_PREFIX;
+		}
+		throw new JetelRuntimeException("Unexpected component allocation.");
 	}
+	
+	public EngineComponentAllocation duplicate() {
+		try {
+			return EngineComponentAllocation.fromString(this.toString());
+		} catch (JetelException e) {
+			throw new JetelRuntimeException(e);
+		}
+	}
+	
 }
