@@ -1102,8 +1102,8 @@ public class HttpConnector extends Node {
 	protected static class HTTPRequestConfiguration {
 		private String target;
 		private String proxy;
-		private Map<String, String> parameters = new HashMap<String, String>();
-		private Map<String, String> multipartEntities = new HashMap<String, String>();
+		private Map<String, String> parameters = new LinkedHashMap<String, String>();
+		private Map<String, String> multipartEntities = new LinkedHashMap<String, String>();
 		private String content;
 		
 		private URL targetURL;
@@ -1192,8 +1192,8 @@ public class HttpConnector extends Node {
 			configuration.setTarget(target);
 			configuration.setProxy(proxy);
 			configuration.setContent(content);
-			configuration.setParameters(new HashMap<String, String>(parameters));
-			configuration.setMultipartEntities(new HashMap<String, String>(multipartEntities));
+			configuration.setParameters(new LinkedHashMap<String, String>(parameters));
+			configuration.setMultipartEntities(new LinkedHashMap<String, String>(multipartEntities));
 			
 			configuration.setProxyURL(proxyURL);
 			configuration.setTargetURL(targetURL);
@@ -2836,7 +2836,7 @@ public class HttpConnector extends Node {
 	 * @return a map representing request parameters.
 	 */
 	private Map<String, String> prepareRequestParameters(Set<String> fieldsToIgnore) {
-		Map<String, String> parameters = new HashMap<String, String>();
+		Map<String, String> parameters = new LinkedHashMap<String, String>();
 		
 		//there are some input fields which should be added to the request
 		if (addInputFieldsAsParametersToUse) {
@@ -2863,7 +2863,7 @@ public class HttpConnector extends Node {
 	 * @return a map representing multi-part entities.
 	 */
 	private Map<String, String> prepareMultipartEntities() {
-		Map<String, String> multipartEntitiesMap = new HashMap<String, String>();
+		Map<String, String> multipartEntitiesMap = new LinkedHashMap<String, String>();
 
 		//parse multipart entities
 		if (multipartEntities != null) {
