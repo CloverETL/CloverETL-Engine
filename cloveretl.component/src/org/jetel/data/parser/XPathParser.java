@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -115,7 +114,7 @@ public class XPathParser extends AbstractParser {
 	private XMLReader reader;
 	private String xmlFeatures;
 
-	private List<XPathEvaluator> xPathEvaluators = new ArrayList<XPathEvaluator>();
+	private XPathEvaluator xPathEvaluator = new XPathEvaluator();
 
 	private SupportedDataModels dataModel = SupportedDataModels.CLOVER_ETL;
 	
@@ -367,14 +366,12 @@ public class XPathParser extends AbstractParser {
 	}
 	
 	private XPathEvaluator getXPathEvaluator(Map<String, String> namespacePaths, String defaultNamespace) {
-		XPathEvaluator evaluator = new XPathEvaluator();
 		if (defaultNamespace != null) {
-			evaluator.setDefaultElementNamespace(defaultNamespace);
+			xPathEvaluator.setDefaultElementNamespace(defaultNamespace);
 		}
-		evaluator.setNamespaceResolver(getNamespacesResolver(namespacePaths));
-		xPathEvaluators.add(evaluator);
+		xPathEvaluator.setNamespaceResolver(getNamespacesResolver(namespacePaths));
 		
-		return evaluator;
+		return xPathEvaluator;
 	}
 	
 	private NamespaceResolver getNamespacesResolver(Map<String, String> namespacePaths) {
@@ -458,9 +455,7 @@ public class XPathParser extends AbstractParser {
 					}
 				};
 				
-				for (XPathEvaluator xPathEvaluator : xPathEvaluators) {
-					xPathEvaluator.getConfiguration().setErrorListener(errorListener);
-				}
+				xPathEvaluator.getConfiguration().setErrorListener(errorListener);
 		    }
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
