@@ -460,7 +460,7 @@ public final class TransformationGraph extends GraphElement {
 	        try {
 				TransformationAnalyser.analyseGraph(this);
 				for (Edge edge : getEdges().values()) {
-					logger.trace("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
+					logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
 				}
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Graph analyse failed.", e);
