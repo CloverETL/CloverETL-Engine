@@ -136,6 +136,7 @@ public class GraphRuntimeContext {
 		ret.clusterNodeId = clusterNodeId;
 		ret.classLoader = getClassLoader();
 		ret.jobType = getJobType();
+		ret.jobUrl = getJobUrl();
 		ret.authorityProxy = getAuthorityProxy();
 		
 		return ret;
@@ -163,7 +164,8 @@ public class GraphRuntimeContext {
 		prop.setProperty("executionGroup", String.valueOf(getExecutionGroup()));
 		prop.setProperty("deamon", Boolean.toString(isDaemon()));
 		prop.setProperty("clusterNodeId", String.valueOf(getClusterNodeId()));
-		prop.setProperty("graphNature", String.valueOf(getJobType()));
+		prop.setProperty("jobType", String.valueOf(getJobType()));
+		prop.setProperty("jobUrl", String.valueOf(getJobUrl()));
 		
 		return prop;
 	}
