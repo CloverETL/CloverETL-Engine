@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -459,4 +460,8 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		throw new UnsupportedOperationException("Profiler job execution is available only in CloverETL Server environment");
 	}
 	
+	@Override
+	public File getLocalFile(URI uri) {
+		return new File(uri);
+	}
 }

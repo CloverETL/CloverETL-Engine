@@ -18,8 +18,12 @@
  */
 package org.jetel.util.file;
 
+import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
+
+import org.jetel.graph.runtime.IAuthorityProxy;
 
 /**
  * Utility class for working with sandbox URLs.
@@ -125,6 +129,30 @@ public final class SandboxUrlUtils {
 	 */
 	public static URL getSandboxUrl(String storageCode, String relativePath) throws MalformedURLException {
 		return FileUtils.getFileURL(FileUtils.appendSlash(SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + storageCode), (relativePath != null ? relativePath : ""));
+	}
+	
+	/**
+	 * Answers file:// URL corresponding to the given sandbox:// URL.
+	 * @param sandboxUrl
+	 * @param authorityProxy
+	 * @return resolved local URL or <code>null</code> if referenced resource is not available locally
+	 */
+	public static URL toLocalFileUrl(URL sandboxUrl, IAuthorityProxy authorityProxy) {
+		
+		if (!isSandboxUrl(sandboxUrl)) {
+			return null; // or throw an exception?
+		}
+		File resolved = null;
+		try {
+			resolved = authorityProxy.getLocalFile(sandboxUrl.toURI());
+		} catch (URISyntaxException e) {
+			return null;
+		}
+		try {
+			return resolved == null ? null : resolved.toURI().toURL(); // adds "/" automatically as the last character for directories
+		} catch (MalformedURLException e) {
+			return null;
+		}
 	}
 
 	private SandboxUrlUtils() {

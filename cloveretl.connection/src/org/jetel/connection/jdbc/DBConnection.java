@@ -56,9 +56,11 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -884,7 +886,21 @@ public class DBConnection extends GraphElement implements IConnection {
 	    	for(int i = 0; i < libraryPaths.length; i++) {
 	            try {
 	                driverLibraryURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, libraryPaths[i]);
-	            } catch (MalformedURLException ex1) {
+	                
+	                if (SandboxUrlUtils.isSandboxUrl(driverLibraryURLs[i])) {
+	                	/*
+	                	 * convert sandbox URL's for URLClassLoader can handle only certain types of URL's (file, http)
+	                	 * despite its name
+	                	 */
+	                	IAuthorityProxy proxy = IAuthorityProxy.getAuthorityProxy(getGraph());
+	                	URL localUrl = SandboxUrlUtils.toLocalFileUrl(driverLibraryURLs[i], proxy);
+	                	if (localUrl == null) {
+	                		throw new ComponentNotReadyException("Could not resolve sandbox URL to local resource: " + driverLibraryURLs[i]);
+	                	} else {
+	                		driverLibraryURLs[i] = localUrl;
+	                	}
+	                }
+	            } catch (MalformedURLException ex1) { 
 	                throw new ComponentNotReadyException("Can not create JDBC connection '" + getId() + "'. Malformed URL: " + ex1.getMessage(), ex1);
 	            }
 	        }
