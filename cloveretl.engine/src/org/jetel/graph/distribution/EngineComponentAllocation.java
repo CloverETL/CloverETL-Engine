@@ -43,6 +43,8 @@ public class EngineComponentAllocation {
 	public static final String COMPONENT_PREFIX = "component:";
 
 	public static final String INFERRED_FROM_NEIGHBOURS_PREFIX = "neighbours:";
+
+	public static final String NUMBER_PREFIX = "number:";
 	
 	private static final EngineComponentAllocation INFERED_FROM_NEIGHBOURS;
 	
@@ -57,8 +59,9 @@ public class EngineComponentAllocation {
 	
 	private String componentId;
 	
-	//is not supported yet
 	private List<String> clusterNodes;
+
+	private Integer number;
 	
 	public static EngineComponentAllocation createBasedOnNeighbours() {
 		return INFERED_FROM_NEIGHBOURS;
@@ -91,6 +94,15 @@ public class EngineComponentAllocation {
 		return componentAllocation;
 	}
 
+	public static EngineComponentAllocation createBasedOnNumber(int number) {
+		if (number <= 0) {
+			throw new IllegalArgumentException("Number of workers has to be positive.");
+		}
+		EngineComponentAllocation componentAllocation = new EngineComponentAllocation();
+		componentAllocation.setNumber(number);
+		return componentAllocation;
+	}
+
 	public static EngineComponentAllocation fromString(String rawAllocation) throws JetelException {
 		if (rawAllocation.startsWith(SANDBOX_PREFIX)) {
 			String sandboxId = rawAllocation.substring(SANDBOX_PREFIX.length());
@@ -110,6 +122,14 @@ public class EngineComponentAllocation {
 				throw new JetelException("Ivalid component allocation format: " + rawAllocation + ".");
 			}
 			return EngineComponentAllocation.createBasedOnClusterNodes(Arrays.asList(clusterNodeIds.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX)));
+		} else if (rawAllocation.startsWith(NUMBER_PREFIX)) {
+			String numberStr = rawAllocation.substring(NUMBER_PREFIX.length());
+			try {
+				int number = Integer.valueOf(numberStr);
+				return EngineComponentAllocation.createBasedOnNumber(number);
+			} catch (NumberFormatException e) {
+				throw new JetelException("Ivalid component allocation format: " + rawAllocation + ".");
+			}
 		} else if (rawAllocation.startsWith(INFERRED_FROM_NEIGHBOURS_PREFIX)) {
 			return INFERED_FROM_NEIGHBOURS;
 		}
@@ -137,6 +157,10 @@ public class EngineComponentAllocation {
 	
 	public boolean isInferedFromClusterNodes() {
 		return clusterNodes != null;
+	}
+
+	public boolean isInferedFromNumber() {
+		return number != null;
 	}
 
 	//GETTERS & SETTERS
@@ -168,7 +192,15 @@ public class EngineComponentAllocation {
 	private void setClusterNodes(List<String> clusterNodes) {
 		this.clusterNodes = clusterNodes;
 	}
+
+	public Integer getNumber() {
+		return number;
+	}
 	
+	private void setNumber(int number) {
+		this.number = number;
+	}
+
 	@Override
 	public String toString() {
 		if (isInferedFromSandbox()) {
@@ -190,6 +222,11 @@ public class EngineComponentAllocation {
 		if (isInferedFromComponent()) {
 			return COMPONENT_PREFIX + componentId;
 		}
+
+		if (isInferedFromNumber()) {
+			return NUMBER_PREFIX + number;
+		}
+		
 		if (isInferedFromNeighbours()) {
 			return INFERRED_FROM_NEIGHBOURS_PREFIX;
 		}

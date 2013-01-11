@@ -34,7 +34,7 @@ import org.jetel.graph.TransformationGraph;
  *
  * @created 20.12.2012
  */
-public class TransformationAnalyser {
+public class GraphAnalyser {
 
 	public static void analyseGraph(TransformationGraph graph) {
 		//first of all find the phase edges

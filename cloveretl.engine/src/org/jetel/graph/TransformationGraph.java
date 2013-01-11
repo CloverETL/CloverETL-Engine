@@ -44,7 +44,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.graph.analyse.TransformationAnalyser;
+import org.jetel.graph.analyse.GraphAnalyser;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -458,7 +458,7 @@ public final class TransformationGraph extends GraphElement {
 
 	        // analyze graph's topology
 	        try {
-				TransformationAnalyser.analyseGraph(this);
+				GraphAnalyser.analyseGraph(this);
 				for (Edge edge : getEdges().values()) {
 					logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
 				}

@@ -37,7 +37,7 @@ import org.jetel.test.CloverTestCase;
  *
  * @created 2.1.2013
  */
-public class TransformationAnalyserTest  extends CloverTestCase {
+public class GraphAnalyserTest  extends CloverTestCase {
 
 	@Override
 	protected void setUp() { 
@@ -48,7 +48,7 @@ public class TransformationAnalyserTest  extends CloverTestCase {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
 		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_01.grf"), runtimeContext);
-		TransformationAnalyser.analyseGraph(graph);
+		GraphAnalyser.analyseGraph(graph);
 		assertEquals(EdgeTypeEnum.BUFFERED, graph.getEdges().get("Edge1").getEdgeType());
 		assertEquals(EdgeTypeEnum.BUFFERED, graph.getEdges().get("Edge2").getEdgeType());
 		assertEquals(EdgeTypeEnum.DIRECT, graph.getEdges().get("Edge0").getEdgeType());
@@ -59,7 +59,7 @@ public class TransformationAnalyserTest  extends CloverTestCase {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
 		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_02.grf"), runtimeContext);
-		TransformationAnalyser.analyseGraph(graph);
+		GraphAnalyser.analyseGraph(graph);
 		assertEquals(EdgeTypeEnum.BUFFERED, graph.getEdges().get("Edge0").getEdgeType());
 		assertEquals(EdgeTypeEnum.BUFFERED, graph.getEdges().get("Edge3").getEdgeType());
 	}
@@ -68,7 +68,7 @@ public class TransformationAnalyserTest  extends CloverTestCase {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
 		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_03.grf"), runtimeContext);
-		TransformationAnalyser.analyseGraph(graph);
+		GraphAnalyser.analyseGraph(graph);
 		assertEquals(EdgeTypeEnum.BUFFERED, graph.getEdges().get("Edge1").getEdgeType());
 		assertEquals(EdgeTypeEnum.BUFFERED, graph.getEdges().get("Edge2").getEdgeType());
 		assertEquals(EdgeTypeEnum.BUFFERED, graph.getEdges().get("Edge4").getEdgeType());
@@ -80,7 +80,7 @@ public class TransformationAnalyserTest  extends CloverTestCase {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
 		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_04.grf"), runtimeContext);
-		TransformationAnalyser.analyseGraph(graph);
+		GraphAnalyser.analyseGraph(graph);
 		assertEquals(EdgeTypeEnum.PHASE_CONNECTION, graph.getEdges().get("Edge1").getEdgeType());
 		assertEquals(EdgeTypeEnum.PHASE_CONNECTION, graph.getEdges().get("Edge2").getEdgeType());
 		assertEquals(EdgeTypeEnum.PHASE_CONNECTION, graph.getEdges().get("Edge4").getEdgeType());
@@ -92,7 +92,7 @@ public class TransformationAnalyserTest  extends CloverTestCase {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
 		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_05.grf"), runtimeContext);
-		TransformationAnalyser.analyseGraph(graph);
+		GraphAnalyser.analyseGraph(graph);
 		assertEquals(EdgeTypeEnum.BUFFERED, graph.getEdges().get("Edge6").getEdgeType());
 		assertEquals(EdgeTypeEnum.BUFFERED, graph.getEdges().get("Edge7").getEdgeType());
 		assertEquals(EdgeTypeEnum.DIRECT, graph.getEdges().get("Edge4").getEdgeType());
@@ -104,7 +104,7 @@ public class TransformationAnalyserTest  extends CloverTestCase {
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
 		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_06.grf"), runtimeContext);
 		try {
-			TransformationAnalyser.analyseGraph(graph);
+			GraphAnalyser.analyseGraph(graph);
 			assertTrue(false);
 		} catch (Exception e) {
 			//OK
