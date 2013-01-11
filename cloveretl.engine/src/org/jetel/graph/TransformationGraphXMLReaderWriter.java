@@ -530,7 +530,7 @@ public class TransformationGraphXMLReaderWriter {
                         && !nodeEnabled.equalsIgnoreCase(EnabledEnum.PASS_THROUGH.toString())) {
 				    graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i));
                 } else {
-                    graphNode = new SimpleNode(nodeID);
+                    graphNode = new SimpleNode(nodeID, nodeType);
                 }
 				if (graphNode != null) {
                     phase.addNode(graphNode);
@@ -1035,13 +1035,15 @@ public class TransformationGraphXMLReaderWriter {
      * by reading graph from xml. In next graph processing will be this nodes removed from graph.
      */
     private static class SimpleNode extends Node {
-
-        public SimpleNode(String id) {
+    	private String type;
+    	
+        public SimpleNode(String id, String type) {
             super(id);
+            this.type = type;
         }
 
         @Override
-		public String getType() { return null; }
+		public String getType() { return type; }
 
         @Override
         public ConfigurationStatus checkConfig(ConfigurationStatus status) { return status; }
