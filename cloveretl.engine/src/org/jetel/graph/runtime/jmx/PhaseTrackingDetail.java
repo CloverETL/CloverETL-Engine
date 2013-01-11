@@ -67,7 +67,8 @@ public class PhaseTrackingDetail implements PhaseTracking {
 		
 		List<NodeTrackingDetail> details = new ArrayList<NodeTrackingDetail>();
 		for (Node node : TransformationGraphAnalyzer.nodesTopologicalSorting(new ArrayList<Node>(phase.getNodes().values()))) {
-			if (!ClusterUtils.isRemoteEdgeComponent(node.getType())) {
+			if (!ClusterUtils.isRemoteEdgeComponent(node.getType())
+					&& !ClusterUtils.isClusterRegather(node.getType())) {
 				details.add(new NodeTrackingDetail(this, node));
 			}
 		}
