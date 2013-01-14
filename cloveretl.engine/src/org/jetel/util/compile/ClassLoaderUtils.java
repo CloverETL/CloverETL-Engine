@@ -40,6 +40,7 @@ import org.jetel.graph.Node;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -202,6 +203,19 @@ public class ClassLoaderUtils {
 	private static URL[] getClassloaderUrls(URL contextUrl, String classpath) throws MalformedURLException {
 		String paths[] = classpath.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
 		URL urls[] = FileUtils.getFileUrls(contextUrl, paths);
+		/*
+		 * resolve sandbox URL's
+		 */
+		for (int i = 0; i < urls.length; ++i) {
+			if (SandboxUrlUtils.isSandboxUrl(urls[i])) {
+				URL localUrl = SandboxUrlUtils.toLocalFileUrl(urls[i]);
+				if (localUrl != null) {
+					urls[i] = localUrl;
+				} else {
+					throw new RuntimeException("Could not resolve sandbox URL: " + urls[i]);
+				}
+			}
+		}
 		for (int i = 0; i < urls.length; ++i) {
 			File file;
 			try {

@@ -18,7 +18,6 @@
  */
 package org.jetel.hadoop.connection;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -37,8 +36,6 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.fileoperation.CloverURI;
-import org.jetel.component.fileoperation.FileManager;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
@@ -285,23 +282,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			if (graph != null) {
 				contextURL = graph.getRuntimeContext().getContextURL();
 			}
-			// CL-2638 - sandbox URLs cannot be used in a classpath
-			if ((contextURL != null) && SandboxUrlUtils.isSandboxUrl(contextURL)) {
-				try {
-					File file = FileManager.getInstance().getFile(CloverURI.createSingleURI(contextURL.toURI()));
-					if (file != null) {
-						contextURL = file.toURI().toURL();
-					} else {
-						if (logger.isDebugEnabled()) {
-							logger.debug("Failed to convert " + contextURL + " to a local file");
-						}
-					}
-				} catch (Exception ex) {
-					if (logger.isDebugEnabled()) {
-						logger.debug("Failed to convert " + contextURL + " to a local file", ex);
-					}
-				}
-			}
 		}
 		
 		if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
@@ -309,6 +289,17 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			for (String url : urls) {
 				try {
 					URL hadoopJar = FileUtils.getFileURL(contextURL, url);
+					/* CL-2638 - sandbox URLs cannot be used in a classpath:
+					 * resolve sandbox URL's
+					 */
+					if (SandboxUrlUtils.isSandboxUrl(hadoopJar)) {
+						URL localUrl = SandboxUrlUtils.toLocalFileUrl(hadoopJar);
+						if (localUrl != null) {
+							hadoopJar = localUrl;
+						} else {
+							throw new ComponentNotReadyException("Could not resolve sandbox URL: " + hadoopJar);
+						}
+					}
 					providerClassPath.add(hadoopJar);
 				} catch (MalformedURLException ex) {
 					throw new ComponentNotReadyException("Cannot load library from '" + url + "'", ex);

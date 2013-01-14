@@ -53,6 +53,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.w3c.dom.Element;
@@ -566,6 +567,20 @@ public class JmsConnection extends GraphElement implements IConnection {
 				}
 			}
 		}// for
+		/*
+		 * resolve sandbox URL's
+		 */
+		for (int i = 0; i < result.size(); ++i) {
+			URL url = result.get(i);
+			if (SandboxUrlUtils.isSandboxUrl(url)) {
+				URL localUrl = SandboxUrlUtils.toLocalFileUrl(url);
+				if (localUrl != null) {
+					result.set(i, localUrl);
+				} else {
+					throw new RuntimeException("Could not resolve sandbox URL: " + url);
+				}
+			}
+		}
 		return (URL[]) result.toArray(new URL[result.size()]);
 	}
 
