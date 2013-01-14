@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
@@ -551,6 +550,4 @@ public abstract class IAuthorityProxy {
 	}
 	
 	public abstract File newTempDir(String label, int allocationHint) throws TempFileCreationException;
-	
-	public abstract File getLocalFile(URI uri);
 }

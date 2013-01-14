@@ -39,7 +39,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.net.URLStreamHandler;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -188,7 +187,7 @@ public class FileUtils {
 	 * Third-party implementation of path resolving - useful to make possible to run the graph inside of war file.
 	 */
     private static final List<CustomPathResolver> customPathResolvers = new ArrayList<CustomPathResolver>();
-	private static final String PLUS_CHAR_ENCODED = URLEncoder.encode("+");
+	private static final String PLUS_CHAR_ENCODED = "%2B";
 
     /**
      * Used only to extract the protocol name in a generic manner

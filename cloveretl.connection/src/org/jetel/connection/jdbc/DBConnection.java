@@ -56,7 +56,6 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -892,8 +891,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	                	 * convert sandbox URL's for URLClassLoader can handle only certain types of URL's (file, http)
 	                	 * despite its name
 	                	 */
-	                	IAuthorityProxy proxy = IAuthorityProxy.getAuthorityProxy(getGraph());
-	                	URL localUrl = SandboxUrlUtils.toLocalFileUrl(driverLibraryURLs[i], proxy);
+	                	URL localUrl = SandboxUrlUtils.toLocalFileUrl(driverLibraryURLs[i]);
 	                	if (localUrl == null) {
 	                		throw new ComponentNotReadyException("Could not resolve sandbox URL to local resource: " + driverLibraryURLs[i]);
 	                	} else {
