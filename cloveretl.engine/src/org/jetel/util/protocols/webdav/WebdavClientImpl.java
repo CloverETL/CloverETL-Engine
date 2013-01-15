@@ -43,7 +43,9 @@ import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultProxyAuthenticationHandler;
+import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
 
 import com.googlecode.sardine.DavResource;
@@ -69,7 +71,7 @@ public class WebdavClientImpl extends SardineImpl implements WebdavClient {
 	
 	public WebdavClientImpl(String protocol, String username, String password, ProxyConfiguration proxyConfiguration) throws UnsupportedEncodingException {
 		this(username, password, proxyConfiguration);
-		//setDefaultProxyCredentials(protocol);
+		setDefaultProxyCredentials(protocol);
 	}
 	
 	private WebdavClientImpl(String username, String password, ProxyConfiguration proxyConfiguration) {
@@ -120,25 +122,29 @@ public class WebdavClientImpl extends SardineImpl implements WebdavClient {
 		return null;
 	}
 	
-//	/**
-//	 * This uses the nonstandard "http.proxyUser" and "http.proxyPassword"
-//	 * System properties.
-//	 * 
-//	 * @param protocol
-//	 */
-//	private void setDefaultProxyCredentials(String protocol) {
-//		protocol = protocol.toLowerCase();
-//		String proxyUserInfo = getUserInfo(System.getProperty(protocol + ".proxyUser"), System.getProperty(protocol + ".proxyPassword"));
-//		String proxyHost = System.getProperty(protocol + ".proxyHost"); // null means any host
-//		String proxyPortString = System.getProperty(protocol + ".proxyPort");
-//		int proxyPort = -1; // -1 means any port
-//		if (proxyPortString != null) {
-//			proxyPort = Integer.parseInt(proxyPortString);
-//		}
-//		if (proxyUserInfo != null) {
-//			setProxyCredentials(client, proxyHost, proxyPort, proxyUserInfo);
-//		}
-//	}
+	/**
+	 * This uses the nonstandard "http.proxyUser" and "http.proxyPassword"
+	 * System properties.
+	 * 
+	 * Standard system properties (http.proxyHost, http.proxyPort)
+	 * seem to work in {@link DefaultHttpClient}. If not,
+	 * try replacing DefaultHttpClient with {@link SystemDefaultHttpClient}.
+	 * 
+	 * @param protocol
+	 */
+	private void setDefaultProxyCredentials(String protocol) {
+		protocol = protocol.toLowerCase();
+		String proxyUserInfo = getUserInfo(System.getProperty(protocol + ".proxyUser"), System.getProperty(protocol + ".proxyPassword"));
+		String proxyHost = System.getProperty(protocol + ".proxyHost"); // null means any host
+		String proxyPortString = System.getProperty(protocol + ".proxyPort");
+		int proxyPort = -1; // -1 means any port
+		if (proxyPortString != null) {
+			proxyPort = Integer.parseInt(proxyPortString);
+		}
+		if (proxyUserInfo != null) {
+			setProxyCredentials(client, proxyHost, proxyPort, proxyUserInfo);
+		}
+	}
 
 	/**
 	 * Stores the HTTP client instance so that client.setProxyAuthenticationHandler()
