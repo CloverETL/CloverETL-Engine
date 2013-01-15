@@ -768,7 +768,7 @@ public class WcardPattern {
 		SFTPConnection sftpConnection = null;
 		try {
 			// list files
-			sftpConnection = (SFTPConnection) url.openConnection(proxy);
+			sftpConnection = (SFTPConnection) ((proxy != null) ? url.openConnection(proxy) : url.openConnection());
 			sftpConnection.setProxyCredentials(proxyCredentials);
 			Vector<?> v = sftpConnection.ls(url.getFile());				// note: too long operation
 			for (Object lsItem: v) {
