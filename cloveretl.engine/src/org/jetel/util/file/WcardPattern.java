@@ -24,6 +24,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +45,7 @@ import org.jetel.enums.ArchiveType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.Pair;
+import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.ftp.FTPConnection;
 import org.jetel.util.protocols.proxy.ProxyHandler;
@@ -740,11 +744,32 @@ public class WcardPattern {
 			return mfiles;
 		}
 
+		Pair<String, String> parts = FileUtils.extractProxyString(url.toString());
+		try {
+			url = FileUtils.getFileURL(parent, parts.getFirst());
+		} catch (MalformedURLException ex) {
+			
+		}
+		String proxyString = parts.getSecond();
+		Proxy proxy = null;
+		UserInfo proxyCredentials = null;
+		if (proxyString != null) {
+			proxy = FileUtils.getProxy(proxyString);
+			try {
+				String userInfo = new URI(proxyString).getUserInfo();
+				if (userInfo != null) {
+					proxyCredentials = new UserInfo(userInfo);
+				}
+			} catch (URISyntaxException use) {
+			}
+		}
+
 		// get files
 		SFTPConnection sftpConnection = null;
 		try {
 			// list files
-			sftpConnection = (SFTPConnection)url.openConnection();
+			sftpConnection = (SFTPConnection) url.openConnection(proxy);
+			sftpConnection.setProxyCredentials(proxyCredentials);
 			Vector<?> v = sftpConnection.ls(url.getFile());				// note: too long operation
 			for (Object lsItem: v) {
 				LsEntry lsEntry = (LsEntry) lsItem;
