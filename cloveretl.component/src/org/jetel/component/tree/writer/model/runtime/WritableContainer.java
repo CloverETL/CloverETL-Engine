@@ -87,6 +87,10 @@ public abstract class WritableContainer implements Writable {
 		System.arraycopy(children, 0, newArray, 0, children.length);
 		newArray[children.length] = element;
 		children = newArray;
+		if (element instanceof WritableValue) {
+			WritableValue value = (WritableValue)element;
+			value.setParentContainer(this);
+		}
 	}
 
 	public void addAttribute(WritableAttribute element) {

@@ -110,6 +110,8 @@ public abstract class TreeFormatter extends AbstractFormatter {
 	}
 
 	public abstract TreeWriter getTreeWriter();
+	
+	public abstract boolean isListSupported();
 
 	public CollectionWriter getCollectionWriter() {
 		throw new UnsupportedOperationException("This format does not support collections");

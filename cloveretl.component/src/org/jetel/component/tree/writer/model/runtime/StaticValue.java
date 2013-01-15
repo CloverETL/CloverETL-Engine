@@ -19,6 +19,7 @@
 package org.jetel.component.tree.writer.model.runtime;
 
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataFieldContainerType;
 
 /**
  * Static text
@@ -45,4 +46,8 @@ public class StaticValue implements NodeValue {
 		return value;
 	}
 
+	@Override
+	public DataFieldContainerType getFieldContainerType() {
+		return null;
+	}
 }
