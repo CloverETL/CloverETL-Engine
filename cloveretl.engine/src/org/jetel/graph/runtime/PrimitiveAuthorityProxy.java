@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
+import java.sql.Connection;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -441,6 +442,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	
 	@Override
 	public Properties getProfilerResultsDatabaseConnectionProperties() {
+		throw new UnsupportedOperationException("Profiler results storage is available only in CloverETL Server environment");
+	}
+	
+	@Override
+	public Connection getProfilerResultsDatabaseConnection() {
 		throw new UnsupportedOperationException("Profiler results storage is available only in CloverETL Server environment");
 	}
 	
