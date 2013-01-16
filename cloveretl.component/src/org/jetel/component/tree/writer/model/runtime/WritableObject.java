@@ -101,7 +101,7 @@ public class WritableObject extends WritableContainer {
 			WritableValue value = (WritableValue)children[0];
 			if (value.isValuesList()) {
 				ListDataField field = (ListDataField)value.getContent(availableData);
-				return field.getValue() == null || field.getValue().isEmpty();
+				return field.isNull() || field.getSize() == 0;
 			}
 		} 
 		return false;
