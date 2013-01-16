@@ -16,38 +16,39 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.tree.writer.model.runtime;
+package org.jetel.util.protocols.webdav;
 
-import org.jetel.data.DataRecord;
-import org.jetel.metadata.DataFieldContainerType;
+import java.io.IOException;
+
+import com.googlecode.sardine.DavResource;
+import com.googlecode.sardine.Sardine;
 
 /**
- * Static text
+ * Extends the {@link Sardine} interface with some useful methods.
  * 
- * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * 
- * @created 20 Dec 2010
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created Jan 10, 2013
  */
-public class StaticValue implements NodeValue {
+public interface WebdavClient extends Sardine {
 
-	private final String value;
-
-	public StaticValue(String value) {
-		this.value = value;
-	}
-
-	@Override
-	public boolean isEmpty(DataRecord[] availableData) {
-		return false;
-	}
-
-	@Override
-	public String getValue(DataRecord[] availableData) {
-		return value;
-	}
-
-	@Override
-	public DataFieldContainerType getFieldContainerType() {
-		return null;
-	}
+	/**
+	 * Execute PROPFIND with depth 0.
+	 * 
+	 * @param url
+	 * @return
+	 * @throws IOException
+	 */
+	public DavResource info(String url) throws IOException;
+	
+	/**
+	 * Check whether remote directory exists.
+	 * 
+	 * @param url
+	 *            Path to the directory.
+	 * @return True if the directory exists.
+	 * @throws IOException
+	 */
+	public boolean dirExists(String url) throws IOException;
 }

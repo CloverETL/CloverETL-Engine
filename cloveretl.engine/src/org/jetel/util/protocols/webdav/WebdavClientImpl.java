@@ -20,11 +20,14 @@ package org.jetel.util.protocols.webdav;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +43,9 @@ import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.AbstractHttpClient;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultProxyAuthenticationHandler;
+import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
 
 import com.googlecode.sardine.DavResource;
@@ -54,16 +59,26 @@ import com.googlecode.sardine.model.Propfind;
 import com.googlecode.sardine.model.Response;
 import com.googlecode.sardine.util.SardineUtil;
 
-class WebdavClientImpl extends SardineImpl {
+public class WebdavClientImpl extends SardineImpl implements WebdavClient {
 	
 	private static final String UTF_8 = "UTF-8";
 
-	private AbstractHttpClient client;
+    private AbstractHttpClient client;
+    
+	public WebdavClientImpl(URL url, ProxyConfiguration proxyConfiguration) throws UnsupportedEncodingException {
+		this(url.getProtocol(), getUsername(url), getPassword(url), proxyConfiguration);
+	}
 	
-	WebdavClientImpl(String username, String password, ProxyConfiguration proxyConfiguration) {
+	public WebdavClientImpl(String protocol, String username, String password, ProxyConfiguration proxyConfiguration) throws UnsupportedEncodingException {
+		this(username, password, proxyConfiguration);
+		setDefaultProxyCredentials(protocol);
+	}
+	
+	private WebdavClientImpl(String username, String password, ProxyConfiguration proxyConfiguration) {
 		super(username, password, proxyConfiguration.getProxySelector());
 		
 		// prefer basic authentication, as NTLM does not seem to work
+		// FIXME deprecated since 4.2, but ProxyAuthenticationStrategy does not support default scheme priority overriding
 		client.setProxyAuthenticationHandler(new DefaultProxyAuthenticationHandler() {
 
 			@Override
@@ -107,27 +122,31 @@ class WebdavClientImpl extends SardineImpl {
 		return null;
 	}
 	
-//	/**
-//	 * This uses the nonstandard "http.proxyUser" and "http.proxyPassword"
-//	 * System properties.
-//	 * 
-//	 * @param protocol
-//	 */
-//	private void setDefaultProxyCredentials(String protocol) {
-//		protocol = protocol.toLowerCase();
-//		String proxyUserInfo = getUserInfo(System.getProperty(protocol + ".proxyUser"), System.getProperty(protocol + ".proxyPassword"));
-//		String proxyHost = System.getProperty(protocol + ".proxyHost"); // null means any host
-//		String proxyPortString = System.getProperty(protocol + ".proxyPort");
-//		int proxyPort = -1; // -1 means any port
-//		if (proxyPortString != null) {
-//			proxyPort = Integer.parseInt(proxyPortString);
-//		}
-//		if (proxyUserInfo != null) {
-//			setProxyCredentials(client, proxyHost, proxyPort, proxyUserInfo);
-//		}
-//	}
+	/**
+	 * This uses the nonstandard "http.proxyUser" and "http.proxyPassword"
+	 * System properties.
+	 * 
+	 * Standard system properties (http.proxyHost, http.proxyPort)
+	 * seem to work in {@link DefaultHttpClient}. If not,
+	 * try replacing DefaultHttpClient with {@link SystemDefaultHttpClient}.
+	 * 
+	 * @param protocol
+	 */
+	private void setDefaultProxyCredentials(String protocol) {
+		protocol = protocol.toLowerCase();
+		String proxyUserInfo = getUserInfo(System.getProperty(protocol + ".proxyUser"), System.getProperty(protocol + ".proxyPassword"));
+		String proxyHost = System.getProperty(protocol + ".proxyHost"); // null means any host
+		String proxyPortString = System.getProperty(protocol + ".proxyPort");
+		int proxyPort = -1; // -1 means any port
+		if (proxyPortString != null) {
+			proxyPort = Integer.parseInt(proxyPortString);
+		}
+		if (proxyUserInfo != null) {
+			setProxyCredentials(client, proxyHost, proxyPort, proxyUserInfo);
+		}
+	}
 
-	/*
+	/**
 	 * Stores the HTTP client instance so that client.setProxyAuthenticationHandler()
 	 * can be called later.
 	 */
@@ -136,9 +155,38 @@ class WebdavClientImpl extends SardineImpl {
 		this.client = super.createDefaultClient(selector);
 		return client;
 	}
-	
+
+//	/**
+//	 * Stores the HTTP client instance so that client.setProxyAuthenticationHandler()
+//	 * can be called later.
+//	 * 
+//	 * {@link DefaultHttpClient} has been replaced with {@link SystemDefaultHttpClient}.
+//	 */
+//	@Override
+//	protected AbstractHttpClient createDefaultClient(ProxySelector selector) {
+//		HttpParams params = createDefaultHttpParams();
+//		// used instead of DefaultHttpClient, should take system properties into account
+//		AbstractHttpClient client = new SystemDefaultHttpClient(params); 
+//		client.setRoutePlanner(createDefaultRoutePlanner(client.getConnectionManager().getSchemeRegistry(), selector));
+//		this.client = client;
+//		return client;
+//	}
+//	
+//	
+//	/**
+//	 * Not used anymore, {@link SystemDefaultHttpClient} uses {@link PoolingClientConnectionManager}
+//	 * instead of the deprecated {@link ThreadSafeClientConnManager}.
+//	 * 
+//	 * @deprecated 
+//	 */
+//	@Deprecated
+//	@Override
+//	protected ClientConnectionManager createDefaultConnectionManager(SchemeRegistry schemeRegistry) {
+//		return super.createDefaultConnectionManager(schemeRegistry);
+//	}
+
 	private void setProxyCredentials(AbstractHttpClient client, String hostName, int port, String userInfo) {
-		if (userInfo == null) {
+		if (userInfo == null || hostName == null || port < 0) {
 			return;
 		}
 		String username;
@@ -152,8 +200,9 @@ class WebdavClientImpl extends SardineImpl {
             password = null;
         }
 		Credentials credentials = new UsernamePasswordCredentials(username, password);
-		InetSocketAddress addr = new InetSocketAddress(hostName, port);
+		InetSocketAddress addr = new InetSocketAddress(hostName, 0); // the port number is not used
 		String hostAddress = addr.getAddress().getHostAddress(); // convert hostname to IP
+		
 		client.getCredentialsProvider().setCredentials(new AuthScope(hostName, port, AuthScope.ANY_REALM, AuthPolicy.BASIC), credentials);
 		client.getCredentialsProvider().setCredentials(new AuthScope(hostAddress, port, AuthScope.ANY_REALM, AuthPolicy.BASIC), credentials);
 		client.getCredentialsProvider().setCredentials(new AuthScope(hostName, port, AuthScope.ANY_REALM, AuthPolicy.DIGEST), credentials);
@@ -173,6 +222,7 @@ class WebdavClientImpl extends SardineImpl {
 	 * @throws IOException
 	 */
 	// not used now, but may be useful for file operations
+	@Override
 	public DavResource info(String url) throws IOException {
 		HttpPropFind entity = new HttpPropFind(url);
 		entity.setDepth("0");
@@ -204,6 +254,7 @@ class WebdavClientImpl extends SardineImpl {
 	 * @return True if the directory exists.
 	 * @throws IOException
 	 */
+	@Override
 	public boolean dirExists(String url) throws IOException {
 		try {
 			InputStream is = get(url);
@@ -219,4 +270,41 @@ class WebdavClientImpl extends SardineImpl {
 			throw ex;
 		}
 	}
+
+	public static String getUsername(URL url) throws UnsupportedEncodingException {
+		String userInfo = url.getUserInfo();
+		
+		if (userInfo != null) {
+            userInfo = URLDecoder.decode(userInfo, UTF_8);
+			int colon = userInfo.indexOf(':');
+			if (colon == -1) {
+				return userInfo;
+			}
+			else {
+				return userInfo.substring(0, colon);
+			}
+		}
+		else {
+			return "";
+		}
+	}
+	
+	public static String getPassword(URL url) throws UnsupportedEncodingException {
+		String userInfo = url.getUserInfo();
+		
+		if (userInfo != null) {
+            userInfo = URLDecoder.decode(userInfo, UTF_8);
+			int colon = userInfo.indexOf(':');
+			if (colon == -1) {
+				return "";
+			}
+			else {
+				return userInfo.substring(colon+1);
+			}
+		}
+		else {
+			return "";
+		}		
+	}
+	
 }

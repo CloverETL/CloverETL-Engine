@@ -21,7 +21,9 @@ package org.jetel.component.tree.writer.model.runtime;
 import org.jetel.component.tree.writer.TreeFormatter;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
 import org.jetel.data.DataRecord;
+import org.jetel.data.ListDataField;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldContainerType;
 
 /**
  * class representing xml text node, can be used as a value of attribute or element.
@@ -32,6 +34,8 @@ import org.jetel.exception.JetelException;
  */
 public abstract class WritableValue implements Writable {
 
+	protected WritableContainer parent;
+	
 	public static WritableValue newInstance(NodeValue... value) {
 		if (value == null) {
 			throw new NullPointerException("value");
@@ -45,10 +49,19 @@ public abstract class WritableValue implements Writable {
 
 	@Override
 	public void write(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
+		
 		MappingWriteState state = formatter.getMapping().getState();
 		if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
 			formatter.getTreeWriter().writeLeaf(getContent(availableData), false);
 		}
+	}
+	
+	public WritableContainer getParentContainer() {
+		return parent;
+	}
+	
+	void setParentContainer(WritableContainer container) {
+		this.parent = container;
 	}
 
 	@Override
@@ -86,7 +99,7 @@ public abstract class WritableValue implements Writable {
 
 	private static class WritableSimpleValue extends WritableValue {
 
-		private final NodeValue value;
+		protected final NodeValue value;
 
 		WritableSimpleValue(NodeValue value) {
 			this.value = value;
@@ -99,8 +112,57 @@ public abstract class WritableValue implements Writable {
 
 		@Override
 		public boolean isEmpty(DataRecord[] availableData) {
-			return value.isEmpty(availableData);
+			if (isValuesList()) {
+				ListDataField field = (ListDataField)getContent(availableData);
+				return field.getValue() == null || field.getValue().isEmpty();
+			} else {
+				return value.isEmpty(availableData);
+			}
+		}
+		
+		@Override
+		public void write(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
+			
+			if (isValuesList() && !formatter.isListSupported()) {
+				/*
+				 * in this case project List value as sequence
+				 * of elements (XML)
+				 */
+				MappingWriteState state = formatter.getMapping().getState();
+				if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
+					ListDataField field = (ListDataField)getContent(availableData);
+					if (field.getValue() != null) {
+						char currentName[] = parent.name.getValue(availableData);
+						for (int i = 0; i < field.getValue().size(); ++i) {
+							/*
+							 * first element is opened by parent already
+							 */
+							if (i > 0) {
+								formatter.getTreeWriter().writeStartNode(currentName);
+								for (WritableNamespace namespace : parent.namespaces) {
+									namespace.write(formatter, availableData);
+								}
+								for (WritableAttribute attr : parent.attributes) {
+									attr.write(formatter, availableData);
+								}
+							}
+							formatter.getTreeWriter().writeLeaf(field.getValue().get(i), false);
+							/*
+							 * last element will be closed by parent
+							 */
+							if (i < field.getValue().size() - 1) {
+								formatter.getTreeWriter().writeEndNode(currentName, false);
+							}
+						}
+					}
+				}
+			} else {
+				super.write(formatter, availableData);
+			}
+		}
+		
+		private boolean isValuesList() {
+			return value.getFieldContainerType() == DataFieldContainerType.LIST;
 		}
 	}
-
 }
