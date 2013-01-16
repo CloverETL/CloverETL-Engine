@@ -63,6 +63,8 @@ public abstract class WritableValue implements Writable {
 	void setParentContainer(WritableContainer container) {
 		this.parent = container;
 	}
+	
+	abstract boolean isValuesList();
 
 	@Override
 	public abstract boolean isEmpty(DataRecord[] availableData);
@@ -95,6 +97,11 @@ public abstract class WritableValue implements Writable {
 			}
 			return builder.toString();
 		}
+		
+		@Override
+		boolean isValuesList() {
+			return false;
+		}
 	}
 
 	private static class WritableSimpleValue extends WritableValue {
@@ -112,12 +119,7 @@ public abstract class WritableValue implements Writable {
 
 		@Override
 		public boolean isEmpty(DataRecord[] availableData) {
-			if (isValuesList()) {
-				ListDataField field = (ListDataField)getContent(availableData);
-				return field.getValue() == null || field.getValue().isEmpty();
-			} else {
-				return value.isEmpty(availableData);
-			}
+			return value.isEmpty(availableData);
 		}
 		
 		@Override
@@ -161,7 +163,7 @@ public abstract class WritableValue implements Writable {
 			}
 		}
 		
-		private boolean isValuesList() {
+		boolean isValuesList() {
 			return value.getFieldContainerType() == DataFieldContainerType.LIST;
 		}
 	}

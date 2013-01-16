@@ -24,6 +24,7 @@ import org.jetel.component.tree.writer.TreeFormatter;
 import org.jetel.component.tree.writer.model.design.ObjectNode;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
 import org.jetel.data.DataRecord;
+import org.jetel.data.ListDataField;
 import org.jetel.exception.JetelException;
 
 /**
@@ -59,6 +60,13 @@ public class WritableObject extends WritableContainer {
 				child.write(formatter, availableData);
 			}
 		} else if (!isNodeEmpty(availableData)) {
+			/*
+			 * if list is not supported (XML) and value is empty,
+			 * do not write anything
+			 */
+			if (!formatter.isListSupported() && isEmptyListElement(availableData)) {
+				return;
+			}
 			MappingWriteState state = formatter.getMapping().getState();
 			char[] nodeName = name.getValue(availableData);
 			if (!hidden && (state == MappingWriteState.ALL || state == MappingWriteState.HEADER)) {
@@ -80,6 +88,23 @@ public class WritableObject extends WritableContainer {
 				formatter.getTreeWriter().writeEndNode(nodeName, writeNull);
 			}
 		}
+	}
+	
+	/**
+	 * Answers whether this object writes a list that is empty - 
+	 * such list should not produce any elements
+	 * @return
+	 */
+	private boolean isEmptyListElement(DataRecord availableData[]) {
+		
+		if (children.length == 1 && children[0] instanceof WritableValue) {
+			WritableValue value = (WritableValue)children[0];
+			if (value.isValuesList()) {
+				ListDataField field = (ListDataField)value.getContent(availableData);
+				return field.getValue() == null || field.getValue().isEmpty();
+			}
+		} 
+		return false;
 	}
 
 	@Override
