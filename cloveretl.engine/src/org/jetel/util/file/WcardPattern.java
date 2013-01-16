@@ -744,6 +744,7 @@ public class WcardPattern {
 			return mfiles;
 		}
 
+		URL originalURL = url;
 		Pair<String, String> parts = FileUtils.extractProxyString(url.toString());
 		try {
 			url = FileUtils.getFileURL(parent, parts.getFirst());
@@ -785,10 +786,11 @@ public class WcardPattern {
 				String newUrlPath = urlPath.substring(0, lastIndex) + resolverdFileNameWithoutPath;
 				
 				// add new resolved url string
-				mfiles.add(url.toString().replace(urlPath, newUrlPath));
+				mfiles.add(originalURL.toString().replace(urlPath, newUrlPath));
 			}
 		} catch (Throwable e) {
 			// return original name
+			logger.debug("SFTP wildcard resolution failed", e);
 			mfiles.add(url.toString());
 		} finally {
 			if (sftpConnection != null) sftpConnection.disconnect();
