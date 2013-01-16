@@ -133,9 +133,9 @@ public abstract class WritableValue implements Writable {
 				MappingWriteState state = formatter.getMapping().getState();
 				if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
 					ListDataField field = (ListDataField)getContent(availableData);
-					if (field.getValue() != null) {
+					if (!field.isNull()) {
 						char currentName[] = parent.name.getValue(availableData);
-						for (int i = 0; i < field.getValue().size(); ++i) {
+						for (int i = 0; i < field.getSize(); ++i) {
 							/*
 							 * first element is opened by parent already
 							 */
@@ -148,7 +148,7 @@ public abstract class WritableValue implements Writable {
 									attr.write(formatter, availableData);
 								}
 							}
-							formatter.getTreeWriter().writeLeaf(field.getValue().get(i), false);
+							formatter.getTreeWriter().writeLeaf(field.getField(i), false);
 							/*
 							 * last element will be closed by parent
 							 */
