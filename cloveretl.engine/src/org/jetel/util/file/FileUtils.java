@@ -1372,7 +1372,31 @@ public class FileUtils {
     		if (isRemoteFile(input) && !isHttp(input)) {
     			// ftp output stream
     			URL url = FileUtils.getFileURL(contextURL, input);
-    			URLConnection urlConnection = url.openConnection();
+    			Pair<String, String> parts = FileUtils.extractProxyString(url.toString());
+    			try {
+    				url = FileUtils.getFileURL(contextURL, parts.getFirst());
+    			} catch (MalformedURLException ex) {
+    				
+    			}
+    			
+    			String proxyString = parts.getSecond();
+    			Proxy proxy = null;
+    			UserInfo proxyCredentials = null;
+    			if (proxyString != null) {
+    				proxy = FileUtils.getProxy(proxyString);
+    				try {
+    					String userInfo = new URI(proxyString).getUserInfo();
+    					if (userInfo != null) {
+    						proxyCredentials = new UserInfo(userInfo);
+    					}
+    				} catch (URISyntaxException use) {
+    				}
+    			}
+    			
+    			URLConnection urlConnection = ((proxy != null) ? url.openConnection(proxy) : url.openConnection());
+    			if (urlConnection instanceof ProxyAuthenticable) {
+    				((ProxyAuthenticable) urlConnection).setProxyCredentials(proxyCredentials);
+    			}
     			if (urlConnection instanceof SFTPConnection) {
     				((SFTPConnection)urlConnection).setMode(appendData? ChannelSftp.APPEND : ChannelSftp.OVERWRITE);
     			}
