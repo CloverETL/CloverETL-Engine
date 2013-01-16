@@ -23,10 +23,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -35,6 +33,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.util.file.FileURLParser;
+import org.jetel.util.file.FileUtils;
 
 import com.googlecode.sardine.impl.SardineException;
 
@@ -51,42 +50,6 @@ public class WebdavOutputStream extends OutputStream {
 	private OutputStream os;
 	private SardinePutThread sardineThread;
 	
-	public static String getUsername(URL url) throws UnsupportedEncodingException {
-		String userInfo = url.getUserInfo();
-		
-		if (userInfo != null) {
-            userInfo = URLDecoder.decode(userInfo, "UTF-8");
-			int colon = userInfo.indexOf(':');
-			if (colon == -1) {
-				return userInfo;
-			}
-			else {
-				return userInfo.substring(0, colon);
-			}
-		}
-		else {
-			return "";
-		}
-	}
-	
-	public static String getPassword(URL url) throws UnsupportedEncodingException {
-		String userInfo = url.getUserInfo();
-		
-		if (userInfo != null) {
-            userInfo = URLDecoder.decode(userInfo, "UTF-8");
-			int colon = userInfo.indexOf(':');
-			if (colon == -1) {
-				return "";
-			}
-			else {
-				return userInfo.substring(colon+1);
-			}
-		}
-		else {
-			return "";
-		}		
-	}
-	
 	public URL stripUserinfo(URL url) throws MalformedURLException {
 		return new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getFile());
 	}
@@ -98,9 +61,9 @@ public class WebdavOutputStream extends OutputStream {
 			url = matcher.group(2) + matcher.group(3) + matcher.group(7);
 		}
 		URL parsedUrl = new URL(url);
-		String username = getUsername(parsedUrl);
-		String password = getPassword(parsedUrl);
-		String outputURL = url;
+		String username = WebdavClientImpl.getUsername(parsedUrl);
+		String password = WebdavClientImpl.getPassword(parsedUrl);
+		URL outputURL = parsedUrl;
 
 		PipedOutputStream pos = new PipedOutputStream();
 		os = pos;
@@ -108,7 +71,7 @@ public class WebdavOutputStream extends OutputStream {
 		InputStream is = new PipedInputStream(pos);
 		
 		try {
-			outputURL = stripUserinfo(parsedUrl).toString();
+			outputURL = stripUserinfo(parsedUrl);
 		} catch (MalformedURLException e) {}
 		
 		sardineThread = new SardinePutThread(outputURL, is, username, password, proxyString);
@@ -116,15 +79,15 @@ public class WebdavOutputStream extends OutputStream {
 	}
 	
 	class SardinePutThread extends Thread {
-		private String URL;
+		private URL url;
 		private String proxyString;
 		private InputStream is;
 		private String username;
 		private String password;
 		private Throwable error;
 		
-		SardinePutThread(String URL, InputStream is, String username, String password, String proxyString) {
-			this.URL = URL;
+		SardinePutThread(URL url, InputStream is, String username, String password, String proxyString) {
+			this.url = url;
 			this.is = is;
 			this.username = username;
 			this.password = password;
@@ -160,20 +123,22 @@ public class WebdavOutputStream extends OutputStream {
 			try {
 
 				ProxyConfiguration proxyConfiguration = new ProxyConfiguration(proxyString);
-				WebdavClientImpl sardine = new WebdavClientImpl(username, password, proxyConfiguration);
+				WebdavClient sardine = new WebdavClientImpl(this.url.getProtocol(), username, password, proxyConfiguration);
 				sardine.enableCompression();
+				
+				String urlString = this.url.toString();
 				
 				// This is a workaround needed for example for writing to CloverETL Server.
 				// It will avoid retry on non-repeatable request error.
 				// Digest authorization will be performed on this request and then the PUT
 				// method (where retry caused by authorization would fail) is already authorized.
-				boolean targetFileExists = sardine.exists(URL);
+				boolean targetFileExists = sardine.exists(urlString);
 
 				if (!targetFileExists) {
 					//target file does not exists
-					Matcher matcher = SUBDIR_REGEXP.matcher(URL);
+					Matcher matcher = SUBDIR_REGEXP.matcher(urlString);
 					if (!matcher.matches()) {
-						logger.warn("url:" + URL + " for storing file on webdav doesn't match regexp:\"" + SUBDIR_REGEXP.pattern() + "\". Skipping creating directories");
+						logger.warn("url:" + urlString + " for storing file on webdav doesn't match regexp:\"" + SUBDIR_REGEXP.pattern() + "\". Skipping creating directories");
 					} else {
 						// expecting valid url
 						String domain = matcher.group(1);
@@ -194,21 +159,19 @@ public class WebdavOutputStream extends OutputStream {
 					}
 				}
 				
-				sardine.put(URL, is);
+				sardine.put(urlString, is);
 			} catch (SardineException e) {
-				error = new IOException(URL + ": " + e.getStatusCode() + " " + e.getResponsePhrase(), e);
+				error = new IOException(url + ": " + e.getStatusCode() + " " + e.getResponsePhrase(), e);
 			} catch (Throwable e) {
 				error = e;
 			} finally {
 				// Closes the input stream both on error or after a successful run.
 				// If successful, the put() method has written all the data already, so the stream can be safely closed.
-				if (is != null) {
-					try {
-						is.close();
-					} catch (IOException ioe) {
-						if (error == null) {
-							error = ioe;
-						}
+				try {
+					FileUtils.closeAll(is);
+				} catch (IOException ioe) {
+					if (error == null) {
+						error = ioe;
 					}
 				}
 			}

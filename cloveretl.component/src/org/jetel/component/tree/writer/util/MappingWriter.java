@@ -28,7 +28,6 @@ import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.Comment;
-import org.jetel.component.tree.writer.model.design.ContainerNode;
 import org.jetel.component.tree.writer.model.design.MappingProperty;
 import org.jetel.component.tree.writer.model.design.Namespace;
 import org.jetel.component.tree.writer.model.design.ObjectNode;
@@ -267,22 +266,4 @@ public class MappingWriter implements MappingVisitor {
 			writer.writeEndElement();
 		}
 	}
-	
-	private String getBoundPrefix(String name, ObjectNode node) {
-		
-		final int colPos = name.indexOf(':');
-		if (colPos > 0) {
-			
-			String prefix = name.substring(0, colPos);
-			for (ContainerNode container = node; container != null; container = container.getParent()) {
-				for (Namespace ns : container.getNamespaces()) {
-					if (prefix.equals(ns.getProperty(MappingProperty.NAME))) { // prefix is NAME - hmm
-						return prefix;
-					}
-				}
-			}
-		}
-		return null;
-	}
-
 }

@@ -19,6 +19,7 @@
 package org.jetel.component.tree.writer.model.runtime;
 
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataFieldContainerType;
 
 /**
  * Interface for value representation.
@@ -34,4 +35,5 @@ public interface NodeValue {
 	
 	public boolean isEmpty(DataRecord[] availableData);
 
+	DataFieldContainerType getFieldContainerType();
 }

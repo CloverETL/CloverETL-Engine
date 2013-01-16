@@ -77,6 +77,11 @@ public class UserInfo {
 	public String getPassword() {
 		return password;
 	}
+
+	@Override
+	public String toString() {
+		return getUserInfo();
+	}
 	
 	
 }

@@ -24,6 +24,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,16 +46,19 @@ import org.jetel.data.Defaults;
 import org.jetel.enums.ArchiveType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.Pair;
+import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.ftp.FTPConnection;
 import org.jetel.util.protocols.proxy.ProxyHandler;
+import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 import org.jetel.util.protocols.sftp.SFTPConnection;
-import org.jetel.util.protocols.webdav.WebdavOutputStream;
+import org.jetel.util.protocols.webdav.ProxyConfiguration;
+import org.jetel.util.protocols.webdav.WebdavClient;
+import org.jetel.util.protocols.webdav.WebdavClientImpl;
 import org.jetel.util.string.StringUtils;
 
 import com.googlecode.sardine.DavResource;
-import com.googlecode.sardine.Sardine;
-import com.googlecode.sardine.SardineFactory;
 import com.googlecode.sardine.impl.SardineException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
@@ -232,6 +238,16 @@ public class WcardPattern {
 		
 		return result;
 	}
+	
+	private boolean isProxy(String url) {
+		int i = url.indexOf(':');
+		if (i >= 0) {
+			String protocol = url.substring(0, i);
+			return ProxyProtocolEnum.fromString(protocol) != null;
+		}
+		
+		return false;
+	}
 
 	/**
 	 * Gets names from file system and sub-archives.
@@ -241,6 +257,10 @@ public class WcardPattern {
 	 * @throws IOException
 	 */
     private List<String> innerFileNames(String fileName) throws IOException {
+    	if (isProxy(fileName)) {
+    		return null; // the string is in fact a proxy definition, do not try to expand it
+    	}
+
     	// result list for non-archive files
         List<String> fileStreamNames = null;
         
@@ -662,6 +682,14 @@ public class WcardPattern {
 			return mfiles;
 		}
 		
+		Pair<String, String> parts = FileUtils.extractProxyString(url.toString());
+		try {
+			url = FileUtils.getFileURL(parent, parts.getFirst());
+		} catch (MalformedURLException ex) {
+			
+		}
+		String proxyString = parts.getSecond();
+		
 		String file = url.getFile();
 		int lastSlash = file.lastIndexOf('/');
 		if (lastSlash == -1) {
@@ -673,7 +701,7 @@ public class WcardPattern {
 		
 		// When there is a wildcard, we will presume the user wants to use WebDAV access to list all the files.
 		try {
-			Sardine sardine = SardineFactory.begin(WebdavOutputStream.getUsername(url), WebdavOutputStream.getPassword(url));
+			WebdavClient sardine = new WebdavClientImpl(url, new ProxyConfiguration(proxyString));
 			sardine.enableCompression();
 			// The issue with sardine is that user authorization must be passed in begin() of SardineFactory
 			// but cannot be kept as part of the URL for which we try to get resources.
@@ -683,18 +711,27 @@ public class WcardPattern {
 			String dir = file.substring(0, lastSlash + 1);
 
 			// remove authorization info 
-			String dirURL = url.getProtocol() + "://" + url.getHost() + ":" + url.getPort() + dir;
+			StringBuilder dirURL = new StringBuilder(url.getProtocol()).append("://").append(url.getHost());
+			if (url.getPort() >= 0) { // proxy can't handle -1 as the port number
+				dirURL.append(':').append(url.getPort());
+			}
+			dirURL.append(dir);
 			String pattern = url.getFile();
 			
-			List<DavResource> resources = sardine.list(dirURL);
+			List<DavResource> resources = sardine.list(dirURL.toString());
 			for (DavResource res : resources) {
 				if (res.isDirectory()) {
 					continue;
 				}
 				if (checkName(pattern, res.getPath())) {
 					// add authorization info back
-					String fullURL = url.getProtocol() + "://" + url.getAuthority() + dir + res.getName();
-					mfiles.add(fullURL);
+					StringBuilder fullURL = new StringBuilder(url.getProtocol()).append(':');
+					if (proxyString != null) { // remember to include the proxyString
+						fullURL.append('(').append(proxyString).append(')');
+					}
+					fullURL.append("//").append(url.getAuthority()).append(dir).append(res.getName());
+					
+					mfiles.add(fullURL.toString());
 				}
 			}
 		} catch (SardineException se) {
@@ -704,7 +741,7 @@ public class WcardPattern {
 				break; // "501: Not implemented" and "405: Method not allowed" are not errors, it just means it is not WebDAV
 			default:
 				if (logger.isDebugEnabled()) {
-					logger.debug(url + " - WebDAV wildcard resolution failed", se);
+					logger.debug(url + " - WebDAV wildcard resolution failed - " + se.getStatusCode() + ": " + se.getResponsePhrase(), se);
 				}
 			}
 			mfiles.add(url.toString());
@@ -736,11 +773,33 @@ public class WcardPattern {
 			return mfiles;
 		}
 
+		URL originalURL = url;
+		Pair<String, String> parts = FileUtils.extractProxyString(url.toString());
+		try {
+			url = FileUtils.getFileURL(parent, parts.getFirst());
+		} catch (MalformedURLException ex) {
+			
+		}
+		String proxyString = parts.getSecond();
+		Proxy proxy = null;
+		UserInfo proxyCredentials = null;
+		if (proxyString != null) {
+			proxy = FileUtils.getProxy(proxyString);
+			try {
+				String userInfo = new URI(proxyString).getUserInfo();
+				if (userInfo != null) {
+					proxyCredentials = new UserInfo(userInfo);
+				}
+			} catch (URISyntaxException use) {
+			}
+		}
+
 		// get files
 		SFTPConnection sftpConnection = null;
 		try {
 			// list files
-			sftpConnection = (SFTPConnection)url.openConnection();
+			sftpConnection = (SFTPConnection) ((proxy != null) ? url.openConnection(proxy) : url.openConnection());
+			sftpConnection.setProxyCredentials(proxyCredentials);
 			Vector<?> v = sftpConnection.ls(url.getFile());				// note: too long operation
 			for (Object lsItem: v) {
 				LsEntry lsEntry = (LsEntry) lsItem;
@@ -756,10 +815,11 @@ public class WcardPattern {
 				String newUrlPath = urlPath.substring(0, lastIndex) + resolverdFileNameWithoutPath;
 				
 				// add new resolved url string
-				mfiles.add(url.toString().replace(urlPath, newUrlPath));
+				mfiles.add(originalURL.toString().replace(urlPath, newUrlPath));
 			}
 		} catch (Throwable e) {
 			// return original name
+			logger.debug("SFTP wildcard resolution failed", e);
 			mfiles.add(url.toString());
 		} finally {
 			if (sftpConnection != null) sftpConnection.disconnect();

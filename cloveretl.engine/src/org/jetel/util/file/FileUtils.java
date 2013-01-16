@@ -75,6 +75,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.logger.SafeLog;
 import org.jetel.logger.SafeLogFactory;
 import org.jetel.util.MultiOutFile;
+import org.jetel.util.Pair;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.protocols.ProxyAuthenticable;
@@ -1034,6 +1035,24 @@ public class FileUtils {
     	// user info is obtained from the URL, most likely different from proxy user info 
         return getAuthorizedConnection(url, proxy, url.getUserInfo());
     }
+    
+    /**
+     * Returns a pair whose first element is the original URL
+     * with the proxy specification removed 
+     * and whose second element is the proxy specification string (or <code>null</code>).
+     * 
+     * @param url with an optional proxy specification 
+     * @return [url, proxyString]
+     */
+    public static Pair<String, String> extractProxyString(String url) {
+		String proxyString = null;
+		Matcher matcher = FileURLParser.getURLMatcher(url);
+		if (matcher != null && (proxyString = matcher.group(5)) != null) {
+			url = matcher.group(2) + matcher.group(3) + matcher.group(7);
+		}
+		
+		return new Pair<String, String>(url, proxyString);
+    }
 
     /**
      * Creates an proxy from the file url string.
@@ -1368,7 +1387,31 @@ public class FileUtils {
     		if (isRemoteFile(input) && !isHttp(input)) {
     			// ftp output stream
     			URL url = FileUtils.getFileURL(contextURL, input);
-    			URLConnection urlConnection = url.openConnection();
+    			Pair<String, String> parts = FileUtils.extractProxyString(url.toString());
+    			try {
+    				url = FileUtils.getFileURL(contextURL, parts.getFirst());
+    			} catch (MalformedURLException ex) {
+    				
+    			}
+    			
+    			String proxyString = parts.getSecond();
+    			Proxy proxy = null;
+    			UserInfo proxyCredentials = null;
+    			if (proxyString != null) {
+    				proxy = FileUtils.getProxy(proxyString);
+    				try {
+    					String userInfo = new URI(proxyString).getUserInfo();
+    					if (userInfo != null) {
+    						proxyCredentials = new UserInfo(userInfo);
+    					}
+    				} catch (URISyntaxException use) {
+    				}
+    			}
+    			
+    			URLConnection urlConnection = ((proxy != null) ? url.openConnection(proxy) : url.openConnection());
+    			if (urlConnection instanceof ProxyAuthenticable) {
+    				((ProxyAuthenticable) urlConnection).setProxyCredentials(proxyCredentials);
+    			}
     			if (urlConnection instanceof SFTPConnection) {
     				((SFTPConnection)urlConnection).setMode(appendData? ChannelSftp.APPEND : ChannelSftp.OVERWRITE);
     			}

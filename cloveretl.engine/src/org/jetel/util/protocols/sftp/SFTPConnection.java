@@ -425,6 +425,9 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 
 	@Override
 	public void setProxyCredentials(org.jetel.util.protocols.UserInfo userInfo) {
+		if (userInfo == null) {
+			return;
+		}
 		String user = userInfo.getUser();
 		String password = userInfo.getPassword();
 		if (proxy4 != null) {
