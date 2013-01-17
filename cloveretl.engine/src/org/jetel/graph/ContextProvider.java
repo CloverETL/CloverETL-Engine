@@ -18,11 +18,13 @@
  */
 package org.jetel.graph;
 
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
 import org.jetel.graph.runtime.CloverWorker;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 
 /**
  * <p>
@@ -87,6 +89,15 @@ public class ContextProvider {
 	public static String getComponentId() {
 		Node component = ContextProvider.getNode();
 		return component==null ? null : component.getId();
+	}
+	
+	/**
+	 * @return contextURL from {@link GraphRuntimeContext} associated with current graph or 
+	 * <code>null</code> if no graph is on thread context
+	 */
+	public static URL getContextURL() {
+		TransformationGraph graph = getGraph();
+		return graph != null ? graph.getRuntimeContext().getContextURL() : null;
 	}
 	
 	private static Context getContext() {

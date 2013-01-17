@@ -18,9 +18,7 @@
  */
 package org.jetel.connection.jms;
 
-import java.io.File;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
@@ -46,14 +44,15 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.w3c.dom.Element;
@@ -550,38 +549,11 @@ public class JmsConnection extends GraphElement implements IConnection {
 	 * @return
 	 */
 	public static URL[] getLibrariesURL(URL contextURL, String libraryPath) {
-		String[] libs = getLibraries(libraryPath);
-		List<URL> result = new ArrayList<URL>();
-		for (int i=0; i< libs.length; i++) {
-			String libraryURLString = libs[i];
-			try {
-				result.add(FileUtils.getFileURL(contextURL, libraryURLString));
-			} catch (MalformedURLException e) {
-				// maybe it is ULR created via File class (no protocol)
-				try {
-					File f = new File(FileUtils.getFileURL(contextURL, "file:" + libraryURLString).getFile());
-					if (!f.exists())
-						throw new IllegalStateException("Library "+f+" doesn't exist");
-					result.add(f.toURI().toURL());
-				} catch (MalformedURLException e1) {
-				}
-			}
-		}// for
-		/*
-		 * resolve sandbox URL's
-		 */
-		for (int i = 0; i < result.size(); ++i) {
-			URL url = result.get(i);
-			if (SandboxUrlUtils.isSandboxUrl(url)) {
-				URL localUrl = SandboxUrlUtils.toLocalFileUrl(url);
-				if (localUrl != null) {
-					result.set(i, localUrl);
-				} else {
-					throw new RuntimeException("Could not resolve sandbox URL: " + url);
-				}
-			}
+		try {
+			return ClassLoaderUtils.getClassloaderUrls(contextURL, libraryPath);
+		} catch (Exception e) {
+			throw new JetelRuntimeException("Can not create JMS connection.", e);
 		}
-		return (URL[]) result.toArray(new URL[result.size()]);
 	}
 
 	/**

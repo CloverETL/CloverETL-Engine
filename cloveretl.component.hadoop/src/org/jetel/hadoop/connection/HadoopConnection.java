@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,9 +50,9 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -278,32 +279,14 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		List<URL> providerClassPath = new ArrayList<URL>();
 
 		if (contextURL == null) {
-			TransformationGraph graph = ContextProvider.getGraph();
-			if (graph != null) {
-				contextURL = graph.getRuntimeContext().getContextURL();
-			}
+			contextURL = ContextProvider.getContextURL();
 		}
 		
-		if (hadoopCoreJar != null && !hadoopCoreJar.isEmpty()) {
-			String urls[] = parseHadoopJarsList(hadoopCoreJar);
-			for (String url : urls) {
-				try {
-					URL hadoopJar = FileUtils.getFileURL(contextURL, url);
-					/* CL-2638 - sandbox URLs cannot be used in a classpath:
-					 * resolve sandbox URL's
-					 */
-					if (SandboxUrlUtils.isSandboxUrl(hadoopJar)) {
-						URL localUrl = SandboxUrlUtils.toLocalFileUrl(hadoopJar);
-						if (localUrl != null) {
-							hadoopJar = localUrl;
-						} else {
-							throw new ComponentNotReadyException("Could not resolve sandbox URL: " + hadoopJar);
-						}
-					}
-					providerClassPath.add(hadoopJar);
-				} catch (MalformedURLException ex) {
-					throw new ComponentNotReadyException("Cannot load library from '" + url + "'", ex);
-				}
+		if (!StringUtils.isEmpty(hadoopCoreJar)) {
+			try {
+				providerClassPath = Arrays.asList(ClassLoaderUtils.getClassloaderUrls(contextURL, hadoopCoreJar));
+			} catch (Exception e) {
+				throw new ComponentNotReadyException("Can not create Hadoop connection '" + getId() + "'.", e);
 			}
 		}
 
