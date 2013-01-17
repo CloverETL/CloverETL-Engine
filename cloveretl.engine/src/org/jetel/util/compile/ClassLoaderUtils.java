@@ -198,9 +198,13 @@ public class ClassLoaderUtils {
 	}
 
 	/**
-	 * Ensures that directory paths contains '/' at the end so that URLClassLoader will treat is as directory.
+	 * Convert the given classpath in string form to array of URLs, which
+	 * are suitable for classloader initialization.
+	 * The method ensures that directory paths contains '/' at the end
+	 * so that URLClassLoader will treat is as directory.
+	 * Sandbox urls are converted into basic file protocol, if possible.
 	 */
-	private static URL[] getClassloaderUrls(URL contextUrl, String classpath) throws MalformedURLException {
+	public static URL[] getClassloaderUrls(URL contextUrl, String classpath) throws MalformedURLException {
 		String paths[] = classpath.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
 		URL urls[] = FileUtils.getFileUrls(contextUrl, paths);
 		/*

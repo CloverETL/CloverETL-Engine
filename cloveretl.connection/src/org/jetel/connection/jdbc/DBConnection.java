@@ -20,7 +20,6 @@ package org.jetel.connection.jdbc;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -47,7 +46,6 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
 import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
-import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -57,9 +55,9 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
@@ -879,28 +877,11 @@ public class DBConnection extends GraphElement implements IConnection {
 
 	private void prepareDriverLibraryURLs() throws ComponentNotReadyException {
 		if(!StringUtils.isEmpty(driverLibrary)) {
-	        String[] libraryPaths = driverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-	    	driverLibraryURLs = new URL[libraryPaths.length];
-	
-	    	for(int i = 0; i < libraryPaths.length; i++) {
-	            try {
-	                driverLibraryURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, libraryPaths[i]);
-	                
-	                if (SandboxUrlUtils.isSandboxUrl(driverLibraryURLs[i])) {
-	                	/*
-	                	 * convert sandbox URL's for URLClassLoader can handle only certain types of URL's (file, http)
-	                	 * despite its name
-	                	 */
-	                	URL localUrl = SandboxUrlUtils.toLocalFileUrl(driverLibraryURLs[i]);
-	                	if (localUrl == null) {
-	                		throw new ComponentNotReadyException("Could not resolve sandbox URL to local resource: " + driverLibraryURLs[i]);
-	                	} else {
-	                		driverLibraryURLs[i] = localUrl;
-	                	}
-	                }
-	            } catch (MalformedURLException ex1) { 
-	                throw new ComponentNotReadyException("Can not create JDBC connection '" + getId() + "'. Malformed URL: " + ex1.getMessage(), ex1);
-	            }
+			URL contextURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
+			try {
+				driverLibraryURLs = ClassLoaderUtils.getClassloaderUrls(contextURL, driverLibrary);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException("Can not create JDBC connection '" + getId() + "'.", e);
 	        }
 		}
 	}
