@@ -556,6 +556,23 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
+	 * Returns the data type of a field based on the field's position within a data record.
+	 *
+	 * @param fieldNumber the ordinal number of the requested field
+	 *
+	 * @return the type of the field
+	 */
+	public DataFieldType getFieldDataType(int fieldNumber) {
+		DataFieldMetadata field = getField(fieldNumber);
+
+		if (field != null) {
+			return field.getDataType();
+		}
+
+		return DataFieldType.UNKNOWN;
+	}
+
+	/**
 	 * Returns the type of a field based on the field's name.
 	 * 
 	 * @param fieldName the name of the requested field
