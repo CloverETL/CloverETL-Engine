@@ -32,9 +32,7 @@ import org.jetel.metadata.DataFieldContainerType;
  * 
  * @created 20 Dec 2010
  */
-public abstract class WritableValue implements Writable {
-
-	protected WritableContainer parent;
+public abstract class WritableValue extends BaseWritable {
 	
 	public static WritableValue newInstance(NodeValue... value) {
 		if (value == null) {
@@ -56,18 +54,10 @@ public abstract class WritableValue implements Writable {
 		}
 	}
 	
-	public WritableContainer getParentContainer() {
-		return parent;
-	}
-	
-	void setParentContainer(WritableContainer container) {
-		this.parent = container;
-	}
-	
 	abstract boolean isValuesList();
 
 	@Override
-	public abstract boolean isEmpty(DataRecord[] availableData);
+	public abstract boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData);
 
 	public abstract Object getContent(DataRecord[] availableData);
 
@@ -80,7 +70,7 @@ public abstract class WritableValue implements Writable {
 		}
 
 		@Override
-		public boolean isEmpty(DataRecord[] availableData) {
+		public boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData) {
 			for (NodeValue element : value) {
 				if (!element.isEmpty(availableData)) {
 					return false;
@@ -118,8 +108,14 @@ public abstract class WritableValue implements Writable {
 		}
 
 		@Override
-		public boolean isEmpty(DataRecord[] availableData) {
-			return value.isEmpty(availableData);
+		public boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData) {
+			
+			if (isValuesList() && !formatter.isListSupported()) {
+				ListDataField field = (ListDataField)getContent(availableData);
+				return field.isNull() || field.getSize() == 0;
+			} else {
+				return value.isEmpty(availableData);
+			}
 		}
 		
 		@Override
@@ -134,7 +130,7 @@ public abstract class WritableValue implements Writable {
 				if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
 					ListDataField field = (ListDataField)getContent(availableData);
 					if (!field.isNull()) {
-						char currentName[] = parent.name.getValue(availableData);
+						char currentName[] = getParentContainer().name.getValue(availableData);
 						for (int i = 0; i < field.getSize(); ++i) {
 							/*
 							 * first element is opened by parent already

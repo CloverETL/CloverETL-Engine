@@ -29,7 +29,7 @@ import org.jetel.exception.JetelException;
  * 
  * @created 20 Dec 2010
  */
-public class WritableNamespace implements Writable {
+public class WritableNamespace extends BaseWritable {
 
 	private final char[] prefix;
 	private final char[] namespaceURI;
@@ -45,8 +45,7 @@ public class WritableNamespace implements Writable {
 	}
 
 	@Override
-	public boolean isEmpty(DataRecord[] availableData) {
+	public boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData) {
 		return false;
 	}
-
 }

@@ -35,6 +35,7 @@ public interface Writable {
 
 	public void write(TreeFormatter formatter, DataRecord[] availableData) throws JetelException, IOException;
 
-	public boolean isEmpty(DataRecord[] availableData);
+	public boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData);
 
+	WritableContainer getParentContainer();
 }
