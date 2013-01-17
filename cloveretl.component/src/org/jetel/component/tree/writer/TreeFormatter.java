@@ -111,6 +111,10 @@ public abstract class TreeFormatter extends AbstractFormatter {
 
 	public abstract TreeWriter getTreeWriter();
 	
+	/**
+	 * Whether receiver is capable directly assign list data fields.
+	 * @return
+	 */
 	public abstract boolean isListSupported();
 
 	public CollectionWriter getCollectionWriter() {

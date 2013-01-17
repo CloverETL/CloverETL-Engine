@@ -58,7 +58,7 @@ public class WritableObject extends WritableContainer {
 			for (Writable child : children) {
 				child.write(formatter, availableData);
 			}
-		} else if (!isNodeEmpty(availableData)) {
+		} else if (!isNodeEmpty(formatter, availableData)) {
 			MappingWriteState state = formatter.getMapping().getState();
 			char[] nodeName = name.getValue(availableData);
 			if (!hidden && (state == MappingWriteState.ALL || state == MappingWriteState.HEADER)) {
@@ -83,15 +83,18 @@ public class WritableObject extends WritableContainer {
 	}
 
 	@Override
-	public boolean isNodeEmpty(DataRecord[] availableData) {
+	public boolean isNodeEmpty(TreeFormatter formatter, DataRecord[] availableData) {
+		/* namespaces alone do not count - 
+		 * something need to be actually written
 		if (namespaces.length > 0) {
 			return false;
 		}
-		if (!super.isNodeEmpty(availableData)) {
+		*/
+		if (!super.isNodeEmpty(formatter, availableData)) {
 			return false;
 		}
 		for (Writable attribute : attributes) {
-			if (!attribute.isEmpty(availableData)) {
+			if (!attribute.isEmpty(formatter, availableData)) {
 				return false;
 			}
 		}
