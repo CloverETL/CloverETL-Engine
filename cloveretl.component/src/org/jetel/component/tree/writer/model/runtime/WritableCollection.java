@@ -42,7 +42,7 @@ public class WritableCollection extends WritableContainer {
 
 	@Override
 	public void writeContent(TreeFormatter formatter, DataRecord[] availableData) throws JetelException, IOException {
-		if (!isNodeEmpty(availableData)) {
+		if (!isNodeEmpty(formatter, availableData)) {
 			MappingWriteState state = formatter.getMapping().getState();
 			if (state != MappingWriteState.NOTHING) {
 				for (Writable child : children) {

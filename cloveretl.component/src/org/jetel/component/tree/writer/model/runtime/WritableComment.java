@@ -30,7 +30,7 @@ import org.jetel.exception.JetelException;
  * 
  * @created 31 Mar 2011
  */
-public class WritableComment implements Writable {
+public class WritableComment extends BaseWritable {
 
 	private WritableValue value;
 
@@ -47,8 +47,7 @@ public class WritableComment implements Writable {
 	}
 
 	@Override
-	public boolean isEmpty(DataRecord[] availableData) {
+	public boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData) {
 		return false;
 	}
-
 }

@@ -31,7 +31,6 @@ import org.jetel.component.tree.writer.CommentWriter;
 import org.jetel.component.tree.writer.NamespaceWriter;
 import org.jetel.component.tree.writer.TreeWriter;
 import org.jetel.data.Defaults;
-import org.jetel.data.ListDataField;
 import org.jetel.exception.JetelException;
 
 /**
@@ -233,24 +232,7 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 	@Override
 	public void writeLeaf(Object value) throws JetelException {
 		performDeferredWrite();
-
-		if (value instanceof ListDataField) {
-			ListDataField list = (ListDataField) value;
-			char[] elementName = elementNameStack[depth - 1];
-			for (int i = 0; i < list.getSize(); i++) {
-				// for first element startNode is already written
-				if (i > 0) {
-					writeStartNode(elementName);
-				}
-
-				writeLeaf(list.getField(i));
-
-				// for last element endNode will be called right away
-				if (i < list.getSize() - 1) {
-					writeEndNode(elementName);
-				}
-			}
-		} else {
+		if (value != null) {
 			writeValue(value);
 		}
 	}

@@ -57,6 +57,11 @@ public class XmlFormatter extends TreeFormatter {
 		this.version = version;
 		this.omitNewLines = omitNewLines;
 	}
+	
+	@Override
+	public boolean isListSupported() {
+		return false;
+	}
 
 	@Override
 	public void setDataTarget(Object outputDataTarget) throws IOException {

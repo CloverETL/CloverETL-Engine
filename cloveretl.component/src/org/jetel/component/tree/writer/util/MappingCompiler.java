@@ -157,7 +157,7 @@ public class MappingCompiler extends AbstractVisitor {
 		Set<DataFieldMetadataWrapper> writeNullSet = gatherNullSet(writeNull, omitNull, element.getParent());
 
 		for (DataFieldMetadataWrapper dataFieldWrapper : availableFields) {
-			WritableValue value = WritableValue.newInstance(new NodeValue[] { new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex) });
+			WritableValue value = WritableValue.newInstance(new NodeValue[] { new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex, dataFieldWrapper.dataFieldMetadata.getContainerType()) });
 			WritableAttribute attribute = new WritableAttribute(dataFieldWrapper.dataFieldMetadata.getName(), dataFieldWrapper.namespace, value, writeNullSet.contains(dataFieldWrapper));
 			currentParent.addAttribute(attribute);
 		}
@@ -174,7 +174,7 @@ public class MappingCompiler extends AbstractVisitor {
 		Set<DataFieldMetadataWrapper> writeNullSet = gatherNullSet(writeNull, omitNull, element.getParent());
 
 		for (DataFieldMetadataWrapper dataFieldWrapper : availableFields) {
-			WritableValue value = WritableValue.newInstance(new NodeValue[] { new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex) });
+			WritableValue value = WritableValue.newInstance(new NodeValue[] { new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex, dataFieldWrapper.dataFieldMetadata.getContainerType()) });
 			WritableObject subNode = new WritableObject(dataFieldWrapper.dataFieldMetadata.getName(), dataFieldWrapper.namespace, writeNullSet.contains(dataFieldWrapper), false);
 			subNode.addChild(value);
 			currentParent.addChild(subNode);
@@ -493,13 +493,15 @@ public class MappingCompiler extends AbstractVisitor {
 			try {
 				portIndex = Integer.valueOf(portName);
 				inputPortIndex = getFirstLocalPortIndex(portName, availableData, inPorts);
-				DynamicValue dynValue = new DynamicValue(portIndex, inPorts.get(inputPortIndex).getFieldPosition(fieldName));
+				DynamicValue dynValue = new DynamicValue(portIndex, inPorts.get(inputPortIndex).getFieldPosition(fieldName),
+						inPorts.get(inputPortIndex).getField(fieldName).getContainerType());
 				value.add(dynValue);
 			} catch (NumberFormatException ex) {
 				for (Integer inPortIndex : availableData) {
 					DataRecordMetadata recordMetadata = inPorts.get(inPortIndex);
 					if (recordMetadata.getName().equals(portName)) {
-						DynamicValue dynValue = new DynamicValue(inPortIndex, recordMetadata.getFieldPosition(fieldName));
+						DynamicValue dynValue = new DynamicValue(inPortIndex, recordMetadata.getFieldPosition(fieldName),
+							recordMetadata.getField(fieldName).getContainerType());
 						value.add(dynValue);
 						break;
 					}

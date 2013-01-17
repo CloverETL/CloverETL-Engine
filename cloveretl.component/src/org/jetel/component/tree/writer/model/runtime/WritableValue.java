@@ -21,7 +21,9 @@ package org.jetel.component.tree.writer.model.runtime;
 import org.jetel.component.tree.writer.TreeFormatter;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
 import org.jetel.data.DataRecord;
+import org.jetel.data.ListDataField;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldContainerType;
 
 /**
  * class representing xml text node, can be used as a value of attribute or element.
@@ -30,8 +32,8 @@ import org.jetel.exception.JetelException;
  * 
  * @created 20 Dec 2010
  */
-public abstract class WritableValue implements Writable {
-
+public abstract class WritableValue extends BaseWritable {
+	
 	public static WritableValue newInstance(NodeValue[] value) {
 		if (value == null) {
 			throw new NullPointerException("value");
@@ -45,14 +47,17 @@ public abstract class WritableValue implements Writable {
 
 	@Override
 	public void write(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
+		
 		MappingWriteState state = formatter.getMapping().getState();
 		if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
 			formatter.getTreeWriter().writeLeaf(getContent(availableData));
 		}
 	}
+	
+	abstract boolean isValuesList();
 
 	@Override
-	public abstract boolean isEmpty(DataRecord[] availableData);
+	public abstract boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData);
 
 	public abstract Object getContent(DataRecord[] availableData);
 
@@ -65,7 +70,7 @@ public abstract class WritableValue implements Writable {
 		}
 
 		@Override
-		public boolean isEmpty(DataRecord[] availableData) {
+		public boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData) {
 			for (NodeValue element : value) {
 				if (!element.isEmpty(availableData)) {
 					return false;
@@ -82,11 +87,16 @@ public abstract class WritableValue implements Writable {
 			}
 			return builder.toString();
 		}
+		
+		@Override
+		boolean isValuesList() {
+			return false;
+		}
 	}
 
 	private static class WritableSimpleValue extends WritableValue {
 
-		private final NodeValue value;
+		protected final NodeValue value;
 
 		WritableSimpleValue(NodeValue value) {
 			this.value = value;
@@ -98,9 +108,59 @@ public abstract class WritableValue implements Writable {
 		}
 
 		@Override
-		public boolean isEmpty(DataRecord[] availableData) {
-			return value.isEmpty(availableData);
+		public boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData) {
+			
+			if (isValuesList() && !formatter.isListSupported()) {
+				ListDataField field = (ListDataField)getContent(availableData);
+				return field.isNull() || field.getSize() == 0;
+			} else {
+				return value.isEmpty(availableData);
+			}
+		}
+		
+		@Override
+		public void write(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
+			
+			if (isValuesList() && !formatter.isListSupported()) {
+				/*
+				 * in this case project List value as sequence
+				 * of elements (XML)
+				 */
+				MappingWriteState state = formatter.getMapping().getState();
+				if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
+					ListDataField field = (ListDataField)getContent(availableData);
+					if (!field.isNull()) {
+						char currentName[] = getParentContainer().name;
+						for (int i = 0; i < field.getSize(); ++i) {
+							/*
+							 * first element is opened by parent already
+							 */
+							if (i > 0) {
+								formatter.getTreeWriter().writeStartNode(currentName);
+								for (WritableNamespace namespace : parent.namespaces) {
+									namespace.write(formatter, availableData);
+								}
+								for (WritableAttribute attr : parent.attributes) {
+									attr.write(formatter, availableData);
+								}
+							}
+							formatter.getTreeWriter().writeLeaf(field.getField(i));
+							/*
+							 * last element will be closed by parent
+							 */
+							if (i < field.getValue().size() - 1) {
+								formatter.getTreeWriter().writeEndNode(currentName);
+							}
+						}
+					}
+				}
+			} else {
+				super.write(formatter, availableData);
+			}
+		}
+		
+		boolean isValuesList() {
+			return value.getFieldContainerType() == DataFieldContainerType.LIST;
 		}
 	}
-
 }

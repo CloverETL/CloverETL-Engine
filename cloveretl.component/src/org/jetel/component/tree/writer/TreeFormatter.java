@@ -110,6 +110,12 @@ public abstract class TreeFormatter implements Formatter {
 	}
 
 	public abstract TreeWriter getTreeWriter();
+	
+	/**
+	 * Whether receiver is capable directly assign list data fields.
+	 * @return
+	 */
+	public abstract boolean isListSupported();
 
 	public CollectionWriter getCollectionWriter() {
 		throw new UnsupportedOperationException("This format does not support collections");

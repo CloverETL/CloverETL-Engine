@@ -258,5 +258,4 @@ public class MappingWriter implements MappingVisitor {
 		}
 		return null;
 	}
-
 }

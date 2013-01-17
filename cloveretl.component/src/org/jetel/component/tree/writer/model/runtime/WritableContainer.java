@@ -30,7 +30,7 @@ import org.jetel.exception.JetelException;
  * 
  * @created 9.1.2012
  */
-public abstract class WritableContainer implements Writable {
+public abstract class WritableContainer extends BaseWritable {
 
 	private PortBinding portBinding;
 
@@ -78,12 +78,12 @@ public abstract class WritableContainer implements Writable {
 	}
 
 	@Override
-	public final boolean isEmpty(DataRecord[] availableData) {
+	public final boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData) {
 		if (portBinding != null) {
 			return false;
 		}
 
-		return isNodeEmpty(availableData);
+		return isNodeEmpty(formatter, availableData);
 	}
 
 	public void addChild(Writable element) {
@@ -91,6 +91,10 @@ public abstract class WritableContainer implements Writable {
 		System.arraycopy(children, 0, newArray, 0, children.length);
 		newArray[children.length] = element;
 		children = newArray;
+		if (element instanceof BaseWritable) {
+			BaseWritable child = (BaseWritable)element;
+			child.setParentContainer(this);
+		}
 	}
 
 	public void addAttribute(WritableAttribute element) {
@@ -98,6 +102,7 @@ public abstract class WritableContainer implements Writable {
 		System.arraycopy(attributes, 0, newArray, 0, attributes.length);
 		newArray[attributes.length] = element;
 		attributes = newArray;
+		element.setParentContainer(this);
 	}
 
 	public void addNamespace(WritableNamespace element) {
@@ -105,6 +110,7 @@ public abstract class WritableContainer implements Writable {
 		System.arraycopy(namespaces, 0, newArray, 0, namespaces.length);
 		newArray[namespaces.length] = element;
 		namespaces = newArray;
+		element.setParentContainer(this);
 	}
 
 	public PortBinding getPortBinding() {
@@ -114,12 +120,12 @@ public abstract class WritableContainer implements Writable {
 	public abstract void writeContent(TreeFormatter formatter, DataRecord[] availableData)
 			throws JetelException, IOException;
 
-	protected boolean isNodeEmpty(DataRecord[] availableData) {
+	protected boolean isNodeEmpty(TreeFormatter formatter, DataRecord[] availableData) {
 		if (writeNull) {
 			return false;
 		}
 		for (Writable child : children) {
-			if (!child.isEmpty(availableData)) {
+			if (!child.isEmpty(formatter, availableData)) {
 				return false;
 			}
 		}

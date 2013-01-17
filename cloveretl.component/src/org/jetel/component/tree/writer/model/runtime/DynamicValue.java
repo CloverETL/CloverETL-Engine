@@ -19,6 +19,7 @@
 package org.jetel.component.tree.writer.model.runtime;
 
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataFieldContainerType;
 
 /**
  * Class representing xml value which will be resolved from field of a record
@@ -31,10 +32,12 @@ public class DynamicValue implements NodeValue {
 
 	private final int port;
 	private final int fieldIndex;
+	private final DataFieldContainerType fieldContainerType;
 
-	public DynamicValue(int port, int fieldIndex) {
+	public DynamicValue(int port, int fieldIndex, DataFieldContainerType fieldContainerType) {
 		this.port = port;
 		this.fieldIndex = fieldIndex;
+		this.fieldContainerType = fieldContainerType;
 	}
 
 	@Override
@@ -45,5 +48,10 @@ public class DynamicValue implements NodeValue {
 	@Override
 	public Object getValue(DataRecord[] availableData) {
 		return availableData[port].getField(fieldIndex);
+	}
+	
+	@Override
+	public DataFieldContainerType getFieldContainerType() {
+		return fieldContainerType;
 	}
 }
