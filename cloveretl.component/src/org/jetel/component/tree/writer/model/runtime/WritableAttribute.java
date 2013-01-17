@@ -29,7 +29,7 @@ import org.jetel.exception.JetelException;
  * 
  * @created 20 Dec 2010
  */
-public class WritableAttribute implements Writable {
+public class WritableAttribute extends BaseWritable {
 	
 	private final DynamicName name;
 	private final WritableValue value;
@@ -44,14 +44,21 @@ public class WritableAttribute implements Writable {
 
 	@Override
 	public void write(TreeFormatter formatter, DataRecord[] availableData) throws JetelException {
-		if (writeNull || !isEmpty(availableData)) {
+		if (writeNull || !isEmpty(formatter, availableData)) {
 			formatter.getAttributeWriter().writeAttribute(name.getValue(availableData), value.getContent(availableData));
 		}
 	}
 
 	@Override
-	public boolean isEmpty(DataRecord[] availableData) {
-		return !writeNull && value.isEmpty(availableData);
+	public boolean isEmpty(TreeFormatter formatter, DataRecord[] availableData) {
+		return !writeNull && value.isEmpty(formatter, availableData);
 	}
-
+	
+	public boolean hasValueBoundChildren() {
+		return value != null;
+	};
+	
+	WritableValue getValue() {
+		return value;
+	}
 }
