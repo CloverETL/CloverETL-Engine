@@ -159,6 +159,7 @@ public abstract class WritableValue extends BaseWritable {
 			}
 		}
 		
+		@Override
 		boolean isValuesList() {
 			return value.getFieldContainerType() == DataFieldContainerType.LIST;
 		}
