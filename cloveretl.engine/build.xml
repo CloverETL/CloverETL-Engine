@@ -963,7 +963,6 @@ defined.version.suffix=release
 			<batchtest todir="${dir.testsresult}">
 				<fileset dir="${dir.src.test}" excludes="${test.exclude}">
 					<include name="${test.include}"/>
-					<include name="${test.include2}" />
 				</fileset>
 			</batchtest>
 			<formatter type="plain"/>
