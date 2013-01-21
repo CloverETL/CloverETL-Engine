@@ -280,7 +280,7 @@ public class runGraph {
             	    @Override
             	    protected PasswordAuthentication getPasswordAuthentication() {
             	        if (getRequestorType() == RequestorType.PROXY) {
-            	            String prot = getRequestingProtocol().toLowerCase();
+            	            String prot = getRequestingURL().getProtocol().toLowerCase();
             	            String host = System.getProperty(prot + ".proxyHost", "");
             	            String port = System.getProperty(prot + ".proxyPort", "");
             	            String user = System.getProperty(prot + ".proxyUser", "");
