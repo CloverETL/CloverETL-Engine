@@ -385,7 +385,9 @@ public class Dedup extends Node {
 	 */
 	private void freeLast() {
 		try {
-			ringBuffer.free();
+			if (ringBuffer != null) {
+				ringBuffer.free();
+			}
 		} catch (IOException e) {
 			logger.warn(e);
 		}
