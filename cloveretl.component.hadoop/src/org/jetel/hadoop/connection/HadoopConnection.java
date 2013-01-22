@@ -284,7 +284,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		
 		if (!StringUtils.isEmpty(hadoopCoreJar)) {
 			try {
-				providerClassPath = Arrays.asList(ClassLoaderUtils.getClassloaderUrls(contextURL, hadoopCoreJar));
+				providerClassPath = new ArrayList<URL>(Arrays.asList(ClassLoaderUtils.getClassloaderUrls(contextURL, hadoopCoreJar)));
 			} catch (Exception e) {
 				throw new ComponentNotReadyException("Can not create Hadoop connection '" + getId() + "'.", e);
 			}
