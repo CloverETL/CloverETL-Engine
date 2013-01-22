@@ -428,6 +428,7 @@ public class DBJoin extends Node {
 
 		lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_" + this.getId(), (DBConnection) conn, dbMetadata, query, maxCached); //$NON-NLS-1$
 		lookupTable.setGraph(getGraph());
+		lookupTable.setStoreNulls(true);
 		lookupTable.checkConfig(null);
 		lookupTable.init();
 
