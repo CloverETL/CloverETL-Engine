@@ -253,6 +253,35 @@ public class FileUtils {
     	return getFileURL(contextURL, fileURL, true);
     }
     
+    private static Pattern DRIVE_LETTER_PATTERN = Pattern.compile("\\A\\p{Alpha}:[/\\\\]");
+    
+    /**
+     * Returns <code>true</code> if <code>fileURL</code> specifies a protocol.
+     * On Windows, single letters are not considered protocol names.
+     * 
+     * @param contextURL
+     * @param fileURL
+     * @return
+     */
+    private static boolean isUnknownProtocol(URL contextURL, String fileURL) {
+    	if (fileURL != null) {
+    		try {
+    			URL url = new URL(contextURL, fileURL, GENERIC_HANDLER);
+    			String protocol = url.getProtocol();
+    			if (!protocol.isEmpty()) {
+    				if (protocol.length() == 1 && PlatformUtils.isWindowsPlatform()) {
+    					return !DRIVE_LETTER_PATTERN.matcher(fileURL).find(); 
+    				}
+    				
+    				return true;
+    			}
+    		} catch (MalformedURLException ex) {
+    		}
+    	}
+		
+		return false;
+    }
+    
     /**
      * Creates URL object based on specified fileURL string. Handles
      * situations when <code>fileURL</code> contains only path to file
@@ -305,7 +334,12 @@ public class FileUtils {
 			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, new ArchiveURLStreamHandler(contextURL));
 		}
 		
-        // file url
+		// throw and exception if fileURL specifies a protocol (drive letters are ignored)
+		if (isUnknownProtocol(contextURL, fileURL)) {
+			return new URL(contextURL, fileURL);
+		}
+
+		// file url
 		String prefix = FILE_PROTOCOL + ":";
 		if (addStrokePrefix && new File(fileURL).isAbsolute() && !fileURL.startsWith("/")) {
 			prefix += "/";
