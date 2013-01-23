@@ -1125,7 +1125,7 @@ public class HttpConnector extends Node {
 
 			if (getProxy() != null) {
 				try {
-					proxyURL = new URL(getProxy());
+					proxyURL = FileUtils.getFileURL(getProxy());
 				} catch (MalformedURLException e) {
 					throw new ComponentNotReadyException("Given proxy URL '" + getProxy() + "' is invalid.");
 				}
