@@ -72,7 +72,21 @@ public class FileUtilsTest extends CloverTestCase {
 	
 			String result7 = FileUtils.normalizeFilePath(FileUtils.getFile(new URL("file:c:/project/"), "c:/other Project/data.txt"));
 			assertEquals("c:/other Project/data.txt", result7);
+			
+			URL result8 = FileUtils.getFileURL("C:/Windows", "C:/Users");
+			assertEquals(new URL("file:/C:/Users"), result8);
+
     	}
+
+    	try {
+			FileUtils.getFileURL("C:/Windows", "unknownprotocol://home/agad/fileManipulation/graph/");
+			fail("MalformedURLException expected");
+		} catch (MalformedURLException ex) {}
+
+		try {
+			FileUtils.getFileURL("C:/Windows", "unknownprotocol:(C:/Users/file.txt)");
+			fail("MalformedURLException expected");
+		} catch (MalformedURLException ex) {}
 	}
 	
 	public void testGetFileURLLinux() throws MalformedURLException {
