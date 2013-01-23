@@ -256,6 +256,7 @@ public class FileUtils {
     private static Pattern DRIVE_LETTER_PATTERN = Pattern.compile("\\A\\p{Alpha}:[/\\\\]");
     
     private static final String PORT_PROTOCOL = "port";
+    private static final String DICTIONARY_PROTOCOL = "dict";
     
     /**
      * Returns <code>true</code> if <code>fileURL</code> specifies a protocol.
@@ -270,7 +271,7 @@ public class FileUtils {
     		try {
     			URL url = new URL(contextURL, fileURL, GENERIC_HANDLER);
     			String protocol = url.getProtocol();
-    			if (!protocol.isEmpty() && !protocol.equals(PORT_PROTOCOL)) {
+    			if (!protocol.isEmpty() && !protocol.equals(PORT_PROTOCOL) && !protocol.equals(DICTIONARY_PROTOCOL)) {
     				if (protocol.length() == 1 && PlatformUtils.isWindowsPlatform()) {
     					return !DRIVE_LETTER_PATTERN.matcher(fileURL).find(); 
     				}
