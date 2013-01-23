@@ -15,6 +15,18 @@ REL 3-4-0-M1
 * SystemExecute - new attribute “Ignore exit value”
 * Write binary data without padding with 0
 
+REL-3-3-1
+---------
+
++ tracking reported in % (e.g. now it's "30%" vs previous "0.3")
+- FIXES:
+	- XMLExtract: autofilling does not work
+	- SystemExecute: Do not delete temp file if component fails
+	- Recapacity of this CloverBuffer is not allowed.
+	- CTLUtils class cannot be used in transformations
+	- Incorrect last modification date on SFTP
+	- Remove org.jetel.license dependency from org.jetel.component plugin
+
 REL 3-3-0
 ---------
 

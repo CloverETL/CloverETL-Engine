@@ -44,6 +44,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -273,30 +274,12 @@ public class RunGraph extends Node{
 		DataRecord outRec = initOutRecord();
 		if (pipelineMode) {
 			Result result = runSingleGraph(graphName, outRec, cloverCmdLineArgs);
-			if (result.code() == Result.FINISHED_OK.code()) {
-				writeOutRecord(outRec);
-			} else {								
-				writeErrRecord(outRec);
-			}
-			broadcastEOF();
-			boolean success = true;
-			if (result.code() == Result.ERROR.code()) {
-				logger.warn("Graph " + graphName +" finished with error.");
-				success = false;
-			} else if (result.code() == Result.ABORTED.code()) {
-				logger.warn("Run of graph " + graphName + " was aborted.");
-				success = false;
-			}
-			if (!success && !ignoreGraphFail) {
-				// if some graph failed and ignoreGraphFail parameter is false, throw an exception to fail whole graph
-				throw new JetelException("Graph '" + graphName + "' failed!");
-			}
+			writeRecord(result, outRec);
 			return Result.FINISHED_OK;
 		}			
 
 		// in-out mode
 		DataRecord inRecord = initInRecord();
-		boolean success = true;
 		String graphNameFromPort = null;
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
@@ -316,36 +299,12 @@ public class RunGraph extends Node{
 
 			try {
 				Result result = runSingleGraph(graphNameFromPort, outRec, cloverCommandLineArgs);
-				if (result.code() == Result.ERROR.code() || result.code() == Result.ABORTED.code()) {
-					success = false;
-				} else {
-					success = true;
-				}
+				writeRecord(result, outRec);
 			} catch (IOException e) {					
-				success = false;
-				logger.error("Exception while processing " + graphNameFromPort + ": "+ e.getMessage());
+				logError("Exception while processing '" + graphNameFromPort + "'. ", e);
 			}			
-			
-			writeOutRecord(outRec);
-			
-			if (!success && !ignoreGraphFail) {
-				if (inPort.readRecord(inRecord) != null) {
-					logger.warn("Some graphs wasn't executed (because graph " + 
-							StringUtils.quote(graphNameFromPort) + " finished with error).");
-				}
-				break;
-			}
 		} 
-		broadcastEOF();
 		
-		if (!success) {
-			logger.warn("Some graph(s) finished with error.");
-			if (!ignoreGraphFail) {
-				//if some graph failed and ignoreGraphFail parameter is false, throw an exception to fail whole graph
-				throw new JetelException("Graph '" + graphNameFromPort + "' failed!");
-			}
-		}
-
 		return Result.FINISHED_OK;
 	}
 	
@@ -363,16 +322,22 @@ public class RunGraph extends Node{
     }
 
 
-	private void writeOutRecord(DataRecord record) throws IOException, 
-			InterruptedException {
+   private void writeRecord(Result result, DataRecord record) throws IOException, InterruptedException {
+		if (result.code() == Result.FINISHED_OK.code()) {
+			writeOutRecord(record);
+		} else {
+			writeErrRecord(record);
+		}
+   }
+   
+	private void writeOutRecord(DataRecord record) throws IOException, InterruptedException {
 		if (outPort != null) {
 			outPort.writeRecord(record);
 		}
 	}
-	
-	private void writeErrRecord(DataRecord record) throws IOException, 
-			InterruptedException {
-		if (outPortErr != null) {								
+
+	private void writeErrRecord(DataRecord record) throws IOException, InterruptedException {
+		if (outPortErr != null) {
 			outPortErr.writeRecord(record);
 		}
 	}
@@ -490,12 +455,12 @@ public class RunGraph extends Node{
 		try {
 			exitValue = procBox.join();
 		} catch (InterruptedException ex) {
-			logger.error("InterruptedException in " + this.getId(), ex);
+			logError("InterruptedException in " + this.getId(), ex);
 			process.destroy();
 			return Result.ABORTED;					
 		}	
 			
-		if (!runIt) {			
+		if (!runIt) { //this is useless, isn't it?			
 			outputRecordData.setResult("Aborted");
 			outputRecordData.setDescription("\nSTOPPED");
 			return Result.ABORTED;
@@ -505,7 +470,7 @@ public class RunGraph extends Node{
 			outputRecordData.setResult("Error");
 			outputRecordData.setDescription(resultMsg);
 						
-			logger.info(graphName + ": Processing with an ERROR: " + "\n: " + resultMsg);
+            logError("Execution of graph '" + graphName + "' failed! " + resultMsg, null);
 			return Result.ERROR;
 		}				
 		
@@ -539,15 +504,15 @@ public class RunGraph extends Node{
 		outputRecordData.setRunId(rs.runId);
 		if (rs.status == Result.ABORTED) {
         	outputRecordData.setResult("Aborted");
-        	outputRecordData.setDescription("Graph execution aborted.");
-        	logger.info(graphFileName + ": " + "Execution of graph aborted!");
+        	outputRecordData.setDescription("Execution of graph '" + graphFileName + "' aborted!");
+        	logError("Execution of graph '" + graphFileName + "' aborted!", null);
 		} else if (rs.status == Result.FINISHED_OK) {
         	outputRecordData.setResult("Finished successfully");
     		outputRecordData.setDescription("");
 		} else {
         	outputRecordData.setResult(Result.ERROR.equals(rs.status) ? "Error" : rs.status.message());
-        	outputRecordData.setDescription("Execution of graph failed! " + assembleDescription(rs));
-            logger.info(graphFileName + ": " + "Execution of graph failed! " + assembleDescription(rs));
+        	outputRecordData.setDescription("Execution of graph '" + graphFileName + "' failed! " + assembleDescription(rs));
+            logError("Execution of graph '" + graphFileName + "' failed!", assembleException(rs));
 		}
 		return rs.status;
 	}
@@ -556,9 +521,21 @@ public class RunGraph extends Node{
 		String message = runStatus.errMessage;
 		String exception = runStatus.errException;
 		if (!StringUtils.isEmpty(message)) {
-			return message + (!StringUtils.isEmpty(exception) ? "\nDetails:\n" + exception : "");
+			return message + (!StringUtils.isEmpty(exception) ? "\nInner exception: " + exception : "");
 		} else {
-			return (!StringUtils.isEmpty(exception)) ? exception : "";
+			return (!StringUtils.isEmpty(exception)) ? "Inner exception: " + exception : "";
+		}
+	}
+
+	private Exception assembleException(RunStatus runStatus) {
+		return new JetelRuntimeException(assembleDescription(runStatus));
+	}
+
+	private void logError(String message, Throwable e) {
+		if (!ignoreGraphFail) {
+			throw new JetelRuntimeException(message, e);
+		} else {
+			logger.info(message, e);
 		}
 	}
 		
@@ -597,7 +574,8 @@ public class RunGraph extends Node{
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
-	@Override public void init() throws ComponentNotReadyException {
+	@Override
+	public void init() throws ComponentNotReadyException {
         if (isInitialized()) return;
 		super.init();
 	
