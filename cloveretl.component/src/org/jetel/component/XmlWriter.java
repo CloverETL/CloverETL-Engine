@@ -209,6 +209,9 @@ public class XmlWriter extends Node {
 	/** output XML root element attribute */
 	public static final String ATTRIBUTE_CREATED = "created";
 	
+	
+	public static final String XSI_URI = "http://www.w3.org/2001/XMLSchema-instance";
+	
 	/**
 	 * Map of portIndex => PortDefinition
 	 * It's read from XML during initialization.
@@ -785,24 +788,37 @@ public class XmlWriter extends Node {
 		}
 		
 		//if (recordsPerFile!=1){
-		if (this.useRootElement){
-			 AttributesImpl atts = new AttributesImpl();
-			 if (rootInfoAttributes){
-				 atts.addAttribute( "", "", ATTRIBUTE_COMPONENT_ID, "CDATA", getId());
-				 atts.addAttribute( "", "", ATTRIBUTE_GRAPH_NAME, "CDATA",this.getGraph().getName());
-				 atts.addAttribute( "", "", ATTRIBUTE_CREATED, "CDATA", (new Date()).toString());
-			 }
-			 if (!StringUtils.isEmpty(xsdSchemaLocation)) {
-				 atts.addAttribute( "", "", "xsi:schemaLocation", "CDATA", this.xsdSchemaLocation);
-			 }
-			 
-			 for (String prefix : namespaces.keySet()){
-				 String uri = namespaces.get(prefix);
-				 hd.startPrefixMapping(prefix, uri);
-			 }
-			 hd.startElement(rootDefaultNamespace, "", root, atts);
+		if (this.useRootElement) {
+			AttributesImpl atts = new AttributesImpl();
+			if (rootInfoAttributes) {
+				atts.addAttribute("", ATTRIBUTE_COMPONENT_ID, ATTRIBUTE_COMPONENT_ID, "CDATA", getId());
+				atts.addAttribute("", ATTRIBUTE_GRAPH_NAME, ATTRIBUTE_GRAPH_NAME, "CDATA", this.getGraph().getName());
+				atts.addAttribute("", ATTRIBUTE_CREATED, ATTRIBUTE_CREATED, "CDATA", (new Date()).toString());
+			}
+			if (!StringUtils.isEmpty(xsdSchemaLocation)) {
+				atts.addAttribute(XSI_URI, "schemaLocation", "xsi:schemaLocation", "CDATA", this.xsdSchemaLocation);
+			}
+
+			for (String prefix : namespaces.keySet()) {
+				String uri = namespaces.get(prefix);
+				hd.startPrefixMapping(prefix, uri);
+			}
+			if (!rootDefaultNamespace.isEmpty()) {
+				hd.startPrefixMapping("", rootDefaultNamespace);
+			}
+
+			hd.startElement(rootDefaultNamespace, getLocalName(root), root, atts);
 		}
 		return hd;
+	}
+	
+	private String getLocalName(String name) {
+		String[] parts = name.split(":", 2);
+		if (parts.length < 2) {
+			return name;
+		} else {
+			return parts[1];
+		}
 	}
 
 	private void createFooter(OutputStream os, TransformerHandler hd) throws TransformerConfigurationException, SAXException, IOException {
@@ -810,7 +826,7 @@ public class XmlWriter extends Node {
 			//if (recordsPerFile!=1){
 			if (this.useRootElement){
 				 String root = (rootElement!=null && rootElement.length()>0) ? rootElement : DEFAULT_ROOT_ELEMENT; 
-				 hd.endElement(rootDefaultNamespace, "", root);
+				 hd.endElement(rootDefaultNamespace, getLocalName(root), root);
 				 for (String prefix : namespaces.keySet())
 					 hd.endPrefixMapping(prefix);
 			}
@@ -892,7 +908,7 @@ public class XmlWriter extends Node {
 				 String name = dataRecord.getMetadata().getField(i).getName();
 				 if (portDefinition.fieldsNamespacePrefix != null)
 					 name = portDefinition.fieldsNamespacePrefix + ":" + name;
-				 atts.addAttribute("", "", name, "CDATA", value);
+				 atts.addAttribute("", name, name, "CDATA", value);
 			 } // for
 			 
 			 for (String prefix : portDefinition.namespaces.keySet()){
@@ -900,7 +916,7 @@ public class XmlWriter extends Node {
 				hd.startPrefixMapping(prefix, uri);
 			 }
 			 
-			 hd.startElement(portDefinition.defaultNamespace, "", outElementName, atts);
+			 hd.startElement(portDefinition.defaultNamespace, getLocalName(outElementName), outElementName, atts);
 
 			 // fields as elements
 			 for (int x=0; x<portDefinition.fieldsAsElementsIndexes.length; x++){
@@ -908,12 +924,16 @@ public class XmlWriter extends Node {
 				 DataField field = dataRecord.getField(i);
 				 atts.clear();
 				 String name = dataRecord.getMetadata().getField(i).getName();
-				 if (portDefinition.fieldsNamespacePrefix != null)
-					 name = portDefinition.fieldsNamespacePrefix + ":" + name;
-				 hd.startElement("", "", name, atts);
+				 String qname;
+				 if (portDefinition.fieldsNamespacePrefix != null) {
+					 qname = portDefinition.fieldsNamespacePrefix + ":" + name;
+				 } else {
+					 qname = name;
+				 }
+				 hd.startElement("", name, qname, atts);
 				 String value = field.toString();
 				 hd.characters(value.toCharArray(),0,value.length());
-				 hd.endElement("", "", name);
+				 hd.endElement("", name, qname);
 				 /*
 				 atts.addAttribute( "", "", ATTRIBUTE_FIELD_NAME,"CDATA", dataRecord.getMetadata().getField(i).getName());
 				 atts.addAttribute( "", "", ATTRIBUTE_FIELD_TYPE,"CDATA", Character.toString(field.getType()));
@@ -939,7 +959,7 @@ public class XmlWriter extends Node {
 			 }// for children
 
 			 //hd.endElement("","",ELEMENT_RECORD);
-			 hd.endElement(portDefinition.defaultNamespace, "", outElementName);
+			 hd.endElement(portDefinition.defaultNamespace, getLocalName(outElementName), outElementName);
 			 
 			 for (String prefix : portDefinition.namespaces.keySet())
 				 hd.endPrefixMapping(prefix);
@@ -1020,7 +1040,7 @@ public class XmlWriter extends Node {
 			String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
 			writer.setFileUrl(fileUrl);
 			
-			String rootDefaultNamespace = xattribs.getString(XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE, null);
+			String rootDefaultNamespace = xattribs.getString(XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE, "");
 			writer.setRootDefaultNamespace(rootDefaultNamespace);
 			
 			String xsdSchemaLocation = xattribs.getString(XML_XSD_LOCATION_ATTRIBUTE, null);
@@ -1127,7 +1147,7 @@ public class XmlWriter extends Node {
 		}
 
 		portData.namespaces = XmlWriter.getNamespaces(portAttribs.getString(XML_NAMESPACES_ATTRIBUTE, null));
-		portData.defaultNamespace = portAttribs.getString(XML_DEFAULT_NAMESPACE_ATTRIBUTE, null);
+		portData.defaultNamespace = portAttribs.getString(XML_DEFAULT_NAMESPACE_ATTRIBUTE, "");
 		portData.fieldsNamespacePrefix = portAttribs.getString(XML_NAMESPACE_PREFIX_ATTRIBUTE, null);
 		String s = portAttribs.getString(XML_FIELDS_AS_ATTRIBUTE, null);
 		portData.fieldsAsAttributes = false;
