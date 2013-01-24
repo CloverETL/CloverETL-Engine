@@ -331,10 +331,9 @@ public class XSLDataTransformer extends Node {
 	 */
 	public void initTransformer(InputStream xsltIs) throws ComponentNotReadyException {
 		transformer = new XSLTransformer();
-		transformer.setXSLT(xsltIs);
 		transformer.setCharset(charset);
 		try {
-			transformer.init();
+			transformer.init(xsltIs);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
 		}
