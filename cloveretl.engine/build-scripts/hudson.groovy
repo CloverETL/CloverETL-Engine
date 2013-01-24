@@ -218,7 +218,7 @@ void init(){
 	
 	ArrayList.metaClass.executeRsync = {
 		print "starting command: "; delegate.each{ print "'"+it+"' "}; println ""
-		def p = delegate.execute(procEnv, dir)
+		def p = delegate.execute()
 		p.waitForProcessOutput( System.out, System.err )
 		assert (p.exitValue() == 0 || p.exitValue() == 24) // rsync exits with 24 if some files vanish - usually ok
 	}
