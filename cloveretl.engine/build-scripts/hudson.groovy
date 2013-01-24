@@ -190,7 +190,7 @@ if( InetAddress.localHost.hostName != "linda" ) {
 	} else {
 		println "using default key" 
 	}
-	rsyncC.executeSave()
+	rsyncC.executeRsync()
 }
 
 
@@ -214,6 +214,13 @@ void init(){
 		def p = delegate.execute(procEnv, dir)
 		p.waitForProcessOutput( System.out, System.err )
 		assert p.exitValue() == 0
+	}
+	
+	ArrayList.metaClass.executeRsync = {
+		print "starting command: "; delegate.each{ print "'"+it+"' "}; println ""
+		def p = delegate.execute(procEnv, dir)
+		p.waitForProcessOutput( System.out, System.err )
+		assert (p.exitValue() == 0 || p.exitValue() == 24) // rsync exits with 24 if some files vanish - usually ok
 	}
 	
 	URL.metaClass.download = { File toFile ->
