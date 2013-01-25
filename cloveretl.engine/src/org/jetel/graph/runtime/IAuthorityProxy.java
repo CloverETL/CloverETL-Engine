@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -79,7 +80,7 @@ public abstract class IAuthorityProxy {
 	public static IAuthorityProxy getAuthorityProxy(TransformationGraph graph) {
 		return (graph != null) ? graph.getAuthorityProxy() : getDefaultProxy();
 	}
-		
+
 	public static class FileOperationResult {
 		public enum ProblemType {
 			GENERAL_OPERATION_FAILURE, FILE_NOT_FOUND, FILE_UNREADABLE, FILE_UNCHANGEABLE, GENERAL_COPY_ERROR, GENERAL_MOVE_ERROR, GENERAL_DELETE_ERROR, NOT_SANDBOX_URL, NO_PROBLEM
@@ -558,4 +559,7 @@ public abstract class IAuthorityProxy {
 	}
 	
 	public abstract File newTempDir(String label, int allocationHint) throws TempFileCreationException;
+	
+	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parentClassLoader, boolean greedyClassLoader);
+	
 }

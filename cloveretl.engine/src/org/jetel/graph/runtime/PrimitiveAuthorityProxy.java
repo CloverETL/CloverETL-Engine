@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.sql.Connection;
@@ -57,6 +59,7 @@ import org.jetel.main.runGraph;
 import org.jetel.util.FileConstrains;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.SeekableByteChannel;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -464,4 +467,21 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	public RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout) {
 		throw new UnsupportedOperationException("Profiler job execution is available only in CloverETL Server environment");
 	}
+
+	@Override
+	public ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedyClassLoader) {
+		if (parent == null) {
+			parent = PrimitiveAuthorityProxy.class.getClassLoader();
+		}
+        if (urls == null || urls.length == 0) {
+        	return parent;
+        } else {
+        	if (greedyClassLoader) {
+        		return new GreedyURLClassLoader(urls, parent);
+        	} else {
+        		return new URLClassLoader(urls, parent);
+        	}
+        }
+	}
+	
 }
