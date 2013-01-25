@@ -20,9 +20,16 @@ package org.jetel.component.fileoperation.pool;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 public abstract class AbstractPoolableConnection implements PoolableConnection {
 
+	private static final Log log = LogFactory.getLog(AbstractPoolableConnection.class);
+
 	protected final Authority authority;
+	
+	private boolean borrowed = false;
 	
 	public AbstractPoolableConnection(Authority authority) {
 		this.authority = authority;
@@ -41,11 +48,43 @@ public abstract class AbstractPoolableConnection implements PoolableConnection {
 		}
 	}
 
-	protected void returnToPool() {
-		try {
-			ConnectionPool.getInstance().returnObject(getAuthority(), this);
-		} catch (Exception e) {
-			e.printStackTrace(); // FIXME log
+	@Override
+	public boolean isBorrowed() {
+		return borrowed;
+	}
+
+	@Override
+	public void setBorrowed(boolean borrowed) {
+		this.borrowed = borrowed;
+	}
+
+	@Override
+	public boolean returnToPool() {
+		if (isBorrowed()) {
+			try {
+				ConnectionPool.getInstance().returnObject(getAuthority(), this);
+				return true;
+			} catch (Exception e) {
+				log.debug("Failed to return connection to the pool", e);
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Fallback - should not be used.
+	 * 
+	 * Instead of garbage collection, 
+	 * an attempt should be made to return the object to the pool,
+	 * but only if it's not in the pool already!
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		if (isBorrowed()) {
+			log.debug("Garbage collection of a borrowed connection, a possible leak");
+		}
+		if (!returnToPool()) {
+			super.finalize();
 		}
 	}
 
