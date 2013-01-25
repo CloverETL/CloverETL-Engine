@@ -62,6 +62,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
+import org.jetel.util.MiscUtils;
 
 /**
  * The FileManager and related classes
@@ -346,7 +347,7 @@ public class FileManager {
 					} catch (FileNotFoundException fnfe) {
 						result.addError(source, target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
 					} catch (Exception ex) {
-						result.addError(source, target, ex.getMessage());
+						result.addError(source, target, MiscUtils.exceptionChainToMessage(null, ex));
 					}
 				}
 			} else {
@@ -442,7 +443,7 @@ public class FileManager {
 					} catch (FileNotFoundException fnfe) {
 						result.addError(source, target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
 					} catch (Exception ex) {
-						result.addError(source, target, ex.getMessage());
+						result.addError(source, target, MiscUtils.exceptionChainToMessage(null, ex));
 					}
 				}
 			} else {
@@ -724,7 +725,7 @@ public class FileManager {
 						} catch (FileNotFoundException fnfe) {
 							result.addError(target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
 						} catch (Exception ex) {
-							result.addError(target, ex.getMessage());
+							result.addError(target, MiscUtils.exceptionChainToMessage(null, ex));
 						}
 					}
 				} else {
@@ -768,7 +769,7 @@ public class FileManager {
 						result.addError(targetExpression, format(FileOperationMessages.getString("FileManager.resolve_failed"), targetExpression.getPath())); //$NON-NLS-1$
 					}
 				} catch (Exception ex) {
-					result.addError(targetExpression, ex.getMessage());
+					result.addError(targetExpression, MiscUtils.exceptionChainToMessage(null, ex));
 				}
 			}
 		}
@@ -993,7 +994,7 @@ public class FileManager {
 					} catch (FileNotFoundException fnfe) {
 						result.addError(target, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
 					} catch (Exception ex) {
-						result.addError(target, ex.getMessage());
+						result.addError(target, MiscUtils.exceptionChainToMessage(null, ex));
 					}
 				}
 			} else {
@@ -1038,7 +1039,7 @@ public class FileManager {
 			} catch (FileNotFoundException fnfe) {
 				result.addError(part, format(FileOperationMessages.getString("FileManager.file_not_found"), fnfe.getMessage())); //$NON-NLS-1$
 			} catch (Exception ex) {
-				result.addError(part, ex.getMessage());
+				result.addError(part, MiscUtils.exceptionChainToMessage(null, ex));
 			}
 		}
 		return result;
@@ -1091,7 +1092,7 @@ public class FileManager {
 			Info info = handler.info(singleTargetURI, params); 
 			result.add(singleTargetURI, info);
 		} catch (Exception ex) {
-			result.addError(singleTargetURI, ex.getMessage());
+			result.addError(singleTargetURI, MiscUtils.exceptionChainToMessage(null, ex));
 		}
 		return result;
 	}
