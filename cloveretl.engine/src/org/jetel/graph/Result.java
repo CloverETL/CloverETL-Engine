@@ -47,7 +47,8 @@ public enum Result {
     FINISHED_OK(0,"FINISHED_OK", true),
     ERROR(-1,"ERROR", true),
     ABORTED(-2,"ABORTED", true),
-    TIMEOUT(-3, "TIMEOUT", true);
+    TIMEOUT(-3, "TIMEOUT", true), 
+    UNKNOWN(-4, "UNKNOWN", true); 
     
     private final int code;
     private final String message;
