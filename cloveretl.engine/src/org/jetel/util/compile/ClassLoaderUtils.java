@@ -37,6 +37,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.LoadClassException;
 import org.jetel.graph.Node;
+import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
@@ -195,6 +196,21 @@ public class ClassLoaderUtils {
 		}
 
 		return classLoader;
+	}
+
+	public static ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
+		if (parent == null) {
+			parent = PrimitiveAuthorityProxy.class.getClassLoader();
+		}
+        if (urls == null || urls.length == 0) {
+        	return parent;
+        } else {
+        	if (greedy) {
+        		return new GreedyURLClassLoader(urls, parent);
+        	} else {
+        		return new URLClassLoader(urls, parent);
+        	}
+        }
 	}
 
 	/**
