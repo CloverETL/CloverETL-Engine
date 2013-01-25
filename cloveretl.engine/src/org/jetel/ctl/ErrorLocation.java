@@ -94,7 +94,11 @@ public final class ErrorLocation {
 
 	@Override
 	public String toString() {
-		return "Line " + beginLine + " column " + beginColumn + " - Line " + endLine + " column " + endColumn;
+		if (beginLine == endLine && beginColumn == endColumn) {
+			return "Line " + beginLine + " column " + beginColumn;
+		} else {
+			return "Line " + beginLine + " column " + beginColumn + " - Line " + endLine + " column " + endColumn;
+		}
 	}
 
 }
