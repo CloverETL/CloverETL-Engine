@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.string.StringUtils;
 
@@ -170,11 +171,7 @@ public class JdbcDriver {
     }
 
     private void prepareClassLoader() throws ComponentNotReadyException {
-        if(driverLibraries != null && driverLibraries.length > 0) {
-            classLoader = new GreedyURLClassLoader(driverLibraries, JdbcDriver.class.getClassLoader());
-        } else {
-            classLoader = JdbcDriver.class.getClassLoader();
-        }
+    	classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, null, true);
     }
     
     private void prepareDriver() throws ComponentNotReadyException {
