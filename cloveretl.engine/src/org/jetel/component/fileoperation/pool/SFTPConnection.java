@@ -24,17 +24,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.Proxy.Type;
+import java.net.URI;
 import java.net.URLDecoder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfo;
 import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfoIteractive;
+import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Proxy;
+import com.jcraft.jsch.ProxyHTTP;
+import com.jcraft.jsch.ProxySOCKS4;
+import com.jcraft.jsch.ProxySOCKS5;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 
@@ -53,11 +60,43 @@ public class SFTPConnection extends AbstractPoolableConnection {
 	private Session session = null;
 	private ChannelSftp channel = null;
 	
-	private Proxy proxy;
-	private Proxy proxy4;
-
 	public SFTPConnection(Authority authority) {
 		super(authority);
+	}
+	
+	private Proxy[] getProxies() {
+		String proxyString = authority.getProxyString();
+		if (!StringUtils.isEmpty(proxyString)) {
+			java.net.Proxy proxy = FileUtils.getProxy(authority.getProxyString());
+			if ((proxy != null) && (proxy.type() != Type.DIRECT)) {
+				URI proxyUri = URI.create(proxyString);
+				String hostName = proxyUri.getHost();
+				int port = proxyUri.getPort();
+				String userInfo = proxyUri.getUserInfo();
+				org.jetel.util.protocols.UserInfo proxyCredentials = null;
+				if (userInfo != null) {
+					proxyCredentials = new org.jetel.util.protocols.UserInfo(userInfo);
+				}
+				switch (proxy.type()) {
+				case HTTP:
+					ProxyHTTP proxyHttp = (port >= 0) ? new ProxyHTTP(hostName, port) : new ProxyHTTP(hostName);
+					if (proxyCredentials != null) {
+						proxyHttp.setUserPasswd(proxyCredentials.getUser(), proxyCredentials.getPassword());
+					}
+					return new Proxy[] {proxyHttp};
+				case SOCKS:
+					ProxySOCKS4 proxySocks4 = (port >= 0) ? new ProxySOCKS4(hostName, port) : new ProxySOCKS4(hostName);
+					ProxySOCKS5 proxySocks5 = (port >= 0) ? new ProxySOCKS5(hostName, port) : new ProxySOCKS5(hostName);
+					if (proxyCredentials != null) {
+						proxySocks4.setUserPasswd(proxyCredentials.getUser(), proxyCredentials.getPassword());
+						proxySocks5.setUserPasswd(proxyCredentials.getUser(), proxyCredentials.getPassword());
+					}
+					return new Proxy[] {proxySocks5, proxySocks4};
+				}
+			}
+		}
+		
+		return new Proxy[1];
 	}
 
 	/**
@@ -102,12 +141,13 @@ public class SFTPConnection extends AbstractPoolableConnection {
 		String username = user[0];
 		String password = user.length == 2 ? user[1] : null;
 
+		Proxy[] proxies = getProxies();
 		try {
 			log.trace("Connecting with password authentication");
-			return getSession(username, new URLUserInfo(password));
+			return getSession(username, new URLUserInfo(password), proxies);
 		} catch (Exception e) {
 			log.trace("Connecting with keyboard-interactive authentication");
-			return getSession(username, new URLUserInfoIteractive(password));
+			return getSession(username, new URLUserInfoIteractive(password), proxies);
 		}
 	}
 	
@@ -120,28 +160,35 @@ public class SFTPConnection extends AbstractPoolableConnection {
 		}
 	}
 
-	private Session getSession(String username, UserInfo password) throws IOException {
+	private Session getSession(String username, UserInfo password, Proxy[] proxies) throws IOException {
+		assert (proxies != null) && (proxies.length > 0);
+		
 		Session session;
 		try {
-			if (authority.getPort() == 0) session = jsch.getSession(username, authority.getHost());
-			else session = jsch.getSession(username, authority.getHost(), authority.getPort() == -1 ? DEFAULT_PORT : authority.getPort());
+			if (authority.getPort() == 0) {
+				session = jsch.getSession(username, authority.getHost());
+			} else {
+				session = jsch.getSession(username, authority.getHost(), authority.getPort() == -1 ? DEFAULT_PORT : authority.getPort());
+			}
 
 			// password will be given via UserInfo interface.
 			session.setUserInfo(password);
-			// TODO proxy support
-//			if (proxy != null) {
-//				proxy.setUserPasswd(user, passwd);
-//				session.setProxy(proxy);
-//			}
-			session.connect();
-			return session;
+			
+			Exception exception = null;
+			for (Proxy proxy: proxies) {
+				if (proxy != null) {
+					session.setProxy(proxy);
+				}
+				try {
+					session.connect();
+					return session;
+				} catch (Exception e) {
+					exception = e;
+				}
+			}
+			
+			throw exception;
 		} catch (Exception e) {
-//			if (proxy4 != null) {
-//				try {
-//					session.connect();
-//					return;
-//				} catch (JSchException e1) {}
-//			}
 			throw new IOException(e.getMessage());
 		}
 	}
