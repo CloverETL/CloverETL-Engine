@@ -84,5 +84,18 @@ public class ConnectionPool extends GenericKeyedObjectPool<Authority, PoolableCo
 		this.setTestWhileIdle(true); // destroy non-working idle connections
 		this.setMinEvictableIdleTimeMillis(MAX_IDLE_TIME); // if MAX_IDLE_TIME is exceeded, the connection will be destroyed upon next eviction
 	}
+
+	@Override
+	public PoolableConnection borrowObject(Authority authority) throws Exception {
+		PoolableConnection connection = super.borrowObject(authority);
+		connection.setBorrowed(true);
+		return connection;
+	}
+
+	@Override
+	public void returnObject(Authority authority, PoolableConnection connection) throws Exception {
+		connection.setBorrowed(false);
+		super.returnObject(authority, connection);
+	}
 	
 }
