@@ -65,6 +65,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -124,6 +125,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.stream.StreamUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -2659,8 +2661,23 @@ public class HttpConnector extends Node {
 
 		// configure proxy 
 		if (configuration.getProxyURL() != null) {
-			HttpHost proxy = new HttpHost(configuration.getProxyURL().getHost(), configuration.getProxyURL().getPort());
-			httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);			
+			String proxyHost = configuration.getProxyURL().getHost();
+			int proxyPort = configuration.getProxyURL().getPort();
+			HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+			httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);	
+			
+			String userInfo = configuration.getProxyURL().getUserInfo();
+			if (!StringUtils.isEmpty(userInfo)) {
+				UserInfo proxyCredentials = new UserInfo(userInfo);
+				
+				String username = proxyCredentials.getUser();
+				String password = proxyCredentials.getPassword();
+				if ((username != null) && (password != null)) {
+					Credentials credentials = new UsernamePasswordCredentials(username, password);
+					AuthScope authScope = new AuthScope(proxyHost, proxyPort, AuthScope.ANY_REALM);
+					httpClient.getCredentialsProvider().setCredentials(authScope, credentials);
+				}
+			}
 		}
 
 		// configure authentication
