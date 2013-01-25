@@ -47,6 +47,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultProxyAuthenticationHandler;
 import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
+import org.jetel.util.protocols.ProxyConfiguration;
 
 import com.googlecode.sardine.DavResource;
 import com.googlecode.sardine.impl.SardineException;
