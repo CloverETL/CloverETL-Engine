@@ -225,7 +225,8 @@ public class FileManager {
 			manager.registerHandler(new DefaultOperationHandler());
 			manager.registerHandler(new WebdavOperationHandler());
 			manager.registerHandler(new S3OperationHandler());
-			manager.registerHandler(new SFTPOperationHandler());
+//			manager.registerHandler(new SFTPOperationHandler());
+			manager.registerHandler(new PooledSFTPOperationHandler());
 		}
 	}
 	
