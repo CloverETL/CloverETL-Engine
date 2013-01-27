@@ -16,37 +16,34 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.validator.params;
-
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlValue;
+package org.jetel.component.validator.utils;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 28.11.2012
+ * @created 4.12.2012
  */
-final public class StringValidationParamNode extends ValidationParamNode {
-	@XmlValue
-	String value = new String();
+public class ValidatorConverter {
 	
-	@SuppressWarnings("unused")
-	private StringValidationParamNode(){} // for JAXB
-	
-	public StringValidationParamNode(int key, String name) {
-		super(key, name);
-	}
-	
-	public StringValidationParamNode(int key, String name, String value) {
-		super(key, name);
-		this.setValue(value);
-	}
-	public String getValue() {
-		return value;
-	}
-	public void setValue(String other) {
-		if(other != null) {
-			value = other;
+	public Integer stringToInt(String in) {
+		try {
+			return Integer.parseInt(in);
+		} catch (NumberFormatException e) {
+			return null;
 		}
 	}
-
+	public Long stringToLong(String in) {
+		try {
+			return Long.parseLong(in);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
+	
+	public Double stringToDouble(String in) {
+		try {
+			return Double.parseDouble(in);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+	}
 }

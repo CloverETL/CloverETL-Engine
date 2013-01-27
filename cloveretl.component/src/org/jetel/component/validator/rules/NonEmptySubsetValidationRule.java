@@ -34,14 +34,14 @@ import org.jetel.data.DataRecord;
 @XmlRootElement(name="nonEmptySubset")
 public class NonEmptySubsetValidationRule extends StringValidationRule {
 	
-	public final static String GOAL = "goal";
-	public final static String COUNT = "count";
+	public final static int GOAL = 100;
+	public final static int COUNT = 101;
 	
 	@XmlElement(name="target",required=true)
 	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
-	@XmlElement(name="checkForEmptiness")
+	@XmlElement(name="checkForEmptiness",required=true)
 	private BooleanValidationParamNode checkForEmptiness = new BooleanValidationParamNode(GOAL, "Only empty field is valid", false);
-	@XmlElement(name="count")
+	@XmlElement(name="count",required=true)
 	private IntegerValidationParamNode count = new IntegerValidationParamNode(COUNT, "Number of fields", 1);
 	
 	public NonEmptySubsetValidationRule() {

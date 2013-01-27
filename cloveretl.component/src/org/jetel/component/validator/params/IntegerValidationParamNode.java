@@ -31,11 +31,11 @@ final public class IntegerValidationParamNode extends ValidationParamNode {
 	@SuppressWarnings("unused")
 	private IntegerValidationParamNode() {} // For JAXB
 	
-	public IntegerValidationParamNode(String key, String name) {
+	public IntegerValidationParamNode(int key, String name) {
 		super(key, name);
 	}
 	
-	public IntegerValidationParamNode(String key, String name, Integer value) {
+	public IntegerValidationParamNode(int key, String name, Integer value) {
 		super(key, name);
 		this.value = value;
 	}

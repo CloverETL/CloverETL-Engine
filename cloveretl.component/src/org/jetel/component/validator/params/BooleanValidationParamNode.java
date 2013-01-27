@@ -31,7 +31,7 @@ final public class BooleanValidationParamNode extends ValidationParamNode {
 	@SuppressWarnings("unused")
 	private BooleanValidationParamNode() {} // For JAXB 
 	
-	public BooleanValidationParamNode(String key, String name, boolean b) {
+	public BooleanValidationParamNode(int key, String name, boolean b) {
 		super(key, name);
 		this.b = b;
 	}

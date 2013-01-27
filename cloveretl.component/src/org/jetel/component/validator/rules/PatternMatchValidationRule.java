@@ -19,6 +19,7 @@
 package org.jetel.component.validator.rules;
 
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -35,12 +36,12 @@ import org.jetel.data.DataRecord;
 @XmlRootElement(name="patternMatch")
 public class PatternMatchValidationRule extends StringValidationRule {
 	
-	public final static String IGNORE_CASE = "ignorecase";
-	public final static String PATTERN = "pattern";
+	public final static int IGNORE_CASE = 100;
+	public final static int PATTERN = 101;
 	
 	@XmlElement(name="target",required=true)
 	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
-	@XmlElement(name="ignoreCase")
+	@XmlElement(name="ignoreCase",required=true)
 	private BooleanValidationParamNode ignoreCase = new BooleanValidationParamNode(IGNORE_CASE, "Ingore case", false);
 	@XmlElement(name="pattern",required=true)
 	private StringValidationParamNode pattern = new StringValidationParamNode(PATTERN, "Patern to match");
@@ -67,10 +68,15 @@ public class PatternMatchValidationRule extends StringValidationRule {
 		
 		String tempString = prepareInput(record.getField(target.getValue()));
 		Pattern pm;
-		if(ignoreCase.getValue()) {
-			pm = Pattern.compile(pattern.getValue(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-		} else {
-			pm = Pattern.compile(pattern.getValue(), Pattern.UNICODE_CASE);
+		try {
+			if(ignoreCase.getValue()) {
+				pm = Pattern.compile(pattern.getValue(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+			} else {
+				pm = Pattern.compile(pattern.getValue(), Pattern.UNICODE_CASE);
+			}
+		} catch (PatternSyntaxException e) {
+			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.INVALID + " (pattern is invalid)");
+			return State.INVALID;
 		}
 		if(pm.matcher(tempString).matches()) {
 			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.VALID);

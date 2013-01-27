@@ -16,37 +16,33 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.validator.params;
-
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlValue;
+package org.jetel.component.validator.utils.convertors;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 28.11.2012
+ * @created 15.1.2013
  */
-final public class StringValidationParamNode extends ValidationParamNode {
-	@XmlValue
-	String value = new String();
+public class StringConverter implements Converter {
 	
-	@SuppressWarnings("unused")
-	private StringValidationParamNode(){} // for JAXB
+	private static StringConverter instance;
+	private StringConverter() {}
 	
-	public StringValidationParamNode(int key, String name) {
-		super(key, name);
-	}
-	
-	public StringValidationParamNode(int key, String name, String value) {
-		super(key, name);
-		this.setValue(value);
-	}
-	public String getValue() {
-		return value;
-	}
-	public void setValue(String other) {
-		if(other != null) {
-			value = other;
+	public static StringConverter getInstance() {
+		if(instance == null) {
+			instance = new StringConverter();
 		}
+		return instance;
+	}
+
+	@Override
+	public String convert(Object o) {
+		if(o == null) {
+			return null;
+		} else if(o instanceof byte[]) {
+			return "" + ((byte[]) o).length;
+		}
+		
+		return o.toString();
 	}
 
 }

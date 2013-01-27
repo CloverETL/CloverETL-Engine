@@ -16,37 +16,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.validator.params;
+package org.jetel.component.validator.utils.comparators;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlValue;
+import java.util.Comparator;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 28.11.2012
+ * @created 25.1.2013
  */
-final public class StringValidationParamNode extends ValidationParamNode {
-	@XmlValue
-	String value = new String();
+public class DoubleComparator implements Comparator<Double>{
 	
-	@SuppressWarnings("unused")
-	private StringValidationParamNode(){} // for JAXB
+	private static DoubleComparator instance;
+	private DoubleComparator() {}
 	
-	public StringValidationParamNode(int key, String name) {
-		super(key, name);
-	}
-	
-	public StringValidationParamNode(int key, String name, String value) {
-		super(key, name);
-		this.setValue(value);
-	}
-	public String getValue() {
-		return value;
-	}
-	public void setValue(String other) {
-		if(other != null) {
-			value = other;
+	public static DoubleComparator getInstance() {
+		if(instance == null) {
+			instance = new DoubleComparator();
 		}
+		return instance;
+	}
+
+	@Override
+	public int compare(Double o1, Double o2) {
+		return o1.compareTo(o2);
 	}
 
 }

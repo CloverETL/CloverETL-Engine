@@ -22,15 +22,24 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
+import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
 
 import org.jetel.component.validator.ValidationGroup;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -43,7 +52,6 @@ public class ValidationRulesPersister {
 			JAXBContext jaxbContext = JAXBContext.newInstance(ValidationGroup.class);
 			Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			
 			StringWriter sw = new StringWriter();
 			marshaller.marshal(group, sw);
 			return sw.toString();
@@ -52,15 +60,31 @@ public class ValidationRulesPersister {
 		}
 	}
 	
-	public static ValidationGroup deserialize(String input) {
+	public static void validate(String input) throws ValidationRulesPersisterException {
+		try {
+			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+			Schema schema = schemaFactory.newSchema(new StreamSource(new StringReader(ValidationRulesPersister.generateSchema())));
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	    	//factory.setValidating(true);
+	    	factory.setNamespaceAware(true);
+	    	factory.setSchema(schema);
+	    	DocumentBuilder builder = factory.newDocumentBuilder();
+	    	Document document = builder.parse(new InputSource(new StringReader(input)));
+		} catch(Exception e) {
+			throw new ValidationRulesPersisterException("Can't validate input string, probably corupted.", e);
+		}
+	}
+	
+	public static ValidationGroup deserialize(String input) throws ValidationRulesPersisterException {
+		//validate(input);
 		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(ValidationGroup.class);
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-			//u.setEventHandler(new javax.xml.bind.helpers.DefaultValidationEventHandler());
+			unmarshaller.setSchema(getSchema());
 		    ValidationGroup group = (ValidationGroup) unmarshaller.unmarshal(new StringReader(input));
 		    return group;
 		} catch(JAXBException ex) {
-			throw new ValidationRulesPersisterException("Could not deserialize, probable corupted validation rules configuration", ex);
+			throw new ValidationRulesPersisterException("Can't deserialize validation rules.", ex);
 		}
 	}
 	
@@ -79,7 +103,15 @@ public class ValidationRulesPersister {
 			});
 			return sw.toString();
 		} catch (Exception ex) {
-			throw new ValidationRulesPersisterException("Could not generate serialize.", ex);
+			throw new ValidationRulesPersisterException("Can't generate validation rules schema.", ex);
+		}
+	}
+	
+	private static Schema getSchema() throws ValidationRulesPersisterException {
+		try {
+			return SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new StreamSource(new StringReader(generateSchema())));
+		} catch (SAXException ex) {
+			throw new ValidationRulesPersisterException("Can't parse validation rules schema.", ex);
 		}
 	}
 	

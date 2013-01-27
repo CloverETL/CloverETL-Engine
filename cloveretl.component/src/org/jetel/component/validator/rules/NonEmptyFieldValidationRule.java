@@ -38,11 +38,11 @@ import org.jetel.data.DataRecord;
  */
 @XmlRootElement(name="nonEmptyField")
 public class NonEmptyFieldValidationRule extends StringValidationRule {
+	public final static int GOAL = 100;
 	
-	public final static String GOAL = "goal";
 	@XmlElement(name="target",required=true)
 	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
-	@XmlElement(name="checkForEmptiness")
+	@XmlElement(name="checkForEmptiness",required=true)
 	private BooleanValidationParamNode checkForEmptiness = new BooleanValidationParamNode(GOAL, "Only empty field is valid", false);
 	
 	public NonEmptyFieldValidationRule() {
@@ -93,6 +93,6 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 	@Override
 	public boolean isReady() {
 		String targetField = target.getValue();
-		return targetField != null && !targetField.isEmpty();
+		return !targetField.isEmpty();
 	}
 }

@@ -16,39 +16,20 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.validator.params;
+package org.jetel.component.validator.utils.convertors;
 
-import java.util.Set;
-
-import javax.xml.bind.annotation.XmlValue;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 10.11.2012
+ * @created 15.1.2013
  */
-final public class StringSetValidationParamNode extends ValidationParamNode {
-	@XmlValue
-	String value;
-	Set<String> options;
-	
-	@SuppressWarnings("unused")
-	private StringSetValidationParamNode() {} // For JAXB
-	
-	public StringSetValidationParamNode(String key, String name, Set<String> options, String value) {
-		super(key, name);
-		this.options = options;
-		setValue(value);
-	}
-	
-	public String getValue() {
-		return value;
-	}
-	public void setValue(String other) {
-		if(!options.contains(other)) return;
-		value = other;
-	}
-	public Set<String> getOptions() {
-		return options;
-	}
+public interface Converter {
 
+	/**
+	 * Converts given object to specific type. The type is determined by class having this method.
+	 * If converting fails null is returned instead of Comparable 
+	 * @param o
+	 * @return
+	 */
+	public <T> T convert(Object o);
 }

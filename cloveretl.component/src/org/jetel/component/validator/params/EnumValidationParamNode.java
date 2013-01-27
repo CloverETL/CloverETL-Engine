@@ -18,35 +18,44 @@
  */
 package org.jetel.component.validator.params;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 28.11.2012
+ * @created 10.11.2012
  */
-final public class StringValidationParamNode extends ValidationParamNode {
+final public class EnumValidationParamNode extends ValidationParamNode {
 	@XmlValue
-	String value = new String();
+	String value = "";
+	Object realValue;
+	LinkedHashMap<Object, String> options;
 	
 	@SuppressWarnings("unused")
-	private StringValidationParamNode(){} // for JAXB
+	private EnumValidationParamNode() {} // For JAXB
 	
-	public StringValidationParamNode(int key, String name) {
+	public EnumValidationParamNode(int key, String name, Map<Object, String> options, Object value) {
 		super(key, name);
+		this.options = new LinkedHashMap<Object, String>(options);
+		setValue(value);
 	}
 	
-	public StringValidationParamNode(int key, String name, String value) {
-		super(key, name);
-		this.setValue(value);
+	public Object getValue() {
+		return realValue;
 	}
-	public String getValue() {
-		return value;
+	public void setValue(Object other) {
+		if(!options.containsKey(other)) return;
+		realValue = other;
+		value = other.toString();
 	}
-	public void setValue(String other) {
-		if(other != null) {
-			value = other;
-		}
+	public Map<Object, String> getOptions() {
+		return options;
 	}
 
 }

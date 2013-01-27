@@ -21,30 +21,19 @@ package org.jetel.component.validator;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.validator.rules.EnumMatchValidationRule;
-import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
-import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
-import org.jetel.component.validator.rules.PatternMatchValidationRule;
-import org.jetel.component.validator.rules.StringLengthValidationRule;
 import org.jetel.data.DataRecord;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.11.2012
  */
-@XmlTransient
 @XmlAccessorType(XmlAccessType.NONE)
-@XmlSeeAlso({ValidationGroup.class, NonEmptyFieldValidationRule.class, NonEmptySubsetValidationRule.class, PatternMatchValidationRule.class, StringLengthValidationRule.class, EnumMatchValidationRule.class})
 public abstract class ValidationNode {
 	protected final static Log logger = LogFactory.getLog(ValidationNode.class);
-	@XmlAttribute
+	@XmlAttribute(required=true)
 	private boolean enabled;
 	@XmlAttribute(required=true)
 	private String name;

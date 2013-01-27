@@ -30,24 +30,34 @@ import org.jetel.component.validator.rules.EnumMatchValidationRule;
 import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
 import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
+import org.jetel.component.validator.rules.RangeCheckValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.11.2012
  */
+@XmlSeeAlso({
+		ValidationGroup.class,
+		EnumMatchValidationRule.class,
+		NonEmptyFieldValidationRule.class, 
+		NonEmptySubsetValidationRule.class, 
+		PatternMatchValidationRule.class, 
+		StringLengthValidationRule.class,
+		RangeCheckValidationRule.class
+	})
 public abstract class AbstractValidationRule extends ValidationNode {
 	
-	public final static String TARGET = "target"; 
+	public final static int TARGET = 0;
 	
-	Map<String,ValidationParamNode> params = new HashMap<String, ValidationParamNode>();
+	Map<Integer,ValidationParamNode> params = new HashMap<Integer, ValidationParamNode>();
 	
-	public ValidationParamNode getParam(String key) {
+	public ValidationParamNode getParam(int key) {
 		return params.get(key);
 	}
 	
 	protected void addParamNode(ValidationParamNode pn) {
-		params.put(pn.getKey(), pn);
+		params.put(Integer.valueOf(pn.getKey()), pn);
 	}
 	public List<ValidationParamNode> getParamNodes() {
 		return new ArrayList<ValidationParamNode>(params.values());

@@ -19,26 +19,18 @@
 package org.jetel.component.validator;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
 import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlType;
 
-import org.jetel.component.validator.rules.EnumMatchValidationRule;
-import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
-import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
-import org.jetel.component.validator.rules.PatternMatchValidationRule;
-import org.jetel.component.validator.rules.StringLengthValidationRule;
 import org.jetel.data.DataRecord;
 
 /**
@@ -50,22 +42,26 @@ import org.jetel.data.DataRecord;
 public class ValidationGroup extends ValidationNode {
 	
 	@XmlElementWrapper(name="children")
-	@XmlElementRefs({
-		@XmlElementRef(type=ValidationGroup.class),
-		@XmlElementRef(type=EnumMatchValidationRule.class),
-		@XmlElementRef(type=NonEmptyFieldValidationRule.class),
-		@XmlElementRef(type=NonEmptySubsetValidationRule.class),
-		@XmlElementRef(type=PatternMatchValidationRule.class),
-		@XmlElementRef(type=StringLengthValidationRule.class),
-	})
+	@XmlElementRef
 	private List<ValidationNode> childs = new ArrayList<ValidationNode>();
-	@XmlAttribute
+	@XmlAttribute(required=true)
 	private Conjunction conjunction = Conjunction.AND;
 	
-	// Set is only workaround for JAXB unability to wrap simple attribute and to make it opinional
-	@XmlElementWrapper(name="prelimitaryCondition")
-	//@XmlElementRef
-	private Set<AbstractValidationRule> prelimitaryCondition = new HashSet<AbstractValidationRule>();
+	@XmlAccessorType(XmlAccessType.NONE)
+	private static class PrelimitaryCondition {
+		@XmlElementRef
+		private AbstractValidationRule content;
+		public AbstractValidationRule getContent() {return content;}
+		public void setContent(AbstractValidationRule value) {content = value;}
+	}
+
+	// FIXME: Really?!
+	// Problems:
+	//  - Cannot be wrapped as its not collection.
+	//  - If it's collection than it can contain more prelimitary conditions (not wanted)
+	//  - Cannot be left out as it couldn't be ommited @XmlElementRef(required=false) requires JAXB 2.1+ (not enabled in Java 6 by default) 
+	@XmlElement(name="prelimitaryCondition")
+	private PrelimitaryCondition prelimitaryCondition;
 	@XmlAttribute
 	private boolean laziness = true;
 	
@@ -79,22 +75,34 @@ public class ValidationGroup extends ValidationNode {
 	 * @param conjunction The conjunction to be used by group
 	 */
 	public void setConjunction(Conjunction conjunction) {
-		this.conjunction = conjunction;
+		if(conjunction != null) {
+			this.conjunction = conjunction;
+		}
+	}
+	
+	public Conjunction getConjunction() {
+		return conjunction;
 	}
 
 	/**
 	 * @param prelimitaryCondition Group's entrance condition
 	 */
 	public void setPrelimitaryCondition(AbstractValidationRule prelimitaryCondition) {
-		this.prelimitaryCondition.clear();
-		this.prelimitaryCondition.add(prelimitaryCondition);
+		if(prelimitaryCondition == null) {
+			this.prelimitaryCondition = null;
+			return;
+		}
+		if (this.prelimitaryCondition == null) {
+			this.prelimitaryCondition = new PrelimitaryCondition();
+		}
+		this.prelimitaryCondition.setContent(prelimitaryCondition);
 	}
 	
 	public AbstractValidationRule getPrelimitaryCondition() {
-		if(this.prelimitaryCondition.size() == 0) {
+		if(prelimitaryCondition == null) {
 			return null;
 		}
-		return this.prelimitaryCondition.iterator().next();
+		return prelimitaryCondition.getContent();
 	}
 
 	/**

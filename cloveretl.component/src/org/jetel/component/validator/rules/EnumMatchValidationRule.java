@@ -39,14 +39,14 @@ import org.jetel.util.string.StringUtils;
  */
 @XmlRootElement(name="enumMatch")
 public class EnumMatchValidationRule extends StringValidationRule {
-	public final static String IGNORE_CASE = "ignorecase";
-	public final static String VALUES = "values";
+	public final static int IGNORE_CASE = 100;
+	public final static int VALUES = 101;
 	
 	@XmlElement(name="target",required=true)
 	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
-	@XmlElement(name="values")
+	@XmlElement(name="values",required=true)
 	private StringValidationParamNode values = new StringValidationParamNode(VALUES, "Accept values");
-	@XmlElement(name="ignoreCase")
+	@XmlElement(name="ignoreCase",required=true)
 	private BooleanValidationParamNode ignoreCase = new BooleanValidationParamNode(IGNORE_CASE, "Ingore case", false);
 	public EnumMatchValidationRule() {
 		super();

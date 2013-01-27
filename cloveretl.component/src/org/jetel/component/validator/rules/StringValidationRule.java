@@ -29,9 +29,9 @@ import org.jetel.data.DataField;
  * @created 4.12.2012
  */
 public abstract class StringValidationRule extends AbstractValidationRule{
-	public final static String TRIM = "trim";
+	public final static int TRIM = 10;
 	
-	@XmlElement(name="trimInput")
+	@XmlElement(name="trimInput",required=true)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(TRIM, "", false);
 
 	public StringValidationRule() {

@@ -18,14 +18,14 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.HashSet;
+import java.util.HashMap;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
-import org.jetel.component.validator.params.StringSetValidationParamNode;
+import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.data.DataRecord;
 
@@ -35,33 +35,32 @@ import org.jetel.data.DataRecord;
  */
 @XmlRootElement(name="stringLength")
 public class StringLengthValidationRule extends StringValidationRule {
-	public final static String TYPE = "type";
-	public final static String TYPE_EXACT = "type_exact";
-	public final static String TYPE_MINIMAL = "type_minimal";
-	public final static String TYPE_MAXIMAL = "type_maximal";
-	public final static String TYPE_INTERVAL = "type_inverval";
-	public final static String FROM = "from";
-	public final static String TO = "to";
+	public final static int TYPE = 100;
+	public static enum TYPES {
+		EXACT, MINIMAL, MAXIMAL, INTERVAL
+	}
+	public final static int FROM = 101;
+	public final static int TO = 102;
 	
 	@XmlElement(name="target",required=true)
 	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
 	
 	@XmlElement(name="type",required=true)
-	private StringSetValidationParamNode type;
-	@XmlElement(name="from")
+	private EnumValidationParamNode type;
+	@XmlElement(name="from",required=true)
 	private IntegerValidationParamNode from = new IntegerValidationParamNode(FROM, "From");
-	@XmlElement(name="to")
+	@XmlElement(name="to",required=true)
 	private IntegerValidationParamNode to = new IntegerValidationParamNode(TO, "To");
 	
 	public StringLengthValidationRule() {
 		super();
 		
-		HashSet<String> temp = new HashSet<String>();
-		temp.add(TYPE_EXACT);
-		temp.add(TYPE_MINIMAL);
-		temp.add(TYPE_MAXIMAL);
-		temp.add(TYPE_INTERVAL);
-		type = new StringSetValidationParamNode(TYPE, "Criterion", temp, TYPE_EXACT);
+		HashMap<Object, String> temp = new HashMap<Object, String>();
+		temp.put(TYPES.EXACT, "Exact");
+		temp.put(TYPES.MINIMAL, "At least");
+		temp.put(TYPES.MAXIMAL, "At most");
+		temp.put(TYPES.INTERVAL, "In interval");
+		type = new EnumValidationParamNode(TYPE, "Criterion", temp, TYPES.EXACT);
 		addParamNode(target);
 		addParamNode(type);
 		addParamNode(from);
@@ -84,16 +83,16 @@ public class StringLengthValidationRule extends StringValidationRule {
 		
 		Integer length = Integer.valueOf(prepareInput(record.getField(target.getValue())).length());
 		State result = State.INVALID;
-		if(type.getValue().equals(TYPE_EXACT) && length.equals(from.getValue())) {
+		if(type.getValue() == TYPES.EXACT && length.equals(from.getValue())) {
 			result = State.VALID;
 		} else
-		if(type.getValue().equals(TYPE_MAXIMAL) && length.compareTo(to.getValue()) <= 0) {
+		if(type.getValue() == TYPES.MAXIMAL && length.compareTo(to.getValue()) <= 0) {
 			result = State.VALID;
 		} else
-		if(type.getValue().equals(TYPE_MINIMAL) && length.compareTo(from.getValue()) >= 0) {
+		if(type.getValue() == TYPES.MINIMAL && length.compareTo(from.getValue()) >= 0) {
 			result = State.VALID;
 		} else
-		if(type.getValue().equals(TYPE_INTERVAL) && length.compareTo(from.getValue()) >= 0 && length.compareTo(to.getValue()) <= 0) {
+		if(type.getValue() == TYPES.INTERVAL && length.compareTo(from.getValue()) >= 0 && length.compareTo(to.getValue()) <= 0) {
 			result = State.VALID;
 		}
 		logger.trace("Validation rule: " + getName() + " on length '" + length + "' is " + result);
@@ -104,10 +103,10 @@ public class StringLengthValidationRule extends StringValidationRule {
 	public boolean isReady() {
 		return !target.getValue().isEmpty() &&
 				(
-						(type.getValue().equals(TYPE_EXACT) && from.getValue() != null) ||
-						(type.getValue().equals(TYPE_MAXIMAL) && to.getValue() != null) ||
-						(type.getValue().equals(TYPE_MINIMAL) && from.getValue() != null) ||
-						(type.getValue().equals(TYPE_INTERVAL) && from.getValue() != null && to.getValue() != null)
+						(type.getValue() == TYPES.EXACT && from.getValue() != null) ||
+						(type.getValue() == TYPES.MAXIMAL && to.getValue() != null) ||
+						(type.getValue() == TYPES.MINIMAL && from.getValue() != null) ||
+						(type.getValue() == TYPES.INTERVAL && from.getValue() != null && to.getValue() != null)
 				);
 	}
 

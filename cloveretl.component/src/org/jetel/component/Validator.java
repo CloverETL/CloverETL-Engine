@@ -20,24 +20,17 @@ package org.jetel.component;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
-import org.jetel.component.validator.params.BooleanValidationParamNode;
-import org.jetel.component.validator.params.IntegerValidationParamNode;
-import org.jetel.component.validator.params.StringSetValidationParamNode;
-import org.jetel.component.validator.params.StringValidationParamNode;
-import org.jetel.component.validator.rules.EnumMatchValidationRule;
-import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
-import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
-import org.jetel.component.validator.rules.PatternMatchValidationRule;
-import org.jetel.component.validator.rules.StringLengthValidationRule;
 import org.jetel.component.validator.utils.ValidationRulesPersister;
+import org.jetel.component.validator.utils.ValidationRulesPersisterException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
@@ -45,7 +38,9 @@ import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -55,16 +50,18 @@ import org.w3c.dom.Element;
 public class Validator extends Node {
 	
 	private final static Log logger = LogFactory.getLog(Validator.class);
-	private static final String COMPONENT_TYPE = "VALIDATOR";
+	private final static String COMPONENT_TYPE = "VALIDATOR";
 	
-	public static final String XML_VALIDATION_RULES = "rules";
+	public final static String XML_RULES_ATTRIBUTE = "rules";
+	public final static String XML_EXTERNAL_RULES_URL_ATTRIBUTE = "externalRulesURL";
 	
 	private final static int INPUT_PORT = 0;
 	private final static int VALID_OUTPUT_PORT = 0;
 	private final static int INVALID_OUTPUT_PORT = 1;
 	
 	private int processedRecords = 0;
-	
+	private String rules;
+	private String externalRulesURL;
 	private ValidationGroup rootGroup;
 	
 	
@@ -87,21 +84,49 @@ public class Validator extends Node {
 		ComponentXMLAttributes attrs = new ComponentXMLAttributes(xmlElement, graph);
 		try {
 			validator = new Validator(attrs.getString(XML_ID_ATTRIBUTE));
-			if(attrs.exists(XML_VALIDATION_RULES)) {
-				System.out.println(attrs.getString(XML_VALIDATION_RULES));
-				validator.setRootGroup(ValidationRulesPersister.deserialize(attrs.getString(XML_VALIDATION_RULES)));
+			if(attrs.exists(XML_RULES_ATTRIBUTE)) {
+				validator.setRules(attrs.getString(XML_RULES_ATTRIBUTE));
+			}
+			if(attrs.exists(XML_EXTERNAL_RULES_URL_ATTRIBUTE)) {
+				validator.setExternalRulesURL(attrs.getString(XML_EXTERNAL_RULES_URL_ATTRIBUTE));
 			}
 			return validator;
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ": Invalid XML configuration.", ex);
 		}
 	}
-	
-	public ValidationGroup getRootGroup() {
-		return rootGroup;
+	private void setRules(String value) {
+		rules = value;
 	}
-	public void setRootGroup(ValidationGroup group) {
-		rootGroup = group;
+	
+	private void setExternalRulesURL(String value) {
+		externalRulesURL = value;
+	}
+	
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+		String tempRules;
+		
+		if(!StringUtils.isEmpty(rules)) {
+			tempRules = rules;
+		} else {
+			tempRules = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), externalRulesURL,null);
+		}
+		
+		try {
+			rootGroup = ValidationRulesPersister.deserialize(tempRules);
+		} catch (ValidationRulesPersisterException e) {
+			ConfigurationProblem problem = new ConfigurationProblem("Cannot create validation tree, rules settings are invalid.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+			status.add(problem);
+		}
+		return status;
+	}
+	
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		
 	}
 
 	@Override
