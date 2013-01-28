@@ -29,6 +29,7 @@ import java.net.URLDecoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -198,6 +199,13 @@ public class ClassLoaderUtils {
 		return classLoader;
 	}
 
+	public static ClassLoader createClassLoader(List<URL> urls, ClassLoader parent, boolean greedy) {
+		URL[] urlsArray = null;
+		if (urls != null)
+			urlsArray = new URL[urls.size()];
+		return createClassLoader(urls.toArray(urlsArray), parent, greedy);
+	}
+	
 	public static ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
 		if (parent == null) {
 			parent = PrimitiveAuthorityProxy.class.getClassLoader();
