@@ -55,6 +55,7 @@ public class DefaultAuthority implements Authority {
 	/**
 	 * @return the scheme
 	 */
+	@Override
 	public String getProtocol() {
 		return protocol;
 	}
@@ -62,6 +63,7 @@ public class DefaultAuthority implements Authority {
 	/**
 	 * @return the userInfo
 	 */
+	@Override
 	public String getUserInfo() {
 		return userInfo;
 	}
@@ -69,6 +71,7 @@ public class DefaultAuthority implements Authority {
 	/**
 	 * @return the host
 	 */
+	@Override
 	public String getHost() {
 		return host;
 	}
@@ -76,6 +79,7 @@ public class DefaultAuthority implements Authority {
 	/**
 	 * @return the port
 	 */
+	@Override
 	public int getPort() {
 		return port;
 	}
@@ -83,6 +87,7 @@ public class DefaultAuthority implements Authority {
 	/**
 	 * @return the proxy
 	 */
+	@Override
 	public String getProxyString() {
 		return proxyString;
 	}
