@@ -27,6 +27,12 @@ public interface PoolableConnection extends Closeable {
 	public Authority getAuthority();
 	
 	/**
+	 * Resets the state of the object, 
+	 * as if it were newly created.
+	 */
+	public void reset();
+	
+	/**
 	 * This method should only be called by the {@link ConnectionPool}.
 	 * 
 	 * It is not a part of the public interface.

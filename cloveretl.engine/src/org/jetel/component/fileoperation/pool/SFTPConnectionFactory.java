@@ -24,7 +24,7 @@ public class SFTPConnectionFactory implements ConnectionFactory {
 	
 	@Override
 	public PoolableConnection makeObject(Authority authority) throws Exception {
-		SFTPConnection connection = new SFTPConnection(authority);
+		PooledSFTPConnection connection = new PooledSFTPConnection(authority);
 		connection.connect();
 		return connection;
 	}
@@ -32,12 +32,12 @@ public class SFTPConnectionFactory implements ConnectionFactory {
 	@Override
 	public void destroyObject(Authority key, PoolableConnection obj)
 			throws Exception {
-		((SFTPConnection) obj).disconnect();
+		((PooledSFTPConnection) obj).disconnect();
 	}
 
 	@Override
 	public boolean validateObject(Authority key, PoolableConnection obj) {
-		return ((SFTPConnection) obj).isOpen();
+		return ((PooledSFTPConnection) obj).isOpen();
 	}
 
 	@Override

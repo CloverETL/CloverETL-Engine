@@ -71,6 +71,11 @@ public abstract class AbstractPoolableConnection implements PoolableConnection {
 		return false;
 	}
 
+	@Override
+	public void reset() {
+		// default implementation does nothing
+	}
+
 	/**
 	 * Fallback - should not be used.
 	 * 

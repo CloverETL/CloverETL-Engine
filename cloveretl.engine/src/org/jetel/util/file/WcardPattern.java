@@ -821,8 +821,6 @@ public class WcardPattern {
 			// return original name
 			logger.debug("SFTP wildcard resolution failed", e);
 			mfiles.add(url.toString());
-		} finally {
-			if (sftpConnection != null) sftpConnection.disconnect();
 		}
 		
 		return mfiles;
