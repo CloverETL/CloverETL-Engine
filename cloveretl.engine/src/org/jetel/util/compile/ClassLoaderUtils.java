@@ -203,7 +203,7 @@ public class ClassLoaderUtils {
 		URL[] urlsArray = null;
 		if (urls != null)
 			urlsArray = new URL[urls.size()];
-		return createClassLoader(urls.toArray(urlsArray), parent, greedy);
+		return createClassLoader(urls == null ? null : urls.toArray(urlsArray), parent, greedy);
 	}
 	
 	public static ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
