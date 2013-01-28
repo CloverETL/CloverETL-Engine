@@ -31,8 +31,10 @@ public interface Authority {
 	
 	public String getProxyString();
 
+	@Override
 	public boolean equals(Object o);
 	
+	@Override
 	public int hashCode();
 	
 }
