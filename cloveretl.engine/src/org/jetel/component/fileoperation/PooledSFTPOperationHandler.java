@@ -49,7 +49,7 @@ import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.component.fileoperation.pool.Authority;
 import org.jetel.component.fileoperation.pool.ConnectionPool;
 import org.jetel.component.fileoperation.pool.DefaultAuthority;
-import org.jetel.component.fileoperation.pool.SFTPConnection;
+import org.jetel.component.fileoperation.pool.PooledSFTPConnection;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -74,7 +74,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	}
 
 	private URI rename(URI source, URI target, MoveParameters params) throws IOException, SftpException {
-		SFTPConnection connection = null;
+		PooledSFTPConnection connection = null;
 		try {
 			connection = connect(source);
 			ChannelSftp channel = connection.getChannelSftp();
@@ -201,7 +201,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	@Override
 	public SingleCloverURI delete(SingleCloverURI target, DeleteParameters params) throws IOException {
 		URI uri = target.toURI().normalize();
-		SFTPConnection connection = null;
+		PooledSFTPConnection connection = null;
 		try {
 			connection = connect(uri);
 			delete(connection.getChannelSftp(), uri, params);
@@ -404,10 +404,10 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		return null;
 	}
 	
-	private SFTPConnection connect(URI uri) throws IOException {
+	private PooledSFTPConnection connect(URI uri) throws IOException {
 		Authority key = new DefaultAuthority(uri);
 		try {
-			return (SFTPConnection) pool.borrowObject(key);
+			return (PooledSFTPConnection) pool.borrowObject(key);
 		} catch (IOException ioe) {
 			throw ioe;
 		} catch (Exception e) {
@@ -415,7 +415,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		}
 	}
 	
-	private void disconnectQuietly(SFTPConnection connection) {
+	private void disconnectQuietly(PooledSFTPConnection connection) {
 		// make sure the object is returned to the pool
 		if (connection != null) {
 			try {
@@ -461,7 +461,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	public List<Info> list(SingleCloverURI parent, ListParameters params)
 			throws IOException {
 		URI uri = parent.toURI();
-		SFTPConnection connection = null;
+		PooledSFTPConnection connection = null;
 		try {
 			connection = connect(uri);
 			return list(uri, connection.getChannelSftp(), params);
@@ -479,7 +479,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	}
 
 	private Info info(URI uri) throws IOException {
-		SFTPConnection connection = null;
+		PooledSFTPConnection connection = null;
 		try {
 			connection = connect(uri);
 			return info(uri, connection.getChannelSftp());
@@ -532,7 +532,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	@Override
 	public SingleCloverURI create(SingleCloverURI target, CreateParameters params) throws IOException {
 		URI uri = target.toURI().normalize();
-		SFTPConnection connection = null;
+		PooledSFTPConnection connection = null;
 		try {
 			connection = connect(uri);
 			create(connection.getChannelSftp(), uri, params);
@@ -589,19 +589,19 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public ReadableByteChannel read() throws IOException {
-			SFTPConnection obj = connect(uri);
+			PooledSFTPConnection obj = connect(uri);
 			return Channels.newChannel(obj.getInputStream(getPath(uri)));
 		}
 
 		@Override
 		public WritableByteChannel write() throws IOException {
-			SFTPConnection obj = connect(uri);
+			PooledSFTPConnection obj = connect(uri);
 			return Channels.newChannel(obj.getOutputStream(getPath(uri), ChannelSftp.OVERWRITE));
 		}
 
 		@Override
 		public WritableByteChannel append() throws IOException {
-			SFTPConnection obj = connect(uri);
+			PooledSFTPConnection obj = connect(uri);
 			return Channels.newChannel(obj.getOutputStream(getPath(uri), ChannelSftp.APPEND));
 		}
 		

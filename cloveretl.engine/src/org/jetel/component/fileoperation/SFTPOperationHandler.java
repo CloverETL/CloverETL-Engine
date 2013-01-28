@@ -53,8 +53,8 @@ import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
-import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfo;
-import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfoIteractive;
+import org.jetel.util.protocols.sftp.URLUserInfo;
+import org.jetel.util.protocols.sftp.URLUserInfoIteractive;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -65,6 +65,12 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.UserInfo;
 
+/**
+ * @deprecated replaced with {@link PooledSFTPOperationHandler}.
+ * 
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ */
 public class SFTPOperationHandler implements IOperationHandler {
 
 	private static final Log log = LogFactory.getLog(SFTPOperationHandler.class);
@@ -650,7 +656,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 	@Override
 	public int getPriority(Operation operation) {
-		return TOP_PRIORITY;
+		return 0;
 	}
 
 	@Override
