@@ -560,6 +560,8 @@ public abstract class IAuthorityProxy {
 	
 	public abstract File newTempDir(String label, int allocationHint) throws TempFileCreationException;
 	
-	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parentClassLoader, boolean greedyClassLoader);
+	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
+
+	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 	
 }
