@@ -1922,9 +1922,6 @@ public class FileUtils {
 		}
 		URLConnection connection = url.openConnection();
 		connection.connect();
-		if (connection instanceof SFTPConnection) {
-			((SFTPConnection) connection).disconnect();
-		}
 	}
 
 	/**

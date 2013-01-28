@@ -31,8 +31,8 @@ import java.net.URLDecoder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfo;
-import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfoIteractive;
+import org.jetel.util.protocols.sftp.URLUserInfo;
+import org.jetel.util.protocols.sftp.URLUserInfoIteractive;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -45,13 +45,13 @@ import com.jcraft.jsch.ProxySOCKS5;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 
-public class SFTPConnection extends AbstractPoolableConnection {
+public class PooledSFTPConnection extends AbstractPoolableConnection {
 	
 	private static final int DEFAULT_PORT = 22;
 
 	private static final JSch jsch = new JSch();
 
-	private static final Log log = LogFactory.getLog(SFTPConnection.class);
+	private static final Log log = LogFactory.getLog(PooledSFTPConnection.class);
 
 	// standard encoding for URLDecoder
 	// see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
@@ -60,7 +60,7 @@ public class SFTPConnection extends AbstractPoolableConnection {
 	private Session session = null;
 	private ChannelSftp channel = null;
 	
-	public SFTPConnection(Authority authority) {
+	public PooledSFTPConnection(Authority authority) {
 		super(authority);
 	}
 	
