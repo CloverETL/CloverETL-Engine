@@ -24,9 +24,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.PostgreConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -47,7 +47,7 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new PostgreConnection(dbConnection, operationType);
 	}
 
@@ -119,33 +119,31 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 	}
 
 	
-  @Override
-public ArrayList<String> getSchemas(java.sql.Connection connection)
-      throws SQLException {
+	@Override
+	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
+		ArrayList<String> tmp;
 
-    ArrayList<String> tmp;
+		ArrayList<String> schemas = new ArrayList<String>();
 
-    ArrayList<String> schemas = new ArrayList<String>();
+		DatabaseMetaData dbMeta = connection.getMetaData();
 
-    DatabaseMetaData dbMeta = connection.getMetaData();
+		// add schemas
+		tmp = getMetaSchemas(dbMeta);
+		if (tmp != null) {
+			schemas.addAll(tmp);
+		}
 
-    // add schemas
-    tmp = getMetaSchemas(dbMeta);
-    if (tmp != null) {
-      schemas.addAll(tmp);
-    }
+		// catalogs not added - postgresql allows only catalog specified in connection url, cannot get matadata from
+		// other catalogs
+		// add catalogs
 
-    //catalogs not added - postgresql allows only catalog specified in connection url, cannot get matadata from other catalogs 
-    // add catalogs
-
-    return schemas;
-  }
+		return schemas;
+	}	
 	
-	
-  @Override
-public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
-    return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW"}/*tableTypes*/);
-  }
+	@Override
+	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
+		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW"}/*tableTypes*/);
+	}
 
 	@Override
 	public boolean isSchemaRequired() {

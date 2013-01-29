@@ -18,16 +18,15 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.regex.Pattern;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.MSSQLConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.QueryType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -62,7 +61,7 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		//that is intentional usage of MSSQLConnection!!!
 		return new MSSQLConnection(dbConnection, operationType);
 	}
@@ -156,7 +155,7 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	public ResultSet getTables(Connection connection, String dbName) throws SQLException {
+	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
 		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW"});
 	}
 

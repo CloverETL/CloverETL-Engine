@@ -36,9 +36,10 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcSpecific;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
@@ -246,7 +247,7 @@ public class AnalyzeDB {
 			print = System.out;
 		}
 		// load in Database Driver & try to connect to database
-		connection=new DBConnection("", config);
+		connection = new DBConnectionImpl("", config);
 		try {
             connection.init();
         } catch (ComponentNotReadyException e) {
@@ -254,13 +255,13 @@ public class AnalyzeDB {
         }
         
 		// do we want just to display driver properties ?
-        DBConnectionInstance conn = connection.getConnection(connection.getId(), OperationType.READ);
+		SqlConnection conn = connection.getConnection(connection.getId(), OperationType.READ);
 		if (showDriverInfo){
 			printDriverProperty(config);
 			System.exit(0);
 		}
 		// Execute Query
-		ResultSet resultSet = conn.getSqlConnection().createStatement().executeQuery(query);
+		ResultSet resultSet = conn.createStatement().executeQuery(query);
 		ResultSetMetaData metadata = resultSet.getMetaData();
 
 		// here we print XML description of data 

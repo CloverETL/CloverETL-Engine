@@ -16,7 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.connection.jdbc.specific;
+package org.jetel.database.sql;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -29,10 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.jetel.connection.jdbc.CopySQLData;
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
-import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -41,7 +37,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * This interface represents customization in behaviour of a JDBC connection.
+ * This interface represents customisation in behaviour of a JDBC connection.
  * The class parameter of jdbcSpecific extension point has to implement this interface.
  * 
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -72,6 +68,11 @@ public interface JdbcSpecific {
 	}
 	
 	/**
+	 * @return unique identifier of this JdbcSpecific (should be same as the 'database' attribute in plungin.xml)
+	 */
+	public String getId();
+	
+	/**
 	 * Closes given result set if the database requires before new result set is created.
 	 * @param resultSet
 	 */
@@ -91,7 +92,7 @@ public interface JdbcSpecific {
 	 * @return
 	 * @throws JetelException
 	 */
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException;
+	public SqlConnection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException;
 
 	/**
 	 * Wraps the given connection to a {@link Connection}, which should follow 
@@ -103,7 +104,7 @@ public interface JdbcSpecific {
 	 * @return
 	 * @throws JetelException
 	 */
-	public Connection wrapSQLConnection(DBConnection dbConnection, OperationType operationType, Connection sqlConnection) throws JetelException;
+	public SqlConnection wrapSQLConnection(DBConnection dbConnection, OperationType operationType, Connection sqlConnection) throws JetelException;
 
 	/**
 	 * Performs check of metatadata if there are some special (DB specific) requirements.
@@ -271,7 +272,7 @@ public interface JdbcSpecific {
 	 * @return ArrayList<String[]> Returns arraylist of rows, each contains a pair of strings CATALOG, SCHEMA
 	 * @throws SQLException
 	 */
-	public ArrayList<String> getSchemas(java.sql.Connection connection) throws SQLException;
+	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException;
 	
 	/**
 	 * Returns a ResultSet representing tables in given database
@@ -281,7 +282,7 @@ public interface JdbcSpecific {
 	 * @param schema
 	 * @return
 	 */
-	public ResultSet getTables(java.sql.Connection connection, String schema) throws SQLException;
+	public ResultSet getTables(SqlConnection connection, String schema) throws SQLException;
 
 	/**
 	 * Returns columns metadata in given table.
@@ -292,7 +293,7 @@ public interface JdbcSpecific {
 	 * @param table
 	 * @return
 	 */
-	public ResultSetMetaData getColumns(java.sql.Connection connection, String schema, String owner, String table) throws SQLException;
+	public ResultSetMetaData getColumns(SqlConnection connection, String schema, String owner, String table) throws SQLException;
 
     /**
      * Return select sql statement for given table.
@@ -311,7 +312,7 @@ public interface JdbcSpecific {
 	 * @return
 	 * @throws SQLException
 	 */
-	public Set<ResultSet> getColumns(java.sql.Connection connection) throws SQLException;
+	public Set<ResultSet> getColumns(SqlConnection connection) throws SQLException;
 	
 	/**
 	 * Returns whether schema should be explicitly set to address table correctly in given db engine. 
@@ -374,4 +375,5 @@ public interface JdbcSpecific {
 	 * @return Implementation of result set which allows to call get methods multiple times.
 	 */
 	public ResultSet wrapResultSet(ResultSet resultSet);
+	
 }

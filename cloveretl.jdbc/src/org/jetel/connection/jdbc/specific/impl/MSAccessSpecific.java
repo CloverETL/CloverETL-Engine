@@ -23,13 +23,13 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
 
-import org.jetel.connection.jdbc.CopySQLData;
-import org.jetel.connection.jdbc.CopySQLData.CopyBoolean;
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
+import org.jetel.connection.jdbc.AbstractCopySQLData.CopyBoolean;
 import org.jetel.connection.jdbc.specific.conn.MSAccessConnection;
 import org.jetel.data.BooleanDataField;
 import org.jetel.data.DataRecord;
+import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -58,7 +58,7 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 	}
 	
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new MSAccessConnection(dbConnection, operationType);
 	}
 

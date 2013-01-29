@@ -18,7 +18,6 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -26,9 +25,9 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.FirebirdConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -54,7 +53,7 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new FirebirdConnection(dbConnection, operationType); 
 	}
 
@@ -85,7 +84,7 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	
 	
 	@Override
-	public ResultSetMetaData getColumns(Connection connection, String schema, String owner, String table) throws SQLException {
+	public ResultSetMetaData getColumns(SqlConnection connection, String schema, String owner, String table) throws SQLException {
 		return super.getColumns(connection, null, null, table);
 	}
 
@@ -145,7 +144,7 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	 * for MySQL a database is a catalog AND a schema
 	 */
 	@Override
-	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
+	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
 		return connection.getMetaData().getTables(null, null, "%", new String[] {"TABLE", "VIEW"}/*tableTypes*/); //fix by kokon - show only tables and views
 	}
 	
@@ -167,7 +166,7 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 
 
 	@Override
-	public ArrayList<String> getSchemas(Connection connection) throws SQLException {
+	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
 		ArrayList<String> schemas = new ArrayList<String>(1);
 		schemas.add("Default");
 		return schemas;

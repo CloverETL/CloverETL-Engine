@@ -38,7 +38,6 @@ import javax.sql.rowset.serial.SerialBlob;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
 import org.jetel.data.BooleanDataField;
 import org.jetel.data.ByteDataField;
@@ -52,6 +51,8 @@ import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.HugeDecimal;
+import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -68,7 +69,7 @@ import org.jetel.util.string.StringUtils;
  * @revision    $Revision$
  * @created     8. ???ervenec 2003
  */
-public abstract class CopySQLData {
+public abstract class AbstractCopySQLData implements CopySQLData {
 
 	/**
 	 *  Description of the Field
@@ -100,19 +101,30 @@ public abstract class CopySQLData {
 	 * @param  fieldJetel  index of the field in Clover record
 	 * @since              October 7, 2002
 	 */
-	protected CopySQLData(DataRecord record, int fieldSQL, int fieldJetel) {
+	protected AbstractCopySQLData(DataRecord record, int fieldSQL, int fieldJetel) {
 		this.fieldSQL = fieldSQL + 1;
 		// fields in ResultSet start with index 1
 		this.fieldJetel=fieldJetel;
 		field = record.getField(fieldJetel);
 	}
 
+	@Override
+	public int getFieldJetel() {
+		return fieldJetel;
+	}
+	
+	@Override
+	public DataField getField() {
+		return field;
+	}
+	
 	/**
 	 * Assigns different DataField than the original used when creating
 	 * copy object
 	 * 
 	 * @param field	New DataField
 	 */
+	@Override
 	public void setCloverField(DataField field){
 	    this.field=field;
 	}
@@ -124,6 +136,7 @@ public abstract class CopySQLData {
 	 * 
 	 * @param record	New DataRecord
 	 */
+	@Override
 	public void setCloverRecord(DataRecord record){
 	    this.field=record.getField(fieldJetel);
 	}
@@ -132,15 +145,18 @@ public abstract class CopySQLData {
      /**
      * @return Returns the inBatchUpdate.
      */
-    public boolean isInBatchUpdate() {
+    @Override
+	public boolean isInBatchUpdate() {
         return inBatchUpdate;
     }
 
     
-    public int getSqlType() {
+    @Override
+	public int getSqlType() {
 		return sqlType;
 	}
 
+	@Override
 	public void setSqlType(int sqlType) {
 		this.sqlType = sqlType;
 	}
@@ -148,7 +164,8 @@ public abstract class CopySQLData {
 	/**
      * @param inBatchUpdate The inBatchUpdate to set.
      */
-    public void setInBatchUpdate(boolean inBatch) {
+    @Override
+	public void setInBatchUpdate(boolean inBatch) {
         this.inBatchUpdate = inBatch;
     }
 	
@@ -159,6 +176,7 @@ public abstract class CopySQLData {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    October 7, 2002
 	 */
+	@Override
 	public void sql2jetel(ResultSet resultSet) throws SQLException {
 		try {
 			setJetel(resultSet);
@@ -179,6 +197,7 @@ public abstract class CopySQLData {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    October 7, 2002
 	 */
+	@Override
 	public void jetel2sql(PreparedStatement pStatement) throws SQLException {
 		try {
 			setSQL(pStatement);
@@ -195,6 +214,7 @@ public abstract class CopySQLData {
 	 * @return current value from result set from corresponding index
 	 * @throws SQLException
 	 */
+	@Override
 	public abstract Object getDbValue(ResultSet resultSet) throws SQLException;
 
 	/**
@@ -202,11 +222,13 @@ public abstract class CopySQLData {
 	 * @return current value from callable statement from corresponding index
 	 * @throws SQLException
 	 */
+	@Override
 	public abstract Object getDbValue(CallableStatement statement) throws SQLException;
 	
 	/**
 	 * @return current value from data record from corresponding field
 	 */
+	@Override
 	public Object getCloverValue() {
 		return field.getValue();
 	}
@@ -219,8 +241,10 @@ public abstract class CopySQLData {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    October 7, 2002
 	 */
+	@Override
 	public abstract void setJetel(ResultSet resultSet) throws SQLException;
 
+	@Override
 	public abstract void setJetel(CallableStatement statement) throws SQLException;
 
 	/**
@@ -230,6 +254,7 @@ public abstract class CopySQLData {
 	 * @exception  SQLException  Description of Exception
 	 * @since                    October 7, 2002
 	 */
+	@Override
 	public abstract void setSQL(PreparedStatement pStatement) throws SQLException;
 
 
@@ -512,8 +537,8 @@ public abstract class CopySQLData {
 			return "Invalid sql query. Wrong number of parameteres - actually: " + transMap.length + ", required: " + pMeta.getParameterCount();
 		}
 		for (int i = 0; i < transMap.length; i++) {
-			if (inMetadata.getFieldType(transMap[i].fieldJetel) != jdbcSpecific.sqlType2jetel(pMeta.getParameterType(i + 1))) {
-				return "Invalid sql query. Incompatible Clover & JDBC field types - field " + inMetadata.getField(transMap[i].fieldJetel).getName() + ". Clover type: " + SQLUtil.jetelType2Str(inMetadata.getFieldType(transMap[i].fieldJetel)) + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1));
+			if (inMetadata.getFieldType(transMap[i].getFieldJetel()) != jdbcSpecific.sqlType2jetel(pMeta.getParameterType(i + 1))) {
+				return "Invalid sql query. Incompatible Clover & JDBC field types - field " + inMetadata.getField(transMap[i].getFieldJetel()).getName() + ". Clover type: " + SQLUtil.jetelType2Str(inMetadata.getFieldType(transMap[i].getFieldJetel())) + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1));
 			}
 		}
 		return null;
@@ -535,16 +560,16 @@ public abstract class CopySQLData {
 			return "Wrong number of output fields - actually: " + transMap.length + ", required: " + sqlMeta.getColumnCount();
 		}
 		for (int i = 0; i < transMap.length; i++) {
-			if (outMetadata.getFieldType(transMap[i].fieldJetel) != jdbcSpecific.sqlType2jetel(sqlMeta.getColumnType(i + 1))){
-				return "Incompatible Clover & JDBC field types - field "+outMetadata.getField(transMap[i].fieldJetel).getName()+
-	            ". Clover type: "+ SQLUtil.jetelType2Str(outMetadata.getFieldType(transMap[i].fieldJetel)) + 
+			if (outMetadata.getFieldType(transMap[i].getFieldJetel()) != jdbcSpecific.sqlType2jetel(sqlMeta.getColumnType(i + 1))){
+				return "Incompatible Clover & JDBC field types - field "+outMetadata.getField(transMap[i].getFieldJetel()).getName()+
+	            ". Clover type: "+ SQLUtil.jetelType2Str(outMetadata.getFieldType(transMap[i].getFieldJetel())) + 
 	            ", SQL type: " + SQLUtil.sqlType2str(sqlMeta.getColumnType(i + 1));
 			}
 		}
 		return null;
 	}
 	
-	public static class CopyArray extends CopySQLData{
+	public static class CopyArray extends AbstractCopySQLData {
 
 		/**
 		 * @param record
@@ -644,7 +669,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	public static class CopyNumeric extends CopySQLData {
+	public static class CopyNumeric extends AbstractCopySQLData {
 		/**
 		 *  Constructor for the CopyNumeric object
 		 *
@@ -727,7 +752,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	public static class CopyDecimal extends CopySQLData {
+	public static class CopyDecimal extends AbstractCopySQLData {
 		/**
 		 *  Constructor for the CopyDecimal object
 		 *
@@ -809,7 +834,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	public static class CopyInteger extends CopySQLData {
+	public static class CopyInteger extends AbstractCopySQLData {
 		/**
 		 *  Constructor for the CopyNumeric object
 		 *
@@ -883,7 +908,7 @@ public abstract class CopySQLData {
 
 	}
 
-	public static class CopyLong extends CopySQLData {
+	public static class CopyLong extends AbstractCopySQLData {
 		/**
 		 *  Constructor for the CopyNumeric object
 		 *
@@ -965,7 +990,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	public static class CopyString extends CopySQLData {
+	public static class CopyString extends AbstractCopySQLData {
 		/**
 		 *  Constructor for the CopyString object
 		 *
@@ -1050,7 +1075,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	public static class CopyDate extends CopySQLData {
+	public static class CopyDate extends AbstractCopySQLData {
 
 		java.sql.Date dateValue;
 
@@ -1144,7 +1169,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	public static class CopyTime extends CopySQLData {
+	public static class CopyTime extends AbstractCopySQLData {
 
 		java.sql.Time timeValue;
 
@@ -1240,7 +1265,7 @@ public abstract class CopySQLData {
 	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
-	public static class CopyTimestamp extends CopySQLData {
+	public static class CopyTimestamp extends AbstractCopySQLData {
 
 		Timestamp timeValue;
 
@@ -1340,7 +1365,7 @@ public abstract class CopySQLData {
 	 * @since       November 27, 2003
 	 * @revision    $Revision$
 	 */
-	public static class CopyBoolean extends CopySQLData {
+	public static class CopyBoolean extends AbstractCopySQLData {
 
 		/**
 		 *  Constructor for the CopyBoolean object
@@ -1417,7 +1442,7 @@ public abstract class CopySQLData {
 
 	}
     
-	public static class CopyByte extends CopySQLData {
+	public static class CopyByte extends AbstractCopySQLData {
         /**
          *  Constructor for the CopyByte object
          *
@@ -1491,7 +1516,7 @@ public abstract class CopySQLData {
 
     }
 
-	public static class CopyBlob extends CopySQLData {
+	public static class CopyBlob extends AbstractCopySQLData {
     	    	
     	Blob blob;
     	
@@ -1608,7 +1633,7 @@ public abstract class CopySQLData {
      * @version 19th August 2009
      * @since 19th August 2009
      */
-	public static class CopyOracleXml extends CopySQLData {
+	public static class CopyOracleXml extends AbstractCopySQLData {
 
         // TODO: We cannot access the oracle.jdbc.OracleTypes class from this place, don't know why. The XML_TYPE
         // constant is therefore set statically to the correct value. However, this might be a problem. If there

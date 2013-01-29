@@ -36,11 +36,12 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.JdbcSpecific;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -199,9 +200,9 @@ public class SQLIncremental {
 	 * @throws SQLException
 	 * @throws ComponentNotReadyException
 	 */
-	public PreparedStatement updateQuery(DBConnectionInstance dbConnection) throws SQLException, ComponentNotReadyException{
+	public PreparedStatement updateQuery(SqlConnection dbConnection) throws SQLException, ComponentNotReadyException{
 		//create record where current incremental values are stored
-    	Statement statement = dbConnection.getSqlConnection().createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+    	Statement statement = dbConnection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
     	ResultSet resultSet = statement.executeQuery(createSelectKeyQuery());
         ResultSetMetaData dbMetadata = resultSet.getMetaData();
 
@@ -340,7 +341,7 @@ public class SQLIncremental {
 	 * @return
 	 * @throws SQLException
 	 */
-	private PreparedStatement setPosition(DBConnectionInstance dbConnection) throws SQLException{
+	private PreparedStatement setPosition(SqlConnection dbConnection) throws SQLException{
 		StringBuffer query = new StringBuffer();
 		StringBuffer preparedQueryBuilder = new StringBuffer();
 		Matcher keyValueMatcher = KEY_VALUE_PATTERN.matcher(sqlQuery);
@@ -367,7 +368,7 @@ public class SQLIncremental {
 		keyValueMatcher.appendTail(query);
 		keyValueMatcher1.appendTail(preparedQueryBuilder);
 		preparedQuery = preparedQueryBuilder.toString();
-		PreparedStatement statement = dbConnection.getSqlConnection().prepareStatement(query.toString());
+		PreparedStatement statement = dbConnection.prepareStatement(query.toString());
 		//set starting values from prepared earlier key record
 		for (int i = 0; i < index; i++){
 			tMap2.get(i).setSQL(statement);

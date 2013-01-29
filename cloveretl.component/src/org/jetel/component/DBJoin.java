@@ -30,7 +30,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.DBConnectionImpl;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -38,6 +38,7 @@ import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.database.IConnection;
+import org.jetel.database.sql.DBConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -488,7 +489,7 @@ public class DBJoin extends Node {
 	private DataRecordMetadata extractDbMetadata(IConnection connection, String sqlQuery)
 			throws ComponentNotReadyException {
 		Properties parameters = new Properties();
-		parameters.setProperty(DBConnection.SQL_QUERY_PROPERTY, sqlQuery);
+		parameters.setProperty(DBConnectionImpl.SQL_QUERY_PROPERTY, sqlQuery);
 
 		try {
 			return connection.createMetadata(parameters);

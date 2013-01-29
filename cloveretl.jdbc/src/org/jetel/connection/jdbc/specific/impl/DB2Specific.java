@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -98,7 +99,7 @@ public class DB2Specific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
+	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
 		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/);
 	}
 

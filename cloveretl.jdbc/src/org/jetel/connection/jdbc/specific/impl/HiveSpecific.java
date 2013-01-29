@@ -20,9 +20,9 @@ package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Types;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.HiveConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -43,7 +43,7 @@ public class HiveSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new HiveConnection(dbConnection, operationType);
 	}
 	

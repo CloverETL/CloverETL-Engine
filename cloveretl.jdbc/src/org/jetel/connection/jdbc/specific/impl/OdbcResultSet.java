@@ -43,7 +43,6 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 
 /**
  * Result set which allows to call get method multiple times. NOTE: get methods with single integer arguments shall be
@@ -55,7 +54,7 @@ import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
  */
 public class OdbcResultSet implements ResultSet {
 
-	private static final Log logger = LogFactory.getLog(DefaultConnection.class);
+	private static final Log logger = LogFactory.getLog(OdbcResultSet.class);
 
 	private final ResultSet resultSet;
 	private final Map<Integer, Object> cache = new HashMap<Integer, Object>();

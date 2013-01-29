@@ -19,7 +19,6 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.CallableStatement;
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,12 +33,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.connection.jdbc.CopySQLData;
-import org.jetel.connection.jdbc.CopySQLData.CopyDecimal;
-import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
+import org.jetel.connection.jdbc.AbstractCopySQLData;
+import org.jetel.connection.jdbc.AbstractCopySQLData.CopyDecimal;
 import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DecimalDataField;
+import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.QueryType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -103,9 +104,7 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	public ArrayList<String> getSchemas(java.sql.Connection connection)
-			throws SQLException {
-		
+	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
 		Statement s = connection.createStatement();
 		
 		ResultSet rs = s.executeQuery("pragma database_list");
@@ -128,8 +127,7 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	public ResultSet getTables(java.sql.Connection connection, String dbName)
-			throws SQLException {
+	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
 		// TODO Auto-generated method stub
 		
 		Statement s = connection.createStatement();
@@ -158,8 +156,7 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	public Set<ResultSet> getColumns(Connection connection)
-			throws SQLException {
+	public Set<ResultSet> getColumns(SqlConnection connection) throws SQLException {
 		Set<ResultSet> resultSets = new HashSet<ResultSet>();
 	    DatabaseMetaData md = connection.getMetaData();
 	    
@@ -177,7 +174,7 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	public ResultSetMetaData getColumns(Connection connection, String schema, String owner, String table) throws SQLException {
+	public ResultSetMetaData getColumns(SqlConnection connection, String schema, String owner, String table) throws SQLException {
 		if (connection == null || StringUtils.isEmpty(table)) {
 			return null;
 		}
@@ -444,7 +441,7 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	 * This implementation of copy object is very similar to {@link CopyDecimal} class.
 	 * However, data from database are retrieved as double data type - not BigDecimal. 
 	 */
-	private static class CopyDecimalAsDouble extends CopySQLData {
+	private static class CopyDecimalAsDouble extends AbstractCopySQLData {
 
 		public CopyDecimalAsDouble(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);

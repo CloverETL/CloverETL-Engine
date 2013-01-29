@@ -22,9 +22,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.GenericODBCConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 
 /**
@@ -52,12 +52,12 @@ public class GenericODBCSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new GenericODBCConnection(dbConnection, operationType);
 	}
 
 	@Override
-	public ArrayList<String> getSchemas(java.sql.Connection connection) throws SQLException {
+	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
 		ArrayList<String> currentCatalog = new ArrayList<String>();
 		currentCatalog.add(connection.getCatalog());
 		return currentCatalog;

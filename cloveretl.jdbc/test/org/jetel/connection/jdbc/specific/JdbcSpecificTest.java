@@ -22,11 +22,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.driver.JdbcDriver;
+import org.jetel.connection.jdbc.DBConnectionImpl;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.connection.jdbc.specific.conn.MySQLConnection;
+import org.jetel.database.sql.JdbcDriver;
+import org.jetel.database.sql.JdbcSpecific;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.test.CloverTestCase;
@@ -49,12 +50,12 @@ public class JdbcSpecificTest extends CloverTestCase {
 		Properties mysqlLogin = new Properties();
 		mysqlLogin.setProperty("user", "test");
 		mysqlLogin.setProperty("password", "test");
-		JdbcDriver mysqlDriver = JdbcDriver.createInstance(JdbcDriverFactory.getJdbcDriverDescriptor("MYSQL"));
+		JdbcDriver mysqlDriver = JdbcDriverFactory.createInstance(JdbcDriverFactory.getJdbcDriverDescriptor("MYSQL"));
 		Connection mysqlConnection = mysqlDriver.getDriver().connect("jdbc:mysql://koule:3306/test", mysqlLogin);
 		
 		JdbcSpecific mysqlSpecific = JdbcSpecificFactory.getJdbcSpecificDescription("MYSQL").getJdbcSpecific();
 		
-		Connection connection = mysqlSpecific.wrapSQLConnection(new DBConnection("id", mysqlLogin), OperationType.READ, mysqlConnection);
+		Connection connection = mysqlSpecific.wrapSQLConnection(new DBConnectionImpl("id", mysqlLogin), OperationType.READ, mysqlConnection);
 		assertTrue(connection instanceof MySQLConnection);
 		MySQLConnection ourMysqlConnection = (MySQLConnection) connection;
 		

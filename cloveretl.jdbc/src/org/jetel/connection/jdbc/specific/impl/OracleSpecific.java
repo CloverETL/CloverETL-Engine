@@ -19,7 +19,6 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.lang.management.ManagementFactory;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -31,13 +30,13 @@ import javax.management.ObjectName;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.CopySQLData;
-import org.jetel.connection.jdbc.CopySQLData.CopyOracleXml;
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.driver.JdbcDriver;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
+import org.jetel.connection.jdbc.AbstractCopySQLData.CopyOracleXml;
 import org.jetel.connection.jdbc.specific.conn.OracleConnection;
 import org.jetel.data.DataRecord;
+import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcDriver;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -69,7 +68,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new OracleConnection(dbConnection, operationType, getAutoKeyType());
 	}
 
@@ -178,7 +177,7 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	public ResultSet getTables(Connection connection, String dbName) throws SQLException {
+	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
 		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" });
 	}
 

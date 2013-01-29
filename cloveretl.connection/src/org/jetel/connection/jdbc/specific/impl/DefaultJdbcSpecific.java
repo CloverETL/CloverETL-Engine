@@ -19,6 +19,7 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 
+
 /**
  * The simplest implementation of JdbcSpecific, which is used by default 
  * for all closely non-defined database connections.

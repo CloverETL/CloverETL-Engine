@@ -24,9 +24,9 @@ import java.sql.Types;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.MySQLConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
@@ -60,7 +60,7 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new MySQLConnection(dbConnection, operationType);
 	}
 
@@ -154,7 +154,7 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	 * for MySQL a database is a catalog AND a schema
 	 */
 	@Override
-	public ResultSet getTables(java.sql.Connection connection, String dbName) throws SQLException {
+	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
 		return connection.getMetaData().getTables(dbName, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
 	}
 

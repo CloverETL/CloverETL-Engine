@@ -22,9 +22,9 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.MSSQLConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -53,7 +53,7 @@ public class MSSQLSpecific extends AbstractMSSQLSpecific {
 	}
 	
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new MSSQLConnection(dbConnection, operationType);
 	}
 
@@ -70,8 +70,7 @@ public class MSSQLSpecific extends AbstractMSSQLSpecific {
 	}
 
 	@Override
-	public ArrayList<String> getSchemas(java.sql.Connection connection)
-			throws SQLException {
+	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
 	  ArrayList <String> currentCatalog = new ArrayList<String>();
 	  currentCatalog.add(connection.getCatalog());
 	  return currentCatalog;

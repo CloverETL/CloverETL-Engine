@@ -24,6 +24,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.database.sql.JdbcDriver;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.Plugins;
 
@@ -42,7 +44,9 @@ public class JdbcDriverFactory {
     public final static String EXTENSION_POINT_ID = "jdbcDriver";
 
     private final static Map<String, JdbcDriverDescription> jdbcDrivers = new HashMap<String, JdbcDriverDescription>();
-    
+   
+    private static Map<JdbcDriverDescription, JdbcDriver> driversCache = new HashMap<JdbcDriverDescription, JdbcDriver>();
+
     public static void init() {
         //ask plugin framework for all jdbc driver extensions
         List<Extension> jdbcExtensions = Plugins.getExtensions(JdbcDriverFactory.EXTENSION_POINT_ID);
@@ -87,4 +91,21 @@ public class JdbcDriverFactory {
         return jdbcDrivers.values().toArray(new JdbcDriverDescription[jdbcDrivers.size()]);
     }
     
+	/**
+	 * Factory method for creating a JdbcDriver based on a JdbcDriverDescription.
+	 * @param jdbcDriverDescription
+	 * @return
+	 * @throws ComponentNotReadyException
+	 */
+	public static JdbcDriver createInstance(JdbcDriverDescription jdbcDriverDescription) throws ComponentNotReadyException {
+		JdbcDriver result = driversCache.get(jdbcDriverDescription);
+		if (result != null) {
+			return result;
+		} else {
+			result = new JdbcDriverImpl(jdbcDriverDescription);
+			driversCache.put(jdbcDriverDescription, result);
+			return result;
+		}
+	}
+
 }

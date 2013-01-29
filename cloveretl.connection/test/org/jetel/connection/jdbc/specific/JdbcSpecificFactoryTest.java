@@ -22,8 +22,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
+import org.jetel.database.sql.JdbcDriver;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.test.CloverTestCase;
 
@@ -45,7 +45,7 @@ public class JdbcSpecificFactoryTest extends CloverTestCase {
 		Properties mysqlLogin = new Properties();
 		mysqlLogin.setProperty("user", "test");
 		mysqlLogin.setProperty("password", "test");
-		JdbcDriver mysqlDriver = JdbcDriver.createInstance(JdbcDriverFactory.getJdbcDriverDescriptor("MYSQL"));
+		JdbcDriver mysqlDriver = JdbcDriverFactory.createInstance(JdbcDriverFactory.getJdbcDriverDescriptor("MYSQL"));
 		Connection mysqlConnection = mysqlDriver.getDriver().connect("jdbc:mysql://koule:3306/test", mysqlLogin);
 		assertEquals(JdbcSpecificFactory.getJdbcSpecificDescription("MYSQL"),
 				JdbcSpecificFactory.getJdbcSpecificDescription(mysqlConnection));

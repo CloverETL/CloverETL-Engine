@@ -25,7 +25,9 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific;
 import org.jetel.data.PluginableItemDescription;
+import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 
@@ -142,7 +144,12 @@ public class JdbcSpecificDescription extends PluginableItemDescription {
             //getting instance
             Method getInstanceMethod = c.getMethod("getInstance", (Class<?>[]) null);
             
-            return (JdbcSpecific) getInstanceMethod.invoke(null, (Object[]) null);
+            JdbcSpecific jdbcSpecific = (JdbcSpecific) getInstanceMethod.invoke(null, (Object[]) null);
+            //preset identifier of JdbcSpecific for later usage - this is available only for AbstractJdbcSpecific
+            if (jdbcSpecific instanceof AbstractJdbcSpecific) {
+            	((AbstractJdbcSpecific) jdbcSpecific).setId(getDatabase());
+            }
+            return jdbcSpecific;
         } catch(ClassNotFoundException ex) {
             logger.error("Unknown jdbc specific: " + getDatabase() + " class: " + getClassName());
             throw new RuntimeException("Unknown jdbc specific: " + getDatabase() + " class: " + getClassName());

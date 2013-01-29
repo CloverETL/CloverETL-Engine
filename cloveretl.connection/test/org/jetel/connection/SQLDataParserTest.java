@@ -3,10 +3,11 @@ package org.jetel.connection;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
-import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.DBConnectionImpl;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.database.sql.DBConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -37,7 +38,7 @@ public class SQLDataParserTest extends CloverTestCase {
 		// aDBConnection = new DBConnection("",
 		// "config\\test\\msaccess.clover_test.txt");
 		metadata = xmlReader.read(new FileInputStream("../cloveretl.engine/config/test/rec_def/db_def_rec.xml"));
-		aDBConnection = new DBConnection("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
+		aDBConnection = new DBConnectionImpl("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
 
 		aDBConnection.init();
 
