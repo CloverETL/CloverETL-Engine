@@ -25,7 +25,7 @@ import java.net.URL;
 import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 
-public class URLAuthority implements Authority {
+public class URLAuthority extends AbstractAuthority implements Authority {
 	
 	private final URL url;
 	private final Proxy proxy;
@@ -99,35 +99,4 @@ public class URLAuthority implements Authority {
 		return proxyString;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((proxyString == null) ? 0 : proxyString.hashCode());
-		result = prime * result + ((url == null) ? 0 : url.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		URLAuthority other = (URLAuthority) obj;
-		if (proxyString == null) {
-			if (other.proxyString != null)
-				return false;
-		} else if (!proxyString.equals(other.proxyString))
-			return false;
-		if (url == null) {
-			if (other.url != null)
-				return false;
-		} else if (!url.equals(other.url))
-			return false;
-		return true;
-	}
-	
 }
