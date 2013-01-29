@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.fileoperation.pool.Authority;
 import org.jetel.component.fileoperation.pool.ConnectionPool;
 import org.jetel.component.fileoperation.pool.PooledSFTPConnection;
-import org.jetel.component.fileoperation.pool.URLAuthority;
+import org.jetel.component.fileoperation.pool.SFTPAuthority;
 import org.jetel.util.protocols.ProxyAuthenticable;
 import org.jetel.util.protocols.UserInfo;
 
@@ -56,7 +56,7 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 
 	private int mode;
 
-	private URLAuthority authority;
+	private SFTPAuthority authority;
 	
 	/**
 	 * SFTP constructor.
@@ -73,7 +73,7 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 	 */
 	protected SFTPConnection(URL url, Proxy proxy) {
 		super(url);
-		this.authority = new URLAuthority(url, proxy);
+		this.authority = new SFTPAuthority(url, proxy);
 		mode = ChannelSftp.OVERWRITE;
 	}
 
