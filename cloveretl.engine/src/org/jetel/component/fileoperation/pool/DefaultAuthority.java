@@ -21,18 +21,12 @@ package org.jetel.component.fileoperation.pool;
 import java.net.URI;
 import java.net.URL;
 
-public class DefaultAuthority implements Authority {
-	public final String protocol;
-	public final String userInfo;
-	public final String host;
-	public final int port;
+public class DefaultAuthority extends AbstractAuthority implements Authority {
+	
 	public final String proxyString;
 	
 	public DefaultAuthority(String protocol, String userInfo, String host, int port, String proxyString) {
-		this.protocol = protocol;
-		this.userInfo = userInfo;
-		this.host = host;
-		this.port = port;
+		super(protocol, userInfo, host, port);
 		this.proxyString = proxyString;
 	}
 
@@ -52,38 +46,6 @@ public class DefaultAuthority implements Authority {
 		this(url, null);
 	}
 	
-	/**
-	 * @return the scheme
-	 */
-	@Override
-	public String getProtocol() {
-		return protocol;
-	}
-
-	/**
-	 * @return the userInfo
-	 */
-	@Override
-	public String getUserInfo() {
-		return userInfo;
-	}
-
-	/**
-	 * @return the host
-	 */
-	@Override
-	public String getHost() {
-		return host;
-	}
-
-	/**
-	 * @return the port
-	 */
-	@Override
-	public int getPort() {
-		return port;
-	}
-
 	/**
 	 * @return the proxy
 	 */

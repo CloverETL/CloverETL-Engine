@@ -20,46 +20,36 @@ package org.jetel.component.fileoperation.pool;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.URI;
 import java.net.URL;
 
 import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 
-public class URLAuthority extends AbstractAuthority implements Authority {
+public class SFTPAuthority extends AbstractAuthority implements Authority {
 	
-	private final URL url;
 	private final Proxy proxy;
 	private UserInfo proxyCredentials;
 	private String proxyString = null;
 	
-	public URLAuthority(URL url, Proxy proxy) {
-		this.url = url;
+	public SFTPAuthority(URL url, Proxy proxy) {
+		super(url);
 		this.proxy = proxy;
 	}
 
-	public URLAuthority(URL url, Proxy proxy, UserInfo proxyCredentials) {
+	public SFTPAuthority(URL url, Proxy proxy, UserInfo proxyCredentials) {
 		this(url, proxy);
 		this.proxyCredentials = proxyCredentials;
 	}
 
-	@Override
-	public String getProtocol() {
-		return url.getProtocol();
+	public SFTPAuthority(URI uri, Proxy proxy) {
+		super(uri);
+		this.proxy = proxy;
 	}
 
-	@Override
-	public String getUserInfo() {
-		return url.getUserInfo();
-	}
-
-	@Override
-	public String getHost() {
-		return url.getHost();
-	}
-
-	@Override
-	public int getPort() {
-		return url.getPort();
+	public SFTPAuthority(URI uri, Proxy proxy, UserInfo proxyCredentials) {
+		this(uri, proxy);
+		this.proxyCredentials = proxyCredentials;
 	}
 
 	public void setProxyCredentials(UserInfo proxyCredentials) {

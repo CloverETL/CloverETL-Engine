@@ -50,8 +50,8 @@ import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.component.fileoperation.pool.Authority;
 import org.jetel.component.fileoperation.pool.ConnectionPool;
-import org.jetel.component.fileoperation.pool.DefaultAuthority;
 import org.jetel.component.fileoperation.pool.PooledSFTPConnection;
+import org.jetel.component.fileoperation.pool.SFTPAuthority;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -409,7 +409,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	}
 	
 	private PooledSFTPConnection connect(URI uri) throws IOException {
-		Authority key = new DefaultAuthority(uri);
+		Authority key = new SFTPAuthority(uri, null);
 		try {
 			return (PooledSFTPConnection) pool.borrowObject(key);
 		} catch (IOException ioe) {

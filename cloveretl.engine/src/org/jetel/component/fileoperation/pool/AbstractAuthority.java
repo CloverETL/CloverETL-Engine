@@ -18,6 +18,9 @@
  */
 package org.jetel.component.fileoperation.pool;
 
+import java.net.URI;
+import java.net.URL;
+
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -25,6 +28,54 @@ package org.jetel.component.fileoperation.pool;
  * @created Jan 29, 2013
  */
 public abstract class AbstractAuthority implements Authority {
+
+	public final String protocol;
+	public final String userInfo;
+	public final String host;
+	public final int port;
+	
+	public AbstractAuthority(String protocol, String userInfo, String host, int port) {
+		this.protocol = protocol;
+		this.userInfo = userInfo;
+		this.host = host;
+		this.port = port;
+	}
+
+	public AbstractAuthority(URL url) {
+		this(url.getProtocol(), url.getUserInfo(), url.getHost(), url.getPort());
+	}
+
+	public AbstractAuthority(URI uri) {
+		this(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort());
+	}
+
+	/**
+	 * @return the protocol
+	 */
+	public String getProtocol() {
+		return protocol;
+	}
+
+	/**
+	 * @return the userInfo
+	 */
+	public String getUserInfo() {
+		return userInfo;
+	}
+
+	/**
+	 * @return the host
+	 */
+	public String getHost() {
+		return host;
+	}
+
+	/**
+	 * @return the port
+	 */
+	public int getPort() {
+		return port;
+	}
 
 	@Override
 	public int hashCode() {
