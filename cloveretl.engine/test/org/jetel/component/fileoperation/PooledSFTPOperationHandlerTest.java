@@ -36,28 +36,28 @@ public class PooledSFTPOperationHandlerTest extends SFTPOperationHandlerTest {
 
 	@Override
 	public void testGetPriority() {
-//		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getSpeed(Operation.copy(SFTPOperationHandler.SFTP_SCHEME, SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.move(SFTPOperationHandler.SFTP_SCHEME, SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.delete(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.create(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.resolve(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.info(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.list(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.read(SFTPOperationHandler.SFTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.write(SFTPOperationHandler.SFTP_SCHEME)));
+//		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getSpeed(Operation.copy(PooledSFTPOperationHandler.SFTP_SCHEME, PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.move(PooledSFTPOperationHandler.SFTP_SCHEME, PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.delete(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.create(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.resolve(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.info(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.list(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.read(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.write(PooledSFTPOperationHandler.SFTP_SCHEME)));
 	}
 
 	@Override
 	public void testCanPerform() {
-//		assertTrue(handler.canPerform(Operation.copy(SFTPOperationHandler.SFTP_SCHEME, SFTPOperationHandler.SFTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.move(SFTPOperationHandler.SFTP_SCHEME, SFTPOperationHandler.SFTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.delete(SFTPOperationHandler.SFTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.create(SFTPOperationHandler.SFTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.resolve(SFTPOperationHandler.SFTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.info(SFTPOperationHandler.SFTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.list(SFTPOperationHandler.SFTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.read(SFTPOperationHandler.SFTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.write(SFTPOperationHandler.SFTP_SCHEME)));
+//		assertTrue(handler.canPerform(Operation.copy(PooledSFTPOperationHandler.SFTP_SCHEME, PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.move(PooledSFTPOperationHandler.SFTP_SCHEME, PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.delete(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.create(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.resolve(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.info(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.list(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.read(PooledSFTPOperationHandler.SFTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.write(PooledSFTPOperationHandler.SFTP_SCHEME)));
 //		
 //		try {
 //			Thread.sleep(60000);
