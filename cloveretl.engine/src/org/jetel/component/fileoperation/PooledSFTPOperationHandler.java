@@ -36,6 +36,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
@@ -60,6 +62,8 @@ import com.jcraft.jsch.SftpException;
 public class PooledSFTPOperationHandler implements IOperationHandler {
 
 	public static final String SFTP_SCHEME = "sftp"; //$NON-NLS-1$
+	
+	private static final Log log = LogFactory.getLog(PooledSFTPOperationHandler.class);
 	
 	private FileManager manager = FileManager.getInstance();
 	
@@ -421,8 +425,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			try {
 				pool.returnObject(connection.getAuthority(), connection);
 			} catch (Exception ex) {
-				// TODO Auto-generated catch block
-				ex.printStackTrace(); // FIXME
+				log.debug("Failed to return SFTP connection to the pool");
 			}
 		}
 	}
