@@ -73,10 +73,9 @@ public interface JdbcSpecific {
 	public String getId();
 	
 	/**
-	 * Closes given result set if the database requires before new result set is created.
-	 * @param resultSet
+	 * @return True if it's possible to close result set before creating new one, false otherwise.
 	 */
-	public void closeResultSetBeforeCreatingNewOne(ResultSet resultSet) throws SQLException;
+	public boolean canCloseResultSetBeforeCreatingNewOne();
 
 	/**
 	 * @return Pattern of db field.

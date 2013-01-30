@@ -115,12 +115,8 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	}
 	
 	@Override
-	public void closeResultSetBeforeCreatingNewOne(ResultSet resultSet) throws SQLException {
-		if (resultSet != null) {
-			// close the previous result set before creating new one
-			resultSet.close();
-			// note: according to documentation, resultSet that is already closed is a no-op, please test
-		}
+	public boolean canCloseResultSetBeforeCreatingNewOne() {
+		return true;
 	}
 	
 	@Override

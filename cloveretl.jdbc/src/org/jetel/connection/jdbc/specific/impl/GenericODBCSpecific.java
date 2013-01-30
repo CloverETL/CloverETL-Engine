@@ -47,8 +47,8 @@ public class GenericODBCSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	public void closeResultSetBeforeCreatingNewOne(ResultSet resultSet) throws SQLException {
-		//do not close the result set
+	public boolean canCloseResultSetBeforeCreatingNewOne() {
+		return false;
 	}
 
 	@Override
