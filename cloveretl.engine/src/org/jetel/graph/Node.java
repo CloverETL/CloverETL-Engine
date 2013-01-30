@@ -463,7 +463,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		try {
     			preExecute();
     		} catch (Throwable e) {
-    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed", e);
+    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
     		}
 
     		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
