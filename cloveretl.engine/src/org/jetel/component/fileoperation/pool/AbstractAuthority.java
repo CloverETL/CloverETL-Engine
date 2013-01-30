@@ -52,6 +52,7 @@ public abstract class AbstractAuthority implements Authority {
 	/**
 	 * @return the protocol
 	 */
+	@Override
 	public String getProtocol() {
 		return protocol;
 	}
@@ -59,6 +60,7 @@ public abstract class AbstractAuthority implements Authority {
 	/**
 	 * @return the userInfo
 	 */
+	@Override
 	public String getUserInfo() {
 		return userInfo;
 	}
@@ -66,6 +68,7 @@ public abstract class AbstractAuthority implements Authority {
 	/**
 	 * @return the host
 	 */
+	@Override
 	public String getHost() {
 		return host;
 	}
@@ -73,6 +76,7 @@ public abstract class AbstractAuthority implements Authority {
 	/**
 	 * @return the port
 	 */
+	@Override
 	public int getPort() {
 		return port;
 	}
