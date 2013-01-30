@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldType;
@@ -49,7 +50,15 @@ public class DecimalDictionaryType extends DictionaryType {
 
 	@Override
 	public Object init(Object value, Dictionary dictionary) throws ComponentNotReadyException {
-		return value;
+		if (value == null) {
+			return null;
+		} else if (value instanceof Decimal) {
+			return ((Decimal) value).getBigDecimalOutput();
+		} else if (value instanceof BigDecimal) {
+			return value;
+		} else {
+			throw new ComponentNotReadyException(dictionary, "Unknown source type for a Decimal dictionary type (" + value + ").");
+		}
 	}
 
 	@Override
@@ -75,6 +84,9 @@ public class DecimalDictionaryType extends DictionaryType {
 	@Override
 	public Properties formatProperties(Object value) {
 		if (value != null) {
+			if (value instanceof Decimal) {
+				value = ((Decimal) value).getBigDecimalOutput();
+			}
 			Properties result = new Properties();
 			result.setProperty(VALUE_ATTRIBUTE, ((BigDecimal) value).toString());
 			return result;
@@ -90,8 +102,7 @@ public class DecimalDictionaryType extends DictionaryType {
 	 */
 	@Override
 	public boolean isValidValue(Object value) {
-		return value == null
-				|| value instanceof BigDecimal;
+		return value == null || value instanceof BigDecimal || value instanceof Decimal;
 	}
 
 	@Override
