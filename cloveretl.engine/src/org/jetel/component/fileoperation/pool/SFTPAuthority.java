@@ -78,7 +78,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 			sb.append(type.toString()).append("://");
 			if (proxy.type() != Proxy.Type.DIRECT) {
 				if ((proxyCredentials != null) && (proxyCredentials.getUserInfo() != null)) {
-					sb.append(proxyCredentials.getUserInfo());
+					sb.append(proxyCredentials.getUserInfo()).append('@');
 				}
 				InetSocketAddress address = (InetSocketAddress) proxy.address();
 				sb.append(address.getHostName()).append(':').append(address.getPort());
