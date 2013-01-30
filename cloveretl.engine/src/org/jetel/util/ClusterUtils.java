@@ -39,6 +39,22 @@ public class ClusterUtils {
 	public static final String REMOTE_EDGE_DATA_RECEIVER_TYPE = "REMOTE_EDGE_DATA_RECEIVER";
 	
 	/**
+	 * Check whether the given component type is one of cluster components.
+	 * @param componentType
+	 * @return true if the given component is a cluster component
+	 */
+	public static boolean isClusterComponent(String componentType) {
+		return CLUSTER_PARTITION_TYPE.equals(componentType) ||
+				CLUSTER_LOAD_BALANCING_PARTITION_TYPE.equals(componentType) ||
+				CLUSTER_SIMPLE_GATHER_TYPE.equals(componentType) ||
+				CLUSTER_MERGE_TYPE.equals(componentType) ||
+				CLUSTER_REPARTITION_TYPE.equals(componentType) ||
+				CLUSTER_REGATHER_TYPE.equals(componentType) ||
+				REMOTE_EDGE_DATA_TRANSMITTER_TYPE.equals(componentType) ||
+				REMOTE_EDGE_DATA_RECEIVER_TYPE.equals(componentType);
+	}
+		
+	/**
 	 * Check whether the given component type is one of cluster gathers.
 	 * @param componentType
 	 * @return true if the given component is a cluster gather
