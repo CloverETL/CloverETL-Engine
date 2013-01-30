@@ -220,13 +220,14 @@ public class FileManager {
 		FileManager manager = FileManager.getInstance();
 		synchronized (manager) {
 			manager.registerHandler(new LocalOperationHandler());
-			manager.registerHandler(new FTPOperationHandler());
+//			manager.registerHandler(new FTPOperationHandler());
 			manager.registerHandler(new URLOperationHandler());
 			manager.registerHandler(new DefaultOperationHandler());
 			manager.registerHandler(new WebdavOperationHandler());
 			manager.registerHandler(new S3OperationHandler());
 //			manager.registerHandler(new SFTPOperationHandler());
 			manager.registerHandler(new PooledSFTPOperationHandler());
+			manager.registerHandler(new PooledFTPOperationHandler());
 		}
 	}
 	
