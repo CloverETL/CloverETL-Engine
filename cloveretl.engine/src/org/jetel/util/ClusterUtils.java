@@ -44,14 +44,11 @@ public class ClusterUtils {
 	 * @return true if the given component is a cluster component
 	 */
 	public static boolean isClusterComponent(String componentType) {
-		return CLUSTER_PARTITION_TYPE.equals(componentType) ||
-				CLUSTER_LOAD_BALANCING_PARTITION_TYPE.equals(componentType) ||
-				CLUSTER_SIMPLE_GATHER_TYPE.equals(componentType) ||
-				CLUSTER_MERGE_TYPE.equals(componentType) ||
-				CLUSTER_REPARTITION_TYPE.equals(componentType) ||
-				CLUSTER_REGATHER_TYPE.equals(componentType) ||
-				REMOTE_EDGE_DATA_TRANSMITTER_TYPE.equals(componentType) ||
-				REMOTE_EDGE_DATA_RECEIVER_TYPE.equals(componentType);
+		return isClusterGather(componentType)
+				|| isClusterPartition(componentType)
+				|| isClusterRepartition(componentType)
+				|| isClusterRegather(componentType)
+				|| isRemoteEdgeComponent(componentType);
 	}
 		
 	/**
@@ -60,8 +57,8 @@ public class ClusterUtils {
 	 * @return true if the given component is a cluster gather
 	 */
 	public static boolean isClusterGather(String componentType) {
-		return componentType.equals(CLUSTER_SIMPLE_GATHER_TYPE) ||
-				componentType.equals(CLUSTER_MERGE_TYPE);
+		return componentType.equals(CLUSTER_SIMPLE_GATHER_TYPE)
+				|| componentType.equals(CLUSTER_MERGE_TYPE);
 	}
 	
 	/**
@@ -70,8 +67,8 @@ public class ClusterUtils {
 	 * @return true if the given component is a cluster partitioner
 	 */
 	public static boolean isClusterPartition(String componentType) {
-		return componentType.equals(CLUSTER_PARTITION_TYPE) ||
-				componentType.equals(CLUSTER_LOAD_BALANCING_PARTITION_TYPE);
+		return componentType.equals(CLUSTER_PARTITION_TYPE)
+				|| componentType.equals(CLUSTER_LOAD_BALANCING_PARTITION_TYPE);
 	}
 
 	/**
@@ -100,8 +97,8 @@ public class ClusterUtils {
 	 * @return true if the given component is 'remote edge' component 
 	 */
 	public static boolean isRemoteEdgeComponent(String componentType) {
-		return componentType.equals(REMOTE_EDGE_DATA_TRANSMITTER_TYPE) ||
-				componentType.equals(REMOTE_EDGE_DATA_RECEIVER_TYPE);
+		return componentType.equals(REMOTE_EDGE_DATA_TRANSMITTER_TYPE)
+				|| componentType.equals(REMOTE_EDGE_DATA_RECEIVER_TYPE);
 	}
 	
 }
