@@ -20,6 +20,7 @@ package org.jetel.data.formatter.provider;
 
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Provides support for getting the universal data formatter.
@@ -27,7 +28,7 @@ import org.jetel.data.formatter.Formatter;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public class DataFormatterProvider implements FormatterProvider {
+public class DataFormatterProvider implements SharedFormatterProvider {
 
 	private String charEncoder;
 	private String header;
@@ -52,7 +53,7 @@ public class DataFormatterProvider implements FormatterProvider {
 	 * @return data formatter
 	 */
 	@Override
-	public Formatter getNewFormatter() {
+	public DataFormatter getNewFormatter() {
 		DataFormatter formatter;
 		if (charEncoder == null) {
 			formatter =	new DataFormatter();
@@ -65,6 +66,20 @@ public class DataFormatterProvider implements FormatterProvider {
 		formatter.setQuotedStrings(quotedStrings);
 		formatter.setQuoteChar(quoteChar);
 		return formatter;
+	}
+
+	private DataFormatter parent = null;
+	private DataRecordMetadata parentMetadata = null;
+
+	@Override
+	public Formatter getNewSharedFormatter(DataRecordMetadata metadata) {
+		if (parent == null) {
+			parentMetadata = metadata;
+			parent = getNewFormatter();
+		} else if (metadata != parentMetadata) {
+			throw new IllegalArgumentException("Different metadata");
+		}
+		return new DataFormatter(parent);
 	}
 
 	/**

@@ -91,6 +91,14 @@ public class DataFormatter extends AbstractFormatter {
 		metadata = null;
 	}
 	
+	public DataFormatter(DataFormatter parent) {
+		// can't be shared without flushing every record, too slow 
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
+		fieldBuffer = parent.fieldBuffer; // shared buffer, potentially dangerous
+		charSet = parent.charSet;
+		metadata = null;
+	}
+	
 	public void setExcludedFieldNames(String[] excludedFieldNames) {
 		this.excludedFieldNames = excludedFieldNames;
 	}
