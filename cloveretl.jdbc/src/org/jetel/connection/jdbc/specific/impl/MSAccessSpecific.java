@@ -18,6 +18,7 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -58,8 +59,8 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 	}
 	
 	@Override
-	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new MSAccessConnection(dbConnection, operationType);
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new MSAccessConnection(dbConnection, connection, operationType);
 	}
 
 	@Override

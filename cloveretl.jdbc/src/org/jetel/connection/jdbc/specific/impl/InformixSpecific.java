@@ -18,6 +18,7 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -66,9 +67,9 @@ public class InformixSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
 		//that is intentional usage of MSSQLConnection!!!
-		return new MSSQLConnection(dbConnection, operationType);
+		return new MSSQLConnection(dbConnection, connection, operationType);
 	}
 
 	@Override

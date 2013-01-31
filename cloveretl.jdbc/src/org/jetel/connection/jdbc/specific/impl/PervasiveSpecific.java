@@ -18,6 +18,7 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -47,8 +48,8 @@ public class PervasiveSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new PervasiveConnection(dbConnection, operationType, getAutoKeyType());
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new PervasiveConnection(dbConnection, connection, operationType);
 	}
 
 	@Override

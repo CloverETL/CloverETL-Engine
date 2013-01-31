@@ -18,6 +18,7 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -53,8 +54,8 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new FirebirdConnection(dbConnection, operationType); 
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new FirebirdConnection(dbConnection, connection, operationType); 
 	}
 
 	@Override

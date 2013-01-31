@@ -19,6 +19,7 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.lang.management.ManagementFactory;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -73,8 +74,8 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new OracleConnection(dbConnection, operationType, getAutoKeyType());
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new OracleConnection(dbConnection, connection, operationType);
 	}
 
 	@Override

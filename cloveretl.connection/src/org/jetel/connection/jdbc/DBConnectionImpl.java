@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -390,13 +391,13 @@ public class DBConnectionImpl extends GraphElement implements DBConnection {
                	//update jdbc specific of this DBConnection according given JNDI connection
                	updateJdbcSpecific(jndiConnection);
                	//wrap the given JNDI connection to a DefaultConnection instance 
-               	return getJdbcSpecific().wrapSQLConnection(this, operationType, jndiConnection);
+               	return getJdbcSpecific().createSQLConnection(this, jndiConnection, operationType);
         	} catch (Exception e) {
         		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
         	}
     	} else {
         	try {
-				return getJdbcSpecific().createSQLConnection(this, operationType);
+				return getJdbcSpecific().createSQLConnection(this, createConnection(), operationType);
 			} catch (JetelException e) {
 				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
 			}
@@ -404,7 +405,7 @@ public class DBConnectionImpl extends GraphElement implements DBConnection {
     }
 
     /**
-     * Determines jdbc specific for this {@link DBConnection} based on given {@link Connection}.
+     * Guess jdbc specific for this {@link DBConnection} based on given {@link Connection}.
      * This is used for {@link Connection} given from JNDI interface to guess proper {@link JdbcSpecific}.
      */
     private void updateJdbcSpecific(Connection connection) {
@@ -950,6 +951,36 @@ public class DBConnectionImpl extends GraphElement implements DBConnection {
 	@Override
 	public void setTransactionIsolation(Integer transactionIsolation) {
 		this.transactionIsolation = transactionIsolation;
+	}
+
+	/**
+	 * Sets up a java.sql.Connection according given DBConnection object.
+	 * @param dbConnection
+	 * @return
+	 * @throws JetelException
+	 */
+	private Connection createConnection() {
+		JdbcDriver jdbcDriver = getJdbcDriver();
+		// -pnajvar
+		// this is a bad hack, workaround for issue 2668
+		if (jdbcDriver == null) { 
+			throw new JetelRuntimeException("JDBC driver couldn't be obtained");
+		}
+		Driver driver = jdbcDriver.getDriver();
+		Connection connection;
+		Properties connectionProperties = new Properties(jdbcDriver.getProperties());
+		connectionProperties.putAll(createConnectionProperties());
+		
+        try {
+            connection = driver.connect(getDbUrl(), connectionProperties);
+        } catch (SQLException ex) {
+            throw new JetelRuntimeException("Can't connect to DB: " + ex.getMessage(), ex);
+        }
+        if (connection == null) {
+            throw new JetelRuntimeException("Not suitable driver for specified DB URL (" + driver + " / " + getDbUrl());
+        }
+        
+        return connection;
 	}
 
 }

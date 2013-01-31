@@ -18,6 +18,7 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -52,8 +53,8 @@ public class MSSQLSpecific2005 extends AbstractMSSQLSpecific {
 	}
 
 	@Override
-	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new MSSQLConnection(dbConnection, operationType);
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new MSSQLConnection(dbConnection, connection, operationType);
 	}
 
 	@Override

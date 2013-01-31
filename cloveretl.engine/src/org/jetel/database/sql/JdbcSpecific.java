@@ -91,19 +91,7 @@ public interface JdbcSpecific {
 	 * @return
 	 * @throws JetelException
 	 */
-	public SqlConnection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException;
-
-	/**
-	 * Wraps the given connection to a {@link Connection}, which should follow 
-	 * all specific behaviour with the given operation type.
-	 * Method is intended to be overridden.
-	 * @param dbConnection
-	 * @param operationType
-	 * @param sqlConnection
-	 * @return
-	 * @throws JetelException
-	 */
-	public SqlConnection wrapSQLConnection(DBConnection dbConnection, OperationType operationType, Connection sqlConnection) throws JetelException;
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection sqlConnection, OperationType operationType) throws JetelException;
 
 	/**
 	 * Performs check of metatadata if there are some special (DB specific) requirements.

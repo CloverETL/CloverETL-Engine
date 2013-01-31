@@ -18,6 +18,7 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.sql.Connection;
 import java.sql.Types;
 
 import org.jetel.connection.jdbc.specific.conn.HiveConnection;
@@ -47,8 +48,8 @@ public class HiveSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new HiveConnection(dbConnection, operationType);
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new HiveConnection(dbConnection, connection, operationType);
 	}
 	
 	@Override

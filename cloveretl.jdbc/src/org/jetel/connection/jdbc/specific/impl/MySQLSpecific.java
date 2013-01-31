@@ -18,6 +18,7 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -65,8 +66,8 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new MySQLConnection(dbConnection, operationType);
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new MySQLConnection(dbConnection, connection, operationType);
 	}
 
 	/* (non-Javadoc)

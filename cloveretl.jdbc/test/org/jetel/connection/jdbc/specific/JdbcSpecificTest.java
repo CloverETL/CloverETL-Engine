@@ -55,11 +55,15 @@ public class JdbcSpecificTest extends CloverTestCase {
 		
 		JdbcSpecific mysqlSpecific = JdbcSpecificFactory.getJdbcSpecificDescription("MYSQL").getJdbcSpecific();
 		
-		Connection connection = mysqlSpecific.wrapSQLConnection(new DBConnectionImpl("id", mysqlLogin), OperationType.READ, mysqlConnection);
+		Connection connection = mysqlSpecific.createSQLConnection(new DBConnectionImpl("id", mysqlLogin), mysqlConnection, OperationType.READ);
 		assertTrue(connection instanceof MySQLConnection);
-		MySQLConnection ourMysqlConnection = (MySQLConnection) connection;
+		MySQLConnection wrapperMysqlConnection = (MySQLConnection) connection;
 		
-		assertEquals(mysqlConnection, ourMysqlConnection.getInnerConnection());
+		boolean autoCommit = mysqlConnection.getAutoCommit();
+		assertEquals(autoCommit, wrapperMysqlConnection.getAutoCommit());
+		
+		mysqlConnection.setAutoCommit(!autoCommit);
+		assertEquals(!autoCommit, wrapperMysqlConnection.getAutoCommit());
 	}
 	
 }

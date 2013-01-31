@@ -39,8 +39,8 @@ public class MSAccessConnection extends GenericODBCConnection {
 	 * @param operationType
 	 * @throws JetelException
 	 */
-	public MSAccessConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		super(dbConnection, operationType);
+	public MSAccessConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		super(dbConnection, connection, operationType);
 	}
 
 	/* (non-Javadoc) We had to ommit holdability settings.

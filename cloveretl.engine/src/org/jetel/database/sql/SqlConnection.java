@@ -24,8 +24,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
 
-import org.jetel.exception.JetelException;
-
 /**
  * Clover specific extension of regular java.sql.Connection interface
  * 
@@ -38,14 +36,6 @@ import org.jetel.exception.JetelException;
 public interface SqlConnection extends Connection {
 
 	public JdbcSpecific getJdbcSpecific();
-	
-	public void init() throws JetelException;
-	
-	public void setInnerConnection(Connection connection);
-	
-	public Connection getInnerConnection();
-	
-	public void setConservative(boolean conservative);
 	
 	public boolean isTransactionsSupported();
 	

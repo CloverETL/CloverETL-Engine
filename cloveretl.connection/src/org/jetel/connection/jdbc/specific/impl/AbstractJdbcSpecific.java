@@ -117,26 +117,8 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	}
 	
 	@Override
-	public SqlConnection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		SqlConnection connection = prepareSQLConnection(dbConnection, operationType);
-		connection.init();
-		return connection;
-	}
-	
-	@Override
-	public SqlConnection wrapSQLConnection(DBConnection dbConnection, OperationType operationType, Connection sqlConnection) throws JetelException {
-		SqlConnection connection = prepareSQLConnection(dbConnection, operationType);
-		connection.setInnerConnection(sqlConnection);
-		connection.init();
-		return connection;
-	}
-	
-	/**
-	 * Just creates respective implementation of {@link DefaultConnection} for this jdbc specific.
-	 * Is intended to be overridden.
-	 */
-	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new BasicSqlConnection(dbConnection, operationType, getAutoKeyType());
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new BasicSqlConnection(dbConnection, connection, operationType);
 	}
 	
 	/* (non-Javadoc)
