@@ -262,14 +262,13 @@ public class FileUtils {
      * Returns <code>true</code> if <code>fileURL</code> specifies a protocol.
      * On Windows, single letters are not considered protocol names.
      * 
-     * @param contextURL
      * @param fileURL
      * @return
      */
-    private static boolean isUnknownProtocol(URL contextURL, String fileURL) {
+    private static boolean isUnknownProtocol(String fileURL) {
     	if (fileURL != null) {
     		try {
-    			URL url = new URL(contextURL, fileURL, GENERIC_HANDLER);
+    			URL url = new URL(null, fileURL, GENERIC_HANDLER);
     			String protocol = url.getProtocol();
     			if (!protocol.isEmpty() && !protocol.equals(PORT_PROTOCOL) && !protocol.equals(DICTIONARY_PROTOCOL)) {
     				if (protocol.length() == 1 && PlatformUtils.isWindowsPlatform()) {
@@ -338,8 +337,11 @@ public class FileUtils {
 		}
 		
 		// throw and exception if fileURL specifies a protocol (drive letters are ignored)
-		if (isUnknownProtocol(contextURL, fileURL)) {
-			return new URL(contextURL, fileURL);
+		if (isUnknownProtocol(fileURL)) {
+			// unknown protocol will throw an exception,
+			// standard Java protocols will be ignored;
+			// all Clover-specific protocols must be checked before this call
+			new URL(fileURL);
 		}
 
 		// file url
