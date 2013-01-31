@@ -47,6 +47,10 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
+	protected SybaseSpecific() {
+		super();
+	}
+	
 	@Override
 	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new SybaseConnection(dbConnection, operationType);

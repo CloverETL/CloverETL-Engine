@@ -46,6 +46,10 @@ public class PostgreSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
+	public PostgreSpecific() {
+		super();
+	}
+	
 	@Override
 	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new PostgreConnection(dbConnection, operationType);

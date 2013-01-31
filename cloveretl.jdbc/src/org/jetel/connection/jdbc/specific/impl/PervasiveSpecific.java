@@ -42,6 +42,10 @@ public class PervasiveSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
+	protected PervasiveSpecific() {
+		super();
+	}
+	
 	@Override
 	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
 		return new PervasiveConnection(dbConnection, operationType, getAutoKeyType());

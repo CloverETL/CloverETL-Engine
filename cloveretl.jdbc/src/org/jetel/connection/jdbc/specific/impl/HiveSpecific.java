@@ -41,6 +41,10 @@ public class HiveSpecific extends AbstractJdbcSpecific {
 	public static HiveSpecific getInstance() {
 		return INSTANCE;
 	}
+
+	protected HiveSpecific() {
+		super();
+	}
 	
 	@Override
 	protected SqlConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
