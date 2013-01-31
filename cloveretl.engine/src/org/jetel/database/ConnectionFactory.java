@@ -24,14 +24,18 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.ComponentFactory;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.XmlUtils;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -141,6 +145,13 @@ public class ConnectionFactory {
         }
     }
 
+    /**
+     *  Method for creating various types of Connection based on connection type and attributes passed as {@link Properties}.
+     */
+    public final static IConnection createConnection(TransformationGraph graph, String connectionType, Properties properties) {
+    	Document xmlDocument = XmlUtils.createDocumentFromProperties(TransformationGraphXMLReaderWriter.CONNECTION_ELEMENT, properties);
+    	return createConnection(graph, connectionType, (Element) xmlDocument.getFirstChild());
+    }
     
     /**
      * Method for querying map of descriptors for all registered connection types
