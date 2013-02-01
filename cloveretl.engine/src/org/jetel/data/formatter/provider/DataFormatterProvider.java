@@ -48,6 +48,19 @@ public class DataFormatterProvider implements SharedFormatterProvider {
 	}
 
 	/**
+	 * Common setup for newly created shared and unshared formatters.
+	 * 
+	 * @param formatter
+	 */
+	private void initFormatter(DataFormatter formatter) {
+		formatter.setHeader(header);
+		charSet = formatter.getCharsetName();
+		formatter.setExcludedFieldNames(excludedFieldNames);
+		formatter.setQuotedStrings(quotedStrings);
+		formatter.setQuoteChar(quoteChar);
+	}
+
+	/**
 	 * Creates new data formatter.
 	 * 
 	 * @return data formatter
@@ -60,14 +73,10 @@ public class DataFormatterProvider implements SharedFormatterProvider {
 		} else {
 			formatter =	new DataFormatter(charEncoder);
 		}
-		formatter.setHeader(header);
-		charSet = formatter.getCharsetName();
-		formatter.setExcludedFieldNames(excludedFieldNames);
-		formatter.setQuotedStrings(quotedStrings);
-		formatter.setQuoteChar(quoteChar);
+		initFormatter(formatter);
 		return formatter;
 	}
-
+	
 	private DataFormatter parent = null;
 	private DataRecordMetadata parentMetadata = null;
 
@@ -79,7 +88,9 @@ public class DataFormatterProvider implements SharedFormatterProvider {
 		} else if (metadata != parentMetadata) {
 			throw new IllegalArgumentException("Different metadata");
 		}
-		return new DataFormatter(parent);
+		DataFormatter formatter = new DataFormatter(parent);
+		initFormatter(formatter);
+		return formatter;
 	}
 
 	/**
