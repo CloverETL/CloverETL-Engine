@@ -23,6 +23,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -99,6 +101,13 @@ public class MSSQLConnection extends BasicSqlConnection {
 			connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 			break;
 		}
+	}
+
+	@Override
+	public List<String> getSchemas() throws SQLException {
+		ArrayList<String> currentCatalog = new ArrayList<String>();
+		currentCatalog.add(connection.getCatalog());
+		return currentCatalog;
 	}
 
 }

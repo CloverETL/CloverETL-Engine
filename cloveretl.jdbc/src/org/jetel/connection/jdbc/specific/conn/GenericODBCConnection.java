@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -85,4 +86,12 @@ public class GenericODBCConnection extends BasicSqlConnection {
 		//driver does not support setting of auto commit
 		logger.warn("AutoCommit is set to " + connection.getAutoCommit() + " and cannot be changed.");
 	}
+	
+	@Override
+	public ArrayList<String> getSchemas() throws SQLException {
+		ArrayList<String> currentCatalog = new ArrayList<String>();
+		currentCatalog.add(connection.getCatalog());
+		return currentCatalog;
+	}
+	
 }

@@ -24,7 +24,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -509,82 +508,6 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		return false;
 	}
 
-	/**
-	 * A static method that retrieves schemas from dbMeta objects.
-	 * Returns it as arraylist of strings in the format either <schema> or <catalog>.<schema>
-	 * e.g.:
-	 * mytable
-	 * dbo.anothertable
-	 * 
-	 * @param dbMeta
-	 * @return
-	 * @throws SQLException
-	 */
-	protected static ArrayList<String> getMetaSchemas(DatabaseMetaData dbMeta) throws SQLException {
-		ArrayList<String> ret = new ArrayList<String>();
-		ResultSet result = dbMeta.getSchemas();
-		String tmp;
-		while (result.next()) {
-			tmp = "";
-			try {
-				if (result.getString(2) != null) {
-					tmp = result.getString(2) + dbMeta.getCatalogSeparator();
-				}
-			} catch (Exception e) {
-				// -pnajvar
-				// this is here deliberately
-				// some dbms don't provide second column and that is not wrong, just have to ignore
-			}
-			tmp += result.getString(1);
-			ret.add(tmp);
-		}
-		result.close();
-		return ret;
-	}
-	
-	protected static ArrayList<String> getMetaCatalogs(DatabaseMetaData dbMeta) throws SQLException {
-		ArrayList<String> ret = new ArrayList<String>();
-		ResultSet result = dbMeta.getCatalogs();
-		String tmp;
-		while (result.next()) {
-			tmp = result.getString(1);
-			ret.add(tmp);
-		}
-		result.close();
-		return ret;
-	}
-	
-	@Override
-	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
-
-		ArrayList<String> tmp;
-		
-		ArrayList<String> schemas = new ArrayList<String>();
-
-		DatabaseMetaData dbMeta = connection.getMetaData();
-		
-		// add schemas
-		tmp = getMetaSchemas(dbMeta);
-		if (tmp != null) {
-			schemas.addAll(tmp);
-		}
-
-		// add catalogs
-		tmp = getMetaCatalogs(dbMeta);
-		if (tmp != null) {
-			schemas.addAll(tmp);
-		}
-		
-		return schemas;
-	}
-
-	@Override
-	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
-		// by default, database `dbName` is considered a schema, sometimes it needs to be considered
-		// as a catalog
-		return connection.getMetaData().getTables(dbName, null, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
-	}
-
     /* (non-Javadoc)
      * @see org.jetel.connection.jdbc.specific.JdbcSpecific#getColumns(java.sql.Connection, java.lang.String, java.lang.String)
      */
@@ -595,7 +518,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 
 		return resultSet.getMetaData();
     }
-    
+
     /* (non-Javadoc)
      * @see org.jetel.connection.jdbc.specific.JdbcSpecific#compileSelectQuery4Table(java.lang.String, java.lang.String)
      */

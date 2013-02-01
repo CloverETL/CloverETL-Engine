@@ -20,8 +20,6 @@ package org.jetel.connection.jdbc.specific.impl;
 
 import java.lang.management.ManagementFactory;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Hashtable;
 import java.util.regex.Pattern;
@@ -180,11 +178,6 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	@Override
 	public Pattern getCommentsPattern() {
 		return COMMENTS_PATTERN;
-	}
-
-	@Override
-	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
-		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" });
 	}
 
 	@Override

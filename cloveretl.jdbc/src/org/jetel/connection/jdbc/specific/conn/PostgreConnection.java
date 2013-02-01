@@ -20,8 +20,11 @@ package org.jetel.connection.jdbc.specific.conn;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -95,4 +98,27 @@ public class PostgreConnection extends BasicSqlConnection {
 		}
 	}
 	
+	@Override
+	public List<String> getSchemas() throws SQLException {
+		List<String> tmp;
+		List<String> schemas = new ArrayList<String>();
+
+		// add schemas
+		tmp = getMetaSchemas();
+		if (tmp != null) {
+			schemas.addAll(tmp);
+		}
+
+		// catalogs not added - postgresql allows only catalog specified in connection url, cannot get matadata from
+		// other catalogs
+		// add catalogs
+
+		return schemas;
+	}	
+
+	@Override
+	public ResultSet getTables(String schema) throws SQLException {
+		return getTablesAsSchema(schema);
+	}
+
 }

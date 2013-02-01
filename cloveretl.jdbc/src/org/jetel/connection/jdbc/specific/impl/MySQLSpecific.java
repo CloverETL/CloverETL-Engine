@@ -156,14 +156,6 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 		}
 	}
     
-	/**
-	 * for MySQL a database is a catalog AND a schema
-	 */
-	@Override
-	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
-		return connection.getMetaData().getTables(dbName, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/); //fix by kokon - show only tables and views
-	}
-
 	@Override
 	public boolean isSchemaRequired() {
 		return true;

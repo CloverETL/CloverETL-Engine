@@ -19,6 +19,7 @@
 package org.jetel.connection.jdbc.specific.conn;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -56,4 +57,12 @@ public class MySQLConnection extends BasicSqlConnection {
 		return statement;
 	}
 	
+	/**
+	 * for MySQL a database is a catalog AND a schema
+	 */
+	@Override
+	public ResultSet getTables(String dbName) throws SQLException {
+		return connection.getMetaData().getTables(dbName, dbName, "%", new String[] {"TABLE", "VIEW" });
+	}
+
 }

@@ -23,7 +23,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.jetel.connection.jdbc.specific.conn.FirebirdConnection;
@@ -141,15 +140,6 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 		
 	}
 	
-	/**
-	 * for MySQL a database is a catalog AND a schema
-	 */
-	@Override
-	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
-		return connection.getMetaData().getTables(null, null, "%", new String[] {"TABLE", "VIEW"}/*tableTypes*/); //fix by kokon - show only tables and views
-	}
-	
-	
 	@Override
 	public String getTypesClassName() {
 		return ORACLE_TYPES_CLASS_NAME;
@@ -165,14 +155,6 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 		return ('"' + identifier + '"');
     }
 
-
-	@Override
-	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
-		ArrayList<String> schemas = new ArrayList<String>(1);
-		schemas.add("Default");
-		return schemas;
-	}
-	
 	@Override
 	public void optimizeResultSet(ResultSet resultSet,
 			OperationType operationType) {

@@ -23,7 +23,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -253,24 +252,6 @@ public interface JdbcSpecific {
 	 */
 	public boolean isCaseStatement(String statement);
 	
-	/**
-	 * Returns a ResultSet representing schemas
-	 * @param dbMeta
-	 * @return ArrayList<String[]> Returns arraylist of rows, each contains a pair of strings CATALOG, SCHEMA
-	 * @throws SQLException
-	 */
-	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException;
-	
-	/**
-	 * Returns a ResultSet representing tables in given database
-	 * It has to extract it from dbMeta object
-	 * 
-	 * @param connection
-	 * @param schema
-	 * @return
-	 */
-	public ResultSet getTables(SqlConnection connection, String schema) throws SQLException;
-
 	/**
 	 * Returns columns metadata in given table.
 	 * 

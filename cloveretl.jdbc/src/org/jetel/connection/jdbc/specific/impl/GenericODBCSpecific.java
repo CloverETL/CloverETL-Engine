@@ -20,8 +20,6 @@ package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.specific.conn.GenericODBCConnection;
 import org.jetel.database.sql.DBConnection;
@@ -63,14 +61,8 @@ public class GenericODBCSpecific extends AbstractJdbcSpecific {
 	}
 
 	@Override
-	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
-		ArrayList<String> currentCatalog = new ArrayList<String>();
-		currentCatalog.add(connection.getCatalog());
-		return currentCatalog;
-	}
-	
-	@Override
 	public ResultSet wrapResultSet(ResultSet resultSet) {
 		return new OdbcResultSet(resultSet);
 	}
+	
  }

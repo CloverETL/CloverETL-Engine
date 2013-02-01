@@ -18,11 +18,13 @@
  */
 package org.jetel.connection.jdbc.specific.impl;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.Connection;
 import java.sql.Types;
 
+import org.jetel.connection.jdbc.specific.conn.DB2Connection;
+import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.SqlConnection;
+import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -43,6 +45,11 @@ public class DB2Specific extends AbstractJdbcSpecific {
 
 	public DB2Specific() {
 		super();
+	}
+	
+	@Override
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new DB2Connection(dbConnection, connection, operationType);
 	}
 	
 	@Override
@@ -104,12 +111,8 @@ public class DB2Specific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
-		return connection.getMetaData().getTables(null, dbName, "%", new String[] {"TABLE", "VIEW" }/*tableTypes*/);
-	}
-
-	@Override
 	public boolean isSchemaRequired() {
 		return true;
 	}
+	
 }

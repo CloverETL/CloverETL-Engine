@@ -19,9 +19,7 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.specific.conn.MSSQLConnection;
 import org.jetel.database.sql.DBConnection;
@@ -71,10 +69,4 @@ public class MSSQLSpecific2005 extends AbstractMSSQLSpecific {
 		}
 	}
 
-    @Override
-    public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
-      ArrayList <String> currentCatalog = new ArrayList<String>();
-      currentCatalog.add(connection.getCatalog());
-      return currentCatalog;
-    }
 }

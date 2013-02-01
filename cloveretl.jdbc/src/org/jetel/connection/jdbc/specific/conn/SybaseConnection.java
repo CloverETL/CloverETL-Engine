@@ -22,6 +22,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.List;
 
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -90,4 +92,17 @@ public class SybaseConnection extends BasicSqlConnection {
 			break;
 		}
 	}
+	
+	@Override
+	public List<String> getSchemas() throws SQLException {
+		return getMetaCatalogs();
+	}
+
+	@Override
+	public ResultSet getTables(String schema) throws SQLException {
+		Statement s = connection.createStatement();
+		s.execute("USE " + schema);		
+		return s.executeQuery("EXECUTE sp_tables @table_type = \"'TABLE', 'VIEW'\"");
+	}
+
 }

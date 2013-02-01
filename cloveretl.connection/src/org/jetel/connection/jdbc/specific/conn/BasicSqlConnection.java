@@ -35,6 +35,7 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -101,19 +102,89 @@ public class BasicSqlConnection implements SqlConnection {
 	
 	@Override
 	public List<String> getSchemas() throws SQLException {
-		return getJdbcSpecific().getSchemas(this);
+		List<String> tmp;
+		List<String> schemas = new ArrayList<String>();
+		
+		// add schemas
+		tmp = getMetaSchemas();
+		if (tmp != null) {
+			schemas.addAll(tmp);
+		}
+
+		// add catalogs
+		tmp = getMetaCatalogs();
+		if (tmp != null) {
+			schemas.addAll(tmp);
+		}
+		
+		return schemas;
 	}
 
 	@Override
 	public ResultSet getTables(String schema) throws SQLException {
-		return getJdbcSpecific().getTables(this, schema);
+		return getTablesAsCatalog(schema);
+	}
+
+	protected ResultSet getTablesAsCatalog(String catalog) throws SQLException {
+		return connection.getMetaData().getTables(catalog, null, "%", new String[] {"TABLE", "VIEW" });
+	}
+
+	protected ResultSet getTablesAsSchema(String schema) throws SQLException {
+		return connection.getMetaData().getTables(null, schema, "%", new String[] {"TABLE", "VIEW" });
 	}
 
 	@Override
 	public ResultSetMetaData getColumns(String schema, String owner, String table) throws SQLException {
 		return getJdbcSpecific().getColumns(this, schema, owner, table);
 	}
-
+	
+	/**
+	 * A static method that retrieves schemas from dbMeta objects.
+	 * Returns it as arraylist of strings in the format either <schema> or <catalog>.<schema>
+	 * e.g.:
+	 * mytable
+	 * dbo.anothertable
+	 * 
+	 * @param dbMeta
+	 * @return
+	 * @throws SQLException
+	 */
+	protected List<String> getMetaSchemas() throws SQLException {
+		DatabaseMetaData dbMeta = connection.getMetaData();
+		List<String> ret = new ArrayList<String>();
+		ResultSet result = dbMeta.getSchemas();
+		String tmp;
+		while (result.next()) {
+			tmp = "";
+			try {
+				if (result.getString(2) != null) {
+					tmp = result.getString(2) + dbMeta.getCatalogSeparator();
+				}
+			} catch (Exception e) {
+				// -pnajvar
+				// this is here deliberately
+				// some dbms don't provide second column and that is not wrong, just have to ignore
+			}
+			tmp += result.getString(1);
+			ret.add(tmp);
+		}
+		result.close();
+		return ret;
+	}
+	
+	protected List<String> getMetaCatalogs() throws SQLException {
+		DatabaseMetaData dbMeta = connection.getMetaData();
+		List<String> ret = new ArrayList<String>();
+		ResultSet result = dbMeta.getCatalogs();
+		String tmp;
+		while (result.next()) {
+			tmp = result.getString(1);
+			ret.add(tmp);
+		}
+		result.close();
+		return ret;
+	}
+	
 	//*************** java.sql.Connection interface **************//
 	/* (non-Javadoc)
 	 * @see java.sql.Connection#clearWarnings()

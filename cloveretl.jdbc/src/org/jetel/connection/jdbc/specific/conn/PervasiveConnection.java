@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -80,6 +81,11 @@ public class PervasiveConnection extends BasicSqlConnection {
 		}
 		optimizeStatement(statement);
 		return statement;
+	}
+
+	@Override
+	public List<String> getSchemas() throws SQLException {
+		return getMetaCatalogs();
 	}
 
 }

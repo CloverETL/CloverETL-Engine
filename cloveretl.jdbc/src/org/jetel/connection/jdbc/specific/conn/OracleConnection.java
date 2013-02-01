@@ -103,4 +103,10 @@ public class OracleConnection extends BasicSqlConnection {
 			break;
 		}
 	}
+	
+	@Override
+	public ResultSet getTables(String schema) throws SQLException {
+		return getTablesAsSchema(schema);
+	}
+
 }

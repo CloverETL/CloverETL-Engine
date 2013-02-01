@@ -19,9 +19,7 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
 
 import org.jetel.connection.jdbc.specific.conn.PervasiveConnection;
 import org.jetel.database.sql.DBConnection;
@@ -52,11 +50,6 @@ public class PervasiveSpecific extends AbstractJdbcSpecific {
 		return new PervasiveConnection(dbConnection, connection, operationType);
 	}
 
-	@Override
-	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
-		return getMetaCatalogs(connection.getMetaData());
-	}
-	
 	@Override
 	public String jetelType2sqlDDL(DataFieldMetadata field) {
 		int sqlType = jetelType2sql(field);

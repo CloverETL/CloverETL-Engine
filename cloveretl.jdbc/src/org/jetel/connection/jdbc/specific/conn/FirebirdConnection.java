@@ -22,6 +22,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -89,6 +91,18 @@ public class FirebirdConnection extends BasicSqlConnection {
 			connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
 			break;
 		}
+	}
+
+	@Override
+	public List<String> getSchemas() throws SQLException {
+		ArrayList<String> schemas = new ArrayList<String>(1);
+		schemas.add("Default");
+		return schemas;
+	}
+
+	@Override
+	public ResultSet getTables(String schema) throws SQLException {
+		return connection.getMetaData().getTables(null, null, "%", new String[] {"TABLE", "VIEW"});
 	}
 
 }

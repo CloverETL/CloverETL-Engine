@@ -19,6 +19,7 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -36,11 +37,14 @@ import java.util.regex.Pattern;
 import org.jetel.connection.jdbc.AbstractCopySQLData;
 import org.jetel.connection.jdbc.AbstractCopySQLData.CopyDecimal;
 import org.jetel.connection.jdbc.SQLUtil;
+import org.jetel.connection.jdbc.specific.conn.SQLiteConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DecimalDataField;
 import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.QueryType;
 import org.jetel.database.sql.SqlConnection;
+import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -65,6 +69,11 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 		super();
 	}
 
+	@Override
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new SQLiteConnection(dbConnection, connection, operationType);
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.connection.jdbc.specific.impl.AbstractJdbcSpecific#createCopyObject(int, org.jetel.metadata.DataFieldMetadata, org.jetel.data.DataRecord, int, int)
 	 */
@@ -104,38 +113,11 @@ public class SQLiteSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	public ArrayList<String> getSchemas(SqlConnection connection) throws SQLException {
-		Statement s = connection.createStatement();
-		
-		ResultSet rs = s.executeQuery("pragma database_list");
-		ArrayList<String> dbList = new ArrayList<String>();
-		String tmp;
-		if (rs != null) while(rs.next()) {
-			tmp = rs.getString(2) + " [" + rs.getString(3) + "]";
-			dbList.add(tmp);
-		}
-		
-		return dbList;
-	}
-	
-	@Override
 	public String getTablePrefix(String schema, String owner,
 			boolean quoteIdentifiers) {
 		int position = schema.indexOf('[');
 		schema = schema.substring(0, position - 1);
 		return quoteIdentifiers ? quoteIdentifier(schema) : schema;
-	}
-
-	@Override
-	public ResultSet getTables(SqlConnection connection, String dbName) throws SQLException {
-		// TODO Auto-generated method stub
-		
-		Statement s = connection.createStatement();
-		// -pnajvar
-		// this is a bit weird, but the result set must have 3rd column the table name
-		ResultSet rs = s.executeQuery("select tbl_name, tbl_name, tbl_name from sqlite_master order by tbl_name");
-		return rs;
-		
 	}
 
 	@Override
