@@ -80,7 +80,6 @@ public class StringUtils {
     private static Pattern delimiterPattern;
 	
 	public final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*";
-	public static final String GRAPH_NAME_PATTERN = "[A-Za-z0-9_]*";
 	
 	private final static String INVALID_CHARACTER_CLASS = "[^_A-Za-z0-9]";
 	private final static Pattern INVALID_CHAR = Pattern.compile(INVALID_CHARACTER_CLASS + "{1}");
@@ -927,23 +926,13 @@ public class StringUtils {
 	}
 	
 	/**
-	 * Returns True, if the character sequence contains only valid identifier chars.<br>
-	 * [A-Za-z0-9_]*
+	 * Validates name of graph
 	 * 
-	 * @param seq
-	 *            Description of the Parameter
-	 * @return True if given sequence is valid graph name, false otherwise.
+	 * @param name name of graph
+	 * @return <code>true</code> if name is a valid graph name, <code>false</code> otherwise.
 	 */
-	public static boolean isValidGraphName(CharSequence seq) {
-		if (seq == null) {
-			return false;
-		}
-		if (seq.length() > MAX_OBJECT_NAME_LENGTH) {
-			return false;
-		}
-
-		return seq.toString().matches(GRAPH_NAME_PATTERN);
-
+	public static boolean isValidGraphName(CharSequence name) {
+		return (name != null);
 	}
 	
 	/**
