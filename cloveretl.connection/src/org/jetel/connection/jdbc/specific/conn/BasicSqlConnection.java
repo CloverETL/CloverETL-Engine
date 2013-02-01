@@ -36,9 +36,11 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -133,11 +135,24 @@ public class BasicSqlConnection implements SqlConnection {
 		return connection.getMetaData().getTables(null, schema, "%", new String[] {"TABLE", "VIEW" });
 	}
 
-	@Override
+    @Override
 	public ResultSetMetaData getColumns(String schema, String owner, String table) throws SQLException {
-		return getJdbcSpecific().getColumns(this, schema, owner, table);
-	}
+		String sqlQuery = getJdbcSpecific().compileSelectQuery4Table(schema, owner, table) + " where 0=1";
+		ResultSet resultSet = connection.createStatement().executeQuery(sqlQuery);
+
+		return resultSet.getMetaData();
+    }
 	
+	@Override
+	public Set<ResultSet> getColumns() throws SQLException {
+		Set<ResultSet> resultSets = new HashSet<ResultSet>();
+		try {
+			resultSets.add(connection.getMetaData().getColumns(null, null, null, "%"));
+		} catch (SQLException e) {
+		}
+		return resultSets;
+	}
+
 	/**
 	 * A static method that retrieves schemas from dbMeta objects.
 	 * Returns it as arraylist of strings in the format either <schema> or <catalog>.<schema>

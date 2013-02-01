@@ -20,7 +20,6 @@ package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.regex.Pattern;
@@ -81,13 +80,6 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 		return super.sqlType2str(sqlType);
 	}
 	
-	
-	
-	@Override
-	public ResultSetMetaData getColumns(SqlConnection connection, String schema, String owner, String table) throws SQLException {
-		return super.getColumns(connection, null, null, table);
-	}
-
 	@Override
 	public int jetelType2sql(DataFieldMetadata field) {
 		// TODO Auto-generated method stub

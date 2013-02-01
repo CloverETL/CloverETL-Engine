@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Clover specific extension of regular java.sql.Connection interface
@@ -58,5 +59,14 @@ public interface SqlConnection extends Connection {
 	 * @throws SQLException 
 	 */
 	public ResultSetMetaData getColumns(String schema, String owner, String table) throws SQLException;
+
+	/**
+	 * Returns a Set of ResultSets representing columns in whole database, 
+	 * It has to extract it from dbMeta objects
+	 * @param connection
+	 * @return
+	 * @throws SQLException
+	 */
+	public Set<ResultSet> getColumns() throws SQLException;
 
 }

@@ -25,9 +25,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -509,17 +507,6 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	}
 
     /* (non-Javadoc)
-     * @see org.jetel.connection.jdbc.specific.JdbcSpecific#getColumns(java.sql.Connection, java.lang.String, java.lang.String)
-     */
-    @Override
-	public ResultSetMetaData getColumns(SqlConnection connection, String schema, String owner, String table) throws SQLException {
-		String sqlQuery = compileSelectQuery4Table(schema, owner, table) + " where 0=1";
-		ResultSet resultSet = connection.createStatement().executeQuery(sqlQuery);
-
-		return resultSet.getMetaData();
-    }
-
-    /* (non-Javadoc)
      * @see org.jetel.connection.jdbc.specific.JdbcSpecific#compileSelectQuery4Table(java.lang.String, java.lang.String)
      */
     @Override
@@ -531,18 +518,6 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
     	}
     }
     
-	
-	@Override
-	public Set<ResultSet> getColumns(SqlConnection connection) throws SQLException {
-		Set<ResultSet> resultSets = new HashSet<ResultSet>();
-		try {
-			resultSets.add(connection.getMetaData().getColumns(null, null, null, "%"));
-		} catch (SQLException e) {
-		}
-		return resultSets;
-	}
-	
-	
 	@Override
 	public boolean isSchemaRequired() {
 		return false;

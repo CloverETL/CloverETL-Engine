@@ -20,6 +20,7 @@ package org.jetel.connection.jdbc.specific.conn;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -103,6 +104,11 @@ public class FirebirdConnection extends BasicSqlConnection {
 	@Override
 	public ResultSet getTables(String schema) throws SQLException {
 		return connection.getMetaData().getTables(null, null, "%", new String[] {"TABLE", "VIEW"});
+	}
+
+	@Override
+	public ResultSetMetaData getColumns(String schema, String owner, String table) throws SQLException {
+		return super.getColumns(null, null, table);
 	}
 
 }

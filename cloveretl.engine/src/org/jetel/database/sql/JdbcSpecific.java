@@ -25,7 +25,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.jetel.data.DataRecord;
@@ -252,17 +251,6 @@ public interface JdbcSpecific {
 	 */
 	public boolean isCaseStatement(String statement);
 	
-	/**
-	 * Returns columns metadata in given table.
-	 * 
-	 * @param connection
-	 * @param schema
-	 * @param owner
-	 * @param table
-	 * @return
-	 */
-	public ResultSetMetaData getColumns(SqlConnection connection, String schema, String owner, String table) throws SQLException;
-
     /**
      * Return select sql statement for given table.
      * Usually returns <code>select * from tablename</code>.
@@ -273,15 +261,6 @@ public interface JdbcSpecific {
      */
     public String compileSelectQuery4Table(String schema, String owner, String table);
 
-	/**
-	 * Returns a Set of ResultSets representing columns in whole database, 
-	 * It has to extract it from dbMeta objects
-	 * @param connection
-	 * @return
-	 * @throws SQLException
-	 */
-	public Set<ResultSet> getColumns(SqlConnection connection) throws SQLException;
-	
 	/**
 	 * Returns whether schema should be explicitly set to address table correctly in given db engine. 
 	 * 
