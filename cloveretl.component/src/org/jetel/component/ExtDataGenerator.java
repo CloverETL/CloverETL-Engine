@@ -151,7 +151,7 @@ public class ExtDataGenerator extends DataGenerator {
 	 * @throws Exception
 	 */
 	private void executeGenerate(DataRecord[] outRecord) throws Exception {
-		for (int i = 0; i < recordsNumber && runIt; i++) {
+		for (int i = 0; (recordsNumber < 0 || i < recordsNumber) && runIt; i++) {
 			for (DataRecord oRecord : outRecord)
 				oRecord.reset();
 			int transformResult = -1;
@@ -174,6 +174,8 @@ public class ExtDataGenerator extends DataGenerator {
 				writeRecord(transformResult, outRecord[transformResult]);
 			} else if (transformResult == RecordTransform.SKIP) {
 				// DO NOTHING - skip the record
+			} else if (transformResult == RecordTransform.STOP && recordsNumber < 0) {
+				break; // successful termination
 			} else {
 				throw new TransformException(
 						"Transformation finished with code: " + transformResult
