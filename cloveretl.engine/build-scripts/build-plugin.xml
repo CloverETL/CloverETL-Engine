@@ -335,7 +335,6 @@
 			</else>
 		</if>
 		
-    <echo message="DEBUG: user.dir ${user.dir} cp.compile ${cp.compile}" />
 		<proguard 
 			shrink="false" 
 			verbose="true"
