@@ -167,6 +167,7 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("UDW_nonExistingDir_fail_CL-2478.grf") // ok, is to fail
 							&& !pathname.getName().equals("CTL_lookup_put_fail.grf") // ok, is to fail
 							&& !pathname.getName().equals("SystemExecute_printBatchFile.grf") // ok, is to fail
+							&& !pathname.getName().startsWith("Proxy_") // allowed to run only on virt-cyan as proxy tests
 							&& !pathname.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
 							&& !pathname.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
 							&& !pathname.getName().equals("BeanWriterReader_employees.grf"); // remove after CL-2474 solved
