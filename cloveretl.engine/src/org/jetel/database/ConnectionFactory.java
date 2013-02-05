@@ -20,6 +20,7 @@ package org.jetel.database;
 
 //import org.w3c.dom.Node;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -50,7 +51,7 @@ public class ConnectionFactory {
     private static Log logger = LogFactory.getLog(ComponentFactory.class);
 
     private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
-    private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
+    private final static Class<?>[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
     private final static Map<String, ConnectionDescription> connectionMap = new HashMap<String, ConnectionDescription>();
     
     public static void init() {
@@ -117,12 +118,15 @@ public class ConnectionFactory {
      *  Method for creating various types of Connection based on connection type & XML parameter definition.
      */
     public final static IConnection createConnection(TransformationGraph graph, String connectionType, Element nodeXML) {
-        Class tClass = getConnectionClass(connectionType);
+        Class<?> tClass = getConnectionClass(connectionType);
 
         try {
             //create instance of connection
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (IConnection) method.invoke(null, new Object[] {graph, nodeXML});
+        } catch (InvocationTargetException e) {
+        	logger.error("Can't create object of : " + connectionType + " exception: " + e.getTargetException(), e.getTargetException());
+            throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + e.getTargetException());
         } catch(Throwable e) {
             logger.error("Can't create object of : " + connectionType + " exception: " + e, e);
             throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + e);
@@ -133,11 +137,11 @@ public class ConnectionFactory {
      *  Method for creating various types of Connection based on connection type, parameters and theirs types for connection constructor.
      */
     public final static IConnection createConnection(TransformationGraph graph, String connectionType, Object[] constructorParameters, Class[] parametersType) {
-        Class tClass = getConnectionClass(connectionType);
+        Class<?> tClass = getConnectionClass(connectionType);
 
         try {
             //create instance of connection
-            Constructor constructor = tClass.getConstructor(parametersType);
+            Constructor<?> constructor = tClass.getConstructor(parametersType);
             return (IConnection) constructor.newInstance(constructorParameters);
         } catch(Exception ex) {
             logger.error("Can't create object of : " + connectionType + " exception: " + ex);
