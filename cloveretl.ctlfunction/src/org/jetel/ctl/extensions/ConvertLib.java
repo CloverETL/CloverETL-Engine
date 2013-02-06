@@ -89,6 +89,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			"json2xml".equals(functionName) ? new Json2XmlFunction() : 
 		    "md5".equals(functionName) ? new MD5Function() : 
 		    "sha".equals(functionName) ? new SHAFunction() : 
+			"sha256".equals(functionName) ? new SHA256Function() : 
 		    "getFieldName".equals(functionName) ? new GetFieldNameFunction() : 
 		    "getFieldType".equals(functionName) ? new GetFieldTypeFunction() : 
 			null;
@@ -1253,6 +1254,33 @@ public class ConvertLib extends TLFunctionLibrary {
 				stack.push(sha(context, stack.popString()));
 			} else {
 				stack.push(sha(context, stack.popByteArray()));
+			}
+		}
+	}
+
+	@TLFunctionAnnotation("Calculates SHA-256 hash of input bytes.")
+	public static final byte[] sha256(TLFunctionCallContext context, byte[] src) {
+		return Digest.digest(DigestType.SHA256, src);
+	}
+	
+	@TLFunctionAnnotation("Calculates SHA-256 hash of input string.")
+	public static final byte[] sha256(TLFunctionCallContext context, String src) {
+		return Digest.digest(DigestType.SHA256, src);
+	}
+	
+	// SHA-256
+	class SHA256Function implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if(context.getParams()[0].isString()) {
+				stack.push(sha256(context, stack.popString()));
+			} else {
+				stack.push(sha256(context, stack.popByteArray()));
 			}
 		}
 	}
