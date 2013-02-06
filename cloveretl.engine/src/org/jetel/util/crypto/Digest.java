@@ -25,7 +25,7 @@ public class Digest {
 
 	public enum DigestType {
 
-		MD5("MD5"), SHA("SHA-1");
+		MD5("MD5"), SHA("SHA-1"), SHA256("SHA-256");
 
 		private final String type;
 
