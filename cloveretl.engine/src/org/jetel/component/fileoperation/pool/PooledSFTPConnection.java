@@ -205,7 +205,11 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 			return false;
 		}
 		try {
-			getChannelSftp().pwd();
+			ChannelSftp channel = getChannelSftp();
+			if (!channel.isConnected() || channel.isClosed()) {
+				return false;
+			}
+			channel.pwd();
 			return true;
 		} catch (Exception ex) {
 			return false;
