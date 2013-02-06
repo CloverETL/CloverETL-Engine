@@ -209,7 +209,8 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 			if (!channel.isConnected() || channel.isClosed()) {
 				return false;
 			}
-			channel.pwd();
+			// test connection
+			channel.realpath("."); // pwd() is cached, don't use
 			return true;
 		} catch (Exception ex) {
 			return false;
