@@ -105,19 +105,24 @@ public class BufferedEdge extends EdgeBase {
 	public void init() throws IOException {
 		recordBuffer = new DynamicRecordBuffer(internalBufferSize);
 		recordBuffer.init();
-		outputRecordCounter = 0;
-		inputRecordCounter = 0;
-		byteCounter = 0;
 	}
 
 	@Override
-	public void reset() {
-        recordBuffer.reset();
+	public void preExecute() {
+		super.preExecute();
+		
 		outputRecordCounter = 0;
 		inputRecordCounter = 0;
 		byteCounter = 0;
 	}
+	
+	@Override
+	public void postExecute() {
+		super.postExecute();
 
+		recordBuffer.reset();
+	}
+	
 	@Override
 	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
         DataRecord ret = recordBuffer.readRecord(record);
