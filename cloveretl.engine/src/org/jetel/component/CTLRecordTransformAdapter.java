@@ -32,7 +32,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 
 /**
  * @author dpavlis
@@ -111,8 +111,8 @@ public final class CTLRecordTransformAdapter extends CTLAbstractTransformAdapter
 			throw new TransformException("Transform failed!", exception);
 		}
 
-		onErrorArguments[0] = exception.getMessage();
-		onErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+		onErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return transformImpl(transformOnErrorFunction, inputRecords, outputRecords, onErrorArguments);
 	}

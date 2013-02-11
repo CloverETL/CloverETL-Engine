@@ -33,7 +33,7 @@ import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -108,8 +108,8 @@ public class PartitionTL extends AbstractTransformTL implements PartitionFunctio
 			throw new TransformException("Partitioning failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(exception.getMessage());
-		onErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+		onErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return getOutputPortImpl(getOutputPortOnErrorFunction, GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME,
 				record, onErrorArguments);

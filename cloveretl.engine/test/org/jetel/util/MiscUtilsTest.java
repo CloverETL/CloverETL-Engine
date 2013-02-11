@@ -53,38 +53,4 @@ public class MiscUtilsTest extends CloverTestCase {
 		assertEquals(MiscUtils.localeToString(enUSLocale), "en.US");
 	}
 	
-	public void testExceptionChainToMessage() {
-		assertEquals("", MiscUtils.exceptionChainToMessage(null, null));
-		
-		assertEquals("", MiscUtils.exceptionChainToMessage("", null));
-		
-		assertEquals("abc", MiscUtils.exceptionChainToMessage("abc", null));
-		
-		assertEquals("", MiscUtils.exceptionChainToMessage(null, new Exception()));
-
-		assertEquals("", MiscUtils.exceptionChainToMessage("", new Exception()));
-
-		assertEquals("abc", MiscUtils.exceptionChainToMessage("abc", new Exception()));
-
-		assertEquals("first", MiscUtils.exceptionChainToMessage(null, new Exception("first")));
-
-		assertEquals("first", MiscUtils.exceptionChainToMessage("", new Exception("first")));
-		
-		assertEquals("abc\nCaused by: first", MiscUtils.exceptionChainToMessage("abc", new Exception("first")));
-
-		assertEquals("abc\nCaused by: first", MiscUtils.exceptionChainToMessage("abc", new Exception("first", new Exception())));
-
-		assertEquals("abc\nCaused by: first", MiscUtils.exceptionChainToMessage("abc", new Exception("first", new Exception(""))));
-
-		assertEquals("abc\nCaused by: first", MiscUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first"))));
-
-		assertEquals("abc\nCaused by: first\nCaused by: second", MiscUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("second"))));
-
-		assertEquals("abc\nCaused by: first\nCaused by: second", MiscUtils.exceptionChainToMessage("abc", new Exception("first", new Exception(null, new Exception("second")))));
-
-		assertEquals("abc\nCaused by: first\nCaused by: second", MiscUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("", new Exception("second")))));
-
-		assertEquals("abc\nCaused by: first\nCaused by: second", MiscUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new Exception("second")))));
-	}
-	
 }

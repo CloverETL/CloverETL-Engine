@@ -593,6 +593,11 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		return edge;
 	}
 	
+	@Override
+	public String toString() {
+		return getId();
+	}
+	
 }
 /*
  *  end class EdgeStub

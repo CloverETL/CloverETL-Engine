@@ -409,10 +409,8 @@ public final class TransformationGraph extends GraphElement {
 					Thread.currentThread().setContextClassLoader(connection.getClass().getClassLoader());
 					connection.init();
 					logger.info(connection + " ... OK");
-				} catch (ComponentNotReadyException e) {
-					throw new ComponentNotReadyException(this, "Can't initialize connection " + connection + ".", e);
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, "FATAL - Can't initialize connection " + connection + ".", e);
+					throw new ComponentNotReadyException(connection, "Can't initialize connection " + connection + ".", e);
 				} finally {
 					Thread.currentThread().setContextClassLoader(formerClassLoader);
 				}
@@ -430,10 +428,8 @@ public final class TransformationGraph extends GraphElement {
 					}
 					sequence.init();
 					logger.info(sequence + " ... OK");
-				} catch (ComponentNotReadyException e) {
-					throw new ComponentNotReadyException(this, "Can't initialize sequence " + sequence + ".", e);
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, "FATAL - Can't initialize sequence " + sequence + ".", e);
+					throw new ComponentNotReadyException(sequence, "Can't initialize sequence " + sequence + ".", e);
 				} finally {
 					Thread.currentThread().setContextClassLoader(formerClassLoader);
 				}
@@ -447,10 +443,8 @@ public final class TransformationGraph extends GraphElement {
 					Thread.currentThread().setContextClassLoader(lookupTable.getClass().getClassLoader());
 					lookupTable.init();
 					logger.info(lookupTable + " ... OK");
-				} catch (ComponentNotReadyException e) {
-					throw new ComponentNotReadyException(this, "Can't initialize lookup table " + lookupTable + ".", e);
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, "FATAL - Can't initialize lookup table " + lookupTable + ".", e);
+					throw new ComponentNotReadyException(lookupTable, "Can't initialize lookup table " + lookupTable + ".", e);
 				} finally {
 					Thread.currentThread().setContextClassLoader(formerClassLoader);
 				}
@@ -497,10 +491,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				connection.preExecute();
 				logger.info(connection + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Pre-Execution of connection " + connection + " failed.", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Pre-Execution of connection " + connection + "failed.", e);
+				throw new ComponentNotReadyException(connection, "Pre-Execution of connection " + connection + "failed.", e);
 			}
 		}
 
@@ -510,10 +502,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				sequence.preExecute();
 				logger.info(sequence + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Pre-Execution of sequence " + sequence + "failed.", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Pre-Execution of sequence " + sequence + "failed.", e);
+				throw new ComponentNotReadyException(sequence, "Pre-Execution of sequence " + sequence + "failed.", e);
 			}
 		}
 
@@ -523,10 +513,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				lookupTable.preExecute();
 				logger.info(lookupTable + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Pre-Execution of lookup table " + lookupTable + "failed.", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Pre-Execution of lookup table " + lookupTable + "failed.", e);
+				throw new ComponentNotReadyException(lookupTable, "Pre-Execution of lookup table " + lookupTable + "failed.", e);
 			}
 		}
 	}
@@ -577,10 +565,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				connection.postExecute();
 				logger.info(connection + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Can't finalize connection " + connection + ".", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Can't finalize connection " + connection + ".", e);
+				throw new ComponentNotReadyException(connection, "Can't finalize connection " + connection + ".", e);
 			}
 		}
 
@@ -590,10 +576,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				sequence.postExecute();
 				logger.info(sequence + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Can't finalize sequence " + sequence + ".", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Can't finalize sequence " + sequence + ".", e);
+				throw new ComponentNotReadyException(sequence, "Can't finalize sequence " + sequence + ".", e);
 			}
 		}
 
@@ -603,10 +587,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				lookupTable.postExecute();
 				logger.info(lookupTable + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Can't finalize lookup table " + lookupTable + ".", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Can't finalize lookup table " + lookupTable + ".", e);
+				throw new ComponentNotReadyException(lookupTable, "Can't finalize lookup table " + lookupTable + ".", e);
 			}
 		}
 	}

@@ -31,7 +31,7 @@ import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 
 /**
  * Implements denormalization based on TransformLang source specified by user. User defines following functions
@@ -108,8 +108,8 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(exception.getMessage());
-		onErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+		onErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return appendImpl(appendOnErrorFunction, inRecord, onErrorArguments);
 	}
@@ -130,8 +130,8 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(exception.getMessage());
-		onErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+		onErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return transformImpl(transformFunction, outRecord, onErrorArguments);
 	}

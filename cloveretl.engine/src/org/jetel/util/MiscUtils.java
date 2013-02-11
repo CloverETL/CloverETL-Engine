@@ -19,8 +19,6 @@
 package org.jetel.util;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -132,24 +130,6 @@ public final class MiscUtils {
 	}
 
 	/**
-	 * Converts stack trace of a given throwable to a string.
-	 *
-	 * @param throwable a throwable
-	 *
-	 * @return stack trace of the given throwable as a string
-	 */
-	public static String stackTraceToString(Throwable throwable) {
-		if (throwable == null) {
-			return null;
-		} else {
-			StringWriter stringWriter = new StringWriter();
-			throwable.printStackTrace(new PrintWriter(stringWriter));
-	
-			return stringWriter.toString();
-		}
-	}
-
-	/**
 	 * Utility method. Compares two objects for equality,
 	 * handles <code>null</code> values.
 	 * 
@@ -161,42 +141,6 @@ public final class MiscUtils {
         return o1 == null ? o2 == null : o1.equals(o2);
     }
 
-    /**
-     * Extract message from the given exception chain. All messages from all exceptions are concatenated
-     * to the resulted string.
-     * @param message prefixed message text which will be in the start of resulted string
-     * @param exception converted exception
-     * @return resulted overall message
-     */
-    public static String exceptionChainToMessage(String message, Throwable exception) {
-    	StringBuffer result = new StringBuffer();
-    	if (message != null) {
-    		result.append(message);
-    	}
-    	if (exception == null) {
-    		return result.toString();
-    	}
-    	Throwable exceptionIterator = exception;
-    	String lastMessage = "";
-    	while (true) {
-    		if (!StringUtils.isEmpty(exceptionIterator.getMessage())
-    				&& !lastMessage.equals(exceptionIterator.getMessage())) {
-    			lastMessage = exceptionIterator.getMessage();
-	    		if (!StringUtils.isEmpty(result)) {
-	    			result.append("\nCaused by: ");
-	    		}
-	    		result.append(lastMessage);
-    		}
-
-    		if (exceptionIterator.getCause() == null || exceptionIterator.getCause() == exceptionIterator) {
-    			break;
-    		} else {
-    			exceptionIterator = exceptionIterator.getCause();
-    		}
-    	}
-    	return result.toString();
-    }
-    
 	/**
 	 * @return array of metadata derived from the given array of records
 	 */

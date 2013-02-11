@@ -101,11 +101,9 @@ public class SequenceFactory {
                 return Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown sequence: " + sequenceType + " class: " + className);
-            throw new RuntimeException("Unknown sequence: " + sequenceType + " class: " + className);
+            throw new RuntimeException("Unknown sequence: " + sequenceType + " class: " + className, ex);
         } catch(Exception ex) {
-            logger.error("Unknown sequence type: " + sequenceType);
-            throw new RuntimeException("Unknown sequence type: " + sequenceType);
+            throw new RuntimeException("Unknown sequence type: " + sequenceType, ex);
         }
     }
     
@@ -120,8 +118,7 @@ public class SequenceFactory {
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (Sequence) method.invoke(null, new Object[] {graph, nodeXML});
         } catch(Throwable ex) {
-            logger.error("Can't create object of : " + sequenceType + " exception: " + ex);
-            throw new RuntimeException("Can't create object of : " + sequenceType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + sequenceType, ex);
         }
     }
     
@@ -136,8 +133,7 @@ public class SequenceFactory {
             Constructor constructor = tClass.getConstructor(parametersType);
             return (Sequence) constructor.newInstance(constructorParameters);
         } catch(Exception ex) {
-            logger.error("Can't create object of : " + sequenceType + " exception: " + ex);
-            throw new RuntimeException("Can't create object of : " + sequenceType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + sequenceType, ex);
         }
     }
 

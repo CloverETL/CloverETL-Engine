@@ -32,7 +32,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -102,8 +102,8 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
 			throw new TransformException("Partitioning failed!", exception);
 		}
 
-		onErrorArguments[0] = exception.getMessage();
-		onErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+		onErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return getOutputPortImpl(getOuputPortOnErrorFunction, record, onErrorArguments);
 	}
