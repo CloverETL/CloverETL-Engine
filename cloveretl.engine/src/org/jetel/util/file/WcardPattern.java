@@ -518,15 +518,11 @@ public class WcardPattern {
      * Gets list of file names or an original name from file system. 
      * @param fileName
      * @return
+     * @throws MalformedURLException for unknown protocols, see CL-2667
      */
-	private List<String> resolveAndSetFileNames(String fileName) {
+	private List<String> resolveAndSetFileNames(String fileName) throws MalformedURLException {
 		// check if the filename is a file or something else
-		URL url = null;
-		try {
-			url = FileUtils.getFileURL(parent, fileName);
-		} catch (MalformedURLException e) {
-			// NOTHING
-		}
+		URL url = FileUtils.getFileURL(parent, fileName); // CL-2667: may throw MalformedURLException
 		
 		// try CustomPathResolvers first
 		for (CustomPathResolver resolver : FileUtils.getCustompathresolvers()) {
