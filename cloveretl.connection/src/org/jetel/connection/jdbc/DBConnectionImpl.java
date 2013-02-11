@@ -23,9 +23,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,9 +52,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -129,25 +125,9 @@ import org.w3c.dom.Element;
  * @revision    $Revision$
  * @created     January 15, 2003
  */
-public class DBConnectionImpl extends GraphElement implements DBConnection {
+public class DBConnectionImpl extends AbstractDBConnection {
 
     private static final Log logger = LogFactory.getLog(DBConnection.class);
-
-    public final static String SQL_QUERY_PROPERTY = "sqlQuery";
-
-    public final static String XML_JDBC_SPECIFIC_ATTRIBUTE = "jdbcSpecific";
-    public final static String XML_DRIVER_LIBRARY_ATTRIBUTE = "driverLibrary";
-    public static final String XML_JNDI_NAME_ATTRIBUTE = "jndiName";
-    public static final String XML_DBURL_ATTRIBUTE = "dbURL";
-    public static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
-    public static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
-    public static final String XML_DATABASE_ATTRIBUTE = "database"; // database type - used to lookup in build-in JDBC drivers
-    public static final String XML_PASSWORD_ATTRIBUTE = "password";
-    public static final String XML_USER_ATTRIBUTE = "user";
-    public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
-    public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted";
-    public static final String XML_HOLDABILITY  = "holdability";
-    public static final String XML_TRANSACTION_ISOLATION = "transactionIsolation";
     
     public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
     
@@ -342,16 +322,6 @@ public class DBConnectionImpl extends GraphElement implements DBConnection {
     }
 
     /**
-     * @param elementId
-     * @return
-     * @throws JetelException
-     */
-    @Override
-	public synchronized SqlConnection getConnection(String elementId) throws JetelException {
-    	return getConnection(elementId, OperationType.UNKNOWN);
-    }
-
-    /**
      * Returns connection instance for the given elementId and operation type. If this db connection
      * is threads safe, all connection are cached, and elementId and operation type 
      * servers as key to hash map.
@@ -382,27 +352,7 @@ public class DBConnectionImpl extends GraphElement implements DBConnection {
         return connection;
     }
 
-    protected SqlConnection connect(OperationType operationType) throws JetelException {
-    	if (!StringUtils.isEmpty(getJndiName())) {
-        	try {
-            	Context initContext = new InitialContext();
-           		DataSource ds = (DataSource)initContext.lookup(getJndiName());
-               	Connection jndiConnection = ds.getConnection();
-               	//update jdbc specific of this DBConnection according given JNDI connection
-               	updateJdbcSpecific(jndiConnection);
-               	//wrap the given JNDI connection to a DefaultConnection instance 
-               	return getJdbcSpecific().createSQLConnection(this, jndiConnection, operationType);
-        	} catch (Exception e) {
-        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
-        	}
-    	} else {
-        	try {
-				return getJdbcSpecific().createSQLConnection(this, createConnection(), operationType);
-			} catch (JetelException e) {
-				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
-			}
-    	}
-    }
+    
 
     /**
      * Guess jdbc specific for this {@link DBConnection} based on given {@link Connection}.
@@ -472,15 +422,6 @@ public class DBConnectionImpl extends GraphElement implements DBConnection {
         } catch (SQLException e) {
             logger.warn("DBConnection '" + getId() + "' close operation failed.");
         }
-    }
-    
-    /**
-     * Closes connection stored in cache under key specified by elementId and OperationType.UNKNOWN.
-     * Closed connection is also removed from cache.
-     */
-    @Override
-	public synchronized void closeConnection(String elementId) {
-    	closeConnection(elementId, OperationType.UNKNOWN);
     }
     
     /**
@@ -655,51 +596,6 @@ public class DBConnectionImpl extends GraphElement implements DBConnection {
         super.checkConfig(status);
         //TODO
         return status;
-    }
-
-    /* (non-Javadoc)
-     * @see org.jetel.database.IConnection#createMetadata(java.util.Properties)
-     */
-    @Override
-	public DataRecordMetadata createMetadata(Properties parameters) throws SQLException {
-    	if (!isInitialized()) {
-    		throw new IllegalStateException("DBConnection has to be initialized to be able to create metadata.");
-    	}
-    	
-        Statement statement = null;
-        ResultSet resultSet = null;
-
-        String sqlQuery = parameters.getProperty(SQL_QUERY_PROPERTY);
-        if(StringUtils.isEmpty(sqlQuery)) {
-            throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
-        }
-
-        int index = sqlQuery.toUpperCase().indexOf("WHERE");
-
-		if (index >= 0) {
-			sqlQuery = sqlQuery.substring(0, index).concat("WHERE 0=1");
-		} else {
-			sqlQuery = sqlQuery.concat(" WHERE 0=1");
-		}
-
-        Connection connection;
-		try {
-			connection = connect(OperationType.UNKNOWN);
-		} catch (JetelException e) {
-			throw new SQLException(e.getMessage());
-		} catch (JetelRuntimeException e) {
-			throw new SQLException(e.getMessage());
-		}
-        
-        try {
-            statement = connection.createStatement();
-            resultSet = statement.executeQuery(sqlQuery);
-            DataRecordMetadata drMetaData = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
-            return drMetaData;
-        } finally {
-            // make sure we close all connection resources
-        	SQLUtil.closeConnection(resultSet, statement, connection);
-        }
     }
 
     @Override
@@ -959,7 +855,7 @@ public class DBConnectionImpl extends GraphElement implements DBConnection {
 	 * @return
 	 * @throws JetelException
 	 */
-	private Connection createConnection() {
+	protected Connection createConnection() {
 		JdbcDriver jdbcDriver = getJdbcDriver();
 		// -pnajvar
 		// this is a bad hack, workaround for issue 2668
@@ -983,5 +879,27 @@ public class DBConnectionImpl extends GraphElement implements DBConnection {
         return connection;
 	}
 
+	@Override
+	protected SqlConnection connect(OperationType operationType) throws JetelException {
+    	if (!StringUtils.isEmpty(getJndiName())) {
+        	try {
+            	Context initContext = new InitialContext();
+           		DataSource ds = (DataSource)initContext.lookup(getJndiName());
+               	Connection jndiConnection = ds.getConnection();
+               	//update jdbc specific of this DBConnection according given JNDI connection
+               	updateJdbcSpecific(jndiConnection);
+               	//wrap the given JNDI connection to a DefaultConnection instance 
+               	return getJdbcSpecific().createSQLConnection(this, jndiConnection, operationType);
+        	} catch (Exception e) {
+        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
+        	}
+    	} else {
+        	try {
+				return getJdbcSpecific().createSQLConnection(this, createConnection(), operationType);
+			} catch (JetelException e) {
+				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
+			}
+    	}
+    }
 }
 
