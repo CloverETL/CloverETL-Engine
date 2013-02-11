@@ -29,7 +29,7 @@ import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 
 /**
  * @created     March 25, 2009
@@ -91,8 +91,8 @@ public class RecordGenerateTL extends AbstractTransformTL implements RecordGener
 			throw new TransformException("Generate failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(exception.getMessage());
-		onErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+		onErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return generateImpl(generateOnErrorFunction, outputRecords, onErrorArguments);
 	}

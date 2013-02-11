@@ -31,7 +31,7 @@ import org.jetel.interpreter.data.TLBooleanValue;
 import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 
 /**
  *  
@@ -102,8 +102,8 @@ public class RecordTransformTL extends AbstractTransformTL implements RecordTran
 			throw new TransformException("Transform failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(exception.getMessage());
-		onErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+		onErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return transformImpl(transformOnErrorFunction, inputRecords, outputRecords, onErrorArguments);
 	}

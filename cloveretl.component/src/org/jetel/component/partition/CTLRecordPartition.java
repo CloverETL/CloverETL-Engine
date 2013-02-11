@@ -29,7 +29,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -123,7 +123,7 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 		int result = 0;
 
 		try {
-			result = getOutputPortOnErrorDelegate(exception.getMessage(), MiscUtils.stackTraceToString(exception));
+			result = getOutputPortOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Partitioning failed!", exception);

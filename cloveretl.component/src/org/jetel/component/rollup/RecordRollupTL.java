@@ -33,7 +33,7 @@ import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 
 /**
  * An implementation of the {@link RecordRollup} interface for the transformation language. Serves as a wrapper
@@ -221,8 +221,8 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
     private TLValue[] initGroupArguments(Exception exception, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message and stack trace
-	    	groupOnErrorArguments[0].setValue(exception.getMessage());
-	    	groupOnErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+	    	groupOnErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+	    	groupOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 	    	// if group accumulator is empty we use an empty record for better error reporting in scope of CTL
 	    	groupOnErrorArguments[2].setValue((groupAccumulator != null) ? groupAccumulator : emptyRecord);
@@ -298,8 +298,8 @@ public class RecordRollupTL extends AbstractTransformTL implements RecordRollup 
     private TLValue[] initTransformArguments(Exception exception, int counter, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message, stack trace and call counter
-	    	transformOnErrorArguments[0].setValue(exception.getMessage());
-	    	transformOnErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+	    	transformOnErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+	    	transformOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 	    	transformOnErrorArguments[2].getNumeric().setValue(counter);
 
 	    	// if group accumulator is empty we use an empty record for better error reporting in scope of CTL

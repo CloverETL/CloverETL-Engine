@@ -105,6 +105,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -3030,8 +3031,7 @@ public class HttpConnector extends Node {
 				sb.append(line + "\n");
 			}
 		} catch (IOException e) {
-		    logger.error("Unable to read request result. Caused by: "+e.getMessage());
-			throw e;
+			throw new JetelRuntimeException("Unable to read request result.", e);
 		} finally {
 			try {
 				result.close();

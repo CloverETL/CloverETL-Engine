@@ -33,7 +33,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.Concatenate;
 
 /**
@@ -228,8 +228,8 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
     private Object[] initGroupArguments(Exception exception, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message and stack trace
-	    	groupOnErrorArguments[0] = exception.getMessage();
-	    	groupOnErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+	    	groupOnErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+	    	groupOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 	    	// if group accumulator is empty we use an empty record for better error reporting in scope of CTL
 	    	groupOnErrorArguments[2] = (groupAccumulator != null) ? groupAccumulator : emptyRecord;
@@ -298,8 +298,8 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
     private Object[] initTransformArguments(Exception exception, int counter, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message, stack trace and call counter
-	    	transformOnErrorArguments[0] = exception.getMessage();
-	    	transformOnErrorArguments[1] = MiscUtils.stackTraceToString(exception);
+	    	transformOnErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+	    	transformOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 	    	transformOnErrorArguments[2] = counter;
 
 	    	// if group accumulator is empty we use an empty record for better error reporting in scope of CTL

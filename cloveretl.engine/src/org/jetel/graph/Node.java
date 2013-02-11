@@ -19,7 +19,6 @@
 package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -39,7 +38,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.exception.TransformException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.graph.runtime.CloverPost;
@@ -498,40 +497,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         } catch (InterruptedException ex) {
             runResult=Result.ABORTED;
             return;
-        } catch (IOException ex) {  // may be handled differently later
+        } catch (Exception ex) {
             runResult=Result.ERROR;
-            resultException = ex;
+            resultException = createNodeException(ex);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
-            getCloverPost().sendMessage(msg);
-            return;
-        } catch (TransformException ex){
-            runResult=Result.ERROR;
-            resultException = ex;
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), "Error occurred in nested transformation: " + runResult.message(), ex));
-            getCloverPost().sendMessage(msg);
-            return;
-        } catch (SQLException ex){
-            runResult=Result.ERROR;
-            resultException = ex;
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
-            getCloverPost().sendMessage(msg);
-            return;
-        } catch (Exception ex) { // may be handled differently later
-            runResult=Result.ERROR;
-            resultException = ex;
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
+                    new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
             getCloverPost().sendMessage(msg);
             return;
         } catch (Throwable ex) {
         	logger.fatal(ex); 
             runResult=Result.ERROR;
-            resultException = ex;
+            resultException = createNodeException(ex);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
+                    new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
             getCloverPost().sendMessage(msg);
             return;
         } finally {
@@ -542,6 +520,10 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     }
     
     protected abstract Result execute() throws Exception;
+    
+    private Exception createNodeException(Throwable cause) {
+    	return new JetelRuntimeException("Component " + this + " finished with status ERROR.", cause);
+    }
     
     /**
      * This method should be called every time when node finishes its work.

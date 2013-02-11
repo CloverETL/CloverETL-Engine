@@ -104,10 +104,8 @@ public class ComponentFactory {
                 return Class.forName(className, true, pluginDescriptor.getClassLoader()).asSubclass(Node.class);
             }
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown component: " + componentType + " class: " + className, ex);
             throw new RuntimeException("Unknown component: " + componentType + " class: " + className, ex);
         } catch(Exception ex) {
-            logger.error("Unknown component type: " + componentType, ex);
             throw new RuntimeException("Unknown component type: " + componentType, ex);
         }
 
@@ -147,14 +145,9 @@ public class ComponentFactory {
 
 			return result;
         } catch(InvocationTargetException e) {
-            logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage(), e);
-        } catch(NoSuchMethodException e) {
-            logger.error("Can't create object of type " + componentType + " with reason: " + e.getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage(), e);
-		} catch(Exception ex) {
-            logger.error("Can't create object of : " + componentType);
-			throw new RuntimeException("Can't create object of : " + componentType, ex);
+            throw new RuntimeException("Can't create component of type '" + componentType + "'.", e.getTargetException());
+		} catch(Exception e) {
+            throw new RuntimeException("Can't create component of type '" + componentType + "'.", e);
 		}
 	}
     
@@ -179,14 +172,9 @@ public class ComponentFactory {
             Constructor<? extends Node> constructor = tClass.getConstructor(parametersType);
             return constructor.newInstance(constructorParameters);
         } catch(InvocationTargetException e) {
-            logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage(), e);
-        } catch(NoSuchMethodException e) {
-            logger.error("Can't create object of type " + componentType + " with reason: " + e.getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage(), e);
-        } catch(Exception ex) {
-            logger.error("Can't create object of : " + componentType + " exception: " + ex);
-            throw new RuntimeException("Can't create object of : " + componentType, ex);
+            throw new RuntimeException("Can't create component of type '" + componentType + "'.", e.getTargetException());
+        } catch(Exception e) {
+            throw new RuntimeException("Can't create component of type '" + componentType + "'.", e);
         }
     }
 }

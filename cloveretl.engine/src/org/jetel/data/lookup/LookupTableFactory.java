@@ -112,11 +112,9 @@ public class LookupTableFactory {
                 return Class.forName(className, true, pluginDescriptor.getClassLoader()).asSubclass(LookupTable.class);
             }
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown lookup table: " + lookupTableType + " class: " + className);
-            throw new RuntimeException("Unknown lookup table: " + lookupTableType + " class: " + className);
+            throw new RuntimeException("Unknown lookup table: " + lookupTableType + " class: " + className, ex);
         } catch(Exception ex) {
-            logger.error("Unknown lookup table type: " + lookupTableType);
-            throw new RuntimeException("Unknown lookup table type: " + lookupTableType);
+            throw new RuntimeException("Unknown lookup table type: " + lookupTableType, ex);
         }
     }
 
@@ -128,8 +126,7 @@ public class LookupTableFactory {
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_PROPERTIES, PARAMETERS_FOR_FROM_PROPERTIES_METHOD);
             return (LookupTable) method.invoke(null, new Object[] {lookupProperties});
         } catch(Exception ex) {
-            logger.error("Can't create object of : " + lookupTableType + " exception: " + ex, ex);
-            throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + lookupTableType, ex);
         }
 	}
 
@@ -144,8 +141,7 @@ public class LookupTableFactory {
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_FROM_XML_METHOD);
             return (LookupTable) method.invoke(null, new Object[] {graph, nodeXML});
         } catch(Exception ex) {
-            logger.error("Can't create object of : " + lookupTableType + " exception: " + ex, ex);
-            throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + lookupTableType, ex);
         }
     }
     
@@ -160,8 +156,7 @@ public class LookupTableFactory {
             Constructor<? extends LookupTable> constructor = tClass.getConstructor(parametersType);
             return constructor.newInstance(constructorParameters);
         } catch(Exception ex) {
-            logger.error("Can't create object of : " + lookupTableType + " exception: " + ex);
-            throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + lookupTableType, ex);
         }
     }
 
@@ -197,7 +192,7 @@ public class LookupTableFactory {
 					throw new XMLConfigurationException("Attribute type at Lookup table is missing");
 				}
 			} catch (Exception e) {
-                throw new RuntimeException("Lookup table is not configured properly: " + e.getMessage());
+                throw new RuntimeException("Lookup table is not configured properly.", e);
 			}
             result = LookupTableFactory.createLookupTable(lookupProperties);
         }else{
@@ -206,7 +201,7 @@ public class LookupTableFactory {
             try {
                 lookupTableType = attributes.getString(IGraphElement.XML_TYPE_ATTRIBUTE);
             } catch (AttributeNotFoundException ex) {
-                throw new RuntimeException("Attribute type at Lookup table is missing - " + ex.getMessage());
+                throw new RuntimeException("Attribute type at Lookup table is missing", ex);
             }
 
             //create lookup table

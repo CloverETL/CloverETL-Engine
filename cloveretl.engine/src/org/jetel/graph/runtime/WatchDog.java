@@ -54,6 +54,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.tracker.TokenTracker;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.primitive.MultiValueMap;
 import org.jetel.util.string.StringUtils;
 
@@ -476,13 +477,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				case ERROR:
 					causeException = ((ErrorMsgBody) message.getBody()).getSourceException();
 					causeGraphElement = message.getSender();
-					logger.error("Graph execution finished with error");
-					logger.error("Node "
-							+ message.getSender().getId()
-							+ " finished with status: "
-							+ ((ErrorMsgBody) message.getBody())
-									.getErrorMessage() + (causeException != null ? " caused by: " + causeException.getMessage() : ""));
-					logger.error("Node " + message.getSender().getId() + " error details:", causeException);
+					logger.error(ExceptionUtils.exceptionChainToMessage("Graph execution finished with error", causeException));
+					logger.error("Error details:", causeException);
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {
