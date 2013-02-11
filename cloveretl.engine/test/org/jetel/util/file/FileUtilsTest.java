@@ -75,6 +75,22 @@ public class FileUtilsTest extends CloverTestCase {
 			
 			URL result8 = FileUtils.getFileURL("C:/Windows", "C:/Users");
 			assertEquals(new URL("file:/C:/Users"), result8);
+			
+			{
+				URL result;
+				
+//				result = FileUtils.getFileURL("jar:file:/home/duke/duke.jar!/", "baz/entry.txt");
+//				assertEquals(new URL("jar:file:/home/duke/duke.jar!/baz/entry.txt"), result);
+//
+//				result = FileUtils.getFileURL((URL) null, "jar:file:/home/duke/duke.jar!/");
+//				assertEquals(new URL("jar:file:/home/duke/duke.jar!/"), result);
+				
+				result = FileUtils.getFileURL((URL) null, "jar:file:/C:/proj/parser/jar/parser.jar!/test");
+				assertEquals(new URL("jar:file:/C:/proj/parser/jar/parser.jar!/test"), result);
+
+				result = FileUtils.getFileURL(new URL("jar:file:/C:/proj/parser/jar/parser.jar!/"), "test");
+				assertEquals(new URL("jar:file:/C:/proj/parser/jar/parser.jar!/test"), result);
+			}
 
     	}
 
@@ -224,6 +240,16 @@ public class FileUtilsTest extends CloverTestCase {
 			FileUtils.getFileURL("/home/user", "unknownprotocol:(/home/test)");
 			fail("MalformedURLException expected");
 		} catch (MalformedURLException ex) {}
+
+		{
+			URL result;
+			
+			result = FileUtils.getFileURL("jar:file:/home/duke/duke.jar!/", "baz/entry.txt");
+			assertEquals(new URL("jar:file:/home/duke/duke.jar!/baz/entry.txt"), result);
+
+			result = FileUtils.getFileURL((URL) null, "jar:file:/home/duke/duke.jar!/");
+			assertEquals(new URL("jar:file:/home/duke/duke.jar!/"), result);
+		}
 	}
 
 // this issue was commented out due low priority and non-trivial possible fix
