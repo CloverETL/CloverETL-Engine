@@ -18,11 +18,15 @@
  */
 package org.jetel.connection.jdbc;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Enumeration;
 import java.util.Properties;
+import java.util.Set;
 
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.SqlConnection;
@@ -32,6 +36,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -59,6 +64,8 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
     public static final String XML_HOLDABILITY  = "holdability";
     public static final String XML_TRANSACTION_ISOLATION = "transactionIsolation";
 	
+    public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
+    
 	/**
 	 * @param id
 	 * @param name
@@ -153,4 +160,76 @@ public abstract class AbstractDBConnection extends GraphElement implements DBCon
     }
     
     protected abstract SqlConnection connect(OperationType opType) throws JetelException;
+    
+    /**
+     * Saves to the given output stream all DBConnection properties.
+     * @param outStream
+     * @throws IOException
+     */
+    @Override
+	public void saveConfiguration(OutputStream outStream) throws IOException {
+    	saveConfiguration(outStream, null);
+    }
+    
+    /**
+     * Saves to the given output stream all DBConnection properties.
+     * @param outStream
+     * @throws IOException
+     */
+    @Override
+	public void saveConfiguration(OutputStream outStream, Properties moreProperties) throws IOException {
+        Properties propsToStore = new Properties();
+
+        TypedProperties extraProperties = getExtraProperties();
+        Set<Object> jdbcProps = extraProperties.keySet();
+        for (Object key : jdbcProps) {
+        	String propName = (String) key; 
+			propsToStore.setProperty(XML_JDBC_PROPERTIES_PREFIX + propName, extraProperties.getProperty(propName));
+		}
+
+        if (moreProperties != null) {
+        	for (Enumeration<?> enu = moreProperties.propertyNames(); enu.hasMoreElements(); ) {
+        		String key = (String) enu.nextElement();
+        		propsToStore.setProperty(key, moreProperties.getProperty(key));
+        	}
+        }
+        
+        
+        if(getUser() != null) {
+        	propsToStore.setProperty(XML_USER_ATTRIBUTE, getUser());
+        }
+        if(getPassword() != null) {
+        	propsToStore.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
+        }
+        if(getDbUrl() != null) {
+        	propsToStore.setProperty(XML_DBURL_ATTRIBUTE, getDbUrl());
+        }
+        if(getDbDriver() != null) {
+        	propsToStore.setProperty(XML_DBDRIVER_ATTRIBUTE, getDbDriver());
+        }
+        if(getDatabase() != null) {
+        	propsToStore.setProperty(XML_DATABASE_ATTRIBUTE, getDatabase());
+        }
+        if(getDriverLibrary() != null) {
+        	propsToStore.setProperty(XML_DRIVER_LIBRARY_ATTRIBUTE, getDriverLibrary());
+        }
+        if(getJdbcSpecificId() != null) {
+        	propsToStore.setProperty(XML_JDBC_SPECIFIC_ATTRIBUTE, getJdbcSpecificId());
+        }
+        if(getJndiName() != null) {
+        	propsToStore.setProperty(XML_JNDI_NAME_ATTRIBUTE, getJndiName());
+        }
+        if (getHoldability() != null) {
+        	propsToStore.setProperty(XML_HOLDABILITY, Integer.toString(getHoldability()));
+        }
+        if (getTransactionIsolation() != null) {
+        	propsToStore.setProperty(XML_TRANSACTION_ISOLATION, Integer.toString(getTransactionIsolation()));
+        }
+        propsToStore.setProperty(XML_THREAD_SAFE_CONNECTIONS, Boolean.toString(isThreadSafeConnections()));
+        propsToStore.setProperty(XML_IS_PASSWORD_ENCRYPTED, Boolean.toString(isPasswordEncrypted()));
+
+        propsToStore.store(outStream, null);
+    }
+    
+    public abstract String getJdbcSpecificId();
 }

@@ -17,14 +17,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.connection.jdbc;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -128,8 +125,6 @@ import org.w3c.dom.Element;
 public class DBConnectionImpl extends AbstractDBConnection {
 
     private static final Log logger = LogFactory.getLog(DBConnection.class);
-    
-    public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
     
     // not yet used by component
     public static final String XML_NAME_ATTRIBUTE = "name";
@@ -466,75 +461,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		}
     }
 
-    /**
-     * Saves to the given output stream all DBConnection properties.
-     * @param outStream
-     * @throws IOException
-     */
-    @Override
-	public void saveConfiguration(OutputStream outStream) throws IOException {
-    	saveConfiguration(outStream, null);
-    }
     
-    /**
-     * Saves to the given output stream all DBConnection properties.
-     * @param outStream
-     * @throws IOException
-     */
-    @Override
-	public void saveConfiguration(OutputStream outStream, Properties moreProperties) throws IOException {
-        Properties propsToStore = new Properties();
-
-        TypedProperties extraProperties = getExtraProperties();
-        Set<Object> jdbcProps = extraProperties.keySet();
-        for (Object key : jdbcProps) {
-        	String propName = (String) key; 
-			propsToStore.setProperty(XML_JDBC_PROPERTIES_PREFIX + propName, extraProperties.getProperty(propName));
-		}
-
-        if (moreProperties != null) {
-        	for(Enumeration enu = moreProperties.propertyNames(); enu.hasMoreElements(); ) {
-        		String key = (String) enu.nextElement();
-        		propsToStore.setProperty(key, moreProperties.getProperty(key));
-        	}
-        }
-        
-        
-        if(getUser() != null) {
-        	propsToStore.setProperty(XML_USER_ATTRIBUTE, getUser());
-        }
-        if(getPassword() != null) {
-        	propsToStore.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
-        }
-        if(getDbUrl() != null) {
-        	propsToStore.setProperty(XML_DBURL_ATTRIBUTE, getDbUrl());
-        }
-        if(getDbDriver() != null) {
-        	propsToStore.setProperty(XML_DBDRIVER_ATTRIBUTE, getDbDriver());
-        }
-        if(getDatabase() != null) {
-        	propsToStore.setProperty(XML_DATABASE_ATTRIBUTE, getDatabase());
-        }
-        if(getDriverLibrary() != null) {
-        	propsToStore.setProperty(XML_DRIVER_LIBRARY_ATTRIBUTE, getDriverLibrary());
-        }
-        if(getJdbcSpecificId() != null) {
-        	propsToStore.setProperty(XML_JDBC_SPECIFIC_ATTRIBUTE, getJdbcSpecificId());
-        }
-        if(getJndiName() != null) {
-        	propsToStore.setProperty(XML_JNDI_NAME_ATTRIBUTE, getJndiName());
-        }
-        if (getHoldability() != null) {
-        	propsToStore.setProperty(XML_HOLDABILITY, Integer.toString(getHoldability()));
-        }
-        if (getTransactionIsolation() != null) {
-        	propsToStore.setProperty(XML_TRANSACTION_ISOLATION, Integer.toString(getTransactionIsolation()));
-        }
-        propsToStore.setProperty(XML_THREAD_SAFE_CONNECTIONS, Boolean.toString(isThreadSafeConnections()));
-        propsToStore.setProperty(XML_IS_PASSWORD_ENCRYPTED, Boolean.toString(isPasswordEncrypted()));
-
-        propsToStore.store(outStream, null);
-    }
     
 
     /* (non-Javadoc)
