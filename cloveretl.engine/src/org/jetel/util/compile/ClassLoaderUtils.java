@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
@@ -246,16 +245,7 @@ public class ClassLoaderUtils {
 		}
 		for (int i = 0; i < urls.length; ++i) {
 			File file;
-			try {
-				file = new File(urls[i].toURI());
-			} catch (URISyntaxException e) {
-				try {
-					file = new File(URLDecoder.decode(urls[i].getFile(), "utf-8"));
-				} catch (UnsupportedEncodingException ex) {
-					// cannot happen with utf-8
-					throw new RuntimeException(ex);
-				}
-			}
+			file = FileUtils.convertUrlToFile(urls[i]);
 			if (file.isDirectory() && !urls[i].toString().endsWith("/")) {
 				urls[i] = new URL(urls[i].toString() + "/");
 			}
