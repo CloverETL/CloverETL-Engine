@@ -93,17 +93,13 @@ public class ExceptionUtils {
     	Throwable exceptionIterator = exception;
     	String lastMessage = "";
     	while (true) {
-    		if (!StringUtils.isEmpty(exceptionIterator.getMessage())
-    				&& !lastMessage.equals(exceptionIterator.getMessage())) {
-    			if (exceptionIterator instanceof NullPointerException 
-    					&& (StringUtils.isEmpty(exceptionIterator.getMessage()) || exceptionIterator.getMessage().equalsIgnoreCase("null"))) {
-    				//in case the exception is NPE and no reasonable message is attached, we append more descriptive error message
-    				lastMessage = "Unexpected null value.";
-    			} else {
-    				lastMessage = exceptionIterator.getMessage();
-    			}
-    			appendMessage(result, lastMessage, depth);
+    		//extract message from current exception
+    		String newMessage = getMessage(exceptionIterator, lastMessage);
+    		
+    		if (newMessage != null) {
+    			appendMessage(result, newMessage, depth);
 	    		depth++;
+	    		lastMessage = newMessage;
     		}
 
     		//CompoundException needs special handling
@@ -127,6 +123,26 @@ public class ExceptionUtils {
     		}
     	}
     	return result.toString();
+    }
+    
+    private static String getMessage(Throwable t, String lastMessage) {
+    	String message = null;
+    	//NPE is handled in special way
+		if (t instanceof NullPointerException 
+				&& (StringUtils.isEmpty(t.getMessage()) || t.getMessage().equalsIgnoreCase("null"))) {
+			//in case the NPE has no reasonable message, we append more descriptive error message
+			message = "Unexpected null value.";
+		} else if (!StringUtils.isEmpty(t.getMessage())) {
+			//only non-empty messages are considered
+			message = t.getMessage();
+		}
+		
+		//in case the previous message is identical, this message is skipped
+		if (EqualsUtil.areEqual(message, lastMessage)) {
+			message = null;
+		}
+		
+		return message;
     }
     
 	private static void appendMessage(StringBuilder result, String message, int depth) {
