@@ -39,6 +39,13 @@ public class ListResult extends AbstractResult implements Iterable<Info> {
 	
 	private final List<SingleCloverURI> uris = new ArrayList<SingleCloverURI>();
 	
+	public ListResult() {
+	}
+
+	public ListResult(Exception fatalError) {
+		super(fatalError);
+	}
+
 	public List<Info> getResult() {
 		return result;
 	}
@@ -50,15 +57,15 @@ public class ListResult extends AbstractResult implements Iterable<Info> {
 		parts.add(infos);
 	}
 	
-	public void addError(SingleCloverURI uri, String error) {
-		addError(error);
+	public void addFailure(SingleCloverURI uri, Exception failure) {
+		addFailure(failure);
 		uris.add(uri);
 		parts.add(null);
 	}
 	
 	@Override
-	public ListResult setException(Exception exception) {
-		return (ListResult) super.setException(exception);
+	public ListResult setFatalError(Exception exception) {
+		return (ListResult) super.setFatalError(exception);
 	}
 
 	public boolean isEmpty() {

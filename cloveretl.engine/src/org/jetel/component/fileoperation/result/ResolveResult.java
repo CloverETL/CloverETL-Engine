@@ -49,15 +49,15 @@ public class ResolveResult extends AbstractResult implements Iterable<SingleClov
 		uris.add(uri);
 	}
 	
-	public void addError(SingleCloverURI uri, String error) {
-		addError(error);
+	public void addFailure(SingleCloverURI uri, Exception failure) {
+		addFailure(failure);
 		parts.add(null);
 		uris.add(uri);
 	}
 	
 	@Override
-	public ResolveResult setException(Exception exception) {
-		return (ResolveResult) super.setException(exception);
+	public ResolveResult setFatalError(Exception exception) {
+		return (ResolveResult) super.setFatalError(exception);
 	}
 
 	@Override
