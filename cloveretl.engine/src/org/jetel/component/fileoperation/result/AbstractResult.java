@@ -30,50 +30,57 @@ import java.util.List;
 public abstract class AbstractResult implements Result {
 
 	private int successCount = 0;
-	private int errorCount = 0;
+	private int failCount = 0;
 
-	private final List<String> errors = new ArrayList<String>();
+	private final List<Exception> failures = new ArrayList<Exception>();
 
-	private Exception exception = null;
+	private Exception fatalError = null;
+
+	public AbstractResult() {
+	}
+
+	public AbstractResult(Exception fatalError) {
+		this.fatalError = fatalError;
+	}
 
 	@Override
-	public int errorCount() {
-		return errorCount;
+	public int failCount() {
+		return failCount;
 	}
 
 	@Override
 	public boolean success() {
-		return (getException() == null) && (errorCount() == 0);
+		return (getFatalError() == null) && (failCount() == 0);
 	}
 
 	@Override
 	public boolean success(int i) {
-		return (getException() == null) && (getError(i) == null);
+		return (getFatalError() == null) && (getFailure(i) == null);
 	}
 
 	@Override
-	public String getError(int i) {
-		return errors.get(i);
+	public Exception getFailure(int i) {
+		return failures.get(i);
 	}
 
 	@Override
-	public Exception getException() {
-		return exception;
+	public Exception getFatalError() {
+		return fatalError;
 	}
 	
-	public AbstractResult setException(Exception exception) {
-		this.exception = exception;
+	public AbstractResult setFatalError(Exception fatalError) {
+		this.fatalError = fatalError;
 		return this;
 	}
 	
 	protected void addSuccess() {
-		errors.add(null);
+		failures.add(null);
 		successCount++;
 	}
 
-	protected void addError(String error) {
-		errors.add(error);
-		errorCount++;
+	protected void addFailure(Exception failure) {
+		failures.add(failure);
+		failCount++;
 	}
 	
 	@Override
@@ -82,16 +89,22 @@ public abstract class AbstractResult implements Result {
 	}
 
 	@Override
-	public String getFirstErrorMessage() {
-		if (exception != null) {
-			return exception.getMessage();
+	public Exception getFirstError() {
+		if (fatalError != null) {
+			return fatalError;
 		}
 		for (int i = 0; i < totalCount(); i++) {
-			if (getError(i) != null) {
-				return getError(i);
+			if (getFailure(i) != null) {
+				return getFailure(i);
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public String getFirstErrorMessage() {
+		Exception ex = getFirstError();
+		return ex != null ? ex.getMessage() : null;
 	}
 
 }

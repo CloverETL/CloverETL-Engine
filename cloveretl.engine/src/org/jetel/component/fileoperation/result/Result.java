@@ -33,15 +33,17 @@ public interface Result {
 	
 	public int totalCount();
 	
-	public int errorCount();
+	public int failCount();
 	
 	public boolean success();
 	
 	public boolean success(int i);
 	
-	public String getError(int i);
+	public Exception getFailure(int i);
 	
-	public Exception getException();
+	public Exception getFatalError();
+	
+	public Exception getFirstError();
 	
 	public String getFirstErrorMessage();
 

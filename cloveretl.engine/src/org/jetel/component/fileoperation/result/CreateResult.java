@@ -38,9 +38,16 @@ public class CreateResult extends AbstractResult implements Iterable<SingleClove
 	
 	private final List<SingleCloverURI> newFiles = new ArrayList<SingleCloverURI>(); 
 	
+	public CreateResult() {
+	}
+
+	public CreateResult(Exception fatalError) {
+		super(fatalError);
+	}
+
 	@Override
-	public CreateResult setException(Exception exception) {
-		return (CreateResult) super.setException(exception);
+	public CreateResult setFatalError(Exception exception) {
+		return (CreateResult) super.setFatalError(exception);
 	}
 
 	public void add(SingleCloverURI uri, SingleCloverURI target) {
@@ -50,8 +57,8 @@ public class CreateResult extends AbstractResult implements Iterable<SingleClove
 		newFiles.add(target);
 	}
 	
-	public void addError(SingleCloverURI source, String error) {
-		addError(error);
+	public void addFailure(SingleCloverURI source, Exception failure) {
+		addFailure(failure);
 		uris.add(source);
 		newFiles.add(null);
 	}

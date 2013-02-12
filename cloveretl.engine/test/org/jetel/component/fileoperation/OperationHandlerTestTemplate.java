@@ -244,7 +244,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertFalse(result.success());
 		assertEquals(2, result.totalCount());
 		assertEquals(1, result.successCount());
-		assertEquals(1, result.errorCount());
+		assertEquals(1, result.failCount());
 
 		source = relativeURI("u/*");
 		target = relativeURI("v");
@@ -961,7 +961,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertTrue(String.format("Delete %s failed", uri), deleteResult.success());
 		assertEquals(1, deleteResult.totalCount());
 		assertEquals(1, deleteResult.successCount());
-		assertEquals(0, deleteResult.errorCount());
+		assertEquals(0, deleteResult.failCount());
 		assertFalse(String.format("%s still exists", uri), manager.exists(uri));
 		
 		uri = relativeURI("eclipse/eclipse-3.6.1-delta-pack.zi");
@@ -970,7 +970,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		assertFalse(String.format("Delete non-existing files must not succeed", uri), deleteResult.success());
 		assertEquals(1, deleteResult.totalCount());
 		assertEquals(0, deleteResult.successCount());
-		assertEquals(1, deleteResult.errorCount());
+		assertEquals(1, deleteResult.failCount());
 		
 		uri = relativeURI("emptyDir");
 		assertTrue(String.format("%s is not a directory", uri), manager.isDirectory(uri));
@@ -1255,7 +1255,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			ListResult listResult = manager.list(relativeURI("non-existing-dir;dir1/topdir/file;dir1/topdir/file/"), new ListParameters().setRecursive(true));
 			assertEquals(3, listResult.totalCount());
 			assertEquals(1, listResult.successCount());
-			assertEquals(2, listResult.errorCount());
+			assertEquals(2, listResult.failCount());
 		}
 		
 		result = manager.list(relativeURI("spaces"), new ListParameters().setRecursive(true)).getResult();

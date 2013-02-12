@@ -40,9 +40,16 @@ public class MoveResult extends AbstractResult implements Iterable<SingleCloverU
 	
 	private final List<SingleCloverURI> results = new ArrayList<SingleCloverURI>(); 
 
+	public MoveResult() {
+	}
+
+	public MoveResult(Exception fatalError) {
+		super(fatalError);
+	}
+
 	@Override
-	public MoveResult setException(Exception exception) {
-		return (MoveResult) super.setException(exception);
+	public MoveResult setFatalError(Exception exception) {
+		return (MoveResult) super.setFatalError(exception);
 	}
 
 	public void add(SingleCloverURI source, SingleCloverURI target, SingleCloverURI result) {
@@ -53,8 +60,8 @@ public class MoveResult extends AbstractResult implements Iterable<SingleCloverU
 		this.aggregatedResult.add(result);
 	}
 	
-	public void addError(SingleCloverURI source, SingleCloverURI target, String error) {
-		addError(error);
+	public void addFailure(SingleCloverURI source, SingleCloverURI target, Exception failure) {
+		addFailure(failure);
 		this.sources.add(source);
 		this.targets.add(target);
 		this.results.add(null);
@@ -72,7 +79,7 @@ public class MoveResult extends AbstractResult implements Iterable<SingleCloverU
 	
 	@Override
 	public boolean success(int i) {
-		return (getException() == null) && (getResult(i) != null);
+		return (getFatalError() == null) && (getResult(i) != null);
 	}
 
 	public SingleCloverURI getSource(int i) {
