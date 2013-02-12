@@ -94,7 +94,13 @@ public class ExceptionUtils {
     	while (true) {
     		if (!StringUtils.isEmpty(exceptionIterator.getMessage())
     				&& !lastMessage.equals(exceptionIterator.getMessage())) {
-    			lastMessage = exceptionIterator.getMessage();
+    			if (exceptionIterator instanceof NullPointerException 
+    					&& (StringUtils.isEmpty(exceptionIterator.getMessage()) || exceptionIterator.getMessage().equalsIgnoreCase("null"))) {
+    				//in case the exception is NPE and no reasonable message is attached, we append more descriptive error message
+    				lastMessage = "Unexpected null value.";
+    			} else {
+    				lastMessage = exceptionIterator.getMessage();
+    			}
     			appendMessage(result, lastMessage, depth);
 	    		depth++;
     		}

@@ -113,15 +113,6 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
             strBuf.append(" - ");
         	strBuf.append(super.getMessage());
         }
-        if (super.getCause() != null) {
-        	if (getCause() instanceof NullPointerException) {
-                strBuf.append(" - ");
-        		strBuf.append("Unexpected null value.");
-        	}
-        	if (super.getCause().getMessage() != null) {
-        		strBuf.append(" - '").append(super.getCause().getMessage()).append("'");
-        	}
-        }
 		if (arguments != null) {
 			for(int i = 0; i < arguments.length; i++) {
 				strBuf.append("\n");
