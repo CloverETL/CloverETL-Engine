@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -294,7 +294,7 @@ public class Dictionary extends GraphElement {
 	 * @param logger
 	 * @param message
 	 */
-	public void printContent(Log logger, String message) {
+	public void printContent(Logger logger, String message) {
 		printContent(null, logger, message);
 	}
 	
@@ -305,7 +305,7 @@ public class Dictionary extends GraphElement {
 	 * @param logger - if it's null, it's ignored; if it's not null, it's used for logging dictionary content
 	 * @param message - first message introducing the content
 	 */
-	private void printContent(StringBuilder sb, Log logger, String message) {
+	private void printContent(StringBuilder sb, Logger logger, String message) {
 		if (!dictionary.isEmpty() 
 				&& (sb != null || (logger != null && logger.isInfoEnabled()))
 				) {

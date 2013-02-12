@@ -24,7 +24,7 @@ import java.io.InputStream;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
+import org.apache.log4j.Logger;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
@@ -236,7 +236,7 @@ public class TypedProperties extends Properties {
 		}
     }
         
-	public void print(Log logger, String message) {
+	public void print(Logger logger, String message) {
         logger.debug(message + " " + this);
 	}
 

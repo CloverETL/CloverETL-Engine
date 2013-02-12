@@ -287,7 +287,7 @@ public class Trash extends Node {
 				try {
 					inputReader.join(1000);
 				} catch (InterruptedException e) {
-					logger.warn(getId() + "thread interrupted, it will interrupt child threads", e);
+					logger.warn(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}
