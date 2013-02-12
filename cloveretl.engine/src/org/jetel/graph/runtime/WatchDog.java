@@ -39,11 +39,9 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
@@ -86,7 +84,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	
     private int[] _MSG_LOCK=new int[0];
     
-    private static Log logger = LogFactory.getLog(WatchDog.class);
+    private static Logger logger = Logger.getLogger(WatchDog.class);
 
 	/**
      * Thread manager is used to run nodes as threads.
@@ -323,12 +321,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
        		causeException = t;
        		causeGraphElement = null;
        		watchDogStatus = Result.ERROR;
-       		logger.error("Fatal error watchdog execution", t);
-       		if (t instanceof RuntimeException) {
-       			throw (RuntimeException)t;
-       		} else {
-       			throw new JetelRuntimeException(t);
-       		}
+       		ExceptionUtils.logException(logger, "Error watchdog execution", t);
 		} finally {
 			//we have to unregister current watchdog's thread from context provider
 			ContextProvider.unregister();
@@ -477,8 +470,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				case ERROR:
 					causeException = ((ErrorMsgBody) message.getBody()).getSourceException();
 					causeGraphElement = message.getSender();
-					logger.error(ExceptionUtils.exceptionChainToMessage("Graph execution finished with error", causeException));
-					logger.error("Error details:", causeException);
+					ExceptionUtils.logException(logger, "Graph execution finished with error", causeException);
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {

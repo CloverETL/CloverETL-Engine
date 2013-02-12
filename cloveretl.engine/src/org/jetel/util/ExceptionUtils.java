@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import org.apache.log4j.Logger;
 import org.jetel.exception.CompoundException;
 import org.jetel.util.string.StringUtils;
 
@@ -141,4 +142,15 @@ public class ExceptionUtils {
 		}
 	}
 
+	/**
+	 * Print out the given exception in preferred form into the given logger. 
+	 * @param logger
+	 * @param message
+	 * @param t
+	 */
+	public static void logException(Logger logger, String message, Throwable t) {
+        logger.error(ExceptionUtils.exceptionChainToMessage(message, t));
+        logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
+	}
+	
 }

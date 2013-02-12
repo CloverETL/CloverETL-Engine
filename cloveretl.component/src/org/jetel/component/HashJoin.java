@@ -497,7 +497,7 @@ public class HashJoin extends Node {
 				try {
 					slaveReader[idx].join(1000);
 				} catch (InterruptedException e) {
-					logger.warn(getId() + "thread interrupted, it will interrupt child threads", e);
+					logger.warn(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}
