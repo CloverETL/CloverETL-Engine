@@ -92,6 +92,18 @@ public class ExceptionUtilsTest extends CloverTestCase {
 										new CompoundException("second\nsecond2", 
 												new CompoundException("third", new Exception("third1"), new Exception("third2", new Exception("third3"))), 
 												new Exception("forth"))))));
+
+		assertEquals("Unexpected null value.", ExceptionUtils.exceptionChainToMessage(null, new NullPointerException()));
+		
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new NullPointerException()));
+
+		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new NullPointerException("first")));
+
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new NullPointerException("")));
+
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new NullPointerException("null")));
+
+		assertEquals("abc\n first\n  Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new NullPointerException("null"))));
 	}
 
 }
