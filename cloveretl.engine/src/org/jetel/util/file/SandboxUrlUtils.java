@@ -20,6 +20,7 @@ package org.jetel.util.file;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 
 /**
@@ -56,9 +57,20 @@ public final class SandboxUrlUtils {
 	 * @return <code>true</code> if the given URL is a sandbox URL, <code>false</code> otherwise 
 	 */
 	public static boolean isSandboxUrl(URL url) {
-		return (url != null && url.getProtocol().equals(SANDBOX_PROTOCOL));
+		return url != null && SANDBOX_PROTOCOL.equals(url.getProtocol());
 	}
 
+	/**
+	 * Checks whether or not an URI is a sandbox URI.
+	 *
+	 * @param uri an URI to be checked
+	 *
+	 * @return <code>true</code> if the given URI is a sandbox URI, <code>false</code> otherwise 
+	 */
+	public static boolean isSandboxUri(URI uri) {
+		return uri != null && SANDBOX_PROTOCOL.equals(uri.getScheme());
+	}
+	
 	/**
 	 * Extracts a sandbox name from a given sandbox URL.
 	 *

@@ -30,6 +30,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -43,7 +44,9 @@ import org.jetel.util.property.PropertyRefResolver;
 
 //TODO: this is work in progress!
 /**
- * FYI this class is based on {@link ReadableChannelIterator} and can be full featured substitution in the future 
+ * FYI this class is based on {@link ReadableChannelIterator} and can be full featured substitution in the future
+ * 
+ *  UPDATE: ReadableChannelIterator has meanwhile evolved. It now handles namely preferred data source types {@link DataSourceType}. 
  * 
  * @author lkrejci (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
@@ -134,9 +137,9 @@ public class SourceIterator {
 		// read from fields
 		if (currentSourcePosition == firstPortProtocolPosition) {
 			try {
-				ReadableByteChannel channel = portReadingIterator.getNextData();
+				Object dataSource = portReadingIterator.getNextData(DataSourceType.CHANNEL);
 				currentSourceName = portReadingIterator.getCurrentFileName();
-				return channel;
+				return dataSource;
 			} catch (NullPointerException e) {
 				throw new JetelException("The field '" + portReadingIterator.getLastFieldName() + "' contain unsupported null value.");
 			} catch (UnsupportedEncodingException e) {

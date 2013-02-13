@@ -35,7 +35,6 @@ import org.jetel.component.fileoperation.OperationHandlerTestTemplate;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.URIUtils;
-import org.jetel.component.fileoperation.hadoop.HadoopOperationHandler;
 import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
@@ -43,6 +42,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.hadoop.fileoperation.HadoopOperationHandler;
 import org.jetel.util.file.FileUtils;
 
 /**

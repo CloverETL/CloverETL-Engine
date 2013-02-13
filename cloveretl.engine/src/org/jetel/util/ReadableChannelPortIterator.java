@@ -35,7 +35,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
-import org.jetel.data.primitive.ByteArray;
+import org.jetel.data.parser.Parser.DataSourceType;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -139,21 +139,21 @@ public class ReadableChannelPortIterator {
 	 * @throws InterruptedException
 	 * @throws JetelException
 	 */
-	public ReadableByteChannel getNextData() throws IOException, InterruptedException, JetelException {
+	public Object getNextData(DataSourceType preferredDataSource) throws IOException, InterruptedException, JetelException {
 		
 		if ((fieldDataWrapper.getPortHandler().getProcessingType() == ProcessingType.STREAM)
 				|| fieldDataWrapper.hasData()) {
 			// if processing stream - do not read whole stream before processing starts but process data as they are coming
 			// if processing sources, previous record resolved into more than one file
-			return fieldDataWrapper.getData();
+			return fieldDataWrapper.getData(preferredDataSource);
 		} else {
 			//read next record
 			record = inputPort.readRecord(record);
 			// go through all data records
 			while (record != null) {
 				// return the first available data stream
-				ReadableByteChannel data;
-				if ((data = fieldDataWrapper.getData()) != null) {
+				Object data;
+				if ((data = fieldDataWrapper.getData(preferredDataSource)) != null) {
 					currentFileName = fieldDataWrapper.getCurrentFileName();
 					lastFieldName = fieldDataWrapper.getFieldName();
 					return data;
@@ -282,11 +282,12 @@ public class ReadableChannelPortIterator {
 		
 		/**
 		 * Gets readable or null.
+		 * @param preferredDataSource
 		 * @return
 		 * @throws JetelException
 		 * @throws IOException 
 		 */
-		public abstract ReadableByteChannel getData() throws IOException, JetelException;
+		public abstract Object getData(DataSourceType preferredDataSource) throws IOException, JetelException;
 		
 		/**
 		 * Returns <code>true</code> if the wrapper
@@ -321,7 +322,7 @@ public class ReadableChannelPortIterator {
 		}
 
 		@Override
-		public ReadableByteChannel getData() throws UnsupportedEncodingException, JetelException {
+		public ReadableByteChannel getData(DataSourceType preferredDataSource) throws IOException, JetelException {
 			return createReadableByteChannel(field.getValue());
 		}
 		
@@ -377,7 +378,7 @@ public class ReadableChannelPortIterator {
 		}
 
 		@Override
-		public ReadableByteChannel getData() throws UnsupportedEncodingException, JetelException {
+		public Object getData(DataSourceType preferredDataSource) throws UnsupportedEncodingException, JetelException {
 			// urls processing
 			if (!hasData()) {
 				String pattern = field.getValue().toString();
@@ -399,7 +400,13 @@ public class ReadableChannelPortIterator {
 				}
 			}
 			
-			currentFileName = iterator.next();
+			currentFileName = ReadableChannelIterator.unificateFileName(contextURL, iterator.next());
+			
+			Object dataSource = ReadableChannelIterator.getPreferredDataSource(contextURL, currentFileName, preferredDataSource);
+			if (dataSource != null) {
+				return dataSource;
+			}
+			
 			return createReadableByteChannel(currentFileName);
 		}
 		
@@ -443,7 +450,7 @@ public class ReadableChannelPortIterator {
 		}
 		
 		@Override
-		public ReadableByteChannel getData() throws JetelException, IOException {
+		public ReadableByteChannel getData(DataSourceType preferredDataSource) throws IOException, JetelException {
 			InputPortReadableChannel channel = new InputPortReadableChannel(inputPort, field.getMetadata().getName(), charset);
 			if (!channel.isEOF()) {
 				return channel;
@@ -451,6 +458,7 @@ public class ReadableChannelPortIterator {
 			//all records were read
 			return null;
 		}
+		
 	}
 
 	/**

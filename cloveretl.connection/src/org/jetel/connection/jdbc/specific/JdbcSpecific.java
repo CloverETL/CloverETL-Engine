@@ -374,4 +374,11 @@ public interface JdbcSpecific {
 	 * @return Implementation of result set which allows to call get methods multiple times.
 	 */
 	public ResultSet wrapResultSet(ResultSet resultSet);
+	
+	/**
+	 * Returns a string which will be added at the end of CREATE TABLE statement 
+	 * @param metadata
+	 * @return
+	 */
+	public String getCreateTableSuffix(DataRecordMetadata metadata);
 }

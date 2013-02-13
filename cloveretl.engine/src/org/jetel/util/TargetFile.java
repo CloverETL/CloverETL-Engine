@@ -33,6 +33,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -604,9 +605,8 @@ public class TargetFile {
 				}
 				else if (getPreferredDataTargetType() == DataTargetType.URI) {
 					try {
-						// TODO: use contectURL ?? setDataTarget(CloverURI.createSingleURI(contextURL.toURI(),
-						// fName).toURI());
-						setDataTarget(new URI(fName));
+						URI uri = CloverURI.createSingleURI(contextURL != null ? contextURL.toURI() : null, fName).getAbsoluteURI().toURI();
+						setDataTarget(uri);
 					} catch (IOException ex) {
 						throw ex;
 					} catch (URISyntaxException ex) {
