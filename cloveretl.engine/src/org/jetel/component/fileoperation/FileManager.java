@@ -56,6 +56,7 @@ import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.component.fileoperation.result.MoveResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -683,12 +684,12 @@ public class FileManager {
 			}
 			try {
 				return handler.getFile(target, params);
-			} catch (Exception ex) {}
+			} catch (Exception ex) {
+				throw new JetelRuntimeException("Failed to convert path to File", ex);
+			}
 		} else {
 			throw new UnsupportedOperationException(operation.toString());
 		}
-		
-		return null;
 	}
 
 	public DeleteResult delete(String target, DeleteParameters params) {
