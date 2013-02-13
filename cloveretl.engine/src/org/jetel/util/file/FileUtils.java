@@ -1862,7 +1862,9 @@ public class FileUtils {
 					return file.toString();
 				}
 			} catch (Exception e) {
-				log.debug("Failed to resolve sandbox URL", e);
+				MalformedURLException mue = new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");
+				mue.initCause(e);
+				throw mue;
 			}
 		}
 		if (url.getRef() != null) return url.getRef();
@@ -2007,7 +2009,9 @@ public class FileUtils {
 					return file;
 				}
 			} catch (Exception e) {
-				log.debug("Failed to resolve sandbox URL", e);
+				MalformedURLException mue = new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");
+				mue.initCause(e);
+				throw mue;
 			}
 		}
 		throw new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");
