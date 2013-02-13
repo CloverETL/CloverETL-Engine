@@ -265,7 +265,9 @@ public class SimpleSequence extends GraphElement implements Sequence {
             }
         } catch(IOException ex) {
             free();
-            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, ex.getMessage());
+            ComponentNotReadyException cnre = new ComponentNotReadyException(this, "Can't read value from sequence file.", ex);
+            cnre.setAttributeName(XML_FILE_URL_ATTRIBUTE);
+            throw cnre;
 		}catch (BufferUnderflowException e) {
 			free();
 			throw new ComponentNotReadyException("Can't read value from sequence file. File is probably corrupted.");
