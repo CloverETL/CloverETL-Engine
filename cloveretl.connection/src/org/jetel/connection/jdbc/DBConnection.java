@@ -47,6 +47,7 @@ import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
 import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
 import org.jetel.database.IConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -604,24 +605,20 @@ public class DBConnection extends GraphElement implements IConnection {
      * @param nodeXML
      * @return
      * @throws XMLConfigurationException
+     * @throws AttributeNotFoundException 
      */
-    public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+    public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
-        try {
-            String id = xattribs.getString(XML_ID_ATTRIBUTE);
-            // do we have dbConfig parameter specified ??
-            if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
-                return new DBConnection(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
-            } else {
-                Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE});
-                
-                return new DBConnection(id, connectionProps);
-            }
-		} catch (Exception e) {
-            throw new XMLConfigurationException("DBConnection: " 
-            		+ xattribs.getString(XML_ID_ATTRIBUTE, "unknown ID") + ":" + e.getMessage(), e);
-		}
+        String id = xattribs.getString(XML_ID_ATTRIBUTE);
+        // do we have dbConfig parameter specified ??
+        if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
+            return new DBConnection(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
+        } else {
+            Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE});
+            
+            return new DBConnection(id, connectionProps);
+        }
     }
 
     /**

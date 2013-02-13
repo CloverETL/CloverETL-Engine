@@ -28,6 +28,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -273,64 +274,61 @@ public class Aggregate extends Node {
 	 * @param xmlElement
 	 * @return component loaded from XML.
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		String[] aggregateKey = new String[0];
 		String mapping = null;
 		boolean oldMapping = false;
         boolean sorted = true;
-		try {
-            //read aggregate key attribute
-            if(xattribs.exists(XML_AGGREGATE_KEY_ATTRIBUTE)) {
-                aggregateKey = xattribs.getString(XML_AGGREGATE_KEY_ATTRIBUTE).split(
-                		Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);                
-            } 
-            
-            //read mapping attribute
-            if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
-            	mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE);
-            }
 
-            //read old mapping attribute
-            if (xattribs.exists(XML_OLD_MAPPING_ATTRIBUTE)) {
-            	if (mapping != null) {
-            		throw new XMLConfigurationException("New and old aggregation function mappings " +
-            				"used simultaneously");
-            	}
-            	mapping = xattribs.getString(XML_OLD_MAPPING_ATTRIBUTE);
-            	oldMapping = true;
-            }
-            
-            if (mapping == null) {
-            	throw new XMLConfigurationException("Aggregation mapping must be provided in the " +
-            			XML_MAPPING_ATTRIBUTE + " or " + XML_OLD_MAPPING_ATTRIBUTE + " attribute");
-            }
-            
-            //read sorted attribute
-            if(xattribs.exists(XML_SORTED_ATTRIBUTE)) {
-                sorted = xattribs.getBoolean(XML_SORTED_ATTRIBUTE);                
-            }
-            //make an instance of the component
-		    Aggregate aggregate = new Aggregate(xattribs.getString("id"), 
-		    		aggregateKey,
-					mapping,
-                    sorted,
-                    oldMapping);
-			
-			// read optional attributes
-			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
-				aggregate.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
-            	aggregate.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            }
-            
-			return aggregate;
-		} catch (Exception e) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" 
-            		+ xattribs.getString(XML_ID_ATTRIBUTE,"unknown ID") + ":" + e.getMessage(),e);
+    	//read aggregate key attribute
+        if(xattribs.exists(XML_AGGREGATE_KEY_ATTRIBUTE)) {
+            aggregateKey = xattribs.getString(XML_AGGREGATE_KEY_ATTRIBUTE).split(
+            		Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);                
+        } 
+        
+        //read mapping attribute
+        if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
+        	mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE);
+        }
+
+        //read old mapping attribute
+        if (xattribs.exists(XML_OLD_MAPPING_ATTRIBUTE)) {
+        	if (mapping != null) {
+        		throw new XMLConfigurationException("New and old aggregation function mappings " +
+        				"used simultaneously");
+        	}
+        	mapping = xattribs.getString(XML_OLD_MAPPING_ATTRIBUTE);
+        	oldMapping = true;
+        }
+        
+        if (mapping == null) {
+        	throw new XMLConfigurationException("Aggregation mapping must be provided in the " +
+        			XML_MAPPING_ATTRIBUTE + " or " + XML_OLD_MAPPING_ATTRIBUTE + " attribute");
+        }
+        
+        //read sorted attribute
+        if(xattribs.exists(XML_SORTED_ATTRIBUTE)) {
+            sorted = xattribs.getBoolean(XML_SORTED_ATTRIBUTE);                
+        }
+        //make an instance of the component
+	    Aggregate aggregate = new Aggregate(xattribs.getString("id"), 
+	    		aggregateKey,
+				mapping,
+                sorted,
+                oldMapping);
+		
+		// read optional attributes
+		if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+			aggregate.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
 		}
+        if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+        	aggregate.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+        }
+        
+		return aggregate;
 	}
 
 	/* (non-Javadoc)

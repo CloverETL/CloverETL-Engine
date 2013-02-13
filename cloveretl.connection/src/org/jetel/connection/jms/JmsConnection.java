@@ -41,6 +41,7 @@ import javax.naming.NoInitialContextException;
 
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -472,40 +473,36 @@ public class JmsConnection extends GraphElement implements IConnection {
 	 * @param  nodeXML  Description of the Parameter
 	 * @return          Description of the Return Value
 	 * @throws XMLConfigurationException 
+	 * @throws AttributeNotFoundException 
 	 */
-	public static JmsConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	public static JmsConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		JmsConnection con;
-		try {
-			if (xattribs.exists(XML_CONFIG_ATTRIBUTE)) {
-				// TODO move readConfig() to init() method - fromXML shouldn't read anything from external files
-				Properties config = readConfig(graph.getRuntimeContext().getContextURL(), 
-						xattribs.getString(XML_CONFIG_ATTRIBUTE), graph);
-				con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
-						config.getProperty(XML_INICTX_FACTORY_ATTRIBUTE, null),
-						config.getProperty(XML_PROVIDER_URL_ATTRIBUTE, null),
-						config.getProperty(XML_CON_FACTORY_ATTRIBUTE, null),
-						config.getProperty(XML_USERNAME_ATTRIBUTE, null),
-						config.getProperty(XML_PASSWORD_ATTRIBUTE, null),
-						config.getProperty(XML_DESTINATION_ATTRIBUTE, null),
-						Boolean.valueOf(config.getProperty(XML_PASSWORD_ENCRYPTED, "false")), 
-						config.getProperty(XML_LIBRARIES_ATTRIBUTE, null)
-						);
-			} else {
-				con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_INICTX_FACTORY_ATTRIBUTE, null),
-						xattribs.getString(XML_PROVIDER_URL_ATTRIBUTE, null),
-						xattribs.getString(XML_CON_FACTORY_ATTRIBUTE, null),
-						xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
-						xattribs.getString(XML_PASSWORD_ATTRIBUTE, null),
-						xattribs.getString(XML_DESTINATION_ATTRIBUTE, null),
-						xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false),
-						xattribs.getString(XML_LIBRARIES_ATTRIBUTE, null)
-						);
-			}
-		} catch (Exception e) {
-            throw new XMLConfigurationException("JmsConnection: " 
-            		+ xattribs.getString(XML_ID_ATTRIBUTE, "unknown ID") + ":" + e.getMessage(), e);
+		if (xattribs.exists(XML_CONFIG_ATTRIBUTE)) {
+			// TODO move readConfig() to init() method - fromXML shouldn't read anything from external files
+			Properties config = readConfig(graph.getRuntimeContext().getContextURL(), 
+					xattribs.getString(XML_CONFIG_ATTRIBUTE), graph);
+			con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
+					config.getProperty(XML_INICTX_FACTORY_ATTRIBUTE, null),
+					config.getProperty(XML_PROVIDER_URL_ATTRIBUTE, null),
+					config.getProperty(XML_CON_FACTORY_ATTRIBUTE, null),
+					config.getProperty(XML_USERNAME_ATTRIBUTE, null),
+					config.getProperty(XML_PASSWORD_ATTRIBUTE, null),
+					config.getProperty(XML_DESTINATION_ATTRIBUTE, null),
+					Boolean.valueOf(config.getProperty(XML_PASSWORD_ENCRYPTED, "false")), 
+					config.getProperty(XML_LIBRARIES_ATTRIBUTE, null)
+					);
+		} else {
+			con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_INICTX_FACTORY_ATTRIBUTE, null),
+					xattribs.getString(XML_PROVIDER_URL_ATTRIBUTE, null),
+					xattribs.getString(XML_CON_FACTORY_ATTRIBUTE, null),
+					xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
+					xattribs.getString(XML_PASSWORD_ATTRIBUTE, null),
+					xattribs.getString(XML_DESTINATION_ATTRIBUTE, null),
+					xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false),
+					xattribs.getString(XML_LIBRARIES_ATTRIBUTE, null)
+					);
 		}
 
 		return con;

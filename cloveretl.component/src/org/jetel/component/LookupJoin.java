@@ -35,6 +35,7 @@ import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -570,41 +571,33 @@ public class LookupJoin extends Node {
 		super.reset();
 	}
 
-	public static Node fromXML(TransformationGraph graph, Element xmlElement)
-			throws XMLConfigurationException {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(
-				xmlElement, graph);
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		LookupJoin join;
 		String[] joinKey;
 		// get necessary parameters
-		try {
-			joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(
-					Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(
+				Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 
-			join = new LookupJoin(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), joinKey,
-					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), xattribs
-							.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
-		      xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
-			join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-			join.setTransformationParameters(xattribs
-							.attributes2Properties(new String[] { XML_TRANSFORM_CLASS_ATTRIBUTE }));
-			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
-				join.setLeftOuterJoin(xattribs
-						.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
-			}
-			join.setFreeLookupTable(xattribs.getBoolean(
-					XML_FREE_LOOKUP_TABLE_ATTRIBUTE, false));
-			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
-				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
-				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":"
-					+ xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ")
-					+ ":" + ex.getMessage(), ex);
+		join = new LookupJoin(xattribs.getString(XML_ID_ATTRIBUTE),
+				xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), joinKey,
+				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), xattribs
+						.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
+	      xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
+		join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+		join.setTransformationParameters(xattribs
+						.attributes2Properties(new String[] { XML_TRANSFORM_CLASS_ATTRIBUTE }));
+		if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
+			join.setLeftOuterJoin(xattribs
+					.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
+		}
+		join.setFreeLookupTable(xattribs.getBoolean(
+				XML_FREE_LOOKUP_TABLE_ATTRIBUTE, false));
+		if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+			join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+			join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
 		}
 
 		return join;

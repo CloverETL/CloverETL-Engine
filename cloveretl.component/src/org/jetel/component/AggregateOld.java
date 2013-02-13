@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -216,37 +217,35 @@ public class AggregateOld extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		String[] aggregateKey = new String[0];
         boolean sorted = true;
-		try {
-            //read aggregate key attribute
-            if(xattribs.exists("aggregateKey")) {
-                aggregateKey = xattribs.getString("aggregateKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);                
-            }
-            //read sorted attribute
-            if(xattribs.exists("sorted")) {
-                sorted = xattribs.getString("sorted").matches("^[Tt].*");                
-            }
-            //make instance of aggregate component
-		    AggregateOld agg;
-			agg = new AggregateOld(xattribs.getString("id"),
-					aggregateKey,
-					xattribs.getString("aggregateFunctions"),
-                    sorted);
-			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
-			    agg.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
-                agg.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            }
-			return agg;
-		} catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage(),ex);
+
+        //read aggregate key attribute
+        if(xattribs.exists("aggregateKey")) {
+            aggregateKey = xattribs.getString("aggregateKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);                
+        }
+        //read sorted attribute
+        if(xattribs.exists("sorted")) {
+            sorted = xattribs.getString("sorted").matches("^[Tt].*");                
+        }
+        //make instance of aggregate component
+	    AggregateOld agg;
+		agg = new AggregateOld(xattribs.getString("id"),
+				aggregateKey,
+				xattribs.getString("aggregateFunctions"),
+                sorted);
+		if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+		    agg.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
 		}
+        if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+            agg.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+        }
+		return agg;
 	}
 
 

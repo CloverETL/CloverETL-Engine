@@ -19,6 +19,7 @@
 package org.jetel.component;
 
 import org.jetel.data.Defaults;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -147,16 +148,13 @@ public class SimpleCopy extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-		try {
-			return new SimpleCopy(xattribs.getString(XML_ID_ATTRIBUTE));
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-		}
+		return new SimpleCopy(xattribs.getString(XML_ID_ATTRIBUTE));
 	}
 
 

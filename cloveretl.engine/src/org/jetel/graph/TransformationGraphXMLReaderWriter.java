@@ -490,7 +490,7 @@ public class TransformationGraphXMLReaderWriter {
 			}catch(NumberFormatException ex1){
 				throwXMLConfigurationException("Phase attribute number is not a valid integer.", ex1);
 			} catch (Exception e) {
-				throwXMLConfigurationException("Phase cannot be instantiated.", e);
+				throwXMLConfigurationException(null, e);
 			}
 		}
 	}
@@ -543,7 +543,7 @@ public class TransformationGraphXMLReaderWriter {
 			} catch (AttributeNotFoundException ex) {
 				throwXMLConfigurationException("Missing attribute at node '" + nodeID + "'.", ex);
 			} catch (Exception e) {
-				throwXMLConfigurationException("Node cannot be instantiated.", e);
+				throwXMLConfigurationException("Component cannot be instantiated.", e);
 			}
 		}
 	}

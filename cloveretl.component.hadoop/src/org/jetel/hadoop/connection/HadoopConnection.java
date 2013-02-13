@@ -126,26 +126,22 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 * @param nodeXML
 	 *            Description of the Parameter
 	 * @return Description of the Return Value
+	 * @throws AttributeNotFoundException 
 	 * @throws Exception
 	 */
-	public static HadoopConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	public static HadoopConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
-		try {
-			if (xattribs.exists(HADOOP_CONFIG_KEY)) {
-				return new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(HADOOP_CONFIG_KEY));
-			} else {
-				HadoopConnection con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE), null);
-				try {
-					con.setConnectionParameters(xattribs.attributes2Properties(new String[0]));
-				} catch (ComponentNotReadyException ex) {
-					throw new XMLConfigurationException("Hadoop connection " + con.getId() + " could not be loaded "
-							+ "from XML. Required attribute probably missing.", ex);
-				}
-				return con;
+		if (xattribs.exists(HADOOP_CONFIG_KEY)) {
+			return new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(HADOOP_CONFIG_KEY));
+		} else {
+			HadoopConnection con = new HadoopConnection(xattribs.getString(XML_ID_ATTRIBUTE), null);
+			try {
+				con.setConnectionParameters(xattribs.attributes2Properties(new String[0]));
+			} catch (ComponentNotReadyException ex) {
+				throw new XMLConfigurationException("Hadoop connection " + con.getId() + " could not be loaded "
+						+ "from XML. Required attribute probably missing.", ex);
 			}
-		} catch (AttributeNotFoundException ex) {
-			throw new XMLConfigurationException("HadoopConnection: "
-					+ xattribs.getString(XML_ID_ATTRIBUTE, "unknown ID") + ":" + ex.getMessage(), ex);
+			return con;
 		}
 	}
 

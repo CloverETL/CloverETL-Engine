@@ -39,7 +39,6 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.CloverWorkerListener;
@@ -954,8 +953,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return          Description of the Returned Value
 	 *@since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
-        throw new  UnsupportedOperationException("not implemented in org.jetel.graph.Node"); 
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
+        throw new UnsupportedOperationException("not implemented in org.jetel.graph.Node"); 
 	}
 
     /**

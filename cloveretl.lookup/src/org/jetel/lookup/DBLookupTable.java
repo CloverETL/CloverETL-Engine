@@ -250,19 +250,15 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         return lookupTable;
     }
     
-    public static DBLookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static DBLookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         DBLookupTable lookupTable = null;
         String id;
         String type;
         
         //reading obligatory attributes
-        try {
-            id = xattribs.getString(XML_ID_ATTRIBUTE);
-            type = xattribs.getString(XML_TYPE_ATTRIBUTE);
-        } catch(AttributeNotFoundException ex) {
-            throw new XMLConfigurationException("Can't create lookup table - " + ex.getMessage(), ex);
-        }
+        id = xattribs.getString(XML_ID_ATTRIBUTE);
+        type = xattribs.getString(XML_TYPE_ATTRIBUTE);
         
         //check type
         if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_DB_LOOKUP)) {
@@ -272,25 +268,21 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         //create db lookup table
         //String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         
-        try {
-            lookupTable = new DBLookupTable(id, xattribs.getString(XML_DBCONNECTION),
-                    xattribs.exists(XML_METADATA_ID) ? xattribs.getString(XML_METADATA_ID) : null, xattribs.getString(XML_SQL_QUERY));
-            
-            if (xattribs.exists(XML_NAME_ATTRIBUTE)){
-            	lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
-            }
-            
-            if(xattribs.exists(XML_LOOKUP_MAX_CACHE_SIZE)) {
-                lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_MAX_CACHE_SIZE));
-            }
-            if (xattribs.exists(XML_STORE_NULL_RESPOND)) {
-            	lookupTable.setStoreNulls(xattribs.getBoolean(XML_STORE_NULL_RESPOND));
-            }
-            
-            return lookupTable;
-        } catch (AttributeNotFoundException ex) {
-            throw new XMLConfigurationException(ex);
+        lookupTable = new DBLookupTable(id, xattribs.getString(XML_DBCONNECTION),
+                xattribs.exists(XML_METADATA_ID) ? xattribs.getString(XML_METADATA_ID) : null, xattribs.getString(XML_SQL_QUERY));
+        
+        if (xattribs.exists(XML_NAME_ATTRIBUTE)){
+        	lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
         }
+        
+        if(xattribs.exists(XML_LOOKUP_MAX_CACHE_SIZE)) {
+            lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_MAX_CACHE_SIZE));
+        }
+        if (xattribs.exists(XML_STORE_NULL_RESPOND)) {
+        	lookupTable.setStoreNulls(xattribs.getBoolean(XML_STORE_NULL_RESPOND));
+        }
+        
+        return lookupTable;
     }
 
     @Override

@@ -345,18 +345,10 @@ public class Trash extends Node {
 		}
 	}
 
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		Trash trash;
-
-		try {
-			trash = new Trash(xattribs.getString(XML_ID_ATTRIBUTE));
-
-			trash.loadAttributesFromXML(xattribs);
-
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
-		}
+		Trash trash = new Trash(xattribs.getString(XML_ID_ATTRIBUTE));
+		trash.loadAttributesFromXML(xattribs);
 		return trash;
 	}
 

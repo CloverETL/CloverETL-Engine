@@ -41,6 +41,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.XmlSaxParser;
 import org.jetel.data.parser.XmlSaxParser.MyHandler;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -289,85 +290,82 @@ public class XMLExtract extends Node {
 	 * @param xmlElement
 	 * @return
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		XMLExtract extract;
 
-		try {
-			// constructor
-			extract = new XMLExtract(xattribs.getString(XML_ID_ATTRIBUTE));
+		// constructor
+		extract = new XMLExtract(xattribs.getString(XML_ID_ATTRIBUTE));
 
-			// set input file
-			extract.setInputFile(xattribs.getStringEx(XML_SOURCEURI_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		// set input file
+		extract.setInputFile(xattribs.getStringEx(XML_SOURCEURI_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 
-			extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE, true));
+		extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE, true));
 
-			// set mapping
-			String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
-			String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
-			NodeList nodes = xmlElement.getChildNodes();
-			if (mappingURL != null)
-				extract.setMappingURL(mappingURL);
-			else if (mapping != null)
-				extract.setMapping(mapping);
-			else if (nodes != null && nodes.getLength() > 0) {
-				// old-fashioned version of mapping definition
-				// mapping xml elements are child nodes of the component
-				extract.setNodes(nodes);
-			} else {
-				xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration
-																									// exception
-			}
-
-			// set namespace bindings attribute
-			if (xattribs.exists(XML_NAMESPACE_BINDINGS_ATTRIBUTE)) {
-				Properties props = null;
-				try {
-					props = new Properties();
-					final String content = xattribs.getString(XML_NAMESPACE_BINDINGS_ATTRIBUTE, null);
-					if (content != null) {
-						props.load(new StringReader(content));
-					}
-				} catch (IOException e) {
-					throw new XMLConfigurationException("Unable to initialize namespace bindings", e);
-				}
-
-				final HashMap<String, String> namespaceBindings = new HashMap<String, String>();
-				for (String name : props.stringPropertyNames()) {
-					namespaceBindings.put(name, props.getProperty(name));
-				}
-
-				extract.setNamespaceBindings(namespaceBindings);
-			}
-
-			// set a skip row attribute
-			if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)) {
-				extract.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
-			}
-
-			// set a numRecord attribute
-			if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)) {
-				extract.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
-			}
-
-			if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)) {
-				extract.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_VALIDATE_ATTRIBUTE)) {
-				extract.setValidate(xattribs.getBoolean(XML_VALIDATE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				extract.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-
-			if (xattribs.exists(XML_TRIM_ATTRIBUTE)) {
-				extract.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
-			}
-			return extract;
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
+		// set mapping
+		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
+		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
+		NodeList nodes = xmlElement.getChildNodes();
+		if (mappingURL != null)
+			extract.setMappingURL(mappingURL);
+		else if (mapping != null)
+			extract.setMapping(mapping);
+		else if (nodes != null && nodes.getLength() > 0) {
+			// old-fashioned version of mapping definition
+			// mapping xml elements are child nodes of the component
+			extract.setNodes(nodes);
+		} else {
+			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration
+																								// exception
 		}
+
+		// set namespace bindings attribute
+		if (xattribs.exists(XML_NAMESPACE_BINDINGS_ATTRIBUTE)) {
+			Properties props = null;
+			try {
+				props = new Properties();
+				final String content = xattribs.getString(XML_NAMESPACE_BINDINGS_ATTRIBUTE, null);
+				if (content != null) {
+					props.load(new StringReader(content));
+				}
+			} catch (IOException e) {
+				throw new XMLConfigurationException("Unable to initialize namespace bindings", e);
+			}
+
+			final HashMap<String, String> namespaceBindings = new HashMap<String, String>();
+			for (String name : props.stringPropertyNames()) {
+				namespaceBindings.put(name, props.getProperty(name));
+			}
+
+			extract.setNamespaceBindings(namespaceBindings);
+		}
+
+		// set a skip row attribute
+		if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)) {
+			extract.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
+		}
+
+		// set a numRecord attribute
+		if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)) {
+			extract.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+		}
+
+		if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)) {
+			extract.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_VALIDATE_ATTRIBUTE)) {
+			extract.setValidate(xattribs.getBoolean(XML_VALIDATE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			extract.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		}
+
+		if (xattribs.exists(XML_TRIM_ATTRIBUTE)) {
+			extract.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
+		}
+		return extract;
 	}
 
 	/**

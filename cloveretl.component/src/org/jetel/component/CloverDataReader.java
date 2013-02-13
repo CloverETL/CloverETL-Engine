@@ -28,12 +28,12 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.CloverDataParser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
@@ -233,37 +233,32 @@ public class CloverDataReader extends Node {
 		return true;
 	}
 	
-	
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws AttributeNotFoundException {
 		CloverDataReader aDataReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
-		try {
-			aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-						xattribs.getStringEx(XML_INDEXFILEURL_ATTRIBUTE,null,RefResFlag.SPEC_CHARACTERS_OFF));
-			if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
-				aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
-				aDataReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)){
-				aDataReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
-				aDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
-				aDataReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
-				aDataReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_INDEXFILEURL_ATTRIBUTE,null,RefResFlag.SPEC_CHARACTERS_OFF));
+		if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
+			aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
 		}
-
+		if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
+			aDataReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)){
+			aDataReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+			aDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
+			aDataReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
+			aDataReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+		}
+		
 		return aDataReader;
 	}
 

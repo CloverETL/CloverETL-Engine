@@ -996,79 +996,76 @@ public class XmlWriter extends Node {
 	 * @param xmlElement
 	 * @return
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 * @throws ComponentNotReadyException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		XmlWriter writer = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
-		try {
-			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
-			
-	        // set mapping
-	        String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
-	        String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
-	        NodeList nodes = xmlElement.getChildNodes();
-	        if (mappingURL != null) 
-	        	writer.setMappingURL(mappingURL);
-	        else if (mapping != null) 
-	        	writer.setMapping(mapping);
-	        else if (nodes != null && nodes.getLength() > 0){
-	            //old-fashioned version of mapping definition
-	            //mapping xml elements are child nodes of the component
-	        	writer.setMappingNodes(nodes);
-	        } else {
-	        	xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration exception
-	        }
+		writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
+		
+        // set mapping
+        String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
+        String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
+        NodeList nodes = xmlElement.getChildNodes();
+        if (mappingURL != null) 
+        	writer.setMappingURL(mappingURL);
+        else if (mapping != null) 
+        	writer.setMapping(mapping);
+        else if (nodes != null && nodes.getLength() > 0){
+            //old-fashioned version of mapping definition
+            //mapping xml elements are child nodes of the component
+        	writer.setMappingNodes(nodes);
+        } else {
+        	xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration exception
+        }
 
-			boolean omitNewLines = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false); // singleRow is deprecated attribute, but still possible ... 
-			omitNewLines = xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, omitNewLines); // ... thus omitNewLines takes precedence over singleRow
-			writer.setOmitNewLines(omitNewLines);
-			
-			boolean useRootElement = xattribs.getBoolean(XML_USE_ROOT_ELEMENT_ATTRIBUTE, true);
-			writer.setUseRootElement(useRootElement);
-			
-			boolean rootInfoAttributes = xattribs.getBoolean(XML_ROOT_INFO_ATTRIBUTES, true);
-			writer.setRootInfoAttributes(rootInfoAttributes);
-			
-			String dtdPublicId = xattribs.getString(XML_DTD_PUBLIC_ID_ATTRIBUTE, null);
-			writer.setDtdPublicId(dtdPublicId);
-			
-			String dtdSystemId = xattribs.getString(XML_DTD_SYSTEM_ID_ATTRIBUTE, null);
-			writer.setDtdSystemId(dtdSystemId);
-			
-			String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
-			writer.setFileUrl(fileUrl);
-			
-			String rootDefaultNamespace = xattribs.getString(XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE, "");
-			writer.setRootDefaultNamespace(rootDefaultNamespace);
-			
-			String xsdSchemaLocation = xattribs.getString(XML_XSD_LOCATION_ATTRIBUTE, null);
-			writer.setXsdSchemaLocation(xsdSchemaLocation);
-			
-			String rootNamespaces = xattribs.getString(XML_ROOT_NAMESPACES_ATTRIBUTE, null);
-			writer.setRootNamespaces(rootNamespaces);
-			
-			int recordsSkip = xattribs.getInteger(XML_RECORDS_SKIP_ATTRIBUTE, 0);
-			writer.setRecordsSkip(recordsSkip);
-			
-			int recordsCount = xattribs.getInteger(XML_RECORDS_COUNT_ATTRIBUTE, 0);
-			writer.setRecordsCount(recordsCount);
-			
-			int recordsPerFile = xattribs.getInteger(XML_RECORDS_PER_FILE_ATTRIBUTE, 0);
-			writer.setRecordsPerFile(recordsPerFile);
-			
-			String rootElement = xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE, DEFAULT_ROOT_ELEMENT);
-			writer.setRootElement(rootElement);
-			
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
-				writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			writer.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
-			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
-				writer.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
-            }
-        } catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		boolean omitNewLines = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false); // singleRow is deprecated attribute, but still possible ... 
+		omitNewLines = xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, omitNewLines); // ... thus omitNewLines takes precedence over singleRow
+		writer.setOmitNewLines(omitNewLines);
+		
+		boolean useRootElement = xattribs.getBoolean(XML_USE_ROOT_ELEMENT_ATTRIBUTE, true);
+		writer.setUseRootElement(useRootElement);
+		
+		boolean rootInfoAttributes = xattribs.getBoolean(XML_ROOT_INFO_ATTRIBUTES, true);
+		writer.setRootInfoAttributes(rootInfoAttributes);
+		
+		String dtdPublicId = xattribs.getString(XML_DTD_PUBLIC_ID_ATTRIBUTE, null);
+		writer.setDtdPublicId(dtdPublicId);
+		
+		String dtdSystemId = xattribs.getString(XML_DTD_SYSTEM_ID_ATTRIBUTE, null);
+		writer.setDtdSystemId(dtdSystemId);
+		
+		String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
+		writer.setFileUrl(fileUrl);
+		
+		String rootDefaultNamespace = xattribs.getString(XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE, "");
+		writer.setRootDefaultNamespace(rootDefaultNamespace);
+		
+		String xsdSchemaLocation = xattribs.getString(XML_XSD_LOCATION_ATTRIBUTE, null);
+		writer.setXsdSchemaLocation(xsdSchemaLocation);
+		
+		String rootNamespaces = xattribs.getString(XML_ROOT_NAMESPACES_ATTRIBUTE, null);
+		writer.setRootNamespaces(rootNamespaces);
+		
+		int recordsSkip = xattribs.getInteger(XML_RECORDS_SKIP_ATTRIBUTE, 0);
+		writer.setRecordsSkip(recordsSkip);
+		
+		int recordsCount = xattribs.getInteger(XML_RECORDS_COUNT_ATTRIBUTE, 0);
+		writer.setRecordsCount(recordsCount);
+		
+		int recordsPerFile = xattribs.getInteger(XML_RECORDS_PER_FILE_ATTRIBUTE, 0);
+		writer.setRecordsPerFile(recordsPerFile);
+		
+		String rootElement = xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE, DEFAULT_ROOT_ELEMENT);
+		writer.setRootElement(rootElement);
+		
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
+			writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		writer.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
+		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+			writer.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
         }
 		
 		return writer;

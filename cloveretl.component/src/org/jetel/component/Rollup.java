@@ -200,46 +200,41 @@ public class Rollup extends Node {
      * @return an instance of the <code>Rollup</code> component
      *
      * @throws XMLConfigurationException when some attribute is missing
+     * @throws AttributeNotFoundException 
      */
     public static Node fromXML(TransformationGraph transformationGraph, Element xmlElement)
-            throws XMLConfigurationException {
+            throws XMLConfigurationException, AttributeNotFoundException {
         Rollup rollup = null;
 
         ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
-        try {
-            if (!componentAttributes.getString(XML_TYPE_ATTRIBUTE).equalsIgnoreCase(COMPONENT_TYPE)) {
-                throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
-                        + " attribute contains a value incompatible with this component!");
-            }
-
-            rollup = new Rollup(componentAttributes.getString(XML_ID_ATTRIBUTE));
-
-            String groupKeyString = componentAttributes.getString(XML_GROUP_KEY_FIELDS_ATTRIBUTE, null);
-            rollup.setGroupKeyFields(!StringUtils.isEmpty(groupKeyString)
-                    ? groupKeyString.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null);
-            rollup.setGroupAccumulatorMetadataId(
-                    componentAttributes.getString(XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, null));
-
-            rollup.setTransform(componentAttributes.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-            rollup.setTransformUrl(componentAttributes.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null,
-            		RefResFlag.SPEC_CHARACTERS_OFF));
-            rollup.setTransformUrlCharset(componentAttributes.getString(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, null));
-            rollup.setTransformClassName(componentAttributes.getString(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, null));
-
-            rollup.setTransformParameters(componentAttributes.attributes2Properties(new String[] {
-            		XML_TYPE_ATTRIBUTE, XML_ID_ATTRIBUTE, XML_GROUP_KEY_FIELDS_ATTRIBUTE,
-            		XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, XML_TRANSFORM_ATTRIBUTE, XML_TRANSFORM_URL_ATTRIBUTE,
-            		XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, XML_INPUT_SORTED_ATTRIBUTE,
-            		XML_EQUAL_NULL_ATTRIBUTE }));
-
-            rollup.setInputSorted(componentAttributes.getBoolean(XML_INPUT_SORTED_ATTRIBUTE, true));
-            rollup.setEqualNULL(componentAttributes.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
-        } catch (AttributeNotFoundException exception) {
-            throw new XMLConfigurationException("Missing a required attribute!", exception);
-        } catch (Exception exception) {
-            throw new XMLConfigurationException("Error creating the component!", exception);
+        if (!componentAttributes.getString(XML_TYPE_ATTRIBUTE).equalsIgnoreCase(COMPONENT_TYPE)) {
+            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
+                    + " attribute contains a value incompatible with this component!");
         }
+
+        rollup = new Rollup(componentAttributes.getString(XML_ID_ATTRIBUTE));
+
+        String groupKeyString = componentAttributes.getString(XML_GROUP_KEY_FIELDS_ATTRIBUTE, null);
+        rollup.setGroupKeyFields(!StringUtils.isEmpty(groupKeyString)
+                ? groupKeyString.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null);
+        rollup.setGroupAccumulatorMetadataId(
+                componentAttributes.getString(XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, null));
+
+        rollup.setTransform(componentAttributes.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+        rollup.setTransformUrl(componentAttributes.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null,
+        		RefResFlag.SPEC_CHARACTERS_OFF));
+        rollup.setTransformUrlCharset(componentAttributes.getString(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, null));
+        rollup.setTransformClassName(componentAttributes.getString(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, null));
+
+        rollup.setTransformParameters(componentAttributes.attributes2Properties(new String[] {
+        		XML_TYPE_ATTRIBUTE, XML_ID_ATTRIBUTE, XML_GROUP_KEY_FIELDS_ATTRIBUTE,
+        		XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, XML_TRANSFORM_ATTRIBUTE, XML_TRANSFORM_URL_ATTRIBUTE,
+        		XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, XML_INPUT_SORTED_ATTRIBUTE,
+        		XML_EQUAL_NULL_ATTRIBUTE }));
+
+        rollup.setInputSorted(componentAttributes.getBoolean(XML_INPUT_SORTED_ATTRIBUTE, true));
+        rollup.setEqualNULL(componentAttributes.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
 
         return rollup;
     }

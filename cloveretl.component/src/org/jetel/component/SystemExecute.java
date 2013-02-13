@@ -40,6 +40,7 @@ import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.parser.Parser;
 import org.jetel.data.parser.TextParserFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -649,37 +650,33 @@ public class SystemExecute extends Node{
 	 /* (non-Javadoc)
 	 * @see org.jetel.graph.Node#fromXML(org.jetel.graph.TransformationGraph, org.w3c.dom.Element)
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		SystemExecute sysExec;
-		try {
-			sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_INTERPRETER_ATTRIBUTE,"${}"),
-					xattribs.getStringEx(XML_COMMAND_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
-					xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
-			sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
-			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
-				sysExec.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_WORKING_DIRECTORY_ATTRIBUTE)){
-				sysExec.setWorkingDirectory(xattribs.getString(XML_WORKING_DIRECTORY_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ENVIRONMENT_ATTRIBUTE)) {
-				sysExec.setEnvironment(xattribs.getString(XML_ENVIRONMENT_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_WORKERS_TIMEOUT_ATTRIBUTE)) {
-				sysExec.setWorkersTimeout(xattribs.getTimeInterval(XML_WORKERS_TIMEOUT_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				sysExec.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_IGNORE_EXIT_VALUE_ATTRIBUTE)) {
-				sysExec.setIgnoreExitValue(xattribs.getBoolean(XML_IGNORE_EXIT_VALUE_ATTRIBUTE));
-			}
-			return sysExec;
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),
+				xattribs.getString(XML_INTERPRETER_ATTRIBUTE,"${}"),
+				xattribs.getStringEx(XML_COMMAND_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
+		sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
+		if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
+			sysExec.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 		}
+		if (xattribs.exists(XML_WORKING_DIRECTORY_ATTRIBUTE)){
+			sysExec.setWorkingDirectory(xattribs.getString(XML_WORKING_DIRECTORY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ENVIRONMENT_ATTRIBUTE)) {
+			sysExec.setEnvironment(xattribs.getString(XML_ENVIRONMENT_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_WORKERS_TIMEOUT_ATTRIBUTE)) {
+			sysExec.setWorkersTimeout(xattribs.getTimeInterval(XML_WORKERS_TIMEOUT_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			sysExec.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_IGNORE_EXIT_VALUE_ATTRIBUTE)) {
+			sysExec.setIgnoreExitValue(xattribs.getBoolean(XML_IGNORE_EXIT_VALUE_ATTRIBUTE));
+		}
+		return sysExec;
 	}
 
 	/**

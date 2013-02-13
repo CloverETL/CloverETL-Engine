@@ -33,6 +33,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.data.RingRecordBuffer;
 import org.jetel.enums.OrderEnum;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -601,30 +602,26 @@ public class Dedup extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Dedup dedup;
-		try {
-            String dedupKey = xattribs.getString(XML_DEDUPKEY_ATTRIBUTE, null);
-            
-			dedup = new Dedup(xattribs.getString(XML_ID_ATTRIBUTE),
-					dedupKey != null ? dedupKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null);
-			if (xattribs.exists(XML_KEEP_ATTRIBUTE)){
-			    dedup.setKeep(xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? KEEP_FIRST :
-				    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
-			}
-			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
-			    dedup.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_NO_DUP_RECORD_ATTRIBUTE)){
-			    dedup.setNumberRecord(xattribs.getInteger(XML_NO_DUP_RECORD_ATTRIBUTE));
-			}
-			
-		} catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-        }
+        String dedupKey = xattribs.getString(XML_DEDUPKEY_ATTRIBUTE, null);
+        
+		dedup = new Dedup(xattribs.getString(XML_ID_ATTRIBUTE),
+				dedupKey != null ? dedupKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null);
+		if (xattribs.exists(XML_KEEP_ATTRIBUTE)){
+		    dedup.setKeep(xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? KEEP_FIRST :
+			    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
+		}
+		if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+		    dedup.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_NO_DUP_RECORD_ATTRIBUTE)){
+		    dedup.setNumberRecord(xattribs.getInteger(XML_NO_DUP_RECORD_ATTRIBUTE));
+		}
 		return dedup;
 	}
 

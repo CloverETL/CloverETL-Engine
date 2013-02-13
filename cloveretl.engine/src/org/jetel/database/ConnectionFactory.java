@@ -20,6 +20,7 @@ package org.jetel.database;
 
 //import org.w3c.dom.Node;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +29,13 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.ComponentFactory;
+import org.jetel.graph.GraphElement;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**
@@ -117,8 +121,15 @@ public class ConnectionFactory {
             //create instance of connection
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (IConnection) method.invoke(null, new Object[] {graph, nodeXML});
-        } catch(Throwable e) {
-            throw new RuntimeException("Can't create object of : " + connectionType, e);
+        } catch (Exception e) {
+			Throwable t = e;
+			if (e instanceof InvocationTargetException) {
+				t = ((InvocationTargetException) e).getTargetException();
+			}
+			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+			String id = xattribs.getString(Node.XML_ID_ATTRIBUTE, null); 
+			String name = xattribs.getString(Node.XML_NAME_ATTRIBUTE, null); 
+            throw new RuntimeException("Can't create connection " + GraphElement.identifiersToString(id, name) + ".", t);
         }
     }
     

@@ -474,7 +474,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         return lookupTable;
     }
     	
-    public static RangeLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+    public static RangeLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         RangeLookupTable lookupTable = null;
         String id;
@@ -484,15 +484,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         String[] endFields;
         
         //reading obligatory attributes
-        try {
-            id = xattribs.getString(XML_ID_ATTRIBUTE);
-            type = xattribs.getString(XML_TYPE_ATTRIBUTE);
-            metadata = xattribs.getString(XML_METADATA_ID);
-            startFields = xattribs.getString(XML_START_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-            endFields = xattribs.getString(XML_END_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-        } catch(AttributeNotFoundException ex) {
-            throw new XMLConfigurationException("Can't create lookup table - " + ex.getMessage(),ex);
-        }
+        id = xattribs.getString(XML_ID_ATTRIBUTE);
+        type = xattribs.getString(XML_TYPE_ATTRIBUTE);
+        metadata = xattribs.getString(XML_METADATA_ID);
+        startFields = xattribs.getString(XML_START_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        endFields = xattribs.getString(XML_END_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         
         //check type
         if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_RANGE_LOOKUP)) {
@@ -501,57 +497,52 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         
         lookupTable = new RangeLookupTable(id, metadata, startFields, endFields);
         
-        try {
-            if (xattribs.exists(XML_NAME_ATTRIBUTE)){
-            	lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
-            }
-            lookupTable.setUseI18N(xattribs.getBoolean(XML_USE_I18N, false));
-			if (xattribs.exists(XML_LOCALE)){
-				lookupTable.setLocale(XML_LOCALE);
-			}
-			if (xattribs.exists(XML_FILE_URL)){
-				lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
-			}
-			lookupTable.setCharset(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
-			boolean[] startInclude = null;
-			if (xattribs.exists(XML_START_INCLUDE)){
-				String[] sI = xattribs.getString(XML_START_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-				startInclude = new boolean[sI.length];
-				for (int i = 0; i < sI.length; i++) {
-					startInclude[i] = Boolean.parseBoolean(sI[i]);
-				}
-			}
-			boolean[] endInclude = null;
-			if (xattribs.exists(XML_END_INCLUDE)){
-				String[] eI = xattribs.getString(XML_END_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-				endInclude = new boolean[eI.length];
-				for (int i = 0; i < eI.length; i++) {
-					endInclude[i] = Boolean.parseBoolean(eI[i]);
-				}
-				if (startInclude == null) {
-			    	startInclude = new boolean[endInclude.length];
-			    	for (int i = 0; i < endInclude.length; i++) {
-						startInclude[i] = true;
-					}
-				}
-			}else if (xattribs.exists(XML_START_INCLUDE)){
-			   	endInclude = new boolean[startInclude.length];
-				for (int i = 0; i < endInclude.length; i++) {
-					endInclude[i] = false;
-				}
-			}
-			lookupTable.setStartInclude(startInclude);
-			lookupTable.setEndInclude(endInclude);
-			
-            if (xattribs.exists(XML_DATA_ATTRIBUTE)) {
-            	lookupTable.setData(xattribs.getString(XML_DATA_ATTRIBUTE));
-            }
-
-            return lookupTable;
-			
-		} catch (AttributeNotFoundException e) {
-            throw new XMLConfigurationException("can't create simple lookup table",e);
+        if (xattribs.exists(XML_NAME_ATTRIBUTE)){
+        	lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
+        }
+        lookupTable.setUseI18N(xattribs.getBoolean(XML_USE_I18N, false));
+		if (xattribs.exists(XML_LOCALE)){
+			lookupTable.setLocale(XML_LOCALE);
 		}
+		if (xattribs.exists(XML_FILE_URL)){
+			lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
+		}
+		lookupTable.setCharset(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+		boolean[] startInclude = null;
+		if (xattribs.exists(XML_START_INCLUDE)){
+			String[] sI = xattribs.getString(XML_START_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			startInclude = new boolean[sI.length];
+			for (int i = 0; i < sI.length; i++) {
+				startInclude[i] = Boolean.parseBoolean(sI[i]);
+			}
+		}
+		boolean[] endInclude = null;
+		if (xattribs.exists(XML_END_INCLUDE)){
+			String[] eI = xattribs.getString(XML_END_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			endInclude = new boolean[eI.length];
+			for (int i = 0; i < eI.length; i++) {
+				endInclude[i] = Boolean.parseBoolean(eI[i]);
+			}
+			if (startInclude == null) {
+		    	startInclude = new boolean[endInclude.length];
+		    	for (int i = 0; i < endInclude.length; i++) {
+					startInclude[i] = true;
+				}
+			}
+		}else if (xattribs.exists(XML_START_INCLUDE)){
+		   	endInclude = new boolean[startInclude.length];
+			for (int i = 0; i < endInclude.length; i++) {
+				endInclude[i] = false;
+			}
+		}
+		lookupTable.setStartInclude(startInclude);
+		lookupTable.setEndInclude(endInclude);
+		
+        if (xattribs.exists(XML_DATA_ATTRIBUTE)) {
+        	lookupTable.setData(xattribs.getString(XML_DATA_ATTRIBUTE));
+        }
+
+        return lookupTable;
 	}
 	
 	public boolean[] getEndInclude() {

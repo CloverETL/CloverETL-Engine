@@ -44,7 +44,6 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -981,60 +980,56 @@ public class AproxMergeJoin extends Node {
         this.transformationParametersForSuspicious = transformationParameters;
     }
 
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		AproxMergeJoin join;
 
-		try {
-           join = new AproxMergeJoin(
-                    xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-                    xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
-                    xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-                    xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
-                    xattribs.getStringEx(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
-                    xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,null),
-                    xattribs.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
-                    xattribs.getStringEx(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-            join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-            if (xattribs.exists(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE)) {
-				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE).
-						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+       join = new AproxMergeJoin(
+                xattribs.getString(XML_ID_ATTRIBUTE),
+                xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
+                xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+                xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
+                xattribs.getStringEx(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
+                xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,null),
+                xattribs.getStringEx(XML_TRANSFORM_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
+                xattribs.getStringEx(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+        join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+        if (xattribs.exists(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE)) {
+			join.setSlaveOverrideKey(xattribs.getString(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE).
+					split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
-			}
-			if (xattribs.exists(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE)) {
-				join.setSlaveMatchingKey(xattribs.getString(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE));
-			}
-			join.setConformityLimit(xattribs.getDouble(XML_CONFORMITY_ATTRIBUTE,DEFAULT_CONFORMITY_LIMIT));
-			join.setTransformationParameters(xattribs.attributes2Properties(
-	                new String[]{XML_ID_ATTRIBUTE,XML_JOIN_KEY_ATTRIBUTE,
-	                		XML_MATCHING_KEY_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,
-	                		XML_TRANSFORM_CLASS_ATTRIBUTE,XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,
-	                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,
-	                		XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
-			join.setTransformationParametersForSuspicious(xattribs.attributes2Properties(
-	                new String[]{XML_ID_ATTRIBUTE,XML_JOIN_KEY_ATTRIBUTE,
-	                		XML_MATCHING_KEY_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,
-	                		XML_TRANSFORM_CLASS_ATTRIBUTE,XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,
-	                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,
-	                		XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
-			
-			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
-				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
-				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
-				join.setLocale(xattribs.getString(XML_LOCALE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
-				join.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
-			}
-			return join;
-        }catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-        }
+		}
+		if (xattribs.exists(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE)) {
+			join.setSlaveMatchingKey(xattribs.getString(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE));
+		}
+		join.setConformityLimit(xattribs.getDouble(XML_CONFORMITY_ATTRIBUTE,DEFAULT_CONFORMITY_LIMIT));
+		join.setTransformationParameters(xattribs.attributes2Properties(
+                new String[]{XML_ID_ATTRIBUTE,XML_JOIN_KEY_ATTRIBUTE,
+                		XML_MATCHING_KEY_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,
+                		XML_TRANSFORM_CLASS_ATTRIBUTE,XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,
+                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,
+                		XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
+		join.setTransformationParametersForSuspicious(xattribs.attributes2Properties(
+                new String[]{XML_ID_ATTRIBUTE,XML_JOIN_KEY_ATTRIBUTE,
+                		XML_MATCHING_KEY_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,
+                		XML_TRANSFORM_CLASS_ATTRIBUTE,XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,
+                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,
+                		XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
+		
+		if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+			join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+			join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
+			join.setLocale(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
+			join.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
+		}
+		return join;
 	}
  
 	@Override

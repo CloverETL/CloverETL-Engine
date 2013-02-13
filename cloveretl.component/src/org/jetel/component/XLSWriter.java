@@ -31,6 +31,7 @@ import org.jetel.data.formatter.XLSFormatter.XLSType;
 import org.jetel.data.formatter.provider.XLSFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -153,71 +154,67 @@ public class XLSWriter extends Node {
 	private static final int READ_FROM_PORT = 0;
 	private static final int OUTPUT_PORT = 0;
 
-    public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         XLSWriter xlsWriter;
 
-        try {
-            xlsWriter = new XLSWriter(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-                    xattribs.getString(XML_CHARSET_ATTRIBUTE, null), xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false), xattribs.getBoolean(XML_REMOVESHEETS_ATTRIBUTE, false));
-            xlsWriter.setFormatterType(XLSType.valueOfIgnoreCase(xattribs.getString(XML_FORMATTER_ATTRIBUTE, null)));
+        xlsWriter = new XLSWriter(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+                xattribs.getString(XML_CHARSET_ATTRIBUTE, null), xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false), xattribs.getBoolean(XML_REMOVESHEETS_ATTRIBUTE, false));
+        xlsWriter.setFormatterType(XLSType.valueOfIgnoreCase(xattribs.getString(XML_FORMATTER_ATTRIBUTE, null)));
 
-            if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)) {
-                xlsWriter.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
-            } else if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)) {
-                xlsWriter.setSheetNumber(xattribs.getInteger(XML_SHEETNUMBER_ATTRIBUTE));
-            }
-
-            xlsWriter.setFirstColumn(xattribs.getString(XML_FIRSTCOLUMN_ATTRIBUTE, "A"));
-            xlsWriter.setFirstRow(xattribs.getInteger(XML_FIRSTDATAROW_ATTRIBUTE, 1));
-            xlsWriter.setNamesRow(xattribs.getInteger(XML_NAMESROW_ATTRIBUTE, 0));
-
-            if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
-                xlsWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
-            }
-
-            if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
-                xlsWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
-            }
-
-            if (xattribs.exists(XML_RECORDS_PER_FILE)) {
-                xlsWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
-            }
-
-            if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
-                xlsWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
-            }
-
-            if (xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
-                xlsWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
-            }
-
-            if (xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
-                xlsWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
-            }
-
-            if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
-                xlsWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
-            }
-			if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
-				xlsWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
-            }
-
-			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
-				xlsWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
-            }
-
-            if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
-                xlsWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
-            }
-            if(xattribs.exists(XML_IN_MEMORY_ATTRIBUTE)) {
-                xlsWriter.setInMemory(xattribs.getBoolean(XML_IN_MEMORY_ATTRIBUTE));
-            }
-
-            return xlsWriter;
-        } catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)) {
+            xlsWriter.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
+        } else if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)) {
+            xlsWriter.setSheetNumber(xattribs.getInteger(XML_SHEETNUMBER_ATTRIBUTE));
         }
+
+        xlsWriter.setFirstColumn(xattribs.getString(XML_FIRSTCOLUMN_ATTRIBUTE, "A"));
+        xlsWriter.setFirstRow(xattribs.getInteger(XML_FIRSTDATAROW_ATTRIBUTE, 1));
+        xlsWriter.setNamesRow(xattribs.getInteger(XML_NAMESROW_ATTRIBUTE, 0));
+
+        if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
+            xlsWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
+        }
+
+        if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
+            xlsWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+        }
+
+        if (xattribs.exists(XML_RECORDS_PER_FILE)) {
+            xlsWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+        }
+
+        if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+            xlsWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+        }
+
+        if (xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+            xlsWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+        }
+
+        if (xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+            xlsWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+        }
+
+        if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
+            xlsWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
+			xlsWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+        }
+
+		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+			xlsWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+        }
+
+        if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
+            xlsWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
+        }
+        if(xattribs.exists(XML_IN_MEMORY_ATTRIBUTE)) {
+            xlsWriter.setInMemory(xattribs.getBoolean(XML_IN_MEMORY_ATTRIBUTE));
+        }
+
+        return xlsWriter;
     }
 
 	private String partition;

@@ -27,6 +27,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.database.dbf.DBFDataParser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -334,48 +335,45 @@ public class DBFDataReader extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		DBFDataReader dbfDataReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
-		try {
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-						xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			} else {
-				dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-				dbfDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
-			} else {
-				// default policy type
-				dbfDataReader.setPolicyType(PolicyType.STRICT);
-			}
-            if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
-            	dbfDataReader.setSkipRows(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
-            	dbfDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
-            }
-			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
-				dbfDataReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
-				dbfDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
-				dbfDataReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
-				dbfDataReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
-			}
-        } catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		} else {
+			dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+		if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
+			dbfDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
+		} else {
+			// default policy type
+			dbfDataReader.setPolicyType(PolicyType.STRICT);
+		}
+        if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+        	dbfDataReader.setSkipRows(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
         }
+        if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+        	dbfDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+        }
+		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
+			dbfDataReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
+			dbfDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
+			dbfDataReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
+			dbfDataReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+		}
 
 		return dbfDataReader;
 	}

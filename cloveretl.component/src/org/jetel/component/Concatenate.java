@@ -31,12 +31,11 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -105,15 +104,10 @@ public class Concatenate extends Node {
 	/** The port index for data record output. */
 	private static final int OUTPUT_PORT = 0;
 
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-		try {
-			return new Concatenate(xattribs.getString(XML_ID_ATTRIBUTE));
-		} catch (AttributeNotFoundException exception) {
-			throw new XMLConfigurationException("Required attribute " + StringUtils.quote(XML_ID_ATTRIBUTE)
-					+ " is missing!", exception);
-		}
+		return new Concatenate(xattribs.getString(XML_ID_ATTRIBUTE));
 	}
 
     /** A byte buffer used for fast copying of data records as their deserialized version is never used. */

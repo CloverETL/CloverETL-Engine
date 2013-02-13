@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -260,14 +259,21 @@ public abstract class GraphElement implements IGraphElement {
 
     @Override
     public String toString() {
-        return "[" + (StringUtils.isEmpty(getName()) ? "" : (getName() + ":")) +  getId() + "]";
+    	return identifiersToString(getId(), getName());
+    }
+    
+    /**
+     * Returns single string representation of a graph element based on <code>id</code> and <code>name</code>. 
+     */
+    public static String identifiersToString(String id, String name) {
+        return "[" + (StringUtils.isEmpty(name) ? "" : (name + ":")) + (!StringUtils.isEmpty(id) ? id : "unknown id") + "]";
     }
     
 	/**
 	 * Only purpose of this implementation is obfuscation. 
 	 * Method fromXML() should not be obfuscated in all descendants.
 	 */
-	public static IGraphElement fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
+	public static IGraphElement fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
         throw new UnsupportedOperationException("not implemented in org.jetel.graph.GraphElement"); 
 	}
 

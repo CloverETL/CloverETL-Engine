@@ -33,6 +33,7 @@ import org.jetel.component.jms.JmsMsg2DataRecord;
 import org.jetel.connection.jms.JmsConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -351,29 +352,26 @@ public class JmsReader extends Node {
 	 * @param xmlElement
 	 * @return
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		JmsReader jmsReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
-		try {
-			jmsReader = new JmsReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
-					xattribs.getString(XML_SELECTOR_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
-					xattribs.getStringEx(XML_PSORURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
-					xattribs.getInteger(XML_MAXMSGCNT_ATTRIBUTE, 0),
-					xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE, 0),
-					xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor 
-							XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE, XML_SELECTOR_ATTRIBUTE,
-							XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE,
-							XML_MAXMSGCNT_ATTRIBUTE, XML_TIMEOUT_ATTRIBUTE
-					}));
-			jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-		}
+		jmsReader = new JmsReader(xattribs.getString(XML_ID_ATTRIBUTE),
+				xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
+				xattribs.getString(XML_SELECTOR_ATTRIBUTE, null),
+				xattribs.getString(XML_PSORCLASS_ATTRIBUTE, null),
+				xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
+				xattribs.getStringEx(XML_PSORURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getInteger(XML_MAXMSGCNT_ATTRIBUTE, 0),
+				xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE, 0),
+				xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor 
+						XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE, XML_SELECTOR_ATTRIBUTE,
+						XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE,
+						XML_MAXMSGCNT_ATTRIBUTE, XML_TIMEOUT_ATTRIBUTE
+				}));
+		jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		return jmsReader; 
 	}
 
