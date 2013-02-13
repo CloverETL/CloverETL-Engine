@@ -76,7 +76,8 @@ public class XSLTransformer {
 	 */
 	public void init(InputStream xslTransform) throws Exception {
 		
-		TransformerFactory factory = TransformerFactory.newInstance();
+		// because of XSLT2 support we need to use saxon
+		TransformerFactory factory = TransformerFactory.newInstance("net.sf.saxon.TransformerFactoryImpl", null);
 		
 		transformerJAXP = factory.newTransformer(new StreamSource(xslTransform));
         transformerJAXP.setOutputProperty(OutputKeys.INDENT, "yes");
