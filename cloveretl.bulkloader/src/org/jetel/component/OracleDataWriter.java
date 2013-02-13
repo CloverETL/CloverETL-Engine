@@ -114,7 +114,7 @@ public class OracleDataWriter extends BulkLoader {
 
     /**  Description of the Field */
     private static final String XML_SQLLDR_ATTRIBUTE = "sqlldr";
-    private static final String XML_TNSNAME_ATTRIBUTE = "tnsname";
+    public static final String XML_TNSNAME_ATTRIBUTE = "tnsname";
     private static final String XML_APPEND_ATTRIBUTE = "append";
     private static final String XML_LOG_ATTRIBUTE = "log";
     private static final String XML_BAD_ATTRIBUTE = "bad";

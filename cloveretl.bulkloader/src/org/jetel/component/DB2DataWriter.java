@@ -565,7 +565,7 @@ public class DB2DataWriter extends Node {
 	 * xml attributes for DB2DataWriterComponent
 	 */
 	private static final String XML_DATABASE_ATTRIBUTE = "database";
-	private static final String XML_USERNAME_ATTRIBUTE = "userName";
+	public static final String XML_USERNAME_ATTRIBUTE = "userName";
 	private static final String XML_PASSWORD_ATTRIBUTE = "password";	
     private static final String XML_TABLE_ATTRIBUTE = "table";
     private static final String XML_MODE_ATTRIBUTE = "loadMode";
