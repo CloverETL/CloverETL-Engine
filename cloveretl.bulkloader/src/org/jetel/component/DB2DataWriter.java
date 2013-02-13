@@ -42,13 +42,14 @@ import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.formatter.Formatter;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -1707,81 +1708,78 @@ public class DB2DataWriter extends Node {
      * @param xmlElement
      * @return
      * @throws XMLConfigurationException
+     * @throws AttributeNotFoundException 
      */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-        try {
-            DB2DataWriter writer = new DB2DataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_DATABASE_ATTRIBUTE),
-                    xattribs.getString(XML_USERNAME_ATTRIBUTE),
-                    xattribs.getString(XML_PASSWORD_ATTRIBUTE),
-                    xattribs.getString(XML_TABLE_ATTRIBUTE),
-                    LoadMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, DEFAULT_TABLE_LOAD_MODE).toLowerCase()),
-                    xattribs.getString(XML_FILEURL_ATTRIBUTE, null),
-                    xattribs.getString(XML_FILEMETADATA_ATTRIBUTE, null));
-			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
-				String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
-				String[] cloverFields = new String[pairs.length];
-				String[] dbFields = new String[pairs.length];
-				String[] pair;
-				for (int i=0;i<pairs.length;i++){
-					pair = JoinKeyUtils.getMappingItemsFromMappingString(pairs[i]);
-					cloverFields[i] = pair[0];
-					dbFields[i] = StringUtils.quote(pair[1]);
-				}
-				writer.setCloverFields(cloverFields);
-				writer.setDBFields(dbFields);
-			}else {
-				if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
-					String[] dbFields = xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-					for (String string : dbFields) {
-						string = StringUtils.quote(string);
-					}
-					writer.setDBFields(dbFields);
-				}
-	
-				if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
-					writer.setCloverFields(xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-				}
+        DB2DataWriter writer = new DB2DataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
+                xattribs.getString(XML_DATABASE_ATTRIBUTE),
+                xattribs.getString(XML_USERNAME_ATTRIBUTE),
+                xattribs.getString(XML_PASSWORD_ATTRIBUTE),
+                xattribs.getString(XML_TABLE_ATTRIBUTE),
+                LoadMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, DEFAULT_TABLE_LOAD_MODE).toLowerCase()),
+                xattribs.getString(XML_FILEURL_ATTRIBUTE, null),
+                xattribs.getString(XML_FILEMETADATA_ATTRIBUTE, null));
+		if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
+			String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
+			String[] cloverFields = new String[pairs.length];
+			String[] dbFields = new String[pairs.length];
+			String[] pair;
+			for (int i=0;i<pairs.length;i++){
+				pair = JoinKeyUtils.getMappingItemsFromMappingString(pairs[i]);
+				cloverFields[i] = pair[0];
+				dbFields[i] = StringUtils.quote(pair[1]);
 			}
-            if(xattribs.exists(XML_USEPIPE_ATTRIBUTE)) {
-                writer.setUsePipe(xattribs.getBoolean(XML_USEPIPE_ATTRIBUTE));
-            }
-            if(xattribs.exists(XML_COLUMNDELIMITER_ATTRIBUTE)) {
-                writer.setColumnDelimiter((xattribs.getString(XML_COLUMNDELIMITER_ATTRIBUTE).charAt(0)));
-            }
-            if(xattribs.exists(XML_INTERPRETER_ATTRIBUTE)) {
-                writer.setInterpreter((xattribs.getString(XML_INTERPRETER_ATTRIBUTE)));
-            }
-            if(xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
-                writer.setParameters((xattribs.getString(XML_PARAMETERS_ATTRIBUTE)));
-            }
-            if(xattribs.exists(XML_REJECTEDRECORDSURL_ATTRIBUTE)) {
-                writer.setRejectedURL((xattribs.getString(XML_REJECTEDRECORDSURL_ATTRIBUTE)));
-            }
-            if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
-            	writer.setProperty(ROW_COUNT_PARAM, xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_MAXERRORS_ATRIBUTE)) {
-            	writer.setProperty(WARNING_COUNT_PARAM, xattribs.getString(XML_MAXERRORS_ATRIBUTE));
-            }
-            if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
-            	writer.setRecordSkip(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_BATCHURL_ATTRIBUTE)) {
-            	writer.setBatchURL(xattribs.getStringEx(XML_BATCHURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-            }
-            if (xattribs.exists(XML_WARNING_LINES_ATTRIBUTE)) {
-            	writer.setWarningNumber(xattribs.getInteger(XML_WARNING_LINES_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_FAIL_ON_WARNINGS_ATTRIBUTE)) {
-            	writer.setFailOnWarnings(xattribs.getBoolean(XML_FAIL_ON_WARNINGS_ATTRIBUTE));
-            }
-           return writer;
-        } catch (Exception ex) {
-               throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+			writer.setCloverFields(cloverFields);
+			writer.setDBFields(dbFields);
+		}else {
+			if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
+				String[] dbFields = xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				for (String string : dbFields) {
+					string = StringUtils.quote(string);
+				}
+				writer.setDBFields(dbFields);
+			}
+
+			if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
+				writer.setCloverFields(xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			}
+		}
+        if(xattribs.exists(XML_USEPIPE_ATTRIBUTE)) {
+            writer.setUsePipe(xattribs.getBoolean(XML_USEPIPE_ATTRIBUTE));
         }
+        if(xattribs.exists(XML_COLUMNDELIMITER_ATTRIBUTE)) {
+            writer.setColumnDelimiter((xattribs.getString(XML_COLUMNDELIMITER_ATTRIBUTE).charAt(0)));
+        }
+        if(xattribs.exists(XML_INTERPRETER_ATTRIBUTE)) {
+            writer.setInterpreter((xattribs.getString(XML_INTERPRETER_ATTRIBUTE)));
+        }
+        if(xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
+            writer.setParameters((xattribs.getString(XML_PARAMETERS_ATTRIBUTE)));
+        }
+        if(xattribs.exists(XML_REJECTEDRECORDSURL_ATTRIBUTE)) {
+            writer.setRejectedURL((xattribs.getString(XML_REJECTEDRECORDSURL_ATTRIBUTE)));
+        }
+        if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
+        	writer.setProperty(ROW_COUNT_PARAM, xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_MAXERRORS_ATRIBUTE)) {
+        	writer.setProperty(WARNING_COUNT_PARAM, xattribs.getString(XML_MAXERRORS_ATRIBUTE));
+        }
+        if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
+        	writer.setRecordSkip(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_BATCHURL_ATTRIBUTE)) {
+        	writer.setBatchURL(xattribs.getStringEx(XML_BATCHURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+        }
+        if (xattribs.exists(XML_WARNING_LINES_ATTRIBUTE)) {
+        	writer.setWarningNumber(xattribs.getInteger(XML_WARNING_LINES_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_FAIL_ON_WARNINGS_ATTRIBUTE)) {
+        	writer.setFailOnWarnings(xattribs.getBoolean(XML_FAIL_ON_WARNINGS_ATTRIBUTE));
+        }
+        return writer;
     }
 	
     @Override

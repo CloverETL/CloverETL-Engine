@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.util.CommandBuilder;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -856,52 +857,47 @@ public class MysqlDataWriter extends BulkLoader {
 	 * @param nodeXML
 	 *            Description of Parameter
 	 * @return Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-		try {
-			MysqlDataWriter mysqlDataWriter = new MysqlDataWriter(
-					xattribs.getString(XML_ID_ATTRIBUTE), 
-					xattribs.getString(XML_MYSQL_PATH_ATTRIBUTE), 
-					xattribs.getString(XML_DATABASE_ATTRIBUTE), 
-					xattribs.getString(XML_TABLE_ATTRIBUTE));
+		MysqlDataWriter mysqlDataWriter = new MysqlDataWriter(
+				xattribs.getString(XML_ID_ATTRIBUTE), 
+				xattribs.getString(XML_MYSQL_PATH_ATTRIBUTE), 
+				xattribs.getString(XML_DATABASE_ATTRIBUTE), 
+				xattribs.getString(XML_TABLE_ATTRIBUTE));
 
-			if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-				mysqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
-				mysqlDataWriter.setColumnDelimiter(xattribs.getStringEx(XML_COLUMN_DELIMITER_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
-				mysqlDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_USER_ATTRIBUTE)) {
-				mysqlDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-				mysqlDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
-				mysqlDataWriter.setCommandURL((xattribs.getStringEx(XML_COMMAND_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF)));
-			}
-			if (xattribs.exists(XML_LOCK_TABLE_ATTRIBUTE)) {
-			    mysqlDataWriter.setLockTable(xattribs.getBoolean(XML_LOCK_TABLE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_IGNORE_ROWS_ATTRIBUTE)) {
-				mysqlDataWriter.setIgnoreRows(xattribs.getInteger(XML_IGNORE_ROWS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
-				mysqlDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
-			}
-
-			return mysqlDataWriter;
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + 
-					xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + 
-					":" + ex.getMessage(), ex);
+		if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
+			mysqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
 		}
+		if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
+			mysqlDataWriter.setColumnDelimiter(xattribs.getStringEx(XML_COLUMN_DELIMITER_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+		if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
+			mysqlDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_USER_ATTRIBUTE)) {
+			mysqlDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
+			mysqlDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
+			mysqlDataWriter.setCommandURL((xattribs.getStringEx(XML_COMMAND_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF)));
+		}
+		if (xattribs.exists(XML_LOCK_TABLE_ATTRIBUTE)) {
+		    mysqlDataWriter.setLockTable(xattribs.getBoolean(XML_LOCK_TABLE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_IGNORE_ROWS_ATTRIBUTE)) {
+			mysqlDataWriter.setIgnoreRows(xattribs.getInteger(XML_IGNORE_ROWS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
+			mysqlDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
+		}
+
+		return mysqlDataWriter;
 	}
 
 	@Override

@@ -49,20 +49,16 @@ public class XmlReader extends TreeReader {
 	private static final String FEATURES_DELIMETER = ";";
 	private static final String FEATURES_ASSIGN = ":=";
 
-	public static XmlReader fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static XmlReader fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		try {
-			XmlReader reader = new XmlReader(xattribs.getString(XML_ID_ATTRIBUTE));
-			readCommonAttributes(reader, xattribs);
+		XmlReader reader = new XmlReader(xattribs.getString(XML_ID_ATTRIBUTE));
+		readCommonAttributes(reader, xattribs);
 
-			if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)) {
-				reader.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
-			}
-
-			return reader;
-		} catch (AttributeNotFoundException ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
+		if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)) {
+			reader.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
 		}
+
+		return reader;
 	}
 
 	private String xmlFeatures;

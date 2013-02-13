@@ -40,6 +40,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -1156,93 +1157,89 @@ public class DBOutputTable extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           September 27, 2002
 	 */
-     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		ComponentXMLAttributes xattribsChild;
 		org.w3c.dom.Node childNode;
 		DBOutputTable outputTable;
 
-		try {
-			// allows specifying parameterized SQL (with ? - question marks)
-			if (xattribs.exists(XML_URL_ATTRIBUTE)){
-				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-						SQLUtil.split(xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
-								xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)))));
-			}else if (xattribs.exists(XML_SQLQUERY_ATRIBUTE)) {
-					outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
+		// allows specifying parameterized SQL (with ? - question marks)
+		if (xattribs.exists(XML_URL_ATTRIBUTE)){
+			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-					SQLUtil.split(xattribs.getString(XML_SQLQUERY_ATRIBUTE)));
-			}else if(xattribs.exists(XML_DBTABLE_ATTRIBUTE)){
+					SQLUtil.split(xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
+							xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)))));
+		}else if (xattribs.exists(XML_SQLQUERY_ATRIBUTE)) {
 				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-						xattribs.getString(XML_DBTABLE_ATTRIBUTE));
-			}else{
-			    childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
-                if (childNode == null) {
-                    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
-                }
-                xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
-                outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-    					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-    					SQLUtil.split(xattribsChild.getText(childNode)));
+				xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+				SQLUtil.split(xattribs.getString(XML_SQLQUERY_ATRIBUTE)));
+		}else if(xattribs.exists(XML_DBTABLE_ATTRIBUTE)){
+			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+					xattribs.getString(XML_DBTABLE_ATTRIBUTE));
+		}else{
+		    childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
+            if (childNode == null) {
+                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
+            }
+            xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
+            outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+					SQLUtil.split(xattribsChild.getText(childNode)));
+		}
+		
+		
+		if (xattribs.exists(XML_DBTABLE_ATTRIBUTE)) {
+			outputTable.setDBTableName(xattribs.getString(XML_DBTABLE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
+			String[] pairs = StringUtils.split(xattribs.getStringEx(XML_FIELDMAP_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+			String[] cloverFields = new String[pairs.length];
+			String[] dbFields = new String[pairs.length];
+			String[] mapping;
+			for (int i=0;i<pairs.length;i++){
+				mapping = JoinKeyUtils.getMappingItemsFromMappingString(pairs[i]);//:= or =
+				cloverFields[i] = mapping[0];
+				dbFields[i] = mapping[1];
 			}
-			
-			
-			if (xattribs.exists(XML_DBTABLE_ATTRIBUTE)) {
-				outputTable.setDBTableName(xattribs.getString(XML_DBTABLE_ATTRIBUTE));
+			outputTable.setCloverFields(cloverFields);
+			outputTable.setDBFields(dbFields);
+		}else {
+			if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
+				outputTable.setDBFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
-			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
-				String[] pairs = StringUtils.split(xattribs.getStringEx(XML_FIELDMAP_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-				String[] cloverFields = new String[pairs.length];
-				String[] dbFields = new String[pairs.length];
-				String[] mapping;
-				for (int i=0;i<pairs.length;i++){
-					mapping = JoinKeyUtils.getMappingItemsFromMappingString(pairs[i]);//:= or =
-					cloverFields[i] = mapping[0];
-					dbFields[i] = mapping[1];
-				}
-				outputTable.setCloverFields(cloverFields);
-				outputTable.setDBFields(dbFields);
-			}else {
-				if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
-					outputTable.setDBFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-				}
-	
-				if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
-					outputTable.setCloverFields(xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-				}
+
+			if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
+				outputTable.setCloverFields(xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
-			if (xattribs.exists(XML_COMMIT_ATTRIBUTE)) {
-				outputTable.setRecordsInCommit(xattribs.getInteger(XML_COMMIT_ATTRIBUTE));
-			}
-			
-			if (xattribs.exists(XML_BATCHMODE_ATTRIBUTE)) {
-				outputTable.setUseBatch(xattribs.getBoolean(XML_BATCHMODE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_BATCHSIZE_ATTRIBUTE)) {
-				outputTable.setBatchSize(xattribs.getInteger(XML_BATCHSIZE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_MAXERRORS_ATRIBUTE)){
-				outputTable.setMaxErrors(xattribs.getInteger(XML_MAXERRORS_ATRIBUTE));
-			}
-			if (xattribs.exists(XML_AUTOGENERATEDCOLUMNS_ATTRIBUTE)){
-				outputTable.setAutoGeneratedColumns(xattribs.getString(XML_AUTOGENERATEDCOLUMNS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			}
-			if (xattribs.exists(XML_ACTION_ON_ERROR)){
-				outputTable.setErrorAction(xattribs.getString(XML_ACTION_ON_ERROR));
-			}
-      if (xattribs.exists(XML_ATOMIC_RECORD_STATEMENT_ATTRIBUTE)){
-        outputTable.setAtomicSQL(xattribs.getBoolean(XML_ATOMIC_RECORD_STATEMENT_ATTRIBUTE));
-      }
-			
-			return outputTable;
-			
-		} catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-        }
+		}
+		if (xattribs.exists(XML_COMMIT_ATTRIBUTE)) {
+			outputTable.setRecordsInCommit(xattribs.getInteger(XML_COMMIT_ATTRIBUTE));
+		}
+		
+		if (xattribs.exists(XML_BATCHMODE_ATTRIBUTE)) {
+			outputTable.setUseBatch(xattribs.getBoolean(XML_BATCHMODE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_BATCHSIZE_ATTRIBUTE)) {
+			outputTable.setBatchSize(xattribs.getInteger(XML_BATCHSIZE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_MAXERRORS_ATRIBUTE)){
+			outputTable.setMaxErrors(xattribs.getInteger(XML_MAXERRORS_ATRIBUTE));
+		}
+		if (xattribs.exists(XML_AUTOGENERATEDCOLUMNS_ATTRIBUTE)){
+			outputTable.setAutoGeneratedColumns(xattribs.getString(XML_AUTOGENERATEDCOLUMNS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		}
+		if (xattribs.exists(XML_ACTION_ON_ERROR)){
+			outputTable.setErrorAction(xattribs.getString(XML_ACTION_ON_ERROR));
+		}
+		if (xattribs.exists(XML_ATOMIC_RECORD_STATEMENT_ATTRIBUTE)){
+			outputTable.setAtomicSQL(xattribs.getBoolean(XML_ATOMIC_RECORD_STATEMENT_ATTRIBUTE));
+		}
+		
+		return outputTable;
 	}
 
      @Override

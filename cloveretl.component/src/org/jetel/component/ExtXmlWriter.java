@@ -46,20 +46,16 @@ public class ExtXmlWriter extends TreeWriter {
 	public static final String XML_OMIT_NEW_LINES_ATTRIBUTE = "omitNewLines";
 	public static final String XML_SCHEMA_URL_ATTRIBUTE = "xmlSchemaURL";
 
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ExtXmlWriter writer = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		try {
-			writer = new ExtXmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
-			readCommonAttributes(writer, xattribs);
+		writer = new ExtXmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
+		readCommonAttributes(writer, xattribs);
 
-			if (xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
-				writer.setMkDir(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
-			}
-			writer.setOmitNewLines(xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, false));
-		} catch (AttributeNotFoundException ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
+		if (xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+			writer.setMkDir(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
 		}
+		writer.setOmitNewLines(xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, false));
 
 		return writer;
 	}

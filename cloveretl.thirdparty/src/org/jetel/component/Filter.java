@@ -20,12 +20,13 @@ package org.jetel.component;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -182,24 +183,20 @@ public class Filter extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           July 23, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		Filter filter;
 		String filterExpression;
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(xmlElement, graph);
 		
-
-		try{
-			filter = new Filter(xattribs.getString(XML_ID_ATTRIBUTE));
-			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
-				filterExpression=xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE);
-				filter.setRecordFilter(new RecordFilterOld(filterExpression));
-			}
-			return filter;
-		}catch(Exception ex){
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		filter = new Filter(xattribs.getString(XML_ID_ATTRIBUTE));
+		if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
+			filterExpression=xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE);
+			filter.setRecordFilter(new RecordFilterOld(filterExpression));
 		}
+		return filter;
 	}
 
 	/**  Description of the Method */

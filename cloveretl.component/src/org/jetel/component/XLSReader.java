@@ -33,6 +33,7 @@ import org.jetel.data.formatter.XLSFormatter.XLSType;
 import org.jetel.data.parser.JExcelXLSDataParser;
 import org.jetel.data.parser.XLSParser;
 import org.jetel.data.parser.XLSXDataParser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -168,76 +169,71 @@ public class XLSReader extends Node {
     private static final int CLOVER_FIELDS = 0;
     private static final int XLS_FIELDS = 1;
 
-    public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
         XLSReader aXLSReader = null;
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
-        try {
-            String[] fMap = null;
-            String[][] fieldMap = null;
+        String[] fMap = null;
+        String[][] fieldMap = null;
 
-            if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)) {
-                fMap = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
-                fieldMap = new String[fMap.length][2];
+        if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)) {
+            fMap = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
+            fieldMap = new String[fMap.length][2];
 
-                for (int i = 0; i < fieldMap.length; i++) {
-                    fieldMap[i] = fMap[i].split(Defaults.ASSIGN_SIGN + "|=");
-                }
+            for (int i = 0; i < fieldMap.length; i++) {
+                fieldMap[i] = fMap[i].split(Defaults.ASSIGN_SIGN + "|=");
             }
-
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-                aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-                        xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), fieldMap, xattribs.getString(XML_CHARSET_ATTRIBUTE));
-
-            } else {
-                aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-                        xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), fieldMap);
-            }
-
-            aXLSReader.setParserType(XLSType.valueOfIgnoreCase(xattribs.getString(XML_PARSER_ATTRIBUTE, null)));
-            aXLSReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
-
-            if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)) {
-                aXLSReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)) {
-                aXLSReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
-            }
-
-            if (xattribs.exists(XML_MAXERRORCOUNT_ATTRIBUTE)) {
-                aXLSReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
-            }
-
-            if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)) {
-                aXLSReader.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
-            } else if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)) {
-                aXLSReader.setSheetNumber(xattribs.getString(XML_SHEETNUMBER_ATTRIBUTE));
-            } 
-
-            if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-                aXLSReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-            }
-
-            if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
-                aXLSReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
-            }
-			if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
-				aXLSReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
-				aXLSReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
-			}
-			aXLSReader.setSheetRange(
-					xattribs.getInteger(XML_METADATAROW_ATTRIBUTE, -1),
-					xattribs.getInteger(XML_STARTROW_ATTRIBUTE, -1),
-					xattribs.getInteger(XML_FINALROW_ATTRIBUTE, -1),
-					xattribs.getInteger(XML_SKIP_SHEET_ROWS_ATTRIBUTE, -1),
-					xattribs.getInteger(XML_NUM_SHEET_RECORDS_ATTRIBUTE, -1)
-					);
-        } catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":"
-                    + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
         }
+
+        if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+            aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                    xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), fieldMap, xattribs.getString(XML_CHARSET_ATTRIBUTE));
+
+        } else {
+            aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                    xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), fieldMap);
+        }
+
+        aXLSReader.setParserType(XLSType.valueOfIgnoreCase(xattribs.getString(XML_PARSER_ATTRIBUTE, null)));
+        aXLSReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
+
+        if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)) {
+            aXLSReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)) {
+            aXLSReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+        }
+
+        if (xattribs.exists(XML_MAXERRORCOUNT_ATTRIBUTE)) {
+            aXLSReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
+        }
+
+        if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)) {
+            aXLSReader.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
+        } else if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)) {
+            aXLSReader.setSheetNumber(xattribs.getString(XML_SHEETNUMBER_ATTRIBUTE));
+        } 
+
+        if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
+            aXLSReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+        }
+
+        if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
+            aXLSReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+        }
+		if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
+			aXLSReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
+			aXLSReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+		}
+		aXLSReader.setSheetRange(
+				xattribs.getInteger(XML_METADATAROW_ATTRIBUTE, -1),
+				xattribs.getInteger(XML_STARTROW_ATTRIBUTE, -1),
+				xattribs.getInteger(XML_FINALROW_ATTRIBUTE, -1),
+				xattribs.getInteger(XML_SKIP_SHEET_ROWS_ATTRIBUTE, -1),
+				xattribs.getInteger(XML_NUM_SHEET_RECORDS_ATTRIBUTE, -1)
+				);
 
         return aXLSReader;
     }

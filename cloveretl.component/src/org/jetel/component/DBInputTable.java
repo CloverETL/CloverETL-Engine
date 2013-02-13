@@ -36,6 +36,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -445,64 +446,60 @@ public class DBInputTable extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           September 27, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
             ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
             ComponentXMLAttributes xattribsChild;
             DBInputTable aDBInputTable = null;
             org.w3c.dom.Node childNode;
 
-            try 
-            {
-                String query;
-                if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                	query = null;
-                } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
-                    query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
-                }else if (xattribs.exists(XML_SQLCODE_ELEMENT)){
-                    query = xattribs.getString(XML_SQLCODE_ELEMENT);
-                }else{
-                    
-                    childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
-                    if (childNode == null) {
-                        throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
-                    }
-                    xattribsChild = new ComponentXMLAttributes(xmlElement, graph);
-                    query=xattribsChild.getText(childNode);
-
-        			
-                }
-
-                aDBInputTable = new DBInputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-                        xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-                        query);
+            String query;
+            if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+            	query = null;
+            } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
+                query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
+            }else if (xattribs.exists(XML_SQLCODE_ELEMENT)){
+                query = xattribs.getString(XML_SQLCODE_ELEMENT);
+            }else{
                 
-                aDBInputTable.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE,null));
-                if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
-                	aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
+                childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
+                if (childNode == null) {
+                    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
                 }
-                if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                	aDBInputTable.setURL(xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-                }
-                if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
-                    aDBInputTable.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
-                }
-                if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-                	aDBInputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-                }
-                if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-                	aDBInputTable.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-                }
-                if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
-                	aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
-                }
-                if (xattribs.exists(XML_AUTOCOMMIT_ATTRIBUTE)) {
-                	aDBInputTable.setAutoCommit(xattribs.getBoolean(XML_AUTOCOMMIT_ATTRIBUTE));
-                }                
-            }catch (Exception ex) {
-                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+                xattribsChild = new ComponentXMLAttributes(xmlElement, graph);
+                query=xattribsChild.getText(childNode);
+
+    			
             }
+
+            aDBInputTable = new DBInputTable(xattribs.getString(XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+                    query);
+            
+            aDBInputTable.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE,null));
+            if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
+            	aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+            	aDBInputTable.setURL(xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+            }
+            if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
+                aDBInputTable.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+            	aDBInputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
+            	aDBInputTable.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+            }
+            if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
+            	aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_AUTOCOMMIT_ATTRIBUTE)) {
+            	aDBInputTable.setAutoCommit(xattribs.getBoolean(XML_AUTOCOMMIT_ATTRIBUTE));
+            }                
 
             return aDBInputTable;
 	}

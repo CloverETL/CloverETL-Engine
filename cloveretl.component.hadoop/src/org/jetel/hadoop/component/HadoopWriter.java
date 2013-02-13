@@ -28,6 +28,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.database.IConnection;
 import org.jetel.enums.PartitionFileTagType;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -262,47 +263,41 @@ public class HadoopWriter extends Node {
 		}
 	}
 
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		HadoopWriter aDataWriter = null;
 
-		try {
-			aDataWriter = new HadoopWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_FILEURL_ATTRIBUTE),
-					xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
-					xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE),
-					xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
-			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
-				aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
-			}
-			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
-				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
-			}
-			if (xattribs.exists(XML_RECORDS_PER_FILE)) {
-				aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
-			}
-			if (xattribs.exists(XML_BYTES_PER_FILE)) {
-				aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
-			}
-			if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
-				aDataWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
-				aDataWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
-				aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
-				aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
-				aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE, "unknown ID") + ":"
-					+ ex.getMessage());
-			return null;
+		aDataWriter = new HadoopWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				xattribs.getString(XML_FILEURL_ATTRIBUTE),
+				xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
+				xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE),
+				xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
+		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
+			aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
+		}
+		if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
+			aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+		}
+		if (xattribs.exists(XML_RECORDS_PER_FILE)) {
+			aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+		}
+		if (xattribs.exists(XML_BYTES_PER_FILE)) {
+			aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
+		}
+		if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+			aDataWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+			aDataWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+			aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
+			aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+			aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
 		}
 
 		return aDataWriter;

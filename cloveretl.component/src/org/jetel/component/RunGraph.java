@@ -38,6 +38,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -752,46 +753,41 @@ public class RunGraph extends Node{
 	 /* (non-Javadoc)
 	 * @see org.jetel.graph.Node#fromXML(org.jetel.graph.TransformationGraph, org.w3c.dom.Element)
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		RunGraph runG;
 					
-		try {
-			runG = new RunGraph(xattribs.getString(XML_ID_ATTRIBUTE),															
-					xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false),
-					xattribs.getBoolean(XML_SAME_INSTANCE_ATTRIBUTE, true));
-			
-			runG.setJavaCmdLine(DEFAULT_JAVA_CMD_LINE);
-			runG.setCloverRunClass(DEFAULT_GRAPH_EXEC_CLASS);
-			runG.setCloverCmdLineArgs(DEFAULT_CLOVER_CMD_LINE);
-									
-			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
-				runG.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_GRAPH_NAME_ATTRIBUTE)) {				
-				runG.setGraphName(xattribs.getString(XML_GRAPH_NAME_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARAMS_TO_PASS)) {				
-				runG.setParamsToPass(xattribs.getString(XML_PARAMS_TO_PASS));
-			}	
-			if (xattribs.exists(XML_ALTERNATIVE_JVM)) {				
-				runG.setJavaCmdLine(xattribs.getString(XML_ALTERNATIVE_JVM));
-			}
-			if (xattribs.exists(XML_GRAPH_EXEC_CLASS)) {				
-				runG.setCloverRunClass(xattribs.getString(XML_GRAPH_EXEC_CLASS));
-			}	
-			if (xattribs.exists(XML_CLOVER_CMD_LINE)) {
-				runG.setCloverCmdLineArgs(xattribs.getStringEx(XML_CLOVER_CMD_LINE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_IGNORE_GRAPH_FAIL)) {
-				runG.setIgnoreGraphFail(xattribs.getBoolean(XML_IGNORE_GRAPH_FAIL));
-			}
-										
-			return runG;
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" +
-	        		   xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
+		runG = new RunGraph(xattribs.getString(XML_ID_ATTRIBUTE),															
+				xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false),
+				xattribs.getBoolean(XML_SAME_INSTANCE_ATTRIBUTE, true));
+		
+		runG.setJavaCmdLine(DEFAULT_JAVA_CMD_LINE);
+		runG.setCloverRunClass(DEFAULT_GRAPH_EXEC_CLASS);
+		runG.setCloverCmdLineArgs(DEFAULT_CLOVER_CMD_LINE);
+								
+		if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
+			runG.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 		}
+		if (xattribs.exists(XML_GRAPH_NAME_ATTRIBUTE)) {				
+			runG.setGraphName(xattribs.getString(XML_GRAPH_NAME_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARAMS_TO_PASS)) {				
+			runG.setParamsToPass(xattribs.getString(XML_PARAMS_TO_PASS));
+		}	
+		if (xattribs.exists(XML_ALTERNATIVE_JVM)) {				
+			runG.setJavaCmdLine(xattribs.getString(XML_ALTERNATIVE_JVM));
+		}
+		if (xattribs.exists(XML_GRAPH_EXEC_CLASS)) {				
+			runG.setCloverRunClass(xattribs.getString(XML_GRAPH_EXEC_CLASS));
+		}	
+		if (xattribs.exists(XML_CLOVER_CMD_LINE)) {
+			runG.setCloverCmdLineArgs(xattribs.getStringEx(XML_CLOVER_CMD_LINE, RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+		if (xattribs.exists(XML_IGNORE_GRAPH_FAIL)) {
+			runG.setIgnoreGraphFail(xattribs.getBoolean(XML_IGNORE_GRAPH_FAIL));
+		}
+									
+		return runG;
 	}
 	
 	   /* (non-Javadoc)

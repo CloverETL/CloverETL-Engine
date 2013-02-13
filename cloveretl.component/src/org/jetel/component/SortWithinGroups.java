@@ -18,8 +18,6 @@
  */
 package org.jetel.component;
 
-import java.io.File;
-
 import org.jetel.data.Defaults;
 import org.jetel.data.DoubleRecordBuffer;
 import org.jetel.data.ExternalSortDataRecord;
@@ -43,7 +41,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -188,41 +185,36 @@ public class SortWithinGroups extends Node {
      * @return an instance of the <code>SortWithinGroups</code> component
      *
      * @throws XMLConfigurationException when some attribute is missing
+     * @throws AttributeNotFoundException 
      */
     public static Node fromXML(TransformationGraph transformationGraph, Element xmlElement)
-            throws XMLConfigurationException {
+            throws XMLConfigurationException, AttributeNotFoundException {
         SortWithinGroups sortWithinGroups = null;
 
         ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
-        try {
-            if (!componentAttributes.getString(XML_TYPE_ATTRIBUTE).equalsIgnoreCase(COMPONENT_TYPE)) {
-                throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
-                        + " attribute contains a value incompatible with this component!");
-            }
+        if (!componentAttributes.getString(XML_TYPE_ATTRIBUTE).equalsIgnoreCase(COMPONENT_TYPE)) {
+            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
+                    + " attribute contains a value incompatible with this component!");
+        }
 
-            String groupKey = componentAttributes.getString(XML_ATTRIBUTE_GROUP_KEY);
-            String sortKey = componentAttributes.getString(XML_ATTRIBUTE_SORT_KEY);
+        String groupKey = componentAttributes.getString(XML_ATTRIBUTE_GROUP_KEY);
+        String sortKey = componentAttributes.getString(XML_ATTRIBUTE_SORT_KEY);
 
-            sortWithinGroups = new SortWithinGroups(componentAttributes.getString(XML_ID_ATTRIBUTE),
-                    groupKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-                    sortKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        sortWithinGroups = new SortWithinGroups(componentAttributes.getString(XML_ID_ATTRIBUTE),
+                groupKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                sortKey.trim().split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
-            if (componentAttributes.exists(XML_NAME_ATTRIBUTE)) {
-                sortWithinGroups.setName(componentAttributes.getString(XML_NAME_ATTRIBUTE));
-            }
+        if (componentAttributes.exists(XML_NAME_ATTRIBUTE)) {
+            sortWithinGroups.setName(componentAttributes.getString(XML_NAME_ATTRIBUTE));
+        }
 
-            if (componentAttributes.exists(XML_ATTRIBUTE_BUFFER_CAPACITY)) {
-                sortWithinGroups.setBufferCapacity(componentAttributes.getInteger(XML_ATTRIBUTE_BUFFER_CAPACITY));
-            }
+        if (componentAttributes.exists(XML_ATTRIBUTE_BUFFER_CAPACITY)) {
+            sortWithinGroups.setBufferCapacity(componentAttributes.getInteger(XML_ATTRIBUTE_BUFFER_CAPACITY));
+        }
 
-            if (componentAttributes.exists(XML_ATTRIBUTE_NUMBER_OF_TAPES)) {
-                sortWithinGroups.setNumberOfTapes(componentAttributes.getInteger(XML_ATTRIBUTE_NUMBER_OF_TAPES));
-            }
-        } catch (AttributeNotFoundException exception) {
-            throw new XMLConfigurationException("Missing a required attribute!", exception);
-        } catch (Exception exception) {
-            throw new XMLConfigurationException("Error creating the component!", exception);
+        if (componentAttributes.exists(XML_ATTRIBUTE_NUMBER_OF_TAPES)) {
+            sortWithinGroups.setNumberOfTapes(componentAttributes.getInteger(XML_ATTRIBUTE_NUMBER_OF_TAPES));
         }
 
         return sortWithinGroups;

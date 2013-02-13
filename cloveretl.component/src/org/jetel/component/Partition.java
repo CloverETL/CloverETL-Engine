@@ -359,20 +359,14 @@ public class Partition extends Node {
 		return partitionFceFactory;
 	}
 
-    public static Node fromXML(TransformationGraph transformationGraph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph transformationGraph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
         Partition partition = null;
 
         ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
-        try {
-        	partition = new Partition(componentAttributes.getString(XML_ID_ATTRIBUTE), transformationGraph);
+    	partition = new Partition(componentAttributes.getString(XML_ID_ATTRIBUTE), transformationGraph);
 
-        	partition.loadAttributesFromXML(componentAttributes);
-        } catch (AttributeNotFoundException exception) {
-            throw new XMLConfigurationException("Missing a required attribute!", exception);
-        } catch (Exception exception) {
-            throw new XMLConfigurationException("Error creating the component!", exception);
-        }
+    	partition.loadAttributesFromXML(componentAttributes);
 
         return partition;
     }

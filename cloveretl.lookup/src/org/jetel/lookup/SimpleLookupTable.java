@@ -314,19 +314,15 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	}
 
 	public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML)
-			throws XMLConfigurationException {
+			throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		SimpleLookupTable lookupTable = null;
 		String id;
 		String type;
 
 		// reading obligatory attributes
-		try {
-			id = xattribs.getString(XML_ID_ATTRIBUTE);
-			type = xattribs.getString(XML_TYPE_ATTRIBUTE);
-		} catch (AttributeNotFoundException ex) {
-			throw new XMLConfigurationException("Can't create lookup table - " + ex.getMessage(), ex);
-		}
+		id = xattribs.getString(XML_ID_ATTRIBUTE);
+		type = xattribs.getString(XML_TYPE_ATTRIBUTE);
 
 		// check type
 		if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_SIMPLE_LOOKUP)) {
@@ -334,35 +330,30 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		}
 
 		// create simple lookup table
-		try {
-			int initialSize = xattribs.getInteger(XML_LOOKUP_INITIAL_SIZE, Defaults.Lookup.LOOKUP_INITIAL_CAPACITY);
-			String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-			String metadata = xattribs.getString(XML_METADATA_ID);
+		int initialSize = xattribs.getInteger(XML_LOOKUP_INITIAL_SIZE, Defaults.Lookup.LOOKUP_INITIAL_CAPACITY);
+		String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		String metadata = xattribs.getString(XML_METADATA_ID);
 
-			lookupTable = new SimpleLookupTable(id, metadata, keys, initialSize);
-			lookupTable.setGraph(graph);
+		lookupTable = new SimpleLookupTable(id, metadata, keys, initialSize);
+		lookupTable.setGraph(graph);
 
-			if (xattribs.exists(XML_NAME_ATTRIBUTE)) {
-				lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_FILE_URL)) {
-				lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
-			}
-			if (xattribs.exists(XML_CHARSET)) {
-				lookupTable.setCharset(xattribs.getString(XML_CHARSET));
-			}
-			if (xattribs.exists(XML_KEY_DUPLICATES_ATTRIBUTE)) {
-				lookupTable.setKeyDuplicates(xattribs.getBoolean(XML_KEY_DUPLICATES_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_DATA_ATTRIBUTE)) {
-				lookupTable.setData(xattribs.getString(XML_DATA_ATTRIBUTE));
-			}
-
-			return lookupTable;
-
-		} catch (Exception ex) {
-			throw new XMLConfigurationException("can't create simple lookup table", ex);
+		if (xattribs.exists(XML_NAME_ATTRIBUTE)) {
+			lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
 		}
+		if (xattribs.exists(XML_FILE_URL)) {
+			lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
+		}
+		if (xattribs.exists(XML_CHARSET)) {
+			lookupTable.setCharset(xattribs.getString(XML_CHARSET));
+		}
+		if (xattribs.exists(XML_KEY_DUPLICATES_ATTRIBUTE)) {
+			lookupTable.setKeyDuplicates(xattribs.getBoolean(XML_KEY_DUPLICATES_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_DATA_ATTRIBUTE)) {
+			lookupTable.setData(xattribs.getString(XML_DATA_ATTRIBUTE));
+		}
+
+		return lookupTable;
 	}
 
 	@Override

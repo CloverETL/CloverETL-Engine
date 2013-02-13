@@ -42,11 +42,12 @@ import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
-import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.TextParserConfiguration;
 import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -610,43 +611,39 @@ public class InfobrightDataWriter extends Node {
 		}
 	}
 	
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         InfobrightDataWriter loader;
 
-		try {
-            loader = new InfobrightDataWriter(xattribs.getString(XML_ID_ATTRIBUTE));
-            loader.setDbConnection(xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
-            loader.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				loader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_DATA_FORMAT_ATTRIBUTE)) {
-				loader.setDataFormat(xattribs.getString(XML_DATA_FORMAT_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_LOG_FILE_ATTRIBUTE)) {
-				loader.setLogFile(xattribs.getString(XML_LOG_FILE_ATTRIBUTE));
-				loader.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
-			}
-            if (xattribs.exists(XML_PIPE_NAMEPREFIX_ATTRIBUTE)) {
-				loader.setPipeNamePrefix(xattribs.getString(XML_PIPE_NAMEPREFIX_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_TIMEOUT_ATTRIBUTE)) {
-				loader.setTimeout(xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_CLOVER_FIELDS_ATTRIBUTE)){
-            	loader.setCloverFields(xattribs.getString(XML_CLOVER_FIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            }
-            if (xattribs.exists(XML_CHECK_VALUES_ATTRIBUTE)){
-            	loader.setCheckValues(xattribs.getBoolean(XML_CHECK_VALUES_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_AGENT_PORT_ATTRIBUTE)){
-            	loader.setAgentPort(xattribs.getInteger(XML_AGENT_PORT_ATTRIBUTE));
-            }
-			return loader;
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        loader = new InfobrightDataWriter(xattribs.getString(XML_ID_ATTRIBUTE));
+        loader.setDbConnection(xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
+        loader.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
+        if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			loader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}
+        if (xattribs.exists(XML_DATA_FORMAT_ATTRIBUTE)) {
+			loader.setDataFormat(xattribs.getString(XML_DATA_FORMAT_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_LOG_FILE_ATTRIBUTE)) {
+			loader.setLogFile(xattribs.getString(XML_LOG_FILE_ATTRIBUTE));
+			loader.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
+		}
+        if (xattribs.exists(XML_PIPE_NAMEPREFIX_ATTRIBUTE)) {
+			loader.setPipeNamePrefix(xattribs.getString(XML_PIPE_NAMEPREFIX_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_TIMEOUT_ATTRIBUTE)) {
+			loader.setTimeout(xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_CLOVER_FIELDS_ATTRIBUTE)){
+        	loader.setCloverFields(xattribs.getString(XML_CLOVER_FIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        }
+        if (xattribs.exists(XML_CHECK_VALUES_ATTRIBUTE)){
+        	loader.setCheckValues(xattribs.getBoolean(XML_CHECK_VALUES_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_AGENT_PORT_ATTRIBUTE)){
+        	loader.setAgentPort(xattribs.getInteger(XML_AGENT_PORT_ATTRIBUTE));
+        }
+		return loader;
 	}
     
 	public void setAgentPort(int agentPort) {

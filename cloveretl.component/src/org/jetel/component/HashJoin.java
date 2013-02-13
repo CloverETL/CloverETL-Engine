@@ -38,6 +38,7 @@ import org.jetel.data.DataRecordMap.DataRecordLookup;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -848,59 +849,56 @@ public class HashJoin extends Node {
 	 * @param nodeXML
 	 *            Description of Parameter
 	 * @return Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		HashJoin join;
 
-		try {
-			String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
-			Join joinType;
+		String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
+		Join joinType;
 
-			if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
-				joinType = Join.INNER;
-			} else if (joinStr.equalsIgnoreCase("leftOuter")) {
-				joinType = Join.LEFT_OUTER;
-			} else if (joinStr.equalsIgnoreCase("fullOuter")) {
-				joinType = Join.FULL_OUTER;
-			} else {
-				throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + "Invalid joinType specification: " + joinStr);
-			}
-
-			// legacy attributes handling {
-			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
-				joinType = xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE) ? Join.LEFT_OUTER : Join.INNER;
-			}
-
-			join = new HashJoin(xattribs.getString(XML_ID_ATTRIBUTE), 
-					xattribs.getString(XML_JOINKEY_ATTRIBUTE), 
-					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null), 
-					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-					joinType);
-
-			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
-				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE));
-			}
-			join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
-				join.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE)) {
-				join.setSlaveDuplicates(xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)) {
-				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)) {
-				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
-			}
-			join.setTransformationParameters(xattribs.attributes2Properties(new String[] { XML_ID_ATTRIBUTE, XML_JOINKEY_ATTRIBUTE, XML_TRANSFORM_ATTRIBUTE, XML_TRANSFORMCLASS_ATTRIBUTE, XML_JOINTYPE_ATTRIBUTE, XML_HASHTABLESIZE_ATTRIBUTE, XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE }));
-			return join;
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
+		if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
+			joinType = Join.INNER;
+		} else if (joinStr.equalsIgnoreCase("leftOuter")) {
+			joinType = Join.LEFT_OUTER;
+		} else if (joinStr.equalsIgnoreCase("fullOuter")) {
+			joinType = Join.FULL_OUTER;
+		} else {
+			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + "Invalid joinType specification: " + joinStr);
 		}
+
+		// legacy attributes handling {
+		if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
+			joinType = xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE) ? Join.LEFT_OUTER : Join.INNER;
+		}
+
+		join = new HashJoin(xattribs.getString(XML_ID_ATTRIBUTE), 
+				xattribs.getString(XML_JOINKEY_ATTRIBUTE), 
+				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null), 
+				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+				joinType);
+
+		if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
+			join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE));
+		}
+		join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+		if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
+			join.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE)) {
+			join.setSlaveDuplicates(xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)) {
+			join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)) {
+			join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+		}
+		join.setTransformationParameters(xattribs.attributes2Properties(new String[] { XML_ID_ATTRIBUTE, XML_JOINKEY_ATTRIBUTE, XML_TRANSFORM_ATTRIBUTE, XML_TRANSFORMCLASS_ATTRIBUTE, XML_JOINTYPE_ATTRIBUTE, XML_HASHTABLESIZE_ATTRIBUTE, XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE }));
+		return join;
 	}
 
 	public void setErrorLog(String errorLog) {

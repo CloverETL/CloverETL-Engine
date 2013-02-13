@@ -38,6 +38,7 @@ import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.database.IConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -554,47 +555,43 @@ public class DBJoin extends Node {
     	}
 	}
 
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		DBJoin dbjoin;
 		String connectionName;
 		String query;
 		String[] joinKey;
 		//get necessary parameters
-		try{
-			connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE);
-			if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-				query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
-             		   xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
-			} else {
-				query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
-			}
-			joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-		
-            dbjoin = new DBJoin(
-                    xattribs.getString(XML_ID_ATTRIBUTE),
-                    connectionName,query,joinKey,
-                    xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-                    xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
-                    xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
-			dbjoin.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-			dbjoin.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
-			if (xattribs.exists(XML_DB_METADATA_ATTRIBUTE)){
-				dbjoin.setDbMetadata(xattribs.getString(XML_DB_METADATA_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)){
-				dbjoin.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
-			}
-			dbjoin.setMaxCached(xattribs.getInteger(XML_MAX_CACHED_ATTRIBUTE,100));
-			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
-				dbjoin.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
-				dbjoin.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        }
+		connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE);
+		if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+			query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
+         		   xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
+		} else {
+			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
+		}
+		joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+	
+        dbjoin = new DBJoin(
+                xattribs.getString(XML_ID_ATTRIBUTE),
+                connectionName,query,joinKey,
+                xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+                xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
+                xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
+		dbjoin.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+		dbjoin.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
+		if (xattribs.exists(XML_DB_METADATA_ATTRIBUTE)){
+			dbjoin.setDbMetadata(xattribs.getString(XML_DB_METADATA_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)){
+			dbjoin.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
+		}
+		dbjoin.setMaxCached(xattribs.getInteger(XML_MAX_CACHED_ATTRIBUTE,100));
+		if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+			dbjoin.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+			dbjoin.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+		}
         
 		return dbjoin;
 	}

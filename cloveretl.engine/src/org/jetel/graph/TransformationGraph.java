@@ -462,12 +462,8 @@ public final class TransformationGraph extends GraphElement {
 			
 			//initialization of all phases
 			//it is no more true --> phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
-			for(Phase phase : phases.values()) {
-				try {
-					phase.init();
-				} catch (ComponentNotReadyException e) {
-					throw new ComponentNotReadyException(this, "Phase " + phase.getPhaseNum() + " can't be initialized.", e);
-				}
+			for (Phase phase : phases.values()) {
+				phase.init();
 			}
 		} finally {
 			//unregister current thread from ContextProvider

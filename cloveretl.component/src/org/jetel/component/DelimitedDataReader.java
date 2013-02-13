@@ -27,16 +27,17 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -300,48 +301,45 @@ public class DelimitedDataReader extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		DelimitedDataReader aDelimitedDataReaderNIO = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-		try {
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
-						xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			} else {
-				aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			aDelimitedDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
-            if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)) {
-                aDelimitedDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)) {
-                aDelimitedDataReaderNIO.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)) {
-                aDelimitedDataReaderNIO.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
-            }
-			if (xattribs.exists(XML_TRIM_ATTRIBUTE)) {
-				aDelimitedDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-				aDelimitedDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
-				aDelimitedDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)) {
-				aDelimitedDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)) {
-				aDelimitedDataReaderNIO.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		} else {
+			aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+		aDelimitedDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
+        if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)) {
+            aDelimitedDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)) {
+            aDelimitedDataReaderNIO.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)) {
+            aDelimitedDataReaderNIO.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+        }
+		if (xattribs.exists(XML_TRIM_ATTRIBUTE)) {
+			aDelimitedDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
+			aDelimitedDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
+			aDelimitedDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)) {
+			aDelimitedDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)) {
+			aDelimitedDataReaderNIO.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
 		}
 
 		return aDelimitedDataReaderNIO;

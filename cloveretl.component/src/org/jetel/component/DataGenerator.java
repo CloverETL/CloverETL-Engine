@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -144,47 +145,43 @@ public abstract class DataGenerator extends Node {
 	 * @param nodeXML
 	 * @return
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
 		DataGenerator dataGenerator = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
-		try {
-			if ((xattribs.exists(XML_GENERATE_ATTRIBUTE) || 
-				xattribs.exists(XML_GENERATECLASS_ATTRIBUTE) ||
-				xattribs.exists(XML_GENERATEURL_ATTRIBUTE)) ||
-				!(xattribs.exists(XML_PATTERN_ATTRIBUTE) || 
-				xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE) ||
-				xattribs.exists(XML_SEQUENCE_FIELDS_ATTRIBUTE))) {
-				dataGenerator = new ExtDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
-						xattribs.getStringEx(XML_GENERATE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-						xattribs.getString(XML_GENERATECLASS_ATTRIBUTE, null), 
-						xattribs.getStringEx(XML_GENERATEURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
-						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
-				
-				((ExtDataGenerator)dataGenerator).setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-				((ExtDataGenerator)dataGenerator).setTransformationParameters(xattribs.attributes2Properties(
-						new String[]{XML_ID_ATTRIBUTE, ExtDataGenerator.XML_GENERATE_ATTRIBUTE, ExtDataGenerator.XML_GENERATECLASS_ATTRIBUTE, 
-								ExtDataGenerator.XML_GENERATEURL_ATTRIBUTE}));
-			} else {
-				dataGenerator = new SimpleDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
-						xattribs.getString(XML_PATTERN_ATTRIBUTE,""), 
-						xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
-				if (xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE)){
-					((SimpleDataGenerator)dataGenerator).setRandomFields(xattribs.getString(XML_RANDOM_FIELDS_ATTRIBUTE));
-				}
-				if (xattribs.exists(XML_SEQUENCE_FIELDS_ATTRIBUTE)){
-					((SimpleDataGenerator)dataGenerator).setSequenceFields(xattribs.getString(XML_SEQUENCE_FIELDS_ATTRIBUTE));
-				}
-			}
+		if ((xattribs.exists(XML_GENERATE_ATTRIBUTE) || 
+			xattribs.exists(XML_GENERATECLASS_ATTRIBUTE) ||
+			xattribs.exists(XML_GENERATEURL_ATTRIBUTE)) ||
+			!(xattribs.exists(XML_PATTERN_ATTRIBUTE) || 
+			xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE) ||
+			xattribs.exists(XML_SEQUENCE_FIELDS_ATTRIBUTE))) {
+			dataGenerator = new ExtDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
+					xattribs.getStringEx(XML_GENERATE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+					xattribs.getString(XML_GENERATECLASS_ATTRIBUTE, null), 
+					xattribs.getStringEx(XML_GENERATEURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
 			
-			if (xattribs.exists(XML_RANDOM_SEED_ATTRIBUTE)){
-				dataGenerator.setRandomSeed(xattribs.getLong(XML_RANDOM_SEED_ATTRIBUTE));
+			((ExtDataGenerator)dataGenerator).setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+			((ExtDataGenerator)dataGenerator).setTransformationParameters(xattribs.attributes2Properties(
+					new String[]{XML_ID_ATTRIBUTE, ExtDataGenerator.XML_GENERATE_ATTRIBUTE, ExtDataGenerator.XML_GENERATECLASS_ATTRIBUTE, 
+							ExtDataGenerator.XML_GENERATEURL_ATTRIBUTE}));
+		} else {
+			dataGenerator = new SimpleDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
+					xattribs.getString(XML_PATTERN_ATTRIBUTE,""), 
+					xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
+			if (xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE)){
+				((SimpleDataGenerator)dataGenerator).setRandomFields(xattribs.getString(XML_RANDOM_FIELDS_ATTRIBUTE));
 			}
-		} catch (Exception ex) {
-		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+			if (xattribs.exists(XML_SEQUENCE_FIELDS_ATTRIBUTE)){
+				((SimpleDataGenerator)dataGenerator).setSequenceFields(xattribs.getString(XML_SEQUENCE_FIELDS_ATTRIBUTE));
+			}
 		}
-
+		
+		if (xattribs.exists(XML_RANDOM_SEED_ATTRIBUTE)){
+			dataGenerator.setRandomSeed(xattribs.getLong(XML_RANDOM_SEED_ATTRIBUTE));
+		}
 		return dataGenerator;
 	}
 
