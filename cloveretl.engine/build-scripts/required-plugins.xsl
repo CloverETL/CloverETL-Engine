@@ -79,6 +79,10 @@
 		<xsl:call-template name="escapeBackslash"><xsl:with-param name="string"><xsl:value-of select="$home" /></xsl:with-param></xsl:call-template>
 		<xsl:text>/cloveretl.</xsl:text>
 
+		<xsl:if test="starts-with(@plugin-id,'org.jetel.hadoop')">
+		  <xsl:text>component.</xsl:text>
+		</xsl:if>
+		
 		<xsl:if test="starts-with(@plugin-id,'org.jetel.')">
 			<xsl:value-of select="substring-after(@plugin-id,'org.jetel.')"/>
 		</xsl:if>
