@@ -673,7 +673,7 @@ public class FileManager {
 			// resolve to deal with wildcards or maybe symbolic links etc.
 			ResolveResult resolveResult = resolve(target);
 			if (!resolveResult.success()) {
-				throw new RuntimeException("Failed to convert path to file", resolveResult.getFirstError());
+				throw new RuntimeException(FileOperationMessages.getString("FileManager.resolve_failed"), resolveResult.getFirstError()); //$NON-NLS-1$
 			}
 			List<SingleCloverURI> resolved = resolveResult.getResult();
 			if (resolved.size() > 1) {
@@ -985,11 +985,11 @@ public class FileManager {
 							result.add(target, infos);
 						}
 					} catch (Exception ex) {
-						result.addFailure(target, new IOException("Directory listing failed", ex));
+						result.addFailure(target, new IOException(FileOperationMessages.getString("FileManager.listing_failed"), ex)); //$NON-NLS-1$
 					}
 				}
 			} else {
-				result.addFailure(glob, new IOException("Directory listing failed", resolved.getFirstError()));
+				result.addFailure(glob, new IOException(FileOperationMessages.getString("FileManager.listing_failed"), resolved.getFirstError())); //$NON-NLS-1$
 			}
 		}
 		return result;
@@ -1081,7 +1081,7 @@ public class FileManager {
 			Info info = handler.info(singleTargetURI, params); 
 			result.add(singleTargetURI, info);
 		} catch (Exception ex) {
-			result.addFailure(singleTargetURI, new IOException("Failed to obtain file info", ex));
+			result.addFailure(singleTargetURI, new IOException(FileOperationMessages.getString("FileManager.info_failed"), ex)); //$NON-NLS-1$
 		}
 		return result;
 	}
