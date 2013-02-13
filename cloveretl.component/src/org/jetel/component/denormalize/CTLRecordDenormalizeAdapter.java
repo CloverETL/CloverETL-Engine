@@ -138,7 +138,7 @@ public class CTLRecordDenormalizeAdapter extends CTLAbstractTransformAdapter imp
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0] = exception.getMessage();
+		onErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return transformImpl(transformOnErrorFunction, outRecord, onErrorArguments);
