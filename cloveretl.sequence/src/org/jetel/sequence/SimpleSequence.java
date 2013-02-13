@@ -32,6 +32,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.sequence.Sequence;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -351,26 +352,22 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		this.filename = filename;
 	}
 	
-	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
-        try {
-        	String id = xattribs.getString(XML_ID_ATTRIBUTE);
-        	if (xattribs.exists(XML_SEQCONFIG_ATTRIBUTE)) {
-        		return new SimpleSequence(id, graph, xattribs.getString(XML_SEQCONFIG_ATTRIBUTE));
-        	} else {
-        		return new SimpleSequence(
-        				id,
-        				graph,
-        				xattribs.getString(XML_NAME_ATTRIBUTE),
-        				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
-        				xattribs.getInteger(XML_START_ATTRIBUTE),
-        				xattribs.getInteger(XML_STEP_ATTRIBUTE),
-        				xattribs.getInteger(XML_CACHED_ATTRIBUTE));
-        	}
-        } catch(Exception ex) {
-            throw new XMLConfigurationException(SEQUENCE_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
-        }
+    	String id = xattribs.getString(XML_ID_ATTRIBUTE);
+    	if (xattribs.exists(XML_SEQCONFIG_ATTRIBUTE)) {
+    		return new SimpleSequence(id, graph, xattribs.getString(XML_SEQCONFIG_ATTRIBUTE));
+    	} else {
+    		return new SimpleSequence(
+    				id,
+    				graph,
+    				xattribs.getString(XML_NAME_ATTRIBUTE),
+    				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
+    				xattribs.getInteger(XML_START_ATTRIBUTE),
+    				xattribs.getInteger(XML_STEP_ATTRIBUTE),
+    				xattribs.getInteger(XML_CACHED_ATTRIBUTE));
+    	}
 	}
 
     @Override
