@@ -311,7 +311,8 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 		for ( ; i < 20; i++) {
 			String name = String.valueOf(i);
 			URI child = URIUtils.getChildURI(root, name);
-			manager.create(CloverURI.createSingleURI(child));
+			CreateResult createResult = manager.create(CloverURI.createSingleURI(child));
+			assumeTrue(createResult.success());
 		}
 	}
 
