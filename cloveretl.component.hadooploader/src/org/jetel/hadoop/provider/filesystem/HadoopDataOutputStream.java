@@ -112,6 +112,7 @@ public class HadoopDataOutputStream implements HadoopDataOutput {
 		return stream.getPos();
 	}
 
+	@Override
 	public final void close() throws IOException {
 		stream.close();
 	}
