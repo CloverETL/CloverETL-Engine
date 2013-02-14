@@ -29,6 +29,7 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -152,7 +153,7 @@ public class URLOperationHandler implements IOperationHandler {
 		URI uri = target.toURI();
 		Info info = info(uri);
 		if (info == null) {
-			throw new FileNotFoundException(uri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 		}
 		return Arrays.asList(info); 
 	}

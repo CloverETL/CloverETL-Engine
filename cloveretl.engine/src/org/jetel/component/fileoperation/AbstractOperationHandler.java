@@ -66,7 +66,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Info source = simpleHandler.info(sourceUri);
 		Info target = simpleHandler.info(targetUri);
 		if (source == null) {
-			throw new FileNotFoundException(sourceUri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), sourceUri.toString())); //$NON-NLS-1$
 		}
 		if (target != null) {
 			if (source.getURI().normalize().equals(target.getURI().normalize())) {
@@ -126,7 +126,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 	protected SingleCloverURI copy(URI sourceUri, URI targetUri, CopyParameters params) throws IOException {
 		Info sourceInfo = simpleHandler.info(sourceUri);
 		if (sourceInfo == null) {
-			throw new FileNotFoundException(sourceUri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), sourceUri.toString())); //$NON-NLS-1$
 		}
 		Info targetInfo = simpleHandler.info(targetUri);
 		if ((targetInfo != null) && targetInfo.isDirectory()) {
@@ -157,7 +157,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		Info source = simpleHandler.info(sourceUri);
 		Info target = simpleHandler.info(targetUri);
 		if (source == null) {
-			throw new FileNotFoundException(sourceUri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), sourceUri.toString())); //$NON-NLS-1$
 		}
 		if (target != null) {
 			if (source.getURI().normalize().equals(target.getURI().normalize())) {
@@ -213,7 +213,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 	protected SingleCloverURI move(URI sourceUri, URI targetUri, MoveParameters params) throws IOException {
 		Info sourceInfo = simpleHandler.info(sourceUri);
 		if (sourceInfo == null) {
-			throw new FileNotFoundException(sourceUri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), sourceUri.toString())); //$NON-NLS-1$
 		}
 		Info targetInfo = simpleHandler.info(targetUri);
 		if ((targetInfo != null) && targetInfo.isDirectory()) {
@@ -286,7 +286,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		}
 		Info info = simpleHandler.info(target);
 		if (info == null) {
-			throw new FileNotFoundException(target.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), target.toString())); //$NON-NLS-1$
 		}
 		if (!info.isDirectory() && target.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
 			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), target)); //$NON-NLS-1$
@@ -323,7 +323,7 @@ public abstract class AbstractOperationHandler implements IOperationHandler {
 		}
 		Info info = simpleHandler.info(uri);
 		if (info == null) {
-			throw new FileNotFoundException(uri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 		}
 		if (uri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !info.isDirectory()) {
 			throw new FileNotFoundException(format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), uri)); //$NON-NLS-1$

@@ -159,7 +159,7 @@ public class HadoopOperationHandler extends AbstractOperationHandler {
 			throws IOException {
 		Info info = simpleHandler.info(target);
 		if (info == null) {
-			throw new FileNotFoundException(target.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), target.toString())); //$NON-NLS-1$
 		}
 		if (!info.isDirectory() && target.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
 			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), target)); //$NON-NLS-1$

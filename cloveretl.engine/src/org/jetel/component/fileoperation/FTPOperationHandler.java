@@ -373,7 +373,7 @@ public class FTPOperationHandler implements IOperationHandler {
 			} else {
 				Info parentInfo = info(parentUri, ftp);
 				if (parentInfo == null) {
-					throw new FileNotFoundException(uri.toString());
+					throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 				}
 			}
 			String path = getPath(uri);
@@ -425,7 +425,7 @@ public class FTPOperationHandler implements IOperationHandler {
 			ftp = connect(source);
 			Info sourceInfo = info(source, ftp);
 			if (sourceInfo == null) {
-				throw new FileNotFoundException(source.toString());
+				throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.toString())); //$NON-NLS-1$
 			} else if (!sourceInfo.isDirectory() && target.getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), source)); //$NON-NLS-1$
 			}
@@ -525,7 +525,7 @@ public class FTPOperationHandler implements IOperationHandler {
 	private boolean delete(FTPClient ftp, URI uri, DeleteParameters params) throws IOException {
 		Info info = info(uri, ftp);
 		if (info == null) {
-			throw new FileNotFoundException(uri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 		}
 		if (!info.isDirectory() && uri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
 			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), uri)); //$NON-NLS-1$
@@ -559,7 +559,7 @@ public class FTPOperationHandler implements IOperationHandler {
 		}
 		Info rootInfo = info(parentUri, ftp);
 		if (rootInfo == null) {
-			throw new FileNotFoundException(parentUri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), parentUri.toString())); //$NON-NLS-1$
 		}
 		if (parentUri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !rootInfo.isDirectory()) {
 			throw new FileNotFoundException(format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), parentUri)); //$NON-NLS-1$
