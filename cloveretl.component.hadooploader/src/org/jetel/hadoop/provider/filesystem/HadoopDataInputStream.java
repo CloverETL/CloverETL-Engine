@@ -124,11 +124,13 @@ public class HadoopDataInputStream implements HadoopDataInput {
 		return stream.seekToNewSource(targetPos);
 	}
 
-	public final long getPos()throws IOException {
+	@Override
+	public final long getPos() throws IOException {
 		return stream.getPos();
 	}
 
 
+	@Override
 	public final void close() throws IOException {
 		stream.close();
 	}
