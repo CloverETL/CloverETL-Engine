@@ -241,9 +241,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		
         buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
-            File file = new File(getGraph() != null ? 
-            		FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), filename) :
-            		filename);
+        	File file = FileUtils.getJavaFile(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, filename);
             if (!file.exists()) {
             	logger.info("Sequence file " + filename + " doesn't exist. Creating new file.");
                 file.createNewFile();
@@ -271,7 +269,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
             throw cnre;
 		}catch (BufferUnderflowException e) {
 			free();
-			throw new ComponentNotReadyException("Can't read value from sequence file. File is probably corrupted.");
+			throw new ComponentNotReadyException("Can't read value from sequence file. File is probably corrupted.", e);
 		}
     }
 
