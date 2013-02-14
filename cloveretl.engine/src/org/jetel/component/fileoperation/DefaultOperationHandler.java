@@ -160,11 +160,17 @@ public class DefaultOperationHandler implements IOperationHandler {
 	@Override
 	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params) throws IOException {
 		InfoResult sourceInfo = manager.info(source);
+		if (!sourceInfo.success()) {
+			throw new IOException("Failed to obtain source file info", sourceInfo.getFirstError());
+		}
 		if (!sourceInfo.exists()) {
 			// source does not exist
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.getPath())); //$NON-NLS-1$
 		}
-		InfoResult targetInfo = manager.info(target); 
+		InfoResult targetInfo = manager.info(target);
+		if (!targetInfo.success()) {
+			throw new IOException("Failed to obtain target file info", targetInfo.getFirstError());
+		}
 		if (targetInfo.isDirectory()) {
 			target = CloverURI.createSingleURI(targetInfo.getURI(), sourceInfo.getName()).getAbsoluteURI();
 		} else if (target.getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
