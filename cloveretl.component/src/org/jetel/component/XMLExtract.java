@@ -420,11 +420,7 @@ public class XMLExtract extends Node {
 		try {
 			// prepare next source
 			if (readableChannelIterator.isGraphDependentSource()) {
-				try {
-					nextSource();
-				} catch (JetelException e) {
-					throw new ComponentNotReadyException(e);
-				}
+				nextSource();
 			}
 			do {
 				if (m_inputSource != null) {
@@ -438,11 +434,7 @@ public class XMLExtract extends Node {
 			if (!runIt()) {
 				return runIt ? Result.FINISHED_OK : Result.ABORTED; // we were stopped by a stop signal... probably
 			}
-			LOGGER.error("XML Extract: " + getId() + " Parse Exception" + ex.getMessage(), ex);
-			throw new JetelException("XML Extract: " + getId() + " Parse Exception", ex);
-		} catch (Exception ex) {
-			LOGGER.error("XML Extract: " + getId() + " Unexpected Exception", ex);
-			throw new JetelException("XML Extract: " + getId() + " Unexpected Exception", ex);
+			throw new JetelException("SAX parsing exception", ex);
 		}
 
 		broadcastEOF();
