@@ -21,6 +21,8 @@ package org.jetel.component.fileoperation.result;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetel.util.ExceptionUtils;
+
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -104,7 +106,7 @@ public abstract class AbstractResult implements Result {
 	@Override
 	public String getFirstErrorMessage() {
 		Exception ex = getFirstError();
-		return ex != null ? ex.getMessage() : null;
+		return ex != null ? ExceptionUtils.exceptionChainToMessage(null, ex) : null;
 	}
 
 }

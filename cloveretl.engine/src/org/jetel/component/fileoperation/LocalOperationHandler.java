@@ -160,7 +160,7 @@ public class LocalOperationHandler implements IOperationHandler {
 			// ignore
 		}
 		if (!source.exists()) {
-			throw new FileNotFoundException(source.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.toString())); //$NON-NLS-1$
 		}
 		File target = new File(targetUri);
 		try {
@@ -196,7 +196,7 @@ public class LocalOperationHandler implements IOperationHandler {
 			// ignore
 		}
 		if (!source.exists()) {
-			throw new FileNotFoundException(source.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.toString())); //$NON-NLS-1$
 		}
 		File target = new File(targetUri);
 		try {
@@ -363,7 +363,7 @@ public class LocalOperationHandler implements IOperationHandler {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
 		if (!file.exists()) {
-			throw new FileNotFoundException(file.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), file.toString())); //$NON-NLS-1$
 		}
 		if (file.isDirectory()) {
 			if (params.isRecursive()) {
@@ -481,7 +481,7 @@ public class LocalOperationHandler implements IOperationHandler {
 			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
 		}
 		if (!parent.exists()) {
-			throw new FileNotFoundException(parent.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), parent.toString())); //$NON-NLS-1$
 		}
 		if (!parent.isDirectory()) {
 			return Arrays.asList(info(parent));

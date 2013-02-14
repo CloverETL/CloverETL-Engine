@@ -364,7 +364,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 			} else {
 				Info parentInfo = info(parentUri, ftp);
 				if (parentInfo == null) {
-					throw new FileNotFoundException(uri.toString());
+					throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 				}
 			}
 			String path = getPath(uri);
@@ -417,7 +417,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 			FTPClient ftp = connection.getFtpClient();
 			Info sourceInfo = info(source, ftp);
 			if (sourceInfo == null) {
-				throw new FileNotFoundException(source.toString());
+				throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.toString())); //$NON-NLS-1$
 			} else if (!sourceInfo.isDirectory() && target.getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
 				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), source)); //$NON-NLS-1$
 			}
@@ -517,7 +517,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 	private boolean delete(FTPClient ftp, URI uri, DeleteParameters params) throws IOException {
 		Info info = info(uri, ftp);
 		if (info == null) {
-			throw new FileNotFoundException(uri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 		}
 		if (!info.isDirectory() && uri.toString().endsWith(URIUtils.PATH_SEPARATOR)) {
 			throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), uri)); //$NON-NLS-1$
@@ -551,7 +551,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		}
 		Info rootInfo = info(parentUri, ftp);
 		if (rootInfo == null) {
-			throw new FileNotFoundException(parentUri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), parentUri.toString())); //$NON-NLS-1$
 		}
 		if (parentUri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !rootInfo.isDirectory()) {
 			throw new FileNotFoundException(format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), parentUri)); //$NON-NLS-1$
@@ -632,7 +632,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 			PooledFTPConnection connection = connect(uri);
 			Info info = info(uri, connection.getFtpClient());
 			if ((info != null) && info.isDirectory()) {
-				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri));
+				throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri)); //$NON-NLS-1$
 			}
 			return Channels.newChannel(connection.getOutputStream(getPath(uri), WriteMode.APPEND));
 		}
@@ -663,7 +663,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 				PooledFTPConnection connection = connect(uri);
 				Info info = info(uri, connection.getFtpClient());
 				if ((info != null) && info.isDirectory()) {
-					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri));
+					throw new IOException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.exists_not_file"), uri)); //$NON-NLS-1$
 				}
 				return Channels.newChannel(connection.getOutputStream(getPath(uri), WriteMode.APPEND));
 			}

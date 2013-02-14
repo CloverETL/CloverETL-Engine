@@ -685,7 +685,7 @@ public class FileManager {
 			try {
 				return handler.getFile(target, params);
 			} catch (Exception ex) {
-				throw new JetelRuntimeException("Failed to convert path to File", ex);
+				throw new JetelRuntimeException(FileOperationMessages.getString("FileManager.local_file_failed"), ex); //$NON-NLS-1$
 			}
 		} else {
 			throw new UnsupportedOperationException(operation.toString());
@@ -850,7 +850,7 @@ public class FileManager {
 			part = URIUtils.urlDecode(part);
 			ListResult listResult = list(CloverURI.createSingleURI(base.getURI()));
 			if (!listResult.success()) {
-				throw new IOException(listResult.getFirstErrorMessage());
+				throw new IOException(FileOperationMessages.getString("FileManager.listing_failed"), listResult.getFirstError()); //$NON-NLS-1$
 			}
 			List<Info> children = listResult.getResult();
 			List<Info> result = new ArrayList<Info>();
@@ -865,7 +865,7 @@ public class FileManager {
 			URI child = URIUtils.getChildURI(base.getURI(), URI.create(part));
 			InfoResult infoResult = this.info(CloverURI.createSingleURI(child));
 			if (!infoResult.success()) {
-				throw new IOException(infoResult.getFirstErrorMessage());
+				throw new IOException(FileOperationMessages.getString("FileManager.info_failed"), infoResult.getFirstError()); //$NON-NLS-1$
 			}
 			Info info = infoResult.getInfo();
 			if (info != null) {
@@ -885,7 +885,7 @@ public class FileManager {
 		List<String> parts = getParts(uriString);
 		InfoResult infoResult = info((SingleCloverURI) CloverURI.createURI(parts.get(0)));
 		if (!infoResult.success()) {
-			throw new IOException(infoResult.getFirstErrorMessage());
+			throw new IOException(FileOperationMessages.getString("FileManager.info_failed"), infoResult.getFirstError()); //$NON-NLS-1$
 		}
 		Info base = infoResult.getInfo();
 		if (base == null) {

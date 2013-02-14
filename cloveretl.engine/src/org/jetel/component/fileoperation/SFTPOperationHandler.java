@@ -118,7 +118,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 			ChannelSftp channel = session.channel;
 			Info sourceInfo = info(source, channel);
 			if (sourceInfo == null) {
-				throw new FileNotFoundException(source.toString());
+				throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.toString())); //$NON-NLS-1$
 			}
 			Info targetInfo = info(target, channel);
 			boolean targetChanged = false;
@@ -229,7 +229,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 	private void delete(ChannelSftp channel, URI uri, DeleteParameters params) throws IOException, SftpException {
 		Info info = info(uri, channel);
 		if (info == null) {
-			throw new FileNotFoundException(uri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 		}
 		delete(channel, info, params);
 	}
@@ -539,7 +539,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		}
 		Info rootInfo = info(parentUri, channel);
 		if (rootInfo == null) {
-			throw new FileNotFoundException(parentUri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), parentUri.toString())); //$NON-NLS-1$
 		}
 		if (parentUri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !rootInfo.isDirectory()) {
 			throw new FileNotFoundException(format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), parentUri)); //$NON-NLS-1$
