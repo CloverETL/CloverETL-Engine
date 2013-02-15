@@ -23,6 +23,7 @@ import java.io.StringWriter;
 
 import org.apache.log4j.Logger;
 import org.jetel.exception.CompoundException;
+import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -57,6 +58,14 @@ public class ExceptionUtils {
 				for (Throwable innerThrowable : ((CompoundException) throwable).getCauses()) {
 					stringWriter.append("\n");
 					stringWriter.append(stackTraceToString(innerThrowable));
+				}
+			}
+			
+			//StackTraceWrapperException has to be handled in special way - stacktrace of a cause is stored in local attribute
+			if (throwable instanceof StackTraceWrapperException) {
+				String causeStackTrace = ((StackTraceWrapperException) throwable).getCauseStackTrace();
+				if (causeStackTrace != null) {
+					stringWriter.append("Caused by: " + causeStackTrace);
 				}
 			}
 			return stringWriter.toString();
