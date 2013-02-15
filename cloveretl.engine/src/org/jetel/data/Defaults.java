@@ -147,6 +147,16 @@ public final class Defaults {
 		properties.putAll(prop);
 	}
 
+	private static long getLongProperties(String key, long def) {
+		String ret = getStringProperty(key);
+
+		if (ret == null) {
+			return def;
+		}
+
+		return Long.parseLong(ret);
+	}
+
 	private static int getIntProperties(String key, int def) {
 		String ret = getStringProperty(key);
 
@@ -255,6 +265,7 @@ public final class Defaults {
         OracleConnection.init();
         CTL.init();
         PortReadingWriting.init();
+        ConnectionPool.init();
     }
 
 	/**
@@ -774,6 +785,38 @@ public final class Defaults {
 		 */
 		public static int DATA_LENGTH;// = 2048;
 
+	}
+	
+	/**
+	 * Defaults for file operations' connection pool.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Feb 15, 2013
+	 */
+	public static final class ConnectionPool {
+		public static void init() {
+			MAX_IDLE_TIME = getLongProperties("ConnectionPool.MAX_IDLE_TIME", 1 * 60 * 1000L);
+			CLEANUP_INTERVAL = getLongProperties("ConnectionPool.CLEANUP_INTERVAL", 1 * 60 * 1000L);
+		}
+		
+		/**
+		 * If the connection has been sitting idle in the pool
+		 * longer than <code>MAX_IDLE_TIME</code>,
+		 * it will be removed by the next cleanup.
+		 */
+		public static long MAX_IDLE_TIME; // 1 * 60 * 1000L (1 minute)
+		
+		/**
+		 * How often will idle connections be removed from the pool.
+		 * 
+		 * If set to a negative number, 
+		 * idle connections will be kept forever and will only be removed
+		 * if they fail the test on borrow 
+		 * (i.e. if the underlying connection timeouts).
+		 */
+		public static long CLEANUP_INTERVAL; // 1 * 60 * 1000L (1 minute)
 	}
 
 }
