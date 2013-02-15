@@ -107,8 +107,7 @@ public class ReadableChannelPortIterator {
 			try {
 				portHandler = new PortHandler(portFileURL[i], ProcessingType.DISCRETE);
 			} catch (MalformedURLException e) {
-				throw new ComponentNotReadyException(UtilMessages.getString("ReadableChannelPortIterator_source_string") + 
-						e.getMessage() + UtilMessages.getString("ReadableChannelPortIterator_invalid")); //$NON-NLS-1$ //$NON-NLS-2$
+				throw new ComponentNotReadyException(UtilMessages.getString("ReadableChannelPortIterator_source_string"), e); //$NON-NLS-1$
 			}
 			
 			// prepare data field

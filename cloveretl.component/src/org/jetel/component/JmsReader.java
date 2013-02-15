@@ -216,7 +216,7 @@ public class JmsReader extends Node {
 		try {
 			consumer = connection.createConsumer(selector);
 		} catch (Exception e) {
-			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage(), e);
+			throw new ComponentNotReadyException("Unable to initialize JMS consumer", e);
 		}
 	}
 

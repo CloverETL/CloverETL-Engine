@@ -308,7 +308,7 @@ public class StringLib extends TLFunctionLibrary {
 				length = ((TLNumericValue<?>) params[2]).getInt();
 				from = ((TLNumericValue<?>) params[1]).getInt();
 			} catch (Exception ex) {
-				throw new TransformLangExecutorRuntimeException(params, "substring - " + ex.getMessage());
+				throw new TransformLangExecutorRuntimeException(params, "substring", ex);
 			}
 
 			if (params[0].type != TLValueType.STRING) {
@@ -318,7 +318,7 @@ public class StringLib extends TLFunctionLibrary {
 			try {
 				strBuf = (CloverString)StringUtils.subString(strBuf, ((TLStringValue) params[0]).getCharSequence(), from, length);
 			} catch (IOException e) {
-				throw new TransformLangExecutorRuntimeException(params, "substring - " + e.getMessage());
+				throw new TransformLangExecutorRuntimeException(params, "substring", e);
 			}
 			return val;
 		}
@@ -351,7 +351,7 @@ public class StringLib extends TLFunctionLibrary {
 			try {
 				length = ((TLNumericValue<?>) params[1]).getInt();
 			} catch (Exception ex) {
-				throw new TransformLangExecutorRuntimeException(params, "left - " + ex.getMessage());
+				throw new TransformLangExecutorRuntimeException(params, "left", ex );
 			}
 
 			if (params[0].type != TLValueType.STRING) {
@@ -361,7 +361,7 @@ public class StringLib extends TLFunctionLibrary {
 			try {
 				strBuf = (CloverString)StringUtils.subString(strBuf, ((TLStringValue) params[0]).getCharSequence(), 0, length);
 			} catch (IOException e) {
-				throw new TransformLangExecutorRuntimeException(params, "substring - " + e.getMessage());
+				throw new TransformLangExecutorRuntimeException(params, "substring", e);
 			}
 			return val;
 		}
@@ -394,7 +394,7 @@ public class StringLib extends TLFunctionLibrary {
 			try {
 				length = ((TLNumericValue<?>) params[1]).getInt();
 			} catch (Exception ex) {
-				throw new TransformLangExecutorRuntimeException(params, "right - " + ex.getMessage());
+				throw new TransformLangExecutorRuntimeException(params, "right", ex);
 			}
 
 			if (params[0].type != TLValueType.STRING) {
@@ -407,7 +407,7 @@ public class StringLib extends TLFunctionLibrary {
 			try {
 				strBuf = (CloverString)StringUtils.subString(strBuf, ((TLStringValue) params[0]).getCharSequence(), from, length);
 			} catch (IOException e) {
-				throw new TransformLangExecutorRuntimeException(params, "substring - " + e.getMessage());
+				throw new TransformLangExecutorRuntimeException(params, "substring", e);
 			}
 			return val;
 		}

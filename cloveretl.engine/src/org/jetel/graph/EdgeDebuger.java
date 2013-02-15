@@ -199,7 +199,7 @@ public class EdgeDebuger {
     	try {
 			return filter.isValid(record);
 		} catch (TransformException e) {
-			throw new RuntimeException("Edge (" + getId() + ") debugging failed in filter expression. " + e.getMessage() , e); 
+			throw new RuntimeException("Edge (" + getId() + ") debugging failed in filter expression.", e); 
 		}
     }
     

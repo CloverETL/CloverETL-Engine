@@ -380,7 +380,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			try {
 				sheet.addCell(name);
 			} catch (Exception e) {
-				throw new IOException(e.getMessage());
+				throw new IOException(e);
 			}
 		}
     }
@@ -477,7 +477,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 				setSheetNumber(-1);
 				prepareSheet();
 			} catch (Exception e) {
-				throw new IOException(e.getMessage());
+				throw new IOException(e);
 			}
 		}
 		currentRow++;

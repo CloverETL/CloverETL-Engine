@@ -189,7 +189,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 			
 			throw exception;
 		} catch (Exception e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		}
 	}
 

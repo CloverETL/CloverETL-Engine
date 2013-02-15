@@ -96,7 +96,7 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 		} catch (JSchException e) {
 			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
 			disconnectQuietly(connection);
 		}
@@ -152,7 +152,7 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 		} catch (JSchException e) {
 			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
 			disconnectQuietly(connection);
 		}
@@ -185,7 +185,7 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 		} catch (JSchException e) {
 			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
 			disconnectQuietly(connection);
 		}
@@ -205,7 +205,7 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 		} catch (JSchException e) {
 			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
 			disconnectQuietly(connection);
 		}
@@ -235,7 +235,7 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 		} catch (JSchException e) {
 			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
 			disconnectQuietly(connection);
 		}

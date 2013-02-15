@@ -57,7 +57,11 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 		super(message);
 	}
 
-    public BadDataFormatException(String message, Throwable cause) {
+	public BadDataFormatException(Throwable cause) {
+		super(cause);
+	}
+
+	public BadDataFormatException(String message, Throwable cause) {
         super(message, cause);
     }
     
@@ -71,7 +75,7 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         this.offendingValue = offendingValue;
     }
     
-    public synchronized void setNextException(BadDataFormatException next){
+	public synchronized void setNextException(BadDataFormatException next){
     	BadDataFormatException theEnd = this;
     	while (theEnd.next != null) {
     	    theEnd = theEnd.next;
@@ -110,13 +114,13 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 	}
 
 	public String getSimpleMessage() {
-		return super.getMessage();
+		return super.getMessage() != null ? super.getMessage() : getCause().getMessage();
 	}
 	
     @Override
     public String getMessage() {
         StringBuffer ret = new StringBuffer();
-        ret.append(super.getMessage());
+        ret.append(super.getMessage() != null ? super.getMessage() : "Error");
         
         if(recordNumber > -1) {
             ret.append(" in record ");

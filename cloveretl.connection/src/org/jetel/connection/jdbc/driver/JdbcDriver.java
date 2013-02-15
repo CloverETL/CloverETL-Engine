@@ -178,9 +178,9 @@ public class JdbcDriver {
         try {
             driver = (Driver) Class.forName(dbDriver, true, getClassLoader()).newInstance();
         } catch (ClassNotFoundException ex1) {
-            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. Can not find class: " + ex1.getMessage(), ex1);
+            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. Can not find class.", ex1);
         } catch (Exception ex1) {
-            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. General exception: " + ex1.getMessage(), ex1);
+            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'.", ex1);
         }
         if (driver == null)
             throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. No driver found. " + dbDriver );
@@ -208,10 +208,10 @@ public class JdbcDriver {
 			try {
 				DriverManager.deregisterDriver(driver);
 			} catch (SQLException e1) {
-				logger.error(e1.getMessage(), e1);
+				logger.error(e1);
 			} catch (SecurityException e2) {
 				// thrown by Sybase driver
-				logger.warn("SecurityException while DriverManager.deregisterDriver() message:" + e2.getMessage());
+				logger.warn("SecurityException while DriverManager.deregisterDriver()", e2);
 			}
 		}
 		

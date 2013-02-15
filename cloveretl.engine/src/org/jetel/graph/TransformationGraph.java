@@ -53,6 +53,7 @@ import org.jetel.graph.runtime.WatchDog;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.MemoryTracker;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -1081,7 +1082,7 @@ public final class TransformationGraph extends GraphElement {
 	        	try {
 	        		connection.checkConfig(status);
 	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, connection, Priority.HIGH);
+	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, connection, Priority.HIGH);
 	        		problem.setCauseException(e);
 	        		status.add(problem);
 	        	}
@@ -1092,7 +1093,7 @@ public final class TransformationGraph extends GraphElement {
 	        	try {
 	        		lookupTable.checkConfig(status);
 	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, lookupTable, Priority.HIGH);
+	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
 	        		problem.setCauseException(e);
 	        		status.add(problem);
 	        	}
@@ -1103,7 +1104,7 @@ public final class TransformationGraph extends GraphElement {
 	        	try {
 	        		sequence.checkConfig(status);
 	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, sequence, Priority.HIGH);
+	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, sequence, Priority.HIGH);
 	        		problem.setCauseException(e);
 	        		status.add(problem);
 	        	}

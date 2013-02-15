@@ -378,7 +378,7 @@ public class SimpleDataParser extends AbstractTextParser {
 				}
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException(getErrorMessage(ex.getMessage(), fieldBuffer, fieldIndex), ex);
+			throw new RuntimeException(getErrorMessage(fieldBuffer, fieldIndex), ex);
 		}
 
 	}
@@ -425,10 +425,9 @@ public class SimpleDataParser extends AbstractTextParser {
 	 * @return error message
 	 * @since September 19, 2002
 	 */
-	private String getErrorMessage(String exceptionMessage, CharSequence value, int field) {
+	private String getErrorMessage(CharSequence value, int field) {
 		StringBuffer message = new StringBuffer();
-		message.append(exceptionMessage);
-		message.append(" when parsing record #");
+		message.append("Error when parsing record #");
 		message.append(recordCounter);
 		if (field != -1) {
 			message.append(" field ");
@@ -452,7 +451,7 @@ public class SimpleDataParser extends AbstractTextParser {
 			record.getField(fieldIndex).fromString(data);
 		} catch (BadDataFormatException bdfe) {
 			if (exceptionHandler != null) {
-				exceptionHandler.populateHandler(bdfe.getMessage(), record,
+				exceptionHandler.populateHandler(null, record,
 						recordCounter, fieldIndex, data.toString(), bdfe);
 			} else {
 				bdfe.setRecordNumber(recordCounter);

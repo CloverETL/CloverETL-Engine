@@ -269,10 +269,9 @@ public abstract class XLSParser extends AbstractParser {
 	 *            fieldNumber
 	 * @return error message
 	 */
-	protected String getErrorMessage(String exceptionMessage, int recNo, int fieldNo) {
+	protected String getErrorMessage(int recNo, int fieldNo) {
 		StringBuffer message = new StringBuffer();
-		message.append(exceptionMessage);
-		message.append(" when parsing record from row ");
+		message.append("Error when parsing record from row ");
 		message.append(currentRow);
 		message.append(" field ");
 		message.append(metadata.getField(fieldNo).getName());

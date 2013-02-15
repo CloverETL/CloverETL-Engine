@@ -48,6 +48,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.NumberIterator;
 import org.jetel.util.SynchronizeUtils;
@@ -476,7 +477,7 @@ public class XLSReader extends Node {
 				status.add(new ConfigurationProblem("Data source issue - cannot be closed.", Severity.ERROR, this, Priority.NORMAL));
 			}
         } catch (IllegalArgumentException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR,
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR,
                     this, ConfigurationStatus.Priority.NORMAL);
             problem.setAttributeName(XML_SHEETNUMBER_ATTRIBUTE);
             status.add(problem);
@@ -605,7 +606,7 @@ public class XLSReader extends Node {
                     broadcastEOF();
                     throw bdfe;
                 } else {
-                    logger.info(bdfe.getMessage());
+                    logger.info(ExceptionUtils.exceptionChainToMessage(bdfe));
                     if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
                         logger.error("DataParser (" + getName() + "): Max error count exceeded.");
                         broadcastEOF();
@@ -623,12 +624,8 @@ public class XLSReader extends Node {
     @Override
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
-    	try {
-            reader.postExecute();
-    	}
-    	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
-    	}
+    	
+    	reader.postExecute();
     }
     
     @Override

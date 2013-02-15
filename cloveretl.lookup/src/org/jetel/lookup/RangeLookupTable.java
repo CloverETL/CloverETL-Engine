@@ -330,7 +330,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 					lookupTable.add(tmpRecord.duplicate());
 				}
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, e.getMessage(), e);
+				throw new ComponentNotReadyException(this, e);
 			} finally {
 				try {
 					dataParser.close();

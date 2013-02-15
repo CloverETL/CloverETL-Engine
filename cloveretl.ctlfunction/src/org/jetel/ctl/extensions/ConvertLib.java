@@ -414,7 +414,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			return formatter.parseInt(input);
 		} catch (ParseException e) {
 			throw new TransformLangExecutorRuntimeException("str2integer - can't convert \"" + input + "\" " + 
-					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : "") + " - " + e.getMessage());
+					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : ""), e);
 		}
 	}
 	
@@ -433,7 +433,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseInt(input);
 		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("str2integer - can't convert \"" + input + "\" - " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("str2integer - can't convert \"" + input + "\"", e);
 		}
 	}
 	class Str2IntegerFunction implements TLFunctionPrototype {
@@ -479,7 +479,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			return formatter.parseLong(input);
 		} catch (ParseException e) {
 			throw new TransformLangExecutorRuntimeException("str2long - can't convert \"" + input + "\" " + 
-					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : "" + " - " + e.getMessage()));
+					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : ""), e);
 		}
 	}
 	
@@ -497,7 +497,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseLong(input);
 		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("str2long - can't convert \"" + input + "\" - " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("str2long - can't convert \"" + input + "\"", e);
 		}
 	}
 	class Str2LongFunction implements TLFunctionPrototype {
@@ -543,7 +543,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			return formatter.parseDouble(input);
 		} catch (ParseException e) {
 			throw new TransformLangExecutorRuntimeException("str2double - can't convert \"" + input + "\" " + 
-					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : "") + " - " + e.getMessage());
+					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : ""), e);
 		}
 	}
 	
@@ -557,7 +557,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseDouble(input);
 		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("str2double - can't convert \"" + input + "\" - " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("str2double - can't convert \"" + input + "\"", e);
 		}
 	}
 	class Str2DoubleFunction implements TLFunctionPrototype {
@@ -1161,7 +1161,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return XML.toJSONObject(xml).toString();
 		} catch (JSONException e) {
-			throw new TransformLangExecutorRuntimeException("xml2json - can't convert \"" + xml + "\": " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("xml2json - can't convert \"" + xml + "\"", e);
 		}
 	}
 	
@@ -1185,7 +1185,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return XML.toString(new JSONObject(json));
 		} catch (JSONException e) {
-			throw new TransformLangExecutorRuntimeException("json2xml - can't convert \"" + json + "\": " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("json2xml - can't convert \"" + json + "\"", e);
 		}
 	}
 	

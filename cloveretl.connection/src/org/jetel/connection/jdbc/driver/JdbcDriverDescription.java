@@ -23,8 +23,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
@@ -216,7 +216,7 @@ public class JdbcDriverDescription extends PluginableItemDescription {
             try {
                 urls[i] = getExtension().getPlugin().getURL(libraryPaths[i]);
             } catch (MalformedURLException ex1) {
-                throw new ComponentNotReadyException("Cannot create JDBC driver '" + database + "'. Malformed URL: " + ex1.getMessage(), ex1);
+                throw new ComponentNotReadyException("Cannot create JDBC driver '" + database + "'.", ex1);
             }
         }
         

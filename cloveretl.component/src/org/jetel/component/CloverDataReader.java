@@ -40,6 +40,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
@@ -305,7 +306,7 @@ public class CloverDataReader extends Node {
 				tempChannel = FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), url.toString());
     		}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem(e.getMessage(), Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
         } finally {
             try {
                 if (tempChannel != null && tempChannel.isOpen()) {

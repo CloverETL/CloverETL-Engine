@@ -24,6 +24,8 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 
+import org.jetel.util.ExceptionUtils;
+
 /**
  * @author csochor (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * 
@@ -144,7 +146,7 @@ public class JavaNumericFormatter implements NumericFormatter {
 		try {
 			return (BigDecimal) numberFormat.parse(seq.toString());
 		} catch (NumberFormatException e) {
-			throw new ParseException(e.getMessage(), -1);
+			throw new ParseException(ExceptionUtils.exceptionChainToMessage(e), -1);
 		}
 	}
 

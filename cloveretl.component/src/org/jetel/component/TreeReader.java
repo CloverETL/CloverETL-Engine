@@ -70,6 +70,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -87,6 +88,7 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.sequence.PrimitiveSequence;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SourceIterator;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
@@ -147,29 +149,25 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	public static final String XML_IMPLICIT_MAPPING_ATTRIBUTE = "implicitMapping";
 
 	protected static void readCommonAttributes(TreeReader treeReader, ComponentXMLAttributes xattribs)
-			throws XMLConfigurationException {
-		try {
-			treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				treeReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-			treeReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
-
-			String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
-			String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
-			if (mappingURL != null) {
-				treeReader.setMappingURL(mappingURL);
-			} else if (mapping != null) {
-				treeReader.setMappingString(mapping);
-			} else {
-				// throw configuration exception
-				xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
-			}
-
-			treeReader.setImplicitMapping(xattribs.getBoolean(XML_IMPLICIT_MAPPING_ATTRIBUTE, false));
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(treeReader.getType() + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
+			throws XMLConfigurationException, AttributeNotFoundException {
+		treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			treeReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}
+		treeReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
+
+		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
+		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
+		if (mappingURL != null) {
+			treeReader.setMappingURL(mappingURL);
+		} else if (mapping != null) {
+			treeReader.setMappingString(mapping);
+		} else {
+			// throw configuration exception
+			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
+		}
+
+		treeReader.setImplicitMapping(xattribs.getBoolean(XML_IMPLICIT_MAPPING_ATTRIBUTE, false));
 	}
 
 	// DataRecordProvider, DataRecordReceiver, XPathSequenceProvider properties
@@ -541,7 +539,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				bdfe.setFieldNumber(e.getFieldMetadata().getNumber());
 				bdfe.setFieldName(e.getFieldMetadata().getName());
 				bdfe.setRecordName(e.getFieldMetadata().getDataRecordMetadata().getName());
-				String errorMsg = bdfe.getMessage() + "; output port: " + e.getPortIndex();
+				String errorMsg = ExceptionUtils.exceptionChainToMessage(bdfe) + "; output port: " + e.getPortIndex();
 				if (!sourceIterator.isSingleSource()) {
 					errorMsg += "; input source: " + sourceIterator.getCurrentFileName();
 				}
@@ -561,7 +559,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		errorLogRecord.getField(i++).setValue(e.getFieldMetadata().getNumber() + 1);
 		setCharSequenceToField(e.getFieldMetadata().getName(), errorLogRecord.getField(i++));
 		setCharSequenceToField(e.getCause().getOffendingValue(), errorLogRecord.getField(i++));
-		setCharSequenceToField(e.getCause().getMessage(), errorLogRecord.getField(i++));
+		setCharSequenceToField(ExceptionUtils.exceptionChainToMessage(e.getCause()), errorLogRecord.getField(i++));
 		if (errorLogRecord.getNumFields() > i) {
 			setCharSequenceToField(sourceIterator.getCurrentFileName(), errorLogRecord.getField(i++));
 		}

@@ -38,6 +38,7 @@ import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.hadoop.connection.HadoopURLUtils;
 import org.jetel.logger.SafeLog;
 import org.jetel.logger.SafeLogFactory;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.CustomPathResolver;
 import org.jetel.util.file.FileUtils;
 
@@ -74,8 +75,8 @@ public class HadoopPathResolver implements CustomPathResolver {
 						HadoopDataInput istream = hconn.open(new URI(inputURI.getPath()));
 						return istream.getDataInputStream();
 					} catch (ComponentNotReadyException e) {
-						log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s",e.getGraphElement().getId(), e.getGraphElement().getName(), e.getMessage()));
-						throw new IOException("Cannot connect to HDFS - "+ e.getMessage(), e);
+						log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s",e.getGraphElement().getId(), e.getGraphElement().getName(), ExceptionUtils.exceptionChainToMessage(e)));
+						throw new IOException("Cannot connect to HDFS", e);
 					}
 				}
 			} catch (URISyntaxException e) {
@@ -170,8 +171,8 @@ public class HadoopPathResolver implements CustomPathResolver {
 					}
 					((HadoopConnection)conn).getFileSystemService(); // just testing that we can connect, we don't store the connection
 				} catch (ComponentNotReadyException e) {
-					log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s", e.getGraphElement().getId(), e.getGraphElement().getName(), e.getMessage()));
-					throw new IOException("Cannot connect to HDFS - " + e.getMessage(), e);
+					log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s", e.getGraphElement().getId(), e.getGraphElement().getName(), ExceptionUtils.exceptionChainToMessage(e)));
+					throw new IOException("Cannot connect to HDFS", e);
 				}
 				// release connection
 				conn.free();

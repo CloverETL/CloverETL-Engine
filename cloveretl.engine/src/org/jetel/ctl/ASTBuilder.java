@@ -65,6 +65,7 @@ import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.IDictionaryType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -477,7 +478,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			}
 		} catch (Exception e) {
 			// underlying lookup cannot be initialized
-			error(node,"Lookup table has configuration error: " + e.getMessage());
+			error(node, ExceptionUtils.exceptionChainToMessage("Lookup table has configuration error", e));
 			node.setType(TLType.ERROR);
 			return node;
 		} 
@@ -528,7 +529,7 @@ public class ASTBuilder extends NavigatingVisitor {
 				return node;
 			} catch (ComponentNotReadyException e) {
 				// underlying lookup is misconfigured
-				error(node,"Lookup table has configuration errors: " + e.getMessage());
+				error(node, ExceptionUtils.exceptionChainToMessage("Lookup table has configuration errors", e));
 				node.setType(TLType.ERROR);
 				return node;
 			}
@@ -868,11 +869,11 @@ public class ASTBuilder extends NavigatingVisitor {
 		} catch (ParseException e) {
 			switch (lit.getTokenKind()) {
 			case TransformLangParserConstants.DATE_LITERAL:
-				errorMessage = e.getMessage();
+				errorMessage = ExceptionUtils.exceptionChainToMessage(e);
 				hint = "Date literal must match format pattern 'YYYY-MM-dd' and has to be valid date value.";
 				break;
 			case TransformLangParserConstants.DATETIME_LITERAL:
-				errorMessage = e.getMessage();
+				errorMessage = ExceptionUtils.exceptionChainToMessage(e);
 				hint = "Date-time literal must match format pattern 'YYYY-MM-DD HH:MM:SS' and has to be valid date-time value.";
 				break;
 			default:

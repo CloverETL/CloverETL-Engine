@@ -245,7 +245,7 @@ public class StructureFormatter extends AbstractFormatter {
 			dataBuffer.put(maskBytes, lastIndex, maskBytes.length - lastIndex);
 	        sentBytes+=dataBuffer.position()-mark;
 		} catch (CharacterCodingException e) {
-            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
+            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ".\nRecord: " +record.toString(), e);
 		}
         
         return sentBytes;

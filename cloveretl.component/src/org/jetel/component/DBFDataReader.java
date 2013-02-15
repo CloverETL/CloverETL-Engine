@@ -39,6 +39,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -191,7 +192,7 @@ public class DBFDataReader extends Node {
 					if (policyType == PolicyType.STRICT) {
 						throw bdfe;
 					} else {
-						logger.info(bdfe.getMessage());
+						logger.info(ExceptionUtils.exceptionChainToMessage(bdfe));
 					}
 				}
 				SynchronizeUtils.cloverYield();
@@ -207,12 +208,8 @@ public class DBFDataReader extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-    	try {
-			reader.postExecute();
-		}
-		catch (ComponentNotReadyException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
-		}
+		
+		reader.postExecute();
 	}
 	
 	@Override
@@ -421,7 +418,7 @@ public class DBFDataReader extends Node {
     		}
             reader.checkConfig(metadata);
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

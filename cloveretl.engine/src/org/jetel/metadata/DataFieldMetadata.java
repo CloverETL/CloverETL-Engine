@@ -32,6 +32,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.formatter.BooleanFormatter;
 import org.jetel.util.formatter.BooleanFormatterFactory;
 import org.jetel.util.formatter.DateFormatter;
@@ -1163,7 +1164,8 @@ public class DataFieldMetadata implements Serializable {
 							Severity.WARNING, null, Priority.NORMAL));
 				}
 			} catch (ParseBooleanException e) {
-				status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will not be parsable (" + e.getMessage() + ").",
+				status.add(new ConfigurationProblem(
+						ExceptionUtils.exceptionChainToMessage("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will not be parsable.", e),
 						Severity.WARNING, null, Priority.NORMAL));
 			}
 
@@ -1174,7 +1176,8 @@ public class DataFieldMetadata implements Serializable {
 							Severity.WARNING, null, Priority.NORMAL));
 				}
 			} catch (ParseBooleanException e) {
-				status.add(new ConfigurationProblem("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will not be parsable (" + e.getMessage() + ").",
+				status.add(new ConfigurationProblem(
+						ExceptionUtils.exceptionChainToMessage("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will not be parsable.", e),
 						Severity.WARNING, null, Priority.NORMAL));
 			}
 		}

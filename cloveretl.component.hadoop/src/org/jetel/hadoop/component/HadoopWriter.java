@@ -37,6 +37,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.connection.HadoopConnection;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -149,7 +150,7 @@ public class HadoopWriter extends Node {
 		try {
 			writer.close();
 		} catch (IOException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 
@@ -166,7 +167,7 @@ public class HadoopWriter extends Node {
 				connection = null;
 			}
 		} catch (Throwable t) {
-			logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+			logger.warn("Resource releasing failed for '" + getId() + "'.", t);
 		}
 	}
 
@@ -185,7 +186,7 @@ public class HadoopWriter extends Node {
 			prepareConnection();
 			HadoopReader.checkConnectionIDs(connectionId, connection, this, status);			
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),
 					ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());

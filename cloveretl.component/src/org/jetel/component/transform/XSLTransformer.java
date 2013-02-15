@@ -18,8 +18,6 @@
  */
 package org.jetel.component.transform;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -162,50 +160,34 @@ public class XSLTransformer {
 	private Exception processTransformException(Exception e) {
     	if (e instanceof TransformerConfigurationException) {
     		TransformerConfigurationException transConEx = (TransformerConfigurationException) e;
-            String errString = "Transformer Config Error: " + transConEx.getMessage();
-
-            Throwable ex = transConEx;
-            if(transConEx.getException() != null) {
-                ex = transConEx.getException();
-                errString += "\n" + ex.getMessage();
-            }
-
-            return new Exception(errString, transConEx);
+            return new Exception("Transformer Config Error", transConEx);
     	}
     	
     	if (e instanceof TransformerException) {
     		TransformerException transEx = (TransformerException) e;
-            String errString = "Transformation error: " + transEx.getMessage();
-
-            Throwable ex = transEx;
-            if(transEx.getException() != null) {
-                ex = transEx.getException();
-                errString += "\n" + ex.getMessage();
-            }
-
-            return new Exception(errString, transEx);
+            return new Exception("Transformation error", transEx);
     	}
     	return e;
     }
 
-	public static void main(String[] args) {
-		XSLTransformer transformer = new XSLTransformer();
-
-		String inXML = new String("<DBConnection a=\"b\">abc</DBConnection>");
-		ByteArrayInputStream bais = new ByteArrayInputStream(inXML.getBytes());
-
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-		String s = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " + "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">" + "</xsl:stylesheet>";
-
-		try {
-			transformer.init(new ByteArrayInputStream(s.getBytes()));
-			transformer.transform(bais, baos);
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-		}
-
-		System.out.println(new String(baos.toByteArray()));
-	}
+//	public static void main(String[] args) {
+//		XSLTransformer transformer = new XSLTransformer();
+//
+//		String inXML = new String("<DBConnection a=\"b\">abc</DBConnection>");
+//		ByteArrayInputStream bais = new ByteArrayInputStream(inXML.getBytes());
+//
+//		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+//
+//		String s = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " + "<xsl:stylesheet xmlns:xsl=\"http://www.w3.org/1999/XSL/Transform\" version=\"1.0\">" + "</xsl:stylesheet>";
+//
+//		try {
+//			transformer.init(new ByteArrayInputStream(s.getBytes()));
+//			transformer.transform(bais, baos);
+//		} catch (Exception e) {
+//			System.err.println(e.getMessage());
+//		}
+//
+//		System.out.println(new String(baos.toByteArray()));
+//	}
 
 }

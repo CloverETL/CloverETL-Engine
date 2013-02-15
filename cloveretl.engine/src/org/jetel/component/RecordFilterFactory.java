@@ -83,9 +83,9 @@ public class RecordFilterFactory {
 				  }
 				  filter.init();
 			} catch (ParseException ex) {
-                throw new ComponentNotReadyException("Parser error when parsing expression: "+ex.getMessage());
+                throw new ComponentNotReadyException("Parser error when parsing expression", ex);
             } catch (Exception e) {
-				throw new ComponentNotReadyException("Error when initializing expression: "+e.getMessage());
+				throw new ComponentNotReadyException("Error when initializing expression", e);
 			}
 		}
 		

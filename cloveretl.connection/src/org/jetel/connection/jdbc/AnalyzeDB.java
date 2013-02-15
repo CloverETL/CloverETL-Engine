@@ -43,6 +43,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.ExceptionUtils;
 
 /**
  *  Class easing creation of Clover metadata describing data originating in Database.<br>
@@ -164,7 +165,7 @@ public class AnalyzeDB {
 					if (config.getProperty("dbURL") != null) optionSwitch |= 0x02;
 					if (config.getProperty("database") != null) optionSwitch |= 0x03;
 				}catch(Exception ex){
-					System.err.println("[Error] "+ex.getMessage());
+					System.err.println("[Error] " + ExceptionUtils.exceptionChainToMessage(ex));
 					System.exit(-1);
 				}
 			} else if (argv[i].equalsIgnoreCase("-plugins")) {
@@ -196,11 +197,11 @@ public class AnalyzeDB {
 				reader.close();
 			}
 			catch (FileNotFoundException ex) {
-				System.err.println("[Error] " + ex.getMessage());
+				System.err.println(ExceptionUtils.exceptionChainToMessage("[Error]", ex));
 				System.exit(-1);
 			}
 			catch (IOException ex) {
-				System.err.println("[Error] " + ex.getMessage());
+				System.err.println(ExceptionUtils.exceptionChainToMessage("[Error]", ex));
 				System.exit(-1);
 			}
 			query = stringBuf.toString();
@@ -215,7 +216,7 @@ public class AnalyzeDB {
 			doAnalyze(config);
 		}
 		catch (Exception ex) {
-			System.err.println("\n[Error] " + ex.getMessage());
+			System.err.println(ExceptionUtils.exceptionChainToMessage("\n[Error]", ex));
 			System.exit(-1);
 		}
 	}
@@ -250,7 +251,7 @@ public class AnalyzeDB {
 		try {
             connection.init();
         } catch (ComponentNotReadyException e) {
-            throw new IOException(e.getMessage());
+            throw new IOException(e);
         }
         
 		// do we want just to display driver properties ?
@@ -306,7 +307,7 @@ public class AnalyzeDB {
 		try{
 			strBuf.append(SQLUtil.jetelType2Str(fieldType));
 		}catch(Exception ex){
-			throw new RuntimeException(ex.getMessage() + " field name " + metadata.getColumnName(fieldNo));
+			throw new RuntimeException("Field name " + metadata.getColumnName(fieldNo), ex);
 		}
 		
 		strBuf.append("\"");

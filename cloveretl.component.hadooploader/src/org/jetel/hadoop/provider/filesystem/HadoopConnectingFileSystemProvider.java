@@ -78,7 +78,7 @@ public class HadoopConnectingFileSystemProvider implements HadoopConnectingFileS
 		try {
 			dfs = FileSystem.get(FileSystem.getDefaultUri(config), config, connData.getUser());
 		} catch (InterruptedException ex) {
-			throw new RuntimeException("Hadoop client API internal exception occured. Reason: " + ex.getMessage(), ex);
+			throw new RuntimeException("Hadoop client API internal exception occured.", ex);
 		}
 	}
 	

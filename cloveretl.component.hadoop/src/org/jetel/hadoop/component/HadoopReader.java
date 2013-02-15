@@ -43,6 +43,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.hadoop.connection.HadoopURLUtils;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
@@ -138,7 +139,7 @@ public class HadoopReader extends Node {
 					if (policyType == PolicyType.STRICT) {
 						throw bdfe;
 					} else {
-						logger.info(bdfe.getMessage());
+						logger.info(bdfe);
 					}
 				}
 				SynchronizeUtils.cloverYield();
@@ -154,11 +155,8 @@ public class HadoopReader extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		try {
-			reader.postExecute();
-		} catch (ComponentNotReadyException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
-		}
+		
+		reader.postExecute();
 	}
 
 	@Override
@@ -180,7 +178,7 @@ public class HadoopReader extends Node {
 				connection = null;
 			}
 		} catch (Throwable t) {
-			logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+			logger.warn("Resource releasing failed for '" + getId() + "'.", t);
 		}
 	}
 
@@ -375,16 +373,16 @@ public class HadoopReader extends Node {
 			}
 			reader.checkConfig(metadata);
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());
 			}
 			status.add(problem);
 		} catch (Exception e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.toString(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 			status.add(problem);
 		} catch (NoClassDefFoundError e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.toString(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			status.add(problem);
 		} finally {
 			free();

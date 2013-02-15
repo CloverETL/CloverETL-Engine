@@ -138,7 +138,7 @@ public class GreedyURLClassLoader extends URLClassLoader {
 		        if (log.isTraceEnabled())
 			      	   log.trace(this+" S-F loaded:  "+ name + " by: "+getClassLoaderId(c.getClassLoader()));
 		    } catch (SecurityException se) { // intended to catch java.lang.SecurityException: sealing violation: package oracle.jdbc.driver is sealed at java.net.URLClassLoader.defineClass (URLClassLoader.java:227)
-		    	log.warn("GreedyURLClassLoader: cannot load "+name+" due to "+"SecurityException:"+se.getMessage()+" loading from parent class-loader:"+this.getParent());
+		    	log.warn("GreedyURLClassLoader: cannot load "+name+" due to SecurityException loading from parent class-loader:"+this.getParent(), se);
 		        if (log.isTraceEnabled())
 			      	   log.trace(this+" S-F loading: "+ name + " by parent: "+getClassLoaderId(getParent()));
 		    	c = getParent().loadClass(name);

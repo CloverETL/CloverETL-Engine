@@ -54,7 +54,7 @@ public class GeneralObjectFactory {
                 registerGeneralObject(description);
             } catch(Exception e) {
                 logger.error("Cannot create general object description, extension in plugin manifest is not valid.\n"
-                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());
+                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension, e);
             }
         }
 	}

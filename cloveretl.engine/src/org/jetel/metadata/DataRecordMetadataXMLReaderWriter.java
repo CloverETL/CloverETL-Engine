@@ -248,21 +248,20 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					+ ex.getLineNumber() + " row " + ex.getColumnNumber(), ex);
 			return null;
 		} catch (ParserConfigurationException ex) {
-			logger.error(ex.getMessage());
+			logger.error(ex);
 			return null;
 		} catch (Exception ex) {
-			logger.error(ex.getMessage());
+			logger.error(ex);
 			return null;
 		}
 
 		try {
 			return parseRecordMetadata(document, metadataId);
 		} catch (DOMException ex) {
-			logger.error(ex.getMessage());
+			logger.error(ex);
 			return null;
 		} catch (Exception ex) {
-			logger.error("parseRecordMetadata method call: "
-					+ ex.getMessage());
+			logger.error("parseRecordMetadata method call", ex);
 			return null;
 		}
 	}

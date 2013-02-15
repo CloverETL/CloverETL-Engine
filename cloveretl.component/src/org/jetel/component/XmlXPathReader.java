@@ -40,6 +40,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.XmlUtils;
@@ -258,7 +259,7 @@ public class XmlXPathReader extends Node {
 			        if(policyType == PolicyType.STRICT) {
 			            throw bdfe;
 			        } else {
-			            logger.info(bdfe.getMessage());
+			            logger.info(ExceptionUtils.exceptionChainToMessage(bdfe));
 			        }
 			    }
 			    SynchronizeUtils.cloverYield();
@@ -303,12 +304,7 @@ public class XmlXPathReader extends Node {
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
 
-    	try {
-    		reader.postExecute();
-    	}
-    	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
-    	}
+    	reader.postExecute();
     }
 	
 	@Override

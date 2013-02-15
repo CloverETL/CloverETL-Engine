@@ -226,15 +226,13 @@ public class DBFDataParser extends AbstractParser {
         } catch (BadDataFormatException bdfe) {
         	bdfe.setRecordNumber(recordCounter);
             if (exceptionHandler != null) { //use handler only if configured
-                exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(),
+                exceptionHandler.populateHandler(getErrorMessage(
                         data, recordCounter, fieldNum), record, recordCounter, fieldNum, data.toString(), bdfe);
             } else {
-                throw new RuntimeException(getErrorMessage(bdfe.getMessage(),
-                        data, recordCounter, fieldNum));
+                throw new RuntimeException(getErrorMessage(data, recordCounter, fieldNum), bdfe);
             }
         } catch (Exception ex) {
-            throw new RuntimeException(getErrorMessage(ex.getMessage(), data,
-                    recordCounter, fieldNum));
+            throw new RuntimeException(getErrorMessage(data, recordCounter, fieldNum), ex);
         }
     }
 
@@ -289,7 +287,7 @@ public class DBFDataParser extends AbstractParser {
         try {
         	read = dbfAnalyzer.analyze(dbfFile, metadata.getName());
         } catch (Exception ex) {
-            throw new ComponentNotReadyException(ex.getMessage());
+            throw new ComponentNotReadyException(ex);
         }
         //set-up buffers
         charBuffer = CharBuffer.allocate(dbfAnalyzer.getRecSize());
@@ -310,9 +308,7 @@ public class DBFDataParser extends AbstractParser {
             //dbfFile.position(dbfAnalyzer.getDBFDataOffset());
             dbfFile.read(ByteBuffer.allocate(dbfAnalyzer.getDBFDataOffset()-read));
         } catch (IOException ex) {
-            throw new ComponentNotReadyException(
-                    "Error when setting initial reading position: "
-                            + ex.getMessage());
+            throw new ComponentNotReadyException("Error when setting initial reading position", ex);
         }
         //verify that metadata correspond to num of fields (plus 1 - deleted flag)
         int dbfFieldCount=0;
@@ -461,11 +457,9 @@ public class DBFDataParser extends AbstractParser {
      * @return error message
      * @since September 19, 2002
      */
-    private String getErrorMessage(String exceptionMessage, CharSequence value,
-            int recNo, int fieldNo) {
+    private String getErrorMessage(CharSequence value, int recNo, int fieldNo) {
         StringBuffer message = new StringBuffer();
-        message.append(exceptionMessage);
-        message.append(" when parsing record #").append(recordCounter);
+        message.append("Error when parsing record #").append(recordCounter);
         message.append(" field ").append(metadata.getField(fieldNo).getName());
         message.append(" value \"").append(value).append("\"");
         return message.toString();

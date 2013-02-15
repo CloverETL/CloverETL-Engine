@@ -309,7 +309,7 @@ public class FixLenDataFormatter extends AbstractFormatter {
 					}
 				}
 			} catch (CharacterCodingException e) {
-	            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
+	            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ".\nRecord: " +record.toString(), e);
 			}
 		} else {
 			try {
@@ -325,7 +325,7 @@ public class FixLenDataFormatter extends AbstractFormatter {
 					record.getField(i).toByteBuffer(dataBuffer, encoder);
 				}
 			} catch (CharacterCodingException e) {
-	            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
+	            throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue() + " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset() + ".\nRecord: " +record.toString(), e);
 			}
 		}
 			

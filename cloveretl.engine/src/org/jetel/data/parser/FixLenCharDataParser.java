@@ -288,7 +288,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 				inChannel.read(byteBuffer.buf());	// write to buffer
 				byteBuffer.flip();	// ready reading
 			} catch (IOException e) {
-				throw new JetelException(e.getMessage());
+				throw new JetelException(e);
 			}
 			charBuffer.compact();	// ready for writing
 			decoder.decode(byteBuffer.buf(), charBuffer, false);

@@ -182,7 +182,7 @@ public class ByteBufferParser extends AbstractParser {
 			
 			return true;
 		} catch (IOException e) {
-			throw new JetelException(e.getMessage(), e);
+			throw new JetelException(e);
 		} catch (BufferUnderflowException e) {
 			throw new JetelException("Invalid end of stream.", e);
 		}

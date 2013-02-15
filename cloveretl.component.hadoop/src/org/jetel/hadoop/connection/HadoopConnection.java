@@ -278,7 +278,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			}
 		} catch (HadoopException ex) {
 			free(); // roll back
-			throw new ComponentNotReadyException("Could not create instance of Hadoop provider. Reason: " + ex.getMessage(), ex);
+			throw new ComponentNotReadyException("Could not create instance of Hadoop provider.", ex);
 		} catch (RuntimeException ex) {
 			free(); // roll back
 			throw ex;
@@ -394,7 +394,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		try {
 			loadConfigFileIfNeeded(config);
 		} catch (ComponentNotReadyException e) { // thrown iff loading of a config file fails
-			status.add(e.getMessage(), e, Severity.ERROR, this, Priority.NORMAL, XML_CONFIG_KEY);
+			status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_CONFIG_KEY);
 			return super.checkConfig(status);
 		}
 		

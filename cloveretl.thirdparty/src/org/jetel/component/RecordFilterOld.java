@@ -18,7 +18,6 @@
  */
 package org.jetel.component;
 import java.lang.reflect.Array;
-
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,7 +27,6 @@ import org.jetel.data.DataFieldFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
-import org.jetel.data.Defaults.Component;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -141,14 +139,14 @@ public class RecordFilterOld {
 				try {
 					filterSpecs[i] = new FilterItem(fieldNum.intValue(), new RegexField(filterValueStr), AND);
 				} catch (Exception ex) {
-					throw new RuntimeException(ex.getMessage() + " - error when populating filter's field " + filterField + " with value " + filterValueStr);
+					throw new RuntimeException("Error when populating filter's field " + filterField + " with value " + filterValueStr, ex);
 				}
 			} else {
 				DataField filterFieldValue = DataFieldFactory.createDataField(fieldMetadata.getType(), fieldMetadata, false);
 				try {
 					filterFieldValue.fromString(filterValueStr);
 				} catch (Exception ex) {
-					throw new RuntimeException(ex.getMessage() + " - error when populating filter's field " + filterField + " with value " + filterValueStr);
+					throw new RuntimeException("Error when populating filter's field " + filterField + " with value " + filterValueStr, ex);
 				}
 
 				filterSpecs[i] = new FilterItem(fieldNum.intValue(), cmpOperator, filterFieldValue, AND);

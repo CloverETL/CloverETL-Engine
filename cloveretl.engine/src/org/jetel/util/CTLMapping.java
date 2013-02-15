@@ -445,7 +445,7 @@ public class CTLMapping {
 						}
 					}
 				}
-				throw new ComponentNotReadyException(component, xmlAttribute, mfe.getMessage());
+				throw new ComponentNotReadyException(component, xmlAttribute, mfe);
 			} catch (Exception e) {
 				throw new JetelRuntimeException(name + " is invalid.", e);
 			}

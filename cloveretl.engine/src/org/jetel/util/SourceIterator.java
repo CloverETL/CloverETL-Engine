@@ -145,7 +145,7 @@ public class SourceIterator {
 			} catch (UnsupportedEncodingException e) {
 				throw new JetelException("The field '" + portReadingIterator.getLastFieldName() + "' contain an value that cannot be translated by " + charset + " charset.");
 			} catch (Exception e) {
-				throw new JetelException("Port reading error: " + e.getMessage(), e);
+				throw new JetelException("Port reading error", e);
 			}
 		}
 

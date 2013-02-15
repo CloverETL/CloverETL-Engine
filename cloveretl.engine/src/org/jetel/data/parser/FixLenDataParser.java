@@ -268,7 +268,7 @@ public abstract class FixLenDataParser extends AbstractParser implements TextPar
 			throw exception;			
 		}
 		// set handler
-		exceptionHandler.populateHandler(exception.getMessage(), record, recordIdx - 1,
+		exceptionHandler.populateHandler(null, record, recordIdx - 1,
 				fieldIdx, offendingValue.toString(), exception);
 	}
 		

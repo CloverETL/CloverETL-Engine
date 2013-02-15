@@ -43,6 +43,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
@@ -494,7 +495,7 @@ public class XLSWriter extends Node {
         try {
             FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR,
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR,
                     this, ConfigurationStatus.Priority.NORMAL);
 
             if (!StringUtils.isEmpty(e.getAttributeName())) {
@@ -527,7 +528,7 @@ public class XLSWriter extends Node {
                             Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
                 }
             } catch (IllegalArgumentException exception) {
-                status.add(new ConfigurationProblem(exception.getMessage(), Severity.ERROR, this,
+                status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(exception), Severity.ERROR, this,
                         Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
             }
         }
@@ -632,7 +633,7 @@ public class XLSWriter extends Node {
     		writer.close();
     	}
     	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    		throw new ComponentNotReadyException(e);
     	}
     }
     
@@ -643,7 +644,7 @@ public class XLSWriter extends Node {
 			try {
 				writer.close();
 			} catch(Throwable t) {
-				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+				logger.warn("Resource releasing failed for '" + getId() + "'.", t);
 			}
     }
     

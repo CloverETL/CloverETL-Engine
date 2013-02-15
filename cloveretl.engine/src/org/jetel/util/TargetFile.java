@@ -390,7 +390,7 @@ public class TargetFile {
 					outputPort.eof();
 				}
 			} catch (InterruptedException e) {
-				throw new IOException(e.getMessage());
+				throw new IOException(e);
 			}
     	}
     }

@@ -428,7 +428,7 @@ public class AggregateProcessor {
 				} catch (Exception e) {
 					// report failed function and field
 					throw new RuntimeException("Exception in aggregate function '" + function.getName() +
-							"' on field '" + function.getInputFieldMetadata().getName() + "': " + e.getMessage(), e);
+							"' on field '" + function.getInputFieldMetadata().getName() + "'", e);
 				}
 			}
 		}
@@ -443,7 +443,7 @@ public class AggregateProcessor {
 					// report failed function and fields
 					throw new RuntimeException("Failed to store result of aggregate function '" + function.getName() +
 							"' of field '" + function.getInputFieldMetadata().getName() +
-							"' into field '" + function.getOutputFieldMetadata().getName() + "': " + e.getMessage(), e);
+							"' into field '" + function.getOutputFieldMetadata().getName() + "'", e);
 				}
 			}
 		}

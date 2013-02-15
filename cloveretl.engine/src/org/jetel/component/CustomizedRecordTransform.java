@@ -46,6 +46,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.primitive.MultiValueMap;
 import org.jetel.util.string.StringUtils;
@@ -1411,8 +1412,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @throws TransformException
 	 */
 	private void error(Rule[][] ruleArray, int recNo, int FieldNo, Exception ex) throws TransformException {
-		errorMessage = "TransformException caused by source: " + ruleArray[recNo][FieldNo].getSource() +
-			". Reason: " + ex.getMessage();
+		errorMessage = "TransformException caused by source: " + ruleArray[recNo][FieldNo].getSource();
 		if (logger != null) {
 			logger.error(errorMessage, ex);
 		}
@@ -2304,14 +2304,14 @@ class ConstantRule extends Rule {
 				tmp.fromString(source);
 				value = tmp.getValue();
 			} catch (BadDataFormatException e) {
-				error(e.getMessage());
+				error(ExceptionUtils.exceptionChainToMessage(e));
 			}
 		} else {
 			try {
 				tmp.setValue(value);
 				source = tmp.toString();
 			} catch (BadDataFormatException e) {
-				error(e.getMessage());
+				error(ExceptionUtils.exceptionChainToMessage(e));
 			}
 		}
 	}
@@ -2383,7 +2383,7 @@ class ParameterRule extends Rule {
 			tmp.fromString(paramValue);
 			value = tmp.getValue();
 		} catch (BadDataFormatException e) {
-			error(e.getMessage());
+			error(ExceptionUtils.exceptionChainToMessage(e));
 		}
 	}
 

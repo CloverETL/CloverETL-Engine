@@ -20,13 +20,13 @@ package org.jetel.data.parser;
 
 import javax.xml.transform.TransformerException;
 
+import net.sf.saxon.sxpath.XPathExpression;
+import net.sf.saxon.trans.XPathException;
+
 import org.jetel.data.DataField;
 import org.jetel.data.xsd.ConvertorRegistry;
 import org.jetel.data.xsd.IGenericConvertor;
 import org.jetel.exception.DataConversionException;
-
-import net.sf.saxon.sxpath.XPathExpression;
-import net.sf.saxon.trans.XPathException;
 
 /**
  * 
@@ -74,7 +74,7 @@ public class XPathElementOfXSDType extends XPathElement {
 		try {
 			currentField.setValue(convertor.parse(value));
 		} catch (DataConversionException e) {
-			throw new TransformerException(e.getMessage());
+			throw new TransformerException(e);
 		}
 	}
 	

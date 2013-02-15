@@ -34,6 +34,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.ExceptionUtils;
 
 
 /**
@@ -316,7 +317,7 @@ public class Phase extends GraphElement implements Comparable {
         	try {
         		node.checkConfig(status);
         	} catch (Exception e) {
-        		ConfigurationProblem problem = new ConfigurationProblem("Unexpected error: " + e.getMessage(), Severity.ERROR, node, Priority.HIGH);
+        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, node, Priority.HIGH);
         		problem.setCauseException(e);
         		status.add(problem);
         	}
