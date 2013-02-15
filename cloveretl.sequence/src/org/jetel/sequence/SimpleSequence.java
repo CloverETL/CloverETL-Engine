@@ -286,8 +286,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
             io.position(0);
             io.write(buffer);
         }catch(IOException ex){
-            logger.error("I/O error when accessing sequence "+getName()+" id: "+getId()+" - "+ex.getMessage(),ex);
-            throw new RuntimeException("I/O error when accessing sequence "+getName()+" id: "+getId()+" - "+ex.getMessage(),ex);
+            throw new RuntimeException("I/O error when accessing sequence "+getName()+" id: "+getId(), ex);
         }
     }
     
@@ -310,8 +309,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
                 io=null;
             }
         } catch (IOException ex) {
-            logger.error("I/O error when freeing sequence " + getName() + " - " + ex.getMessage(),ex);
-            //throw new RuntimeException("I/O error when accessing sequence " + getName() + " - " + ex.getMessage());
+            logger.warn("I/O error when freeing sequence " + getName(), ex);
         }
     }
     
