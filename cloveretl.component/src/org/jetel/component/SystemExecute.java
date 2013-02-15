@@ -516,7 +516,9 @@ public class SystemExecute extends Node{
     		logger.info("SystemExecute component failed with batch file content:\n" + command);
     	}
     	
-    	try {
+		deleteBatch();
+
+		try {
     		if (outputFile!=null) {
     			outputFile.close();
     		}
@@ -532,13 +534,16 @@ public class SystemExecute extends Node{
 	public void free() {
         if(!isInitialized()) return;
 		super.free();
-		deleteBatch();
 	}
 	
 	private void deleteBatch(){
-		if (interpreter!=null) {
-			if (batch != null && !getGraph().getRuntimeContext().isDebugMode() && !batch.delete()) {
-				logger.warn("Batch file (" + batch.getName() + ") was not deleted");
+		if (interpreter != null) {
+			if ((batch != null) && !getGraph().getRuntimeContext().isDebugMode()) {
+				if (batch.delete() || !batch.exists()) {
+					batch = null;
+				} else {
+					logger.warn("Batch file (" + batch.getName() + ") was not deleted");
+				}
 			}
 		}
 	}
