@@ -486,7 +486,13 @@ public class XLSXDataParser extends XLSParser {
     				try {
     					record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
     				} catch (Exception ex) {
-    					handleException(new BadDataFormatException(ex), record, cloverFieldIndex, cell.getStringCellValue());
+    					BadDataFormatException bdfe;
+    					if (ex instanceof BadDataFormatException) {
+    						bdfe = (BadDataFormatException) ex;
+    					} else {
+    						bdfe = new BadDataFormatException(ex);
+    					}
+    					handleException(bdfe, record, cloverFieldIndex, cell.getStringCellValue());
     				}
     			}
     		}

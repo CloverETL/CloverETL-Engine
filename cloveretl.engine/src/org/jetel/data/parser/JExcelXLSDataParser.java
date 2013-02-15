@@ -376,7 +376,12 @@ public class JExcelXLSDataParser extends XLSParser {
 				try {
 					record.getField(cloverFieldIndex).fromString(parseString(cell));
 				} catch (Exception e) {
-					BadDataFormatException bdfe = new BadDataFormatException(bdne);
+					BadDataFormatException bdfe;
+					if (bdne instanceof BadDataFormatException) {
+						bdfe = (BadDataFormatException) bdne;
+					} else {
+						bdfe = new BadDataFormatException(bdne);
+					}
 					bdfe.setRecordNumber(currentRow+1);
 					bdfe.setFieldNumber(cloverFieldIndex);
 					if (exceptionHandler != null) { // use handler only if configured
