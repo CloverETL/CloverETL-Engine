@@ -38,6 +38,7 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Result;
@@ -154,7 +155,7 @@ public abstract class IAuthorityProxy {
 		public RuntimeException getException() {
 			if (status.code() < 0) {
 				return new JetelRuntimeException("Job " + jobUrl + "(#" + runId + ") finished with final status " + status + ".",
-						new JetelRuntimeException(errMessage));
+						new StackTraceWrapperException(errMessage, errException));
 			} else {
 				return null;
 			}

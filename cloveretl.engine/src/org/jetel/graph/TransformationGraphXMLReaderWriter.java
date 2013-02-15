@@ -543,7 +543,7 @@ public class TransformationGraphXMLReaderWriter {
 			} catch (AttributeNotFoundException ex) {
 				throwXMLConfigurationException("Missing attribute at node '" + nodeID + "'.", ex);
 			} catch (Exception e) {
-				throwXMLConfigurationException("Component cannot be instantiated.", e);
+				throwXMLConfigurationException(e);
 			}
 		}
 	}
@@ -900,6 +900,10 @@ public class TransformationGraphXMLReaderWriter {
 
 	private void throwXMLConfigurationException(String message) throws XMLConfigurationException {
 		throwXMLConfigurationException(message, null);
+	}
+
+	private void throwXMLConfigurationException(Throwable cause) throws XMLConfigurationException {
+		throwXMLConfigurationException(null, cause);
 	}
 
 	private void throwXMLConfigurationException(String message, Throwable cause) throws XMLConfigurationException {
