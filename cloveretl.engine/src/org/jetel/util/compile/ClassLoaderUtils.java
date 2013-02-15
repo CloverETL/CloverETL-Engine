@@ -265,12 +265,15 @@ public class ClassLoaderUtils {
 				}
 			}
 		}
+		*/
 		for (int i = 0; i < urls.length; ++i) {
-			File file = FileUtils.convertUrlToFile(urls[i]);
-			if (file.isDirectory() && !urls[i].toString().endsWith("/")) {
-				urls[i] = new URL(urls[i].toString() + "/");
+			if (!SandboxUrlUtils.isSandboxUrl(urls[i])) {
+				File file = FileUtils.convertUrlToFile(urls[i]);
+				if (file.isDirectory() && !urls[i].toString().endsWith("/")) {
+					urls[i] = new URL(urls[i].toString() + "/");
+				}
 			}
-		}*/
+		}
 		return urls;
 	}
 	
