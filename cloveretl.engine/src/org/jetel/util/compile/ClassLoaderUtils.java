@@ -19,6 +19,10 @@
 package org.jetel.util.compile;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -36,12 +40,16 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.LoadClassException;
+import org.jetel.exception.TempFileCreationException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
+import org.jetel.util.stream.StreamUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -233,13 +241,27 @@ public class ClassLoaderUtils {
 		/*
 		 * resolve sandbox URL's
 		 */
+		/*
+		 * commented out by MVa to test CLS-1169
 		for (int i = 0; i < urls.length; ++i) {
 			if (SandboxUrlUtils.isSandboxUrl(urls[i])) {
 				URL localUrl = SandboxUrlUtils.toLocalFileUrl(urls[i]);
 				if (localUrl != null) {
 					urls[i] = localUrl;
 				} else {
-					throw new RuntimeException("Could not resolve sandbox URL: " + urls[i]);
+					// sandbox URL doesn't have local path
+					try {
+						String filename = urls[i].getFile();
+						filename = filename.substring(filename.lastIndexOf("/"));
+						File locTempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(filename, -1);
+						OutputStream os = new FileOutputStream(locTempFile);
+						StreamUtils.copy(FileUtils.getInputStream(contextUrl, paths[i]), os, true, true);
+						urls[i] = locTempFile.toURI().toURL(); 
+					} catch (IOException e) {
+						throw new RuntimeException("Could not resolve sandbox URL: " + urls[i], e);
+					} catch (TempFileCreationException e) {
+						throw new RuntimeException("Could not create local temp file for URL: " + urls[i], e);
+					}
 				}
 			}
 		}
@@ -248,7 +270,7 @@ public class ClassLoaderUtils {
 			if (file.isDirectory() && !urls[i].toString().endsWith("/")) {
 				urls[i] = new URL(urls[i].toString() + "/");
 			}
-		}
+		}*/
 		return urls;
 	}
 	
