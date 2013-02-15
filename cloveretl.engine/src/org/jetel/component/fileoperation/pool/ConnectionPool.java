@@ -20,6 +20,8 @@ package org.jetel.component.fileoperation.pool;
 
 
 import org.apache.commons.pool.impl.GenericKeyedObjectPool;
+import org.jetel.data.Defaults;
+
 
 /**
  * An implementation of a generic connection pool, a thread-safe singleton.
@@ -54,13 +56,12 @@ public class ConnectionPool extends GenericKeyedObjectPool<Authority, PoolableCo
 		return SingletonHolder.INSTANCE;
 	}
 
-	// TODO add these to Defaults
 	/**
 	 * How often is the cleanup performed.
 	 * 
 	 * @see #evict()
 	 */
-	public static final long CLEANUP_INTERVAL = 1 * 60 * 1000L; // 1 minute
+	public static final long CLEANUP_INTERVAL = Defaults.ConnectionPool.CLEANUP_INTERVAL; // 1 minute
 	
 	/**
 	 * When a connection is idle for more than <code>MAX_IDLE_TIME</code>,
@@ -68,7 +69,7 @@ public class ConnectionPool extends GenericKeyedObjectPool<Authority, PoolableCo
 	 * 
 	 * @see #evict()
 	 */
-	public static final long MAX_IDLE_TIME = 5 * 60 * 1000L; // 5 minutes
+	public static final long MAX_IDLE_TIME = Defaults.ConnectionPool.MAX_IDLE_TIME;
 	
     /**
 	 * Private constructor. 
