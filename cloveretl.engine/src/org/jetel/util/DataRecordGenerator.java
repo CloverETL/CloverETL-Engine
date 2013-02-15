@@ -317,7 +317,7 @@ public class DataRecordGenerator extends AbstractParser {
 				}
 			} catch (BadDataFormatException e) {
 				throw new ComponentNotReadyException(component, "Can't get record from pattern: "
-						+ StringUtils.quote(pattern) + " " + e.getMessage());
+						+ StringUtils.quote(pattern), e);
 			} catch (JetelException e) {
 				throw new ComponentNotReadyException(component, "Can't get record from pattern: "
 						+ StringUtils.quote(pattern));

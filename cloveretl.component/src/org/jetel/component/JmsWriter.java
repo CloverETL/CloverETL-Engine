@@ -183,7 +183,7 @@ public class JmsWriter extends Node {
 		try {
 			producer = connection.createProducer();
 		} catch (Exception e) {
-			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage(), e);
+			throw new ComponentNotReadyException("Unable to initialize JMS consumer", e);
 		}
 	}
 

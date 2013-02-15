@@ -106,7 +106,7 @@ public abstract class AbstractResult implements Result {
 	@Override
 	public String getFirstErrorMessage() {
 		Exception ex = getFirstError();
-		return ex != null ? ExceptionUtils.exceptionChainToMessage(null, ex) : null;
+		return ex != null ? ExceptionUtils.exceptionChainToMessage(ex) : null;
 	}
 
 }

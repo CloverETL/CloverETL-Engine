@@ -305,7 +305,7 @@ public class Trash extends Node {
 				writer.close();
 			}
 		} catch (Exception e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 	
@@ -317,7 +317,7 @@ public class Trash extends Node {
 			try {
 				writer.close();
 			} catch (Throwable t) {
-				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+				logger.warn("Resource releasing failed for '" + getId() + "'.", t);
 			}
 		}
 	}

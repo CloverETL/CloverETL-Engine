@@ -57,6 +57,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -575,7 +576,7 @@ public class DBOutputTable extends Node {
 				try {
 					eachStatement.init();
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, e.getMessage(), e);
+					throw new ComponentNotReadyException(this, e);
 				}
 			}
 		} else {
@@ -593,7 +594,7 @@ public class DBOutputTable extends Node {
 						try {
 							eachStatement.setConnection(connection);
 						} catch (Exception e) {
-							throw new ComponentNotReadyException(this, e.getMessage(), e);
+							throw new ComponentNotReadyException(this, e);
 						}
 					}
 				} catch (JetelException exception) {
@@ -606,7 +607,7 @@ public class DBOutputTable extends Node {
 					eachStatement.setInRecord(inRecord);
 					eachStatement.reset();
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, e.getMessage(), e);
+					throw new ComponentNotReadyException(this, e);
 				}
 			}
 			recCount = 0;
@@ -718,10 +719,10 @@ public class DBOutputTable extends Node {
 				} catch(SQLException ex) {
 					countError++;
 					exception = ex;
-					errmes = "Exeption thrown by: " + statement[i].getQuery() + ". Message: " + ex.getMessage();
+					errmes = "Exeption thrown by: " + statement[i].getQuery() + ". Message: " + ExceptionUtils.exceptionChainToMessage(ex);
 					SQLException chain = ex.getNextException();
 					while (chain != null) {
-						errmes += "\n  Caused by: " + chain.getMessage();
+						errmes += "\n  Caused by: " + ExceptionUtils.exceptionChainToMessage(chain);
 						chain = chain.getNextException();
 					}
 
@@ -845,11 +846,11 @@ public class DBOutputTable extends Node {
 				}catch(SQLException ex){
 	               countError++;
 	               exception = ex;
-	               errmes = "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ex.getMessage();
+	               errmes = "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.exceptionChainToMessage(ex);
 	               //for this record statement won't be executed 
 	               SQLException chain = ex.getNextException();
 	               while(chain!=null) {
-	                 errmes += "\n  Caused by: "+chain.getMessage();
+	                 errmes += "\n  Caused by: "+ExceptionUtils.exceptionChainToMessage(chain);
 	                 chain = chain.getNextException();
 	               }
 					if (rejectedPort != null) {
@@ -951,10 +952,10 @@ public class DBOutputTable extends Node {
 				statement[statementCount].clearBatch();
 				exceptions[statementCount] = ex;
 				exception = ex;
-				errmes += "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ex.getMessage() + "\n";
+				errmes += "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.exceptionChainToMessage(ex) + "\n";
 				if (ex.getNextException() != null) {
 					// With PostgreSQL, 1. exception is good for nothing, append next one
-					errmes += "  Caused by: " + ex.getNextException().getMessage();
+					errmes += "  Caused by: " + ExceptionUtils.exceptionChainToMessage(ex.getNextException());
 				}
 				exThrown = true;
 				
@@ -1032,7 +1033,7 @@ public class DBOutputTable extends Node {
 							if (exception != null) {
 								if (errMessFieldNum != -1) {
 									records[i][count].getField(errMessFieldNum).setValue("Exeption thrown by: " + 
-											statement[i].getQuery() + ". Message: " + exception.getMessage());
+											statement[i].getQuery() + ". Message: " + ExceptionUtils.exceptionChainToMessage(exception));
 								}
 								if (errorCodeFieldNum != -1){
 									records[i][count].getField(errorCodeFieldNum).setValue(exception.getErrorCode());
@@ -1040,7 +1041,7 @@ public class DBOutputTable extends Node {
 							}
 							if (exception != null && countError <= MAX_WARNINGS) {
 								logger.warn("Exeption thrown by: " + statement[i].getQuery() + 
-										". Message: " + exception.getMessage());
+										". Message: " + ExceptionUtils.exceptionChainToMessage(exception));
 							} else if (exception == null && countError <= MAX_WARNINGS) {
 								logger.warn("Record not inserted to database");
 							} else if (countError == MAX_WARNINGS + 1) {
@@ -1393,7 +1394,7 @@ public class DBOutputTable extends Node {
 						//		.getMessage(), ConfigurationStatus.Severity.WARNING, this,
 						//		ConfigurationStatus.Priority.NORMAL);
 						//status.add(problem);
-						logger.debug("CheckConfig warning: " + e.getMessage(), e);
+						logger.debug("CheckConfig warning", e);
 					}                        
 				}
 			}
@@ -1406,16 +1407,16 @@ public class DBOutputTable extends Node {
     		problem.setCauseException(uoe);
     		status.add(problem);
     	} catch (ComponentAlmostNotReadyException e1) {
-			ConfigurationProblem problem = new ConfigurationProblem(e1
-					.getMessage(), ConfigurationStatus.Severity.WARNING, this,
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e1),
+					ConfigurationStatus.Severity.WARNING, this,
 					ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e1.getAttributeName())) {
 				problem.setAttributeName(e1.getAttributeName());
 			}
 			status.add(problem);
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e
-					.getMessage(), ConfigurationStatus.Severity.ERROR, this,
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),
+					ConfigurationStatus.Severity.ERROR, this,
 					ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());

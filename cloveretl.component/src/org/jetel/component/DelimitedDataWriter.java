@@ -206,7 +206,7 @@ public class DelimitedDataWriter extends Node {
 			writer.close();
 		}
 		catch (IOException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 	
@@ -555,7 +555,7 @@ public class DelimitedDataWriter extends Node {
 			try {
 				writer.close();
 			} catch(Throwable t) {
-				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+				logger.warn("Resource releasing failed", t);
 			}
 	}
 }

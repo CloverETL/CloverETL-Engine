@@ -201,7 +201,7 @@ public class FixLenDataWriter extends Node {
 			writer.close();
 		}
 		catch (IOException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 	

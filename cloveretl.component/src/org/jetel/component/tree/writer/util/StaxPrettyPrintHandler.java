@@ -120,6 +120,6 @@ public class StaxPrettyPrintHandler implements InvocationHandler {
 				throw throwable;
 			}
 		}
-		throw new RuntimeException(throwable.getMessage(), throwable);
+		throw new RuntimeException(throwable);
 	}
 }

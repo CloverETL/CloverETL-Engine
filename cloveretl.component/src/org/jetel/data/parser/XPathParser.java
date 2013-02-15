@@ -446,12 +446,12 @@ public class XPathParser extends AbstractParser {
 					@Override
 					public void fatalError(TransformerException exception)
 							throws TransformerException {
-						exceptionHandler.populateHandler(exception.getMessage(), recordResult, -1, -1, null, new BadDataFormatException(exception.getMessage()));
+						exceptionHandler.populateHandler("Parsing error", recordResult, -1, -1, null, new BadDataFormatException(exception));
 					}
 					@Override
 					public void error(TransformerException exception)
 							throws TransformerException {
-						exceptionHandler.populateHandler(exception.getMessage(), recordResult, -1, -1, null, new BadDataFormatException(exception.getMessage(), exception));
+						exceptionHandler.populateHandler("Parsing error", recordResult, -1, -1, null, new BadDataFormatException(exception));
 					}
 				};
 				

@@ -233,7 +233,7 @@ public class ReadableChannelIterator {
 			} catch (UnsupportedEncodingException e) {
 				throw new JetelException("The field '" + portReadingIterator.getLastFieldName() + "' contain a value that cannot be translated by " + charset + " charset." );
 			} catch (Exception e) {
-				throw new JetelException("Port reading error: " + e.getMessage(), e);
+				throw new JetelException("Port reading error", e);
 			}
 		}
 		
@@ -328,7 +328,7 @@ public class ReadableChannelIterator {
 				}
 				return new URI(currentFileName);
 			} catch (URISyntaxException ex) {
-				throw new JetelException("Invalid fileURL - " + ex.getMessage(), ex);
+				throw new JetelException("Invalid fileURL", ex);
 			} catch (Exception e) {
 				// DO NOTHING - just try to open a stream based on the currentFileName in the next step
 			}

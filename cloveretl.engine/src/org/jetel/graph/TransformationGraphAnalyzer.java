@@ -90,8 +90,7 @@ public class TransformationGraphAnalyzer {
 					try {
 						node.getGraph().addEdge(inEdge);
 					} catch (GraphConfigurationException e) {
-						logger.error("Unexpected error: " + e.getMessage());
-						e.printStackTrace();
+						logger.error(e);
 					}
 				}
 			}

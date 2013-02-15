@@ -73,6 +73,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -632,15 +633,14 @@ public class XmlWriter extends Node {
     	            //mapping xml elements are child nodes of the component
     	        	List<PortDefinition> list = readInPortsDefinitionFromXml(graph, this.mappingNodes, (PortDefinition)null, allPortDefinitionMap);
     	        	if (list.size() > 1)
-    	 	           throw new ComponentNotReadyException(COMPONENT_TYPE + ":" + this.getId() +" more then 1 root mapping element" );
+    	 	           throw new ComponentNotReadyException("More then 1 root mapping element" );
     	        	else if (list.size() < 1)
-    	 	           throw new ComponentNotReadyException(COMPONENT_TYPE + ":" + this.getId() +" no mapping element" );
+    	 	           throw new ComponentNotReadyException("No mapping element" );
 
     	        	rootPortDefinition = list.get(0);
     	        }
     		} catch (Exception e) {
-    			logger.error("cannot instantiate node from XML", e);
-    			throw new ComponentNotReadyException(e.getMessage(), e);
+    			throw new ComponentNotReadyException("cannot instantiate node from XML", e);
     		}
     		this.allPortDefinitionMap = allPortDefinitionMap;
     		this.rootPortDefinition = rootPortDefinition;
@@ -733,7 +733,7 @@ public class XmlWriter extends Node {
 			writer.close();
 		}
 		catch (IOException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 
@@ -1266,7 +1266,7 @@ public class XmlWriter extends Node {
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: "+e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage("Can't parse XML mapping schema.", e), Severity.ERROR, this, Priority.NORMAL));
 		}
         
 		//...
@@ -1323,7 +1323,7 @@ public class XmlWriter extends Node {
 			try {
 				writer.close();
 			} catch(Throwable t) {
-				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+				logger.warn("Resource releasing failed for '" + getId() + "'.", t);
 			}
 	}
 

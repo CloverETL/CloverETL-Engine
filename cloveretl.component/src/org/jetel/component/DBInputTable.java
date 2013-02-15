@@ -50,6 +50,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -267,7 +268,7 @@ public class DBInputTable extends Node {
 				incrementalFile = FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), incrementalFile);
 			} catch (MalformedURLException e) {
 				throw new ComponentNotReadyException(this,
-						XML_INCREMENTAL_FILE_ATTRIBUTE, e.getMessage());
+						XML_INCREMENTAL_FILE_ATTRIBUTE, e);
 			}
 		}
 		
@@ -362,7 +363,7 @@ public class DBInputTable extends Node {
 					if (policyType == PolicyType.STRICT) {
 						throw bdfe;
 					} else {
-						logger.info(bdfe.getMessage());
+						logger.info(ExceptionUtils.exceptionChainToMessage(bdfe));
 					}
 				}
 			}
@@ -563,7 +564,7 @@ public class DBInputTable extends Node {
 					// Throwing and exception halts the entire graph which might not be correct as inc file
 					// can be created at graph runtime. Instead just log it
 					// issue #2127
-		            ConfigurationProblem problem = new ConfigurationProblem(e1.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+		            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e1), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 		            problem.setAttributeName(XML_INCREMENTAL_FILE_ATTRIBUTE);
 		            status.add(problem);
 				} catch (ComponentNotReadyException e2) {
@@ -571,7 +572,7 @@ public class DBInputTable extends Node {
 					// Throwing and exception halts the entire graph which might not be correct as inc file
 					// can be created at graph runtime. Instead just log it
 					// issue #2127
-		            ConfigurationProblem problem = new ConfigurationProblem(e2.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+		            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e2), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 		            if(!StringUtils.isEmpty(e2.getAttributeName())) {
 		                problem.setAttributeName(e2.getAttributeName());
 		            }
@@ -579,7 +580,7 @@ public class DBInputTable extends Node {
 				}
 			}
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

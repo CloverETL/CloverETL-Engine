@@ -40,6 +40,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -628,7 +629,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 				}
 			}			
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e.getMessage(),	ConfigurationStatus.Severity.ERROR, this,ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	ConfigurationStatus.Severity.ERROR, this,ConfigurationStatus.Priority.NORMAL));
 		}		
 		csvMode = isCsvModeUsed(properties);
 		setDefaultColumnDelimiter(csvMode);		
@@ -646,7 +647,7 @@ public class PostgreSqlDataWriter extends BulkLoader {
 			initDataFile();
 			createCommandFile();
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e.getMessage(),	ConfigurationStatus.Severity.ERROR, this,ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	ConfigurationStatus.Severity.ERROR, this,ConfigurationStatus.Priority.NORMAL));
 		}
 		deleteTempFiles();
 		return status;

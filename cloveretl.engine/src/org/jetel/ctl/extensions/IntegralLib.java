@@ -79,7 +79,7 @@ public class IntegralLib extends TLFunctionLibrary {
 			transformCache.init(from.getMetadata(), to.getMetadata());
 			transformCache.transform(from, to);
 		} catch (Exception e) {
-			throw new TransformLangExecutorRuntimeException("copyByName - " + e.getMessage(), e);
+			throw new TransformLangExecutorRuntimeException("copyByName", e);
 		}
 		return to;
 	}

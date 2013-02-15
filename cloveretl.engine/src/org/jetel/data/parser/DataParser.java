@@ -480,7 +480,7 @@ public class DataParser extends AbstractTextParser {
 						}
 					}
 				} catch (Exception ex) {
-					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, metadataFields[fieldCounter]), ex);
+					throw new RuntimeException(getErrorMessage(null, metadataFields[fieldCounter]), ex);
 				}
 			} else { //fixlen data field
 				mark = 0;
@@ -530,7 +530,7 @@ public class DataParser extends AbstractTextParser {
 					}
 
 				} catch (Exception ex) {
-					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, metadataFields[fieldCounter]), ex);
+					throw new RuntimeException(getErrorMessage(null, metadataFields[fieldCounter]), ex);
 				}
 			}
 
@@ -551,7 +551,7 @@ public class DataParser extends AbstractTextParser {
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (Exception e1) {
-					throw new RuntimeException(getErrorMessage(e1.getMessage(),	null, metadataFields[fieldCounter]), e1);
+					throw new RuntimeException(getErrorMessage(null, metadataFields[fieldCounter]), e1);
                 }
 			}
 
@@ -671,10 +671,9 @@ public class DataParser extends AbstractTextParser {
 	 * @return error message
 	 * @since September 19, 2002
 	 */
-	private String getErrorMessage(String exceptionMessage, CharSequence value, DataFieldMetadata metadataField) {
+	private String getErrorMessage(CharSequence value, DataFieldMetadata metadataField) {
 		StringBuffer message = new StringBuffer();
-		message.append(exceptionMessage);
-		message.append(" when parsing record #");
+		message.append("Error when parsing record #");
 		message.append(recordCounter);
 		if (metadataField != null) {
 			message.append(" field ");
@@ -712,7 +711,7 @@ public class DataParser extends AbstractTextParser {
 			record.getField(fieldNum).fromString(data);
 		} catch(BadDataFormatException bdfe) {
             if(exceptionHandler != null) {
-                exceptionHandler.populateHandler(bdfe.getMessage(), record,
+                exceptionHandler.populateHandler(null, record,
 						recordCounter, fieldNum , data.toString(), bdfe);
             } else {
                 bdfe.setRecordNumber(recordCounter);
@@ -721,7 +720,7 @@ public class DataParser extends AbstractTextParser {
                 throw bdfe;
             }
 		} catch(Exception ex) {
-			throw new RuntimeException(getErrorMessage(ex.getMessage(), null, metadataFields[fieldNum]));
+			throw new RuntimeException(getErrorMessage(null, metadataFields[fieldNum]), ex);
 		}
 	}
 
@@ -844,7 +843,7 @@ public class DataParser extends AbstractTextParser {
 				}
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(getErrorMessage(e.getMessage(), null, null));
+			throw new RuntimeException(getErrorMessage(null, null), e);
 		}
 		//end of file
 		return false;
@@ -869,7 +868,7 @@ public class DataParser extends AbstractTextParser {
 				count++;
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(getErrorMessage(e.getMessage(), null, null));
+			throw new RuntimeException(getErrorMessage(null, null), e);
 		}
 		//end of file
 		return -1;
@@ -900,7 +899,7 @@ public class DataParser extends AbstractTextParser {
 					}
 				}
 			} catch (IOException e) {
-				throw new RuntimeException(getErrorMessage(e.getMessage(), null, null));
+				throw new RuntimeException(getErrorMessage(null, null), e);
 			} finally {
 				//end of file or longest delimiter found
 				tempReadBuffer.append(temp);

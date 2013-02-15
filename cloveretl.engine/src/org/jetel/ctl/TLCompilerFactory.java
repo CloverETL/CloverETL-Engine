@@ -58,7 +58,7 @@ public class TLCompilerFactory {
                 registerCompiler(desc);
             } catch(Exception e) {
                 logger.error("Cannot create TL compiler description, extension in plugin manifest is not valid.\n"
-                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());
+                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension, e);
             }
         }
         

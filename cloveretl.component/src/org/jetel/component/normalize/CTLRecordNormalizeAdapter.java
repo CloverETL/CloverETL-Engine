@@ -175,7 +175,7 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
 		try {
 			executor.executeFunction(cleanFunction, NO_ARGUMENTS);
 		} catch (TransformLangExecutorRuntimeException exception) {
-			logger.warn("Failed to execute " + cleanFunction.getName() + "() function: " + exception.getMessage());
+			logger.warn("Failed to execute " + cleanFunction.getName() + "() function", exception);
 		}
 	}
 

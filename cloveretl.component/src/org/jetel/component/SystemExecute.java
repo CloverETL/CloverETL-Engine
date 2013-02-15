@@ -53,6 +53,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -524,7 +525,7 @@ public class SystemExecute extends Node{
     		}
     	}
     	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    		throw new ComponentNotReadyException(e);
     	}
     }
     
@@ -644,7 +645,7 @@ public class SystemExecute extends Node{
 					}
 				}
 			} catch (IOException e) {
-	            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+	            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 	            problem.setAttributeName(XML_COMMAND_ATTRIBUTE);
 	            status.add(problem);
 	        }
@@ -834,16 +835,15 @@ public class SystemExecute extends Node{
                     SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
-				resultMsg = ex.getMessage();
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch (InterruptedException ex){
 				resultCode =  Result.ERROR;
 			}catch(Exception ex){
 				logger.error("Error in sysexec GetData",ex);
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
@@ -935,7 +935,7 @@ public class SystemExecute extends Node{
 					SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){	
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				parentThread.interrupt();
@@ -944,7 +944,7 @@ public class SystemExecute extends Node{
 				resultCode = Result.ABORTED;
 			}catch(Exception ex){
 				logger.error("Error in sysexec SendData",ex);
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
@@ -1030,12 +1030,12 @@ public class SystemExecute extends Node{
 					}
  				}
 			}catch(IOException ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch(Exception ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
@@ -1120,12 +1120,12 @@ public class SystemExecute extends Node{
 					}
  				}
 			}catch(IOException ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch(Exception ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);

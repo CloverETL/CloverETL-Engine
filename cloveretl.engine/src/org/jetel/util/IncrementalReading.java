@@ -27,9 +27,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -111,7 +111,7 @@ public class IncrementalReading {
     	try {
     		prop.load(Channels.newInputStream(FileUtils.getReadableChannel(contextURL, incrementalFile)));
 		} catch (IOException e) {
-			logger.warn("The incremental file not found or it is corrupted! Cause: " + e.getMessage());
+			logger.warn("The incremental file not found or it is corrupted!", e);
 		}
 		incremental = new IncrementalData(prop);
 		incremental.add(incrementalKey);

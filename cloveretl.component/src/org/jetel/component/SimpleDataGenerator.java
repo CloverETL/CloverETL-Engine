@@ -28,6 +28,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.DataRecordGenerator;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -212,7 +213,7 @@ public class SimpleDataGenerator extends DataGenerator {
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

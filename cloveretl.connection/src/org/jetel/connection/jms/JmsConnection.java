@@ -239,7 +239,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 					}
 				} catch (NoInitialContextException e) {
 					if (e.getRootCause() instanceof ClassNotFoundException)
-						throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)");
+						throw new ComponentNotReadyException("No class definition found (add to classpath)", e);
 					else
 						throw new ComponentNotReadyException("Cannot create initial context", e);
 				} catch (Exception e) {
@@ -261,7 +261,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 				} catch (NamingException e) {
 					throw e;
 				} catch (Exception e) {
-					throw new ComponentNotReadyException("Cannot create connection factory; " + e.getMessage());
+					throw new ComponentNotReadyException("Cannot create connection factory", e);
 				}
 				if (factory == null)
 					throw new ComponentNotReadyException("Cannot create connection factory");
@@ -289,14 +289,14 @@ public class JmsConnection extends GraphElement implements IConnection {
 					Thread.currentThread().setContextClassLoader(prevCl);
 			}
 		} catch (NoClassDefFoundError e) {
-			throw new ComponentNotReadyException("No class definition found for:" + e.getMessage() + " (add to classpath)", e);// e.printStackTrace();
+			throw new ComponentNotReadyException("No class definition found (add to classpath)", e);
 		} catch (NamingException e) {
 			if (e.getRootCause() instanceof NoClassDefFoundError)
-				throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)", e);
+				throw new ComponentNotReadyException("No class definition found (add to classpath)", e);
 			else if (e.getRootCause() instanceof ClassNotFoundException)
-				throw new ComponentNotReadyException("No class definition found for:" + e.getRootCause().getMessage() + " (add to classpath)", e);
+				throw new ComponentNotReadyException("No class definition found (add to classpath)", e);
 			else
-				throw new ComponentNotReadyException("Cannot create initial context; " + e.getMessage(), e);
+				throw new ComponentNotReadyException("Cannot create initial context", e);
 		} catch (IllegalStateException e) {
 			throw new ComponentNotReadyException(e);
 		}
@@ -411,7 +411,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 			try {
 				connection = factory.createConnection(user, pwd);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException("Cannot establish JMS connection (" + e.getMessage() + ")", e);
+				throw new ComponentNotReadyException("Cannot establish JMS connection", e);
 			}
 			if (connection == null)
 				throw new ComponentNotReadyException("Cannot establish JMS connection");

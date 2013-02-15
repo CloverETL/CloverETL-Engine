@@ -294,7 +294,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 //					return;
 //				} catch (JSchException e1) {}
 //			}
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		}
 	}
 

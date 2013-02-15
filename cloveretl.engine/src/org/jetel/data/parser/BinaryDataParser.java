@@ -172,7 +172,7 @@ public class BinaryDataParser extends AbstractParser {
 			
 			return record;
 		} catch (IOException e) {
-			throw new JetelRuntimeException(e.getMessage(), e);
+			throw new JetelRuntimeException(e);
 		} catch (BufferUnderflowException e) {
 			throw new JetelRuntimeException("Invalid end of stream.", e);
 		}
@@ -208,7 +208,7 @@ public class BinaryDataParser extends AbstractParser {
 			
 			return true;
 		} catch (IOException e) {
-			throw new JetelRuntimeException(e.getMessage(), e);
+			throw new JetelRuntimeException(e);
 		} catch (BufferUnderflowException e) {
 			throw new JetelRuntimeException("Invalid end of stream.", e);
 		}

@@ -288,7 +288,7 @@ public class DataFormatter extends AbstractFormatter {
 		} catch (CharacterCodingException e) {
             throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue()
             		+ " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset()
-            		+ ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
+            		+ ".\nRecord: " +record.toString(), e);
 		}
         return encLen;
 	}

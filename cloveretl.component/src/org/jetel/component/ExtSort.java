@@ -227,7 +227,7 @@ public class ExtSort extends Node {
 		} catch (InterruptedException ex) {
 			throw ex;
 		} catch (Exception ex) {
-			throw new JetelException( "Error when sorting: " + ex.getMessage(),ex);
+			throw new JetelException("Error when sorting", ex);
 		}
 		
         while (sorter.get(recordBuffer) && runIt) {

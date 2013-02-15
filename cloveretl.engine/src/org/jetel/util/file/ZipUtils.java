@@ -153,7 +153,7 @@ public class ZipUtils {
 		try {
 			output = decompresser.decompress(input);
 		} catch (DataFormatException e) {
-			throw new RuntimeException("Unable to decompress data: " + e.getMessage());
+			throw new RuntimeException("Unable to decompress data", e);
 		}
 		decompresser.release();
 		return output;
@@ -176,7 +176,7 @@ public class ZipUtils {
 		try {
 			output = decompresser.decompress(input, outSize);
 		} catch (DataFormatException e) {
-			throw new RuntimeException("Unable to decompress data: " + e.getMessage());
+			throw new RuntimeException("Unable to decompress data", e);
 		}
 		decompresser.release();
 		return output;

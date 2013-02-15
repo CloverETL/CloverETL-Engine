@@ -62,6 +62,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -214,7 +215,7 @@ public class InfobrightDataWriter extends Node {
 		try {
 			chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		} catch (Exception e) {
-			status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE);
+			status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE);
 		}
 
 		//check debug file
@@ -257,7 +258,7 @@ public class InfobrightDataWriter extends Node {
 				status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
 				return status;
 			} catch (JetelException e) {
-				status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+				status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
 				return status;
 			}
 		}        
@@ -290,9 +291,9 @@ public class InfobrightDataWriter extends Node {
 			try {
 				bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), log);
 			} catch (SQLException e) {//probably table doesn't exist yet
-				status.add(e.getMessage(), Severity.WARNING, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
+				status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.WARNING, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
 			}catch (Exception e) {
-				status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_CLOVER_FIELDS_ATTRIBUTE);
+				status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CLOVER_FIELDS_ATTRIBUTE);
 			}
 		}
 		return status;
@@ -330,7 +331,7 @@ public class InfobrightDataWriter extends Node {
 						OperationType.WRITE).getSqlConnection();
 			} catch (JetelException e) {
 				throw new ComponentNotReadyException(this,
-						XML_DBCONNECTION_ATTRIBUTE, e.getMessage());
+						"Invalid " + XML_DBCONNECTION_ATTRIBUTE, e);
 			}
 			//prepare indexes of clover fields to load
 			DataRecordMetadata metadata = getInputPort(READ_FROM_PORT)
@@ -875,21 +876,20 @@ public class InfobrightDataWriter extends Node {
                     SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
-				resultMsg = ex.getMessage();
 			}catch (InterruptedException ex){
 				resultCode =  Result.ABORTED;
 			}catch(Exception ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			} finally{
 				try {
 					loader.stop();
 				} catch (Exception e) {
-					resultMsg = e.getMessage();
+					resultMsg = ExceptionUtils.exceptionChainToMessage(e);
 					resultCode = Result.ERROR;
 					resultException = e;
 				}
@@ -955,20 +955,20 @@ public class InfobrightDataWriter extends Node {
 					SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){	
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			}catch (InterruptedException ex){
 				resultCode = Result.ABORTED;
 			}catch(Exception ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			}finally{
 				try {
 					parser.close();
                 } catch (Exception e) {
-    				resultMsg = e.getMessage();
+    				resultMsg = ExceptionUtils.exceptionChainToMessage(e);
     				resultCode = Result.ERROR;
     				resultException = e;
                 }

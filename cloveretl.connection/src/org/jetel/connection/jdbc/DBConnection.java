@@ -493,7 +493,7 @@ public class DBConnection extends GraphElement implements IConnection {
                	//wrap the given JNDI connection to a DefaultConnection instance 
                	return getJdbcSpecific().wrapSQLConnection(this, operationType, jndiConnection);
         	} catch (Exception e) {
-        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
+        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName(), e);
         	}
     	} else {
         	try {
@@ -780,9 +780,9 @@ public class DBConnection extends GraphElement implements IConnection {
 		try {
 			connection = connect(OperationType.UNKNOWN);
 		} catch (JetelException e) {
-			throw new SQLException(e.getMessage());
+			throw new SQLException(e);
 		} catch (JetelRuntimeException e) {
-			throw new SQLException(e.getMessage());
+			throw new SQLException(e);
 		}
         
         try {

@@ -319,7 +319,7 @@ public class RandomLib extends TLFunctionLibrary {
 			long toTime = formatter.parseMillis(to);
 			return randomDate(context, fromTime, toTime);
 		} catch (IllegalArgumentException e) {
-			throw new TransformLangExecutorRuntimeException("randomDate - " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("randomDate", e);
 		}
 	}
 

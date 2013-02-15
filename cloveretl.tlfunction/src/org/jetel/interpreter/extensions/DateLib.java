@@ -434,7 +434,7 @@ public class DateLib extends TLFunctionLibrary {
 	    		try {
 					fromDate = format.parse(((TLStringValue)params[0]).getCharSequence().toString()).getTime();
 				} catch (ParseException e) {
-		            throw new TransformLangExecutorRuntimeException(params, "random_date - " + e.getMessage(), e);
+		            throw new TransformLangExecutorRuntimeException(params, "random_date", e);
 				}
 			} else {
 	            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong type of first literal");
@@ -463,7 +463,7 @@ public class DateLib extends TLFunctionLibrary {
 	    		try {
 					toDate = format.parse(((TLStringValue)params[1]).getCharSequence().toString()).getTime();
 				} catch (ParseException e) {
-		            throw new TransformLangExecutorRuntimeException(params, "random_date - " + e.getMessage(), e);
+		            throw new TransformLangExecutorRuntimeException(params, "random_date", e);
 				}
 	        } else {
 	            throw new TransformLangExecutorRuntimeException(params, "random_date - wrong type of second literal");

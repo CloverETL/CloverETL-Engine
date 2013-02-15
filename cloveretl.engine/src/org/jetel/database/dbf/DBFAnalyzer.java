@@ -39,6 +39,7 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.DataRecordParsingType;
+import org.jetel.util.ExceptionUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -320,7 +321,7 @@ public class DBFAnalyzer {
 			}
 			DataRecordMetadataXMLReaderWriter.write(dbf.getCloverMetadata(), outstream);
 		}catch(IOException ex){
-			System.err.println(ex.getMessage());
+			System.err.println(ExceptionUtils.exceptionChainToMessage(ex));
 			System.exit(-1);
 		}
 		System.exit(0);

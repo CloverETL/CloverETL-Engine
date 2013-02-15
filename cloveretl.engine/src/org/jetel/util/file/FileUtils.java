@@ -464,7 +464,7 @@ public class FileUtils {
 				in.close();
 			}
 		} catch (IOException ex) {
-			throw new RuntimeException("Can't get string from file " + fileURL + " : " + ex.getMessage());
+			throw new RuntimeException("Can't get string from file " + fileURL, ex);
 		}
         return sb.toString();
 	}
@@ -1617,7 +1617,7 @@ public class FileUtils {
         		}
         	}
 		} catch (Exception e) { // FIXME parent dir creation fails for proxies
-			log.debug(e.getMessage());
+			log.debug(e);
 		}
 	}
 	

@@ -44,6 +44,7 @@ import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -335,7 +336,7 @@ public class Partition extends Node {
 			try {
 				partitionKey.init();
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(e.getMessage());
+				throw new ComponentNotReadyException(e);
 			}
 		}
 		
@@ -444,11 +445,11 @@ public class Partition extends Node {
     				partitionKey.init();
     			} catch (Exception e) {
     				throw new ComponentNotReadyException(this, 
-    						XML_PARTITIONKEY_ATTRIBUTE, e.getMessage());
+    						XML_PARTITIONKEY_ATTRIBUTE, e);
     			}
     		}
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

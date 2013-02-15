@@ -54,7 +54,6 @@ import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.primitive.MultiValueMap;
-import org.jetel.util.string.StringUtils;
 
 
 /**
@@ -295,7 +294,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
            		} catch (Exception e) {
            			causeException = e;
 	           		watchDogStatus = Result.ERROR;
-	           		logger.fatal("Graph commit failed:" + e.getMessage(), e);
+	           		logger.fatal("Graph commit failed", e);
            		}
            	} else {
            		try {
@@ -303,7 +302,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
            		} catch (Exception e) {
            			causeException = e;
 	           		watchDogStatus = Result.ERROR;
-	           		logger.fatal("Graph rollback failed:" + e.getMessage(), e);
+	           		logger.fatal("Graph rollback failed", e);
            		}
            	}
            	
@@ -617,7 +616,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		try {
 			phase.preExecute();
 		} catch (ComponentNotReadyException e) {
-			logger.error("Phase pre-execute initialization failed with reason: " + e.getMessage(), e);
+			logger.error("Phase pre-execute initialization failed", e);
 			causeException = e;
 			causeGraphElement = e.getGraphElement();
 			return Result.ERROR;
@@ -667,7 +666,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
         	try {
         		phase.postExecute();
         	} catch (ComponentNotReadyException e) {
-    			logger.error("Phase post-execute finalization failed with reason: " + e.getMessage(), e);
+    			logger.error("Phase post-execute finalization failed", e);
     			causeException = e;
     			causeGraphElement = e.getGraphElement();
     			phaseStatus = Result.ERROR;
@@ -734,8 +733,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	}
     	
     	Throwable throwable = getCauseException();
-    	if (throwable != null && !StringUtils.isEmpty(throwable.getMessage())) {
-    		message.append(throwable.getMessage());
+    	if (throwable != null) {
+    		message.append(ExceptionUtils.exceptionChainToMessage(throwable));
     	}
     	
     	return message.length() > 0 ? message.toString() : null;

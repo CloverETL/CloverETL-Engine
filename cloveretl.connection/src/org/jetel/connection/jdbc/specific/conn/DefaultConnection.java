@@ -91,8 +91,7 @@ public class DefaultConnection implements Connection {
 			try {
 				optimizeConnection(operationType);
 			} catch (Exception e1) {
-				logger.warn("Optimizing connection failed: " + e1.getMessage());
-				logger.warn("Try to use another jdbc specific");
+				logger.warn("Optimizing connection failed. Try to use another jdbc specific.", e1);
 			}
 			
 			try {
@@ -165,10 +164,10 @@ public class DefaultConnection implements Connection {
 			try {
 				statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 				statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}catch (UnsupportedOperationException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 				statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 			break;
@@ -378,10 +377,10 @@ public class DefaultConnection implements Connection {
 			try {
 				statement = connection.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 				statement = connection.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}catch (UnsupportedOperationException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 				statement = connection.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 			break;

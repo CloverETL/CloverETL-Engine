@@ -510,7 +510,7 @@ public class CodeParser {
         try {
             fieldNum = (Integer) inputFieldsNames[recordNum.intValue()].get(fieldRef[1]);
         } catch (ArrayIndexOutOfBoundsException ex) {
-            throw new RuntimeException("Nonexisting index to array containing input records :" + ex.getMessage());
+            throw new RuntimeException("Nonexisting index to array containing input records", ex);
         }
         if (fieldNum == null) {
             throw new RuntimeException("Field does not exist: " + fieldRef[1] + " in input record: " + fieldRef[0]);
@@ -617,9 +617,7 @@ public class CodeParser {
             try {
                 fieldNum = (Integer) inputFieldsNames[recordNum.intValue()].get(fieldRef[1]);
             } catch (ArrayIndexOutOfBoundsException ex) {
-                throw new RuntimeException(
-                        "Nonexisting index to array containing input records :"
-                                + ex.getMessage());
+                throw new RuntimeException("Nonexisting index to array containing input records", ex);
             }
             if (fieldNum == null) {
                 throw new RuntimeException("Field does not exist: " + fieldRef[1] + " in input record: " + fieldRef[0]);
@@ -682,7 +680,7 @@ public class CodeParser {
 		try {
 			fieldNum = (Integer) outputFieldsNames[recordNum.intValue()].get(fieldRef[1]);
 		} catch (ArrayIndexOutOfBoundsException ex) {
-			throw new RuntimeException("Nonexisting index to array containing output records :" + ex.getMessage());
+			throw new RuntimeException("Nonexisting index to array containing output records", ex);
 		}
 		if (fieldNum == null) {
 			throw new RuntimeException("Field does not exist: " + fieldRef[1] + " in output record: " + fieldRef[0]);

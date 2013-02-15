@@ -44,6 +44,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.TargetFile;
@@ -270,7 +271,7 @@ public class XSLDataTransformer extends Node {
 			xsltIs.close(); //closing XSLT opened in xsltMappingTransition or transformer
 			//files opened by channelIterator are closed in execute()
 		} catch (IOException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 
@@ -460,7 +461,7 @@ public class XSLDataTransformer extends Node {
             try {
                 checkConfig();
             } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+                ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
                 if(!StringUtils.isEmpty(e.getAttributeName())) {
                     problem.setAttributeName(e.getAttributeName());
                 }

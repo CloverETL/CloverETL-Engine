@@ -362,7 +362,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				throw new TransformLangExecutorRuntimeException(params,
 					Function.STR2DATE.name() + " - can't convert \""
 							+ params[0] + "\" using format "
-							+ c.formatter.getPattern()+  " : "+ex.getMessage());
+							+ c.formatter.getPattern(), ex);
 			}
 		/*	if (result != null) {
 				val.setValue(result);

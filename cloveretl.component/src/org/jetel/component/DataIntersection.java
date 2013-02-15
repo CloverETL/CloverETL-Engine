@@ -443,7 +443,7 @@ public class DataIntersection extends Node {
            	try {
     			errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
     		} catch (IOException e) {
-    			throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+    			throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
     		}
         }
     }    
@@ -564,7 +564,7 @@ public class DataIntersection extends Node {
     		}
     	}
     	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    		throw new ComponentNotReadyException(e);
     	}
     }
 

@@ -53,6 +53,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileURLParser;
@@ -534,7 +535,7 @@ public class XMLExtract extends Node {
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: " + e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: " + ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL));
 		} finally {
 			parser.reset();
 		}
@@ -584,7 +585,7 @@ public class XMLExtract extends Node {
 				}
 			}
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());
 			}

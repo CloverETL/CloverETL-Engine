@@ -42,6 +42,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -330,7 +331,7 @@ public class SQLCloverStatement {
 		try{
 			init();
 		}catch (Exception e) {
-			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, element, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, element, Priority.NORMAL));
 			return status;
 		}
 		if (record != null) {
@@ -346,7 +347,7 @@ public class SQLCloverStatement {
 		try {
 			prepareMapping(outRecord);
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, element, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, element, Priority.NORMAL));
 		}finally{//"reset" mapping
 			cloverOutputFieldsIndex = null;
 		}

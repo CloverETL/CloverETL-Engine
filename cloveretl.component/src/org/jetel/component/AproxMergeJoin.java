@@ -51,6 +51,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -582,7 +583,7 @@ public class AproxMergeJoin extends Node {
         	try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
         }
     }    
@@ -710,7 +711,7 @@ public class AproxMergeJoin extends Node {
     		}
     	}
     	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    		throw new ComponentNotReadyException(e);
     	}
     }
 
@@ -771,7 +772,7 @@ public class AproxMergeJoin extends Node {
         	try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
         }
 		// initializing join parameters
@@ -1210,7 +1211,7 @@ public class AproxMergeJoin extends Node {
 //            init();
 //            free();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

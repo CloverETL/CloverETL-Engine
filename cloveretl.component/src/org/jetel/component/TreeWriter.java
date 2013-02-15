@@ -57,14 +57,15 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -100,52 +101,48 @@ public abstract class TreeWriter extends Node {
 	private static final int MAX_ERRORS_OR_WARNINGS = 20;
 
 	public static Node readCommonAttributes(TreeWriter writer, ComponentXMLAttributes xattribs)
-			throws XMLConfigurationException {
-		try {
-			writer.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
-			writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-			String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
-			String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
-			if (mappingURL != null)
-				writer.setMappingURL(mappingURL);
-			else if (mapping != null)
-				writer.setMappingString(mapping);
-			else {
-				// throw configuration exception
-				xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
-			}
-			if (xattribs.exists(XML_CACHE_SIZE)) {
-				writer.setCacheSize(StringUtils.parseMemory(xattribs.getString(XML_CACHE_SIZE)));
-			}
-			if (xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
-				writer.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE, false));
-			}
-			if (xattribs.exists(XML_SORTKEYS_ATTRIBUTE)) {
-				writer.setSortHintsString(xattribs.getString(XML_SORTKEYS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_RECORDS_PER_FILE)) {
-				writer.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
-			}
-			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
-				writer.setRecordsCount(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
-			}
-			if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
-				writer.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
-				writer.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
-				writer.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
-				writer.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
-				writer.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
-			}
-		} catch (AttributeNotFoundException ex) {
-			throw new XMLConfigurationException(writer.getType() + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
+			throws XMLConfigurationException, AttributeNotFoundException {
+		writer.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+		writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
+		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
+		if (mappingURL != null)
+			writer.setMappingURL(mappingURL);
+		else if (mapping != null)
+			writer.setMappingString(mapping);
+		else {
+			// throw configuration exception
+			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
+		}
+		if (xattribs.exists(XML_CACHE_SIZE)) {
+			writer.setCacheSize(StringUtils.parseMemory(xattribs.getString(XML_CACHE_SIZE)));
+		}
+		if (xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
+			writer.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE, false));
+		}
+		if (xattribs.exists(XML_SORTKEYS_ATTRIBUTE)) {
+			writer.setSortHintsString(xattribs.getString(XML_SORTKEYS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_RECORDS_PER_FILE)) {
+			writer.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+		}
+		if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
+			writer.setRecordsCount(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+		}
+		if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+			writer.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+			writer.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+			writer.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
+			writer.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
+			writer.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
 		}
 
 		return writer;
@@ -192,7 +189,7 @@ public abstract class TreeWriter extends Node {
 		try {
 			validateMapping(status);
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());
 			}
@@ -304,8 +301,7 @@ public abstract class TreeWriter extends Node {
 			try {
 				stream = FileUtils.getInputStream(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
 			} catch (IOException e) {
-				LOGGER.error("cannot instantiate node from XML", e);
-				throw new ComponentNotReadyException(e.getMessage(), e);
+				throw new ComponentNotReadyException("cannot instantiate node from XML", e);
 			}
 		} else {
 			stream = new ByteArrayInputStream(this.mappingString.getBytes());
@@ -536,7 +532,7 @@ public abstract class TreeWriter extends Node {
 				FileUtils.deleteRecursively(tempDirectory);
 			}
 		} catch (IOException e) {
-			throw new ComponentNotReadyException(getType() + ": " + e.getMessage(), e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 

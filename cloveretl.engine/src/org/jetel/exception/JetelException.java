@@ -40,4 +40,8 @@ public class JetelException extends Exception {
 		super(message, cause);
 	}
 
+	public JetelException(Throwable cause) {
+		super(cause);
+	}
+
 } /* end class NoMoreDataException */

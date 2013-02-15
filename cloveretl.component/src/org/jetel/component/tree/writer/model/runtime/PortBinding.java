@@ -113,7 +113,7 @@ public class PortBinding {
 				return;
 			}
 		} catch (TransformException e) {
-			throw new JetelException(e.getMessage(), e);
+			throw new JetelException(e);
 		}
 		record.copyFrom(writeRecord);
 

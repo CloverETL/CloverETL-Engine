@@ -121,6 +121,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
@@ -2418,7 +2419,7 @@ public class HttpConnector extends Node {
         try {
         	tryToInit(true);
         } catch (Exception e) {
-        	status.add("Initialization failed. " + e.getMessage(), Severity.ERROR, this, Priority.NORMAL);
+        	status.add("Initialization failed. " + ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL);
         }
 		
         

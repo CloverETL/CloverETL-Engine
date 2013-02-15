@@ -516,8 +516,7 @@ public class MultiFileReader {
     		}
     	} catch (JetelException e) {
             noInputFile = true;
-            throw new ComponentNotReadyException(e.getMessage()/*"FileURL attribute (" + fileURL + ") doesn't contain valid file url."*/, e);
-//			logger.error("preExecute", e);
+            throw new ComponentNotReadyException(e);
 		}
     }
     

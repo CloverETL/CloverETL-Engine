@@ -227,7 +227,7 @@ import org.w3c.dom.Element;
                 try{
                     defaultRecord.getField(i).fromString(defaultForeignKeys[i]);
                 }catch(BadDataFormatException ex){
-                    throw new ComponentNotReadyException(this,"error when initializing DefaultForeignKey - "+ex.getMessage(),ex);
+                    throw new ComponentNotReadyException(this,"error when initializing DefaultForeignKey", ex);
                 }catch(IndexOutOfBoundsException ex){
                     throw new ComponentNotReadyException(this,"invalid number of default values (\"defaultForeignKey\" parameter) when initializing DefaultRecord");
                 }

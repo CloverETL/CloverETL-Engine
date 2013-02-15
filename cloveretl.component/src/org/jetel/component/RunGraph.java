@@ -61,6 +61,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
@@ -317,7 +318,7 @@ public class RunGraph extends Node{
 			try {
 				outputFile.close();
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
+				throw new ComponentNotReadyException(e);
 			}
 		}
     }
@@ -737,7 +738,7 @@ public class RunGraph extends Node{
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), 
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), 
             		Severity.ERROR, this, Priority.NORMAL);
             if (!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());

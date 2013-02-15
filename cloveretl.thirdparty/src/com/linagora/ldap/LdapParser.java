@@ -331,16 +331,13 @@ public class LdapParser extends AbstractParser {
 				transMap[i].setField(df,attrs.get(df.getMetadata().getName()));
 			} catch (BadDataFormatException bdfe) {
 				if (exceptionHandler != null) { //use handler only if configured
-					exceptionHandler.populateHandler(getErrorMessage(bdfe
-							.getMessage(), recordCounter, i), record, recordCounter,
+					exceptionHandler.populateHandler(getErrorMessage(recordCounter, i), record, recordCounter,
 							i, bdfe.getOffendingValue().toString(), bdfe);
 				} else {
-					throw new RuntimeException(getErrorMessage(bdfe.getMessage(),
-							recordCounter, i), bdfe);
+					throw new RuntimeException(getErrorMessage(recordCounter, i), bdfe);
 				}
 			} catch (Exception ex) {
-				throw new RuntimeException(ex.getClass().getName() + ":"
-						+ ex.getMessage(), ex);
+				throw new RuntimeException(ex);
 			}
 		}
 		
@@ -390,11 +387,10 @@ public class LdapParser extends AbstractParser {
 	 * @return error message
 	 * @since September 19, 2002
 	 */
-	protected String getErrorMessage(String exceptionMessage, int recNo,
+	protected String getErrorMessage(int recNo,
 			int fieldNo) {
 		StringBuffer message = new StringBuffer();
-		message.append(exceptionMessage);
-		message.append(" when parsing record #");
+		message.append("Error when parsing record #");
 		message.append(recordCounter);
 		message.append(" field ");
 		message.append(metadata.getField(fieldNo).getName());

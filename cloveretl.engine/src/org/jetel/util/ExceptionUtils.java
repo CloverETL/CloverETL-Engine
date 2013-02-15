@@ -66,6 +66,16 @@ public class ExceptionUtils {
     /**
      * Extract message from the given exception chain. All messages from all exceptions are concatenated
      * to the resulted string.
+     * @param exception converted exception
+     * @return resulted overall message
+     */
+    public static String exceptionChainToMessage(Throwable exception) {
+    	return exceptionChainToMessage(null, exception);
+    }
+
+    /**
+     * Extract message from the given exception chain. All messages from all exceptions are concatenated
+     * to the resulted string.
      * @param message prefixed message text which will be in the start of resulted string
      * @param exception converted exception
      * @return resulted overall message

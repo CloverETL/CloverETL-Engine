@@ -54,6 +54,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
@@ -714,7 +715,7 @@ public class InformixDataWriter extends BulkLoader {
 						Severity.ERROR, this, Priority.NORMAL));
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	Severity.ERROR, this, Priority.NORMAL));
 		}
 		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
 			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
@@ -732,7 +733,7 @@ public class InformixDataWriter extends BulkLoader {
 								Severity.ERROR,	this, Priority.NORMAL));
 					}
 				} catch (ComponentNotReadyException e) {
-					status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL));
+					status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	Severity.ERROR, this, Priority.NORMAL));
 				}
 		}
 		
@@ -787,7 +788,7 @@ public class InformixDataWriter extends BulkLoader {
 				getFilePath(errorLog);
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	Severity.ERROR, this, Priority.NORMAL));
 		}        
         return status;
     }
