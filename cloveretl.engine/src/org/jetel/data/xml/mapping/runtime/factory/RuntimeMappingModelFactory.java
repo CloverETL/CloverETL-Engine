@@ -179,8 +179,9 @@ public class RuntimeMappingModelFactory {
 		if (inputFieldToRecordMappings.isEmpty()) {
 			return null;
 		}
-		
-		String transformationCode = buildTransformationCode(inputFieldToRecordMappings, parentRuntimeMapping.getOutputPortNumber());
+
+		//we need to use port number 0 - this mini transformation has always one input and one output 
+		String transformationCode = buildTransformationCode(inputFieldToRecordMappings, 0);
 		
 		OutputPort outPort = context.getParentComponent().getOutputPort(parentRuntimeMapping.getOutputPortNumber());
 		InputPort inPort = context.getParentComponent().getInputPort(0);
