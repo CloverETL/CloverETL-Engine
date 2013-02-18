@@ -23,6 +23,7 @@ import java.io.StringWriter;
 
 import org.apache.log4j.Logger;
 import org.jetel.exception.CompoundException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.util.string.StringUtils;
 
@@ -90,7 +91,7 @@ public class ExceptionUtils {
      * @return resulted overall message
      */
     public static String exceptionChainToMessage(String message, Throwable exception) {
-    	return exceptionChainToMessage(message, exception, 0);
+    	return exceptionChainToMessage(new JetelRuntimeException(message, exception), 0);
     }
 
     /**
@@ -100,15 +101,8 @@ public class ExceptionUtils {
      * @param exception converted exception
      * @return resulted overall message
      */
-    private static String exceptionChainToMessage(String message, Throwable exception, int depth) {
+    private static String exceptionChainToMessage(Throwable exception, int depth) {
     	StringBuilder result = new StringBuilder();
-    	if (!StringUtils.isEmpty(message)) {
-    		result.append(message);
-    		depth++;
-    	}
-    	if (exception == null) {
-    		return result.toString();
-    	}
     	Throwable exceptionIterator = exception;
     	String lastMessage = "";
     	while (true) {
@@ -124,7 +118,7 @@ public class ExceptionUtils {
     		//CompoundException needs special handling
     		if (exceptionIterator instanceof CompoundException) {
     			for (Throwable t : ((CompoundException) exceptionIterator).getCauses()) {
-    				String messageOfNestedException = exceptionChainToMessage(null, t, depth);
+    				String messageOfNestedException = exceptionChainToMessage(t, depth);
     				if (!StringUtils.isEmpty(messageOfNestedException)) {
 	        			if (!StringUtils.isEmpty(result)) {
 	        				result.append("\n");
@@ -159,6 +153,17 @@ public class ExceptionUtils {
 		//in case the previous message is identical, this message is skipped
 		if (EqualsUtil.areEqual(message, lastMessage)) {
 			message = null;
+		}
+		
+		//in case the exception was created with "new Throwable(Throwable cause)" constructor
+		//generic message of this exception is useless, since all necessary information are in cause
+		//and this is attempt to detect it and skip it in the message stack
+		Throwable cause = t.getCause();
+		if (message != null && cause != null
+				&&
+			 (message.equals(cause.getClass().getName())
+					 || message.equals(cause.getClass().getName() + ": " + cause.getMessage()))) {
+				 message = null;
 		}
 		
 		return message;
