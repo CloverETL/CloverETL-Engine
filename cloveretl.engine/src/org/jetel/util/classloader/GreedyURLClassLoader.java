@@ -26,9 +26,9 @@ import org.jetel.data.Defaults;
 import org.jetel.util.string.StringUtils;
 
 /**
- * Class-loader extended from URL classloader which by default loads classes (greedily) from specified
- * URLs at first. If unsuccessful, it tries to load class using parent classloader. Specified packages
- * are excluded from greedy loading.
+ * Class-loader extended from URL classloader which by default loads classes and finds resources
+ * (greedily) from specified URLs at first. If unsuccessful, it tries to load class or to find resource
+ * using parent classloader. Specified packages are excluded from greedy class loading.
  * 
  * On the other hand, class loader can behave like ordinary class loader and only the specified packages
  * are loaded greedily.
@@ -171,5 +171,17 @@ public class GreedyURLClassLoader extends URLClassLoader {
 	public synchronized void addURL(URL urlToAdd) {
 		super.addURL(urlToAdd);
 	}
-	
+
+	@Override
+	public URL getResource(String name) {
+		if (greedy) {
+			URL url = findResource(name);
+			if (url != null) {
+				return url;
+			}
+		}
+		
+		return super.getResource(name);
+	}
+
 }
