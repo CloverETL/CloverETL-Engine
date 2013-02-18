@@ -104,6 +104,20 @@ public class ExceptionUtilsTest extends CloverTestCase {
 		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new NullPointerException("null")));
 
 		assertEquals("abc\n first\n  Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new NullPointerException("null"))));
+
+		assertEquals("abc", ExceptionUtils.exceptionChainToMessage("abc", new Exception()));
+
+		assertEquals("abc", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new Exception())));
+		
+		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new Exception("first"))));
+
+		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new NullPointerException("first"))));
+
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new NullPointerException())));
+
+		assertEquals("abc\n first\n  second", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception(new Exception(new Exception(new Exception("second")))))));
+
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new Exception(new NullPointerException()))));
 	}
 
 }
