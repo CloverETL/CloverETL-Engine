@@ -32,7 +32,6 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.sequence.Sequence;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -82,7 +81,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     String filename;
     long sequenceValue;
     final int step;
-    final int start;
+    final long start;
     final int numCachedValues;
     boolean alreadyIncremented = false;
     
@@ -112,7 +111,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * @param numCachedValues	how many values should be cached (reduces IO but consumes some of the 
      * available values between object reusals)
      */
-    public SimpleSequence(String id, TransformationGraph graph, String sequenceName, String filename, int start, int step, int numCachedValues) {
+    public SimpleSequence(String id, TransformationGraph graph, String sequenceName, String filename, long start, int step, int numCachedValues) {
         super(id, graph, sequenceName);
         this.filename=filename;
         this.start=start;
@@ -125,13 +124,13 @@ public class SimpleSequence extends GraphElement implements Sequence {
     /**
      *  Constructor for the SimpleSequence object.
      *
-     * @param  configFilename  properties filename containing definition of seqeunce (properties file)
+     * @param  configFilename  properties filename containing definition of sequence (properties file)
      */
     public SimpleSequence(String id, TransformationGraph graph, String configFilename) {
         super(id, graph);
         this.configFileName = configFilename;
         
-        int start = 0;
+        long start = 0;
         int step = 0;
         int cached = 0;
 
@@ -146,7 +145,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
 
         		setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
         		this.filename = typedProperties.getStringProperty(XML_FILE_URL_ATTRIBUTE, null);
-        		start = typedProperties.getIntProperty(XML_START_ATTRIBUTE, 0);
+        		start = typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0);
         		step = typedProperties.getIntProperty(XML_STEP_ATTRIBUTE, 0);
         		cached = typedProperties.getIntProperty(XML_CACHED_ATTRIBUTE, 0);                
         		
@@ -329,7 +328,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		return numCachedValues;
 	}
 
-	public int getStart() {
+	public long getStart() {
 		return start;
 	}
 	
@@ -360,7 +359,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     				graph,
     				xattribs.getString(XML_NAME_ATTRIBUTE),
     				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
-    				xattribs.getInteger(XML_START_ATTRIBUTE),
+    				xattribs.getLong(XML_START_ATTRIBUTE),
     				xattribs.getInteger(XML_STEP_ATTRIBUTE),
     				xattribs.getInteger(XML_CACHED_ATTRIBUTE));
     	}

@@ -130,7 +130,7 @@ public class SimpleDataGenerator extends DataGenerator {
 	 * @param pattern
 	 * @param recordsNumber
 	 */
-	public SimpleDataGenerator(String id, String pattern, int recordsNumber) {
+	public SimpleDataGenerator(String id, String pattern, long recordsNumber) {
 		super(id);
 		this.pattern = pattern;
 		this.recordsNumber = recordsNumber;
@@ -177,7 +177,7 @@ public class SimpleDataGenerator extends DataGenerator {
 	public Result execute() throws Exception {
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 		record.init();
-		for (int i=0;i<recordsNumber && runIt;i++){
+		for (long i=0;i<recordsNumber && runIt;i++){
 			record = recordGenerator.getNext(record);
 			autoFilling.setAutoFillingFields(record);
 			writeRecordBroadcast(record);

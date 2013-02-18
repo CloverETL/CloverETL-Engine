@@ -81,7 +81,7 @@ public class ConcurrentOutputPort implements OutputPortDirect {
 	}
 
 	@Override
-	public synchronized int getOutputRecordCounter() {
+	public synchronized long getOutputRecordCounter() {
 		return outputPort.getOutputRecordCounter();
 	}
 
@@ -91,7 +91,7 @@ public class ConcurrentOutputPort implements OutputPortDirect {
 	}
 
 	@Override
-	public synchronized int getRecordCounter() {
+	public synchronized long getRecordCounter() {
 		return outputPort.getRecordCounter();
 	}
 

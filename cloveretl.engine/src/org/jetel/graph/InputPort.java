@@ -100,14 +100,14 @@ public interface InputPort {
      * @deprecated use getInputRecordCounter() method instead
 	 */
     @Deprecated
-	public int getRecordCounter();
+	public long getRecordCounter();
     
     /**
      *  Gets the number of records passed (so far) through this input port.
      *
      * @return    number of records which passed this input port
      */
-    public int getInputRecordCounter();
+    public long getInputRecordCounter();
     
     /**
      * Gets the number of bytes passed (so far) through this port

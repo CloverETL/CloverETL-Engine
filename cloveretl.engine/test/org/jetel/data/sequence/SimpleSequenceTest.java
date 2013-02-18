@@ -51,7 +51,7 @@ public class SimpleSequenceTest extends CloverTestCase {
 	    
         sequence = SequenceFactory.createSequence(null, "SIMPLE_SEQUENCE", 
         		new Object[]{"",null,"Test",SEQUENCE_FILE,0,1,17}, 
-        		new Class[]{String.class,TransformationGraph.class,String.class,String.class,int.class,int.class,int.class});
+        		new Class[]{String.class,TransformationGraph.class,String.class,String.class,long.class,int.class,int.class});
         sequence.init();
     }
 

@@ -73,12 +73,12 @@ public class ConcurrentInputPort implements InputPortDirect {
 
 	@Override
 	@Deprecated
-	public synchronized int getRecordCounter() {
+	public synchronized long getRecordCounter() {
 		return inputPort.getRecordCounter();
 	}
 
 	@Override
-	public synchronized int getInputRecordCounter() {
+	public synchronized long getInputRecordCounter() {
 		return inputPort.getInputRecordCounter();
 	}
 

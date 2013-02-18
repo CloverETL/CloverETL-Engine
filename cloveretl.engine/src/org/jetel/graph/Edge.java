@@ -63,7 +63,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
     protected boolean debugMode;
     protected EdgeDebuger edgeDebuger;
-    protected int debugMaxRecords;
+    protected long debugMaxRecords;
     protected boolean debugLastRecords;
     protected String debugFilterExpression;
     protected boolean debugSampleData;
@@ -125,7 +125,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     	this.debugMode = debugMode;
     }
     
-    public void setDebugMaxRecords(int debugMaxRecords) {
+    public void setDebugMaxRecords(long debugMaxRecords) {
     	this.debugMaxRecords = debugMaxRecords;
     }
     
@@ -175,7 +175,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @see org.jetel.graph.InputPort#getRecordCounter()
 	 */
 	@Override
-	public int getRecordCounter() {
+	public long getRecordCounter() {
 		return edge.getOutputRecordCounter();
 	}
     
@@ -183,7 +183,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @see org.jetel.graph.OutputPort#getOutputRecordCounter()
      */
     @Override
-	public int getOutputRecordCounter() {
+	public long getOutputRecordCounter() {
         return edge.getOutputRecordCounter();
     }
 
@@ -191,7 +191,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @see org.jetel.graph.InputPort#getInputRecordCounter()
      */
     @Override
-	public int getInputRecordCounter() {
+	public long getInputRecordCounter() {
         return edge.getInputRecordCounter();
     }
 

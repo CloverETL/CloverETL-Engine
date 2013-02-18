@@ -52,7 +52,7 @@ public class EdgeDebuger {
     private final String debugFile;
     private final boolean readMode;
 
-    private final int debugMaxRecords; // max number of debugged records; 0 -> infinite
+    private final long debugMaxRecords; // max number of debugged records; 0 -> infinite
     private final boolean debugLastRecords;
     private final String filterExpression;
     private final DataRecordMetadata metadata;
@@ -79,7 +79,7 @@ public class EdgeDebuger {
     	this(parentEdge, debugFile, readMode, 0, true, null, null, false);
     }
 
-    public EdgeDebuger(Edge parentEdge, String debugFile, boolean readMode, int debugMaxRecords, boolean debugLastRecords, 
+    public EdgeDebuger(Edge parentEdge, String debugFile, boolean readMode, long debugMaxRecords, boolean debugLastRecords, 
     		String filterExpression, DataRecordMetadata metadata, boolean sampleData) {
     	this.parentEdge = parentEdge;
         this.debugFile = debugFile;

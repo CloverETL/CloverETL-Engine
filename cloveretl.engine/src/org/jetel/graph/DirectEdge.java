@@ -43,7 +43,7 @@ public class DirectEdge extends EdgeBase {
 	private CloverBuffer readBuffer;
 	private CloverBuffer writeBuffer;
 	private CloverBuffer tmpDataRecord;
-	private int recordCounter;
+	private long recordCounter;
     private long byteCounter;
     private AtomicInteger bufferedRecords; 
 	private volatile boolean isClosed;
@@ -66,12 +66,12 @@ public class DirectEdge extends EdgeBase {
 	}
 	
 	@Override
-	public int getOutputRecordCounter() {
+	public long getOutputRecordCounter() {
 		return recordCounter;
 	}
 
     @Override
-	public int getInputRecordCounter() {
+	public long getInputRecordCounter() {
         return recordCounter;
     }
 

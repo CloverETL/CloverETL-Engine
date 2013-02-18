@@ -317,12 +317,12 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		}
 
 		@Override
-		public int getRecordCounter() {
+		public long getRecordCounter() {
 			return 0;
 		}
 
 		@Override
-		public int getInputRecordCounter() {
+		public long getInputRecordCounter() {
 			return 0;
 		}
 
