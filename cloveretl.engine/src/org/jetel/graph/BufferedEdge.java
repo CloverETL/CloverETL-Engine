@@ -44,8 +44,8 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class BufferedEdge extends EdgeBase {
 
-    private int outputRecordCounter;
-    private int inputRecordCounter;
+    private long outputRecordCounter;
+    private long inputRecordCounter;
     private long byteCounter;
     private int internalBufferSize;
 
@@ -72,12 +72,12 @@ public class BufferedEdge extends EdgeBase {
 	}
 
 	@Override
-	public int getOutputRecordCounter() {
+	public long getOutputRecordCounter() {
 		return outputRecordCounter;
 	}
 
     @Override
-	public int getInputRecordCounter() {
+	public long getInputRecordCounter() {
         return inputRecordCounter;
     }
 

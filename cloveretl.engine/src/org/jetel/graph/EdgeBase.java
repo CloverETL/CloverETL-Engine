@@ -95,14 +95,14 @@ public abstract class EdgeBase {
      *
      *@return    The recordCounter value
      */
-    public abstract int getOutputRecordCounter();
+    public abstract long getOutputRecordCounter();
 
     /**
      *  Gets the recordCounter - how many records came out this edge so far.
      *
      *@return    The recordCounter value
      */
-    public abstract int getInputRecordCounter();
+    public abstract long getInputRecordCounter();
 
     /**
      * Gets the byteCounter - how many bytes came in this edge so far.

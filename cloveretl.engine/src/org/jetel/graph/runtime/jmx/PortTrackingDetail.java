@@ -42,7 +42,7 @@ public abstract class PortTrackingDetail implements PortTracking {
 
 	protected final int index;
 	
-	protected int totalRecords;
+	protected long totalRecords;
 	protected long totalBytes;
     
 	protected int recordFlow;
@@ -205,7 +205,7 @@ public abstract class PortTrackingDetail implements PortTracking {
 	
 	abstract void gatherTrackingDetails();
 	
-	protected void gatherTrackingDetails0(int newTotalRecords, long newTotalBytes, int waitingRecords) {
+	protected void gatherTrackingDetails0(long newTotalRecords, long newTotalBytes, int waitingRecords) {
 		long currentTime = System.nanoTime();
 		long timespan = lastGatherTime != 0 ? currentTime - lastGatherTime : 0; 
 

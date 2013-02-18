@@ -41,8 +41,8 @@ import org.jetel.util.bytes.CloverBuffer;
 public class PhaseConnectionEdge extends EdgeBase {
 
 	private DataRecordTape dataTape;
-	private int writeCounter;
-	private int readCounter;
+	private long writeCounter;
+	private long readCounter;
     private long writeByteCounter;
     private long readByteCounter;
 	private boolean isReadMode;
@@ -67,12 +67,12 @@ public class PhaseConnectionEdge extends EdgeBase {
 	}
 
 	@Override
-	public int getOutputRecordCounter() {
+	public long getOutputRecordCounter() {
 		return writeCounter;
 	}
 
     @Override
-	public int getInputRecordCounter() {
+	public long getInputRecordCounter() {
         return readCounter;
     }
 
@@ -87,8 +87,8 @@ public class PhaseConnectionEdge extends EdgeBase {
     }
 
     @Override
-	public int getBufferedRecords(){
-        return writeCounter-readCounter;
+	public int getBufferedRecords() {
+        return (int) (writeCounter - readCounter);
     }
     
     @Override

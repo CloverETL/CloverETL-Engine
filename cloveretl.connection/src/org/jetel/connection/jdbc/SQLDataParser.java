@@ -212,7 +212,7 @@ public class SQLDataParser extends AbstractParser {
 		return record;
 	}
 
-	private String getErrorMessage(Exception ex, DataRecord record, int fieldNum) {
+	private String getErrorMessage(DataRecord record, int fieldNum) {
 		String fieldName = null;
 		String fieldType = null;
 		String metadataName = null;
@@ -229,11 +229,7 @@ public class SQLDataParser extends AbstractParser {
 			}
 		}
 		
-		StringBuilder builder = new StringBuilder();
-		builder.append(fieldName).append(" (").append(fieldType).append(") ");
-		builder.append("- ").append(ExceptionUtils.exceptionChainToMessage(ex)).append("; in field ").append(fieldNum).append(" (\"").append(fieldName).append("\")").append(", metadata ").append(metadataName);
-		
-		return builder.toString();
+		return "Parsing error in field " + fieldNum + " - " + fieldName + " (" + fieldType + ") in metadata " + metadataName;
 	}
 	
 	/**
@@ -259,9 +255,7 @@ public class SQLDataParser extends AbstractParser {
 				throw bdfe;
 			}
 		} catch (Exception ex) {
-			
-            logger.debug(getErrorMessage(ex, record, fieldNum) ,ex);
-			throw new RuntimeException(getErrorMessage(ex, record, fieldNum), ex);
+			throw new RuntimeException(getErrorMessage(record, fieldNum), ex);
 		}
 	}
 

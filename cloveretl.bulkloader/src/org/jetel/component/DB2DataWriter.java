@@ -2054,12 +2054,12 @@ public class DB2DataWriter extends Node {
  */
 class DB2DataConsumer implements DataConsumer {
 	
-	int read;
-	int skipped;
-	int loaded;
-	int rejected;
-	int deleted;
-	int committed;
+	long read;
+	long skipped;
+	long loaded;
+	long rejected;
+	long deleted;
+	long committed;
 	private String errorMessage;
 	private boolean partRead = false;
 	private OutputPort errPort;
@@ -2122,22 +2122,22 @@ class DB2DataConsumer implements DataConsumer {
 		}
 		//remember number of processed records
 		if (line.contains("rows read")) {
-			read = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			read = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows skipped")) {
-			skipped = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			skipped = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows loaded")) {
-			loaded = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			loaded = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows rejected")) {
-			rejected = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			rejected = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows deleted")) {
-			deleted = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			deleted = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows committed")) {
-			committed = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			committed = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.matches("^SQL\\d+.*")){
 			// remember first line of error message
@@ -2182,19 +2182,19 @@ class DB2DataConsumer implements DataConsumer {
 		return true;
 	}
 
-	public int getCommitted() {
+	public long getCommitted() {
 		return committed;
 	}
 
-	public int getDeleted() {
+	public long getDeleted() {
 		return deleted;
 	}
 
-	public int getLoaded() {
+	public long getLoaded() {
 		return loaded;
 	}
 
-	public int getRead() {
+	public long getRead() {
 		return read;
 	}
 
@@ -2207,11 +2207,11 @@ class DB2DataConsumer implements DataConsumer {
 	public void close() {
 	}
 
-	public int getRejected() {
+	public long getRejected() {
 		return rejected;
 	}
 
-	public int getSkipped() {
+	public long getSkipped() {
 		return skipped;
 	}
 	

@@ -39,7 +39,7 @@ import org.jetel.util.bytes.CloverBuffer;
 public class DirectEdgeFastPropagate extends EdgeBase {
     
     protected EdgeRecordBufferPool recordsBuffer;
-    protected int recordCounter;
+    protected long recordCounter;
     protected long byteCounter;
     protected AtomicInteger bufferedRecords;
 
@@ -58,12 +58,12 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     }
 
     @Override
-	public int getOutputRecordCounter() {
+	public long getOutputRecordCounter() {
         return recordCounter;
     }
 
     @Override
-	public int getInputRecordCounter() {
+	public long getInputRecordCounter() {
         return recordCounter;
     }
 

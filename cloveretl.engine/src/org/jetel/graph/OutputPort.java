@@ -106,14 +106,14 @@ public interface OutputPort {
      * @deprecated use getOutputRecordCounter() method instead
 	 */
     @Deprecated
-	public int getRecordCounter();
+	public long getRecordCounter();
     
     /**
      *  Gets the number of records passed (so far) through this output port.
      *
      * @return    number of records which passed this output port
      */
-    public int getOutputRecordCounter();
+    public long getOutputRecordCounter();
     
     /**
      * Gets the number of bytes passed (so far) through this port

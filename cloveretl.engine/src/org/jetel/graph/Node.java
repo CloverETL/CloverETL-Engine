@@ -331,8 +331,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      *@deprecated
 	 */
 	@Deprecated
-	public int getRecordCount(char portType, int portNum) {
-		int count;
+	public long getRecordCount(char portType, int portNum) {
+		long count;
         // Integer used as key to TreeMap containing ports
 		Integer port = Integer.valueOf(portNum);
 		try {
@@ -472,7 +472,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
                 Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                         new ErrorMsgBody(runResult.code(), 
                                 resultMessage != null ? resultMessage : runResult.message(), null));
-                getCloverPost().sendMessage(msg);
+                sendMessage(msg);
             }
             
             if (runResult == Result.FINISHED_OK) {
@@ -485,7 +485,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	            			runResult = Result.ERROR;
 	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
 	            					new ErrorMsgBody(runResult.code(), "Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records.", null));
-	            			getCloverPost().sendMessage(msg);
+	            			sendMessage(msg);
 	            			return;
 	            		}
 	            	}
@@ -495,22 +495,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             }
         } catch (InterruptedException ex) {
             runResult=Result.ABORTED;
-            return;
         } catch (Exception ex) {
             runResult=Result.ERROR;
             resultException = createNodeException(ex);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
-            getCloverPost().sendMessage(msg);
-            return;
+            sendMessage(msg);
         } catch (Throwable ex) {
         	logger.fatal(ex); 
             runResult=Result.ERROR;
             resultException = createNodeException(ex);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
-            getCloverPost().sendMessage(msg);
-            return;
+            sendMessage(msg);
         } finally {
         	sendFinishMessage();
         	setNodeThread(null);
@@ -529,9 +526,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     private void sendFinishMessage() {
         //sends notification - node has finished
-        Message<Void> msg = Message.createNodeFinishedMessage(this);
-        if (getCloverPost() != null) //that condition should be removed - graph aborting is not well synchronized now
-        	getCloverPost().sendMessage(msg);
+        sendMessage(Message.createNodeFinishedMessage(this));
     }
     
 	/**
@@ -561,7 +556,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             resultException = cause;
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), cause));
-            getCloverPost().sendMessage(msg);
+            sendMessage(msg);
             sendFinishMessage();
 		} else if (!runResult.isStop()) {
 			logger.debug("Node '" + getId() + "' was not interrupted in legal way.");
@@ -619,15 +614,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		runIt = false;
 	}
 
-    /**
-     * Provides CloverRuntime - object providing
-     * various run-time services
-     * 
-     * @return
-     * @since 13.12.2006
-     */
-    public CloverPost getCloverPost(){
-        return getGraph().getPost();
+    public void sendMessage(Message<?> msg) {
+    	CloverPost post = getGraph().getPost();
+    	if (post != null) {
+    		post.sendMessage(msg);
+    	} else {
+    		getLog().info("Component reports a message, but its graph is already released. Message: " + msg.toString());
+    	}
     }
     
 	/**

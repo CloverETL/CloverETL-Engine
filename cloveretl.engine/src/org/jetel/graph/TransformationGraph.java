@@ -101,7 +101,7 @@ public final class TransformationGraph extends GraphElement {
     
     private String debugModeStr;
     
-    private int debugMaxRecords = 0;
+    private long debugMaxRecords = 0;
     
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
@@ -231,14 +231,14 @@ public final class TransformationGraph extends GraphElement {
      * Sets maximum debugged records on the edges.
      * @param debugMaxRecords
      */
-    public void setDebugMaxRecords(int debugMaxRecords) {
+    public void setDebugMaxRecords(long debugMaxRecords) {
     	this.debugMaxRecords = debugMaxRecords;
     }
     
     /**
      * @return maximum debugged records on the edges.
      */
-    public int getDebugMaxRecords() {
+    public long getDebugMaxRecords() {
         return debugMaxRecords;
     }
 
