@@ -232,7 +232,7 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 			
 			URI tmp = file.getFile();
 			try {
-				this.uri = new URI(tmp.getScheme(), connectionId, tmp.getPath(), null);
+				this.uri = new URI(tmp.getScheme(), connectionId, tmp.getPath(), null, null);
 			} catch (URISyntaxException e) {
 				throw new IOException(e);
 			}
