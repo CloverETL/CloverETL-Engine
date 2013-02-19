@@ -30,9 +30,7 @@ import org.jetel.component.fileoperation.FileManager;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.TransformationGraphAnalyzer;
 import org.jetel.main.runGraph;
 import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.PluginRepositoryLocation;
@@ -245,13 +243,6 @@ public class EngineInitializer {
 	public static void initGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
 		graph.setPassword(runtimeContext.getPassword());
 		
-        //remove disabled components and their edges
-        try {
-			TransformationGraphAnalyzer.disableNodesInPhases(graph);
-		} catch (GraphConfigurationException e) {
-			throw new ComponentNotReadyException(graph, "Failed to remove disabled/pass-through nodes from graph", e);
-		}
-		
 		//first perform checkConfig() method on the graph 
 		if (!runtimeContext.isSkipCheckConfig()) {
 			checkConfig(graph);
@@ -268,13 +259,6 @@ public class EngineInitializer {
 	 * Checks configuration of the given graph.
 	 */
 	public static void checkConfig(TransformationGraph graph) throws ComponentNotReadyException {
-        //remove disabled components and their edges
-        try {
-			TransformationGraphAnalyzer.disableNodesInPhases(graph);
-		} catch (GraphConfigurationException e) {
-			throw new ComponentNotReadyException(graph, "Failed to remove disabled/pass-through nodes from graph", e);
-		}
-		
 		logger.info("Checking graph configuration...");
 		ConfigurationStatus status = graph.checkConfig(null);
 		if (status.isError()) {
