@@ -252,24 +252,41 @@ public class EngineInitializer {
 			throw new ComponentNotReadyException(graph, "Failed to remove disabled/pass-through nodes from graph", e);
 		}
 		
+		//first perform checkConfig() method on the graph 
 		if (!runtimeContext.isSkipCheckConfig()) {
-			logger.info("Checking graph configuration...");
-			ConfigurationStatus status = graph.checkConfig(null);
-			if (status.isError()) {
-				logger.error("Graph configuration is invalid.");
-				status.log();
-				throw new ComponentNotReadyException(graph, "Graph configuration is invalid.", status.toException());
-			} else {
-				logger.info("Graph configuration is valid.");
-				status.log();
-			}
+			checkConfig(graph);
 		} else {
 			logger.info("Graph configuration checking is skipped.");
 		}
+		
+		//initialize the graph
 		logger.info("Graph initialization (" + graph.getName() + ")");
         graph.init();
 	}
 
+	/**
+	 * Checks configuration of the given graph.
+	 */
+	public static void checkConfig(TransformationGraph graph) throws ComponentNotReadyException {
+        //remove disabled components and their edges
+        try {
+			TransformationGraphAnalyzer.disableNodesInPhases(graph);
+		} catch (GraphConfigurationException e) {
+			throw new ComponentNotReadyException(graph, "Failed to remove disabled/pass-through nodes from graph", e);
+		}
+		
+		logger.info("Checking graph configuration...");
+		ConfigurationStatus status = graph.checkConfig(null);
+		if (status.isError()) {
+			logger.error("Graph configuration is invalid.");
+			status.log();
+			throw new ComponentNotReadyException(graph, "Graph configuration is invalid.", status.toException());
+		} else {
+			logger.info("Graph configuration is valid.");
+			status.log();
+		}
+	}
+	
 	/**
 	 * Initializes location of licenses. If you want to use this method, it has to be called BEFORE initEngine call.
 	 * @param licenses Location(s) where licenses are stored.

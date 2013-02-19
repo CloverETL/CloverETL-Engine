@@ -70,4 +70,13 @@ public class SandboxUrlUtilsTest extends TestCase {
 		assertEquals("sandbox://mySandbox/path/to/folder/data.txt", SandboxUrlUtils.getSandboxUrl("mySandbox", "path/to/folder/data.txt").toString());
 	}
 	
+	public void testGetSandboxPath() {
+		assertEquals("sandbox://xxx/yyy", SandboxUrlUtils.getSandboxPath("xxx", "yyy"));
+		assertEquals("sandbox://xxx/yyy", SandboxUrlUtils.getSandboxPath("xxx/", "yyy"));
+		assertEquals("sandbox://xxx/yyy/", SandboxUrlUtils.getSandboxPath("xxx/", "yyy/"));
+		assertEquals("sandbox://xxx/yyy/", SandboxUrlUtils.getSandboxPath("xxx", "yyy/"));
+		assertEquals("sandbox://xxx/y/yy/", SandboxUrlUtils.getSandboxPath("xxx", "y/yy/"));
+		assertEquals("sandbox://xxx/yy/y", SandboxUrlUtils.getSandboxPath("xxx", "yy/y"));
+	}
+	
 }

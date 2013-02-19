@@ -141,6 +141,16 @@ public final class SandboxUrlUtils {
 	}
 	
 	/**
+	 * Simply concatenates sandbox protocol with given storageCode and relative path.
+	 * @param storageCode
+	 * @param relativePath
+	 * @return
+	 */
+	public static String getSandboxPath(String storageCode, String relativePath) {
+		return FileUtils.appendSlash(SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + storageCode) + (relativePath != null ? relativePath : "");
+	}
+	
+	/**
 	 * Answers file:// URL corresponding to the given sandbox:// URL.
 	 * @param sandboxUrl
 	 * @return resolved local URL or <code>null</code> if referenced resource is not available locally or the URL is ambiguous
