@@ -53,7 +53,7 @@ import org.jetel.util.file.FileUtils;
  */
 public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 
-	private static final String TESTING_URI = "hdfs://CDH3U5/tmp/test_fo/";
+	private static final String TESTING_URI = "hdfs://CDH_3U5/tmp/test_fo/";
 	
 	private static final String HADOOP_TEST_GRAPH = "hadoop-testGraph.grf";
 	
