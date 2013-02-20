@@ -29,7 +29,7 @@ import java.util.Arrays;
 import org.jetel.component.tree.writer.AttributeWriter;
 import org.jetel.component.tree.writer.CommentWriter;
 import org.jetel.component.tree.writer.NamespaceWriter;
-import org.jetel.component.tree.writer.TreeWriter;
+import org.jetel.component.tree.writer.TreeWriterBase;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelException;
 
@@ -40,7 +40,7 @@ import org.jetel.exception.JetelException;
  * 
  * @created 11 Mar 2011
  */
-public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, CommentWriter {
+public class XmlWriter extends TreeWriterBase implements NamespaceWriter, AttributeWriter, CommentWriter {
 
 	private enum TagContent {EMPTY, ATTRIBUTE_COMMENT_NAMESPACE, VALUE_CHILD};
 	
