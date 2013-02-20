@@ -170,13 +170,6 @@ public class BasicSqlConnection implements SqlConnection {
 		ResultSet result = dbMeta.getSchemas();
 		String tmp;
 		
-		if (!conservative) {
-			try {
-				optimizeConnection(operationType);
-			} catch (Exception e1) {
-				logger.warn("Optimizing connection failed. Try to use another jdbc specific.", e1);
-			}
-		}
 		while (result.next()) {
 			tmp = "";
 			try {

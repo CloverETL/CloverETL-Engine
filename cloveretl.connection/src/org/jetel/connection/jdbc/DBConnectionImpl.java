@@ -18,11 +18,12 @@
  */
 package org.jetel.connection.jdbc;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -45,7 +46,6 @@ import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.database.sql.SqlConnection;
-import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -53,7 +53,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.compile.ClassLoaderUtils;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -351,28 +351,6 @@ public class DBConnectionImpl extends AbstractDBConnection {
         return connection;
     }
     
-    protected Connection connect(OperationType operationType) throws JetelException {
-    	if (!StringUtils.isEmpty(getJndiName())) {
-        	try {
-            	Context initContext = new InitialContext();
-           		DataSource ds = (DataSource)initContext.lookup(getJndiName());
-               	Connection jndiConnection = ds.getConnection();
-               	//update jdbc specific of this DBConnection according given JNDI connection
-               	updateJdbcSpecific(jndiConnection);
-               	//wrap the given JNDI connection to a DefaultConnection instance 
-               	return getJdbcSpecific().wrapSQLConnection(this, operationType, jndiConnection);
-        	} catch (Exception e) {
-        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName(), e);
-        	}
-    	} else {
-        	try {
-				return getJdbcSpecific().createSQLConnection(this, operationType);
-			} catch (JetelException e) {
-				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
-			}
-    	}
-    }
-
     /**
      * Guess jdbc specific for this {@link DBConnection} based on given {@link Connection}.
      * This is used for {@link Connection} given from JNDI interface to guess proper {@link JdbcSpecific}.
