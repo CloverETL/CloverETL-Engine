@@ -36,6 +36,7 @@ import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -49,6 +50,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -266,7 +268,7 @@ public class DBInputTable extends Node {
 				incrementalFile = FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), incrementalFile);
 			} catch (MalformedURLException e) {
 				throw new ComponentNotReadyException(this,
-						XML_INCREMENTAL_FILE_ATTRIBUTE, e.getMessage());
+						XML_INCREMENTAL_FILE_ATTRIBUTE, e);
 			}
 		}
 		
@@ -361,7 +363,7 @@ public class DBInputTable extends Node {
 					if (policyType == PolicyType.STRICT) {
 						throw bdfe;
 					} else {
-						logger.info(bdfe.getMessage());
+						logger.info(ExceptionUtils.exceptionChainToMessage(bdfe));
 					}
 				}
 			}
@@ -445,64 +447,60 @@ public class DBInputTable extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           September 27, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
             ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
             ComponentXMLAttributes xattribsChild;
             DBInputTable aDBInputTable = null;
             org.w3c.dom.Node childNode;
 
-            try 
-            {
-                String query;
-                if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                	query = null;
-                } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
-                    query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
-                }else if (xattribs.exists(XML_SQLCODE_ELEMENT)){
-                    query = xattribs.getString(XML_SQLCODE_ELEMENT);
-                }else{
-                    
-                    childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
-                    if (childNode == null) {
-                        throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
-                    }
-                    xattribsChild = new ComponentXMLAttributes(xmlElement, graph);
-                    query=xattribsChild.getText(childNode);
-
-        			
-                }
-
-                aDBInputTable = new DBInputTable(xattribs.getString(XML_ID_ATTRIBUTE),
-                        xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-                        query);
+            String query;
+            if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+            	query = null;
+            } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
+                query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
+            }else if (xattribs.exists(XML_SQLCODE_ELEMENT)){
+                query = xattribs.getString(XML_SQLCODE_ELEMENT);
+            }else{
                 
-                aDBInputTable.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE,null));
-                if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
-                	aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
+                childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
+                if (childNode == null) {
+                    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
                 }
-                if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                	aDBInputTable.setURL(xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-                }
-                if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
-                    aDBInputTable.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
-                }
-                if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-                	aDBInputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-                }
-                if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-                	aDBInputTable.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-                }
-                if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
-                	aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
-                }
-                if (xattribs.exists(XML_AUTOCOMMIT_ATTRIBUTE)) {
-                	aDBInputTable.setAutoCommit(xattribs.getBoolean(XML_AUTOCOMMIT_ATTRIBUTE));
-                }                
-            }catch (Exception ex) {
-                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+                xattribsChild = new ComponentXMLAttributes(xmlElement, graph);
+                query=xattribsChild.getText(childNode);
+
+    			
             }
+
+            aDBInputTable = new DBInputTable(xattribs.getString(XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+                    query);
+            
+            aDBInputTable.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE,null));
+            if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
+            	aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+            	aDBInputTable.setURL(xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+            }
+            if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
+                aDBInputTable.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+            	aDBInputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
+            	aDBInputTable.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+            }
+            if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
+            	aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_AUTOCOMMIT_ATTRIBUTE)) {
+            	aDBInputTable.setAutoCommit(xattribs.getBoolean(XML_AUTOCOMMIT_ATTRIBUTE));
+            }                
 
             return aDBInputTable;
 	}
@@ -566,7 +564,7 @@ public class DBInputTable extends Node {
 					// Throwing and exception halts the entire graph which might not be correct as inc file
 					// can be created at graph runtime. Instead just log it
 					// issue #2127
-		            ConfigurationProblem problem = new ConfigurationProblem(e1.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+		            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e1), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 		            problem.setAttributeName(XML_INCREMENTAL_FILE_ATTRIBUTE);
 		            status.add(problem);
 				} catch (ComponentNotReadyException e2) {
@@ -574,7 +572,7 @@ public class DBInputTable extends Node {
 					// Throwing and exception halts the entire graph which might not be correct as inc file
 					// can be created at graph runtime. Instead just log it
 					// issue #2127
-		            ConfigurationProblem problem = new ConfigurationProblem(e2.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+		            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e2), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 		            if(!StringUtils.isEmpty(e2.getAttributeName())) {
 		                problem.setAttributeName(e2.getAttributeName());
 		            }
@@ -582,7 +580,7 @@ public class DBInputTable extends Node {
 				}
 			}
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

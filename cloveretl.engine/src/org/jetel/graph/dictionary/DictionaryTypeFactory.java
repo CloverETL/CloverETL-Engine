@@ -55,7 +55,7 @@ public class DictionaryTypeFactory {
                 registerDictionaryEntry(description);
             } catch(Exception e) {
                 logger.error("Cannot create dictionary type description, extension in plugin manifest is not valid.\n"
-                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());
+                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension, e);
             }
         }
 	}
@@ -92,13 +92,10 @@ public class DictionaryTypeFactory {
                 return Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown dictionary entry type: " + dictionaryType + " class: " + className);
-            throw new RuntimeException("Unknown dictionary entry type: " + dictionaryType + " class: " + className);
+            throw new RuntimeException("Unknown dictionary entry type: " + dictionaryType + " class: " + className, ex);
         } catch(Exception ex) {
-            logger.error("Unknown dictionary entry type: " + dictionaryType);
-            throw new RuntimeException("Unknown dictionary entry type: " + dictionaryType);
+            throw new RuntimeException("Unknown dictionary entry type: " + dictionaryType, ex);
         }
-
     }
     
 	/**
@@ -116,19 +113,11 @@ public class DictionaryTypeFactory {
 		Object entryProviderObject;
 		try {
 			entryProviderObject = tClass.newInstance();
-		} catch (InstantiationException e) {
-			logger.error("Can't create object of type " + dictionaryType + " with reason: " + e.getMessage());
-			throw new RuntimeException("Can't create object of type " + dictionaryType + " with reason: " + e.getMessage());
-		} catch (IllegalAccessException e) {
-			logger.error("Can't create object of type " + dictionaryType + " with reason: " + e.getMessage());
-          	throw new RuntimeException("Can't create object of type " + dictionaryType + " with reason: " + e.getMessage());
-		} catch(Exception ex) {
-			logger.error("Can't create object of : " + dictionaryType + " exception: " + ex);
-			throw new RuntimeException("Can't create object of : " + dictionaryType + " exception: " + ex);
+		} catch (Exception ex) {
+			throw new RuntimeException("Can't create dictionary entry type " + dictionaryType, ex);
 		}
 		if(!(entryProviderObject instanceof IDictionaryType)) {
-            logger.error("Can't create object of type " + dictionaryType + " with reason: '" + tClass.getCanonicalName() + "' is not instance of the DictionaryEntryProvider interface.");
-            throw new RuntimeException("Can't create object of type " + dictionaryType + " with reason: '" + tClass.getCanonicalName() + "' is not instance of the DictionaryEntryProvider interface.");
+            throw new RuntimeException("Can't create dictionary entry type " + dictionaryType + " with reason: '" + tClass.getCanonicalName() + "' is not instance of the DictionaryEntryProvider interface.");
 		}
 		return (IDictionaryType) entryProviderObject;
 	}

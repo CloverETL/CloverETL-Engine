@@ -29,6 +29,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.ExternalSortDataRecord;
 import org.jetel.data.ISortDataRecord;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -42,8 +43,6 @@ import org.jetel.graph.runtime.tracker.CopyComponentTokenTracker;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.RefResFlag;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 /**
  *  <h3>Sort Component</h3>
@@ -228,7 +227,7 @@ public class ExtSort extends Node {
 		} catch (InterruptedException ex) {
 			throw ex;
 		} catch (Exception ex) {
-			throw new JetelException( "Error when sorting: " + ex.getMessage(),ex);
+			throw new JetelException("Error when sorting", ex);
 		}
 		
         while (sorter.get(recordBuffer) && runIt) {
@@ -333,48 +332,43 @@ public class ExtSort extends Node {
      *
      * @param  nodeXML  Description of Parameter
      * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
      * @since           May 21, 2002
      */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         ExtSort sort;
-        try {
-        	boolean oldAscendingOrder;
-            if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) { 
-            	// this is for backwards compatibility
-            	oldAscendingOrder = xattribs.getString(XML_SORTORDER_ATTRIBUTE)
-                    .matches("^[Aa].*");
-            } else 
-            	oldAscendingOrder = true;
+    	boolean oldAscendingOrder;
+        if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) { 
+        	// this is for backwards compatibility
+        	oldAscendingOrder = xattribs.getString(XML_SORTORDER_ATTRIBUTE)
+                .matches("^[Aa].*");
+        } else 
+        	oldAscendingOrder = true;
 
-        	sort = new ExtSort(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(
-                    XML_SORTKEY_ATTRIBUTE).split(
-                    Defaults.Component.KEY_FIELDS_DELIMITER_REGEX), oldAscendingOrder);
-            if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
-            	sort.setSortOrders(xattribs.getString(XML_SORTORDER_ATTRIBUTE), sort.getSortKeyCount());
-            }
-            if (xattribs.exists(XML_SORTERINITIALCAPACITY_ATTRIBUTE)){
-                //only for backward compatibility
-                sort.setBufferCapacity(xattribs.getInteger(XML_SORTERINITIALCAPACITY_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_NUMBEROFTAPES_ATTRIBUTE)){
-                sort.setNumberOfTapes(xattribs.getInteger(XML_NUMBEROFTAPES_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_BUFFER_CAPACITY_ATTRIBUTE)){
-                sort.setBufferCapacity(xattribs.getInteger(XML_BUFFER_CAPACITY_ATTRIBUTE));
-            }
-
-            if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
-                sort.setLocaleStr(xattribs.getString(XML_LOCALE_ATTRIBUTE));
-            }
-			if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
-				sort.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
-			}
-
-            
-        } catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+    	sort = new ExtSort(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(
+                XML_SORTKEY_ATTRIBUTE).split(
+                Defaults.Component.KEY_FIELDS_DELIMITER_REGEX), oldAscendingOrder);
+        if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
+        	sort.setSortOrders(xattribs.getString(XML_SORTORDER_ATTRIBUTE), sort.getSortKeyCount());
         }
+        if (xattribs.exists(XML_SORTERINITIALCAPACITY_ATTRIBUTE)){
+            //only for backward compatibility
+            sort.setBufferCapacity(xattribs.getInteger(XML_SORTERINITIALCAPACITY_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_NUMBEROFTAPES_ATTRIBUTE)){
+            sort.setNumberOfTapes(xattribs.getInteger(XML_NUMBEROFTAPES_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_BUFFER_CAPACITY_ATTRIBUTE)){
+            sort.setBufferCapacity(xattribs.getInteger(XML_BUFFER_CAPACITY_ATTRIBUTE));
+        }
+
+        if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
+            sort.setLocaleStr(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+        }
+		if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
+			sort.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
+		}
         return sort;
     }
 

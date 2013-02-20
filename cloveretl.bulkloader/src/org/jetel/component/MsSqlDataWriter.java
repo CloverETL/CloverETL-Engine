@@ -36,6 +36,7 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -50,6 +51,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -508,7 +510,7 @@ public class MsSqlDataWriter extends BulkLoader {
 	private final static String XML_BCP_UTILITY_PATH_ATTRIBUTE = "bcpUtilityPath";
 	private final static String XML_OWNER_ATTRIBUTE = "owner";
 	private final static String XML_VIEW_ATTRIBUTE = "view";
-	private static final String XML_SERVER_NAME_ATTRIBUTE = "serverName";
+	public static final String XML_SERVER_NAME_ATTRIBUTE = "serverName";
 
 	private final static String MS_SQL_MAX_ERRORS_PARAM = "maxErrors";
 	private final static String MS_SQL_MAX_ERRORS_SWITCH = "m";
@@ -1001,50 +1003,46 @@ public class MsSqlDataWriter extends BulkLoader {
 	 * 
 	 * @param nodeXML Description of Parameter
 	 * @return Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-		try {
-			MsSqlDataWriter msSqlDataWriter = new MsSqlDataWriter(
-					xattribs.getString(XML_ID_ATTRIBUTE), 
-					xattribs.getString(XML_BCP_UTILITY_PATH_ATTRIBUTE),
-					xattribs.getString(XML_DATABASE_ATTRIBUTE));
+		MsSqlDataWriter msSqlDataWriter = new MsSqlDataWriter(
+				xattribs.getString(XML_ID_ATTRIBUTE), 
+				xattribs.getString(XML_BCP_UTILITY_PATH_ATTRIBUTE),
+				xattribs.getString(XML_DATABASE_ATTRIBUTE));
 
-			if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
-				msSqlDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-				msSqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_OWNER_ATTRIBUTE)) {
-				msSqlDataWriter.setOwner(xattribs.getString(XML_OWNER_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_VIEW_ATTRIBUTE)) {
-				msSqlDataWriter.setView(xattribs.getString(XML_VIEW_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_USER_ATTRIBUTE)) {
-				msSqlDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-				msSqlDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
-        		msSqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SERVER_NAME_ATTRIBUTE)) {
-        		msSqlDataWriter.setServerName(xattribs.getStringEx(XML_SERVER_NAME_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
-				msSqlDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
-			}
-
-			return msSqlDataWriter;
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" +
-					 xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
+		if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
+			msSqlDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
 		}
+		if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
+			msSqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+		if (xattribs.exists(XML_OWNER_ATTRIBUTE)) {
+			msSqlDataWriter.setOwner(xattribs.getString(XML_OWNER_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_VIEW_ATTRIBUTE)) {
+			msSqlDataWriter.setView(xattribs.getString(XML_VIEW_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_USER_ATTRIBUTE)) {
+			msSqlDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
+			msSqlDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
+    		msSqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SERVER_NAME_ATTRIBUTE)) {
+    		msSqlDataWriter.setServerName(xattribs.getStringEx(XML_SERVER_NAME_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+		if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
+			msSqlDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
+		}
+
+		return msSqlDataWriter;
 	}
 
 	@Override
@@ -1137,7 +1135,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		try {
 			initDataFile();
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e.getMessage(),	ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
 		deleteTempFiles();
 		return status;

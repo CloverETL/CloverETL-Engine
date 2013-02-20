@@ -91,6 +91,14 @@ public class DataFormatter extends AbstractFormatter {
 		metadata = null;
 	}
 	
+	public DataFormatter(DataFormatter parent) {
+		// can't be shared without flushing every record, too slow 
+		dataBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
+		fieldBuffer = parent.fieldBuffer; // shared buffer, potentially dangerous
+		charSet = parent.charSet;
+		metadata = null;
+	}
+	
 	public void setExcludedFieldNames(String[] excludedFieldNames) {
 		this.excludedFieldNames = excludedFieldNames;
 	}
@@ -280,7 +288,7 @@ public class DataFormatter extends AbstractFormatter {
 		} catch (CharacterCodingException e) {
             throw new RuntimeException("Exception when converting the field value: " + record.getField(i).getValue()
             		+ " (field name: '" + record.getMetadata().getField(i).getName() + "') to " + encoder.charset()
-            		+ ". (original cause: " + e.getMessage() + ") \n\nRecord: " +record.toString(), e);
+            		+ ".\nRecord: " +record.toString(), e);
 		}
         return encLen;
 	}

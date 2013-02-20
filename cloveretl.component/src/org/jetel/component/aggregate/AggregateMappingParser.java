@@ -33,6 +33,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -272,9 +273,9 @@ public class AggregateMappingParser {
 					throw new AggregationException(messagePart1 + messagePart2, e);
 				}
 			} catch (AggregationException e) {
-				String message = "Invalid mapping '" + expr2 + "' :\n" + e.getMessage();
+				String message = "Invalid mapping '" + expr2 + "'";
 				if (lenient) {
-					errors.add(message);
+					errors.add(ExceptionUtils.exceptionChainToMessage(message, e));
 				} else {
 					throw new AggregationException(message, e);
 				}
@@ -333,8 +334,7 @@ public class AggregateMappingParser {
 		try {
 			function = registry.getFunction(functionName).newInstance();
 		} catch (Exception e) {
-			throw new AggregationException("Cannot instantiate aggregation function " + functionName + "()"
-					+ " : " + e.getMessage(), e);
+			throw new AggregationException("Cannot instantiate aggregation function " + functionName + "()", e);
 		}
 		
 		if (!function.requiresInputField() && (inputField != null)) {
@@ -350,8 +350,7 @@ public class AggregateMappingParser {
 			try {
 				function.checkInputFieldType(inputFieldMetadata);
 			} catch (AggregationException e) {
-				throw new AggregationException("Input field " + inputField + " has " +
-						"invalid type, " + e.getMessage());
+				throw new AggregationException("Input field " + inputField + " has invalid type", e);
 			}
 		}
 		
@@ -360,7 +359,7 @@ public class AggregateMappingParser {
 		} catch (AggregationException e) {
 			throw new AggregationException("Function " + function.getName() + "()"
 					+ ": output field " + outputField + " has " +
-					"invalid type, " + e.getMessage());
+					"invalid type", e);
 		}
 	}
 	

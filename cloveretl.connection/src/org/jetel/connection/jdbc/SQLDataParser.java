@@ -45,6 +45,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -144,10 +145,9 @@ public class SQLDataParser extends AbstractParser {
 		 * @return                   error message
 		 * @since                    September 19, 2002
 		 */
-		private String getErrorMessage(String exceptionMessage, int recNo, int fieldNo) {
+		private String getErrorMessage(int recNo, int fieldNo) {
 			StringBuffer message = new StringBuffer();
-			message.append(exceptionMessage);
-			message.append(" when parsing record #");
+			message.append("Error when parsing record #");
 			message.append(recordCounter);
 			message.append(" field ");
 			message.append(metadata.getField(fieldNo-1).getName());
@@ -181,16 +181,14 @@ public class SQLDataParser extends AbstractParser {
 			if(resultSet.next() == false)
 				return null;
 		} catch (SQLException e) {
-            logger.debug("SQLException when reading resultSet: "+e.getMessage(),e);
-			throw new JetelException("SQLException when reading resultSet: "+e.getMessage(),e);
+			throw new JetelException("SQLException when reading resultSet", e);
 		}
 		// init transMap if null
 		if (transMap==null){
 		    try {
 				initSQLMap(record);
 			} catch (SQLException ex) {
-	            logger.debug(ex.getMessage(),ex);
-				throw new JetelException(ex.getMessage(),ex);
+				throw new JetelException(ex);
 			}
 		}else if (record!=outRecord){
 			AbstractCopySQLData.resetDataRecord(transMap,record);
@@ -214,7 +212,7 @@ public class SQLDataParser extends AbstractParser {
 		return record;
 	}
 
-	private String getErrorMessage(Exception ex, DataRecord record, int fieldNum) {
+	private String getErrorMessage(DataRecord record, int fieldNum) {
 		String fieldName = null;
 		String fieldType = null;
 		String metadataName = null;
@@ -231,11 +229,7 @@ public class SQLDataParser extends AbstractParser {
 			}
 		}
 		
-		StringBuilder builder = new StringBuilder();
-		builder.append(fieldName).append(" (").append(fieldType).append(") ");
-		builder.append("- ").append(ex.getMessage()).append("; in field ").append(fieldNum).append(" (\"").append(fieldName).append("\")").append(", metadata ").append(metadataName);
-		
-		return builder.toString();
+		return "Parsing error in field " + fieldNum + " - " + fieldName + " (" + fieldType + ") in metadata " + metadataName;
 	}
 	
 	/**
@@ -255,15 +249,13 @@ public class SQLDataParser extends AbstractParser {
 		} catch (BadDataFormatException bdfe) {
 			if(exceptionHandler != null ) {  //use handler only if configured
                 exceptionHandler.populateHandler(getErrorMessage(
-                		bdfe.getMessage(), recordCounter, fieldNum), record, -1, 
+                		recordCounter, fieldNum), record, -1, 
                 		fieldNum-1, "" + bdfe.getOffendingValue(), bdfe);
 			} else {
 				throw bdfe;
 			}
 		} catch (Exception ex) {
-			
-            logger.debug(getErrorMessage(ex, record, fieldNum) ,ex);
-			throw new RuntimeException(getErrorMessage(ex, record, fieldNum), ex);
+			throw new RuntimeException(getErrorMessage(record, fieldNum), ex);
 		}
 	}
 

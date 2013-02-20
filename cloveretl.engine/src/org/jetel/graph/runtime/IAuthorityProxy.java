@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -36,6 +37,8 @@ import javax.naming.NamingException;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationException;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Result;
@@ -43,8 +46,8 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertiesUtils;
@@ -79,7 +82,7 @@ public abstract class IAuthorityProxy {
 	public static IAuthorityProxy getAuthorityProxy(TransformationGraph graph) {
 		return (graph != null) ? graph.getAuthorityProxy() : getDefaultProxy();
 	}
-		
+
 	public static class FileOperationResult {
 		public enum ProblemType {
 			GENERAL_OPERATION_FAILURE, FILE_NOT_FOUND, FILE_UNREADABLE, FILE_UNCHANGEABLE, GENERAL_COPY_ERROR, GENERAL_MOVE_ERROR, GENERAL_DELETE_ERROR, NOT_SANDBOX_URL, NO_PROBLEM
@@ -120,9 +123,9 @@ public abstract class IAuthorityProxy {
 		public String toString() {
 			StringBuilder s = new StringBuilder();
 			s.append("Status: ").append(status)
-				.append(" Message: ").append(errMessage)
-				.append(" Duration: ").append(duration)
-				.append(" RunId: ").append(runId);
+				.append(" RunId: ").append(runId)
+				.append(" JobURL: ").append(jobUrl)
+				.append(" Message: ").append(errMessage);
 			return s.toString();
 		}
 		
@@ -149,25 +152,21 @@ public abstract class IAuthorityProxy {
 			return result;
 		}
 		
-		public String getErrorReport() {
-			StringBuilder s = new StringBuilder();
-			s.append("Status: ").append(status)
-			.append(", Job URL: ").append("\"").append(jobUrl).append("\"")
-			.append(", Message: ").append(errMessage != null ? "\""+errMessage+"\"" : "none")
-			.append(", Exception: ").append(errException != null ? errException.toString() : "none")
-			.append(", Error Component: ").append(errComponent != null ? errComponent : "none")
-			.append(", Error Component Type: ").append(errComponentType != null ? errComponentType : "none")
-			.append(", Duration: ").append(duration)
-			.append(", RunId: ").append(runId);
-			return s.toString();
+		public RuntimeException getException() {
+			if (status.code() < 0) {
+				return new JetelRuntimeException("Job " + jobUrl + "(#" + runId + ") finished with final status " + status + ".",
+						new StackTraceWrapperException(errMessage, errException));
+			} else {
+				return null;
+			}
 		}
 
 		/**
 		 * Sets {@link #errMessage} and {@link #errException} based on given {@link Exception}.
 		 */
 		public void setException(Exception e) {
-			errMessage = MiscUtils.exceptionChainToMessage(null, e);
-			errException = MiscUtils.stackTraceToString(e);
+			errMessage = ExceptionUtils.exceptionChainToMessage(null, e);
+			errException = ExceptionUtils.stackTraceToString(e);
 			
 			//try to find caused graph element id
 			Throwable t = e;
@@ -558,4 +557,9 @@ public abstract class IAuthorityProxy {
 	}
 	
 	public abstract File newTempDir(String label, int allocationHint) throws TempFileCreationException;
+	
+	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
+
+	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
+	
 }

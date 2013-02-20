@@ -24,6 +24,7 @@ import java.util.List;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -185,15 +186,11 @@ public class LookupTableReaderWriter extends Node {
 		}
 	}
 	
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		try{
-			return new LookupTableReaderWriter(xattribs.getString(XML_ID_ATTRIBUTE), 
-					xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), 
-					xattribs.getBoolean(XML_FREE_LOOKUP_TABLE_ATTRIBUTE, false));
-		} catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-        }
+		return new LookupTableReaderWriter(xattribs.getString(XML_ID_ATTRIBUTE), 
+				xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), 
+				xattribs.getBoolean(XML_FREE_LOOKUP_TABLE_ATTRIBUTE, false));
  	}
     
 	@Override

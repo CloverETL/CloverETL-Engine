@@ -31,6 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -227,7 +228,7 @@ public class Reformat extends Node {
             	try {
     				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
     			} catch (IOException e) {
-    				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+    				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
     			}
             }
     	}
@@ -237,7 +238,7 @@ public class Reformat extends Node {
     	    	try {
     				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
     			} catch (IOException e) {
-    				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+    				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
     			}
     	    }
     	}
@@ -346,7 +347,7 @@ public class Reformat extends Node {
     		}
     	}
     	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    		throw new ComponentNotReadyException(e);
     	}
     }    
 
@@ -443,29 +444,26 @@ public class Reformat extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Reformat reformat;
 
-		try {
-            reformat = new Reformat(
-                            xattribs.getString(XML_ID_ATTRIBUTE),
-                            xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF), 
-                            xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-                            xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null,RefResFlag.SPEC_CHARACTERS_OFF));
-			reformat.setTransformationParameters(xattribs.attributes2Properties(
-					new String[]{XML_ID_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE}));
-			reformat.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
-				reformat.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
-				reformat.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        reformat = new Reformat(
+                        xattribs.getString(XML_ID_ATTRIBUTE),
+                        xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF), 
+                        xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+                        xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null,RefResFlag.SPEC_CHARACTERS_OFF));
+		reformat.setTransformationParameters(xattribs.attributes2Properties(
+				new String[]{XML_ID_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE}));
+		reformat.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+		if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+			reformat.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+			reformat.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
 		}
 		return reformat;
 	}

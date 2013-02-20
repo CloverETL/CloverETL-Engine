@@ -31,6 +31,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordComparator;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -43,6 +44,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.CopyComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -298,30 +300,27 @@ public class SequenceChecker extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           January 5, 2007
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		SequenceChecker checker;
-		try {
-			checker = new SequenceChecker(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_SORTKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-					xattribs.getString(XML_SORTORDER_ATTRIBUTE, "A").matches("^[Aa].*"));
-			if (xattribs.exists(XML_UNIQUE_ATTRIBUTE)){
-				checker.setUnique(xattribs.getBoolean(XML_UNIQUE_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_USE_I18N_ATTRIBUTE)){
-            	checker.setUseI18N(xattribs.getBoolean(XML_USE_I18N_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_LOCALE_ATTRIBUTE)){
-            	checker.setLocaleStr(xattribs.getString(XML_LOCALE_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
-            	checker.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
-            }
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		checker = new SequenceChecker(xattribs.getString(XML_ID_ATTRIBUTE),
+				xattribs.getString(XML_SORTKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+				xattribs.getString(XML_SORTORDER_ATTRIBUTE, "A").matches("^[Aa].*"));
+		if (xattribs.exists(XML_UNIQUE_ATTRIBUTE)){
+			checker.setUnique(xattribs.getBoolean(XML_UNIQUE_ATTRIBUTE));
 		}
+        if (xattribs.exists(XML_USE_I18N_ATTRIBUTE)){
+        	checker.setUseI18N(xattribs.getBoolean(XML_USE_I18N_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_LOCALE_ATTRIBUTE)){
+        	checker.setLocaleStr(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+        	checker.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+        }
 		return checker;
 	}
 
@@ -345,7 +344,7 @@ public class SequenceChecker extends Node {
             try {
                 init();
             } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+                ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
                 if(!StringUtils.isEmpty(e.getAttributeName())) {
                     problem.setAttributeName(e.getAttributeName());
                 }

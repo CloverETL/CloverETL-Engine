@@ -70,9 +70,9 @@ public class OracleConnection extends BasicSqlConnection {
 			try {
 				stmt.setFetchSize(prefetchValue);
 			} catch (SQLException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 			} catch (UnsupportedOperationException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 			}
 		}
 		return stmt;

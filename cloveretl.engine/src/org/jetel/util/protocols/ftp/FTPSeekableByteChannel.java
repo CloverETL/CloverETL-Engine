@@ -131,7 +131,7 @@ public class FTPSeekableByteChannel implements SeekableByteChannel {
 			try {
 				fileDesc = ftpClient.list(url.getPath());
 			} catch (Exception e) {
-				throw new IOException(e.getMessage());
+				throw new IOException(e);
 			}
 			
 			if (fileDesc != null && fileDesc.length == 1) {

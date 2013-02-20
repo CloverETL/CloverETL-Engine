@@ -244,7 +244,7 @@ public class TransformFactory<T> {
         	List<ErrorMessage> msgs = compiler.compile(transformCode, transformDescriptor.getCompiledCTL2TransformClass(), component.getId());
         	if (compiler.errorCount() > 0) {
         		String report = ErrorMessage.listToString(msgs, component.getLog());
-        		String message = "CTL code compilation finished with " + compiler.errorCount() + " errors" + report;
+        		String message = "CTL code compilation finished with " + compiler.errorCount() + " errors." + report;
         		for (ErrorMessage msg: msgs) {
         			if (msg.getDetail() instanceof MetadataErrorDetail) {
         				MetadataErrorDetail detail = (MetadataErrorDetail) msg.getDetail();

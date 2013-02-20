@@ -323,4 +323,11 @@ public interface JdbcSpecific {
 	 */
 	public ResultSet wrapResultSet(ResultSet resultSet);
 	
+	/**
+	 * Returns a string which will be added at the end of CREATE TABLE statement 
+	 * @param metadata
+	 * @return
+	 */
+	public String getCreateTableSuffix(DataRecordMetadata metadata);
+	
 }

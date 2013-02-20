@@ -36,6 +36,7 @@ import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -50,6 +51,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.exec.ProcBox;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -114,7 +116,7 @@ public class OracleDataWriter extends BulkLoader {
 
     /**  Description of the Field */
     private static final String XML_SQLLDR_ATTRIBUTE = "sqlldr";
-    private static final String XML_TNSNAME_ATTRIBUTE = "tnsname";
+    public static final String XML_TNSNAME_ATTRIBUTE = "tnsname";
     private static final String XML_APPEND_ATTRIBUTE = "append";
     private static final String XML_LOG_ATTRIBUTE = "log";
     private static final String XML_BAD_ATTRIBUTE = "bad";
@@ -591,67 +593,64 @@ public class OracleDataWriter extends BulkLoader {
      *
      * @param  nodeXML  Description of Parameter
      * @return          Description of the Returned Value
+     * @throws AttributeNotFoundException 
      * @since           May 21, 2002
      */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-        try {
-            OracleDataWriter oracleDataWriter = new OracleDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_SQLLDR_ATTRIBUTE),
-                    xattribs.getString(XML_USER_ATTRIBUTE),
-                    xattribs.getString(XML_PASSWORD_ATTRIBUTE),
-                    xattribs.getString(XML_TNSNAME_ATTRIBUTE));
-            if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
-                oracleDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_APPEND_ATTRIBUTE)) {
-                oracleDataWriter.setAppend(Append.valueOf(xattribs.getString(XML_APPEND_ATTRIBUTE)));
-            }
-            if (xattribs.exists(XML_CONTROL_ATTRIBUTE)) {
-                oracleDataWriter.setControl(xattribs.getString(XML_CONTROL_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_LOG_ATTRIBUTE)) {
-                oracleDataWriter.setLogFileName(xattribs.getString(XML_LOG_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_BAD_ATTRIBUTE)) {
-                oracleDataWriter.setBadFileName(xattribs.getString(XML_BAD_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_DISCARD_ATTRIBUTE)) {
-                oracleDataWriter.setDiscardFileName(xattribs.getString(XML_DISCARD_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
-                oracleDataWriter.setDbFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            }
-            if (xattribs.exists(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE)) {
-                oracleDataWriter.setUseFileForExchange(xattribs.getBoolean(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-            	oracleDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-            if (xattribs.exists(XML_MAX_ERRORS_ATTRIBUTE)) {
-            	oracleDataWriter.setMaxErrors(xattribs.getInteger(XML_MAX_ERRORS_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_MAX_DISCARDS_ATTRIBUTE)) {
-            	oracleDataWriter.setMaxDiscards(xattribs.getInteger(XML_MAX_DISCARDS_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_IGNORE_ROWS_ATTRIBUTE)) {
-            	oracleDataWriter.setIgnoreRows(xattribs.getInteger(XML_IGNORE_ROWS_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_COMMIT_INTERVAL_ATTRIBUTE)) {
-            	oracleDataWriter.setCommitInterval(xattribs.getInteger(XML_COMMIT_INTERVAL_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
-				oracleDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_FAIL_ON_WARNINGS_ATTRIBUTE)) {
-				oracleDataWriter.setFailOnWarnings(xattribs.getBoolean(XML_FAIL_ON_WARNINGS_ATTRIBUTE));
-			}
-            
-            return oracleDataWriter;
-        } catch (Exception ex) {
-               throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        OracleDataWriter oracleDataWriter = new OracleDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
+                xattribs.getString(XML_SQLLDR_ATTRIBUTE),
+                xattribs.getString(XML_USER_ATTRIBUTE),
+                xattribs.getString(XML_PASSWORD_ATTRIBUTE),
+                xattribs.getString(XML_TNSNAME_ATTRIBUTE));
+        if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
+            oracleDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
         }
+        if (xattribs.exists(XML_APPEND_ATTRIBUTE)) {
+            oracleDataWriter.setAppend(Append.valueOf(xattribs.getString(XML_APPEND_ATTRIBUTE)));
+        }
+        if (xattribs.exists(XML_CONTROL_ATTRIBUTE)) {
+            oracleDataWriter.setControl(xattribs.getString(XML_CONTROL_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_LOG_ATTRIBUTE)) {
+            oracleDataWriter.setLogFileName(xattribs.getString(XML_LOG_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_BAD_ATTRIBUTE)) {
+            oracleDataWriter.setBadFileName(xattribs.getString(XML_BAD_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_DISCARD_ATTRIBUTE)) {
+            oracleDataWriter.setDiscardFileName(xattribs.getString(XML_DISCARD_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
+            oracleDataWriter.setDbFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        }
+        if (xattribs.exists(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE)) {
+            oracleDataWriter.setUseFileForExchange(xattribs.getBoolean(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
+        	oracleDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+        if (xattribs.exists(XML_MAX_ERRORS_ATTRIBUTE)) {
+        	oracleDataWriter.setMaxErrors(xattribs.getInteger(XML_MAX_ERRORS_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_MAX_DISCARDS_ATTRIBUTE)) {
+        	oracleDataWriter.setMaxDiscards(xattribs.getInteger(XML_MAX_DISCARDS_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_IGNORE_ROWS_ATTRIBUTE)) {
+        	oracleDataWriter.setIgnoreRows(xattribs.getInteger(XML_IGNORE_ROWS_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_COMMIT_INTERVAL_ATTRIBUTE)) {
+        	oracleDataWriter.setCommitInterval(xattribs.getInteger(XML_COMMIT_INTERVAL_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
+			oracleDataWriter.setParameters(xattribs.getString(XML_PARAMETERS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_FAIL_ON_WARNINGS_ATTRIBUTE)) {
+			oracleDataWriter.setFailOnWarnings(xattribs.getBoolean(XML_FAIL_ON_WARNINGS_ATTRIBUTE));
+		}
+        
+        return oracleDataWriter;
     }
 
     private void setDiscardFileName(String discardFileName) {
@@ -778,7 +777,7 @@ public class OracleDataWriter extends BulkLoader {
 	    	getFilePath(badFileName);
 	    	getFilePath(discardFileName);
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e.getMessage(),	ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
 		deleteTempFiles();        
         return status;

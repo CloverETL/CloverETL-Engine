@@ -46,14 +46,14 @@ public class RingRecordBuffer {
 
 	private RecordBuffer recordBuffer;
 	
-	private final int recordBufferSize;
+	private final long recordBufferSize;
 	
 	private int numBufferedRecords;
 	
 	/**
 	 * @param recordBufferSize maximum number of records stored in the buffer at once
 	 */
-	public RingRecordBuffer(int recordBufferSize) {
+	public RingRecordBuffer(long recordBufferSize) {
 		this(recordBufferSize, Defaults.Record.RECORDS_BUFFER_SIZE);
 	}
 	
@@ -61,7 +61,7 @@ public class RingRecordBuffer {
 	 * @param recordBufferSize maximum number of records stored in the buffer at once
 	 * @param internalBufferSize size of internal byte buffer
 	 */
-	public RingRecordBuffer(int recordBufferSize, int internalBufferSize) {
+	public RingRecordBuffer(long recordBufferSize, int internalBufferSize) {
 		this.recordBufferSize = recordBufferSize;
 		this.recordBuffer = new RecordBuffer(internalBufferSize);
 	}

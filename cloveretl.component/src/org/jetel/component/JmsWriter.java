@@ -35,6 +35,7 @@ import org.jetel.connection.jms.JmsConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.database.IConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -182,7 +183,7 @@ public class JmsWriter extends Node {
 		try {
 			producer = connection.createProducer();
 		} catch (Exception e) {
-			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage(), e);
+			throw new ComponentNotReadyException("Unable to initialize JMS consumer", e);
 		}
 	}
 
@@ -293,25 +294,22 @@ public class JmsWriter extends Node {
 	 * @param xmlElement
 	 * @return
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		JmsWriter jmsReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
-		try {
-			jmsReader = new JmsWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORURL_ATTRIBUTE, null),
-					xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor
-							XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE,
-							XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE
-					}));
-					jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-		}
+		jmsReader = new JmsWriter(xattribs.getString(XML_ID_ATTRIBUTE),
+				xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
+				xattribs.getString(XML_PSORCLASS_ATTRIBUTE, null),
+				xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
+				xattribs.getString(XML_PSORURL_ATTRIBUTE, null),
+				xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor
+						XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE,
+						XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE
+				}));
+				jmsReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		return jmsReader; 
 	}
 

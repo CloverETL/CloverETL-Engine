@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -33,6 +34,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -279,52 +281,49 @@ public class LdapWriter extends Node {
 	 *  configuration.
 	 *  @param graph
 	 *  @param nodeXML
+	 * @throws AttributeNotFoundException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs= new ComponentXMLAttributes(nodeXML, graph);
 		LdapWriter aSimpleLdapWriter = null;
-		try{
-			int action = 0;
-			String action_value = xattribs.getString(XML_ACTION_ATTRIBUTE, null);
-			if(action_value != null && action_value.equalsIgnoreCase(XML_ADD_ENTRY_VALUE)) {
-				action = LdapFormatter.ADD_ENTRY;
-			} else if(action_value != null && action_value.equalsIgnoreCase(XML_REMOVE_ENTRY_VALUE)) {
-				action = LdapFormatter.REMOVE_ENTRY;
-			} else if(action_value != null && action_value.equalsIgnoreCase(XML_REPLACE_ATTRIBUTES_VALUE)) {
-				action = LdapFormatter.REPLACE_ATTRIBUTES;
-			} else if(action_value != null && action_value.equalsIgnoreCase(XML_REMOVE_ATTRIBUTES_VALUE)) {
-				action = LdapFormatter.REMOVE_ATTRIBUTES;
+		int action = 0;
+		String action_value = xattribs.getString(XML_ACTION_ATTRIBUTE, null);
+		if(action_value != null && action_value.equalsIgnoreCase(XML_ADD_ENTRY_VALUE)) {
+			action = LdapFormatter.ADD_ENTRY;
+		} else if(action_value != null && action_value.equalsIgnoreCase(XML_REMOVE_ENTRY_VALUE)) {
+			action = LdapFormatter.REMOVE_ENTRY;
+		} else if(action_value != null && action_value.equalsIgnoreCase(XML_REPLACE_ATTRIBUTES_VALUE)) {
+			action = LdapFormatter.REPLACE_ATTRIBUTES;
+		} else if(action_value != null && action_value.equalsIgnoreCase(XML_REMOVE_ATTRIBUTES_VALUE)) {
+			action = LdapFormatter.REMOVE_ATTRIBUTES;
+		} else {
+			StringBuffer msg = new StringBuffer();
+			if (action_value == null) {
+				msg.append("Missing action specification");
 			} else {
-				StringBuffer msg = new StringBuffer();
-				if (action_value == null) {
-					msg.append("Missing action specification");
-				} else {
-					msg.append("Invalid action specification \"").append(action_value).append("\"");
-				}
-				msg.append(" in component ").append(xattribs.getString(Node.XML_ID_ATTRIBUTE, "unknown ID"));
-				msg.append("; defaulting to action \"").append(XML_ADD_ENTRY_VALUE).append("\"");
-				logger.warn(msg.toString());
-				action = LdapFormatter.ADD_ENTRY;
+				msg.append("Invalid action specification \"").append(action_value).append("\"");
 			}
-			
+			msg.append(" in component ").append(xattribs.getString(Node.XML_ID_ATTRIBUTE, "unknown ID"));
+			msg.append("; defaulting to action \"").append(XML_ADD_ENTRY_VALUE).append("\"");
+			logger.warn(msg.toString());
+			action = LdapFormatter.ADD_ENTRY;
+		}
+		
 
-			if(xattribs.exists(XML_USER_ATTRIBUTE) && xattribs.exists(XML_PASSWORD_ATTRIBUTE) ) {
-				aSimpleLdapWriter = new LdapWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_LDAPURL_ATTRIBUTE),
-						action,
-						xattribs.getString(XML_USER_ATTRIBUTE),
-						xattribs.getString(XML_PASSWORD_ATTRIBUTE));
-			} else {
-				aSimpleLdapWriter = new LdapWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_LDAPURL_ATTRIBUTE),
-						action);
-				
-			}
-			if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {
-				aSimpleLdapWriter.setMultiValueSeparator(xattribs.getString(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE));
-			}
-		} catch(Exception ex){
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
+		if(xattribs.exists(XML_USER_ATTRIBUTE) && xattribs.exists(XML_PASSWORD_ATTRIBUTE) ) {
+			aSimpleLdapWriter = new LdapWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_LDAPURL_ATTRIBUTE),
+					action,
+					xattribs.getString(XML_USER_ATTRIBUTE),
+					xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+		} else {
+			aSimpleLdapWriter = new LdapWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_LDAPURL_ATTRIBUTE),
+					action);
+			
+		}
+		if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {
+			aSimpleLdapWriter.setMultiValueSeparator(xattribs.getString(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE));
 		}
 		
 		return aSimpleLdapWriter;
@@ -348,7 +347,7 @@ public class LdapWriter extends Node {
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

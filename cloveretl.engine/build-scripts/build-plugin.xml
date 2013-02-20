@@ -205,12 +205,6 @@
   </target>
 
     <target name="save-required-plugins-recursive">
-        <if>
-            <equals arg1="${echo.recursive.property}" arg2="1" />
-            <then>
-                <echo message="RECURSIVE plugin.name ${plugin.name}" />
-            </then>
-        </if>
         <antcall target="save-required-plugins">
             <param name="plugin.name" value="${plugin.name}" />
         </antcall>
@@ -335,7 +329,6 @@
 			</else>
 		</if>
 		
-    <echo message="DEBUG: user.dir ${user.dir} cp.compile ${cp.compile}" />
 		<proguard 
 			shrink="false" 
 			verbose="true"
@@ -651,6 +644,7 @@
 			<batchtest todir="${dir.testsresult}">
 				<fileset dir="${dir.src.test}">
 					<include name="**/*Test.java" />
+					<include name="**/Test*.java" />
 				</fileset>
 			</batchtest>
 			<formatter type="plain"/>

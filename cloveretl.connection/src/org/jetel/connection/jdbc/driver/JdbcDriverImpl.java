@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.string.StringUtils;
 
@@ -173,20 +174,16 @@ public class JdbcDriverImpl implements JdbcDriver {
     }
 
     private void prepareClassLoader() throws ComponentNotReadyException {
-        if(driverLibraries != null && driverLibraries.length > 0) {
-            classLoader = new GreedyURLClassLoader(driverLibraries, JdbcDriver.class.getClassLoader());
-        } else {
-            classLoader = JdbcDriver.class.getClassLoader();
-        }
+    	classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, null, true);
     }
     
     private void prepareDriver() throws ComponentNotReadyException {
         try {
             driver = (Driver) Class.forName(dbDriver, true, getClassLoader()).newInstance();
         } catch (ClassNotFoundException ex1) {
-            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. Can not find class: " + ex1.getMessage(), ex1);
+            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. Can not find class.", ex1);
         } catch (Exception ex1) {
-            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. General exception: " + ex1.getMessage(), ex1);
+            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'.", ex1);
         }
         if (driver == null)
             throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. No driver found. " + dbDriver );
@@ -215,10 +212,10 @@ public class JdbcDriverImpl implements JdbcDriver {
 			try {
 				DriverManager.deregisterDriver(driver);
 			} catch (SQLException e1) {
-				logger.error(e1.getMessage(), e1);
+				logger.error(e1);
 			} catch (SecurityException e2) {
 				// thrown by Sybase driver
-				logger.warn("SecurityException while DriverManager.deregisterDriver() message:" + e2.getMessage());
+				logger.warn("SecurityException while DriverManager.deregisterDriver()", e2);
 			}
 		}
 		

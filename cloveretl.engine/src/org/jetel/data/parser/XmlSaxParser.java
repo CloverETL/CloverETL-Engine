@@ -62,6 +62,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.formatter.DateFormatter;
@@ -266,7 +267,7 @@ public class XmlSaxParser {
 			try {
 				mappingResult = mappingParser.parseMapping(nodeXML);
 			} catch (XMLMappingDefinitionParseException e) {
-				return Collections.singletonList(e.getMessage());
+				return Collections.singletonList(ExceptionUtils.exceptionChainToMessage(e));
 			}
 			
 			if (!mappingResult.isSuccessful()) {

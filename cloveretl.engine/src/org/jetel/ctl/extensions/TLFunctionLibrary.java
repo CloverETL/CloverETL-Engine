@@ -157,7 +157,7 @@ public abstract class TLFunctionLibrary implements ITLFunctionLibrary {
         			logger.trace("Method " + m.toString() + " registered as ctl function: " + functionName);
         		}
     		} catch (IllegalArgumentException e) {
-    			logger.warn("Function '" + getClass().getName() + "." + m.getName() + "' ignored - " + e.getMessage());
+    			logger.warn("Function '" + getClass().getName() + "." + m.getName() + "' ignored", e);
     		}
     		
     	}

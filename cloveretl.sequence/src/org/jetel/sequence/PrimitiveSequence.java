@@ -23,6 +23,7 @@ import java.net.URL;
 import java.util.Properties;
 
 import org.jetel.data.sequence.Sequence;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -220,52 +221,48 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
         this.step = step;
     }
 
-    static public PrimitiveSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+    static public PrimitiveSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
-        try {
-            String configAttr = xattribs.getString(XML_SEQCONFIG_ATTRIBUTE, "");
-			if (configAttr.isEmpty()) {
-	            PrimitiveSequence seq =  new PrimitiveSequence(
-	                xattribs.getString(XML_ID_ATTRIBUTE),
-	                graph,
-	                xattribs.getString(XML_NAME_ATTRIBUTE, ""));
-	            if(xattribs.exists(XML_START_ATTRIBUTE)) {
-	                seq.setStart(xattribs.getLong(XML_START_ATTRIBUTE));
-	            }
-	            if(xattribs.exists(XML_STEP_ATTRIBUTE)) {
-	                seq.setStep(xattribs.getLong(XML_STEP_ATTRIBUTE));
-	            }
-	            return seq;
+        String configAttr = xattribs.getString(XML_SEQCONFIG_ATTRIBUTE, "");
+		if (configAttr.isEmpty()) {
+            PrimitiveSequence seq =  new PrimitiveSequence(
+                xattribs.getString(XML_ID_ATTRIBUTE),
+                graph,
+                xattribs.getString(XML_NAME_ATTRIBUTE, ""));
+            if(xattribs.exists(XML_START_ATTRIBUTE)) {
+                seq.setStart(xattribs.getLong(XML_START_ATTRIBUTE));
             }
-			else {
-				PrimitiveSequence seq = new PrimitiveSequence(
-						xattribs.getString(XML_ID_ATTRIBUTE),
-						graph,
-						xattribs.getString(XML_NAME_ATTRIBUTE, ""));
-				
-	            try {
-	            	URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
-	                InputStream stream = FileUtils.getFileURL(projectURL, configAttr).openStream();
-
-	                Properties tempProperties = new Properties();
-	                tempProperties.load(stream);
-	        		TypedProperties typedProperties = new TypedProperties(tempProperties, graph);
-
-	        		seq.setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
-	        		seq.start = typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0);
-	        		seq.step = typedProperties.getLongProperty(XML_STEP_ATTRIBUTE, 0);
-	        		
-	                stream.close();
-	            } catch (Exception ex) {
-	                initFromConfigFileException = ex;
-	            }
-				
-				return seq;
-			}
-        } catch(Exception ex) {
-            throw new XMLConfigurationException(SEQUENCE_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
+            if(xattribs.exists(XML_STEP_ATTRIBUTE)) {
+                seq.setStep(xattribs.getLong(XML_STEP_ATTRIBUTE));
+            }
+            return seq;
         }
+		else {
+			PrimitiveSequence seq = new PrimitiveSequence(
+					xattribs.getString(XML_ID_ATTRIBUTE),
+					graph,
+					xattribs.getString(XML_NAME_ATTRIBUTE, ""));
+			
+            try {
+            	URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+                InputStream stream = FileUtils.getFileURL(projectURL, configAttr).openStream();
+
+                Properties tempProperties = new Properties();
+                tempProperties.load(stream);
+        		TypedProperties typedProperties = new TypedProperties(tempProperties, graph);
+
+        		seq.setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
+        		seq.start = typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0);
+        		seq.step = typedProperties.getLongProperty(XML_STEP_ATTRIBUTE, 0);
+        		
+                stream.close();
+            } catch (Exception ex) {
+                initFromConfigFileException = ex;
+            }
+			
+			return seq;
+		}
     }
 
 	@Override

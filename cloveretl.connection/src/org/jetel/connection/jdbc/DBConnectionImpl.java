@@ -18,6 +18,7 @@
  */
 package org.jetel.connection.jdbc;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -44,12 +45,15 @@ import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.database.sql.SqlConnection;
+import org.jetel.database.IConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -346,8 +350,28 @@ public class DBConnectionImpl extends AbstractDBConnection {
         
         return connection;
     }
-
     
+    protected Connection connect(OperationType operationType) throws JetelException {
+    	if (!StringUtils.isEmpty(getJndiName())) {
+        	try {
+            	Context initContext = new InitialContext();
+           		DataSource ds = (DataSource)initContext.lookup(getJndiName());
+               	Connection jndiConnection = ds.getConnection();
+               	//update jdbc specific of this DBConnection according given JNDI connection
+               	updateJdbcSpecific(jndiConnection);
+               	//wrap the given JNDI connection to a DefaultConnection instance 
+               	return getJdbcSpecific().wrapSQLConnection(this, operationType, jndiConnection);
+        	} catch (Exception e) {
+        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName(), e);
+        	}
+    	} else {
+        	try {
+				return getJdbcSpecific().createSQLConnection(this, operationType);
+			} catch (JetelException e) {
+				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
+			}
+    	}
+    }
 
     /**
      * Guess jdbc specific for this {@link DBConnection} based on given {@link Connection}.
@@ -441,8 +465,9 @@ public class DBConnectionImpl extends AbstractDBConnection {
      * @param nodeXML
      * @return
      * @throws XMLConfigurationException
+     * @throws AttributeNotFoundException 
      */
-    public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+    public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
         try {
@@ -525,8 +550,48 @@ public class DBConnectionImpl extends AbstractDBConnection {
         return status;
     }
 
-    @Override
-	public boolean isThreadSafeConnections() {
+	public DataRecordMetadata createMetadata(Properties parameters) throws SQLException {
+    	if (!isInitialized()) {
+    		throw new IllegalStateException("DBConnection has to be initialized to be able to create metadata.");
+    	}
+    	
+        Statement statement = null;
+        ResultSet resultSet = null;
+
+        String sqlQuery = parameters.getProperty(SQL_QUERY_PROPERTY);
+        if(StringUtils.isEmpty(sqlQuery)) {
+            throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
+        }
+
+        int index = sqlQuery.toUpperCase().indexOf("WHERE");
+
+		if (index >= 0) {
+			sqlQuery = sqlQuery.substring(0, index).concat("WHERE 0=1");
+		} else {
+			sqlQuery = sqlQuery.concat(" WHERE 0=1");
+		}
+
+        Connection connection;
+		try {
+			connection = connect(OperationType.UNKNOWN);
+		} catch (JetelException e) {
+			throw new SQLException(e);
+		} catch (JetelRuntimeException e) {
+			throw new SQLException(e);
+		}
+        
+        try {
+            statement = connection.createStatement();
+            resultSet = statement.executeQuery(sqlQuery);
+            DataRecordMetadata drMetaData = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), getJdbcSpecific());
+            return drMetaData;
+        } finally {
+            // make sure we close all connection resources
+        	SQLUtil.closeConnection(resultSet, statement, connection);
+        }
+    }
+
+    public boolean isThreadSafeConnections() {
         return threadSafeConnections;
     }
     

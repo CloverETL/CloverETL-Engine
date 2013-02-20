@@ -29,6 +29,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.formatter.provider.DataFormatterProvider;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.enums.PartitionFileTagType;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -40,6 +41,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.SystemOutByteChannel;
@@ -192,7 +194,7 @@ public class DataWriter extends Node {
 			writer.close();
 		}
 		catch (IOException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 
@@ -376,62 +378,59 @@ public class DataWriter extends Node {
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
 	 * @throws XMLConfigurationException 
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
 		DataWriter aDataWriter = null;
 		
-		try{
-			aDataWriter = new DataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-									xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-									xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
-									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
-            if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
-                aDataWriter.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
-            }
-            if(xattribs.exists(XML_RECORDS_PER_FILE)) {
-                aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
-            }
-            if(xattribs.exists(XML_BYTES_PER_FILE)) {
-                aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
-            }
-			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
-				aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
-			}
-			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
-				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
-			}
-			if(xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
-				aDataWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
-            }
-			if(xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
-				aDataWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
-            }
-			if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
-				aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
-            }
-			if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
-				aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
-            }
-			if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
-				aDataWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
-            }
-			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
-				aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
-            }
-            if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
-                aDataWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
-            }
-            if(xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)) {
-                aDataWriter.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
-                aDataWriter.quotedStringsHasDefaultValue = false;
-            }
-            if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
-            	aDataWriter.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));
-            }
-        } catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		aDataWriter = new DataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+								xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
+								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
+        if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
+            aDataWriter.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
+        }
+        if(xattribs.exists(XML_RECORDS_PER_FILE)) {
+            aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+        }
+        if(xattribs.exists(XML_BYTES_PER_FILE)) {
+            aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
+        }
+		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+			aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
+		}
+		if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
+			aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+		}
+		if(xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+			aDataWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+			aDataWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+			aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
+			aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
+			aDataWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+        }
+		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+			aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
+        }
+        if(xattribs.exists(XML_EXCLUDE_FIELDS_ATTRIBUTE)) {
+            aDataWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
+        }
+        if(xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)) {
+            aDataWriter.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
+            aDataWriter.quotedStringsHasDefaultValue = false;
+        }
+        if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
+        	aDataWriter.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));
         }
 		
 		return aDataWriter;
@@ -479,7 +478,7 @@ public class DataWriter extends Node {
                             Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
                 }
             } catch (IllegalArgumentException exception) {
-                status.add(new ConfigurationProblem(exception.getMessage(), Severity.ERROR, this,
+                status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(exception), Severity.ERROR, this,
                         Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
             }
         }
@@ -663,7 +662,7 @@ public class DataWriter extends Node {
 			try {
 				writer.close();
 			} catch(Throwable t) {
-				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+				logger.warn("Resource releasing failed for '" + getId() + "'.", t);
 			}
 	}
 	

@@ -32,7 +32,7 @@ import org.jetel.interpreter.data.TLStringValue;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 
 /**
  * Implements normalization based on TransformLang source specified by user. User defines following functions (asterisk
@@ -114,8 +114,8 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 			throw new TransformException("Normalization failed!", exception);
 		}
 
-		countOnErrorArguments[0].setValue(exception.getMessage());
-		countOnErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+		countOnErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		countOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return countImpl(countOnErrorFunction, COUNT_ON_ERROR_FUNCTION_NAME, source, countOnErrorArguments);
 	}
@@ -145,8 +145,8 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 			throw new TransformException("Normalization failed!", exception);
 		}
 
-		transformOnErrorArguments[0].setValue(exception.getMessage());
-		transformOnErrorArguments[1].setValue(MiscUtils.stackTraceToString(exception));
+		transformOnErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		transformOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 		transformOnErrorArguments[2].getNumeric().setValue(idx);
 
 		return transformImpl(transformOnErrorFunction, source, target, transformOnErrorArguments);

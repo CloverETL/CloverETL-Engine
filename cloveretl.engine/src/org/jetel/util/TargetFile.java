@@ -33,6 +33,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -42,6 +43,7 @@ import org.jetel.data.StringDataField;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.Formatter.DataTargetType;
 import org.jetel.data.formatter.provider.FormatterProvider;
+import org.jetel.data.formatter.provider.SharedFormatterProvider;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
@@ -388,7 +390,7 @@ public class TargetFile {
 					outputPort.eof();
 				}
 			} catch (InterruptedException e) {
-				throw new IOException(e.getMessage());
+				throw new IOException(e);
 			}
     	}
     }
@@ -534,7 +536,13 @@ public class TargetFile {
      * @throws ComponentNotReadyException
      */
     private void initOutput() throws IOException, ComponentNotReadyException {
-    	if (formatter == null) formatter = formatterProvider.getNewFormatter();
+    	if (formatter == null) {
+    		if (formatterProvider instanceof SharedFormatterProvider) {
+    			formatter = ((SharedFormatterProvider) formatterProvider).getNewSharedFormatter(metadata);
+    		} else {
+    			formatter = formatterProvider.getNewFormatter();
+    		}
+    	}
     	formatter.init(metadata);
     	setNextOutput();
     }
@@ -597,9 +605,8 @@ public class TargetFile {
 				}
 				else if (getPreferredDataTargetType() == DataTargetType.URI) {
 					try {
-						// TODO: use contectURL ?? setDataTarget(CloverURI.createSingleURI(contextURL.toURI(),
-						// fName).toURI());
-						setDataTarget(new URI(fName));
+						URI uri = CloverURI.createSingleURI(contextURL != null ? contextURL.toURI() : null, fName).getAbsoluteURI().toURI();
+						setDataTarget(uri);
 					} catch (IOException ex) {
 						throw ex;
 					} catch (URISyntaxException ex) {

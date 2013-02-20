@@ -480,11 +480,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 			value.fromString(seq, numericFormatter);
 			setNull(value.isNaN());
 		} catch (Decimal.OutOfPrecisionException outOfPrecision) {
-			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\": %s", getMetadata().getName(), getMetadata().getDataType().getName(), seq, outOfPrecision.getMessage()));
+			throw new BadDataFormatException(String.format("%s (%s) cannot be set to \"%s\": %s", getMetadata().getName(), getMetadata().getDataType().getName(), seq, outOfPrecision.getMessage()), outOfPrecision);
 		} catch (Exception ex) {
 			throw new BadDataFormatException(
 					String.format("%s (%s) cannot be set to \"%s\" - doesn't match defined format \"%s\"",
-							getMetadata().getName(), getMetadata().getDataType().getName(), seq, numericFormatter.getFormatPattern()), seq.toString());
+							getMetadata().getName(), getMetadata().getDataType().getName(), seq, numericFormatter.getFormatPattern()), seq.toString(), ex);
 		}
 	}
 	

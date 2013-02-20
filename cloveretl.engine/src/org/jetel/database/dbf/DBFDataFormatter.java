@@ -21,7 +21,6 @@ package org.jetel.database.dbf;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.CharBuffer;
@@ -104,7 +103,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 				}
 			}
 		} catch (Exception ex) {
-			throw new ComponentNotReadyException(ex.getMessage(), ex);
+			throw new ComponentNotReadyException(ex);
 		}
 		
 		this.metadata = _metadata;

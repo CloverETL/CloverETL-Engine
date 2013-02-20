@@ -21,14 +21,15 @@ package org.jetel.component;
 import java.io.IOException;
 
 import org.jetel.data.Defaults;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -175,14 +176,10 @@ public class SimpleGather extends Node {
 		return EMPTY_LOOPS_WAIT;
 	}
 	
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-		try {
-			return new SimpleGather(xattribs.getString(XML_ID_ATTRIBUTE), graph);
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
-		}
+		return new SimpleGather(xattribs.getString(XML_ID_ATTRIBUTE), graph);
 	}
 
 	/** Description of the Method */

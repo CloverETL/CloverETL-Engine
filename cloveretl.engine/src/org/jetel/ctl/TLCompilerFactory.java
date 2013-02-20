@@ -58,7 +58,7 @@ public class TLCompilerFactory {
                 registerCompiler(desc);
             } catch(Exception e) {
                 logger.error("Cannot create TL compiler description, extension in plugin manifest is not valid.\n"
-                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());
+                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension, e);
             }
         }
         
@@ -94,10 +94,8 @@ public class TLCompilerFactory {
                 return Class.forName(className, true, pluginDescriptor.getClassLoader()).asSubclass(ITLCompiler.class);
             }
         } catch (ClassNotFoundException ex) {
-            logger.error("Unknown TL compiler: " + compilerType + " class: " + className);
             throw new RuntimeException("Unknown TL compiler: " + compilerType + " class: " + className, ex);
         } catch (Exception ex) {
-            logger.error("Unknown TL compiler type: " + compilerType);
             throw new RuntimeException("Unknown TL compiler type: " + compilerType, ex);
         }
 
@@ -111,14 +109,9 @@ public class TLCompilerFactory {
 			Constructor<? extends ITLCompiler> constructor = tClass.getConstructor(PARAMETERS_FOR_CONSTURCTOR);
 			return constructor.newInstance(new Object[] {graph, inMetadata, outMetadata, encoding});
         } catch(InvocationTargetException e) {
-            logger.error("Can't create object of type " + compilerType + " with reason: " + e.getTargetException().getMessage());
-            throw new RuntimeException("Can't create object of type " + compilerType + " with reason: " + e.getTargetException().getMessage());
-        } catch(NoSuchMethodException e) {
-            logger.error("Can't create object of type " + compilerType + " with reason: " + e.getMessage());
-            throw new RuntimeException("Can't create object of type " + compilerType + " with reason: " + e.getMessage());
-		} catch(Exception ex) {
-            logger.error("Can't create object of : " + compilerType + " exception: " + ex);
-			throw new RuntimeException("Can't create object of : " + compilerType + " exception: " + ex);
+            throw new RuntimeException("Can't create TL compiler of type " + compilerType, e.getTargetException());
+        } catch(Exception e) {
+            throw new RuntimeException("Can't create TL compiler of type " + compilerType, e);
 		}
 	}
 

@@ -587,4 +587,9 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	public ResultSet wrapResultSet(ResultSet resultSet) {
 		return resultSet;
 	}
+	
+	@Override
+	public String getCreateTableSuffix(DataRecordMetadata metadata) {
+		return "";
+	}
 }

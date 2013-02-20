@@ -44,6 +44,7 @@ import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.lookup.RangeLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -335,7 +336,7 @@ public class Partition extends Node {
 			try {
 				partitionKey.init();
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(e.getMessage());
+				throw new ComponentNotReadyException(e);
 			}
 		}
 		
@@ -359,20 +360,14 @@ public class Partition extends Node {
 		return partitionFceFactory;
 	}
 
-    public static Node fromXML(TransformationGraph transformationGraph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph transformationGraph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
         Partition partition = null;
 
         ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
-        try {
-        	partition = new Partition(componentAttributes.getString(XML_ID_ATTRIBUTE), transformationGraph);
+    	partition = new Partition(componentAttributes.getString(XML_ID_ATTRIBUTE), transformationGraph);
 
-        	partition.loadAttributesFromXML(componentAttributes);
-        } catch (AttributeNotFoundException exception) {
-            throw new XMLConfigurationException("Missing a required attribute!", exception);
-        } catch (Exception exception) {
-            throw new XMLConfigurationException("Error creating the component!", exception);
-        }
+    	partition.loadAttributesFromXML(componentAttributes);
 
         return partition;
     }
@@ -450,11 +445,11 @@ public class Partition extends Node {
     				partitionKey.init();
     			} catch (Exception e) {
     				throw new ComponentNotReadyException(this, 
-    						XML_PARTITIONKEY_ATTRIBUTE, e.getMessage());
+    						XML_PARTITIONKEY_ATTRIBUTE, e);
     			}
     		}
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

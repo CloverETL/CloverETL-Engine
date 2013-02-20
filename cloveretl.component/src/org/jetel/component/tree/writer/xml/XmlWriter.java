@@ -375,7 +375,7 @@ public class XmlWriter implements TreeWriter, NamespaceWriter, AttributeWriter, 
 				buffer.append(data, offset, length);
 			}
 		} catch (IOException e) {
-			throw new JetelException(e.getMessage(), e);
+			throw new JetelException(e);
 		}
 	}
 

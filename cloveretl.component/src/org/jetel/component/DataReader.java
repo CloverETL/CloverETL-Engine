@@ -33,6 +33,7 @@ import org.jetel.data.IntegerDataField;
 import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.TextParserConfiguration;
 import org.jetel.data.parser.TextParserFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -47,6 +48,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.DataRecordUtils;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -277,13 +279,13 @@ public class DataReader extends Node {
 							((IntegerDataField) logRecord.getField(1))
 									.setValue(bdfe.getFieldNumber() + 1);
 							setCharSequenceToField(bdfe.getRawRecord(), logRecord.getField(2));
-							setCharSequenceToField(bdfe.getMessage(), logRecord.getField(3));
+							setCharSequenceToField(ExceptionUtils.exceptionChainToMessage(bdfe), logRecord.getField(3));
 							if (hasFileNameField) {
 								setCharSequenceToField(reader.getSourceName(), logRecord.getField(4));
 							}
 							writeRecord(LOG_PORT, logRecord);
 						} else {
-							logger.warn(bdfe.getMessage() + "; input source: " + reader.getSourceName());
+							logger.warn(ExceptionUtils.exceptionChainToMessage("Error in input source: " + reader.getSourceName(), bdfe));
 						}
 						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
 							logger.error("DataParser (" + getName()
@@ -332,12 +334,8 @@ public class DataReader extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-    	try {
-			reader.postExecute();
-		}
-		catch (ComponentNotReadyException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
-		}
+		
+		reader.postExecute();
 	}
 	
 	@Override
@@ -476,66 +474,63 @@ public class DataReader extends Node {
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
 	 * @throws XMLConfigurationException 
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
 		DataReader aDataReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
-		try {
-			aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-					xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
-					xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, false));
-			aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
-			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
-				aDataReader.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
-				aDataReader.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
-				aDataReader.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
-				aDataReader.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)){
-				aDataReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
-				aDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
-				aDataReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
-				aDataReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_MAXERRORCOUNT_ATTRIBUTE)){
-				aDataReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)){
-				aDataReader.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
-				aDataReader.quotedStringsHasDefaultValue = false;
-			}
-			if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
-				aDataReader.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));
-			}
-			if (xattribs.exists(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE)){
-				aDataReader.setTreatMultipleDelimitersAsOne(xattribs.getBoolean(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
-				aDataReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
-				aDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARSER_ATTRIBUTE)){
-				aDataReader.setParserClassName(xattribs.getString(XML_PARSER_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
+				xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, false));
+		aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
+		if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
+			aDataReader.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
+			aDataReader.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
+			aDataReader.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
+			aDataReader.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)){
+			aDataReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+			aDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIP_SOURCE_ROWS_ATTRIBUTE)){
+			aDataReader.setSkipSourceRows(xattribs.getInteger(XML_SKIP_SOURCE_ROWS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_NUM_SOURCE_RECORDS_ATTRIBUTE)){
+			aDataReader.setNumSourceRecords(xattribs.getInteger(XML_NUM_SOURCE_RECORDS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_MAXERRORCOUNT_ATTRIBUTE)){
+			aDataReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_QUOTEDSTRINGS_ATTRIBUTE)){
+			aDataReader.setQuotedStrings(xattribs.getBoolean(XML_QUOTEDSTRINGS_ATTRIBUTE));
+			aDataReader.quotedStringsHasDefaultValue = false;
+		}
+		if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
+			aDataReader.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));
+		}
+		if (xattribs.exists(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE)){
+			aDataReader.setTreatMultipleDelimitersAsOne(xattribs.getBoolean(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
+			aDataReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
+			aDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARSER_ATTRIBUTE)){
+			aDataReader.setParserClassName(xattribs.getString(XML_PARSER_ATTRIBUTE));
 		}
 
 		return aDataReader;
@@ -604,7 +599,7 @@ public class DataReader extends Node {
     		}
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

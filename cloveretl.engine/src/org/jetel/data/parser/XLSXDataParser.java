@@ -486,7 +486,13 @@ public class XLSXDataParser extends XLSParser {
     				try {
     					record.getField(cloverFieldIndex).fromString(dataFormatter.formatCellValue(cell));
     				} catch (Exception ex) {
-    					handleException(new BadDataFormatException(ex.getMessage()), record, cloverFieldIndex, cell.getStringCellValue());
+    					BadDataFormatException bdfe;
+    					if (ex instanceof BadDataFormatException) {
+    						bdfe = (BadDataFormatException) ex;
+    					} else {
+    						bdfe = new BadDataFormatException(ex);
+    					}
+    					handleException(bdfe, record, cloverFieldIndex, cell.getStringCellValue());
     				}
     			}
     		}
@@ -512,10 +518,10 @@ public class XLSXDataParser extends XLSParser {
 		bdfe.setFieldNumber(cloverFieldIndex);
 
 		if (exceptionHandler != null) { // use handler only if configured
-			exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), currentRow + 1,
+			exceptionHandler.populateHandler(getErrorMessage(currentRow + 1,
 					cloverFieldIndex), record, currentRow + 1, cloverFieldIndex, cellValue, bdfe);
 		} else {
-			throw new RuntimeException(getErrorMessage(bdfe.getMessage(), currentRow + 1, cloverFieldIndex));
+			throw new RuntimeException(getErrorMessage(currentRow + 1, cloverFieldIndex), bdfe);
 		}
 	}
 

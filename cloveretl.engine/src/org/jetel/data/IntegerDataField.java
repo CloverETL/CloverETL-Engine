@@ -457,7 +457,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 					"value \"%s\"; doesn't match the specified format \"%s\"" + 
 					(!StringUtils.isEmpty(ex.getMessage()) ? " with reason \"%s\";" : ""), getMetadata().getName(), 
 					getMetadata().getDataType().getName(), seq, numericFormatter.getFormatPattern(), ex.getMessage()),
-					(new StringBuilder(seq)).toString());
+					(new StringBuilder(seq)).toString(), ex);
 			e.setAdditionalMessage("(note that for ParallelReader or Server parallel transformation run the record " +
 					"number might be incorrect)");
 			throw e;

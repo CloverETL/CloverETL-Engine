@@ -40,12 +40,8 @@ public class JetelException extends Exception {
 		super(message, cause);
 	}
 
-	@Override
-	public String getMessage() {
-		if (super.getCause() != null) {
-			return super.getMessage() + " caused by: " + super.getCause();
-		}
-		return super.getMessage();
+	public JetelException(Throwable cause) {
+		super(cause);
 	}
 
 } /* end class NoMoreDataException */

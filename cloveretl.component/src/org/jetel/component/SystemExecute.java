@@ -40,6 +40,7 @@ import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.parser.Parser;
 import org.jetel.data.parser.TextParserFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -52,6 +53,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -515,13 +517,15 @@ public class SystemExecute extends Node{
     		logger.info("SystemExecute component failed with batch file content:\n" + command);
     	}
     	
-    	try {
+		deleteBatch();
+
+		try {
     		if (outputFile!=null) {
     			outputFile.close();
     		}
     	}
     	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    		throw new ComponentNotReadyException(e);
     	}
     }
     
@@ -531,13 +535,16 @@ public class SystemExecute extends Node{
 	public void free() {
         if(!isInitialized()) return;
 		super.free();
-		deleteBatch();
 	}
 	
 	private void deleteBatch(){
-		if (interpreter!=null) {
-			if (batch != null && !getGraph().getRuntimeContext().isDebugMode() && !batch.delete()) {
-				logger.warn("Batch file (" + batch.getName() + ") was not deleted");
+		if (interpreter != null) {
+			if ((batch != null) && !getGraph().getRuntimeContext().isDebugMode()) {
+				if (batch.delete() || !batch.exists()) {
+					batch = null;
+				} else {
+					logger.warn("Batch file (" + batch.getName() + ") was not deleted");
+				}
 			}
 		}
 	}
@@ -638,7 +645,7 @@ public class SystemExecute extends Node{
 					}
 				}
 			} catch (IOException e) {
-	            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+	            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 	            problem.setAttributeName(XML_COMMAND_ATTRIBUTE);
 	            status.add(problem);
 	        }
@@ -649,37 +656,33 @@ public class SystemExecute extends Node{
 	 /* (non-Javadoc)
 	 * @see org.jetel.graph.Node#fromXML(org.jetel.graph.TransformationGraph, org.w3c.dom.Element)
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		SystemExecute sysExec;
-		try {
-			sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_INTERPRETER_ATTRIBUTE,"${}"),
-					xattribs.getStringEx(XML_COMMAND_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
-					xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
-			sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
-			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
-				sysExec.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_WORKING_DIRECTORY_ATTRIBUTE)){
-				sysExec.setWorkingDirectory(xattribs.getString(XML_WORKING_DIRECTORY_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ENVIRONMENT_ATTRIBUTE)) {
-				sysExec.setEnvironment(xattribs.getString(XML_ENVIRONMENT_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_WORKERS_TIMEOUT_ATTRIBUTE)) {
-				sysExec.setWorkersTimeout(xattribs.getTimeInterval(XML_WORKERS_TIMEOUT_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				sysExec.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_IGNORE_EXIT_VALUE_ATTRIBUTE)) {
-				sysExec.setIgnoreExitValue(xattribs.getBoolean(XML_IGNORE_EXIT_VALUE_ATTRIBUTE));
-			}
-			return sysExec;
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),
+				xattribs.getString(XML_INTERPRETER_ATTRIBUTE,"${}"),
+				xattribs.getStringEx(XML_COMMAND_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
+		sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
+		if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
+			sysExec.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 		}
+		if (xattribs.exists(XML_WORKING_DIRECTORY_ATTRIBUTE)){
+			sysExec.setWorkingDirectory(xattribs.getString(XML_WORKING_DIRECTORY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ENVIRONMENT_ATTRIBUTE)) {
+			sysExec.setEnvironment(xattribs.getString(XML_ENVIRONMENT_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_WORKERS_TIMEOUT_ATTRIBUTE)) {
+			sysExec.setWorkersTimeout(xattribs.getTimeInterval(XML_WORKERS_TIMEOUT_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			sysExec.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_IGNORE_EXIT_VALUE_ATTRIBUTE)) {
+			sysExec.setIgnoreExitValue(xattribs.getBoolean(XML_IGNORE_EXIT_VALUE_ATTRIBUTE));
+		}
+		return sysExec;
 	}
 
 	/**
@@ -832,16 +835,15 @@ public class SystemExecute extends Node{
                     SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
-				resultMsg = ex.getMessage();
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch (InterruptedException ex){
 				resultCode =  Result.ERROR;
 			}catch(Exception ex){
 				logger.error("Error in sysexec GetData",ex);
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
@@ -933,7 +935,7 @@ public class SystemExecute extends Node{
 					SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){	
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				parentThread.interrupt();
@@ -942,7 +944,7 @@ public class SystemExecute extends Node{
 				resultCode = Result.ABORTED;
 			}catch(Exception ex){
 				logger.error("Error in sysexec SendData",ex);
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
@@ -1028,12 +1030,12 @@ public class SystemExecute extends Node{
 					}
  				}
 			}catch(IOException ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch(Exception ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
@@ -1118,12 +1120,12 @@ public class SystemExecute extends Node{
 					}
  				}
 			}catch(IOException ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch(Exception ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);

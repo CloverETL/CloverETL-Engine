@@ -42,13 +42,14 @@ import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.formatter.Formatter;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -58,6 +59,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CommandBuilder;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.PlatformUtils;
@@ -565,7 +567,7 @@ public class DB2DataWriter extends Node {
 	 * xml attributes for DB2DataWriterComponent
 	 */
 	private static final String XML_DATABASE_ATTRIBUTE = "database";
-	private static final String XML_USERNAME_ATTRIBUTE = "userName";
+	public static final String XML_USERNAME_ATTRIBUTE = "userName";
 	private static final String XML_PASSWORD_ATTRIBUTE = "password";	
     private static final String XML_TABLE_ATTRIBUTE = "table";
     private static final String XML_MODE_ATTRIBUTE = "loadMode";
@@ -801,7 +803,7 @@ public class DB2DataWriter extends Node {
 			try {
 				initDataFile();
 			} catch (ComponentNotReadyException e) {
-				status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE));
+				status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE));
 			}
 		}
 		
@@ -819,7 +821,7 @@ public class DB2DataWriter extends Node {
 			try {
 				fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName, true);
 			} catch (Exception e) {
-				status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL, XML_FILEMETADATA_ATTRIBUTE));
+				status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILEMETADATA_ATTRIBUTE));
 			}
 			if (fileMetadata == null) {
 				status.add(new ConfigurationProblem("File metadata ID is not valid", Severity.ERROR, this, Priority.NORMAL,
@@ -847,9 +849,9 @@ public class DB2DataWriter extends Node {
 				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL));
 			}
 		} catch (IOException e) {
-			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
 		} catch (TempFileCreationException e) {
-			status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
 		}
         return status;
 	}
@@ -1707,81 +1709,78 @@ public class DB2DataWriter extends Node {
      * @param xmlElement
      * @return
      * @throws XMLConfigurationException
+     * @throws AttributeNotFoundException 
      */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-        try {
-            DB2DataWriter writer = new DB2DataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_DATABASE_ATTRIBUTE),
-                    xattribs.getString(XML_USERNAME_ATTRIBUTE),
-                    xattribs.getString(XML_PASSWORD_ATTRIBUTE),
-                    xattribs.getString(XML_TABLE_ATTRIBUTE),
-                    LoadMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, DEFAULT_TABLE_LOAD_MODE).toLowerCase()),
-                    xattribs.getString(XML_FILEURL_ATTRIBUTE, null),
-                    xattribs.getString(XML_FILEMETADATA_ATTRIBUTE, null));
-			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
-				String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
-				String[] cloverFields = new String[pairs.length];
-				String[] dbFields = new String[pairs.length];
-				String[] pair;
-				for (int i=0;i<pairs.length;i++){
-					pair = JoinKeyUtils.getMappingItemsFromMappingString(pairs[i]);
-					cloverFields[i] = pair[0];
-					dbFields[i] = StringUtils.quote(pair[1]);
-				}
-				writer.setCloverFields(cloverFields);
-				writer.setDBFields(dbFields);
-			}else {
-				if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
-					String[] dbFields = xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-					for (String string : dbFields) {
-						string = StringUtils.quote(string);
-					}
-					writer.setDBFields(dbFields);
-				}
-	
-				if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
-					writer.setCloverFields(xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-				}
+        DB2DataWriter writer = new DB2DataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
+                xattribs.getString(XML_DATABASE_ATTRIBUTE),
+                xattribs.getString(XML_USERNAME_ATTRIBUTE),
+                xattribs.getString(XML_PASSWORD_ATTRIBUTE),
+                xattribs.getString(XML_TABLE_ATTRIBUTE),
+                LoadMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, DEFAULT_TABLE_LOAD_MODE).toLowerCase()),
+                xattribs.getString(XML_FILEURL_ATTRIBUTE, null),
+                xattribs.getString(XML_FILEMETADATA_ATTRIBUTE, null));
+		if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
+			String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
+			String[] cloverFields = new String[pairs.length];
+			String[] dbFields = new String[pairs.length];
+			String[] pair;
+			for (int i=0;i<pairs.length;i++){
+				pair = JoinKeyUtils.getMappingItemsFromMappingString(pairs[i]);
+				cloverFields[i] = pair[0];
+				dbFields[i] = StringUtils.quote(pair[1]);
 			}
-            if(xattribs.exists(XML_USEPIPE_ATTRIBUTE)) {
-                writer.setUsePipe(xattribs.getBoolean(XML_USEPIPE_ATTRIBUTE));
-            }
-            if(xattribs.exists(XML_COLUMNDELIMITER_ATTRIBUTE)) {
-                writer.setColumnDelimiter((xattribs.getString(XML_COLUMNDELIMITER_ATTRIBUTE).charAt(0)));
-            }
-            if(xattribs.exists(XML_INTERPRETER_ATTRIBUTE)) {
-                writer.setInterpreter((xattribs.getString(XML_INTERPRETER_ATTRIBUTE)));
-            }
-            if(xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
-                writer.setParameters((xattribs.getString(XML_PARAMETERS_ATTRIBUTE)));
-            }
-            if(xattribs.exists(XML_REJECTEDRECORDSURL_ATTRIBUTE)) {
-                writer.setRejectedURL((xattribs.getString(XML_REJECTEDRECORDSURL_ATTRIBUTE)));
-            }
-            if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
-            	writer.setProperty(ROW_COUNT_PARAM, xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_MAXERRORS_ATRIBUTE)) {
-            	writer.setProperty(WARNING_COUNT_PARAM, xattribs.getString(XML_MAXERRORS_ATRIBUTE));
-            }
-            if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
-            	writer.setRecordSkip(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_BATCHURL_ATTRIBUTE)) {
-            	writer.setBatchURL(xattribs.getStringEx(XML_BATCHURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-            }
-            if (xattribs.exists(XML_WARNING_LINES_ATTRIBUTE)) {
-            	writer.setWarningNumber(xattribs.getInteger(XML_WARNING_LINES_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_FAIL_ON_WARNINGS_ATTRIBUTE)) {
-            	writer.setFailOnWarnings(xattribs.getBoolean(XML_FAIL_ON_WARNINGS_ATTRIBUTE));
-            }
-           return writer;
-        } catch (Exception ex) {
-               throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+			writer.setCloverFields(cloverFields);
+			writer.setDBFields(dbFields);
+		}else {
+			if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
+				String[] dbFields = xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				for (String string : dbFields) {
+					string = StringUtils.quote(string);
+				}
+				writer.setDBFields(dbFields);
+			}
+
+			if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
+				writer.setCloverFields(xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			}
+		}
+        if(xattribs.exists(XML_USEPIPE_ATTRIBUTE)) {
+            writer.setUsePipe(xattribs.getBoolean(XML_USEPIPE_ATTRIBUTE));
         }
+        if(xattribs.exists(XML_COLUMNDELIMITER_ATTRIBUTE)) {
+            writer.setColumnDelimiter((xattribs.getString(XML_COLUMNDELIMITER_ATTRIBUTE).charAt(0)));
+        }
+        if(xattribs.exists(XML_INTERPRETER_ATTRIBUTE)) {
+            writer.setInterpreter((xattribs.getString(XML_INTERPRETER_ATTRIBUTE)));
+        }
+        if(xattribs.exists(XML_PARAMETERS_ATTRIBUTE)) {
+            writer.setParameters((xattribs.getString(XML_PARAMETERS_ATTRIBUTE)));
+        }
+        if(xattribs.exists(XML_REJECTEDRECORDSURL_ATTRIBUTE)) {
+            writer.setRejectedURL((xattribs.getString(XML_REJECTEDRECORDSURL_ATTRIBUTE)));
+        }
+        if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
+        	writer.setProperty(ROW_COUNT_PARAM, xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_MAXERRORS_ATRIBUTE)) {
+        	writer.setProperty(WARNING_COUNT_PARAM, xattribs.getString(XML_MAXERRORS_ATRIBUTE));
+        }
+        if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
+        	writer.setRecordSkip(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_BATCHURL_ATTRIBUTE)) {
+        	writer.setBatchURL(xattribs.getStringEx(XML_BATCHURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+        }
+        if (xattribs.exists(XML_WARNING_LINES_ATTRIBUTE)) {
+        	writer.setWarningNumber(xattribs.getInteger(XML_WARNING_LINES_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_FAIL_ON_WARNINGS_ATTRIBUTE)) {
+        	writer.setFailOnWarnings(xattribs.getBoolean(XML_FAIL_ON_WARNINGS_ATTRIBUTE));
+        }
+        return writer;
     }
 	
     @Override
@@ -2055,12 +2054,12 @@ public class DB2DataWriter extends Node {
  */
 class DB2DataConsumer implements DataConsumer {
 	
-	int read;
-	int skipped;
-	int loaded;
-	int rejected;
-	int deleted;
-	int committed;
+	long read;
+	long skipped;
+	long loaded;
+	long rejected;
+	long deleted;
+	long committed;
 	private String errorMessage;
 	private boolean partRead = false;
 	private OutputPort errPort;
@@ -2123,22 +2122,22 @@ class DB2DataConsumer implements DataConsumer {
 		}
 		//remember number of processed records
 		if (line.contains("rows read")) {
-			read = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			read = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows skipped")) {
-			skipped = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			skipped = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows loaded")) {
-			loaded = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			loaded = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows rejected")) {
-			rejected = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			rejected = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows deleted")) {
-			deleted = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			deleted = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.contains("rows committed")) {
-			committed = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
+			committed = Long.parseLong(line.substring(line.indexOf('=') + 1).trim());
 		}
 		if (line.matches("^SQL\\d+.*")){
 			// remember first line of error message
@@ -2167,7 +2166,7 @@ class DB2DataConsumer implements DataConsumer {
 						try {
 							errPort.writeRecord(errRecord);
 						} catch (Exception e) {
-							throw new JetelException(e.getMessage(), e);
+							throw new JetelException(e);
 						}
 					}				 
 				}
@@ -2183,19 +2182,19 @@ class DB2DataConsumer implements DataConsumer {
 		return true;
 	}
 
-	public int getCommitted() {
+	public long getCommitted() {
 		return committed;
 	}
 
-	public int getDeleted() {
+	public long getDeleted() {
 		return deleted;
 	}
 
-	public int getLoaded() {
+	public long getLoaded() {
 		return loaded;
 	}
 
-	public int getRead() {
+	public long getRead() {
 		return read;
 	}
 
@@ -2208,11 +2207,11 @@ class DB2DataConsumer implements DataConsumer {
 	public void close() {
 	}
 
-	public int getRejected() {
+	public long getRejected() {
 		return rejected;
 	}
 
-	public int getSkipped() {
+	public long getSkipped() {
 		return skipped;
 	}
 	

@@ -73,6 +73,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -208,6 +209,9 @@ public class XmlWriter extends Node {
 	public static final String ATTRIBUTE_GRAPH_NAME = "graph";
 	/** output XML root element attribute */
 	public static final String ATTRIBUTE_CREATED = "created";
+	
+	
+	public static final String XSI_URI = "http://www.w3.org/2001/XMLSchema-instance";
 	
 	/**
 	 * Map of portIndex => PortDefinition
@@ -629,15 +633,14 @@ public class XmlWriter extends Node {
     	            //mapping xml elements are child nodes of the component
     	        	List<PortDefinition> list = readInPortsDefinitionFromXml(graph, this.mappingNodes, (PortDefinition)null, allPortDefinitionMap);
     	        	if (list.size() > 1)
-    	 	           throw new ComponentNotReadyException(COMPONENT_TYPE + ":" + this.getId() +" more then 1 root mapping element" );
+    	 	           throw new ComponentNotReadyException("More then 1 root mapping element" );
     	        	else if (list.size() < 1)
-    	 	           throw new ComponentNotReadyException(COMPONENT_TYPE + ":" + this.getId() +" no mapping element" );
+    	 	           throw new ComponentNotReadyException("No mapping element" );
 
     	        	rootPortDefinition = list.get(0);
     	        }
     		} catch (Exception e) {
-    			logger.error("cannot instantiate node from XML", e);
-    			throw new ComponentNotReadyException(e.getMessage(), e);
+    			throw new ComponentNotReadyException("cannot instantiate node from XML", e);
     		}
     		this.allPortDefinitionMap = allPortDefinitionMap;
     		this.rootPortDefinition = rootPortDefinition;
@@ -700,7 +703,7 @@ public class XmlWriter extends Node {
 				try {
 					portReaders[idx].join(1000);
 				} catch (InterruptedException e) {
-					logger.warn(getId() + "thread interrupted, it will interrupt child threads", e);
+					logger.warn(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}// while
@@ -730,7 +733,7 @@ public class XmlWriter extends Node {
 			writer.close();
 		}
 		catch (IOException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 
@@ -785,24 +788,37 @@ public class XmlWriter extends Node {
 		}
 		
 		//if (recordsPerFile!=1){
-		if (this.useRootElement){
-			 AttributesImpl atts = new AttributesImpl();
-			 if (rootInfoAttributes){
-				 atts.addAttribute( "", "", ATTRIBUTE_COMPONENT_ID, "CDATA", getId());
-				 atts.addAttribute( "", "", ATTRIBUTE_GRAPH_NAME, "CDATA",this.getGraph().getName());
-				 atts.addAttribute( "", "", ATTRIBUTE_CREATED, "CDATA", (new Date()).toString());
-			 }
-			 if (!StringUtils.isEmpty(xsdSchemaLocation)) {
-				 atts.addAttribute( "", "", "xsi:schemaLocation", "CDATA", this.xsdSchemaLocation);
-			 }
-			 
-			 for (String prefix : namespaces.keySet()){
-				 String uri = namespaces.get(prefix);
-				 hd.startPrefixMapping(prefix, uri);
-			 }
-			 hd.startElement(rootDefaultNamespace, "", root, atts);
+		if (this.useRootElement) {
+			AttributesImpl atts = new AttributesImpl();
+			if (rootInfoAttributes) {
+				atts.addAttribute("", ATTRIBUTE_COMPONENT_ID, ATTRIBUTE_COMPONENT_ID, "CDATA", getId());
+				atts.addAttribute("", ATTRIBUTE_GRAPH_NAME, ATTRIBUTE_GRAPH_NAME, "CDATA", this.getGraph().getName());
+				atts.addAttribute("", ATTRIBUTE_CREATED, ATTRIBUTE_CREATED, "CDATA", (new Date()).toString());
+			}
+			if (!StringUtils.isEmpty(xsdSchemaLocation)) {
+				atts.addAttribute(XSI_URI, "schemaLocation", "xsi:schemaLocation", "CDATA", this.xsdSchemaLocation);
+			}
+
+			for (String prefix : namespaces.keySet()) {
+				String uri = namespaces.get(prefix);
+				hd.startPrefixMapping(prefix, uri);
+			}
+			if (!rootDefaultNamespace.isEmpty()) {
+				hd.startPrefixMapping("", rootDefaultNamespace);
+			}
+
+			hd.startElement(rootDefaultNamespace, getLocalName(root), root, atts);
 		}
 		return hd;
+	}
+	
+	private String getLocalName(String name) {
+		String[] parts = name.split(":", 2);
+		if (parts.length < 2) {
+			return name;
+		} else {
+			return parts[1];
+		}
 	}
 
 	private void createFooter(OutputStream os, TransformerHandler hd) throws TransformerConfigurationException, SAXException, IOException {
@@ -810,7 +826,7 @@ public class XmlWriter extends Node {
 			//if (recordsPerFile!=1){
 			if (this.useRootElement){
 				 String root = (rootElement!=null && rootElement.length()>0) ? rootElement : DEFAULT_ROOT_ELEMENT; 
-				 hd.endElement(rootDefaultNamespace, "", root);
+				 hd.endElement(rootDefaultNamespace, getLocalName(root), root);
 				 for (String prefix : namespaces.keySet())
 					 hd.endPrefixMapping(prefix);
 			}
@@ -892,7 +908,7 @@ public class XmlWriter extends Node {
 				 String name = dataRecord.getMetadata().getField(i).getName();
 				 if (portDefinition.fieldsNamespacePrefix != null)
 					 name = portDefinition.fieldsNamespacePrefix + ":" + name;
-				 atts.addAttribute("", "", name, "CDATA", value);
+				 atts.addAttribute("", name, name, "CDATA", value);
 			 } // for
 			 
 			 for (String prefix : portDefinition.namespaces.keySet()){
@@ -900,7 +916,7 @@ public class XmlWriter extends Node {
 				hd.startPrefixMapping(prefix, uri);
 			 }
 			 
-			 hd.startElement(portDefinition.defaultNamespace, "", outElementName, atts);
+			 hd.startElement(portDefinition.defaultNamespace, getLocalName(outElementName), outElementName, atts);
 
 			 // fields as elements
 			 for (int x=0; x<portDefinition.fieldsAsElementsIndexes.length; x++){
@@ -908,12 +924,16 @@ public class XmlWriter extends Node {
 				 DataField field = dataRecord.getField(i);
 				 atts.clear();
 				 String name = dataRecord.getMetadata().getField(i).getName();
-				 if (portDefinition.fieldsNamespacePrefix != null)
-					 name = portDefinition.fieldsNamespacePrefix + ":" + name;
-				 hd.startElement("", "", name, atts);
+				 String qname;
+				 if (portDefinition.fieldsNamespacePrefix != null) {
+					 qname = portDefinition.fieldsNamespacePrefix + ":" + name;
+				 } else {
+					 qname = name;
+				 }
+				 hd.startElement("", name, qname, atts);
 				 String value = field.toString();
 				 hd.characters(value.toCharArray(),0,value.length());
-				 hd.endElement("", "", name);
+				 hd.endElement("", name, qname);
 				 /*
 				 atts.addAttribute( "", "", ATTRIBUTE_FIELD_NAME,"CDATA", dataRecord.getMetadata().getField(i).getName());
 				 atts.addAttribute( "", "", ATTRIBUTE_FIELD_TYPE,"CDATA", Character.toString(field.getType()));
@@ -939,7 +959,7 @@ public class XmlWriter extends Node {
 			 }// for children
 
 			 //hd.endElement("","",ELEMENT_RECORD);
-			 hd.endElement(portDefinition.defaultNamespace, "", outElementName);
+			 hd.endElement(portDefinition.defaultNamespace, getLocalName(outElementName), outElementName);
 			 
 			 for (String prefix : portDefinition.namespaces.keySet())
 				 hd.endPrefixMapping(prefix);
@@ -976,79 +996,76 @@ public class XmlWriter extends Node {
 	 * @param xmlElement
 	 * @return
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 * @throws ComponentNotReadyException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		XmlWriter writer = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
-		try {
-			writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
-			
-	        // set mapping
-	        String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
-	        String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
-	        NodeList nodes = xmlElement.getChildNodes();
-	        if (mappingURL != null) 
-	        	writer.setMappingURL(mappingURL);
-	        else if (mapping != null) 
-	        	writer.setMapping(mapping);
-	        else if (nodes != null && nodes.getLength() > 0){
-	            //old-fashioned version of mapping definition
-	            //mapping xml elements are child nodes of the component
-	        	writer.setMappingNodes(nodes);
-	        } else {
-	        	xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration exception
-	        }
+		writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
+		
+        // set mapping
+        String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
+        String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
+        NodeList nodes = xmlElement.getChildNodes();
+        if (mappingURL != null) 
+        	writer.setMappingURL(mappingURL);
+        else if (mapping != null) 
+        	writer.setMapping(mapping);
+        else if (nodes != null && nodes.getLength() > 0){
+            //old-fashioned version of mapping definition
+            //mapping xml elements are child nodes of the component
+        	writer.setMappingNodes(nodes);
+        } else {
+        	xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration exception
+        }
 
-			boolean omitNewLines = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false); // singleRow is deprecated attribute, but still possible ... 
-			omitNewLines = xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, omitNewLines); // ... thus omitNewLines takes precedence over singleRow
-			writer.setOmitNewLines(omitNewLines);
-			
-			boolean useRootElement = xattribs.getBoolean(XML_USE_ROOT_ELEMENT_ATTRIBUTE, true);
-			writer.setUseRootElement(useRootElement);
-			
-			boolean rootInfoAttributes = xattribs.getBoolean(XML_ROOT_INFO_ATTRIBUTES, true);
-			writer.setRootInfoAttributes(rootInfoAttributes);
-			
-			String dtdPublicId = xattribs.getString(XML_DTD_PUBLIC_ID_ATTRIBUTE, null);
-			writer.setDtdPublicId(dtdPublicId);
-			
-			String dtdSystemId = xattribs.getString(XML_DTD_SYSTEM_ID_ATTRIBUTE, null);
-			writer.setDtdSystemId(dtdSystemId);
-			
-			String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
-			writer.setFileUrl(fileUrl);
-			
-			String rootDefaultNamespace = xattribs.getString(XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE, null);
-			writer.setRootDefaultNamespace(rootDefaultNamespace);
-			
-			String xsdSchemaLocation = xattribs.getString(XML_XSD_LOCATION_ATTRIBUTE, null);
-			writer.setXsdSchemaLocation(xsdSchemaLocation);
-			
-			String rootNamespaces = xattribs.getString(XML_ROOT_NAMESPACES_ATTRIBUTE, null);
-			writer.setRootNamespaces(rootNamespaces);
-			
-			int recordsSkip = xattribs.getInteger(XML_RECORDS_SKIP_ATTRIBUTE, 0);
-			writer.setRecordsSkip(recordsSkip);
-			
-			int recordsCount = xattribs.getInteger(XML_RECORDS_COUNT_ATTRIBUTE, 0);
-			writer.setRecordsCount(recordsCount);
-			
-			int recordsPerFile = xattribs.getInteger(XML_RECORDS_PER_FILE_ATTRIBUTE, 0);
-			writer.setRecordsPerFile(recordsPerFile);
-			
-			String rootElement = xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE, DEFAULT_ROOT_ELEMENT);
-			writer.setRootElement(rootElement);
-			
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
-				writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			writer.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
-			if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
-				writer.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
-            }
-        } catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		boolean omitNewLines = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false); // singleRow is deprecated attribute, but still possible ... 
+		omitNewLines = xattribs.getBoolean(XML_OMIT_NEW_LINES_ATTRIBUTE, omitNewLines); // ... thus omitNewLines takes precedence over singleRow
+		writer.setOmitNewLines(omitNewLines);
+		
+		boolean useRootElement = xattribs.getBoolean(XML_USE_ROOT_ELEMENT_ATTRIBUTE, true);
+		writer.setUseRootElement(useRootElement);
+		
+		boolean rootInfoAttributes = xattribs.getBoolean(XML_ROOT_INFO_ATTRIBUTES, true);
+		writer.setRootInfoAttributes(rootInfoAttributes);
+		
+		String dtdPublicId = xattribs.getString(XML_DTD_PUBLIC_ID_ATTRIBUTE, null);
+		writer.setDtdPublicId(dtdPublicId);
+		
+		String dtdSystemId = xattribs.getString(XML_DTD_SYSTEM_ID_ATTRIBUTE, null);
+		writer.setDtdSystemId(dtdSystemId);
+		
+		String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
+		writer.setFileUrl(fileUrl);
+		
+		String rootDefaultNamespace = xattribs.getString(XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE, "");
+		writer.setRootDefaultNamespace(rootDefaultNamespace);
+		
+		String xsdSchemaLocation = xattribs.getString(XML_XSD_LOCATION_ATTRIBUTE, null);
+		writer.setXsdSchemaLocation(xsdSchemaLocation);
+		
+		String rootNamespaces = xattribs.getString(XML_ROOT_NAMESPACES_ATTRIBUTE, null);
+		writer.setRootNamespaces(rootNamespaces);
+		
+		int recordsSkip = xattribs.getInteger(XML_RECORDS_SKIP_ATTRIBUTE, 0);
+		writer.setRecordsSkip(recordsSkip);
+		
+		int recordsCount = xattribs.getInteger(XML_RECORDS_COUNT_ATTRIBUTE, 0);
+		writer.setRecordsCount(recordsCount);
+		
+		int recordsPerFile = xattribs.getInteger(XML_RECORDS_PER_FILE_ATTRIBUTE, 0);
+		writer.setRecordsPerFile(recordsPerFile);
+		
+		String rootElement = xattribs.getString(XML_ROOT_ELEMENT_ATTRIBUTE, DEFAULT_ROOT_ELEMENT);
+		writer.setRootElement(rootElement);
+		
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE))
+			writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+		writer.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
+		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+			writer.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
         }
 		
 		return writer;
@@ -1127,7 +1144,7 @@ public class XmlWriter extends Node {
 		}
 
 		portData.namespaces = XmlWriter.getNamespaces(portAttribs.getString(XML_NAMESPACES_ATTRIBUTE, null));
-		portData.defaultNamespace = portAttribs.getString(XML_DEFAULT_NAMESPACE_ATTRIBUTE, null);
+		portData.defaultNamespace = portAttribs.getString(XML_DEFAULT_NAMESPACE_ATTRIBUTE, "");
 		portData.fieldsNamespacePrefix = portAttribs.getString(XML_NAMESPACE_PREFIX_ATTRIBUTE, null);
 		String s = portAttribs.getString(XML_FIELDS_AS_ATTRIBUTE, null);
 		portData.fieldsAsAttributes = false;
@@ -1249,7 +1266,7 @@ public class XmlWriter extends Node {
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: "+e.getMessage(), Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage("Can't parse XML mapping schema.", e), Severity.ERROR, this, Priority.NORMAL));
 		}
         
 		//...
@@ -1306,7 +1323,7 @@ public class XmlWriter extends Node {
 			try {
 				writer.close();
 			} catch(Throwable t) {
-				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+				logger.warn("Resource releasing failed for '" + getId() + "'.", t);
 			}
 	}
 

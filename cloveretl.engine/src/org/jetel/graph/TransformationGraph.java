@@ -53,6 +53,7 @@ import org.jetel.graph.runtime.WatchDog;
 import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.MemoryTracker;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -100,7 +101,7 @@ public final class TransformationGraph extends GraphElement {
     
     private String debugModeStr;
     
-    private int debugMaxRecords = 0;
+    private long debugMaxRecords = 0;
     
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
@@ -230,14 +231,14 @@ public final class TransformationGraph extends GraphElement {
      * Sets maximum debugged records on the edges.
      * @param debugMaxRecords
      */
-    public void setDebugMaxRecords(int debugMaxRecords) {
+    public void setDebugMaxRecords(long debugMaxRecords) {
     	this.debugMaxRecords = debugMaxRecords;
     }
     
     /**
      * @return maximum debugged records on the edges.
      */
-    public int getDebugMaxRecords() {
+    public long getDebugMaxRecords() {
         return debugMaxRecords;
     }
 
@@ -409,10 +410,8 @@ public final class TransformationGraph extends GraphElement {
 					Thread.currentThread().setContextClassLoader(connection.getClass().getClassLoader());
 					connection.init();
 					logger.info(connection + " ... OK");
-				} catch (ComponentNotReadyException e) {
-					throw new ComponentNotReadyException(this, "Can't initialize connection " + connection + ".", e);
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, "FATAL - Can't initialize connection " + connection + ".", e);
+					throw new ComponentNotReadyException(connection, "Can't initialize connection " + connection + ".", e);
 				} finally {
 					Thread.currentThread().setContextClassLoader(formerClassLoader);
 				}
@@ -430,10 +429,8 @@ public final class TransformationGraph extends GraphElement {
 					}
 					sequence.init();
 					logger.info(sequence + " ... OK");
-				} catch (ComponentNotReadyException e) {
-					throw new ComponentNotReadyException(this, "Can't initialize sequence " + sequence + ".", e);
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, "FATAL - Can't initialize sequence " + sequence + ".", e);
+					throw new ComponentNotReadyException(sequence, "Can't initialize sequence " + sequence + ".", e);
 				} finally {
 					Thread.currentThread().setContextClassLoader(formerClassLoader);
 				}
@@ -447,10 +444,8 @@ public final class TransformationGraph extends GraphElement {
 					Thread.currentThread().setContextClassLoader(lookupTable.getClass().getClassLoader());
 					lookupTable.init();
 					logger.info(lookupTable + " ... OK");
-				} catch (ComponentNotReadyException e) {
-					throw new ComponentNotReadyException(this, "Can't initialize lookup table " + lookupTable + ".", e);
 				} catch (Exception e) {
-					throw new ComponentNotReadyException(this, "FATAL - Can't initialize lookup table " + lookupTable + ".", e);
+					throw new ComponentNotReadyException(lookupTable, "Can't initialize lookup table " + lookupTable + ".", e);
 				} finally {
 					Thread.currentThread().setContextClassLoader(formerClassLoader);
 				}
@@ -468,12 +463,8 @@ public final class TransformationGraph extends GraphElement {
 			
 			//initialization of all phases
 			//it is no more true --> phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
-			for(Phase phase : phases.values()) {
-				try {
-					phase.init();
-				} catch (ComponentNotReadyException e) {
-					throw new ComponentNotReadyException(this, "Phase " + phase.getPhaseNum() + " can't be initialized.", e);
-				}
+			for (Phase phase : phases.values()) {
+				phase.init();
 			}
 		} finally {
 			//unregister current thread from ContextProvider
@@ -497,10 +488,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				connection.preExecute();
 				logger.info(connection + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Pre-Execution of connection " + connection + " failed.", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Pre-Execution of connection " + connection + "failed.", e);
+				throw new ComponentNotReadyException(connection, "Pre-Execution of connection " + connection + "failed.", e);
 			}
 		}
 
@@ -510,10 +499,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				sequence.preExecute();
 				logger.info(sequence + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Pre-Execution of sequence " + sequence + "failed.", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Pre-Execution of sequence " + sequence + "failed.", e);
+				throw new ComponentNotReadyException(sequence, "Pre-Execution of sequence " + sequence + "failed.", e);
 			}
 		}
 
@@ -523,10 +510,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				lookupTable.preExecute();
 				logger.info(lookupTable + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Pre-Execution of lookup table " + lookupTable + "failed.", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Pre-Execution of lookup table " + lookupTable + "failed.", e);
+				throw new ComponentNotReadyException(lookupTable, "Pre-Execution of lookup table " + lookupTable + "failed.", e);
 			}
 		}
 	}
@@ -577,10 +562,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				connection.postExecute();
 				logger.info(connection + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Can't finalize connection " + connection + ".", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Can't finalize connection " + connection + ".", e);
+				throw new ComponentNotReadyException(connection, "Can't finalize connection " + connection + ".", e);
 			}
 		}
 
@@ -590,10 +573,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				sequence.postExecute();
 				logger.info(sequence + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Can't finalize sequence " + sequence + ".", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Can't finalize sequence " + sequence + ".", e);
+				throw new ComponentNotReadyException(sequence, "Can't finalize sequence " + sequence + ".", e);
 			}
 		}
 
@@ -603,10 +584,8 @@ public final class TransformationGraph extends GraphElement {
 			try {
 				lookupTable.postExecute();
 				logger.info(lookupTable + " ... OK");
-			} catch (ComponentNotReadyException e) {
-				throw new ComponentNotReadyException(this, "Can't finalize lookup table " + lookupTable + ".", e);
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "FATAL - Can't finalize lookup table " + lookupTable + ".", e);
+				throw new ComponentNotReadyException(lookupTable, "Can't finalize lookup table " + lookupTable + ".", e);
 			}
 		}
 	}
@@ -1103,7 +1082,7 @@ public final class TransformationGraph extends GraphElement {
 	        	try {
 	        		connection.checkConfig(status);
 	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, connection, Priority.HIGH);
+	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, connection, Priority.HIGH);
 	        		problem.setCauseException(e);
 	        		status.add(problem);
 	        	}
@@ -1114,7 +1093,7 @@ public final class TransformationGraph extends GraphElement {
 	        	try {
 	        		lookupTable.checkConfig(status);
 	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, lookupTable, Priority.HIGH);
+	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
 	        		problem.setCauseException(e);
 	        		status.add(problem);
 	        	}
@@ -1125,7 +1104,7 @@ public final class TransformationGraph extends GraphElement {
 	        	try {
 	        		sequence.checkConfig(status);
 	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem("FATAL ERROR: " + e.getMessage(), Severity.ERROR, sequence, Priority.HIGH);
+	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, sequence, Priority.HIGH);
 	        		problem.setCauseException(e);
 	        		status.add(problem);
 	        	}

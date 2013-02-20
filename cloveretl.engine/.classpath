@@ -12,7 +12,7 @@
 			<attribute name="javadoc_location" value="http://logging.apache.org/log4j/1.2/apidocs/"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry exported="true" kind="lib" path="lib/jsch-0.1.42.jar" sourcepath="lib.src/jsch-0.1.42.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/jsch-0.1.49.jar" sourcepath="lib.src/jsch-0.1.49.zip"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.1.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="jar:platform:/resource/cloveretl.engine/lib.doc/commons-cli-1.1.zip!/apidocs"/>
@@ -41,5 +41,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/poi-3.8-20120326.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.8-20120326.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.8-20120326.jar"/>
+	<classpathentry kind="lib" path="lib/commons-pool-1.6.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.6.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

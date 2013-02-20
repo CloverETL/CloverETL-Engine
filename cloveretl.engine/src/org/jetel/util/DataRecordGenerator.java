@@ -84,8 +84,8 @@ public class DataRecordGenerator extends AbstractParser {
 	// multiplier = (max random - min random)/(possible max random - possible min
 	// random),3 - move
 
-	private int recordNumber;
-	private int counter = 0;
+	private long recordNumber;
+	private long counter = 0;
 
 	private boolean initialized = false;
 
@@ -119,7 +119,7 @@ public class DataRecordGenerator extends AbstractParser {
 	 * @see DataGenerator for more info
 	 */
 	public DataRecordGenerator(Node component, DataRecordMetadata metadata, String pattern, String randomFields,
-			long randomSeed, String sequenceFields, int recordsNumber) throws ComponentNotReadyException {
+			long randomSeed, String sequenceFields, long recordsNumber) throws ComponentNotReadyException {
 		this.recordNumber = recordsNumber;
 		this.component = component;
 		this.metadata = metadata;
@@ -317,7 +317,7 @@ public class DataRecordGenerator extends AbstractParser {
 				}
 			} catch (BadDataFormatException e) {
 				throw new ComponentNotReadyException(component, "Can't get record from pattern: "
-						+ StringUtils.quote(pattern) + " " + e.getMessage());
+						+ StringUtils.quote(pattern), e);
 			} catch (JetelException e) {
 				throw new ComponentNotReadyException(component, "Can't get record from pattern: "
 						+ StringUtils.quote(pattern));
@@ -604,9 +604,9 @@ public class DataRecordGenerator extends AbstractParser {
 	@Override
 	public int skip(int rec) throws JetelException {
 		if (counter + rec > recordNumber) {
-			int i = recordNumber - counter;
+			long i = recordNumber - counter;
 			counter = recordNumber;
-			return i;
+			return (int) i; //should be change in the future after the return value of this skip method will be long typed
 		} else {
 			counter += rec;
 			return rec;

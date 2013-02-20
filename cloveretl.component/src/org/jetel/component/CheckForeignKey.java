@@ -28,12 +28,13 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -226,7 +227,7 @@ import org.w3c.dom.Element;
                 try{
                     defaultRecord.getField(i).fromString(defaultForeignKeys[i]);
                 }catch(BadDataFormatException ex){
-                    throw new ComponentNotReadyException(this,"error when initializing DefaultForeignKey - "+ex.getMessage(),ex);
+                    throw new ComponentNotReadyException(this,"error when initializing DefaultForeignKey", ex);
                 }catch(IndexOutOfBoundsException ex){
                     throw new ComponentNotReadyException(this,"invalid number of default values (\"defaultForeignKey\" parameter) when initializing DefaultRecord");
                 }
@@ -348,31 +349,28 @@ import org.w3c.dom.Element;
     	 *
     	 * @param  nodeXML  Description of Parameter
     	 * @return          Description of the Returned Value
+    	 * @throws AttributeNotFoundException 
     	 * @since           May 21, 2002
     	 */
-        public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+        public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
     		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
             CheckForeignKey checkKey;
     
-    		try {
-                checkKey = new CheckForeignKey(
-                        xattribs.getString(XML_ID_ATTRIBUTE),
-                        xattribs.getString(XML_FOREIGNKEY_ATTRIBUTE),
-                        xattribs.getString(XML_DEFAULTFOREIGNKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-    
-                if (xattribs.exists(XML_PRIMARYKEY_ATTRIBUTE)) {
-                	checkKey.setPrimeryKey(xattribs.getString(XML_PRIMARYKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-                }
-    			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
-                    checkKey.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
-    			}
-    			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)) {
-                    checkKey.setEqualNull(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
-    			}
-    			return checkKey;
-    		} catch (Exception ex) {
-    	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-    		}
+            checkKey = new CheckForeignKey(
+                    xattribs.getString(XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_FOREIGNKEY_ATTRIBUTE),
+                    xattribs.getString(XML_DEFAULTFOREIGNKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+
+            if (xattribs.exists(XML_PRIMARYKEY_ATTRIBUTE)) {
+            	checkKey.setPrimeryKey(xattribs.getString(XML_PRIMARYKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            }
+			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
+                checkKey.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)) {
+                checkKey.setEqualNull(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+			}
+			return checkKey;
     	}
         
 		/**

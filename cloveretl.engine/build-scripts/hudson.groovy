@@ -57,7 +57,7 @@ if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
 	antArgs = [
-		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial",
+		"-Dadditional.plugin.list=cloveretl.license.engine,cloveretl.component.hadoop,cloveretl.component.commercial,cloveretl.lookup.commercial,cloveretl.compiler.commercial,cloveretl.quickbase.commercial,cloveretl.tlfunction.commercial,cloveretl.ctlfunction.commercial,cloveretl.addressdoctor.commercial,cloveretl.profiler.commercial",
 		"-Dcte.logpath=/data/cte-logs",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
 		"-Ddir.examples=../cloveretl.examples",
@@ -65,7 +65,7 @@ if( !runTests ){
 	if( jobGoal == "after-commit" ) {
 		antTarget = "reports-hudson"
 		antArgs += "-Dcte.environment.config=engine-${versionSuffix}_java-1.6-Sun"
-		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java"
+		antArgs += "-Dtest.exclude=org/jetel/graph/ResetTest.java,org/jetel/component/fileoperation/SFTPOperationHandlerTest.java,org/jetel/component/fileoperation/FTPOperationHandlerTest.java"
 		antArgs += "-Druntests-target=runtests-scenario-after-commit"
 	} else if( jobGoal == "optimalized"){
 		antTarget = "reports-hudson-optimalized"
@@ -190,7 +190,7 @@ if( InetAddress.localHost.hostName != "linda" ) {
 	} else {
 		println "using default key" 
 	}
-	rsyncC.executeSave()
+	rsyncC.executeRsync()
 }
 
 
@@ -214,6 +214,13 @@ void init(){
 		def p = delegate.execute(procEnv, dir)
 		p.waitForProcessOutput( System.out, System.err )
 		assert p.exitValue() == 0
+	}
+	
+	ArrayList.metaClass.executeRsync = {
+		print "starting command: "; delegate.each{ print "'"+it+"' "}; println ""
+		def p = delegate.execute()
+		p.waitForProcessOutput( System.out, System.err )
+		assert (p.exitValue() == 0 || p.exitValue() == 24) // rsync exits with 24 if some files vanish - usually ok
 	}
 	
 	URL.metaClass.download = { File toFile ->

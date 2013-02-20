@@ -135,7 +135,7 @@ public class ReadableChannelDictionaryIterator {
 				rch = createChannelFromSource(rch, charset);
 			}
 		} catch (UnsupportedEncodingException e) {
-			throw new JetelException(e.getMessage(), e);
+			throw new JetelException(e);
 		}
 		
 		channelIterator = new DirectChannelIterator(rch);
@@ -161,7 +161,7 @@ public class ReadableChannelDictionaryIterator {
 			readableByteChannel.read(dataBuffer);	// write to buffer
 			dataBuffer.flip();	// ready reading
 		} catch (IOException e) {
-			throw new JetelException(e.getMessage());
+			throw new JetelException(e);
 		}
 		charBuffer.compact();	// ready for writing
         decoder.decode(dataBuffer, charBuffer, false);

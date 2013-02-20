@@ -33,6 +33,7 @@ import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -157,14 +158,10 @@ public class WrapperTL {
             parseTree = parser.Start();
             parseTree.init();
         }catch(ParseException ex){
-            ex.printStackTrace();
-            errorMessage = ex.getLocalizedMessage();
-            logger.error(ex);
+            errorMessage = ExceptionUtils.exceptionChainToMessage(ex);
             throw new ComponentNotReadyException(ex);
         }catch(Exception ex){
-            ex.printStackTrace();
-            errorMessage = ex.getLocalizedMessage();
-            logger.error(ex);
+            errorMessage = ExceptionUtils.exceptionChainToMessage(ex);
             throw new ComponentNotReadyException(ex);
         }
         
@@ -174,8 +171,7 @@ public class WrapperTL {
         }
         
         if (parser.getParseExceptions().size()>0){
-            errorMessage=((Exception)parser.getParseExceptions().get(0)).getMessage();
-            throw new ComponentNotReadyException(errorMessage);
+            throw new ComponentNotReadyException(((Exception)parser.getParseExceptions().get(0)));
         }
         
         //initializing executor
@@ -192,9 +188,8 @@ public class WrapperTL {
         try{
             executor.visit(parseTree,null);
         }catch (Exception ex){
-            logger.error(ex);
-            errorMessage=ex.getMessage();
-            throw new ComponentNotReadyException(errorMessage);
+            errorMessage = ExceptionUtils.exceptionChainToMessage(ex);
+            throw new ComponentNotReadyException(ex);
         }
     	
     }

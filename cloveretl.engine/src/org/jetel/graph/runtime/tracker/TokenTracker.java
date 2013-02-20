@@ -29,7 +29,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.IAuthorityProxy.RunStatus;
 import org.jetel.graph.runtime.WatchDog;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 
 /**
  * This is root class for whole token tracking toolkit.
@@ -161,7 +161,7 @@ public class TokenTracker {
 		tokenContent.setToken(token);
 		
 		for (TokenTrackerSerializer serializer : serializers) {
-			serializer.logMessage(new Date(), component.getId(), tokenContent, level, message, MiscUtils.stackTraceToString(exception));
+			serializer.logMessage(new Date(), component.getId(), tokenContent, level, message, ExceptionUtils.stackTraceToString(exception));
 		}
 	}
 

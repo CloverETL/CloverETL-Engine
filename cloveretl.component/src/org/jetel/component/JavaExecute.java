@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -239,8 +240,9 @@ public class JavaExecute extends Node {
 	 * @param xmlElement
 	 * @return
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
@@ -248,26 +250,22 @@ public class JavaExecute extends Node {
 		Properties internalProperties;
 		
 		try {
-			try {
-            	internalProperties = new Properties();
-            	String stringProperties = xattribs.getString(XML_PROPERTIES_ATTRIBUTE,null);
-            	if (stringProperties != null) {
-            		internalProperties.load(new StringReader(stringProperties));
-            	}
-    		} catch (IOException e){
-    			throw new RuntimeException("Unexpected IO exception in byte array reading.");
-    		}
-            javaExecute = new JavaExecute(
-                    xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getStringEx(XML_RUNNABLE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-                    xattribs.getString(XML_RUNNABLECLASS_ATTRIBUTE, null),
-                    xattribs.getStringEx(XML_RUNNABLEURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
-                    internalProperties);
-
-            javaExecute.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
+        	internalProperties = new Properties();
+        	String stringProperties = xattribs.getString(XML_PROPERTIES_ATTRIBUTE,null);
+        	if (stringProperties != null) {
+        		internalProperties.load(new StringReader(stringProperties));
+        	}
+		} catch (IOException e){
+			throw new RuntimeException("Unexpected IO exception in byte array reading.", e);
 		}
+        javaExecute = new JavaExecute(
+                xattribs.getString(XML_ID_ATTRIBUTE),
+                xattribs.getStringEx(XML_RUNNABLE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+                xattribs.getString(XML_RUNNABLECLASS_ATTRIBUTE, null),
+                xattribs.getStringEx(XML_RUNNABLEURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
+                internalProperties);
+
+        javaExecute.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		
 		return javaExecute;
 	}

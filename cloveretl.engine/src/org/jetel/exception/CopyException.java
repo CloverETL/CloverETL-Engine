@@ -38,5 +38,9 @@ public class CopyException extends Exception {
 	public CopyException(String message, Throwable cause) {
 		super(message, cause);
 	}
+
+	public CopyException(Throwable cause) {
+		super(cause);
+	}
 	
 }

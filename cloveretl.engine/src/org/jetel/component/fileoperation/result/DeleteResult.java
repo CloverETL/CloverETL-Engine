@@ -38,9 +38,16 @@ public class DeleteResult extends AbstractResult implements Iterable<SingleClove
 	
 	private final List<SingleCloverURI> deletedFiles = new ArrayList<SingleCloverURI>(); 
 	
+	public DeleteResult() {
+	}
+
+	public DeleteResult(Exception fatalError) {
+		super(fatalError);
+	}
+
 	@Override
-	public DeleteResult setException(Exception exception) {
-		return (DeleteResult) super.setException(exception);
+	public DeleteResult setFatalError(Exception exception) {
+		return (DeleteResult) super.setFatalError(exception);
 	}
 
 	public void add(SingleCloverURI uri) {
@@ -50,8 +57,8 @@ public class DeleteResult extends AbstractResult implements Iterable<SingleClove
 		deletedFiles.add(uri);
 	}
 	
-	public void addError(SingleCloverURI source, String error) {
-		addError(error);
+	public void addFailure(SingleCloverURI source, Exception failure) {
+		addFailure(failure);
 		uris.add(source);
 		deletedFiles.add(null);
 	}

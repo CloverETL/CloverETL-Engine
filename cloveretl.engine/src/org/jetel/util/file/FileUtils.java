@@ -253,6 +253,37 @@ public class FileUtils {
     	return getFileURL(contextURL, fileURL, true);
     }
     
+    private static Pattern DRIVE_LETTER_PATTERN = Pattern.compile("\\A\\p{Alpha}:[/\\\\]");
+    
+    private static final String PORT_PROTOCOL = "port";
+    private static final String DICTIONARY_PROTOCOL = "dict";
+    
+    /**
+     * Returns <code>true</code> if <code>fileURL</code> specifies a protocol.
+     * On Windows, single letters are not considered protocol names.
+     * 
+     * @param fileURL
+     * @return
+     */
+    private static boolean isUnknownProtocol(String fileURL) {
+    	if (fileURL != null) {
+    		try {
+    			URL url = new URL(null, fileURL, GENERIC_HANDLER);
+    			String protocol = url.getProtocol();
+    			if (!protocol.isEmpty() && !protocol.equals(PORT_PROTOCOL) && !protocol.equals(DICTIONARY_PROTOCOL)) {
+    				if (protocol.length() == 1 && PlatformUtils.isWindowsPlatform()) {
+    					return !DRIVE_LETTER_PATTERN.matcher(fileURL).find(); 
+    				}
+    				
+    				return true;
+    			}
+    		} catch (MalformedURLException ex) {
+    		}
+    	}
+		
+		return false;
+    }
+    
     /**
      * Creates URL object based on specified fileURL string. Handles
      * situations when <code>fileURL</code> contains only path to file
@@ -312,7 +343,15 @@ public class FileUtils {
 			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, new ArchiveURLStreamHandler(contextURL));
 		}
 		
-        // file url
+		// throw and exception if fileURL specifies a protocol (drive letters are ignored)
+		if (isUnknownProtocol(fileURL)) {
+			// unknown protocol will throw an exception,
+			// standard Java protocols will be ignored;
+			// all Clover-specific protocols must be checked before this call
+			new URL(fileURL);
+		}
+
+		// file url
 		String prefix = FILE_PROTOCOL + ":";
 		if (addStrokePrefix && new File(fileURL).isAbsolute() && !fileURL.startsWith("/")) {
 			prefix += "/";
@@ -425,7 +464,7 @@ public class FileUtils {
 				in.close();
 			}
 		} catch (IOException ex) {
-			throw new RuntimeException("Can't get string from file " + fileURL + " : " + ex.getMessage());
+			throw new RuntimeException("Can't get string from file " + fileURL, ex);
 		}
         return sb.toString();
 	}
@@ -1578,7 +1617,7 @@ public class FileUtils {
         		}
         	}
 		} catch (Exception e) { // FIXME parent dir creation fails for proxies
-			log.debug(e.getMessage());
+			log.debug(e);
 		}
 	}
 	
@@ -1823,7 +1862,9 @@ public class FileUtils {
 					return file.toString();
 				}
 			} catch (Exception e) {
-				log.debug("Failed to resolve sandbox URL", e);
+				MalformedURLException mue = new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");
+				mue.initCause(e);
+				throw mue;
 			}
 		}
 		if (url.getRef() != null) return url.getRef();
@@ -1885,9 +1926,6 @@ public class FileUtils {
 		}
 		URLConnection connection = url.openConnection();
 		connection.connect();
-		if (connection instanceof SFTPConnection) {
-			((SFTPConnection) connection).disconnect();
-		}
 	}
 
 	/**
@@ -1971,7 +2009,9 @@ public class FileUtils {
 					return file;
 				}
 			} catch (Exception e) {
-				log.debug("Failed to resolve sandbox URL", e);
+				MalformedURLException mue = new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");
+				mue.initCause(e);
+				throw mue;
 			}
 		}
 		throw new MalformedURLException("URL '" + url.toString() + "' cannot be converted to File.");

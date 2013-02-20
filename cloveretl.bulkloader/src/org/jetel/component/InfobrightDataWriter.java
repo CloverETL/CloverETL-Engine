@@ -47,6 +47,7 @@ import org.jetel.database.IConnection;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -61,6 +62,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -213,7 +215,7 @@ public class InfobrightDataWriter extends Node {
 		try {
 			chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		} catch (Exception e) {
-			status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE);
+			status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE);
 		}
 
 		//check debug file
@@ -256,7 +258,7 @@ public class InfobrightDataWriter extends Node {
 				status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
 				return status;
 			} catch (JetelException e) {
-				status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+				status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
 				return status;
 			}
 		}        
@@ -289,9 +291,9 @@ public class InfobrightDataWriter extends Node {
 			try {
 				bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), log);
 			} catch (SQLException e) {//probably table doesn't exist yet
-				status.add(e.getMessage(), Severity.WARNING, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
+				status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.WARNING, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
 			}catch (Exception e) {
-				status.add(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_CLOVER_FIELDS_ATTRIBUTE);
+				status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CLOVER_FIELDS_ATTRIBUTE);
 			}
 		}
 		return status;
@@ -328,7 +330,7 @@ public class InfobrightDataWriter extends Node {
 				sqlConnection = dbConnection.getConnection(getId(), OperationType.WRITE);
 			} catch (JetelException e) {
 				throw new ComponentNotReadyException(this,
-						XML_DBCONNECTION_ATTRIBUTE, e.getMessage());
+						"Invalid " + XML_DBCONNECTION_ATTRIBUTE, e);
 			}
 			//prepare indexes of clover fields to load
 			DataRecordMetadata metadata = getInputPort(READ_FROM_PORT)
@@ -609,43 +611,39 @@ public class InfobrightDataWriter extends Node {
 		}
 	}
 	
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         InfobrightDataWriter loader;
 
-		try {
-            loader = new InfobrightDataWriter(xattribs.getString(XML_ID_ATTRIBUTE));
-            loader.setDbConnection(xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
-            loader.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				loader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_DATA_FORMAT_ATTRIBUTE)) {
-				loader.setDataFormat(xattribs.getString(XML_DATA_FORMAT_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_LOG_FILE_ATTRIBUTE)) {
-				loader.setLogFile(xattribs.getString(XML_LOG_FILE_ATTRIBUTE));
-				loader.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
-			}
-            if (xattribs.exists(XML_PIPE_NAMEPREFIX_ATTRIBUTE)) {
-				loader.setPipeNamePrefix(xattribs.getString(XML_PIPE_NAMEPREFIX_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_TIMEOUT_ATTRIBUTE)) {
-				loader.setTimeout(xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_CLOVER_FIELDS_ATTRIBUTE)){
-            	loader.setCloverFields(xattribs.getString(XML_CLOVER_FIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            }
-            if (xattribs.exists(XML_CHECK_VALUES_ATTRIBUTE)){
-            	loader.setCheckValues(xattribs.getBoolean(XML_CHECK_VALUES_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_AGENT_PORT_ATTRIBUTE)){
-            	loader.setAgentPort(xattribs.getInteger(XML_AGENT_PORT_ATTRIBUTE));
-            }
-			return loader;
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        loader = new InfobrightDataWriter(xattribs.getString(XML_ID_ATTRIBUTE));
+        loader.setDbConnection(xattribs.getString(XML_DBCONNECTION_ATTRIBUTE));
+        loader.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
+        if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			loader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}
+        if (xattribs.exists(XML_DATA_FORMAT_ATTRIBUTE)) {
+			loader.setDataFormat(xattribs.getString(XML_DATA_FORMAT_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_LOG_FILE_ATTRIBUTE)) {
+			loader.setLogFile(xattribs.getString(XML_LOG_FILE_ATTRIBUTE));
+			loader.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
+		}
+        if (xattribs.exists(XML_PIPE_NAMEPREFIX_ATTRIBUTE)) {
+			loader.setPipeNamePrefix(xattribs.getString(XML_PIPE_NAMEPREFIX_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_TIMEOUT_ATTRIBUTE)) {
+			loader.setTimeout(xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_CLOVER_FIELDS_ATTRIBUTE)){
+        	loader.setCloverFields(xattribs.getString(XML_CLOVER_FIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        }
+        if (xattribs.exists(XML_CHECK_VALUES_ATTRIBUTE)){
+        	loader.setCheckValues(xattribs.getBoolean(XML_CHECK_VALUES_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_AGENT_PORT_ATTRIBUTE)){
+        	loader.setAgentPort(xattribs.getInteger(XML_AGENT_PORT_ATTRIBUTE));
+        }
+		return loader;
 	}
     
 	public void setAgentPort(int agentPort) {
@@ -877,21 +875,20 @@ public class InfobrightDataWriter extends Node {
                     SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
-				resultMsg = ex.getMessage();
 			}catch (InterruptedException ex){
 				resultCode =  Result.ABORTED;
 			}catch(Exception ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			} finally{
 				try {
 					loader.stop();
 				} catch (Exception e) {
-					resultMsg = e.getMessage();
+					resultMsg = ExceptionUtils.exceptionChainToMessage(e);
 					resultCode = Result.ERROR;
 					resultException = e;
 				}
@@ -957,20 +954,20 @@ public class InfobrightDataWriter extends Node {
 					SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){	
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			}catch (InterruptedException ex){
 				resultCode = Result.ABORTED;
 			}catch(Exception ex){
-				resultMsg = ex.getMessage();
+				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			}finally{
 				try {
 					parser.close();
                 } catch (Exception e) {
-    				resultMsg = e.getMessage();
+    				resultMsg = ExceptionUtils.exceptionChainToMessage(e);
     				resultCode = Result.ERROR;
     				resultException = e;
                 }

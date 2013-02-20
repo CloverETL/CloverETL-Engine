@@ -40,6 +40,7 @@ import org.jetel.database.IConnection;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.database.sql.SqlConnection;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -55,6 +56,7 @@ import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -445,7 +447,7 @@ public class DBExecute extends Node {
 			try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
 		}
 	}
@@ -457,12 +459,12 @@ public class DBExecute extends Node {
 			try {
 				errorLog.flush();
 			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
 			try {
 				errorLog.close();
 			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
 		}
 		try {
@@ -540,7 +542,7 @@ public class DBExecute extends Node {
 				}
 			}
 		} catch (SQLException e) {
-			throw new ComponentNotReadyException(this, XML_SQLCODE_ELEMENT, e.getMessage());
+			throw new ComponentNotReadyException(this, XML_SQLCODE_ELEMENT, e);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
 		}
@@ -583,7 +585,7 @@ public class DBExecute extends Node {
 					errRecord.getField(errorCodeFieldNum).setValue(e.getErrorCode());
 				}
 				if (errMessFieldNum != -1) {
-					errRecord.getField(errMessFieldNum).setValue(e.getMessage());
+					errRecord.getField(errMessFieldNum).setValue(ExceptionUtils.exceptionChainToMessage(e));
 				}
 				errPort.writeRecord(errRecord);
 			}else if (errorLog != null){
@@ -591,10 +593,10 @@ public class DBExecute extends Node {
 				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
 				errorLog.write(String.valueOf(e.getErrorCode()));
 				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
-				errorLog.write(e.getMessage());
+				errorLog.write(ExceptionUtils.exceptionChainToMessage(e));
 				errorLog.write("\n");
 			}else{
-				logger.warn(e.getMessage());
+				logger.warn(ExceptionUtils.exceptionChainToMessage(e));
 			}
 		}else{
 			if (errorLog != null){
@@ -819,10 +821,10 @@ public class DBExecute extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           September 27, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement)
-            throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(
                 xmlElement, graph);
         org.w3c.dom.Node childNode;
@@ -830,70 +832,65 @@ public class DBExecute extends Node {
         DBExecute executeSQL;
         String query = null, fileURL = null;
 
-        try {
-        	if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                fileURL = xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
-            } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)) {
-                query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
-            } else if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
-                query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
-            } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
-                query = xattribs.getString(XML_SQLCODE_ELEMENT);
-            } else {// we try to get it from child text node - slightly obsolete
-                    // now
-                childNode = xattribs.getChildNode(xmlElement,
-                        XML_SQLCODE_ELEMENT);
-                if (childNode == null) {
-                    throw new RuntimeException("Can't find <SQLCode> node !");
-                }
-                xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
-                query = xattribsChild.getText(childNode);
+    	if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+            fileURL = xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
+        } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)) {
+            query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
+        } else if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
+            query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
+        } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
+            query = xattribs.getString(XML_SQLCODE_ELEMENT);
+        } else {// we try to get it from child text node - slightly obsolete
+                // now
+            childNode = xattribs.getChildNode(xmlElement,
+                    XML_SQLCODE_ELEMENT);
+            if (childNode == null) {
+                throw new RuntimeException("Can't find <SQLCode> node !");
             }
-            executeSQL = new DBExecute(xattribs
-                    .getString(XML_ID_ATTRIBUTE), xattribs
-                    .getString(XML_DBCONNECTION_ATTRIBUTE), 
-                    query);
-            if (fileURL != null) {
-            	executeSQL.setFileURL(fileURL);
-            	if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-            		executeSQL.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            	}
-            }
-            if (xattribs.exists(XML_INTRANSACTION_ATTRIBUTE)) {
-                executeSQL.setTransaction(xattribs
-                        .getString(XML_INTRANSACTION_ATTRIBUTE));
-            }
-
-            if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
-                executeSQL.setPrintStatements(xattribs
-                        .getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
-            }
-
-            if (xattribs.exists(XML_PROCEDURE_CALL_ATTRIBUTE)){
-                executeSQL.setProcedureCall(xattribs.getBoolean(XML_PROCEDURE_CALL_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_IN_PARAMETERS)){
-            	executeSQL.setInParameters(xattribs.getString(XML_IN_PARAMETERS));
-            }
-            if (xattribs.exists(XML_OUT_PARAMETERS)){
-            	executeSQL.setOutParameters(xattribs.getString(XML_OUT_PARAMETERS));
-            }
-            if (xattribs.exists(XML_OUTPUT_FIELDS)){
-            	executeSQL.setOutputFields(xattribs.getString(XML_OUTPUT_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            }
-            if (xattribs.exists(XML_STATEMENT_DELIMITER)){
-                executeSQL.setSqlStatementDelimiter(xattribs.getString(XML_STATEMENT_DELIMITER));
-            }
-			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
-				executeSQL.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
-				executeSQL.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
-			}
-            
-        } catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+            xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
+            query = xattribsChild.getText(childNode);
         }
+        executeSQL = new DBExecute(xattribs
+                .getString(XML_ID_ATTRIBUTE), xattribs
+                .getString(XML_DBCONNECTION_ATTRIBUTE), 
+                query);
+        if (fileURL != null) {
+        	executeSQL.setFileURL(fileURL);
+        	if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+        		executeSQL.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+        	}
+        }
+        if (xattribs.exists(XML_INTRANSACTION_ATTRIBUTE)) {
+            executeSQL.setTransaction(xattribs
+                    .getString(XML_INTRANSACTION_ATTRIBUTE));
+        }
+
+        if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
+            executeSQL.setPrintStatements(xattribs
+                    .getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
+        }
+
+        if (xattribs.exists(XML_PROCEDURE_CALL_ATTRIBUTE)){
+            executeSQL.setProcedureCall(xattribs.getBoolean(XML_PROCEDURE_CALL_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_IN_PARAMETERS)){
+        	executeSQL.setInParameters(xattribs.getString(XML_IN_PARAMETERS));
+        }
+        if (xattribs.exists(XML_OUT_PARAMETERS)){
+        	executeSQL.setOutParameters(xattribs.getString(XML_OUT_PARAMETERS));
+        }
+        if (xattribs.exists(XML_OUTPUT_FIELDS)){
+        	executeSQL.setOutputFields(xattribs.getString(XML_OUTPUT_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+        }
+        if (xattribs.exists(XML_STATEMENT_DELIMITER)){
+            executeSQL.setSqlStatementDelimiter(xattribs.getString(XML_STATEMENT_DELIMITER));
+        }
+		if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+			executeSQL.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+			executeSQL.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+		}
 
         return executeSQL;
     }
@@ -1002,7 +999,7 @@ public class DBExecute extends Node {
             	status.add(new ConfigurationProblem("Output port must be defined when output parameters are set.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
             }
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

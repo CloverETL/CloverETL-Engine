@@ -39,11 +39,9 @@ import javax.management.MalformedObjectNameException;
 import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
@@ -54,8 +52,8 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.tracker.TokenTracker;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.primitive.MultiValueMap;
-import org.jetel.util.string.StringUtils;
 
 
 /**
@@ -85,7 +83,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	
     private int[] _MSG_LOCK=new int[0];
     
-    private static Log logger = LogFactory.getLog(WatchDog.class);
+    private static Logger logger = Logger.getLogger(WatchDog.class);
 
 	/**
      * Thread manager is used to run nodes as threads.
@@ -296,7 +294,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
            		} catch (Exception e) {
            			causeException = e;
 	           		watchDogStatus = Result.ERROR;
-	           		logger.fatal("Graph commit failed:" + e.getMessage(), e);
+	           		logger.fatal("Graph commit failed", e);
            		}
            	} else {
            		try {
@@ -304,7 +302,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
            		} catch (Exception e) {
            			causeException = e;
 	           		watchDogStatus = Result.ERROR;
-	           		logger.fatal("Graph rollback failed:" + e.getMessage(), e);
+	           		logger.fatal("Graph rollback failed", e);
            		}
            	}
            	
@@ -322,12 +320,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
        		causeException = t;
        		causeGraphElement = null;
        		watchDogStatus = Result.ERROR;
-       		logger.error("Fatal error watchdog execution", t);
-       		if (t instanceof RuntimeException) {
-       			throw (RuntimeException)t;
-       		} else {
-       			throw new JetelRuntimeException(t);
-       		}
+       		ExceptionUtils.logException(logger, "Error watchdog execution", t);
 		} finally {
 			//we have to unregister current watchdog's thread from context provider
 			ContextProvider.unregister();
@@ -476,13 +469,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				case ERROR:
 					causeException = ((ErrorMsgBody) message.getBody()).getSourceException();
 					causeGraphElement = message.getSender();
-					logger.error("Graph execution finished with error");
-					logger.error("Node "
-							+ message.getSender().getId()
-							+ " finished with status: "
-							+ ((ErrorMsgBody) message.getBody())
-									.getErrorMessage() + (causeException != null ? " caused by: " + causeException.getMessage() : ""));
-					logger.error("Node " + message.getSender().getId() + " error details:", causeException);
+					ExceptionUtils.logException(logger, "Graph execution finished with error", causeException);
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {
@@ -629,7 +616,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		try {
 			phase.preExecute();
 		} catch (ComponentNotReadyException e) {
-			logger.error("Phase pre-execute initialization failed with reason: " + e.getMessage(), e);
+			logger.error("Phase pre-execute initialization failed", e);
 			causeException = e;
 			causeGraphElement = e.getGraphElement();
 			return Result.ERROR;
@@ -679,7 +666,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
         	try {
         		phase.postExecute();
         	} catch (ComponentNotReadyException e) {
-    			logger.error("Phase post-execute finalization failed with reason: " + e.getMessage(), e);
+    			logger.error("Phase post-execute finalization failed", e);
     			causeException = e;
     			causeGraphElement = e.getGraphElement();
     			phaseStatus = Result.ERROR;
@@ -746,8 +733,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	}
     	
     	Throwable throwable = getCauseException();
-    	if (throwable != null && !StringUtils.isEmpty(throwable.getMessage())) {
-    		message.append(throwable.getMessage());
+    	if (throwable != null) {
+    		message.append(ExceptionUtils.exceptionChainToMessage(throwable));
     	}
     	
     	return message.length() > 0 ? message.toString() : null;

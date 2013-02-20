@@ -323,10 +323,9 @@ public class DelimitedDataParser extends AbstractParser {
 	 *@return                   error message
 	 *@since                    September 19, 2002
 	 */
-	private String getErrorMessage(String exceptionMessage,CharSequence value, int recNo, int fieldNo) {
+	private String getErrorMessage(CharSequence value, int recNo, int fieldNo) {
 		StringBuffer message = new StringBuffer();
-		message.append(exceptionMessage);
-		message.append(" when parsing record #");
+		message.append("Error when parsing record #");
 		message.append(recordCounter);
 		message.append(" field ");
 		message.append(metadata.getField(fieldNo).getName());
@@ -503,8 +502,7 @@ public class DelimitedDataParser extends AbstractParser {
 			} catch (BadDataFormatException ex) {
                 throw ex;
 			} catch (Exception ex) {
-				throw new RuntimeException(getErrorMessage(ex.getClass().getName()+":"+ex.getMessage(),null, 
-				        	recordCounter, fieldCounter),ex);
+				throw new RuntimeException(getErrorMessage(null, recordCounter, fieldCounter), ex);
 			}
 
 			// did we have EOF situation ?
@@ -512,8 +510,7 @@ public class DelimitedDataParser extends AbstractParser {
 				try {
 					reader.close();
 				} catch (IOException e) {
-					e.printStackTrace();
-					throw new JetelException(e.getMessage());
+					throw new JetelException(e);
 				}
 				// if not eofDelimiter, then skip this record 
 				if (!eofDelimiter)
@@ -555,8 +552,7 @@ public class DelimitedDataParser extends AbstractParser {
 				bdfe.setRecordNumber(recordCounter);
                 bdfe.setFieldNumber(fieldNum);
                 bdfe.setOffendingValue(strData);
-                exceptionHandler.populateHandler(getErrorMessage(bdfe                
-						.getMessage(), data, recordCounter, fieldNum), record,
+                exceptionHandler.populateHandler(getErrorMessage(data, recordCounter, fieldNum), record,
 						-1, fieldNum, strData.toString(), bdfe);
 			} else {
                 bdfe.setRecordNumber(recordCounter);
@@ -565,7 +561,7 @@ public class DelimitedDataParser extends AbstractParser {
                 throw bdfe;
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException(getErrorMessage(ex.getMessage(),null,recordCounter, fieldNum),ex);
+			throw new RuntimeException(getErrorMessage(null,recordCounter, fieldNum),ex);
 		}
 	}
 

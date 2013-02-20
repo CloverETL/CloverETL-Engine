@@ -25,6 +25,7 @@ import java.util.Stack;
 
 import org.jetel.graph.runtime.CloverWorker;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.IAuthorityProxy;
 
 /**
  * <p>
@@ -98,6 +99,14 @@ public class ContextProvider {
 	public static URL getContextURL() {
 		TransformationGraph graph = getGraph();
 		return graph != null ? graph.getRuntimeContext().getContextURL() : null;
+	}
+	
+	/**
+	 * @return {@link IAuthorityProxy} implementation associated with current graph or default authority proxy
+	 * if no graph is registered with this thread
+	 */
+	public static IAuthorityProxy getAuthorityProxy() {
+		return IAuthorityProxy.getAuthorityProxy(getGraph());
 	}
 	
 	private static Context getContext() {

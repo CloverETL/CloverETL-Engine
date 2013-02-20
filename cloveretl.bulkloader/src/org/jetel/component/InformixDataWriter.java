@@ -39,6 +39,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -53,6 +54,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
@@ -572,63 +574,59 @@ public class InformixDataWriter extends BulkLoader {
      *
      * @param  nodeXML  Description of Parameter
      * @return          Description of the Returned Value
+     * @throws AttributeNotFoundException 
      * @since           May 21, 2002
      */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-        try {
-        	InformixDataWriter informixDataWriter = new InformixDataWriter(
-        			xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_DB_LOADER_PATH_ATTRIBUTE),
-                    xattribs.getString(XML_DATABASE_ATTRIBUTE));
-        	if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
-        		informixDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_COMMAND_ATTRIBUTE)) {
-        		informixDataWriter.setCommand(xattribs.getString(XML_COMMAND_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)) {
-        		informixDataWriter.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_MAX_ERRORS_ATTRIBUTE)) {
-        		informixDataWriter.setMaxErrors(xattribs.getInteger(XML_MAX_ERRORS_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_IGNORE_ROWS_ATTRIBUTE)) {
-        		informixDataWriter.setIgnoreRows(xattribs.getInteger(XML_IGNORE_ROWS_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_COMMIT_INTERVAL_ATTRIBUTE)) {
-        		informixDataWriter.setCommitInterval(xattribs.getInteger(XML_COMMIT_INTERVAL_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
-        		informixDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-        		informixDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-        	}
-        	if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
-        		informixDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_USE_LOAD_UTILITY_ATTRIBUTE)) {
-        		informixDataWriter.setUseLoadUtility(xattribs.getBoolean(XML_USE_LOAD_UTILITY_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_USER_ATTRIBUTE)) {
-        		informixDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-        		informixDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE)) {
-        		informixDataWriter.setIgnoreUniqueKeyViolation(xattribs.getBoolean(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE));
-        	}
-        	if (xattribs.exists(XML_USE_INSERT_CUROSOR_ATTRIBUTE)) {
-        		informixDataWriter.setUseInsertCursor(xattribs.getBoolean(XML_USE_INSERT_CUROSOR_ATTRIBUTE));
-        	}
-            return informixDataWriter;
-        } catch (Exception ex) {
-               throw new XMLConfigurationException(COMPONENT_TYPE + ":" + 
-            		   xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
-        }
+    	InformixDataWriter informixDataWriter = new InformixDataWriter(
+    			xattribs.getString(XML_ID_ATTRIBUTE),
+                xattribs.getString(XML_DB_LOADER_PATH_ATTRIBUTE),
+                xattribs.getString(XML_DATABASE_ATTRIBUTE));
+    	if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
+    		informixDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_COMMAND_ATTRIBUTE)) {
+    		informixDataWriter.setCommand(xattribs.getString(XML_COMMAND_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)) {
+    		informixDataWriter.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_MAX_ERRORS_ATTRIBUTE)) {
+    		informixDataWriter.setMaxErrors(xattribs.getInteger(XML_MAX_ERRORS_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_IGNORE_ROWS_ATTRIBUTE)) {
+    		informixDataWriter.setIgnoreRows(xattribs.getInteger(XML_IGNORE_ROWS_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_COMMIT_INTERVAL_ATTRIBUTE)) {
+    		informixDataWriter.setCommitInterval(xattribs.getInteger(XML_COMMIT_INTERVAL_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
+    		informixDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
+    		informixDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+    	}
+    	if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
+    		informixDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_USE_LOAD_UTILITY_ATTRIBUTE)) {
+    		informixDataWriter.setUseLoadUtility(xattribs.getBoolean(XML_USE_LOAD_UTILITY_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_USER_ATTRIBUTE)) {
+    		informixDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
+    		informixDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE)) {
+    		informixDataWriter.setIgnoreUniqueKeyViolation(xattribs.getBoolean(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE));
+    	}
+    	if (xattribs.exists(XML_USE_INSERT_CUROSOR_ATTRIBUTE)) {
+    		informixDataWriter.setUseInsertCursor(xattribs.getBoolean(XML_USE_INSERT_CUROSOR_ATTRIBUTE));
+    	}
+        return informixDataWriter;
     }
     
     @Override
@@ -717,7 +715,7 @@ public class InformixDataWriter extends BulkLoader {
 						Severity.ERROR, this, Priority.NORMAL));
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	Severity.ERROR, this, Priority.NORMAL));
 		}
 		if (StringUtils.isEmpty(command) && StringUtils.isEmpty(table)) {
 			status.add(new ConfigurationProblem(StringUtils.quote(XML_TABLE_ATTRIBUTE) + " attribute has to be specified or " +
@@ -735,7 +733,7 @@ public class InformixDataWriter extends BulkLoader {
 								Severity.ERROR,	this, Priority.NORMAL));
 					}
 				} catch (ComponentNotReadyException e) {
-					status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL));
+					status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	Severity.ERROR, this, Priority.NORMAL));
 				}
 		}
 		
@@ -790,7 +788,7 @@ public class InformixDataWriter extends BulkLoader {
 				getFilePath(errorLog);
 			}
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(e.getMessage(),	Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	Severity.ERROR, this, Priority.NORMAL));
 		}        
         return status;
     }

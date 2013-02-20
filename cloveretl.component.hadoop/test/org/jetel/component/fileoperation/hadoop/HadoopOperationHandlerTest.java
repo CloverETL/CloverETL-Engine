@@ -35,7 +35,6 @@ import org.jetel.component.fileoperation.OperationHandlerTestTemplate;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.URIUtils;
-import org.jetel.component.fileoperation.hadoop.HadoopOperationHandler;
 import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
@@ -43,6 +42,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.hadoop.fileoperation.HadoopOperationHandler;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -53,7 +53,7 @@ import org.jetel.util.file.FileUtils;
  */
 public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 
-	private static final String TESTING_URI = "hdfs://CDH3U5/tmp/test_fo/";
+	private static final String TESTING_URI = "hdfs://CDH_3U5/tmp/test_fo/";
 	
 	private static final String HADOOP_TEST_GRAPH = "hadoop-testGraph.grf";
 	
@@ -311,7 +311,8 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 		for ( ; i < 20; i++) {
 			String name = String.valueOf(i);
 			URI child = URIUtils.getChildURI(root, name);
-			manager.create(CloverURI.createSingleURI(child));
+			CreateResult createResult = manager.create(CloverURI.createSingleURI(child));
+			assumeTrue(createResult.success());
 		}
 	}
 

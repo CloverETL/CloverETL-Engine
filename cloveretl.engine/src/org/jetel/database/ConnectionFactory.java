@@ -25,18 +25,17 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.ComponentFactory;
+import org.jetel.graph.GraphElement;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
-import org.jetel.util.XmlUtils;
-import org.w3c.dom.Document;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**
@@ -106,11 +105,9 @@ public class ConnectionFactory {
                 return Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown connection: " + connectionType + " class: " + className);
-            throw new RuntimeException("Unknown connection: " + connectionType + " class: " + className);
+            throw new RuntimeException("Unknown connection: " + connectionType + " class: " + className, ex);
         } catch(Exception ex) {
-            logger.error("Unknown connection type: " + connectionType);
-            throw new RuntimeException("Unknown connection type: " + connectionType);
+            throw new RuntimeException("Unknown connection type: " + connectionType, ex);
         }
     }
 
@@ -124,12 +121,15 @@ public class ConnectionFactory {
             //create instance of connection
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (IConnection) method.invoke(null, new Object[] {graph, nodeXML});
-        } catch (InvocationTargetException e) {
-        	logger.error("Can't create object of : " + connectionType + " exception: " + e.getTargetException(), e.getTargetException());
-            throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + e.getTargetException());
-        } catch(Throwable e) {
-            logger.error("Can't create object of : " + connectionType + " exception: " + e, e);
-            throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + e);
+        } catch (Exception e) {
+			Throwable t = e;
+			if (e instanceof InvocationTargetException) {
+				t = ((InvocationTargetException) e).getTargetException();
+			}
+			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+			String id = xattribs.getString(Node.XML_ID_ATTRIBUTE, null); 
+			String name = xattribs.getString(Node.XML_NAME_ATTRIBUTE, null); 
+            throw new RuntimeException("Can't create connection " + GraphElement.identifiersToString(id, name) + ".", t);
         }
     }
     
@@ -144,8 +144,7 @@ public class ConnectionFactory {
             Constructor<?> constructor = tClass.getConstructor(parametersType);
             return (IConnection) constructor.newInstance(constructorParameters);
         } catch(Exception ex) {
-            logger.error("Can't create object of : " + connectionType + " exception: " + ex);
-            throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + connectionType, ex);
         }
     }
 

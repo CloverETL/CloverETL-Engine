@@ -20,6 +20,7 @@ package org.jetel.data.sequence;
 
 //import org.w3c.dom.Node;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +29,13 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.ComponentFactory;
+import org.jetel.graph.GraphElement;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**
@@ -101,11 +105,9 @@ public class SequenceFactory {
                 return Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown sequence: " + sequenceType + " class: " + className);
-            throw new RuntimeException("Unknown sequence: " + sequenceType + " class: " + className);
+            throw new RuntimeException("Unknown sequence: " + sequenceType + " class: " + className, ex);
         } catch(Exception ex) {
-            logger.error("Unknown sequence type: " + sequenceType);
-            throw new RuntimeException("Unknown sequence type: " + sequenceType);
+            throw new RuntimeException("Unknown sequence type: " + sequenceType, ex);
         }
     }
     
@@ -119,9 +121,15 @@ public class SequenceFactory {
             //create instance of sequence
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (Sequence) method.invoke(null, new Object[] {graph, nodeXML});
-        } catch(Throwable ex) {
-            logger.error("Can't create object of : " + sequenceType + " exception: " + ex);
-            throw new RuntimeException("Can't create object of : " + sequenceType + " exception: " + ex);
+        } catch (Exception e) {
+			Throwable t = e;
+			if (e instanceof InvocationTargetException) {
+				t = ((InvocationTargetException) e).getTargetException();
+			}
+			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+			String id = xattribs.getString(Node.XML_ID_ATTRIBUTE, null); 
+			String name = xattribs.getString(Node.XML_NAME_ATTRIBUTE, null); 
+            throw new RuntimeException("Can't create sequence " + GraphElement.identifiersToString(id, name) + ".", t);
         }
     }
     
@@ -136,8 +144,7 @@ public class SequenceFactory {
             Constructor constructor = tClass.getConstructor(parametersType);
             return (Sequence) constructor.newInstance(constructorParameters);
         } catch(Exception ex) {
-            logger.error("Can't create object of : " + sequenceType + " exception: " + ex);
-            throw new RuntimeException("Can't create object of : " + sequenceType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + sequenceType, ex);
         }
     }
 

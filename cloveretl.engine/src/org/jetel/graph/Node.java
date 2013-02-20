@@ -19,7 +19,6 @@
 package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -39,8 +38,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.exception.TransformException;
-import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.CloverWorkerListener;
@@ -333,8 +331,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      *@deprecated
 	 */
 	@Deprecated
-	public int getRecordCount(char portType, int portNum) {
-		int count;
+	public long getRecordCount(char portType, int portNum) {
+		long count;
         // Integer used as key to TreeMap containing ports
 		Integer port = Integer.valueOf(portNum);
 		try {
@@ -474,7 +472,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
                 Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                         new ErrorMsgBody(runResult.code(), 
                                 resultMessage != null ? resultMessage : runResult.message(), null));
-                getCloverPost().sendMessage(msg);
+                sendMessage(msg);
             }
             
             if (runResult == Result.FINISHED_OK) {
@@ -487,7 +485,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	            			runResult = Result.ERROR;
 	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
 	            					new ErrorMsgBody(runResult.code(), "Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records.", null));
-	            			getCloverPost().sendMessage(msg);
+	            			sendMessage(msg);
 	            			return;
 	            		}
 	            	}
@@ -497,43 +495,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             }
         } catch (InterruptedException ex) {
             runResult=Result.ABORTED;
-            return;
-        } catch (IOException ex) {  // may be handled differently later
+        } catch (Exception ex) {
             runResult=Result.ERROR;
-            resultException = ex;
+            resultException = createNodeException(ex);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
-            getCloverPost().sendMessage(msg);
-            return;
-        } catch (TransformException ex){
-            runResult=Result.ERROR;
-            resultException = ex;
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), "Error occurred in nested transformation: " + runResult.message(), ex));
-            getCloverPost().sendMessage(msg);
-            return;
-        } catch (SQLException ex){
-            runResult=Result.ERROR;
-            resultException = ex;
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
-            getCloverPost().sendMessage(msg);
-            return;
-        } catch (Exception ex) { // may be handled differently later
-            runResult=Result.ERROR;
-            resultException = ex;
-            Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
-            getCloverPost().sendMessage(msg);
-            return;
+                    new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
+            sendMessage(msg);
         } catch (Throwable ex) {
         	logger.fatal(ex); 
             runResult=Result.ERROR;
-            resultException = ex;
+            resultException = createNodeException(ex);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
-            getCloverPost().sendMessage(msg);
-            return;
+                    new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
+            sendMessage(msg);
         } finally {
         	sendFinishMessage();
         	setNodeThread(null);
@@ -543,14 +517,16 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     
     protected abstract Result execute() throws Exception;
     
+    private Exception createNodeException(Throwable cause) {
+    	return new JetelRuntimeException("Component " + this + " finished with status ERROR.", cause);
+    }
+    
     /**
      * This method should be called every time when node finishes its work.
      */
     private void sendFinishMessage() {
         //sends notification - node has finished
-        Message<Void> msg = Message.createNodeFinishedMessage(this);
-        if (getCloverPost() != null) //that condition should be removed - graph aborting is not well synchronized now
-        	getCloverPost().sendMessage(msg);
+        sendMessage(Message.createNodeFinishedMessage(this));
     }
     
 	/**
@@ -580,7 +556,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             resultException = cause;
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                     new ErrorMsgBody(runResult.code(), runResult.message(), cause));
-            getCloverPost().sendMessage(msg);
+            sendMessage(msg);
             sendFinishMessage();
 		} else if (!runResult.isStop()) {
 			logger.debug("Node '" + getId() + "' was not interrupted in legal way.");
@@ -638,15 +614,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		runIt = false;
 	}
 
-    /**
-     * Provides CloverRuntime - object providing
-     * various run-time services
-     * 
-     * @return
-     * @since 13.12.2006
-     */
-    public CloverPost getCloverPost(){
-        return getGraph().getPost();
+    public void sendMessage(Message<?> msg) {
+    	CloverPost post = getGraph().getPost();
+    	if (post != null) {
+    		post.sendMessage(msg);
+    	} else {
+    		getLog().info("Component reports a message, but its graph is already released. Message: " + msg.toString());
+    	}
     }
     
 	/**
@@ -972,8 +946,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return          Description of the Returned Value
 	 *@since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
-        throw new  UnsupportedOperationException("not implemented in org.jetel.graph.Node"); 
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws Exception {
+        throw new UnsupportedOperationException("not implemented in org.jetel.graph.Node"); 
 	}
 
     /**

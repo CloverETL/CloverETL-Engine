@@ -18,91 +18,63 @@
  */
 package org.jetel.util.protocols.sftp;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLDecoder;
 import java.util.Vector;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.component.fileoperation.pool.Authority;
+import org.jetel.component.fileoperation.pool.ConnectionPool;
+import org.jetel.component.fileoperation.pool.PooledSFTPConnection;
+import org.jetel.component.fileoperation.pool.SFTPAuthority;
 import org.jetel.util.protocols.ProxyAuthenticable;
+import org.jetel.util.protocols.UserInfo;
 
 import com.jcraft.jsch.ChannelSftp;
-import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Proxy;
-import com.jcraft.jsch.ProxyHTTP;
-import com.jcraft.jsch.ProxySOCKS4;
-import com.jcraft.jsch.ProxySOCKS5;
-import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
-import com.jcraft.jsch.UIKeyboardInteractive;
-import com.jcraft.jsch.UserInfo;
 
 /**
- * URL Connection for sftp protocol.
+ * URL Connection for sftp protocol with pooling.
  * 
- * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz) (c) Javlin
- *         Consulting (www.javlinconsulting.cz)
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created Jan 28, 2013
  */
 public class SFTPConnection extends URLConnection implements ProxyAuthenticable {
 
-	private static final JSch jsch = new JSch();
+	private static final ConnectionPool pool = ConnectionPool.getInstance();
 	
-	protected Session session;
-	protected ChannelSftp channel;
+	private static final Log logger = LogFactory.getLog(SFTPConnection.class);
 
-	protected int mode;
+	private int mode;
 
-	private Proxy proxy;
-	private ProxySOCKS4 proxy4;
+	private SFTPAuthority authority;
 	
-	private final SFTPStreamHandler handler;
-	private int openedStreams = 0;
-
-	// standard encoding for URLDecoder
-	// see http://www.w3.org/TR/html40/appendix/notes.html#non-ascii-chars
-	private static final String ENCODING = "UTF-8";
-
 	/**
 	 * SFTP constructor.
 	 * @param url
-	 * @param handler
 	 */
-	protected SFTPConnection(URL url, SFTPStreamHandler handler) {
-		this(url, null, handler);
+	protected SFTPConnection(URL url) {
+		this(url, null);
 	}
 	
 	/**
 	 * SFTP constructor.
 	 * @param url
 	 * @param proxy
-	 * @param handler
 	 */
-	protected SFTPConnection(URL url, java.net.Proxy proxy, SFTPStreamHandler handler) {
+	protected SFTPConnection(URL url, Proxy proxy) {
 		super(url);
+		this.authority = new SFTPAuthority(url, proxy);
 		mode = ChannelSftp.OVERWRITE;
-		this.handler = handler;
-		
-		if (proxy == null) return;
-		SocketAddress sa = proxy.address();
-		if (!(sa instanceof InetSocketAddress)) return;
-		String hostName = ((InetSocketAddress) sa).getHostName();
-		int port = ((InetSocketAddress) sa).getPort();
-		if (proxy.type() == java.net.Proxy.Type.HTTP) {
-			this.proxy = port >= 0 ? new ProxyHTTP(hostName, port) : new ProxyHTTP(hostName);
-		} 
-		else if (proxy.type() == java.net.Proxy.Type.SOCKS) {
-			this.proxy = port >= 0 ? new ProxySOCKS5(hostName, port) : new ProxySOCKS5(hostName);
-			this.proxy4 = port >= 0 ? new ProxySOCKS4(hostName, port) : new ProxySOCKS4(hostName);
-		}
 	}
 
 	/**
@@ -110,132 +82,93 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 	 * 
 	 * @return
 	 * @throws IOException
+	 * 
+	 * @deprecated since the connections are pooled,
+	 * changing the current directory is a potentially dangerous
+	 * operation. Should not be used from URLConnection anyway.
 	 */
+	@Deprecated
 	public void cd(String path) throws IOException {
-		connect();
+		PooledSFTPConnection connection = null;
 		try {
-			channel = getChannelSftp();
-			channel.cd(path);
+			connection = connect(authority);
+			connection.getChannelSftp().cd(path);
 		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
+			disconnectQuietly(connection);
 		}
 	}
 	
+	private PooledSFTPConnection connect(Authority authority) throws IOException {
+		try {
+			PooledSFTPConnection connection = (PooledSFTPConnection) pool.borrowObject(authority);
+			
+			return connection;
+		} catch (IOException ioe) {
+			throw ioe;
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+	}
+
+	private void disconnectQuietly(PooledSFTPConnection connection) {
+		// make sure the object is returned to the pool
+		if (connection != null) {
+			try {
+				pool.returnObject(connection.getAuthority(), connection);
+			} catch (Exception ex) {
+				logger.debug("Failed to return the connection to the pool", ex);
+			}
+		}
+	}
+
 	@Override
 	public void connect() throws IOException {
-		String[] user = getUserInfo();
+		PooledSFTPConnection connection = null;
 		try {
-			connect(new URLUserInfo(user.length == 2 ? user[1] : null));
-		} catch (Exception e) {
-			connect(new URLUserInfoIteractive(user.length == 2 ? user[1] : null));
-		}
-	}
-
-	private void connect(AUserInfo aUserInfo) throws IOException {
-		if (session != null && session.isConnected()) return;
-		
-		String[] user = getUserInfo();
-		try {
-			if (url.getPort() == 0) session = jsch.getSession(user[0], url.getHost());
-			else session = jsch.getSession(user[0], url.getHost(), url.getPort() == -1 ? 22 : url.getPort());
-
-			// password will be given via UserInfo interface.
-			session.setUserInfo(aUserInfo);
-			if (proxy != null) session.setProxy(proxy);
-			session.connect();
-		} catch (Exception e) {
-			if (proxy4 != null) {
-				try {
-					session.connect();
-					return;
-				} catch (JSchException e1) {}
-			}
-			throw new IOException(e.getMessage());
-		}
-	}
-
-	/**
-	 * Session disconnect.
-	 */
-	public void disconnect() {
-		if (openedStreams == 0 && session != null && session.isConnected()) {
-			session.disconnect();
-			handler.removeFromPool(this);
+			connection = connect(authority);
+		} finally {
+			disconnectQuietly(connection);
 		}
 	}
 
 	/**
 	 * Gets file from remote host.
 	 * 
-	 * @param remore -
+	 * @param remote -
 	 *            remote path
 	 * @param os -
 	 *            output stream
 	 * @throws IOException
 	 */
-	public void get(String remore, OutputStream os) throws IOException {
-		connect();
+	public void get(String remote, OutputStream os) throws IOException {
+		PooledSFTPConnection connection = null;
 		try {
-			channel = getChannelSftp();
-			channel.get(remore, os);
+			connection = connect(authority);
+			connection.getChannelSftp().get(remote, os);
 		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
+			disconnectQuietly(connection);
 		}
 	}
 
 	@Override
 	public InputStream getInputStream() throws IOException {
-		connect();
-		try {
-			channel = getChannelSftp();
-			String file = url.getFile();
-			InputStream is = new BufferedInputStream(channel.get(file.equals("") ? "/" : file)) {
-				@Override
-				public void close() throws IOException {
-					openedStreams--;
-					if (openedStreams >= 0) {
-						super.close();
-						disconnect();
-					}
-				}
-			};
-			openedStreams++;
-			return is;
-		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
-		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
-		}
+		PooledSFTPConnection obj = connect(authority);
+		String file = url.getFile();
+		return obj.getInputStream(file.equals("") ? "/" : file);
 	}
 
 	@Override
 	public OutputStream getOutputStream() throws IOException {
-		connect();
-		try {
-			channel = getChannelSftp();
-			OutputStream os = new BufferedOutputStream(channel.put(url.getFile(), mode)) {
-				@Override
-				public void close() throws IOException {
-					openedStreams--;
-					if (openedStreams >= 0) {
-						super.close();
-						disconnect();
-					}
-				}
-			};
-			openedStreams++;
-			return os;
-		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
-		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
-		}
+		PooledSFTPConnection obj = connect(authority);
+		return obj.getOutputStream(url.getFile(), mode);
 	}
 
 	/**
@@ -245,15 +178,16 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 	 * @throws IOException
 	 */
 	public Vector<?> ls(String path) throws IOException {
-		connect();
+		PooledSFTPConnection connection = null;
 		try {
-			channel = getChannelSftp();
-			return channel.ls(path);
+			connection = connect(authority);
+			return connection.getChannelSftp().ls(path);
 		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
+			disconnectQuietly(connection);
 		}
 	}
 
@@ -264,15 +198,16 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 	 * @throws IOException
 	 */
 	public String pwd() throws IOException {
-		connect();
+		PooledSFTPConnection connection = null;
 		try {
-			channel = getChannelSftp();
-			return channel.pwd();
+			connection = connect(authority);
+			return connection.getChannelSftp().pwd();
 		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
+			disconnectQuietly(connection);
 		}
 	}
 
@@ -286,10 +221,6 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 		this.mode = mode;
 	}
 
-	public void setTimeout(int timeout) throws JSchException {
-		session.setTimeout(timeout);
-	}
-
 	/**
 	 * Gets informations for actual path.
 	 * 
@@ -297,146 +228,21 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 	 * @throws IOException
 	 */
 	public SftpATTRS stat(String path) throws IOException {
-		connect();
+		PooledSFTPConnection connection = null;
 		try {
-			channel = getChannelSftp();
-			return channel.stat(path);
+			connection = connect(authority);
+			return connection.getChannelSftp().stat(path);
 		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		} finally {
+			disconnectQuietly(connection);
 		}
-	}
-
-	private String[] getUserInfo() {
-		String userInfo = url.getUserInfo();
-		if (userInfo == null) return new String[] {""};
-		return decodeString(userInfo).split(":");
-	}
-
-	/**
-	 * Decodes string.
-	 * @param s
-	 * @return
-	 */
-	private String decodeString(String s) {
-		try {
-			return URLDecoder.decode(s, ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			return s;
-		}
-	}
-
-	/**
-	 * Gets ChannelSftp.
-	 * 
-	 * @return ChannelSftp
-	 * @throws JSchException
-	 */
-	private ChannelSftp getChannelSftp() throws JSchException {
-		if (channel == null || !channel.isConnected()) {
-			channel = (ChannelSftp) session.openChannel(url.getProtocol());
-			channel.connect();
-		}
-		return channel;
-	}
-
-	public static abstract class AUserInfo implements UserInfo {
-		protected String password;
-
-		protected String passphrase = null;
-
-		public AUserInfo(String password) {
-			this.password = password;
-		}
-
-		@Override
-		public void showMessage(String message) {
-		}
-
-		@Override
-		public boolean promptPassphrase(String message) {
-			return true;
-		}
-
-		@Override
-		public boolean promptYesNo(String str) {
-			return true;
-		}
-
-		@Override
-		public String getPassphrase() {
-			return passphrase;
-		}
-	}
-
-	/**
-	 * Class for password supporting.
-	 * 
-	 * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz) (c) Javlin
-	 *         Consulting (www.javlinconsulting.cz)
-	 */
-	public static class URLUserInfoIteractive extends AUserInfo implements
-			UIKeyboardInteractive {
-
-		public URLUserInfoIteractive(String password) {
-			super(password);
-		}
-
-		@Override
-		public String getPassword() {
-			return null;
-		}
-
-		@Override
-		public boolean promptPassword(String message) {
-			return true;
-		}
-
-		@Override
-		public String[] promptKeyboardInteractive(String destination,
-				String name, String instruction, String[] prompt, boolean[] echo) {
-			return new String[] { password };
-		}
-	}
-
-	public static class URLUserInfo extends AUserInfo {
-
-		public URLUserInfo(String password) {
-			super(password);
-		}
-
-		@Override
-		public String getPassword() {
-			return password;
-		}
-
-		@Override
-		public boolean promptPassword(String message) {
-			return password != null;
-		}
-
-	}
-	
-	void setURL(URL url) {
-		super.url = url;
 	}
 
 	@Override
-	public void setProxyCredentials(org.jetel.util.protocols.UserInfo userInfo) {
-		if (userInfo == null) {
-			return;
-		}
-		String user = userInfo.getUser();
-		String password = userInfo.getPassword();
-		if (proxy4 != null) {
-			proxy4.setUserPasswd(user, password);
-		}
-		if (proxy instanceof ProxyHTTP) {
-			((ProxyHTTP) proxy).setUserPasswd(user, password);
-		} else if (proxy instanceof ProxySOCKS5) {
-			((ProxySOCKS5) proxy).setUserPasswd(user, password);
-		}
+	public void setProxyCredentials(UserInfo userInfo) {
+		authority.setProxyCredentials(userInfo);
 	}
 }

@@ -260,7 +260,7 @@ public class MultiFileWriter {
 					lookup = lookupTable.createLookup(partitionKey);
 				}
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(e.getMessage());
+				throw new ComponentNotReadyException(e);
 			}
 	    }
     }
@@ -422,7 +422,7 @@ public class MultiFileWriter {
             counter++;
     	} catch (RuntimeException e) {
     		if (e.getCause() instanceof CharacterCodingException) {
-    			throw new IOException("Converting exception in the record: " + counter + ". " + e.getMessage());
+    			throw new IOException("Converting exception in the record: " + counter + ". ", e);
     		} else {
     			throw e;
     		}

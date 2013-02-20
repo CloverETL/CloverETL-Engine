@@ -35,6 +35,7 @@ import java.util.List;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
@@ -47,6 +48,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultProxyAuthenticationHandler;
 import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
+import org.jetel.util.protocols.ProxyConfiguration;
 
 import com.googlecode.sardine.DavResource;
 import com.googlecode.sardine.impl.SardineException;
@@ -69,7 +71,7 @@ public class WebdavClientImpl extends SardineImpl implements WebdavClient {
 		this(url.getProtocol(), getUsername(url), getPassword(url), proxyConfiguration);
 	}
 	
-	public WebdavClientImpl(String protocol, String username, String password, ProxyConfiguration proxyConfiguration) throws UnsupportedEncodingException {
+	public WebdavClientImpl(String protocol, String username, String password, ProxyConfiguration proxyConfiguration) {
 		this(username, password, proxyConfiguration);
 		setDefaultProxyCredentials(protocol);
 	}
@@ -229,7 +231,26 @@ public class WebdavClientImpl extends SardineImpl implements WebdavClient {
 		Propfind body = new Propfind();
 		body.setAllprop(new Allprop());
 		entity.setEntity(new StringEntity(SardineUtil.toXml(body), UTF_8));
-		Multistatus multistatus = execute(entity, new MultiStatusResponseHandler());
+		
+		Multistatus multistatus = execute(entity, new MultiStatusResponseHandler() {
+
+			@Override
+			public Multistatus handleResponse(HttpResponse response) throws SardineException, IOException {
+				StatusLine statusLine = response.getStatusLine();
+				int statusCode = statusLine.getStatusCode();
+				if (statusCode == HttpStatus.SC_NOT_FOUND)
+				{
+					return null; // expected response, do not throw an exception
+				}
+				return super.handleResponse(response);
+			}
+			
+		});
+		
+		if (multistatus == null) {
+			return null;
+		}
+		
 		List<Response> responses = multistatus.getResponse();
 		List<DavResource> resources = new ArrayList<DavResource>(responses.size());
 		for (Response resp : responses) {

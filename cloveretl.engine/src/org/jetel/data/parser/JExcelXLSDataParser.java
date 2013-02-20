@@ -376,17 +376,20 @@ public class JExcelXLSDataParser extends XLSParser {
 				try {
 					record.getField(cloverFieldIndex).fromString(parseString(cell));
 				} catch (Exception e) {
-					BadDataFormatException bdfe = new BadDataFormatException(bdne.getMessage(), bdne);
+					BadDataFormatException bdfe;
+					if (bdne instanceof BadDataFormatException) {
+						bdfe = (BadDataFormatException) bdne;
+					} else {
+						bdfe = new BadDataFormatException(bdne);
+					}
 					bdfe.setRecordNumber(currentRow+1);
 					bdfe.setFieldNumber(cloverFieldIndex);
 					if (exceptionHandler != null) { // use handler only if configured
-						exceptionHandler.populateHandler(getErrorMessage(bdfe
-								.getMessage(), currentRow + 1, cloverFieldIndex),
+						exceptionHandler.populateHandler(getErrorMessage(currentRow + 1, cloverFieldIndex),
 								record, currentRow + 1, cloverFieldIndex,
 								cell.getContents(), bdfe);
 					} else {
-						throw new RuntimeException(getErrorMessage(bdfe
-								.getMessage(), currentRow + 1, cloverFieldIndex));
+						throw new RuntimeException(getErrorMessage(currentRow + 1, cloverFieldIndex), bdfe);
 					}
 				}
 			}

@@ -76,7 +76,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 	 */
 	@Test
 	public final void testIsOpen() throws IOException {
-		channel = new InputPortReadableChannel(new InputPortMock(new String[3]), FIELD_NAME, "UTF-8");
+		channel = new InputPortReadableChannel(new InputPortMock(FIELD_NAME, new String[3]), FIELD_NAME, "UTF-8");
 		assertTrue(channel.isOpen());
 		channel.close();
 		assertFalse(channel.isOpen());
@@ -97,7 +97,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		//read short records (|record| << BUFFER_SIZE - all data fits buffer size
 		String[] data = getSampleData(SampleDataType.SHORT);
 		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-		channel = new InputPortReadableChannel(new InputPortMock(data), FIELD_NAME, "UTF-8");
+		channel = new InputPortReadableChannel(new InputPortMock(FIELD_NAME, data), FIELD_NAME, "UTF-8");
 		assertTrue(channel.isOpen());
 		assertFalse(channel.isEOF());
 		assertTrue(channel.read(buffer) > 0);
@@ -128,7 +128,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		//read records (|record| == BUFFER_SIZE)
 		String[] data = getSampleData(SampleDataType.EXACT);
 		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE * 3);
-		channel = new InputPortReadableChannel(new InputPortMock(data), FIELD_NAME, "UTF-8");
+		channel = new InputPortReadableChannel(new InputPortMock(FIELD_NAME, data), FIELD_NAME, "UTF-8");
 		
 		while (channel.read(buffer) > 0) {}
 		
@@ -148,7 +148,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		
 		//read record and use small buffer (smaller than field size)
 		String[] data = getSampleData(SampleDataType.EXACT);
-		InputPort port = new InputPortMock(data);
+		InputPort port = new InputPortMock(FIELD_NAME, data);
 		StringBuilder sb = new StringBuilder();
 		channel = new InputPortReadableChannel(port, FIELD_NAME, "UTF-8");
 		do {
@@ -174,7 +174,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		//null field is read first, some field with value as second
 		String[] data = getSampleData(SampleDataType.NULL_FIRST);
 		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-		InputPort mockInputPort = new InputPortMock(data);
+		InputPort mockInputPort = new InputPortMock(FIELD_NAME, data);
 		channel = new InputPortReadableChannel(mockInputPort, FIELD_NAME, "UTF-8");
 		assertTrue(channel.isOpen());
 		assertTrue(channel.isEOF());
@@ -203,7 +203,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		//send (and last) field has null value
 		String[] data = getSampleData(SampleDataType.NULL_SECOND);
 		ByteBuffer buffer = ByteBuffer.allocate(BUFFER_SIZE);
-		channel = new InputPortReadableChannel(new InputPortMock(data), FIELD_NAME, "UTF-8");
+		channel = new InputPortReadableChannel(new InputPortMock(FIELD_NAME, data), FIELD_NAME, "UTF-8");
 		assertTrue(channel.isOpen());
 		assertFalse(channel.isEOF());
 		assertTrue(channel.read(buffer) > 0);
@@ -222,7 +222,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 	public final void testReadNullRecord() throws IOException {
 		
 		//send (and last) field has null value
-		channel = new InputPortReadableChannel(new InputPortMock(new String[1]), FIELD_NAME, "UTF-8");
+		channel = new InputPortReadableChannel(new InputPortMock(FIELD_NAME, new String[1]), FIELD_NAME, "UTF-8");
 		assertTrue(channel.isOpen());
 		assertTrue(channel.isEOF());
 		channel.close();
@@ -268,15 +268,17 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 	 *
 	 * @created 2.10.2012
 	 */
-	private class InputPortMock implements InputPort {
+	static class InputPortMock implements InputPort {
 
 		private DataRecordMetadata metadata;
 		private int i = 0;
 		private String[] data;
+		private String fieldName;
 		
-		public InputPortMock(String[] data) {
+		public InputPortMock(String fieldName, String[] data) {
 			metadata = new DataRecordMetadata("recordName1", DataRecordParsingType.DELIMITED);
-			metadata.addField(new DataFieldMetadata(FIELD_NAME, DataFieldType.STRING, "|"));
+			metadata.addField(new DataFieldMetadata(fieldName, DataFieldType.STRING, "|"));
+			this.fieldName = fieldName;
 			this.data = data;
 		}
 		
@@ -287,7 +289,7 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		@Override
 		public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
 			if (record != null && i < data.length) {
-				record.getField(FIELD_NAME).setValue(data[i]);
+				record.getField(fieldName).setValue(data[i]);
 				i++;
 				return record;
 			}
@@ -315,12 +317,12 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		}
 
 		@Override
-		public int getRecordCounter() {
+		public long getRecordCounter() {
 			return 0;
 		}
 
 		@Override
-		public int getInputRecordCounter() {
+		public long getInputRecordCounter() {
 			return 0;
 		}
 

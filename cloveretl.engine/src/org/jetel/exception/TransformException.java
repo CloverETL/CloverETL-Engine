@@ -64,6 +64,10 @@ public class TransformException extends JetelException {
         super(message, cause);
     }
 
+	public TransformException(Throwable cause) {
+		super(cause);
+	}
+
 	public int getFieldNo() {
 		return fieldNo;
 	}

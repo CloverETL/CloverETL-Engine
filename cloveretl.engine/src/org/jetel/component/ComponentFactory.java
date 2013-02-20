@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.distribution.EngineComponentAllocation;
@@ -64,7 +65,7 @@ public class ComponentFactory {
                 registerComponent(description);
             } catch(Exception e) {
                 logger.error("Cannot create component description, extension in plugin manifest is not valid.\n"
-                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());
+                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension, e);
             }
         }
         
@@ -104,10 +105,8 @@ public class ComponentFactory {
                 return Class.forName(className, true, pluginDescriptor.getClassLoader()).asSubclass(Node.class);
             }
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown component: " + componentType + " class: " + className, ex);
             throw new RuntimeException("Unknown component: " + componentType + " class: " + className, ex);
         } catch(Exception ex) {
-            logger.error("Unknown component type: " + componentType, ex);
             throw new RuntimeException("Unknown component type: " + componentType, ex);
         }
 
@@ -124,17 +123,16 @@ public class ComponentFactory {
 	 */
 	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
 		Class<? extends Node> tClass = getComponentClass(componentType);
-        
+
         try {
             //create instance of component
 			Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 			Node result = (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
-
-			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
 			
 			//nodeDistribution attribute parsing
 			//hack for extracting of node layout information - Clover3 solves this issue
 			//it is the easiest way how to add new common attribute for all nodes
+			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
 			if (xattribs.exists(Node.XML_ALLOCATION_ATTRIBUTE)) {
 				EngineComponentAllocation nodeAllocation = EngineComponentAllocation.fromString(xattribs.getString(Node.XML_ALLOCATION_ATTRIBUTE));
 				result.setAllocation(nodeAllocation);
@@ -146,15 +144,15 @@ public class ComponentFactory {
 			}
 
 			return result;
-        } catch(InvocationTargetException e) {
-            logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage(), e);
-        } catch(NoSuchMethodException e) {
-            logger.error("Can't create object of type " + componentType + " with reason: " + e.getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage(), e);
-		} catch(Exception ex) {
-            logger.error("Can't create object of : " + componentType);
-			throw new RuntimeException("Can't create object of : " + componentType, ex);
+		} catch (Exception e) {
+			Throwable t = e;
+			if (e instanceof InvocationTargetException) {
+				t = ((InvocationTargetException) e).getTargetException();
+			}
+			ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+			String id = xattribs.getString(Node.XML_ID_ATTRIBUTE, null); 
+			String name = xattribs.getString(Node.XML_NAME_ATTRIBUTE, null); 
+            throw new RuntimeException("Can't create component " + GraphElement.identifiersToString(id, name) + ".", t);
 		}
 	}
     
@@ -179,14 +177,9 @@ public class ComponentFactory {
             Constructor<? extends Node> constructor = tClass.getConstructor(parametersType);
             return constructor.newInstance(constructorParameters);
         } catch(InvocationTargetException e) {
-            logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage(), e);
-        } catch(NoSuchMethodException e) {
-            logger.error("Can't create object of type " + componentType + " with reason: " + e.getMessage());
-            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage(), e);
-        } catch(Exception ex) {
-            logger.error("Can't create object of : " + componentType + " exception: " + ex);
-            throw new RuntimeException("Can't create object of : " + componentType, ex);
+            throw new RuntimeException("Can't create component of type '" + componentType + "'.", e.getTargetException());
+        } catch(Exception e) {
+            throw new RuntimeException("Can't create component of type '" + componentType + "'.", e);
         }
     }
 }

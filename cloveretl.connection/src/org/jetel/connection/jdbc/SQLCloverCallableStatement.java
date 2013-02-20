@@ -193,10 +193,10 @@ public class SQLCloverCallableStatement {
 				try {
 					outTransMap[i].setJetel(statement);
 				} catch (SQLException ex) {
-					throw new SQLException(ex.getMessage() + " with field " + outTransMap[i].getField().getMetadata().getName());
+					throw new SQLException("Error on field " + outTransMap[i].field.getMetadata().getName(), ex);
 				} catch (ClassCastException ex){
-				    throw new SQLException("Incompatible Clover & JDBC field types - field "+outTransMap[i].getField().getMetadata().getName()+
-				            " Clover type: "+SQLUtil.jetelType2Str(outTransMap[i].getField().getMetadata().getType()));
+				    throw new SQLException("Incompatible Clover & JDBC field types - field "+outTransMap[i].field.getMetadata().getName()+
+				            " Clover type: "+SQLUtil.jetelType2Str(outTransMap[i].field.getMetadata().getType()), ex);
 				}
 			}
 			gotOutParams = true;

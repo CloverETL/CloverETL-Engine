@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -36,6 +37,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -257,7 +259,7 @@ public class LdapReader extends Node {
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }
@@ -272,7 +274,7 @@ public class LdapReader extends Node {
 	/*
 	 * Isn't this function mandatory ??
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		LdapReader aLdapReader = null;
 		int i_scope = SearchControls.OBJECT_SCOPE;
@@ -299,36 +301,31 @@ public class LdapReader extends Node {
 			logger.warn(msg.toString());
 		}
 
-		try {
-			if(xattribs.exists(XML_USER_ATTRIBUTE) && xattribs.exists(XML_PASSWORD_ATTRIBUTE) ) {
-				aLdapReader = new LdapReader(
-						xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_LDAPURL_ATTRIBUTE),
-						xattribs.getString(XML_BASE_ATTRIBUTE),
-						xattribs.getString(XML_FILTER_ATTRIBUTE),
-						i_scope,
-						xattribs.getString(XML_USER_ATTRIBUTE),
-						xattribs.getString(XML_PASSWORD_ATTRIBUTE));
-			} else {
-				aLdapReader = new LdapReader(
-						xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_LDAPURL_ATTRIBUTE),
-						xattribs.getString(XML_BASE_ATTRIBUTE),
-						xattribs.getString(XML_FILTER_ATTRIBUTE),
-						i_scope);
-			}
-			if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {
-				aLdapReader.setMultiValueSeparator(xattribs.getString(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ALIAS_HANDLING_ATTRIBUTE)) {
-				aLdapReader.setAliasHandling(Enum.valueOf(AliasHandling.class, xattribs.getString(XML_ALIAS_HANDLING_ATTRIBUTE)));
-			}
-			if (xattribs.exists(XML_REFERRAL_HANDLING_ATTRIBUTE)) {
-				aLdapReader.setReferralHandling(Enum.valueOf(ReferralHandling.class, xattribs.getString(XML_REFERRAL_HANDLING_ATTRIBUTE)));
-			}
-
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
+		if(xattribs.exists(XML_USER_ATTRIBUTE) && xattribs.exists(XML_PASSWORD_ATTRIBUTE) ) {
+			aLdapReader = new LdapReader(
+					xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_LDAPURL_ATTRIBUTE),
+					xattribs.getString(XML_BASE_ATTRIBUTE),
+					xattribs.getString(XML_FILTER_ATTRIBUTE),
+					i_scope,
+					xattribs.getString(XML_USER_ATTRIBUTE),
+					xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+		} else {
+			aLdapReader = new LdapReader(
+					xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_LDAPURL_ATTRIBUTE),
+					xattribs.getString(XML_BASE_ATTRIBUTE),
+					xattribs.getString(XML_FILTER_ATTRIBUTE),
+					i_scope);
+		}
+		if (xattribs.exists(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE)) {
+			aLdapReader.setMultiValueSeparator(xattribs.getString(XML_MULTI_VALUE_SEPARATOR_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ALIAS_HANDLING_ATTRIBUTE)) {
+			aLdapReader.setAliasHandling(Enum.valueOf(AliasHandling.class, xattribs.getString(XML_ALIAS_HANDLING_ATTRIBUTE)));
+		}
+		if (xattribs.exists(XML_REFERRAL_HANDLING_ATTRIBUTE)) {
+			aLdapReader.setReferralHandling(Enum.valueOf(ReferralHandling.class, xattribs.getString(XML_REFERRAL_HANDLING_ATTRIBUTE)));
 		}
 		
 		return aLdapReader;

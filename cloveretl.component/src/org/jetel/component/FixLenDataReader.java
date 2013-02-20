@@ -29,19 +29,21 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.FixLenByteDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -211,7 +213,7 @@ public class FixLenDataReader extends Node {
 			        if(policyType == PolicyType.STRICT) {
 			            throw bdfe;
 			        } else {
-			            logger.warn(bdfe.getMessage());
+			            logger.warn(ExceptionUtils.exceptionChainToMessage(bdfe));
 			        }
 			    }
 			    SynchronizeUtils.cloverYield();
@@ -227,12 +229,8 @@ public class FixLenDataReader extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		try {
-			reader.postExecute();
-		}
-		catch (ComponentNotReadyException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
-		}
+		
+		reader.postExecute();
 	}
 	
 	@Override
@@ -369,57 +367,54 @@ public class FixLenDataReader extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		FixLenDataReader aFixLenDataReaderNIO = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
-		try {
-			String charset = null;
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				charset = xattribs.getString(XML_CHARSET_ATTRIBUTE);
-			}
-			boolean byteMode = false;
-			if (xattribs.exists(XML_BYTEMODE_ATTRIBUTE)){
-				byteMode = xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE);
-			}
-			aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, "", RefResFlag.SPEC_CHARACTERS_OFF),
-						charset, byteMode);
-			if (xattribs.exists(XML_ENABLEINCOMPLETE_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setEnableIncomplete(xattribs.getBoolean(XML_ENABLEINCOMPLETE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIPEMPTY_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setSkipEmpty(xattribs.getBoolean(XML_SKIPEMPTY_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
-                aFixLenDataReaderNIO.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
-            }
-			if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
-			}
-            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
-                aFixLenDataReaderNIO.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
-            }
-			aFixLenDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));			
-			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
-			}
-			if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		String charset = null;
+		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+			charset = xattribs.getString(XML_CHARSET_ATTRIBUTE);
+		}
+		boolean byteMode = false;
+		if (xattribs.exists(XML_BYTEMODE_ATTRIBUTE)){
+			byteMode = xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE);
+		}
+		aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, "", RefResFlag.SPEC_CHARACTERS_OFF),
+					charset, byteMode);
+		if (xattribs.exists(XML_ENABLEINCOMPLETE_ATTRIBUTE)){
+			aFixLenDataReaderNIO.setEnableIncomplete(xattribs.getBoolean(XML_ENABLEINCOMPLETE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIPEMPTY_ATTRIBUTE)){
+			aFixLenDataReaderNIO.setSkipEmpty(xattribs.getBoolean(XML_SKIPEMPTY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
+			aFixLenDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
+			aFixLenDataReaderNIO.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
+            aFixLenDataReaderNIO.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
+        }
+		if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
+			aFixLenDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
+		}
+        if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+            aFixLenDataReaderNIO.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+        }
+		aFixLenDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));			
+		if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
+			aFixLenDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
+			aFixLenDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		}
+		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
+			aFixLenDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));
 		}
 
 		return aFixLenDataReaderNIO;
@@ -463,7 +458,7 @@ public class FixLenDataReader extends Node {
     		prepareMultiFileReader();
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

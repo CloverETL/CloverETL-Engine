@@ -19,7 +19,7 @@
 	<property name="dir.component.lib" value="${dir.projects}/${parent.project}/lib"/>
 
 	<!-- output files -->
-	<property name="dist.jar" value="${dir.dist}/cloveretl.component.hadooploader.jar"/>
+	<property name="dist.jar" value="${dir.dist}/cloveretl.hadoop.provider.jar"/>
 	
 	<!-- =========================== FILESETS ============================= -->
 	<fileset id="libs" dir="${dir.lib}">

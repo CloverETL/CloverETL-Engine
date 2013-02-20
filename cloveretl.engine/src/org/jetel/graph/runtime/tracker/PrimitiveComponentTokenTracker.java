@@ -25,7 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
 import org.jetel.graph.runtime.IAuthorityProxy.RunStatus;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 
 /**
  * Default component token tracker which is used by all components in case regular ETL graph execution.
@@ -68,7 +68,7 @@ public class PrimitiveComponentTokenTracker implements ComponentTokenTracker {
 	public void logMessage(DataRecord token, Level level, String message, Throwable exception) {
 		tokenContent.setRecord(token);
 		
-		log4jSerializer.logMessage(new Date(), component.getId(), tokenContent, level, message, MiscUtils.stackTraceToString(exception));
+		log4jSerializer.logMessage(new Date(), component.getId(), tokenContent, level, message, ExceptionUtils.stackTraceToString(exception));
 	}
 
 	@Override

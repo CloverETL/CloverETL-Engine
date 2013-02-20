@@ -73,11 +73,9 @@ public class CustomPathResolverFactory {
 	        try {
 	                return Class.forName(descriptor.getClassName(), true, descriptor.getPluginDescriptor().getClassLoader());
 	        } catch(ClassNotFoundException ex) {
-	            logger.error("Unknown custom path resolver: " + descriptor.getType() + " class: " + descriptor.getClassName());
-	            throw new RuntimeException("Unknown custom path resolver: " + descriptor.getType() + " class: " + descriptor.getClassName());
+	            throw new RuntimeException("Unknown custom path resolver: " + descriptor.getType() + " class: " + descriptor.getClassName(), ex);
 	        } catch(Exception ex) {
-	            logger.error("Unknown custom path resolver type: " + descriptor.getClassName());
-	            throw new RuntimeException("Unknown custom path resolver type: " + descriptor.getClassName());
+	            throw new RuntimeException("Unknown custom path resolver type: " + descriptor.getClassName(), ex);
 	        }
 	    }
 }

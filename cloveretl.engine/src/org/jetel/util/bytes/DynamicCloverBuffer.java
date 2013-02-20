@@ -188,12 +188,11 @@ public class DynamicCloverBuffer extends CloverBuffer {
      */
     @Override
     public final CloverBuffer capacity(int newCapacity) {
-        if (!recapacityAllowed) {
-            throw new IllegalStateException("Resizing of this CloverBuffer is not allowed.");
-        }
-
         // Allocate a new buffer and transfer all settings to it.
         if (newCapacity > capacity()) {
+            if (!recapacityAllowed) {
+                throw new IllegalStateException("Resizing of this CloverBuffer is not allowed.");
+            }
             // Expand:
             //// Save the state.
             int pos = position();
@@ -302,10 +301,6 @@ public class DynamicCloverBuffer extends CloverBuffer {
     }
 
     private void expand(int pos, int expectedRemaining, boolean autoExpand) {
-        if (!recapacityAllowed) {
-            throw new IllegalStateException("Resizing of this CloverBuffer is not allowed.");
-        }
-
         int end = pos + expectedRemaining;
         int newCapacity;
         if (autoExpand) {

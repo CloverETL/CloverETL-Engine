@@ -53,8 +53,8 @@ import org.jetel.component.fileoperation.SimpleParameters.MoveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
-import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfo;
-import org.jetel.util.protocols.sftp.SFTPConnection.URLUserInfoIteractive;
+import org.jetel.util.protocols.sftp.URLUserInfo;
+import org.jetel.util.protocols.sftp.URLUserInfoIteractive;
 import org.jetel.util.string.StringUtils;
 
 import com.jcraft.jsch.ChannelSftp;
@@ -65,6 +65,12 @@ import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import com.jcraft.jsch.UserInfo;
 
+/**
+ * @deprecated replaced with {@link PooledSFTPOperationHandler}.
+ * 
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ */
 public class SFTPOperationHandler implements IOperationHandler {
 
 	private static final Log log = LogFactory.getLog(SFTPOperationHandler.class);
@@ -112,7 +118,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 			ChannelSftp channel = session.channel;
 			Info sourceInfo = info(source, channel);
 			if (sourceInfo == null) {
-				throw new FileNotFoundException(source.toString());
+				throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.toString())); //$NON-NLS-1$
 			}
 			Info targetInfo = info(target, channel);
 			boolean targetChanged = false;
@@ -223,7 +229,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 	private void delete(ChannelSftp channel, URI uri, DeleteParameters params) throws IOException, SftpException {
 		Info info = info(uri, channel);
 		if (info == null) {
-			throw new FileNotFoundException(uri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 		}
 		delete(channel, info, params);
 	}
@@ -288,7 +294,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 //					return;
 //				} catch (JSchException e1) {}
 //			}
-			throw new IOException(e.getMessage());
+			throw new IOException(e);
 		}
 	}
 
@@ -533,7 +539,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 		}
 		Info rootInfo = info(parentUri, channel);
 		if (rootInfo == null) {
-			throw new FileNotFoundException(parentUri.toString());
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), parentUri.toString())); //$NON-NLS-1$
 		}
 		if (parentUri.toString().endsWith(URIUtils.PATH_SEPARATOR) && !rootInfo.isDirectory()) {
 			throw new FileNotFoundException(format(FileOperationMessages.getString("IOperationHandler.not_a_directory"), parentUri)); //$NON-NLS-1$
@@ -650,7 +656,7 @@ public class SFTPOperationHandler implements IOperationHandler {
 
 	@Override
 	public int getPriority(Operation operation) {
-		return TOP_PRIORITY;
+		return 0;
 	}
 
 	@Override

@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.saxon.om.XMLChar;
+import net.sf.saxon.om.Name11Checker;
 
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
@@ -46,6 +46,8 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
+
+
 
 /**
  * Visitor which validates xml mapping.
@@ -370,9 +372,9 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 		if (StringUtils.isEmpty(name)) {
 			addProblem(element, MappingProperty.NAME, new MappingError("Name must not be empty", Severity.ERROR));
 		} else {
-			if (XMLChar.isValidName(name)) {
+			if (Name11Checker.getInstance().isQName(name)) {
 				return true;
-			} else if (XMLChar.isValidName(name.replaceAll(FIELD_REFERENCE_PATTERN, "x"))) {
+			} else if (Name11Checker.getInstance().isQName(name.replaceAll(FIELD_REFERENCE_PATTERN, "x"))) {
 				return true;
 			} else {
 				addProblem(element, MappingProperty.NAME, new MappingError("Invalid name " + name, Severity.ERROR));

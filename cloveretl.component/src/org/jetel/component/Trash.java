@@ -287,7 +287,7 @@ public class Trash extends Node {
 				try {
 					inputReader.join(1000);
 				} catch (InterruptedException e) {
-					logger.warn(getId() + "thread interrupted, it will interrupt child threads", e);
+					logger.warn(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}
@@ -305,7 +305,7 @@ public class Trash extends Node {
 				writer.close();
 			}
 		} catch (Exception e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 	
@@ -317,7 +317,7 @@ public class Trash extends Node {
 			try {
 				writer.close();
 			} catch (Throwable t) {
-				logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+				logger.warn("Resource releasing failed for '" + getId() + "'.", t);
 			}
 		}
 	}
@@ -345,18 +345,10 @@ public class Trash extends Node {
 		}
 	}
 
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		Trash trash;
-
-		try {
-			trash = new Trash(xattribs.getString(XML_ID_ATTRIBUTE));
-
-			trash.loadAttributesFromXML(xattribs);
-
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
-		}
+		Trash trash = new Trash(xattribs.getString(XML_ID_ATTRIBUTE));
+		trash.loadAttributesFromXML(xattribs);
 		return trash;
 	}
 

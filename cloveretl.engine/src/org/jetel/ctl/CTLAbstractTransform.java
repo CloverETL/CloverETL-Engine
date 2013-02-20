@@ -149,7 +149,7 @@ public abstract class CTLAbstractTransform implements Transform {
 		try {
 			getGraph().getDictionary().setValue(key, StringDictionaryType.TYPE_ID, value);
 		} catch (ComponentNotReadyException e) {
-			throw new TransformLangExecutorRuntimeException(e.getMessage());
+			throw new TransformLangExecutorRuntimeException("Dictionary writing failed", e);
 		}
 	}
 

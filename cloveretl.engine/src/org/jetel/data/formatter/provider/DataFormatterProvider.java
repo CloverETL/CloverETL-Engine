@@ -20,6 +20,7 @@ package org.jetel.data.formatter.provider;
 
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Provides support for getting the universal data formatter.
@@ -27,7 +28,7 @@ import org.jetel.data.formatter.Formatter;
  * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public class DataFormatterProvider implements FormatterProvider {
+public class DataFormatterProvider implements SharedFormatterProvider {
 
 	private String charEncoder;
 	private String header;
@@ -47,23 +48,48 @@ public class DataFormatterProvider implements FormatterProvider {
 	}
 
 	/**
+	 * Common setup for newly created shared and unshared formatters.
+	 * 
+	 * @param formatter
+	 */
+	private void initFormatter(DataFormatter formatter) {
+		formatter.setHeader(header);
+		charSet = formatter.getCharsetName();
+		formatter.setExcludedFieldNames(excludedFieldNames);
+		formatter.setQuotedStrings(quotedStrings);
+		formatter.setQuoteChar(quoteChar);
+	}
+
+	/**
 	 * Creates new data formatter.
 	 * 
 	 * @return data formatter
 	 */
 	@Override
-	public Formatter getNewFormatter() {
+	public DataFormatter getNewFormatter() {
 		DataFormatter formatter;
 		if (charEncoder == null) {
 			formatter =	new DataFormatter();
 		} else {
 			formatter =	new DataFormatter(charEncoder);
 		}
-		formatter.setHeader(header);
-		charSet = formatter.getCharsetName();
-		formatter.setExcludedFieldNames(excludedFieldNames);
-		formatter.setQuotedStrings(quotedStrings);
-		formatter.setQuoteChar(quoteChar);
+		initFormatter(formatter);
+		return formatter;
+	}
+	
+	private DataFormatter parent = null;
+	private DataRecordMetadata parentMetadata = null;
+
+	@Override
+	public Formatter getNewSharedFormatter(DataRecordMetadata metadata) {
+		if (parent == null) {
+			parentMetadata = metadata;
+			parent = getNewFormatter();
+		} else if (metadata != parentMetadata) {
+			throw new IllegalArgumentException("Different metadata");
+		}
+		DataFormatter formatter = new DataFormatter(parent);
+		initFormatter(formatter);
 		return formatter;
 	}
 

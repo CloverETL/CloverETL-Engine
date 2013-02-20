@@ -352,7 +352,7 @@ public class TransformationGraphXMLReaderWriter {
 	        //get debug mode
 	        graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
 	        //get debugMaxRecords
-	        graph.setDebugMaxRecords(grfAttributes.getInteger("debugMaxRecords", 0));
+	        graph.setDebugMaxRecords(grfAttributes.getLong("debugMaxRecords", 0));
 	        
 	        graph.setAuthor(grfAttributes.getString(AUTHOR_ATTRIBUTE, null));
 	        graph.setRevision(grfAttributes.getString(REVISION_ATTRIBUTE, null));
@@ -397,6 +397,9 @@ public class TransformationGraphXMLReaderWriter {
 			NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
 			instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
 	
+	        //remove disabled components and their edges
+			TransformationGraphAnalyzer.disableNodesInPhases(graph);
+
 	        return graph;
 		} finally {
 			ContextProvider.unregister();
@@ -490,7 +493,7 @@ public class TransformationGraphXMLReaderWriter {
 			}catch(NumberFormatException ex1){
 				throwXMLConfigurationException("Phase attribute number is not a valid integer.", ex1);
 			} catch (Exception e) {
-				throwXMLConfigurationException("Phase cannot be instantiated.", e);
+				throwXMLConfigurationException(null, e);
 			}
 		}
 	}
@@ -543,7 +546,7 @@ public class TransformationGraphXMLReaderWriter {
 			} catch (AttributeNotFoundException ex) {
 				throwXMLConfigurationException("Missing attribute at node '" + nodeID + "'.", ex);
 			} catch (Exception e) {
-				throwXMLConfigurationException("Node cannot be instantiated.", e);
+				throwXMLConfigurationException(e);
 			}
 		}
 	}
@@ -559,7 +562,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  nodes         Description of Parameter
 	 * @since                May 24, 2002
 	 */
-	private void instantiateEdges(NodeList edgeElements, Map<String, Object> metadata, boolean graphDebugMode, int graphDebugMaxRecords) throws XMLConfigurationException,GraphConfigurationException {
+	private void instantiateEdges(NodeList edgeElements, Map<String, Object> metadata, boolean graphDebugMode, long graphDebugMaxRecords) throws XMLConfigurationException,GraphConfigurationException {
 		String edgeID="unknown";
 		String edgeMetadataID;
 		String fromNodeAttr;
@@ -567,7 +570,7 @@ public class TransformationGraphXMLReaderWriter {
 		String edgeType = null;
         boolean debugMode = false;
         String debugFilterExpression = null;
-        int debugMaxRecords = 0;
+        long debugMaxRecords = 0;
         boolean debugLastRecords = true;
         boolean debugSampleData = false;
         boolean fastPropagate = false;
@@ -595,7 +598,7 @@ public class TransformationGraphXMLReaderWriter {
 			debugMode = attributes.getBoolean("debugMode", false);
             
             if (graphDebugMaxRecords == 0) { // if this value isn't defined for whole graph 
-            	debugMaxRecords = attributes.getInteger("debugMaxRecords", 0);
+            	debugMaxRecords = attributes.getLong("debugMaxRecords", 0);
             } else {
             	debugMaxRecords = graphDebugMaxRecords;
             }
@@ -900,6 +903,10 @@ public class TransformationGraphXMLReaderWriter {
 
 	private void throwXMLConfigurationException(String message) throws XMLConfigurationException {
 		throwXMLConfigurationException(message, null);
+	}
+
+	private void throwXMLConfigurationException(Throwable cause) throws XMLConfigurationException {
+		throwXMLConfigurationException(null, cause);
 	}
 
 	private void throwXMLConfigurationException(String message, Throwable cause) throws XMLConfigurationException {

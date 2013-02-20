@@ -95,10 +95,9 @@ public class XSLTMappingTransition {
 	 */
 	public void init() throws ComponentNotReadyException {
 		transformer = new XSLTransformer();
-		transformer.setXSLT(xslt);
 		transformer.setCharset(charset);
 		try {
-			transformer.init();
+			transformer.init(xslt);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e);
 		}

@@ -34,8 +34,9 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.BasicComponentTokenTracker;
+import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -237,27 +238,24 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           July 23, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ExtFilter filter;
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(xmlElement, graph);
 		
-		try{
-			filter = new ExtFilter(xattribs.getString(XML_ID_ATTRIBUTE));
-			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
-				filter.setFilterExpression(xattribs.getStringEx(XML_FILTEREXPRESSION_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
-			}else{
-				try {
-					filter.setFilterExpression(xattribs.getText(xmlElement, false));
-				} catch (AttributeNotFoundException e) {
-					throw new AttributeNotFoundException(XML_FILTEREXPRESSION_ATTRIBUTE);
-				}
+		filter = new ExtFilter(xattribs.getString(XML_ID_ATTRIBUTE));
+		if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
+			filter.setFilterExpression(xattribs.getStringEx(XML_FILTEREXPRESSION_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+		}else{
+			try {
+				filter.setFilterExpression(xattribs.getText(xmlElement, false));
+			} catch (AttributeNotFoundException e) {
+				throw new AttributeNotFoundException(XML_FILTEREXPRESSION_ATTRIBUTE);
 			}
-			return filter;
-		}catch(Exception ex){
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
+		return filter;
 	}
 
 	/**  Description of the Method */
@@ -275,7 +273,7 @@ public class ExtFilter extends org.jetel.graph.Node {
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

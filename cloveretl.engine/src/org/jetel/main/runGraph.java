@@ -34,8 +34,6 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -55,6 +53,7 @@ import org.jetel.graph.runtime.IThreadManager;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.file.FileUtils;
 
@@ -114,7 +113,7 @@ import org.jetel.util.file.FileUtils;
  * @revision    $Revision$
  */
 public class runGraph {
-    private static Log logger = LogFactory.getLog(runGraph.class);
+    private static Logger logger = Logger.getLogger(runGraph.class);
 
 	public final static String VERBOSE_SWITCH = "-v";
 	public final static String PROPERTY_FILE_SWITCH = "-cfg";
@@ -190,7 +189,7 @@ public class runGraph {
                     properties.load(inStream);
                     additionalProperties.putAll(properties);
                 } catch (IOException ex) {
-                    logger.error(ex.getMessage(), ex);
+                    logger.error(ex);
                     System.exit(-1);
                 }
             } else if (args[i].startsWith(LOG4J_PROPERTY_FILE_SWITCH)) {
@@ -285,7 +284,7 @@ public class runGraph {
             	    @Override
             	    protected PasswordAuthentication getPasswordAuthentication() {
             	        if (getRequestorType() == RequestorType.PROXY) {
-            	            String prot = getRequestingProtocol().toLowerCase();
+            	            String prot = getRequestingURL().getProtocol().toLowerCase();
             	            String host = System.getProperty(prot + ".proxyHost", "");
             	            String port = System.getProperty(prot + ".proxyPort", "");
             	            String user = System.getProperty(prot + ".proxyUser", "");
@@ -342,7 +341,7 @@ public class runGraph {
     		try {
 				runtimeContext.setRuntimeClassPath(FileUtils.getFileUrls(contextURL, classPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
 			} catch (MalformedURLException e) {
-				logger.error("Given classpath is not valid URL. " + e.getMessage(), e);
+				logger.error("Given classpath is not valid URL.", e);
 				System.exit(-1);
 			}
     	}
@@ -350,7 +349,7 @@ public class runGraph {
     		try {
 				runtimeContext.setCompileClassPath(FileUtils.getFileUrls(contextURL, compileClassPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
 			} catch (MalformedURLException e) {
-				logger.error("Given compile classpath is not valid URL. " + e.getMessage(), e);
+				logger.error("Given compile classpath is not valid URL.", e);
 				System.exit(-1);
 			}
     	}
@@ -366,7 +365,7 @@ public class runGraph {
         	try {
             	in = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, graphFileName));
             } catch (IOException e) {
-                logger.error("Error - graph definition file can't be read: " + e.getMessage());
+                logger.error("Error - graph definition file can't be read", e);
                 System.exit(-1);
             }
         }
@@ -415,14 +414,8 @@ public class runGraph {
 				EngineInitializer.initGraph(graph);
 			}
 			futureResult = executeGraph(graph, graph.getRuntimeContext());			
-		} catch (ComponentNotReadyException e) {
-            logger.error("Error during graph initialization !", e);
-            if (graph.getRuntimeContext().isVerboseMode()) {
-                e.printStackTrace(System.err);
-            }
-            System.exit(-1);
-        } catch (RuntimeException e) {
-            logger.error("Error during graph initialization !", e);
+        } catch (Exception e) {
+			ExceptionUtils.logException(logger, "Error during graph initialization !", e);
             if (graph.getRuntimeContext().isVerboseMode()) {
                 e.printStackTrace(System.err);
             }
@@ -433,13 +426,13 @@ public class runGraph {
 		try {
 			result = futureResult.get();
 		} catch (InterruptedException e) {
-            logger.error("Graph was unexpectedly interrupted !", e);
+			ExceptionUtils.logException(logger, "Graph was unexpectedly interrupted !", e);
             if (graph.getRuntimeContext().isVerboseMode()) {
                 e.printStackTrace(System.err);
             }
             System.exit(-1);
 		} catch (ExecutionException e) {
-            logger.error("Error during graph processing !", e);
+			ExceptionUtils.logException(logger, "Error during graph processing !", e);
             if (graph.getRuntimeContext().isVerboseMode()) {
                 e.printStackTrace(System.err);
             }

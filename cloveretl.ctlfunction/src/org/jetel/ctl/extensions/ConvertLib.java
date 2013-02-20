@@ -89,6 +89,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			"json2xml".equals(functionName) ? new Json2XmlFunction() : 
 		    "md5".equals(functionName) ? new MD5Function() : 
 		    "sha".equals(functionName) ? new SHAFunction() : 
+			"sha256".equals(functionName) ? new SHA256Function() : 
 		    "getFieldName".equals(functionName) ? new GetFieldNameFunction() : 
 		    "getFieldType".equals(functionName) ? new GetFieldTypeFunction() : 
 			null;
@@ -413,7 +414,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			return formatter.parseInt(input);
 		} catch (ParseException e) {
 			throw new TransformLangExecutorRuntimeException("str2integer - can't convert \"" + input + "\" " + 
-					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : "") + " - " + e.getMessage());
+					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : ""), e);
 		}
 	}
 	
@@ -432,7 +433,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseInt(input);
 		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("str2integer - can't convert \"" + input + "\" - " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("str2integer - can't convert \"" + input + "\"", e);
 		}
 	}
 	class Str2IntegerFunction implements TLFunctionPrototype {
@@ -478,7 +479,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			return formatter.parseLong(input);
 		} catch (ParseException e) {
 			throw new TransformLangExecutorRuntimeException("str2long - can't convert \"" + input + "\" " + 
-					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : "" + " - " + e.getMessage()));
+					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : ""), e);
 		}
 	}
 	
@@ -496,7 +497,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseLong(input);
 		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("str2long - can't convert \"" + input + "\" - " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("str2long - can't convert \"" + input + "\"", e);
 		}
 	}
 	class Str2LongFunction implements TLFunctionPrototype {
@@ -542,7 +543,7 @@ public class ConvertLib extends TLFunctionLibrary {
 			return formatter.parseDouble(input);
 		} catch (ParseException e) {
 			throw new TransformLangExecutorRuntimeException("str2double - can't convert \"" + input + "\" " + 
-					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : "") + " - " + e.getMessage());
+					"with format \"" + format +  "\"" + (locale != null ? " and locale \"" + locale + "\"" : ""), e);
 		}
 	}
 	
@@ -556,7 +557,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseDouble(input);
 		} catch (ParseException e) {
-			throw new TransformLangExecutorRuntimeException("str2double - can't convert \"" + input + "\" - " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("str2double - can't convert \"" + input + "\"", e);
 		}
 	}
 	class Str2DoubleFunction implements TLFunctionPrototype {
@@ -1160,7 +1161,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return XML.toJSONObject(xml).toString();
 		} catch (JSONException e) {
-			throw new TransformLangExecutorRuntimeException("xml2json - can't convert \"" + xml + "\": " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("xml2json - can't convert \"" + xml + "\"", e);
 		}
 	}
 	
@@ -1184,7 +1185,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return XML.toString(new JSONObject(json));
 		} catch (JSONException e) {
-			throw new TransformLangExecutorRuntimeException("json2xml - can't convert \"" + json + "\": " + e.getMessage());
+			throw new TransformLangExecutorRuntimeException("json2xml - can't convert \"" + json + "\"", e);
 		}
 	}
 	
@@ -1253,6 +1254,33 @@ public class ConvertLib extends TLFunctionLibrary {
 				stack.push(sha(context, stack.popString()));
 			} else {
 				stack.push(sha(context, stack.popByteArray()));
+			}
+		}
+	}
+
+	@TLFunctionAnnotation("Calculates SHA-256 hash of input bytes.")
+	public static final byte[] sha256(TLFunctionCallContext context, byte[] src) {
+		return Digest.digest(DigestType.SHA256, src);
+	}
+	
+	@TLFunctionAnnotation("Calculates SHA-256 hash of input string.")
+	public static final byte[] sha256(TLFunctionCallContext context, String src) {
+		return Digest.digest(DigestType.SHA256, src);
+	}
+	
+	// SHA-256
+	class SHA256Function implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if(context.getParams()[0].isString()) {
+				stack.push(sha256(context, stack.popString()));
+			} else {
+				stack.push(sha256(context, stack.popByteArray()));
 			}
 		}
 	}

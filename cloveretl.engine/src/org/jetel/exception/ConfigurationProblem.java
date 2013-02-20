@@ -22,7 +22,7 @@ import org.apache.commons.logging.Log;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.IGraphElement;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -163,7 +163,7 @@ public class ConfigurationProblem {
     public String toString() {
 		String result = createMessage();
     	if (getCauseException() != null) {
-    		result += "\n" + MiscUtils.stackTraceToString(getCauseException());
+    		result += "\n" + ExceptionUtils.stackTraceToString(getCauseException());
     	}
     	
     	return result;

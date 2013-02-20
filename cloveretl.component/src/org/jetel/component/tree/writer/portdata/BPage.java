@@ -920,7 +920,7 @@ final class BPage<K, V> implements Serializer<BPage<K, V>> {
 			}
 
 		} catch (ClassNotFoundException except) {
-			throw new IOException(except.getMessage());
+			throw new IOException(except);
 		}		
 				
 		if (bpage._isLeaf) {

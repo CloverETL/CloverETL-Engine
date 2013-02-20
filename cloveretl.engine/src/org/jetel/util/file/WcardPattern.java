@@ -47,13 +47,13 @@ import org.jetel.enums.ArchiveType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.Pair;
+import org.jetel.util.protocols.ProxyConfiguration;
 import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.ftp.FTPConnection;
 import org.jetel.util.protocols.proxy.ProxyHandler;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
 import org.jetel.util.protocols.sftp.SFTPConnection;
-import org.jetel.util.protocols.webdav.ProxyConfiguration;
 import org.jetel.util.protocols.webdav.WebdavClient;
 import org.jetel.util.protocols.webdav.WebdavClientImpl;
 import org.jetel.util.string.StringUtils;
@@ -518,15 +518,11 @@ public class WcardPattern {
      * Gets list of file names or an original name from file system. 
      * @param fileName
      * @return
+     * @throws MalformedURLException for unknown protocols, see CL-2667
      */
-	private List<String> resolveAndSetFileNames(String fileName) {
+	private List<String> resolveAndSetFileNames(String fileName) throws MalformedURLException {
 		// check if the filename is a file or something else
-		URL url = null;
-		try {
-			url = FileUtils.getFileURL(parent, fileName);
-		} catch (MalformedURLException e) {
-			// NOTHING
-		}
+		URL url = FileUtils.getFileURL(parent, fileName); // CL-2667: may throw MalformedURLException
 		
 		// try CustomPathResolvers first
 		for (CustomPathResolver resolver : FileUtils.getCustompathresolvers()) {
@@ -821,8 +817,6 @@ public class WcardPattern {
 			// return original name
 			logger.debug("SFTP wildcard resolution failed", e);
 			mfiles.add(url.toString());
-		} finally {
-			if (sftpConnection != null) sftpConnection.disconnect();
 		}
 		
 		return mfiles;

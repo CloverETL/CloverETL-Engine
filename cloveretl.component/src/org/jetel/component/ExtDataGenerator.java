@@ -31,6 +31,7 @@ import org.jetel.exception.TransformException;
 import org.jetel.graph.Result;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.string.StringUtils;
@@ -60,7 +61,7 @@ public class ExtDataGenerator extends DataGenerator {
 	private String generatorClassName;
 	private String generatorURL;
 	private String charset;
-	private int recordsNumber;
+	private long recordsNumber;
 
 	// data generator
 	private Properties generateParameters;
@@ -72,7 +73,7 @@ public class ExtDataGenerator extends DataGenerator {
 	 * @param generate
 	 * @param recordsNumber
 	 */
-	public ExtDataGenerator(String id, RecordGenerate generate, int recordsNumber) {
+	public ExtDataGenerator(String id, RecordGenerate generate, long recordsNumber) {
 		super(id);
 		this.generatorClass = generate;
 		this.recordsNumber = recordsNumber;
@@ -84,7 +85,7 @@ public class ExtDataGenerator extends DataGenerator {
 	 * @param recordsNumber
 	 */
 	public ExtDataGenerator(String id, String generate, String generateClass,
-			String generateURL, int recordsNumber) {
+			String generateURL, long recordsNumber) {
 		super(id);
 		this.generatorSource = generate;
 		this.generatorClassName = generateClass;
@@ -151,7 +152,7 @@ public class ExtDataGenerator extends DataGenerator {
 	 * @throws Exception
 	 */
 	private void executeGenerate(DataRecord[] outRecord) throws Exception {
-		for (int i = 0; i < recordsNumber && runIt; i++) {
+		for (long i = 0; (recordsNumber < 0 || i < recordsNumber) && runIt; i++) {
 			for (DataRecord oRecord : outRecord)
 				oRecord.reset();
 			int transformResult = -1;
@@ -174,6 +175,8 @@ public class ExtDataGenerator extends DataGenerator {
 				writeRecord(transformResult, outRecord[transformResult]);
 			} else if (transformResult == RecordTransform.SKIP) {
 				// DO NOTHING - skip the record
+			} else if (transformResult == RecordTransform.STOP && recordsNumber < 0) {
+				break; // successful termination
 			} else {
 				throw new TransformException(
 						"Transformation finished with code: " + transformResult
@@ -191,7 +194,7 @@ public class ExtDataGenerator extends DataGenerator {
 	 * @throws Exception
 	 */
 	private void executeAutoFilling(DataRecord[] outRecord) throws Exception {
-		for (int i = 0; i < recordsNumber && runIt; i++) {
+		for (long i = 0; i < recordsNumber && runIt; i++) {
 			for (int outPort = 0; outPort < outRecord.length; outPort++) {
 				autoFilling.setLastUsedAutoFillingFields(outRecord[outPort]);
 				writeRecord(outPort, outRecord[outPort]);
@@ -290,7 +293,7 @@ public class ExtDataGenerator extends DataGenerator {
 				getTransformFactory().checkConfig(status);
 			}
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());

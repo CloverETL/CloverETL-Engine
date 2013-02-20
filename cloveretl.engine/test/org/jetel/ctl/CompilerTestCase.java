@@ -3585,6 +3585,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(Arrays.equals((byte[])getVariable("shaHash2"), Digest.digest(DigestType.SHA, BYTEARRAY_VALUE)));
 	}
 
+	public void test_convertlib_sha256() {
+		doCompile("test_convertlib_sha256");
+		assertTrue(Arrays.equals((byte[])getVariable("shaHash1"), Digest.digest(DigestType.SHA256, "The quick brown fox jumps over the lazy dog")));
+		assertTrue(Arrays.equals((byte[])getVariable("shaHash2"), Digest.digest(DigestType.SHA256, BYTEARRAY_VALUE)));
+	}
+
 	public void test_convertlib_str2bits() {
 		doCompile("test_convertlib_str2bits");
 		//TODO: uncomment -> test will pass, but is that correct?

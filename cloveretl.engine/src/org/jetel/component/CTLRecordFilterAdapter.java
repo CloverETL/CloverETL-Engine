@@ -66,9 +66,9 @@ public class CTLRecordFilterAdapter implements RecordFilter {
 			global();
 		} catch (TransformLangExecutorRuntimeException e) {
 			if (logger != null) {
-				logger.warn("Failed to initialize global scope: " + e.getMessage());
+				logger.warn("Failed to initialize global scope", e);
 			}
-			throw new ComponentNotReadyException("Failed to initialize global scope",e);
+			throw new ComponentNotReadyException("Failed to initialize global scope", e);
 		}
 		
  	}

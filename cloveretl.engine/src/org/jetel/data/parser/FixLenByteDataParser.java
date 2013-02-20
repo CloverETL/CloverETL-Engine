@@ -195,7 +195,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 				inChannel.read(byteBuffer.buf());				// write to buffer
 				byteBuffer.flip();						// prepare buffer for reading
 			} catch (IOException e) {
-				throw new JetelException(e.getMessage());
+				throw new JetelException(e);
 			}
 			dataPos = 0;
 			dataLim = byteBuffer.limit();

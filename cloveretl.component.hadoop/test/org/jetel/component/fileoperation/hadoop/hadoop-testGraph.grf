@@ -16,9 +16,7 @@
 <Field name="field1" type="integer"/>
 </Record>
 </Metadata>
-<Connection config="cdh_3u4.cfg" id="CDH3U4" type="HADOOP"/>
-<Connection config="cdh_3u5.cfg" id="CDH3U5" type="HADOOP"/>
-<Connection config="cdh_4-1-1.cfg" id="CDH411" type="HADOOP"/>
+<Connection config="cdh_3u5.cfg" id="CDH_3U5" type="HADOOP"/>
 <Connection config="cdh_4-1-2.cfg" id="CDH412" type="HADOOP"/>
 <Property id="GraphParameter0" name="ENCODING" value="UTF-8"/>
 <Dictionary/>

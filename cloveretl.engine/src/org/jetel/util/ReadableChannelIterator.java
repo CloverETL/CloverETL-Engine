@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -224,25 +225,15 @@ public class ReadableChannelIterator {
 		// read from fields
 		if (currentPortProtocolPosition == firstPortProtocolPosition) {
 			try {
-				ReadableByteChannel channel = portReadingIterator.getNextData();
+				Object dataSource = portReadingIterator.getNextData(preferredDataSourceType);
 				currentFileName = portReadingIterator.getCurrentFileName();
-				//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
-				if (preferredDataSourceType == DataSourceType.URI) {
-					try {
-						return new URI(currentFileName);
-	        		} catch(URISyntaxException ex){
-	        			throw new JetelException("Invalid fileURL - "+ex.getMessage(),ex);
-	        		} catch (Exception e) {
-						//DO NOTHING - just use the regular channel
-					}
-				} 
-				return channel;
+				return dataSource;
 			} catch (NullPointerException e) {
 				throw new JetelException("The field '" + portReadingIterator.getLastFieldName() + "' contain unsupported null value.");
 			} catch (UnsupportedEncodingException e) {
-				throw new JetelException("The field '" + portReadingIterator.getLastFieldName() + "' contain an value that cannot be translated by " + charset + " charset." );
+				throw new JetelException("The field '" + portReadingIterator.getLastFieldName() + "' contain a value that cannot be translated by " + charset + " charset." );
 			} catch (Exception e) {
-				throw new JetelException("Port reading error: " + e.getMessage(), e);
+				throw new JetelException("Port reading error", e);
 			}
 		}
 		
@@ -256,34 +247,18 @@ public class ReadableChannelIterator {
 				dictionaryReadingIterator.init(currentFileName);
 				return next();
 			}
-			currentFileName = unificateFileName(currentFileName);
-
+			currentFileName = unificateFileName(contextURL, currentFileName);
 			
-			//sometimes source in form of 'java.io.File' is preferred instead of providing an anonymous channel
-			if (preferredDataSourceType == DataSourceType.FILE) {
-				try {
-					return FileUtils.getJavaFile(contextURL, currentFileName);
-				} catch (Exception e) {
-					//DO NOTHING - just try to prepare a data source in other way
-				}
-			}
-			
-			//sometimes source in form of 'java.net.URI' is preferred instead of providing an anonymous channel
-			if (preferredDataSourceType == DataSourceType.URI) {
-				try {
-					return new URI(currentFileName);
-        		} catch(URISyntaxException ex){
-        			throw new JetelException("Invalid fileURL - "+ex.getMessage(),ex);
-        		} catch (Exception e) {
-					//DO NOTHING - just try to open a stream based on the currentFileName in the next step
-				}
+			Object preferredDataSoutce = getPreferredDataSource(contextURL, currentFileName, preferredDataSourceType);
+			if (preferredDataSoutce != null) {
+				return preferredDataSoutce;
 			}
 			
 			return createReadableByteChannel(currentFileName);
 		}
 		return null;
 	}
-
+	
 	/**
 	 * @return first ReadableByteChannel in the queue of sources (the other types are skipped)
 	 * @throws JetelException
@@ -296,26 +271,69 @@ public class ReadableChannelIterator {
 		return (ReadableByteChannel) source;
 	}
 	
-	private String unificateFileName(String fileName) {
+	static String unificateFileName(URL contextURL, String fileName) {
 		try {
-			// standard console -> do nothing
-			if (currentFileName.equals(FileUtils.STD_CONSOLE)) return currentFileName;
-
-			// remote file -> do nothing
-			if (FileURLParser.isServerURL(fileName) || FileURLParser.isArchiveURL(fileName)) return currentFileName;
-			
 			// unify only local files
-			//URL fileURL = FileUtils.getFileURL(contextURL, currentFileName);
-			URL fileURL = CloverURI.createSingleURI(contextURL.toURI(), currentFileName).toURI().toURL();
-			
-			if ( fileURL.getProtocol().equals(PROTOCOL_FILE)) {
+			URI fileURI = getFileURI(contextURL, fileName);
+			if (fileURI != null) {
+				URL fileURL = fileURI.toURL();
 				String sPath = fileURL.getRef() != null ? fileURL.getFile() + "#" + fileURL.getRef() : fileURL.getFile();
-				currentFileName = new File(sPath).getCanonicalFile().toString();
+				fileName = new File(sPath).getCanonicalFile().toString();
 			}
 		} catch (Exception e) {
 			//NOTHING
 		}
-		return currentFileName;
+		return fileName;
+	}
+	
+	/**
+	 * Returns absolute URI with "file" scheme if currentFileName is considered to be a path to a local file.
+	 * @param contextURL
+	 * @param currentFileName
+	 * @return file:/ URI or null 
+	 */
+	private static URI getFileURI(URL contextURL, String fileName) throws MalformedURLException, URISyntaxException {
+		if (fileName.equals(FileUtils.STD_CONSOLE)) return null;
+
+		if (FileURLParser.isServerURL(fileName) || FileURLParser.isArchiveURL(fileName)) return null;
+		
+		URI fileURI = CloverURI.createSingleURI(contextURL != null ? contextURL.toURI() : null, fileName).toURI();
+		return PROTOCOL_FILE.equals(fileURI.getScheme()) ? fileURI : null;
+	}
+	
+	/**
+	 * Handles creation of preferred data source form like 'java.io.File' or 'java.net.URI' which are
+	 * sometimes needed instead of an anonymous channel.
+	 * @return preferred data source or null if no preferred data source specified or it could not be created.
+	 * @throws JetelException hmmmf TODO Here is the place where exception with good informative message can be thrown.
+	 * If we just fall back to Channel which the parser wouldn't support, the parser has no chance to give a good error message,
+	 * only some kind of "Unsupported data source"
+	 */
+	static Object getPreferredDataSource(URL contextURL, String currentFileName, DataSourceType preferredDataSourceType) throws JetelException {
+		if (preferredDataSourceType == DataSourceType.FILE) {
+			try {
+				File file = FileUtils.getJavaFile(contextURL, currentFileName);
+				return file;
+			} catch (Exception e) {
+				//DO NOTHING - just try to prepare a data source in other way
+			}
+		}
+		
+		if (preferredDataSourceType == DataSourceType.URI) {
+			try {
+				try {
+					return CloverURI.createSingleURI(contextURL != null ? contextURL.toURI() : null, currentFileName).getAbsoluteURI().toURI();
+				} catch (Exception e) {
+					// ignore
+				}
+				return new URI(currentFileName);
+			} catch (URISyntaxException ex) {
+				throw new JetelException("Invalid fileURL", ex);
+			} catch (Exception e) {
+				// DO NOTHING - just try to open a stream based on the currentFileName in the next step
+			}
+		}
+		return null;
 	}
 	
 	/**

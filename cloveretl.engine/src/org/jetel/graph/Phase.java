@@ -17,23 +17,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.graph;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.CompoundException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.util.MiscUtils;
+import org.jetel.util.ExceptionUtils;
 
 
 /**
@@ -135,22 +136,22 @@ public class Phase extends GraphElement implements Comparable {
         if(isInitialized()) return;
 		super.init();
 
-		logger.info("[Clover] Initializing phase: " + phaseNum);
+		logger.info("Initializing phase " + phaseNum);
 
         //initialization of all edges
-		logger.debug(" initializing edges: ");
+		logger.debug("Initializing edges");
         for (Edge edge : edges.values()) {
         	try {
         		edge.init();
         	} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
-        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization failed.", e);
+        		throw new ComponentNotReadyException(this, "Edge " + edge + " initialization failed.", e);
         	}
         }
-		logger.debug(" all edges initialized successfully... ");
+		logger.debug("All edges initialized successfully.");
 
 		// iterate through all nodes and initialize them
-		logger.debug(" initializing nodes: ");
+		logger.debug("Initializing nodes");
 		for (Node node : nodes.values()) {
 			ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 
@@ -159,26 +160,21 @@ public class Phase extends GraphElement implements Comparable {
 				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
 				node.init();
 				logger.debug("\t" + node.getId() + " ...OK");
-			} catch (ComponentNotReadyException ex) {
-				node.setResultCode(Result.ERROR);
-				result = Result.ERROR;
-				throw new ComponentNotReadyException(node, "FAILED !", ex);
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node, "FATAL ERROR !", ex);
+				throw new ComponentNotReadyException(node, "Component " + node + " initilization failed.", ex);
 			} catch (Throwable ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node, "FATAL ERROR !", new JetelRuntimeException(ex));
+				throw new ComponentNotReadyException(node, "FATAL: Component " + node + " initilization failed.", new JetelRuntimeException(ex));
 			} finally {
 				Thread.currentThread().setContextClassLoader(formerClassLoader);
 				ContextProvider.unregister();
 			}
 		}
         
-
-		logger.info("[Clover] phase: " + phaseNum + " initialized successfully.");
+		logger.info("Phase " + phaseNum + " initialized successfully.");
 		
         result = Result.READY;
 		// initialized OK
@@ -197,27 +193,11 @@ public class Phase extends GraphElement implements Comparable {
         		edge.preExecute();
         	} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
-        		throw new ComponentNotReadyException(this, "Edge " + edge.getId() + " initialization failed.", e);
+        		throw new ComponentNotReadyException(this, "Edge " + edge + " pre-execution failed.", e);
         	}
         }
 
-		//nodes are pre-executed at theirs own threads
-		// iterate through all nodes and initialize them
-//		logger.debug(" pre-execute initializing nodes: ");
-//		for(Node node : nodes.values()) {
-//			try {
-//				node.preExecute();
-//				logger.debug("\t" + node.getId() + " ...OK");
-//			} catch (ComponentNotReadyException ex) {
-//				node.setResultCode(Result.ERROR);
-//				result = Result.ERROR;
-//				throw new ComponentNotReadyException(node.getId() + " ...FAILED ! \nReason: " +  ex.getMessage(), ex);
-//			} catch (Exception ex) {
-//				node.setResultCode(Result.ERROR);
-//				result = Result.ERROR;
-//				throw new ComponentNotReadyException(node.getId() + " ...FATAL ERROR !\nReason: " +  ex.getMessage(), ex);
-//			}
-//		}
+		//NOTE: nodes are pre-executed at theirs own threads
 	}
 	
 	@Override
@@ -247,39 +227,32 @@ public class Phase extends GraphElement implements Comparable {
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 
-		logger.info("[Clover] Post-execute phase finalization: " + phaseNum);
-
-		Map<IGraphElement, Exception> failedElements = new HashMap<IGraphElement, Exception>();
+		logger.debug("Phase " + phaseNum + " post-execution");
+		List<Exception> exceptions = new ArrayList<Exception>();
+		
 		// post-execute finalization of all edges
-		logger.debug(" post-execute edges finalizing: ");
+		logger.debug("Edges post-execution");
 		for (Edge edge : edges.values()) {
 			try {
 				edge.postExecute();
 			} catch (ComponentNotReadyException e) {
 				result = Result.ERROR;
-				failedElements.put(edge, e);
-				logger.error("Edge " + edge.getId() + " finalization failed.", e);
+				exceptions.add(new ComponentNotReadyException(edge, "Edge " + edge + " post-execution failed.", e));
 			}
 		}
-		logger.debug(" edges finalized " + (failedElements.size() != 0 ? "with errors... " : "successfully... "));
+		logger.debug("Edges post-execution " + (exceptions.size() != 0 ? "failed." : "success."));
 
 		// iterate through all nodes and finalize them
-		logger.debug(" post-execute nodes finalizing: ");
+		logger.debug("Components post-execution");
 		for (Node node : nodes.values()) {
 			try {
 				ContextProvider.registerNode(node);
 				node.postExecute();
 				logger.debug("\t" + node.getId() + " ...OK");
-			} catch (ComponentNotReadyException ex) {
-				node.setResultCode(Result.ERROR);
-				result = Result.ERROR;
-				failedElements.put(node, ex);
-				logger.error(node.getId() + " ...FAILED ! \nReason: " + ex.getMessage(), ex);
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				failedElements.put(node, ex);
-				logger.error(node.getId() + " ...FATAL ERROR !\nReason: " + ex.getMessage(), ex);
+				exceptions.add(new ComponentNotReadyException(node, "Component " + node + " post-execution failed.", ex));
 			} finally {
 				ContextProvider.unregister();
 			}
@@ -287,16 +260,10 @@ public class Phase extends GraphElement implements Comparable {
 		
 		getGraph().getVfsEntries().freeAll(); // close all zip files - moved from TransformationGraph.free()
 		
-		if (failedElements.isEmpty()) {
-			logger.info("[Clover] phase: " + phaseNum + " post-execute finalization successfully.");
+		if (exceptions.isEmpty()) {
+			logger.debug("Phase " + phaseNum + " post-execution succeeded.");
 		} else {
-			StringBuffer sb = new StringBuffer();
-			sb.append("[Clover] phase: ").append(phaseNum).append(" post-execute FAILED at following elements:");
-			for (Entry<IGraphElement, Exception> element : failedElements.entrySet()) {
-				sb.append('\n');
-				sb.append(element.getKey().getId()).append(": ").append(MiscUtils.exceptionChainToMessage(null, element.getValue()));
-			}
-			throw new ComponentNotReadyException(this, sb.toString());
+			throw new CompoundException("Phase " + phaseNum + " post-execution failed.", exceptions.toArray(new Exception[0]));
 		}
 	}
 	
@@ -350,7 +317,7 @@ public class Phase extends GraphElement implements Comparable {
         	try {
         		node.checkConfig(status);
         	} catch (Exception e) {
-        		ConfigurationProblem problem = new ConfigurationProblem("Unexpected error: " + e.getMessage(), Severity.ERROR, node, Priority.HIGH);
+        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, node, Priority.HIGH);
         		problem.setCauseException(e);
         		status.add(problem);
         	}

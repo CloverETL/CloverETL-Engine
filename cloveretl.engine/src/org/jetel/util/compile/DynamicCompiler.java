@@ -96,11 +96,11 @@ public final class DynamicCompiler {
 	 */
 	public Class<?> compile(String sourceCode, String className) throws CompilationException {
 		if (sourceCode == null) {
-			throw new NullPointerException("sourceCode");
+			throw new NullPointerException("sourceCode is null!");
 		}
 
 		if (className == null) {
-			throw new NullPointerException("className");
+			throw new NullPointerException("className is null!");
 		}
 
 		final Set<URL> extraLibraries = getExtraLibraries();

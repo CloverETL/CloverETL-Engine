@@ -72,7 +72,42 @@ public class FileUtilsTest extends CloverTestCase {
 	
 			String result7 = FileUtils.normalizeFilePath(FileUtils.getFile(new URL("file:c:/project/"), "c:/other Project/data.txt"));
 			assertEquals("c:/other Project/data.txt", result7);
+			
+			URL result8 = FileUtils.getFileURL("C:/Windows", "C:/Users");
+			assertEquals(new URL("file:/C:/Users"), result8);
+			
+			{
+				URL result;
+				
+//				result = FileUtils.getFileURL("jar:file:/home/duke/duke.jar!/", "baz/entry.txt");
+//				assertEquals(new URL("jar:file:/home/duke/duke.jar!/baz/entry.txt"), result);
+//
+//				result = FileUtils.getFileURL((URL) null, "jar:file:/home/duke/duke.jar!/");
+//				assertEquals(new URL("jar:file:/home/duke/duke.jar!/"), result);
+				
+				result = FileUtils.getFileURL((URL) null, "jar:file:/C:/proj/parser/jar/parser.jar!/test");
+				assertEquals(new URL("jar:file:/C:/proj/parser/jar/parser.jar!/test"), result);
+
+				result = FileUtils.getFileURL(new URL("jar:file:/C:/proj/parser/jar/parser.jar!/"), "test");
+				assertEquals(new URL("jar:file:/C:/proj/parser/jar/parser.jar!/test"), result);
+			}
+
     	}
+
+    	try {
+			FileUtils.getFileURL("C:/Windows", "unknownprotocol://home/agad/fileManipulation/graph/");
+			fail("MalformedURLException expected");
+		} catch (MalformedURLException ex) {}
+
+		try {
+			FileUtils.getFileURL("unknownprotocol://home/agad/fileManipulation/graph/", "home/user");
+			fail("MalformedURLException expected");
+		} catch (MalformedURLException ex) {}
+
+		try {
+			FileUtils.getFileURL("C:/Windows", "unknownprotocol:(C:/Users/file.txt)");
+			fail("MalformedURLException expected");
+		} catch (MalformedURLException ex) {}
 	}
 	
 	public void testGetFileURLLinux() throws MalformedURLException {
@@ -184,6 +219,37 @@ public class FileUtilsTest extends CloverTestCase {
 
 		fileURL = FileUtils.getFileURL(new URL("file:/home/user/workspace/myproject/"), "sftp://user:password@server:123/myfile.txt");
 		assertEquals(new URL(null, "sftp://user:password@server:123/myfile.txt", new SFTPStreamHandler()), fileURL);
+		
+		fileURL = FileUtils.getFileURL(new URL("jar:file:/clover-executor/clover-executor-86.0.0-SNAPSHOT.jar!/com/gooddata/clover"), "/home/test");
+		assertEquals(new URL("file:/home/test"), fileURL);
+
+		fileURL = FileUtils.getFileURL(new URL("http://www.cloveret.com/clover"), "/home/test");
+		assertEquals(new URL("file:/home/test"), fileURL);
+
+		try {
+			FileUtils.getFileURL("/home/user", "unknownprotocol://home/agad/fileManipulation/graph/");
+			fail("MalformedURLException expected");
+		} catch (MalformedURLException ex) {}
+
+		try {
+			FileUtils.getFileURL("unknownprotocol://home/agad/fileManipulation/graph/", "home/user");
+			fail("MalformedURLException expected");
+		} catch (MalformedURLException ex) {}
+
+		try {
+			FileUtils.getFileURL("/home/user", "unknownprotocol:(/home/test)");
+			fail("MalformedURLException expected");
+		} catch (MalformedURLException ex) {}
+
+		{
+			URL result;
+			
+			result = FileUtils.getFileURL("jar:file:/home/duke/duke.jar!/", "baz/entry.txt");
+			assertEquals(new URL("jar:file:/home/duke/duke.jar!/baz/entry.txt"), result);
+
+			result = FileUtils.getFileURL((URL) null, "jar:file:/home/duke/duke.jar!/");
+			assertEquals(new URL("jar:file:/home/duke/duke.jar!/"), result);
+		}
 	}
 
 // this issue was commented out due low priority and non-trivial possible fix

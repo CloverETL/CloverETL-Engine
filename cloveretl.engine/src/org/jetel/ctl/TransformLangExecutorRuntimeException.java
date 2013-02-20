@@ -20,6 +20,7 @@ package org.jetel.ctl;
 
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.SimpleNode;
+import org.jetel.exception.JetelRuntimeException;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -45,7 +46,8 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
     
     @SuppressWarnings(value="EI2")
     public TransformLangExecutorRuntimeException(SimpleNode node,Object[] arguments,String message,Throwable cause){
-        super(message,cause);
+    	//that is the way how to ensure that the given message is printed out to the graph log as follow-up exception, on separate line - better chain of messages layout
+        super(new JetelRuntimeException(message, cause)); 
         this.nodeInError=node;
         this.arguments=arguments;
     }
@@ -108,19 +110,6 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
         	}
             strBuf.append(" on line ").append(nodeInError.getLine());
             strBuf.append(" column ").append(nodeInError.getColumn());
-        }
-        if (super.getMessage() != null) {
-            strBuf.append(" - ");
-        	strBuf.append(super.getMessage());
-        }
-        if (super.getCause() != null) {
-        	if (getCause() instanceof NullPointerException) {
-                strBuf.append(" - ");
-        		strBuf.append("Unexpected null value.");
-        	}
-        	if (super.getCause().getMessage() != null) {
-        		strBuf.append(" - '").append(super.getCause().getMessage()).append("'");
-        	}
         }
 		if (arguments != null) {
 			for(int i = 0; i < arguments.length; i++) {

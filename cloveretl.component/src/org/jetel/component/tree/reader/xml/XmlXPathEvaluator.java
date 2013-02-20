@@ -57,7 +57,7 @@ public class XmlXPathEvaluator implements XPathEvaluator {
 	 */
 	private IndependentContext context = new IndependentContext();
 	public XmlXPathEvaluator() {
-		FunctionLibrary javaFunctionLibrary = evaluator.getConfiguration().getExtensionBinder();
+		FunctionLibrary javaFunctionLibrary = evaluator.getConfiguration().getExtensionBinder("java");
 		Configuration.getPlatform().declareJavaClass(javaFunctionLibrary, TAG_NAME_FUNCTIONS_NAMESPACE_URI, TagName.class);
 	}
 	

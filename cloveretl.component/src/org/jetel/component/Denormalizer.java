@@ -34,6 +34,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -405,7 +406,7 @@ public class Denormalizer extends Node {
         	try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
         }
     }
@@ -441,7 +442,7 @@ public class Denormalizer extends Node {
 			}
     	}
     	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    		throw new ComponentNotReadyException(e);
     	}
     }
 
@@ -510,8 +511,9 @@ public class Denormalizer extends Node {
 	 * @param xmlElement
 	 * @return
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Denormalizer denorm;
 
@@ -530,36 +532,32 @@ public class Denormalizer extends Node {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + "unknown input order: '" + orderString + "'");				
 		}
 
-		try {
-			denorm = new Denormalizer(
-					xattribs.getString(XML_ID_ATTRIBUTE),					
-					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
-					parseKeyList(xattribs.getString(XML_KEY_ATTRIBUTE, null)),
-					order
-					);
-			denorm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-			denorm.setTransformationParameters(xattribs.attributes2Properties(
-					new String[] { XML_ID_ATTRIBUTE,
-							XML_TRANSFORM_ATTRIBUTE,
-							XML_TRANSFORMCLASS_ATTRIBUTE, }));
-			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
-				denorm.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
-				denorm.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_SIZE_ATTRIBUTE)) {
-				denorm.setGroupSize(xattribs.getInteger(XML_SIZE_ATTRIBUTE));
-			}
-
-			denorm.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
-
-			return denorm;
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		denorm = new Denormalizer(
+				xattribs.getString(XML_ID_ATTRIBUTE),					
+				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
+				parseKeyList(xattribs.getString(XML_KEY_ATTRIBUTE, null)),
+				order
+				);
+		denorm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+		denorm.setTransformationParameters(xattribs.attributes2Properties(
+				new String[] { XML_ID_ATTRIBUTE,
+						XML_TRANSFORM_ATTRIBUTE,
+						XML_TRANSFORMCLASS_ATTRIBUTE, }));
+		if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+			denorm.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
 		}
+		if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+			denorm.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_SIZE_ATTRIBUTE)) {
+			denorm.setGroupSize(xattribs.getInteger(XML_SIZE_ATTRIBUTE));
+		}
+
+		denorm.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
+
+		return denorm;
 	}
 	
 	/**

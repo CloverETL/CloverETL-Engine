@@ -181,7 +181,7 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		try {
 			setJetel(resultSet);
 		} catch (SQLException ex) {
-			throw new SQLException(ex.getMessage() + " with field '" + field.getMetadata().getName() + "'");
+			throw new SQLException("Error on field '" + field.getMetadata().getName() + "'", ex);
 		} catch (ClassCastException ex){
 		    throw new SQLException("Incompatible Clover & JDBC field types - field '"+field.getMetadata().getName()+
 		            "'; Clover type: "+SQLUtil.jetelType2Str(field.getMetadata().getType()) + "; SQL type: " + SQLUtil.sqlType2str(getSqlType()));
@@ -202,10 +202,10 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		try {
 			setSQL(pStatement);
 		} catch (SQLException ex) {
-			throw new SQLException(ex.getMessage() + " with field '" + field.getMetadata().getName() + "'", ex);
+			throw new SQLException("Error on field '" + field.getMetadata().getName() + "'", ex);
 		}catch (ClassCastException ex){
 		    throw new SQLException("Incompatible Clover & JDBC field types - field '"+field.getMetadata().getName()+
-		            "'; Clover type: "+SQLUtil.jetelType2Str(field.getMetadata().getType()) + "; SQL type: " + SQLUtil.sqlType2str(getSqlType()));
+		            "'; Clover type: "+SQLUtil.jetelType2Str(field.getMetadata().getType()) + "; SQL type: " + SQLUtil.sqlType2str(getSqlType()), ex);
 		}
 	}
 

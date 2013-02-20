@@ -43,6 +43,7 @@ import org.jetel.data.reader.IInputReader.InputOrdering;
 import org.jetel.data.reader.SlaveReader;
 import org.jetel.data.reader.SlaveReaderDup;
 import org.jetel.enums.OrderEnum;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -54,6 +55,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -491,7 +493,7 @@ public class MergeJoin extends Node {
     		}
     	}
     	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
+    		throw new ComponentNotReadyException(e);
     	}
     }
 	
@@ -664,7 +666,7 @@ public class MergeJoin extends Node {
         	try {
 				errorLog = new FileWriter(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), errorLogURL));
 			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e.getMessage());
+				throw new ComponentNotReadyException(this, XML_ERROR_LOG_ATTRIBUTE, e);
 			}
         }
     }    
@@ -749,69 +751,66 @@ public class MergeJoin extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		MergeJoin join;
 
-		try {
-			String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
-			Join joinType;
-			
-			if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
-				joinType = Join.INNER;
-			} else if (joinStr.equalsIgnoreCase("leftOuter")) {
-				joinType = Join.LEFT_OUTER;
-			} else if (joinStr.equalsIgnoreCase("fullOuter")) {
-				joinType = Join.FULL_OUTER;
-			} else {
-				throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" 
-						+ "Invalid joinType specification: " + joinStr);				
-			}
-
-			// legacy attributes handling {
-			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
-				joinType = xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE) ? Join.LEFT_OUTER : Join.INNER;
-			}
-			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.exists(XML_FULLOUTERJOIN_ATTRIBUTE)) {
-				joinType = xattribs.getBoolean(XML_FULLOUTERJOIN_ATTRIBUTE) ? Join.FULL_OUTER : Join.INNER;
-			}
-
-			join = new MergeJoin(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_JOINKEY_ATTRIBUTE),
-					xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
-					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-					xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
-					joinType,
-					xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true),
-					xattribs.getBoolean(XML_ASCENDING_INPUTS_ATTRIBUTE, true));
-			
-			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
-				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			}
-			if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
-				join.setLocale(xattribs.getString(XML_LOCALE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
-				join.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
-			}
-			join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-			if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
-				join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
-				join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
-			}
-			join.setTransformationParameters(xattribs.attributes2Properties(
-	                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
-	                		XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE,
-	                		XML_LEFTOUTERJOIN_ATTRIBUTE,XML_SLAVEOVERRIDEKEY_ATTRIBUTE,
-	                		XML_FULLOUTERJOIN_ATTRIBUTE,XML_JOINTYPE_ATTRIBUTE}));			
-			return join;
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+		String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
+		Join joinType;
+		
+		if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
+			joinType = Join.INNER;
+		} else if (joinStr.equalsIgnoreCase("leftOuter")) {
+			joinType = Join.LEFT_OUTER;
+		} else if (joinStr.equalsIgnoreCase("fullOuter")) {
+			joinType = Join.FULL_OUTER;
+		} else {
+			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" 
+					+ "Invalid joinType specification: " + joinStr);				
 		}
+
+		// legacy attributes handling {
+		if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
+			joinType = xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE) ? Join.LEFT_OUTER : Join.INNER;
+		}
+		if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.exists(XML_FULLOUTERJOIN_ATTRIBUTE)) {
+			joinType = xattribs.getBoolean(XML_FULLOUTERJOIN_ATTRIBUTE) ? Join.FULL_OUTER : Join.INNER;
+		}
+
+		join = new MergeJoin(xattribs.getString(XML_ID_ATTRIBUTE),
+				xattribs.getString(XML_JOINKEY_ATTRIBUTE),
+				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
+				joinType,
+				xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true),
+				xattribs.getBoolean(XML_ASCENDING_INPUTS_ATTRIBUTE, true));
+		
+		if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
+			join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		}
+		if (xattribs.exists(XML_LOCALE_ATTRIBUTE)) {
+			join.setLocale(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_CASE_SENSITIVE_ATTRIBUTE)) {
+			join.setCaseSensitive(xattribs.getBoolean(XML_CASE_SENSITIVE_ATTRIBUTE));
+		}
+		join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+		if (xattribs.exists(XML_ERROR_ACTIONS_ATTRIBUTE)){
+			join.setErrorActions(xattribs.getString(XML_ERROR_ACTIONS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)){
+			join.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+		}
+		join.setTransformationParameters(xattribs.attributes2Properties(
+                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
+                		XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE,
+                		XML_LEFTOUTERJOIN_ATTRIBUTE,XML_SLAVEOVERRIDEKEY_ATTRIBUTE,
+                		XML_FULLOUTERJOIN_ATTRIBUTE,XML_JOINTYPE_ATTRIBUTE}));			
+		return join;
 	}
 
 	public void setErrorLog(String errorLog) {
@@ -911,7 +910,7 @@ public class MergeJoin extends Node {
 			}        	
 	            	
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 			if(!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());
 			}

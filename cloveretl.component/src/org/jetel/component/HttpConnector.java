@@ -65,6 +65,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -99,11 +100,13 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -118,12 +121,14 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.stream.StreamUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -1121,7 +1126,7 @@ public class HttpConnector extends Node {
 
 			if (getProxy() != null) {
 				try {
-					proxyURL = new URL(getProxy());
+					proxyURL = FileUtils.getFileURL(getProxy());
 				} catch (MalformedURLException e) {
 					throw new ComponentNotReadyException("Given proxy URL '" + getProxy() + "' is invalid.");
 				}
@@ -2124,51 +2129,47 @@ public class HttpConnector extends Node {
 	 * @param xmlElement
 	 * @return an instance of the HTTPConnector based on the given XML definition.
 	 * @throws XMLConfigurationException
+	 * @throws AttributeNotFoundException 
 	 */
-    public static HttpConnector fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static HttpConnector fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
-		try {
-			HttpConnector httpConnector = new HttpConnector(xattribs.getString(XML_ID_ATTRIBUTE));
+		HttpConnector httpConnector = new HttpConnector(xattribs.getString(XML_ID_ATTRIBUTE));
 
-			/** base properties */
-			httpConnector.setUrl(xattribs.getString(XML_URL_ATTRIBUTE, null));
-			httpConnector.setRequestMethod(xattribs.getString(XML_REQUEST_METHOD_ATTRIBUTE, GET));
-			httpConnector.setInputFileUrl(xattribs.getStringEx(XML_INPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-			httpConnector.setOutputFileUrl(xattribs.getStringEx(XML_OUTPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-			httpConnector.setAppendOutput(xattribs.getBoolean(XML_APPEND_OUTPUT_ATTRIBUTE, DEFAULT_APPEND_OUTPUT));
-			httpConnector.setAdditionalRequestHeaders(xattribs.getString(XML_ADDITIONAL_HTTP_HEADERS_ATTRIBUTE, null));
-			httpConnector.setRequestContent(xattribs.getString(XML_REQUEST_CONTENT_ATTRIBUTE, null));
-			httpConnector.setInputFieldName(xattribs.getString(XML_INPUT_PORT_FIELD_NAME, null));
-			httpConnector.setOutputFieldName(xattribs.getString(XML_OUTPUT_PORT_FIELD_NAME, null));
-			httpConnector.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-			httpConnector.setStoreResponseToTempFile(xattribs.getBoolean(XML_STORE_RESPONSE_TO_TEMP_FILE, false));
-			httpConnector.setTemporaryFilePrefix(xattribs.getString(XML_TEMPORARY_FILE_PREFIX, "http-response-"));
-			httpConnector.setAuthenticationMethod(xattribs.getString(XML_AUTHENTICATION_METHOD_ATTRIBUTE, "BASIC"));
-			httpConnector.setUsername(xattribs.getString(XML_USERNAME_ATTRIBUTE, null));
-			httpConnector.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE, null));
-			httpConnector.setAddInputFieldsAsParameters(xattribs.getBoolean(XML_ADD_INPUT_FIELDS_AS_PARAMETERS_ATTRIBUTE, false));
-			httpConnector.setAddInputFieldsAsParametersTo(xattribs.getString(XML_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_ATTRIBUTE, "QUERY"));
-			httpConnector.setIgnoredFields(xattribs.getString(XML_IGNORED_FIELDS_ATTRIBUTE, null));
-			httpConnector.setMultipartEntities(xattribs.getString(XML_MULTIPART_ENTITIES_FIELDS_LIST_ATTRIBUTE, null));
-			httpConnector.setUrlInputField(xattribs.getString(XML_URL_FROM_INPUT_FIELD_ATTRIBUTE, null));
-			httpConnector.setConsumerKey(xattribs.getString(XML_CONSUMER_KEY_ATTRIBUTE, null));
-			httpConnector.setConsumerSecret(xattribs.getString(XML_CONSUMER_SECRET_ATTRIBUTE, null));
-			httpConnector.setRawHttpHeaders(xattribs.getString(XML_RAW_HTTP_HEADERS_ATTRIBUTE, null));
-			httpConnector.setRequestCookies(xattribs.getString(XML_REQUEST_COOKIES_ATTRIBUTE, null));
-			httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
+		/** base properties */
+		httpConnector.setUrl(xattribs.getString(XML_URL_ATTRIBUTE, null));
+		httpConnector.setRequestMethod(xattribs.getString(XML_REQUEST_METHOD_ATTRIBUTE, GET));
+		httpConnector.setInputFileUrl(xattribs.getStringEx(XML_INPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+		httpConnector.setOutputFileUrl(xattribs.getStringEx(XML_OUTPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+		httpConnector.setAppendOutput(xattribs.getBoolean(XML_APPEND_OUTPUT_ATTRIBUTE, DEFAULT_APPEND_OUTPUT));
+		httpConnector.setAdditionalRequestHeaders(xattribs.getString(XML_ADDITIONAL_HTTP_HEADERS_ATTRIBUTE, null));
+		httpConnector.setRequestContent(xattribs.getString(XML_REQUEST_CONTENT_ATTRIBUTE, null));
+		httpConnector.setInputFieldName(xattribs.getString(XML_INPUT_PORT_FIELD_NAME, null));
+		httpConnector.setOutputFieldName(xattribs.getString(XML_OUTPUT_PORT_FIELD_NAME, null));
+		httpConnector.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
+		httpConnector.setStoreResponseToTempFile(xattribs.getBoolean(XML_STORE_RESPONSE_TO_TEMP_FILE, false));
+		httpConnector.setTemporaryFilePrefix(xattribs.getString(XML_TEMPORARY_FILE_PREFIX, "http-response-"));
+		httpConnector.setAuthenticationMethod(xattribs.getString(XML_AUTHENTICATION_METHOD_ATTRIBUTE, "BASIC"));
+		httpConnector.setUsername(xattribs.getString(XML_USERNAME_ATTRIBUTE, null));
+		httpConnector.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE, null));
+		httpConnector.setAddInputFieldsAsParameters(xattribs.getBoolean(XML_ADD_INPUT_FIELDS_AS_PARAMETERS_ATTRIBUTE, false));
+		httpConnector.setAddInputFieldsAsParametersTo(xattribs.getString(XML_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_ATTRIBUTE, "QUERY"));
+		httpConnector.setIgnoredFields(xattribs.getString(XML_IGNORED_FIELDS_ATTRIBUTE, null));
+		httpConnector.setMultipartEntities(xattribs.getString(XML_MULTIPART_ENTITIES_FIELDS_LIST_ATTRIBUTE, null));
+		httpConnector.setUrlInputField(xattribs.getString(XML_URL_FROM_INPUT_FIELD_ATTRIBUTE, null));
+		httpConnector.setConsumerKey(xattribs.getString(XML_CONSUMER_KEY_ATTRIBUTE, null));
+		httpConnector.setConsumerSecret(xattribs.getString(XML_CONSUMER_SECRET_ATTRIBUTE, null));
+		httpConnector.setRawHttpHeaders(xattribs.getString(XML_RAW_HTTP_HEADERS_ATTRIBUTE, null));
+		httpConnector.setRequestCookies(xattribs.getString(XML_REQUEST_COOKIES_ATTRIBUTE, null));
+		httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
 
-			/** job flow related properties */
-			httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-			httpConnector.setStandardOutputMapping(xattribs.getStringEx(XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-			httpConnector.setErrorOutputMapping(xattribs.getStringEx(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-    		httpConnector.setRedirectErrorOutput(xattribs.getBoolean(XML_REDIRECT_ERROR_OUTPUT, false));
-			
-			
-			return httpConnector;
-		} catch (Exception ex) {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + ex.getMessage(), ex);
-		}
+		/** job flow related properties */
+		httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+		httpConnector.setStandardOutputMapping(xattribs.getStringEx(XML_STANDARD_OUTPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+		httpConnector.setErrorOutputMapping(xattribs.getStringEx(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+		httpConnector.setRedirectErrorOutput(xattribs.getBoolean(XML_REDIRECT_ERROR_OUTPUT, false));
+		
+		return httpConnector;
 	}
 
     private boolean attributeMappedFromInput(String attributeName) {
@@ -2418,7 +2419,7 @@ public class HttpConnector extends Node {
         try {
         	tryToInit(true);
         } catch (Exception e) {
-        	status.add("Initialization failed. " + e.getMessage(), Severity.ERROR, this, Priority.NORMAL);
+        	status.add("Initialization failed. " + ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL);
         }
 		
         
@@ -2659,8 +2660,23 @@ public class HttpConnector extends Node {
 
 		// configure proxy 
 		if (configuration.getProxyURL() != null) {
-			HttpHost proxy = new HttpHost(configuration.getProxyURL().getHost(), configuration.getProxyURL().getPort());
-			httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);			
+			String proxyHost = configuration.getProxyURL().getHost();
+			int proxyPort = configuration.getProxyURL().getPort();
+			HttpHost proxy = new HttpHost(proxyHost, proxyPort);
+			httpClient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);	
+			
+			String userInfo = configuration.getProxyURL().getUserInfo();
+			if (!StringUtils.isEmpty(userInfo)) {
+				UserInfo proxyCredentials = new UserInfo(userInfo);
+				
+				String username = proxyCredentials.getUser();
+				String password = proxyCredentials.getPassword();
+				if ((username != null) && (password != null)) {
+					Credentials credentials = new UsernamePasswordCredentials(username, password);
+					AuthScope authScope = new AuthScope(proxyHost, proxyPort, AuthScope.ANY_REALM);
+					httpClient.getCredentialsProvider().setCredentials(authScope, credentials);
+				}
+			}
 		}
 
 		// configure authentication
@@ -3013,8 +3029,7 @@ public class HttpConnector extends Node {
 				sb.append(line + "\n");
 			}
 		} catch (IOException e) {
-		    logger.error("Unable to read request result. Caused by: "+e.getMessage());
-			throw e;
+			throw new JetelRuntimeException("Unable to read request result.", e);
 		} finally {
 			try {
 				result.close();

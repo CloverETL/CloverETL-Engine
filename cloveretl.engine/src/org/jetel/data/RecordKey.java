@@ -35,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
@@ -586,7 +587,7 @@ public class RecordKey {
     		incomparable = new Integer[0];
     		isNull = true;
     	}catch(RuntimeException e) {
-    		problem = new ConfigurationProblem(e.getMessage(), Severity.ERROR, component, Priority.NORMAL, masterAttribute); 
+    		problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute); 
     		status.add(problem);
     		incomparable = new Integer[0];
     	}
@@ -599,7 +600,7 @@ public class RecordKey {
     		incomparable = new Integer[0];
     		isNull = true;
     	}catch(RuntimeException e) {
-    		problem = new ConfigurationProblem(e.getMessage(), Severity.ERROR, component, Priority.NORMAL, masterAttribute);
+    		problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute);
     		status.add(problem);
     		incomparable = new Integer[0];
     	}

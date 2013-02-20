@@ -44,8 +44,8 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class BufferedEdge extends EdgeBase {
 
-    private int outputRecordCounter;
-    private int inputRecordCounter;
+    private long outputRecordCounter;
+    private long inputRecordCounter;
     private long byteCounter;
     private int internalBufferSize;
 
@@ -72,12 +72,12 @@ public class BufferedEdge extends EdgeBase {
 	}
 
 	@Override
-	public int getOutputRecordCounter() {
+	public long getOutputRecordCounter() {
 		return outputRecordCounter;
 	}
 
     @Override
-	public int getInputRecordCounter() {
+	public long getInputRecordCounter() {
         return inputRecordCounter;
     }
 
@@ -105,19 +105,24 @@ public class BufferedEdge extends EdgeBase {
 	public void init() throws IOException {
 		recordBuffer = new DynamicRecordBuffer(internalBufferSize);
 		recordBuffer.init();
-		outputRecordCounter = 0;
-		inputRecordCounter = 0;
-		byteCounter = 0;
 	}
 
 	@Override
-	public void reset() {
-        recordBuffer.reset();
+	public void preExecute() {
+		super.preExecute();
+		
 		outputRecordCounter = 0;
 		inputRecordCounter = 0;
 		byteCounter = 0;
 	}
+	
+	@Override
+	public void postExecute() {
+		super.postExecute();
 
+		recordBuffer.reset();
+	}
+	
 	@Override
 	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
         DataRecord ret = recordBuffer.readRecord(record);
@@ -157,7 +162,7 @@ public class BufferedEdge extends EdgeBase {
         try {
 			recordBuffer.setEOF();
 		} catch (IOException ex) {
-			throw new RuntimeException("Error when closing BufferedEdge: " + ex.getMessage(), ex);
+			throw new RuntimeException("Error when closing BufferedEdge", ex);
 		}
 	}
 

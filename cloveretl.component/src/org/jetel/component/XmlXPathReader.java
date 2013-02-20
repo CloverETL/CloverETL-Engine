@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.XPathParser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -39,6 +40,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.XmlUtils;
@@ -257,7 +259,7 @@ public class XmlXPathReader extends Node {
 			        if(policyType == PolicyType.STRICT) {
 			            throw bdfe;
 			        } else {
-			            logger.info(bdfe.getMessage());
+			            logger.info(ExceptionUtils.exceptionChainToMessage(bdfe));
 			        }
 			    }
 			    SynchronizeUtils.cloverYield();
@@ -302,12 +304,7 @@ public class XmlXPathReader extends Node {
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
 
-    	try {
-    		reader.postExecute();
-    	}
-    	catch (Exception e) {
-    		throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(),e);
-    	}
+    	reader.postExecute();
     }
 	
 	@Override
@@ -337,49 +334,45 @@ public class XmlXPathReader extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		XmlXPathReader aXmlXPathReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		try {
-			String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
-			if (mappingURL != null) {
-				aXmlXPathReader = new XmlXPathReader(
-						xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-						mappingURL);
-			} else {
-				Document mappingDocument = null;
-				try {
-					mappingDocument = XmlUtils.createDocumentFromString(xattribs.getString(XML_MAPPING_ATTRIBUTE));
-				} catch (JetelException e) {
-					throw new XMLConfigurationException("Mapping parameter parse error occurs.", e);
-				}
-				
-				aXmlXPathReader = new XmlXPathReader(
-						xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-						mappingDocument);
+		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
+		if (mappingURL != null) {
+			aXmlXPathReader = new XmlXPathReader(
+					xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+					mappingURL);
+		} else {
+			Document mappingDocument = null;
+			try {
+				mappingDocument = XmlUtils.createDocumentFromString(xattribs.getString(XML_MAPPING_ATTRIBUTE));
+			} catch (JetelException e) {
+				throw new XMLConfigurationException("Mapping parameter parse error occurs.", e);
 			}
 			
-			aXmlXPathReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
-            if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
-                aXmlXPathReader.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
-                aXmlXPathReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
-                aXmlXPathReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-            }
-            if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)){
-                aXmlXPathReader.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
-            }
-            
-		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+			aXmlXPathReader = new XmlXPathReader(
+					xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+					mappingDocument);
 		}
+		
+		aXmlXPathReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
+        if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
+            aXmlXPathReader.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+            aXmlXPathReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+            aXmlXPathReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+        }
+        if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)){
+            aXmlXPathReader.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
+        }
 
 		return aXmlXPathReader;
 	}

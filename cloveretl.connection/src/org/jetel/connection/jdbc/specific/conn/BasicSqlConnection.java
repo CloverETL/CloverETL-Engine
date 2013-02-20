@@ -169,6 +169,14 @@ public class BasicSqlConnection implements SqlConnection {
 		List<String> ret = new ArrayList<String>();
 		ResultSet result = dbMeta.getSchemas();
 		String tmp;
+		
+		if (!conservative) {
+			try {
+				optimizeConnection(operationType);
+			} catch (Exception e1) {
+				logger.warn("Optimizing connection failed. Try to use another jdbc specific.", e1);
+			}
+		}
 		while (result.next()) {
 			tmp = "";
 			try {
@@ -239,10 +247,10 @@ public class BasicSqlConnection implements SqlConnection {
 			try {
 				statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 				statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}catch (UnsupportedOperationException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 				statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 			break;
@@ -452,10 +460,10 @@ public class BasicSqlConnection implements SqlConnection {
 			try {
 				statement = connection.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT);
 			} catch (SQLException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 				statement = connection.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}catch (UnsupportedOperationException e) {
-				logger.warn(e.getMessage());
+				logger.warn(e);
 				statement = connection.prepareStatement(sql,ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 			}
 			break;

@@ -40,9 +40,16 @@ public class CopyResult extends AbstractResult implements Iterable<SingleCloverU
 	
 	private final List<SingleCloverURI> results = new ArrayList<SingleCloverURI>(); 
 	
+	public CopyResult() {
+	}
+
+	public CopyResult(Exception fatalError) {
+		super(fatalError);
+	}
+
 	@Override
-	public CopyResult setException(Exception exception) {
-		return (CopyResult) super.setException(exception);
+	public CopyResult setFatalError(Exception exception) {
+		return (CopyResult) super.setFatalError(exception);
 	}
 
 	public void add(SingleCloverURI source, SingleCloverURI target, SingleCloverURI result) {
@@ -53,8 +60,8 @@ public class CopyResult extends AbstractResult implements Iterable<SingleCloverU
 		aggregatedResult.add(target);
 	}
 	
-	public void addError(SingleCloverURI source, SingleCloverURI target, String error) {
-		addError(error);
+	public void addFailure(SingleCloverURI source, SingleCloverURI target, Exception failure) {
+		addFailure(failure);
 		sources.add(source);
 		targets.add(target);
 		results.add(null);
@@ -62,7 +69,7 @@ public class CopyResult extends AbstractResult implements Iterable<SingleCloverU
 	
 	@Override
 	public boolean success(int i) {
-		return (getException() == null) && (getResult(i) != null);
+		return (getFatalError() == null) && (getResult(i) != null);
 	}
 
 	@Override

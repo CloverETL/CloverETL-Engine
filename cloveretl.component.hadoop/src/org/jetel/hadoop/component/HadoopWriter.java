@@ -28,6 +28,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.database.IConnection;
 import org.jetel.enums.PartitionFileTagType;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -36,6 +37,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.connection.HadoopConnection;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -51,6 +53,7 @@ import org.w3c.dom.Element;
 
 public class HadoopWriter extends Node {
 
+	private static final String XML_CONNECTION_ID_ATTRIBUTE = "connectionId";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
@@ -66,6 +69,7 @@ public class HadoopWriter extends Node {
 	private static final String XML_VALUE_FIELD_NAME_ATTRIBUTE = "valueField";
 
 	private boolean mkDir;
+	private String connectionId;
 	private String fileURL;
 	private boolean appendData;
 	private String keyField;
@@ -146,7 +150,7 @@ public class HadoopWriter extends Node {
 		try {
 			writer.close();
 		} catch (IOException e) {
-			throw new ComponentNotReadyException(COMPONENT_TYPE + ": " + e.getMessage(), e);
+			throw new ComponentNotReadyException(e);
 		}
 	}
 
@@ -163,7 +167,7 @@ public class HadoopWriter extends Node {
 				connection = null;
 			}
 		} catch (Throwable t) {
-			logger.warn("Resource releasing failed for '" + getId() + "'. " + t.getMessage(), t);
+			logger.warn("Resource releasing failed for '" + getId() + "'.", t);
 		}
 	}
 
@@ -178,10 +182,11 @@ public class HadoopWriter extends Node {
 		/* can't easily check writability - would need also Hadoop connection */
 
 		try {
-			// well, at least try to get connection from file URL
+			// well, at least try to initialize connection
 			prepareConnection();
+			HadoopReader.checkConnectionIDs(connectionId, connection, this, status);			
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(),
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),
 					ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());
@@ -195,7 +200,7 @@ public class HadoopWriter extends Node {
 	}
 
 	private void prepareConnection() throws ComponentNotReadyException {
-		IConnection conn = HadoopReader.prepareGraphConnectionFromFileURL(fileURL, "output", this, getGraph(), logger);
+		IConnection conn = HadoopReader.prepareGraphConnection(connectionId, fileURL, "output", this, getGraph(), logger);
 		this.connection = (HadoopConnection) conn;
 	}
 
@@ -210,7 +215,8 @@ public class HadoopWriter extends Node {
 		prepareConnection();
 
 		try {
-			formatter = connection.getConnection().createFormatter(this.keyField, this.valueField, !this.appendData);
+			formatter = connection.getFileSystemServiceUnconnected().createFormatter(this.keyField, this.valueField,
+					!this.appendData, connection.getUserName(), connection.getAdditionalProperties());
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(this, e);
 		}
@@ -262,50 +268,47 @@ public class HadoopWriter extends Node {
 		}
 	}
 
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
-		HadoopWriter aDataWriter = null;
+		HadoopWriter writer = null;
 
-		try {
-			aDataWriter = new HadoopWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_FILEURL_ATTRIBUTE),
-					xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
-					xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE),
-					xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
-			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
-				aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
-			}
-			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
-				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
-			}
-			if (xattribs.exists(XML_RECORDS_PER_FILE)) {
-				aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
-			}
-			if (xattribs.exists(XML_BYTES_PER_FILE)) {
-				aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
-			}
-			if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
-				aDataWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
-				aDataWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
-				aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
-				aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
-				aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
-			}
-		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE, "unknown ID") + ":"
-					+ ex.getMessage());
-			return null;
+		writer = new HadoopWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				xattribs.getString(XML_FILEURL_ATTRIBUTE),
+				xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
+				xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE),
+				xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
+		if (xattribs.exists(XML_CONNECTION_ID_ATTRIBUTE)) {
+			writer.setConnectionId(xattribs.getString(XML_CONNECTION_ID_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
+			writer.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
+		}
+		if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
+			writer.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+		}
+		if (xattribs.exists(XML_RECORDS_PER_FILE)) {
+			writer.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+		}
+		if (xattribs.exists(XML_BYTES_PER_FILE)) {
+			writer.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
+		}
+		if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+			writer.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+			writer.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+			writer.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_PARTITION_OUTFIELDS_ATTRIBUTE)) {
+			writer.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
+			writer.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
 		}
 
-		return aDataWriter;
+		return writer;
 	}
 
 	/**
@@ -425,4 +428,8 @@ public class HadoopWriter extends Node {
 		this.mkDir = mkDir;
 	}
 
+	public void setConnectionId(String connectionId) {
+		this.connectionId = connectionId;
+	}
+	
 }

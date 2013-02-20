@@ -19,7 +19,7 @@
 package org.jetel.hadoop;
 
 import org.jetel.component.fileoperation.FileManager;
-import org.jetel.component.fileoperation.hadoop.HadoopOperationHandler;
+import org.jetel.hadoop.fileoperation.HadoopOperationHandler;
 import org.jetel.plugin.PluginActivator;
 
 public class Activator extends PluginActivator {

@@ -160,10 +160,17 @@ public class DefaultOperationHandler implements IOperationHandler {
 	@Override
 	public SingleCloverURI copy(SingleCloverURI source, SingleCloverURI target, CopyParameters params) throws IOException {
 		InfoResult sourceInfo = manager.info(source);
-		if (!sourceInfo.exists()) {
-			throw new FileNotFoundException(source.getPath()); // source does not exist
+		if (!sourceInfo.success()) {
+			throw new IOException("Failed to obtain source file info", sourceInfo.getFirstError());
 		}
-		InfoResult targetInfo = manager.info(target); 
+		if (!sourceInfo.exists()) {
+			// source does not exist
+			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.getPath())); //$NON-NLS-1$
+		}
+		InfoResult targetInfo = manager.info(target);
+		if (!targetInfo.success()) {
+			throw new IOException("Failed to obtain target file info", targetInfo.getFirstError());
+		}
 		if (targetInfo.isDirectory()) {
 			target = CloverURI.createSingleURI(targetInfo.getURI(), sourceInfo.getName()).getAbsoluteURI();
 		} else if (target.getPath().endsWith(URIUtils.PATH_SEPARATOR)) {
@@ -199,7 +206,7 @@ public class DefaultOperationHandler implements IOperationHandler {
 		}
 		if (targetInfo.isDirectory()) {
 			if (!sourceInfo.exists()) {
-				throw new FileNotFoundException(source.toURI().toString());
+				throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), source.toURI().toString())); //$NON-NLS-1$
 			}
 			SingleCloverURI newTarget = CloverURI.createSingleURI(URIUtils.getChildURI(target.toURI(), sourceInfo.getName()));
 			targetInfo = manager.info(newTarget);
