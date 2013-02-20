@@ -170,6 +170,7 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().startsWith("Proxy_") // allowed to run only on virt-cyan as proxy tests
 							&& !pathname.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
 							&& !pathname.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
+							&& !pathname.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
 							&& !pathname.getName().equals("BeanWriterReader_employees.grf"); // remove after CL-2474 solved
 					
 				}
