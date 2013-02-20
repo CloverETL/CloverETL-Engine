@@ -170,8 +170,14 @@ public class ConfigurationProblem {
     }
 	
 	private String createMessage() {
-    	return (getGraphElement() != null ? 
-    			(getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : "") + " - ") : "") + message;
+		StringBuilder result = new StringBuilder();
+    	if (getGraphElement() != null) {
+    		result.append("Error in " + getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : ""));
+    	}
+    	if (message != null) {
+    		result.append(" - " + message);
+    	}
+    	return result.toString();
 	}
 	
 }
