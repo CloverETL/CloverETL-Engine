@@ -48,6 +48,8 @@ public enum MappingProperty {
 	OMIT_NULL_ELEMENT("omitNullElement"),
 	WRITE_NULL_ELEMENT("writeNullElement"), //True|False it's property of ObjectElement
 	
+	DATA_TYPE("dataType"), // value data type (useful for Maps)
+	
 	PATH("path"), //read-only property
 	DESCRIPTION("description"), //read-only property
 	UNKNOWN("unknown");

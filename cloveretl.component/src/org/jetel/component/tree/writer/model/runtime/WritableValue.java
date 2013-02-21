@@ -50,8 +50,20 @@ public abstract class WritableValue extends BaseWritable {
 		
 		MappingWriteState state = formatter.getMapping().getState();
 		if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
-			formatter.getTreeWriter().writeLeaf(getContent(availableData), false);
+			formatter.getTreeWriter().writeLeaf(getContent(availableData), getDataType(), false);
 		}
+	}
+	
+	/*
+	 * TODO shouldn't this property be part of this class
+	 * instead of parent container?
+	 */
+	protected String getDataType() {
+		if (parent instanceof WritableObject) {
+			WritableObject wo = (WritableObject)parent;
+			return wo.dataType;
+		}
+		return null;
 	}
 	
 	abstract boolean isValuesList();
@@ -144,7 +156,7 @@ public abstract class WritableValue extends BaseWritable {
 									attr.write(formatter, availableData);
 								}
 							}
-							formatter.getTreeWriter().writeLeaf(field.getField(i), false);
+							formatter.getTreeWriter().writeLeaf(field.getField(i), getDataType(), false);
 							/*
 							 * last element will be closed by parent
 							 */
