@@ -30,7 +30,9 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
@@ -40,6 +42,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.entity.StringEntity;
@@ -53,7 +56,9 @@ import org.jetel.util.protocols.ProxyConfiguration;
 import com.googlecode.sardine.DavResource;
 import com.googlecode.sardine.impl.SardineException;
 import com.googlecode.sardine.impl.SardineImpl;
+import com.googlecode.sardine.impl.handler.ExistsResponseHandler;
 import com.googlecode.sardine.impl.handler.MultiStatusResponseHandler;
+import com.googlecode.sardine.impl.io.ConsumingInputStream;
 import com.googlecode.sardine.impl.methods.HttpPropFind;
 import com.googlecode.sardine.model.Allprop;
 import com.googlecode.sardine.model.Multistatus;
@@ -61,6 +66,15 @@ import com.googlecode.sardine.model.Propfind;
 import com.googlecode.sardine.model.Response;
 import com.googlecode.sardine.util.SardineUtil;
 
+/**
+ * An extension of {@link SardineImpl}
+ * with a few customizations.
+ *  
+ * @author krivanekm (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created Jan 10, 2013
+ */
 public class WebdavClientImpl extends SardineImpl implements WebdavClient {
 	
 	private static final String UTF_8 = "UTF-8";
@@ -264,31 +278,89 @@ public class WebdavClientImpl extends SardineImpl implements WebdavClient {
 	}
 
 	/**
-	 * Check whether remote directory exists with the help of GET method instead of HEAD used by Sardine.exists.
-	 * See http://code.google.com/p/sardine/issues/detail?id=48 for more information and motivation.
+	 * @see com.googlecode.sardine.Sardine#get(java.lang.String, java.util.Map)
 	 * 
-	 * This is quite inefficient, how about PROPFIND?
-	 * See {@link #info(String)}.
+	 * Just like the method above, but uses a custom response handler.
+	 * Returns <code>null</code> if HTTP 404 (not found) is returned.
+	 */
+	public InputStream getIfExists(String url, Map<String, String> headers) throws IOException
+	{
+		HttpGet get = new HttpGet(url);
+		for (String header : headers.keySet())
+		{
+			get.addHeader(header, headers.get(header));
+		}
+		// Must use #execute without handler, otherwise the entity is consumed
+		// already after the handler exits.
+		HttpResponse response = this.execute(get);
+		ExistsResponseHandler handler = new ExistsResponseHandler() {
+
+			@Override
+			public Boolean handleResponse(HttpResponse response) throws SardineException {
+				StatusLine statusLine = response.getStatusLine();
+				int statusCode = statusLine.getStatusCode();
+				if (statusCode == HttpStatus.SC_NOT_FOUND) {
+					return false;
+				}
+				
+				validateResponse(response);
+				return true; // the validation has not thrown any exceptions
+			}
+			
+		};
+		try
+		{
+			if (!handler.handleResponse(response)) {
+				return null; // HttpStatus.SC_NOT_FOUND = 404 
+			}
+			// Will consume the entity when the stream is closed.
+			return new ConsumingInputStream(response);
+		}
+		catch (IOException ex)
+		{
+			get.abort();
+			throw ex;
+		}
+	}
+
+	/**
+	 * Check whether remote directory exists.
+	 * If HEAD used by {@link #exists(String)} fails, GET is used instead.
+	 * 
+	 * See <a href="http://code.google.com/p/sardine/issues/detail?id=48">http://code.google.com/p/sardine/issues/detail?id=48</a>
+	 * and <a href="https://issues.alfresco.com/jira/browse/ALF-7883">https://issues.alfresco.com/jira/browse/ALF-7883</a> 
+	 * for more information and motivation.
+	 * 
+	 * This method should work both for WebDAV and plain HTTP,
+	 * hence PROPFIND can't be used.
 	 * 
 	 * @param url
 	 *            Path to the directory.
 	 * @return True if the directory exists.
 	 * @throws IOException
 	 */
+	// CL-2709: The bug in Alfresco has already been fixed.
+	// As for Jackrabbit, http://koule:22401/repository/ returns 404 both for GET and HEAD
 	@Override
 	public boolean dirExists(String url) throws IOException {
 		try {
-			InputStream is = get(url);
-			if (is == null) {
-				throw new IOException("GET " + url + " failed");
+			return exists(url); // first try with HTTP HEAD
+		} catch (SardineException se) {
+			// https://issues.alfresco.com/jira/browse/ALF-7883
+			switch (se.getStatusCode()) {
+				case HttpStatus.SC_BAD_REQUEST: // HEAD failed
+				case HttpStatus.SC_METHOD_NOT_ALLOWED: // HEAD not allowed
+					// try HTTP GET as a fallback
+					InputStream is = getIfExists(url, Collections.<String, String>emptyMap());
+					if (is == null) {
+						return false;
+					} else {
+						is.close();
+						return true;
+					}
 			}
-			is.close();
-			return true;
-		} catch (SardineException ex) {
-			if (ex.getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-				return false;
-			}
-			throw ex;
+
+			throw se;
 		}
 	}
 

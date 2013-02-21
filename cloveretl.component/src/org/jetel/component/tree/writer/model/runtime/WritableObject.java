@@ -37,19 +37,21 @@ public class WritableObject extends WritableContainer {
 
 	private final boolean hidden;
 	private final boolean root;
+	protected final String dataType;
 
-	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, boolean root) {
-		this(name, prefix, writeNull, null, ObjectNode.HIDE_DEFAULT, root);
+	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, boolean root, String dataType) {
+		this(name, prefix, writeNull, null, ObjectNode.HIDE_DEFAULT, root, dataType);
 	}
 	
-	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, boolean hidden, boolean root) {
-		this(name, prefix, writeNull, null, hidden, root);
+	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, boolean hidden, boolean root, String dataType) {
+		this(name, prefix, writeNull, null, hidden, root, dataType);
 	}
 
-	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, PortBinding portBinding, boolean hidden, boolean root) {
+	public WritableObject(WritableValue name, WritableValue prefix, boolean writeNull, PortBinding portBinding, boolean hidden, boolean root, String dataType) {
 		super(name, prefix, writeNull, portBinding);
 		this.hidden = hidden;
 		this.root = root;
+		this.dataType = dataType;
 	}
 
 	@Override
