@@ -18,7 +18,14 @@
  */
 package org.jetel.util;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jetel.exception.CompoundException;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.MissingFieldException;
+import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.test.CloverTestCase;
 
 /**
@@ -120,4 +127,68 @@ public class ExceptionUtilsTest extends CloverTestCase {
 		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new Exception(new NullPointerException()))));
 	}
 
+	public void testInstanceOf() {
+		assertFalse(ExceptionUtils.instanceOf(null, JetelRuntimeException.class));
+		assertTrue(ExceptionUtils.instanceOf(new JetelRuntimeException(), JetelRuntimeException.class));
+		assertFalse(ExceptionUtils.instanceOf(new JetelRuntimeException(), MissingFieldException.class));
+		assertTrue(ExceptionUtils.instanceOf(new StackTraceWrapperException("", ""), JetelRuntimeException.class));
+		assertFalse(ExceptionUtils.instanceOf(new NullPointerException(), JetelRuntimeException.class));
+		assertTrue(ExceptionUtils.instanceOf(new RuntimeException(new JetelRuntimeException()), JetelRuntimeException.class));
+		assertTrue(ExceptionUtils.instanceOf(new RuntimeException(new JetelRuntimeException(new NullPointerException())), JetelRuntimeException.class));
+		assertFalse(ExceptionUtils.instanceOf(new RuntimeException(new JetelRuntimeException(new NullPointerException())), StackTraceWrapperException.class));
+		assertFalse(ExceptionUtils.instanceOf(new CompoundException(new JetelRuntimeException(), new NullPointerException()), StackTraceWrapperException.class));
+		assertTrue(ExceptionUtils.instanceOf(new CompoundException(new JetelRuntimeException(), new NullPointerException()), JetelRuntimeException.class));
+		assertTrue(ExceptionUtils.instanceOf(new CompoundException(new JetelRuntimeException(), new NullPointerException()), NullPointerException.class));
+		assertTrue(ExceptionUtils.instanceOf(new RuntimeException(new CompoundException(new JetelRuntimeException(), new NullPointerException())), NullPointerException.class));
+		assertTrue(ExceptionUtils.instanceOf(new RuntimeException(new CompoundException(new JetelRuntimeException(), new NullPointerException())), RuntimeException.class));
+	}
+	
+	public void testGetAllExceptions() {
+		List<Throwable> result = new ArrayList<Throwable>();
+		Exception e;
+		
+		result.clear();
+		assertEquals(result, ExceptionUtils.getAllExceptions(null, RuntimeException.class));
+		
+		result.clear();
+		result.add(new RuntimeException());
+		assertEquals(result, ExceptionUtils.getAllExceptions(result.get(0), RuntimeException.class));
+		
+		result.clear();
+		assertEquals(result, ExceptionUtils.getAllExceptions(new RuntimeException(), JetelRuntimeException.class));
+
+		result.clear();
+		e = new RuntimeException(new JetelRuntimeException());
+		result.add(e.getCause());
+		assertEquals(result, ExceptionUtils.getAllExceptions(e, JetelRuntimeException.class));
+
+		result.clear();
+		e = new RuntimeException(new JetelRuntimeException(new JetelRuntimeException()));
+		result.add(e.getCause());
+		result.add(e.getCause().getCause());
+		assertEquals(result, ExceptionUtils.getAllExceptions(e, JetelRuntimeException.class));
+
+		result.clear();
+		e = new RuntimeException(new JetelRuntimeException(new JetelRuntimeException(new RuntimeException(new JetelRuntimeException()))));
+		result.add(e.getCause());
+		result.add(e.getCause().getCause());
+		result.add(e.getCause().getCause().getCause().getCause());
+		assertEquals(result, ExceptionUtils.getAllExceptions(e, JetelRuntimeException.class));
+
+		result.clear();
+		e = new RuntimeException(new JetelRuntimeException(new CompoundException(new RuntimeException(new JetelRuntimeException()), new JetelRuntimeException())));
+		result.add(e.getCause());
+		result.add(e.getCause().getCause());
+		result.add(((CompoundException) e.getCause().getCause()).getCauses().get(0).getCause());
+		result.add(((CompoundException) e.getCause().getCause()).getCauses().get(1));
+		assertEquals(result, ExceptionUtils.getAllExceptions(e, JetelRuntimeException.class));
+
+		result.clear();
+		e = new RuntimeException(new IOException(new CompoundException(new RuntimeException(new IOException()), new IOException())));
+		result.add(e.getCause());
+		result.add(((CompoundException) e.getCause().getCause()).getCauses().get(0).getCause());
+		result.add(((CompoundException) e.getCause().getCause()).getCauses().get(1));
+		assertEquals(result, ExceptionUtils.getAllExceptions(e, IOException.class));
+	}
+	
 }

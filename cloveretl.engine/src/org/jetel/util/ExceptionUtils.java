@@ -20,6 +20,8 @@ package org.jetel.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.jetel.exception.CompoundException;
@@ -191,6 +193,63 @@ public class ExceptionUtils {
 	public static void logException(Logger logger, String message, Throwable t) {
         logger.error(ExceptionUtils.exceptionChainToMessage(message, t));
         logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
+	}
+	
+	/**
+	 * Check whether the given exception or one of its children is instance of a given class.
+	 * @param t exception to be searched
+	 * @param exceptionClass searched exception type 
+	 * @return true if the given exception or some of its children is instance of a given class.
+	 */
+	public static boolean instanceOf(Throwable t, Class<? extends Throwable> exceptionClass) {
+		while (t != null) {
+			if (exceptionClass.isInstance(t)) {
+				return true;
+			}
+			if (t instanceof CompoundException) {
+				for (Throwable cause : ((CompoundException) t).getCauses()) {
+					if (instanceOf(cause, exceptionClass)) {
+						return true;
+					}
+				}
+				return false;
+			}
+			if (t != t.getCause()) {
+				t = t.getCause();
+			} else {
+				t = null;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Returns list of all exceptions of a given type in the given exception chain.
+	 * @param t root of searched exception chain
+	 * @param exceptionClass searched exception type
+	 * @return list of exceptions with a given type in the given exception chain
+	 */
+	public static <T extends Throwable> List<T> getAllExceptions(Throwable t, Class<T> exceptionClass) {
+		List<T> result = new ArrayList<T>();
+		
+		while (t != null) {
+			if (exceptionClass.isInstance(t)) {
+				result.add(exceptionClass.cast(t));
+			}
+			if (t instanceof CompoundException) {
+				for (Throwable cause : ((CompoundException) t).getCauses()) {
+					result.addAll(getAllExceptions(cause, exceptionClass));
+				}
+				return result;
+			}
+			if (t != t.getCause()) {
+				t = t.getCause();
+			} else {
+				t = null;
+			}
+		}
+		
+		return result;
 	}
 	
 }
