@@ -20,7 +20,6 @@ package org.jetel.connection.jdbc;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -31,12 +30,13 @@ import java.util.TimeZone;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.parser.AbstractParser;
+import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.JdbcSpecific;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -72,7 +72,7 @@ public class SQLDataParser extends AbstractParser {
 	protected DataRecordMetadata metadata;
 	protected int recordCounter;
 
-	protected DBConnectionInstance dbConnection;
+	protected SqlConnection dbConnection;
 	protected String sqlQuery;
 
 	protected ResultSet resultSet = null;
@@ -191,7 +191,7 @@ public class SQLDataParser extends AbstractParser {
 				throw new JetelException(ex);
 			}
 		}else if (record!=outRecord){
-		    CopySQLData.resetDataRecord(transMap,record);
+			AbstractCopySQLData.resetDataRecord(transMap,record);
 		    outRecord=record;
 		}
 			
@@ -264,9 +264,9 @@ public class SQLDataParser extends AbstractParser {
 				this.dbConnection.getJdbcSpecific().getFieldTypes(resultSet.getMetaData(), metadata):
 				SQLUtil.getFieldTypes(resultSet.getMetaData());	
 		if (sqlCloverStatement.getCloverOutputFields() == null) {
-			transMap = CopySQLData.sql2JetelTransMap(fieldTypes ,metadata, record, dbConnection.getJdbcSpecific());
+			transMap = AbstractCopySQLData.sql2JetelTransMap(fieldTypes ,metadata, record, dbConnection.getJdbcSpecific());
 		}else{
-			transMap = CopySQLData.sql2JetelTransMap(fieldTypes ,metadata, record, 
+			transMap = AbstractCopySQLData.sql2JetelTransMap(fieldTypes ,metadata, record, 
 					sqlCloverStatement.getCloverOutputFields(), dbConnection.getJdbcSpecific());
 		}
 	}
@@ -297,10 +297,10 @@ public class SQLDataParser extends AbstractParser {
 		
 		//outRecord.init();
         // get dbConnection from graph
-        if (! (inputDataSource instanceof DBConnectionInstance)){
+        if (! (inputDataSource instanceof SqlConnection)){
             throw new RuntimeException("Need org.jetel.data.connection.jdbc.specific.DBConnectionInstance object !");
         }
-        dbConnection = (DBConnectionInstance) inputDataSource;
+        dbConnection = (SqlConnection) inputDataSource;
         
         long startTime;
         sqlCloverStatement = new SQLCloverStatement(dbConnection, sqlQuery, null);
@@ -366,9 +366,8 @@ public class SQLDataParser extends AbstractParser {
 				resultSet.close();
 			}
 			// try to commit (as some DBs apparently need commit even when data is read only
-			Connection conn = dbConnection.getSqlConnection();
-			if (!conn.isClosed() && !conn.getAutoCommit() && autoCommit) {
-				conn.commit();
+			if (!dbConnection.isClosed() && !dbConnection.getAutoCommit() && autoCommit) {
+				dbConnection.commit();
 			}            
 			// close statement
 			sqlCloverStatement.close();

@@ -25,9 +25,10 @@ import java.sql.Types;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
+import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -48,7 +49,7 @@ public class SQLCloverCallableStatement {
 	protected int RESULT_SET_OUTPARAMETER_TYPE = Types.OTHER;
 	
 	protected String query;
-	protected DBConnectionInstance connection;
+	protected SqlConnection connection;
 	protected CallableStatement statement;
 	protected CopySQLData[] inTransMap, outTransMap, resultOutMap;
 	protected DataRecord inRecord, outRecord;
@@ -60,14 +61,14 @@ public class SQLCloverCallableStatement {
 	
 	private boolean gotOutParams;
 
-	public SQLCloverCallableStatement(DBConnectionInstance connection, String query, DataRecord inRecord, DataRecord outRecord) {
+	public SQLCloverCallableStatement(SqlConnection connection, String query, DataRecord inRecord, DataRecord outRecord) {
 		this.query = query;
 		this.connection = connection;
 		this.inRecord = inRecord;
 		this.outRecord = outRecord;
 	}
 
-	public SQLCloverCallableStatement(DBConnectionInstance connection, String query, DataRecord inRecord, DataRecord outRecord,
+	public SQLCloverCallableStatement(SqlConnection connection, String query, DataRecord inRecord, DataRecord outRecord,
 			int resultSetOutParameterType) {
 		this(connection, query, inRecord, outRecord);
 		this.resultSetOutParameterType = resultSetOutParameterType;
@@ -98,7 +99,7 @@ public class SQLCloverCallableStatement {
 	}
 
 	public boolean prepareCall() throws SQLException, ComponentNotReadyException{
-		statement = connection.getSqlConnection().prepareCall(query);
+		statement = connection.prepareCall(query);
 		int fieldNumber;
 		int parameterNumber;
 		//prepare transition map for input parameters
@@ -192,10 +193,10 @@ public class SQLCloverCallableStatement {
 				try {
 					outTransMap[i].setJetel(statement);
 				} catch (SQLException ex) {
-					throw new SQLException("Error on field " + outTransMap[i].field.getMetadata().getName(), ex);
+					throw new SQLException("Error on field " + ((AbstractCopySQLData)outTransMap[i]).field.getMetadata().getName(), ex);
 				} catch (ClassCastException ex){
-				    throw new SQLException("Incompatible Clover & JDBC field types - field "+outTransMap[i].field.getMetadata().getName()+
-				            " Clover type: "+SQLUtil.jetelType2Str(outTransMap[i].field.getMetadata().getType()), ex);
+				    throw new SQLException("Incompatible Clover & JDBC field types - field "+((AbstractCopySQLData)outTransMap[i]).field.getMetadata().getName()+
+				            " Clover type: "+SQLUtil.jetelType2Str(((AbstractCopySQLData)outTransMap[i]).field.getMetadata().getType()), ex);
 				}
 			}
 			gotOutParams = true;
@@ -213,7 +214,7 @@ public class SQLCloverCallableStatement {
 
 		// init transMap if null
 		if (resultOutMap == null){
-			resultOutMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()),
+			resultOutMap = AbstractCopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(resultSet.getMetaData()),
 					outRecord.getMetadata(), outRecord, outputFields, connection.getJdbcSpecific());
 		}
 			
@@ -230,7 +231,7 @@ public class SQLCloverCallableStatement {
 
 	public void setInRecord(DataRecord inRecord) {
 		this.inRecord = inRecord;
-		CopySQLData.resetDataRecord(inTransMap, inRecord);
+		AbstractCopySQLData.resetDataRecord(inTransMap, inRecord);
 	}
 
 	public void close() throws SQLException {

@@ -26,8 +26,9 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.string.StringUtils;

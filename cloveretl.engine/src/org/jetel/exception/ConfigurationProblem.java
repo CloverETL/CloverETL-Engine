@@ -21,6 +21,7 @@ package org.jetel.exception;
 import org.apache.commons.logging.Log;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
@@ -43,20 +44,21 @@ public class ConfigurationProblem {
     
     private Severity severity;
     
-    private IGraphElement graphElement;
-
     private Priority priority;
     
     private String attributeName;
     
-    private String graphElementID;
+    private String graphElementId;
+
+    private String graphElementName;
     
     private Exception causeException;
     
 	public ConfigurationProblem(String message, Severity severity, IGraphElement graphElement, Priority priority, String attributeName) {
         this.message = message;
         this.severity = severity;
-        this.graphElement = graphElement;
+        this.graphElementId = graphElement != null ? graphElement.getId() : null;
+        this.graphElementName = graphElement != null ? graphElement.getName() : null;
         this.priority = priority;
         this.attributeName = attributeName;
     }
@@ -95,10 +97,6 @@ public class ConfigurationProblem {
         }
     }
     
-    public IGraphElement getGraphElement() {
-        return graphElement;
-    }
-
     public String getMessage() {
         return message;
     }
@@ -119,25 +117,16 @@ public class ConfigurationProblem {
         this.attributeName = attributeName;
     }
     
-    
-    /**
-     * @return ID of the associated graph element. It uses the associated graph element. When
-     * the graph element is not specified, it uses the element ID specified via {@link #setGraphElementID(String)}.
-     */
     public String getGraphElementID() {
-    	if (graphElement != null) {
-    		return graphElement.getId();
-    	} else {
-    		return graphElementID;
-    	}
+    	return graphElementId;
 	}
 
-	/**
-	 * @param graphElementID ID of the associated graph element. Set this when you don't want to store
-	 * the element here by itself (i.e. the graph is remote).
-	 */
-	public void setGraphElementID(String graphElementID) {
-		this.graphElementID = graphElementID;
+	public void setGraphElementID(String graphElementId) {
+		this.graphElementId = graphElementId;
+	}
+
+    public String getGraphElementName() {
+    	return graphElementName;
 	}
 
     public Exception getCauseException() {
@@ -171,11 +160,11 @@ public class ConfigurationProblem {
 	
 	private String createMessage() {
 		StringBuilder result = new StringBuilder();
-    	if (getGraphElement() != null) {
-    		result.append("Error in " + getGraphElement() + (getAttributeName() != null ? ("." + getAttributeName()) : ""));
+    	if (getGraphElementID() != null) {
+    		result.append("Error in " + GraphElement.identifiersToString(getGraphElementID(), getGraphElementName()) + (getAttributeName() != null ? ("." + getAttributeName()) : ""));
     	}
     	if (message != null) {
-    		result.append(" - " + message);
+    		result.append(" - " + ExceptionUtils.exceptionChainToMessage(message, causeException));
     	}
     	return result.toString();
 	}

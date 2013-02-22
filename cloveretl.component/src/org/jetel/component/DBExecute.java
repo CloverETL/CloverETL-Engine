@@ -30,16 +30,16 @@ import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverCallableStatement;
-import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -198,7 +198,7 @@ public class DBExecute extends Node {
     }
     
 	private DBConnection dbConnection;
-	private DBConnectionInstance connectionInstance;
+	private SqlConnection connection;
 	private String dbConnectionName;
 	private String sqlQuery;
     private String[] dbSQL;
@@ -487,9 +487,9 @@ public class DBExecute extends Node {
 	private void initConnection() throws ComponentNotReadyException {
 		try {
 			if (procedureCall) {
-				connectionInstance = dbConnection.getConnection(getId(), OperationType.CALL);
+				connection = dbConnection.getConnection(getId(), OperationType.CALL);
 			} else {
-				connectionInstance = dbConnection.getConnection(getId(), OperationType.WRITE);
+				connection = dbConnection.getConnection(getId(), OperationType.WRITE);
 			}
 		} catch (JetelException e) {
 			throw new ComponentNotReadyException(e);
@@ -506,7 +506,7 @@ public class DBExecute extends Node {
 					callableStatement = new SQLCloverCallableStatement[dbSQL.length];
 					for (int i = 0; i < callableStatement.length; i++) {
 						callableStatement[i] = new SQLCloverCallableStatement(
-								connectionInstance, dbSQL[i], inRecord, outRecord, resultSetType);
+								connection, dbSQL[i], inRecord, outRecord, resultSetType);
 						if (inParams != null) {
 							callableStatement[i].setInParameters(inParams[i]);
 						}
@@ -523,7 +523,7 @@ public class DBExecute extends Node {
 					callableStatement = new SQLCloverCallableStatement[1];
 				}
 			} else {
-				sqlStatement = connectionInstance.getSqlConnection().createStatement();
+				sqlStatement = connection.createStatement();
 			}
 			// this does not work for some drivers
 			try {
@@ -535,7 +535,7 @@ public class DBExecute extends Node {
 				// }
 				// Autocommit should be disabled only if multiple queries are executed within a single transaction.
 				// Otherwise some queries might fail.
-				connectionInstance.getSqlConnection().setAutoCommit(transaction == InTransaction.ONE);
+				connection.setAutoCommit(transaction == InTransaction.ONE);
 			} catch (SQLException ex) {
 				if (transaction != InTransaction.ONE) {
 					throw new ComponentNotReadyException("Can't disable AutoCommit mode (required by current \"Transaction set\" setting) for DB: " + dbConnection + " !");
@@ -604,7 +604,7 @@ public class DBExecute extends Node {
 				errorLog.close();
 			}
 			try {
-				connectionInstance.getSqlConnection().rollback();
+				connection.rollback();
 			} catch (SQLException e1) {
 				logger.warn("Can't rollback!!", e);
 			}
@@ -613,9 +613,9 @@ public class DBExecute extends Node {
 	}
 	
 	private void dbCommit() throws IOException, InterruptedException, SQLException{
-		if (!connectionInstance.getSqlConnection().getAutoCommit()) {
+		if (!connection.getAutoCommit()) {
     		try {
-    			connectionInstance.getSqlConnection().commit();
+    			connection.commit();
     		} catch (SQLException e) {
     			handleException(e, inRecord, -1);
     		}
@@ -642,7 +642,7 @@ public class DBExecute extends Node {
     					}
     					try {
     						if (procedureCall) {
-    							callableStatement[0] = new SQLCloverCallableStatement(connectionInstance, 
+    							callableStatement[0] = new SQLCloverCallableStatement(connection, 
     									statementRecord.getField(0).toString(), null, outRecord, dbConnection.getResultSetType());
     							callableStatement[0].prepareCall();
     							executeCall(callableStatement[0], index);
@@ -693,7 +693,7 @@ public class DBExecute extends Node {
     			dbCommit();
     		}
     		if (!runIt) {
-    			connectionInstance.getSqlConnection().rollback();
+    			connection.rollback();
     		}
 		} finally {
     		broadcastEOF();

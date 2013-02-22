@@ -22,13 +22,19 @@ import java.io.StringReader;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Map;
+import java.util.Properties;
 
+import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.xmlbeans.impl.common.XMLChar;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 /**
@@ -129,4 +135,40 @@ public class XmlUtils {
 		
 		return namespaceURI + parsed[1];
 	}
+	
+	/**
+	 * Creates org.w3c.dom.Document with single root element, which has attributes
+	 * assembled from the given properties.
+	 * Example result:
+	 * <myRoot property1="value1" property2="value2" property3="value3"/>
+	 * 	
+	 * @param rootElement name of root element
+	 * @param properties properties which will be converted to attributes of the only root element
+	 * @return XML document with described structure 
+	 */
+	public static Document createDocumentFromProperties(String rootElement, Properties properties) {
+		if (!StringUtils.isEmpty(rootElement) && properties != null) {
+			try {
+				// create new Document
+				DocumentBuilderFactory dbfac = DocumentBuilderFactory.newInstance();
+				DocumentBuilder docBuilder = null;
+				docBuilder = dbfac.newDocumentBuilder();
+				Document doc = docBuilder.newDocument();
+		
+				// create the root element and add it to the document
+				Element root = doc.createElement(rootElement);
+				doc.appendChild(root);
+				
+				for (String propertyName : properties.stringPropertyNames()) {
+					root.setAttribute(propertyName, properties.getProperty(propertyName));
+				}
+				return doc;
+			} catch (ParserConfigurationException e) {
+				throw new JetelRuntimeException(e);
+			}
+		} else {
+			throw new NullPointerException("rootElement=" + rootElement + "; properties=" + properties);
+		}
+	}
+	
 }

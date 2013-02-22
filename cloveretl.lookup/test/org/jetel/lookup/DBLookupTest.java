@@ -5,13 +5,14 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.DBConnectionImpl;
 import org.jetel.connection.jdbc.SQLDataParser;
-import org.jetel.connection.jdbc.specific.DBConnectionInstance;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -24,7 +25,7 @@ public class DBLookupTest extends CloverTestCase {
 	Lookup lookup;
 	DataRecord customer, employee = null;
 	SQLDataParser parser;
-	DBConnectionInstance aDBConnection;
+	SqlConnection sqlConnection;
 	private DBLookupTable lookupTable;
 	private RecordKey recordKey;
 
@@ -33,9 +34,9 @@ public class DBLookupTest extends CloverTestCase {
 		initEngine();
 		
 	    
-		DBConnection conn = new DBConnection("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
+		DBConnection conn = new DBConnectionImpl("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
 		conn.init();
-		aDBConnection = conn.getConnection(conn.getId());
+		sqlConnection = conn.getConnection(conn.getId());
 
 		Properties p = new Properties();
 		p.put("sqlQuery", "select * from customer");
@@ -44,7 +45,7 @@ public class DBLookupTest extends CloverTestCase {
 		customer.init();
 		parser = new SQLDataParser(customerMetadata, "select * from customer");
 		parser.init();
-		parser.setDataSource(aDBConnection);
+		parser.setDataSource(sqlConnection);
 
 		lookupTable = new DBLookupTable("MyLookup", conn, null, "select * from employee where last_name=?", 0);
 		lookupTable.init();
@@ -106,7 +107,7 @@ public class DBLookupTest extends CloverTestCase {
 		lookupTable.postExecute();
 
 		lookupTable.preExecute();
-		parser.setDataSource(aDBConnection);
+		parser.setDataSource(sqlConnection);
 		lookup = lookupTable.createLookup(recordKey, customer);
 		start = System.currentTimeMillis();
 		while ((parser.getNext(customer)) != null) {
@@ -125,7 +126,7 @@ public class DBLookupTest extends CloverTestCase {
 		lookupTable.postExecute();
 
 		lookupTable.preExecute();
-		parser.setDataSource(aDBConnection);
+		parser.setDataSource(sqlConnection);
 		lookupTable.setNumCached(1000);
 		lookupTable.setStoreNulls(false);
 		lookupTable.init();
@@ -147,7 +148,7 @@ public class DBLookupTest extends CloverTestCase {
 		lookupTable.postExecute();
 
 		lookupTable.preExecute();
-		parser.setDataSource(aDBConnection);
+		parser.setDataSource(sqlConnection);
 		lookupTable.setNumCached(1000);
 		lookupTable.setStoreNulls(true);
 		lookupTable.init();
@@ -170,7 +171,7 @@ public class DBLookupTest extends CloverTestCase {
 //		lookupTable.free();
 
 		lookupTable.preExecute();
-		parser.setDataSource(aDBConnection);
+		parser.setDataSource(sqlConnection);
 		lookupTable.setNumCached(3000);
 		lookupTable.setStoreNulls(false);
 		lookupTable.init();
@@ -193,7 +194,7 @@ public class DBLookupTest extends CloverTestCase {
 //		lookupTable.free();
 
 		lookupTable.preExecute();
-		parser.setDataSource(aDBConnection);
+		parser.setDataSource(sqlConnection);
 		lookupTable.setNumCached(3000);
 		lookupTable.setStoreNulls(true);
 		lookupTable.init();

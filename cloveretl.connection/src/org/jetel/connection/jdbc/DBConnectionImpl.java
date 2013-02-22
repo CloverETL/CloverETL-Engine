@@ -17,15 +17,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.connection.jdbc;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -37,23 +35,23 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.connection.jdbc.driver.JdbcDriverDescription;
 import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
-import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
+import org.jetel.connection.jdbc.driver.JdbcDriverImpl;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
 import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
-import org.jetel.database.IConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcDriver;
+import org.jetel.database.sql.JdbcSpecific;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.compile.ClassLoaderUtils;
@@ -128,131 +126,9 @@ import org.w3c.dom.Element;
  * @revision    $Revision$
  * @created     January 15, 2003
  */
-public class DBConnection extends GraphElement implements IConnection {
+public class DBConnectionImpl extends AbstractDBConnection {
 
     private static final Log logger = LogFactory.getLog(DBConnection.class);
-
-    public final static String SQL_QUERY_PROPERTY = "sqlQuery";
-
-    public final static String XML_JDBC_SPECIFIC_ATTRIBUTE = "jdbcSpecific";
-    public final static String XML_DRIVER_LIBRARY_ATTRIBUTE = "driverLibrary";
-    public static final String XML_JNDI_NAME_ATTRIBUTE = "jndiName";
-    public static final String XML_DBURL_ATTRIBUTE = "dbURL";
-    public static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
-    public static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
-    public static final String XML_DATABASE_ATTRIBUTE = "database"; // database type - used to lookup in build-in JDBC drivers
-    public static final String XML_PASSWORD_ATTRIBUTE = "password";
-    public static final String XML_USER_ATTRIBUTE = "user";
-    public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
-    public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted";
-    public static final String XML_HOLDABILITY  = "holdability";
-    public static final String XML_TRANSACTION_ISOLATION = "transactionIsolation";
-    
-    public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
-    
-    /**
-     * Enum for the transaction isolation property values.
-     * 
-     * @author Jaroslav Urban (jaroslav.urban@javlin.eu)
-     *         (c) Javlin a.s. (www.javlin.eu)
-     *
-     * @since Oct 2, 2009
-     */
-    public static enum TransactionIsolation {
-    	TRANSACTION_NONE(Connection.TRANSACTION_NONE),
-    	READ_UNCOMMITTED(Connection.TRANSACTION_READ_UNCOMMITTED),
-    	READ_COMMITTED(Connection.TRANSACTION_READ_COMMITTED),
-    	REPEATABLE_READ(Connection.TRANSACTION_REPEATABLE_READ),
-    	SERIALIZABLE(Connection.TRANSACTION_SERIALIZABLE);
-    	
-    	private int code;
-    	
-    	// map of transaction isolation codes to their enum values
-    	private static HashMap<Integer, TransactionIsolation> codeMap = 
-    		new HashMap<Integer, TransactionIsolation>();
-    	
-    	static {
-    		TransactionIsolation[] values = TransactionIsolation.values();
-    		for (TransactionIsolation transationIsolation : values) {
-				codeMap.put(transationIsolation.getCode(), transationIsolation);
-			}
-    	}
-    	
-    	/**
-    	 * @param code
-    	 * @return enum value for the transaction isolation code.
-    	 */
-    	public static TransactionIsolation fromCode(int code) {
-    		return codeMap.get(code);
-    	}
-    	
-    	/**
-    	 * Allocates a new <tt>TransactionIsolation</tt> object.
-    	 *
-    	 * @param code
-    	 */
-    	private TransactionIsolation(int code) {
-    		this.code = code;
-    	}
-    	
-    	/**
-    	 * @return the number code for the transaction isolation.
-    	 */
-    	public int getCode() {
-    		return this.code;
-    	}
-    }
-    
-    /**
-     * Enum for the holdability property values.
-     * 
-     * @author Jaroslav Urban (jaroslav.urban@javlin.eu)
-     *         (c) Javlin a.s. (www.javlin.eu)
-     *
-     * @since Oct 2, 2009
-     */
-    public static enum Holdability {
-    	HOLD_CURSORS(ResultSet.HOLD_CURSORS_OVER_COMMIT),
-    	CLOSE_CURSORS(ResultSet.CLOSE_CURSORS_AT_COMMIT);
-    	
-    	private int code;
-    	
-    	// map of holdability codes to their enum values
-    	private static HashMap<Integer, Holdability> codeMap = 
-    		new HashMap<Integer, Holdability>();
-    	
-    	static {
-    		Holdability[] values = Holdability.values();
-    		for (Holdability holdability : values) {
-				codeMap.put(holdability.getCode(), holdability);
-			}
-    	}
-    	
-    	/**
-    	 * @param code
-    	 * @return enum value for the holdability code.
-    	 */
-    	public static Holdability fromCode(int code) {
-    		return codeMap.get(code);
-    	}
-
-
-    	/**
-    	 * Allocates a new <tt>Holdability</tt> object.
-    	 *
-    	 * @param code
-    	 */
-    	private Holdability(int code) {
-    		this.code = code;
-    	}
-    	
-    	/**
-    	 * @return the number code for the holdability.
-    	 */
-    	public int getCode() {
-    		return this.code;
-    	}
-    }
     
     // not yet used by component
     public static final String XML_NAME_ATTRIBUTE = "name";
@@ -275,8 +151,8 @@ public class DBConnection extends GraphElement implements IConnection {
     // properties specific to the JDBC connection (not used by Clover)
     private TypedProperties jdbcProperties;
     
-    private Map<CacheKey, DBConnectionInstance> connectionsCache = new HashMap<CacheKey, DBConnectionInstance>();
-    private DBConnectionInstance connectionInstance; //this variable is used in case threadSafe = false
+    private Map<CacheKey, SqlConnection> connectionsCache = new HashMap<CacheKey, SqlConnection>();
+    private SqlConnection sharedConnection; //this variable is used in case threadSafe = false
 
     private JdbcDriver jdbcDriver;
     private JdbcSpecific jdbcSpecific;
@@ -287,7 +163,7 @@ public class DBConnection extends GraphElement implements IConnection {
      *
      * @param  configFilename  properties filename containing definition of driver, dbURL, username, password
      */
-    public DBConnection(String id, String configFilename) {
+    public DBConnectionImpl(String id, String configFilename) {
         super(id);
         this.configFileName = configFilename;
     }
@@ -297,7 +173,7 @@ public class DBConnection extends GraphElement implements IConnection {
      * @param id
      * @param properties
      */
-    public DBConnection(String id, Properties properties) {
+    public DBConnectionImpl(String id, Properties properties) {
         super(id);
         
         fromProperties(properties);
@@ -365,6 +241,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	 * (properties with prefix 'jdbc.') and user name and password.
 	 * @return
 	 */
+	@Override
 	public Properties createConnectionProperties() {
 		Properties ret = new Properties();
 		
@@ -439,17 +316,8 @@ public class DBConnection extends GraphElement implements IConnection {
             jdbcDriver = jdbcDriverDescription.createJdbcDriver();
         } else {
         	//database connection is full specified by dbDriver and driverLibrary attributes
-            jdbcDriver = new JdbcDriver(null, getDbDriver(), getDbDriver(), getDriverLibraryURLs(), getJdbcSpecific(), null);
+            jdbcDriver = new JdbcDriverImpl(null, getDbDriver(), getDbDriver(), getDriverLibraryURLs(), getJdbcSpecific(), null);
         }
-    }
-
-    /**
-     * @param elementId
-     * @return
-     * @throws JetelException
-     */
-    public synchronized DBConnectionInstance getConnection(String elementId) throws JetelException {
-    	return getConnection(elementId, OperationType.UNKNOWN);
     }
 
     /**
@@ -462,50 +330,29 @@ public class DBConnection extends GraphElement implements IConnection {
      * @return
      * @throws JetelException
      */
-    public synchronized DBConnectionInstance getConnection(String elementId, OperationType operationType) throws JetelException {
-        DBConnectionInstance connection = null;
+    @Override
+	public synchronized SqlConnection getConnection(String elementId, OperationType operationType) throws JetelException {
+    	SqlConnection connection = null;
         
         if (isThreadSafeConnections()) {
         	CacheKey key = new CacheKey(elementId, operationType);
-            connection = (DBConnectionInstance) connectionsCache.get(key);
+            connection = connectionsCache.get(key);
             if (connection == null) {
-                connection = new DBConnectionInstance(this, connect(operationType), operationType);
+                connection = connect(operationType);
                 connectionsCache.put(key, connection);
             }
         } else {
-            if (connectionInstance == null) {
-                connectionInstance = new DBConnectionInstance(this, connect(operationType), operationType);
+            if (sharedConnection == null) {
+                sharedConnection = connect(operationType);
             }
-            connection = connectionInstance;
+            connection = sharedConnection;
         }
         
         return connection;
     }
-
-    protected Connection connect(OperationType operationType) throws JetelException {
-    	if (!StringUtils.isEmpty(getJndiName())) {
-        	try {
-            	Context initContext = new InitialContext();
-           		DataSource ds = (DataSource)initContext.lookup(getJndiName());
-               	Connection jndiConnection = ds.getConnection();
-               	//update jdbc specific of this DBConnection according given JNDI connection
-               	updateJdbcSpecific(jndiConnection);
-               	//wrap the given JNDI connection to a DefaultConnection instance 
-               	return getJdbcSpecific().wrapSQLConnection(this, operationType, jndiConnection);
-        	} catch (Exception e) {
-        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName(), e);
-        	}
-    	} else {
-        	try {
-				return getJdbcSpecific().createSQLConnection(this, operationType);
-			} catch (JetelException e) {
-				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
-			}
-    	}
-    }
-
+    
     /**
-     * Determines jdbc specific for this {@link DBConnection} based on given {@link Connection}.
+     * Guess jdbc specific for this {@link DBConnection} based on given {@link Connection}.
      * This is used for {@link Connection} given from JNDI interface to guess proper {@link JdbcSpecific}.
      */
     private void updateJdbcSpecific(Connection connection) {
@@ -545,21 +392,19 @@ public class DBConnection extends GraphElement implements IConnection {
 
     private void closeConnections() {
         if (threadSafeConnections) {
-            for (DBConnectionInstance connectionInstance : connectionsCache.values()) {
-            	Connection connection = connectionInstance.getSqlConnection();
+            for (SqlConnection connection: connectionsCache.values()) {
             	closeConnection(connection);
             }
             connectionsCache.clear();
         }
 
-        if (connectionInstance != null) {
-			Connection connection = connectionInstance.getSqlConnection();
-			closeConnection(connection);
-			connectionInstance = null;
+        if (sharedConnection != null) {
+			closeConnection(sharedConnection);
+			sharedConnection = null;
 		}
     }
 
-    private void closeConnection(Connection connection) {
+    private void closeConnection(SqlConnection connection) {
         try {
         	if (!connection.isClosed()) {
                 if (!connection.getAutoCommit()) {
@@ -577,24 +422,17 @@ public class DBConnection extends GraphElement implements IConnection {
     }
     
     /**
-     * Closes connection stored in cache under key specified by elementId and OperationType.UNKNOWN.
-     * Closed connection is also removed from cache.
-     */
-    public synchronized void closeConnection(String elementId) {
-    	closeConnection(elementId, OperationType.UNKNOWN);
-    }
-    
-    /**
      * Closes connection stored in cache under key specified by elementId and operationType.
      * Connection is closed only if DBConnection is thread-safe.
      * Closed connection is also removed from cache.
      */
-    public synchronized void closeConnection(String elementId, OperationType operationType) {
+    @Override
+	public synchronized void closeConnection(String elementId, OperationType operationType) {
     	if (isThreadSafeConnections()) {
         	CacheKey key = new CacheKey(elementId, operationType);
-        	DBConnectionInstance connection = connectionsCache.remove(key);
+        	SqlConnection connection = connectionsCache.remove(key);
         	if (connection != null)
-        		closeConnection(connection.getSqlConnection());
+        		closeConnection(connection);
         }
     }
     
@@ -610,84 +448,23 @@ public class DBConnection extends GraphElement implements IConnection {
     public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
-        String id = xattribs.getString(XML_ID_ATTRIBUTE);
-        // do we have dbConfig parameter specified ??
-        if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
-            return new DBConnection(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
-        } else {
-            Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE});
-            
-            return new DBConnection(id, connectionProps);
-        }
-    }
-
-    /**
-     * Saves to the given output stream all DBConnection properties.
-     * @param outStream
-     * @throws IOException
-     */
-    public void saveConfiguration(OutputStream outStream) throws IOException {
-    	saveConfiguration(outStream, null);
-    }
-    
-    /**
-     * Saves to the given output stream all DBConnection properties.
-     * @param outStream
-     * @throws IOException
-     */
-    public void saveConfiguration(OutputStream outStream, Properties moreProperties) throws IOException {
-        Properties propsToStore = new Properties();
-
-        TypedProperties extraProperties = getExtraProperties();
-        Set<Object> jdbcProps = extraProperties.keySet();
-        for (Object key : jdbcProps) {
-        	String propName = (String) key; 
-			propsToStore.setProperty(XML_JDBC_PROPERTIES_PREFIX + propName, extraProperties.getProperty(propName));
+        try {
+            String id = xattribs.getString(XML_ID_ATTRIBUTE);
+            // do we have dbConfig parameter specified ??
+            if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
+                return new DBConnectionImpl(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
+            } else {
+                Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE});
+                
+                return new DBConnectionImpl(id, connectionProps);
+            }
+		} catch (Exception e) {
+            throw new XMLConfigurationException("DBConnection: " 
+            		+ xattribs.getString(XML_ID_ATTRIBUTE, "unknown ID") + ":" + e.getMessage(), e);
 		}
-
-        if (moreProperties != null) {
-        	for(Enumeration enu = moreProperties.propertyNames(); enu.hasMoreElements(); ) {
-        		String key = (String) enu.nextElement();
-        		propsToStore.setProperty(key, moreProperties.getProperty(key));
-        	}
-        }
-        
-        
-        if(getUser() != null) {
-        	propsToStore.setProperty(XML_USER_ATTRIBUTE, getUser());
-        }
-        if(getPassword() != null) {
-        	propsToStore.setProperty(XML_PASSWORD_ATTRIBUTE, getPassword());
-        }
-        if(getDbUrl() != null) {
-        	propsToStore.setProperty(XML_DBURL_ATTRIBUTE, getDbUrl());
-        }
-        if(getDbDriver() != null) {
-        	propsToStore.setProperty(XML_DBDRIVER_ATTRIBUTE, getDbDriver());
-        }
-        if(getDatabase() != null) {
-        	propsToStore.setProperty(XML_DATABASE_ATTRIBUTE, getDatabase());
-        }
-        if(getDriverLibrary() != null) {
-        	propsToStore.setProperty(XML_DRIVER_LIBRARY_ATTRIBUTE, getDriverLibrary());
-        }
-        if(getJdbcSpecificId() != null) {
-        	propsToStore.setProperty(XML_JDBC_SPECIFIC_ATTRIBUTE, getJdbcSpecificId());
-        }
-        if(getJndiName() != null) {
-        	propsToStore.setProperty(XML_JNDI_NAME_ATTRIBUTE, getJndiName());
-        }
-        if (getHoldability() != null) {
-        	propsToStore.setProperty(XML_HOLDABILITY, Integer.toString(getHoldability()));
-        }
-        if (getTransactionIsolation() != null) {
-        	propsToStore.setProperty(XML_TRANSACTION_ISOLATION, Integer.toString(getTransactionIsolation()));
-        }
-        propsToStore.setProperty(XML_THREAD_SAFE_CONNECTIONS, Boolean.toString(isThreadSafeConnections()));
-        propsToStore.setProperty(XML_IS_PASSWORD_ENCRYPTED, Boolean.toString(isPasswordEncrypted()));
-
-        propsToStore.store(outStream, null);
     }
+
+    
     
 
     /* (non-Javadoc)
@@ -751,10 +528,7 @@ public class DBConnection extends GraphElement implements IConnection {
         return status;
     }
 
-    /* (non-Javadoc)
-     * @see org.jetel.database.IConnection#createMetadata(java.util.Properties)
-     */
-    @Override
+	@Override
 	public DataRecordMetadata createMetadata(Properties parameters) throws SQLException {
     	if (!isInitialized()) {
     		throw new IllegalStateException("DBConnection has to be initialized to be able to create metadata.");
@@ -796,7 +570,8 @@ public class DBConnection extends GraphElement implements IConnection {
         }
     }
 
-    public boolean isThreadSafeConnections() {
+    @Override
+	public boolean isThreadSafeConnections() {
         return threadSafeConnections;
     }
     
@@ -804,7 +579,8 @@ public class DBConnection extends GraphElement implements IConnection {
         this.threadSafeConnections = threadSafeConnections;
     }
  
-    public boolean isPasswordEncrypted() {
+    @Override
+	public boolean isPasswordEncrypted() {
         return isPasswordEncrypted;
     }
     
@@ -812,6 +588,7 @@ public class DBConnection extends GraphElement implements IConnection {
         this.isPasswordEncrypted = isPasswordEncrypted;
     }
 
+	@Override
 	public String getJndiName() {
 		return jndiName;
 	}
@@ -820,6 +597,7 @@ public class DBConnection extends GraphElement implements IConnection {
 		this.jndiName = jndiName;
 	}
 
+	@Override
 	public JdbcDriver getJdbcDriver() {
 		return jdbcDriver;
 	}
@@ -828,6 +606,7 @@ public class DBConnection extends GraphElement implements IConnection {
 		this.jdbcDriver = jdbcDriver;
 	}
 
+	@Override
 	public String getDbUrl() {
 		return dbUrl;
 	}
@@ -836,6 +615,7 @@ public class DBConnection extends GraphElement implements IConnection {
 		this.dbUrl = dbUrl;
 	}
 
+	@Override
 	public String getUser() {
 		return user;
 	}
@@ -844,6 +624,7 @@ public class DBConnection extends GraphElement implements IConnection {
 		this.user = user;
 	}
 
+	@Override
 	public String getPassword() {
 		return password;
 	}
@@ -852,6 +633,7 @@ public class DBConnection extends GraphElement implements IConnection {
 		this.password = password;
 	}
 
+	@Override
 	public String getDatabase() {
 		return database;
 	}
@@ -860,6 +642,7 @@ public class DBConnection extends GraphElement implements IConnection {
 		this.database = database;
 	}
 
+	@Override
 	public String getDbDriver() {
 		return dbDriver;
 	}
@@ -868,6 +651,7 @@ public class DBConnection extends GraphElement implements IConnection {
 		this.dbDriver = dbDriver;
 	}
 
+	@Override
 	public String getDriverLibrary() {
 		return driverLibrary;
 	}
@@ -891,6 +675,7 @@ public class DBConnection extends GraphElement implements IConnection {
 		this.driverLibrary = driverLibrary;
 	}
 
+	@Override
 	public String getJdbcSpecificId() {
 		return jdbcSpecificId;
 	}
@@ -910,6 +695,7 @@ public class DBConnection extends GraphElement implements IConnection {
 		}
 	}
 	
+	@Override
 	public JdbcSpecific getJdbcSpecific() {
 		if(jdbcSpecific != null) {
 			return jdbcSpecific;
@@ -929,7 +715,8 @@ public class DBConnection extends GraphElement implements IConnection {
      * @return type of associated result set
      * @throws ComponentNotReadyException
      */
-    public int getResultSetType() throws ComponentNotReadyException {
+    @Override
+	public int getResultSetType() throws ComponentNotReadyException {
 		Class<?> typesClass;
 		ClassLoader classLoader;
 
@@ -953,6 +740,7 @@ public class DBConnection extends GraphElement implements IConnection {
     }
     
 	
+	@Override
 	public TypedProperties getExtraProperties() {
 		return jdbcProperties;
 	}
@@ -1006,6 +794,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	/**
 	 * @return the holdability
 	 */
+	@Override
 	public Integer getHoldability() {
 		return holdability;
 	}
@@ -1020,6 +809,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	/**
 	 * @return the transactionIsolation
 	 */
+	@Override
 	public Integer getTransactionIsolation() {
 		return transactionIsolation;
 	}
@@ -1027,9 +817,62 @@ public class DBConnection extends GraphElement implements IConnection {
 	/**
 	 * @param transactionIsolation the transactionIsolation to set
 	 */
+	@Override
 	public void setTransactionIsolation(Integer transactionIsolation) {
 		this.transactionIsolation = transactionIsolation;
 	}
 
+	/**
+	 * Sets up a java.sql.Connection according given DBConnection object.
+	 * @param dbConnection
+	 * @return
+	 * @throws JetelException
+	 */
+	protected Connection createConnection() {
+		JdbcDriver jdbcDriver = getJdbcDriver();
+		// -pnajvar
+		// this is a bad hack, workaround for issue 2668
+		if (jdbcDriver == null) { 
+			throw new JetelRuntimeException("JDBC driver couldn't be obtained");
+		}
+		Driver driver = jdbcDriver.getDriver();
+		Connection connection;
+		Properties connectionProperties = new Properties(jdbcDriver.getProperties());
+		connectionProperties.putAll(createConnectionProperties());
+		
+        try {
+            connection = driver.connect(getDbUrl(), connectionProperties);
+        } catch (SQLException ex) {
+            throw new JetelRuntimeException("Can't connect to DB: " + ex.getMessage(), ex);
+        }
+        if (connection == null) {
+            throw new JetelRuntimeException("Not suitable driver for specified DB URL (" + driver + " / " + getDbUrl());
+        }
+        
+        return connection;
+	}
+
+	@Override
+	protected SqlConnection connect(OperationType operationType) throws JetelException {
+    	if (!StringUtils.isEmpty(getJndiName())) {
+        	try {
+            	Context initContext = new InitialContext();
+           		DataSource ds = (DataSource)initContext.lookup(getJndiName());
+               	Connection jndiConnection = ds.getConnection();
+               	//update jdbc specific of this DBConnection according given JNDI connection
+               	updateJdbcSpecific(jndiConnection);
+               	//wrap the given JNDI connection to a DefaultConnection instance 
+               	return getJdbcSpecific().createSQLConnection(this, jndiConnection, operationType);
+        	} catch (Exception e) {
+        		throw new JetelException("Cannot establish DB connection to JNDI:" + getJndiName() + " " + e.getMessage(), e);
+        	}
+    	} else {
+        	try {
+				return getJdbcSpecific().createSQLConnection(this, createConnection(), operationType);
+			} catch (JetelException e) {
+				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
+			}
+    	}
+    }
 }
 

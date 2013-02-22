@@ -27,10 +27,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.jetel.connection.jdbc.CopySQLData;
+import org.jetel.connection.jdbc.AbstractCopySQLData;
 import org.jetel.connection.jdbc.SQLCloverStatement;
 import org.jetel.connection.jdbc.SQLUtil;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -38,6 +37,8 @@ import org.jetel.data.HashKey;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
+import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -137,7 +138,7 @@ public final class DBLookup implements Lookup {
 			}
 		}
 		List<DataRecord> records;
-		synchronized (lookupTable.dbConnection.getSqlConnection()) {
+		synchronized (lookupTable.sqlConnection) {
 			records = fetchData();
 		}
 		recordCount = records.size();
@@ -168,10 +169,10 @@ public final class DBLookup implements Lookup {
 				 * and move this logic in an appropriate unit
 				 */
 				if (statement.getCloverOutputFields() == null) {
-					dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), lookupTable.dbConnection.getJdbcSpecific());
+					dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData(), lookupTable.sqlConnection.getJdbcSpecific());
 				} else {
 					ResultSetMetaData dbMeta = resultSet.getMetaData();
-					JdbcSpecific jdbcSpecific = lookupTable.dbConnection.getJdbcSpecific();
+					JdbcSpecific jdbcSpecific = lookupTable.sqlConnection.getJdbcSpecific();
 					String[] fieldName = statement.getCloverOutputFields();
 					DataFieldMetadata fieldMetadata;
 					String tableName = dbMeta.getTableName(1);
@@ -194,9 +195,9 @@ public final class DBLookup implements Lookup {
 			}
 			boolean recordsCached = true;
 			while (resultSet.next()) {
-				CopySQLData transMap[] = CopySQLData.sql2JetelTransMap(
-						SQLUtil.getFieldTypes(dbMetadata, lookupTable.dbConnection.getJdbcSpecific()), 
-						dbMetadata, record, lookupTable.dbConnection.getJdbcSpecific());
+				CopySQLData transMap[] = AbstractCopySQLData.sql2JetelTransMap(
+						SQLUtil.getFieldTypes(dbMetadata, lookupTable.sqlConnection.getJdbcSpecific()), 
+						dbMetadata, record, lookupTable.sqlConnection.getJdbcSpecific());
 				//get data from results
 				for (int i = 0; i < transMap.length; i++) {
 					transMap[i].sql2jetel(resultSet);

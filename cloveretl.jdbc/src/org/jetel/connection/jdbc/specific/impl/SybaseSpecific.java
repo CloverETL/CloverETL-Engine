@@ -19,15 +19,11 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Types;
-import java.util.ArrayList;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.conn.DefaultConnection;
 import org.jetel.connection.jdbc.specific.conn.SybaseConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -48,9 +44,13 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 		return INSTANCE;
 	}
 
+	protected SybaseSpecific() {
+		super();
+	}
+	
 	@Override
-	protected DefaultConnection prepareSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		return new SybaseConnection(dbConnection, operationType);
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		return new SybaseConnection(dbConnection, connection, operationType);
 	}
 
 	@Override
@@ -97,20 +97,6 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 	}
     
 	@Override
-	public ArrayList<String> getSchemas(java.sql.Connection connection)
-			throws SQLException {
-		return AbstractJdbcSpecific.getMetaCatalogs(connection.getMetaData());
-	}
-
-	@Override
-	public ResultSet getTables(Connection connection, String dbName)
-			throws SQLException {
-		Statement s = connection.createStatement();
-		s.execute("USE " + dbName);		
-		return s.executeQuery("EXECUTE sp_tables @table_type = \"'TABLE', 'VIEW'\"");
-	}
-
-	@Override
 	public String getTablePrefix(String schema, String owner,
 			boolean quoteIdentifiers) {
 		if (quoteIdentifiers) {
@@ -119,7 +105,5 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 			return schema + "." + owner;
 		}
 	}
-	
-
 	
 }

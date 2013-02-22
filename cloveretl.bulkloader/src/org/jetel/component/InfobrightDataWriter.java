@@ -36,9 +36,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.infobright.BooleanType;
 import org.jetel.component.infobright.CloverValueConverter;
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -47,6 +44,9 @@ import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.TextParserConfiguration;
 import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcSpecific;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -253,7 +253,7 @@ public class InfobrightDataWriter extends Node {
 		if (dbConnection != null && !dbConnection.isInitialized()) {
 			try {
 				dbConnection.init();
-				sqlConnection = dbConnection.getConnection(getId(), OperationType.WRITE).getSqlConnection();
+				sqlConnection = dbConnection.getConnection(getId(), OperationType.WRITE);
 			} catch (ComponentNotReadyException e) {
 				status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
 				return status;
@@ -327,8 +327,7 @@ public class InfobrightDataWriter extends Node {
 				dbConnection.init();
 			}
 			try {
-				sqlConnection = dbConnection.getConnection(getId(),
-						OperationType.WRITE).getSqlConnection();
+				sqlConnection = dbConnection.getConnection(getId(), OperationType.WRITE);
 			} catch (JetelException e) {
 				throw new ComponentNotReadyException(this,
 						"Invalid " + XML_DBCONNECTION_ATTRIBUTE, e);
