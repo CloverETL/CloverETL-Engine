@@ -26,11 +26,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.PluginableItemDescription;
+import org.jetel.database.sql.JdbcDriver;
+import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.ExtensionParameter;
@@ -182,7 +183,7 @@ public class JdbcDriverDescription extends PluginableItemDescription {
      * @throws ComponentNotReadyException
      */
     public JdbcDriver createJdbcDriver() throws ComponentNotReadyException {
-    	return JdbcDriver.createInstance(this);
+    	return JdbcDriverFactory.createInstance(this);
     }
 
     public JdbcSpecificDescription getJdbcSpecificDescription() {

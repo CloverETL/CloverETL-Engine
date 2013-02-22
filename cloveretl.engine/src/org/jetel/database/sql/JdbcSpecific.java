@@ -16,23 +16,17 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.connection.jdbc.specific;
+package org.jetel.database.sql;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.jetel.connection.jdbc.CopySQLData;
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
-import org.jetel.connection.jdbc.driver.JdbcDriver;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -41,7 +35,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * This interface represents customization in behaviour of a JDBC connection.
+ * This interface represents customisation in behaviour of a JDBC connection.
  * The class parameter of jdbcSpecific extension point has to implement this interface.
  * 
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -72,10 +66,14 @@ public interface JdbcSpecific {
 	}
 	
 	/**
-	 * Closes given result set if the database requires before new result set is created.
-	 * @param resultSet
+	 * @return unique identifier of this JdbcSpecific (should be same as the 'database' attribute in plungin.xml)
 	 */
-	public void closeResultSetBeforeCreatingNewOne(ResultSet resultSet) throws SQLException;
+	public String getId();
+	
+	/**
+	 * @return True if it's possible to close result set before creating new one, false otherwise.
+	 */
+	public boolean canCloseResultSetBeforeCreatingNewOne();
 
 	/**
 	 * @return Pattern of db field.
@@ -91,19 +89,7 @@ public interface JdbcSpecific {
 	 * @return
 	 * @throws JetelException
 	 */
-	public Connection createSQLConnection(DBConnection dbConnection, OperationType operationType) throws JetelException;
-
-	/**
-	 * Wraps the given connection to a {@link Connection}, which should follow 
-	 * all specific behaviour with the given operation type.
-	 * Method is intended to be overridden.
-	 * @param dbConnection
-	 * @param operationType
-	 * @param sqlConnection
-	 * @return
-	 * @throws JetelException
-	 */
-	public Connection wrapSQLConnection(DBConnection dbConnection, OperationType operationType, Connection sqlConnection) throws JetelException;
+	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection sqlConnection, OperationType operationType) throws JetelException;
 
 	/**
 	 * Performs check of metatadata if there are some special (DB specific) requirements.
@@ -265,35 +251,6 @@ public interface JdbcSpecific {
 	 */
 	public boolean isCaseStatement(String statement);
 	
-	/**
-	 * Returns a ResultSet representing schemas
-	 * @param dbMeta
-	 * @return ArrayList<String[]> Returns arraylist of rows, each contains a pair of strings CATALOG, SCHEMA
-	 * @throws SQLException
-	 */
-	public ArrayList<String> getSchemas(java.sql.Connection connection) throws SQLException;
-	
-	/**
-	 * Returns a ResultSet representing tables in given database
-	 * It has to extract it from dbMeta object
-	 * 
-	 * @param connection
-	 * @param schema
-	 * @return
-	 */
-	public ResultSet getTables(java.sql.Connection connection, String schema) throws SQLException;
-
-	/**
-	 * Returns columns metadata in given table.
-	 * 
-	 * @param connection
-	 * @param schema
-	 * @param owner
-	 * @param table
-	 * @return
-	 */
-	public ResultSetMetaData getColumns(java.sql.Connection connection, String schema, String owner, String table) throws SQLException;
-
     /**
      * Return select sql statement for given table.
      * Usually returns <code>select * from tablename</code>.
@@ -304,15 +261,6 @@ public interface JdbcSpecific {
      */
     public String compileSelectQuery4Table(String schema, String owner, String table);
 
-	/**
-	 * Returns a Set of ResultSets representing columns in whole database, 
-	 * It has to extract it from dbMeta objects
-	 * @param connection
-	 * @return
-	 * @throws SQLException
-	 */
-	public Set<ResultSet> getColumns(java.sql.Connection connection) throws SQLException;
-	
 	/**
 	 * Returns whether schema should be explicitly set to address table correctly in given db engine. 
 	 * 
@@ -381,4 +329,5 @@ public interface JdbcSpecific {
 	 * @return
 	 */
 	public String getCreateTableSuffix(DataRecordMetadata metadata);
+	
 }

@@ -18,7 +18,11 @@
  */
 package org.jetel.util;
 
+import java.util.Properties;
+
 import org.jetel.test.CloverTestCase;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  * @author Martin Zatopek (info@cloveretl.com)
@@ -51,6 +55,58 @@ public class XmlUtilsTest extends CloverTestCase {
 		checkInvalid(".elementName");
 		checkInvalid("1elementName");
 		checkInvalid("element name");
+	}
+	
+	public void testCreateDocumentFromProperties() {
+		try {
+			XmlUtils.createDocumentFromProperties(null, null);
+			assertTrue(false);
+		} catch (NullPointerException e) {
+			//OK
+		}
+		try {
+			XmlUtils.createDocumentFromProperties(null, new Properties());
+			assertTrue(false);
+		} catch (NullPointerException e) {
+			//OK
+		}
+		try {
+			XmlUtils.createDocumentFromProperties("myRoot", null);
+			assertTrue(false);
+		} catch (NullPointerException e) {
+			//OK
+		}
+		try {
+			XmlUtils.createDocumentFromProperties("", new Properties());
+			assertTrue(false);
+		} catch (NullPointerException e) {
+			//OK
+		}
+		
+		Document document;
+		Properties properties;
+		Element rootElement;
+		
+		properties = new Properties();
+		document = XmlUtils.createDocumentFromProperties("myRoot", properties);
+		rootElement = (Element) document.getFirstChild();
+		assertEquals("myRoot", rootElement.getNodeName());
+		assertFalse(rootElement.hasAttributes());
+		
+		properties.setProperty("nonEmptyAttr", "value1");
+		document = XmlUtils.createDocumentFromProperties("myRoot", properties);
+		rootElement = (Element) document.getFirstChild();
+		assertEquals("myRoot", rootElement.getNodeName());
+		assertEquals(1, rootElement.getAttributes().getLength());
+		assertEquals("value1", rootElement.getAttribute("nonEmptyAttr"));
+
+		properties.setProperty("emptyAttr", "");
+		document = XmlUtils.createDocumentFromProperties("myRoot", properties);
+		rootElement = (Element) document.getFirstChild();
+		assertEquals("myRoot", rootElement.getNodeName());
+		assertEquals(2, rootElement.getAttributes().getLength());
+		assertEquals("value1", rootElement.getAttribute("nonEmptyAttr"));
+		assertEquals("", rootElement.getAttribute("emptyAttr"));
 	}
 	
 }

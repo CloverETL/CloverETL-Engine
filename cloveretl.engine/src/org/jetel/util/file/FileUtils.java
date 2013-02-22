@@ -2084,11 +2084,19 @@ public class FileUtils {
 			return null;
 		}
 		
+		String urlString = null;
         if (url.getProtocol().equals(FILE_PROTOCOL)) {
-			return normalizeFilePath(url.getPath());
+			urlString = normalizeFilePath(url.getPath());
 		} else {
-			return url.toString();
+			urlString = url.toString();
 		}
+        
+        try {
+        	urlString = URLDecoder.decode(urlString, UTF8);
+		} catch (Exception e) {
+			log.error("Failed to decode URL " + urlString, e);
+		}
+        return urlString;
 	}
 	
     public static class ArchiveURLStreamHandler extends URLStreamHandler {

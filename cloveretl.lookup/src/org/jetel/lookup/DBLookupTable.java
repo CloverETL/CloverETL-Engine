@@ -25,13 +25,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jetel.connection.jdbc.CopySQLData;
-import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.AbstractCopySQLData;
 import org.jetel.connection.jdbc.SQLCloverStatement;
 import org.jetel.connection.jdbc.SQLUtil;
-import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -39,6 +35,11 @@ import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.database.sql.CopySQLData;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcSpecific;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -95,7 +96,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
 	protected DataRecordMetadata dbMetadata;
 	protected DBConnection connection;
-	protected DBConnectionInstance dbConnection;
+	protected SqlConnection sqlConnection;
 	protected String sqlQuery;//this query can contain $field
 	
 	protected int maxCached = 0;
@@ -186,14 +187,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		super.preExecute();
 		if (firstRun()) {// a phase-dependent part of initialization
 			try {
-				dbConnection = connection.getConnection(getId(), OperationType.READ);
+				sqlConnection = connection.getConnection(getId(), OperationType.READ);
 			} catch (JetelException e) {
 				throw new ComponentNotReadyException("Can't connect to database", e);
 			}
 		} else {
 			if (getGraph() != null && getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) {
 				try {
-					dbConnection = connection.getConnection(getId(), OperationType.READ);
+					sqlConnection = connection.getConnection(getId(), OperationType.READ);
 				} catch (JetelException e) {
 					throw new ComponentNotReadyException("Can't connect to database", e);
 				}
@@ -348,7 +349,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	public Iterator<DataRecord> iterator() {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
-        } else if (dbConnection == null) {
+        } else if (sqlConnection == null) {
         	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
         }
         
@@ -364,7 +365,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     			query.setLength(whereIndex);
     		}
     	}
-    	synchronized (dbConnection.getSqlConnection()) {
+    	synchronized (sqlConnection) {
     		return iteratorImpl(query.toString());
     	}
    }
@@ -374,18 +375,18 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     	ResultSet resultSet = null;
         
        	try {
-        	SQLCloverStatement st = new SQLCloverStatement(dbConnection, query, null);
+        	SQLCloverStatement st = new SQLCloverStatement(sqlConnection, query, null);
         	st.init();
 
         	resultSet = st.executeQuery();
-			dbConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
+			sqlConnection.getJdbcSpecific().optimizeResultSet(resultSet, OperationType.READ);
 		   
 			if (dbMetadata == null) {
 	            if (st.getCloverOutputFields() == null) {
-					dbMetadata = SQLUtil.dbMetadata2jetel(resultSet	.getMetaData(), dbConnection.getJdbcSpecific());
+					dbMetadata = SQLUtil.dbMetadata2jetel(resultSet	.getMetaData(), sqlConnection.getJdbcSpecific());
 				}else{
 					ResultSetMetaData dbMeta = resultSet.getMetaData();
-					JdbcSpecific jdbcSpecific = dbConnection.getJdbcSpecific();
+					JdbcSpecific jdbcSpecific = sqlConnection.getJdbcSpecific();
 					String[] fieldName = st.getCloverOutputFields();
 					DataFieldMetadata fieldMetadata;
 					String tableName = dbMeta.getTableName(1);
@@ -402,8 +403,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		   }
 		   DataRecord record = DataRecordFactory.newRecord(dbMetadata);
 		   record.init();
-			CopySQLData[] transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(dbMetadata, dbConnection.getJdbcSpecific()), 
-					dbMetadata, record, dbConnection.getJdbcSpecific());
+			CopySQLData[] transMap = AbstractCopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(dbMetadata, sqlConnection.getJdbcSpecific()), 
+					dbMetadata, record, sqlConnection.getJdbcSpecific());
 			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
 			while (resultSet.next()){
 				for (int i = 0; i < transMap.length; i++) {
@@ -435,7 +436,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	public Lookup createLookup(RecordKey key, DataRecord keyRecord) throws ComponentNotReadyException {
         if (!isInitialized()) {
             throw new NotInitializedException(this);
-        } else if (dbConnection == null) {
+        } else if (sqlConnection == null) {
         	throw new NotInitializedException("No DB connection! (pre-execute initialization not performed?)", this);
         }
 
@@ -443,7 +444,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         key.init();
 
         try {
-        	lookup = new DBLookup(new SQLCloverStatement(dbConnection, sqlQuery, keyRecord, key.getKeyFieldNames()),
+        	lookup = new DBLookup(new SQLCloverStatement(sqlConnection, sqlQuery, keyRecord, key.getKeyFieldNames()),
     				key, keyRecord);
         } catch (SQLException e) {
             throw new ComponentNotReadyException(this, e);

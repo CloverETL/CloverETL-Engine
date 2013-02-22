@@ -16,39 +16,31 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.connection.jdbc.specific;
+package org.jetel.connection.jdbc.specific.conn;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Properties;
 
-import org.jetel.connection.jdbc.driver.JdbcDriverFactory;
-import org.jetel.database.sql.JdbcDriver;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.test.CloverTestCase;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.exception.JetelException;
 
 /**
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 19 Apr 2012
+ * @created 1.2.2013
  */
-public class JdbcSpecificFactoryTest extends CloverTestCase {
+public class DerbyConnection extends BasicSqlConnection {
 
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		initEngine();
+	public DerbyConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		super(dbConnection, connection, operationType);
 	}
-
-	public void testGetJdbcSpecificDescription() throws ComponentNotReadyException, SQLException {
-		Properties mysqlLogin = new Properties();
-		mysqlLogin.setProperty("user", "test");
-		mysqlLogin.setProperty("password", "test");
-		JdbcDriver mysqlDriver = JdbcDriverFactory.createInstance(JdbcDriverFactory.getJdbcDriverDescriptor("MYSQL"));
-		Connection mysqlConnection = mysqlDriver.getDriver().connect("jdbc:mysql://koule:3306/test", mysqlLogin);
-		assertEquals(JdbcSpecificFactory.getJdbcSpecificDescription("MYSQL"),
-				JdbcSpecificFactory.getJdbcSpecificDescription(mysqlConnection));
+	
+	@Override
+	public ResultSet getTables(String schema) throws SQLException {
+		return getTablesAsSchema(schema);
 	}
 	
 }
