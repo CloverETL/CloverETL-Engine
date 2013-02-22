@@ -23,13 +23,12 @@ import java.net.URL;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
+import org.jetel.database.sql.JdbcDriver;
+import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.util.classloader.GreedyURLClassLoader;
@@ -44,11 +43,9 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 14.9.2007
  */
-public class JdbcDriver {
+public class JdbcDriverImpl implements JdbcDriver {
     private static Log logger = LogFactory.getLog(JdbcDriver.class);
     
-    private static Map<JdbcDriverDescription, JdbcDriver> driversCache = new HashMap<JdbcDriverDescription, JdbcDriver>();
-
 //    static {
 //		DriverManager.setLogWriter(new PrintWriter(System.err));
 //    }
@@ -94,7 +91,7 @@ public class JdbcDriver {
      * @param jdbcDriverDescription
      * @throws ComponentNotReadyException
      */
-    private JdbcDriver(JdbcDriverDescription jdbcDriverDescription) throws ComponentNotReadyException {
+    JdbcDriverImpl(JdbcDriverDescription jdbcDriverDescription) throws ComponentNotReadyException {
     	this(jdbcDriverDescription.getDatabase(),
     			jdbcDriverDescription.getName(),
     			jdbcDriverDescription.getDbDriver(),
@@ -112,7 +109,7 @@ public class JdbcDriver {
      * @param jdbcSpecific
      * @throws ComponentNotReadyException
      */
-    public JdbcDriver(String database, String name, String dbDriver, URL[] driverLibraries, JdbcSpecific jdbcSpecific, Properties properties) throws ComponentNotReadyException {
+    public JdbcDriverImpl(String database, String name, String dbDriver, URL[] driverLibraries, JdbcSpecific jdbcSpecific, Properties properties) throws ComponentNotReadyException {
     	this.database = database;
     	this.name = name;
     	this.dbDriver = dbDriver;
@@ -127,28 +124,32 @@ public class JdbcDriver {
     /**
      * @return identifier of this jdbc driver. It is usually name of targeted database.
      */
-    public String getDatabase() {
+    @Override
+	public String getDatabase() {
         return database;
     }
 
     /**
      * @return human readable name of jdbc driver.
      */
-    public String getName() {
+    @Override
+	public String getName() {
         return !StringUtils.isEmpty(name) ? name : database;
     }
 
     /**
      * @return jdbc specific associated by default with this jdbc driver
      */
-    public JdbcSpecific getJdbcSpecific() {
+    @Override
+	public JdbcSpecific getJdbcSpecific() {
     	return jdbcSpecific;
     }
     
     /**
      * @return custom connection properties
      */
-    public Properties getProperties() {
+    @Override
+	public Properties getProperties() {
     	Properties result = new Properties();
     	if (properties != null) {
     		result.putAll(properties);
@@ -159,14 +160,16 @@ public class JdbcDriver {
     /**
      * @return class loader, which is used to create java.sql.Driver instance, created in getDriver() method
      */
-    public ClassLoader getClassLoader() {
+    @Override
+	public ClassLoader getClassLoader() {
         return classLoader;
     }
     
     /**
      * That is major method of this class. Returns a java.sql.Driver represented by this entity.
      */
-    public Driver getDriver() {
+    @Override
+	public Driver getDriver() {
     	return driver;
     }
 
@@ -197,6 +200,7 @@ public class JdbcDriver {
      * 
      * @see DriverUnregisterer
      */
+	@Override
 	public void free() {
 		// process only classLoaders created by this instance
 		if (this.classLoader == JdbcDriver.class.getClassLoader())
@@ -254,23 +258,6 @@ public class JdbcDriver {
 		
 		// perform garbage collection as soon as possible
 		System.gc();
-	}
-	
-	/**
-	 * Factory method for creating a JdbcDriver based on a JdbcDriverDescription.
-	 * @param jdbcDriverDescription
-	 * @return
-	 * @throws ComponentNotReadyException
-	 */
-	public static JdbcDriver createInstance(JdbcDriverDescription jdbcDriverDescription) throws ComponentNotReadyException {
-		JdbcDriver result = driversCache.get(jdbcDriverDescription);
-		if (result != null) {
-			return result;
-		} else {
-			result = new JdbcDriver(jdbcDriverDescription);
-			driversCache.put(jdbcDriverDescription, result);
-			return result;
-		}
 	}
 	
 }

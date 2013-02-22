@@ -111,7 +111,7 @@ public class ComponentXMLAttributes {
 	 * @param  nodeXML  Description of the Parameter
 	 */
 	public ComponentXMLAttributes(Element nodeXML, TransformationGraph graph) {
-	    this(nodeXML, graph.getGraphProperties());
+	    this(nodeXML, graph != null ? graph.getGraphProperties() : null);
 	}
 
 

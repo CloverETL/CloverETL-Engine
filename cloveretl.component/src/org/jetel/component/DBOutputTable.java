@@ -30,16 +30,16 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.ConnectionAction;
-import org.jetel.connection.jdbc.DBConnection;
 import org.jetel.connection.jdbc.SQLCloverStatement;
-import org.jetel.connection.jdbc.SQLCloverStatement.QueryType;
 import org.jetel.connection.jdbc.SQLUtil;
-import org.jetel.connection.jdbc.specific.DBConnectionInstance;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
+import org.jetel.database.sql.QueryType;
+import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -242,7 +242,7 @@ public class DBOutputTable extends Node {
 	private static final Pattern CLOVER_FIELDS_PATTERN = Pattern.compile(Defaults.CLOVER_FIELD_REGEX);//$cloverField
 
 	private DBConnection dbConnection;
-	private DBConnectionInstance connection;
+	private SqlConnection connection;
 	private String dbConnectionName;
 	private String dbTableName;
 	private SQLCloverStatement[] statement;
@@ -501,7 +501,7 @@ public class DBOutputTable extends Node {
 			// prepare rejectedRecord and keysRecord
 			boolean supportsConnectionKeyGenaration = false;
 			try {
-				supportsConnectionKeyGenaration = dbConnection.getJdbcSpecific().supportsGetGeneratedKeys(connection.getSqlConnection().getMetaData());
+				supportsConnectionKeyGenaration = dbConnection.getJdbcSpecific().supportsGetGeneratedKeys(connection.getMetaData());
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 			}
@@ -536,7 +536,7 @@ public class DBOutputTable extends Node {
 
 			// check that what we require is supported
 			try {
-				if (useBatch && !connection.getSqlConnection().getMetaData().supportsBatchUpdates()) {
+				if (useBatch && !connection.getMetaData().supportsBatchUpdates()) {
 					logger.warn("DB indicates no support for batch updates -> switching it off !");
 					useBatch = false;
 				}
@@ -660,7 +660,7 @@ public class DBOutputTable extends Node {
 			}
 		}catch (InterruptedException e) {
 			if (errorAction == ConnectionAction.ROLLBACK) {
-				errorAction.perform(connection.getSqlConnection());
+				errorAction.perform(connection);
 				if (errorAction == ConnectionAction.ROLLBACK) {
 					logger.info("Rollback performed.");
 					logger.info("Number of commited records: " + (recCount / recordsInCommit)*recordsInCommit);
@@ -670,7 +670,7 @@ public class DBOutputTable extends Node {
 				logger.info("Rollback performed.");
 				logger.info("Number of commited records: " + (recCount / recordsInCommit)*recordsInCommit);
 			}else if (recordsInCommit!=Integer.MAX_VALUE){
-				errorAction.perform(connection.getSqlConnection());
+				errorAction.perform(connection);
 				logger.info("Number of commited records: " + recCount);
 			}
 		} finally {
@@ -709,7 +709,7 @@ public class DBOutputTable extends Node {
 					// Fix of issue #5711; For PostgresSQL we need to set SAVEPOINT for partial rollback in case of SQL exception
 					if (useSavepoints && !atomicSQL) {
 						try {
-							savepoint = connection.getSqlConnection().setSavepoint(SAVEPOINT_NAME);
+							savepoint = connection.setSavepoint(SAVEPOINT_NAME);
 						} catch (SQLException e) {
 							logger.warn("Failed to set SAVEPOINT; rest of transaction may be lost", e);
 						}
@@ -743,12 +743,12 @@ public class DBOutputTable extends Node {
 					}
 					// if atomicity of all sql statements is required, rollback current transaction and cancel executing following statements of this record
 					if (atomicSQL) {
-						connection.getSqlConnection().rollback();
+						connection.rollback();
 						logger.info("AtomicSQL is true. Rollback performed.");
 						break;
 					} else if (useSavepoints && savepoint != null) {
 						// Fix of issue #5711; For PostgresSQL rollback to last SAVEPOINT (which was set after last successful statement)
-						connection.getSqlConnection().rollback(savepoint);
+						connection.rollback(savepoint);
 					}
 					
 				}
@@ -760,7 +760,7 @@ public class DBOutputTable extends Node {
 			//if number of errors is greater then allowed throw exception
 			if (countError>maxErrors && maxErrors!=-1){
 				//Perform commit or rollback
-				errorAction.perform(connection.getSqlConnection());
+				errorAction.perform(connection);
 				if (errorAction == ConnectionAction.ROLLBACK) {
 					logger.info("Rollback performed.");
 					logger.info("Number of commited records: " + (recCount / recordsInCommit)*recordsInCommit);
@@ -772,16 +772,16 @@ public class DBOutputTable extends Node {
 			}
 			//if needed, commit
 			if ((recordsInCommit!=Integer.MAX_VALUE && ++recCount % recordsInCommit == 0) || atomicSQL) {
-				connection.getSqlConnection().commit();
+				connection.commit();
 			}
 			SynchronizeUtils.cloverYield();
 		}
  		// end of records stream - final commits;
 		 // unless we have option never to commit, commit at the end of processing
 	    if (runIt && recordsInCommit!=Integer.MAX_VALUE){
-	    	connection.getSqlConnection().commit();	
+	    	connection.commit();	
 	    }else if (!runIt) {//component execution aborted
-			errorAction.perform(connection.getSqlConnection());
+			errorAction.perform(connection);
 			if (errorAction == ConnectionAction.ROLLBACK) {
 				logger.info("Rollback performed.");
 				logger.info("Number of commited records: " + (recCount / recordsInCommit)*recordsInCommit);
@@ -889,7 +889,7 @@ public class DBOutputTable extends Node {
 					batchCount = 0;
 					holderCount = -1;
 				}
-				connection.getSqlConnection().commit();
+				connection.commit();
 			}
 		}
 	    
@@ -900,12 +900,12 @@ public class DBOutputTable extends Node {
 	    
 		// unless we have option never to commit, commit at the end of processing
 		if (runIt && recordsInCommit != Integer.MAX_VALUE) {
-			connection.getSqlConnection().commit();
+			connection.commit();
 			if (failedBatches > 0) {
 				logger.warn("Number of failed batches: " + failedBatches);
 			}
 		} else if (!runIt) {
-			errorAction.perform(connection.getSqlConnection());
+			errorAction.perform(connection);
 			if (errorAction == ConnectionAction.ROLLBACK) {
 				logger.info("Rollback performed.");
 				logger.info("Number of commited records: " + (recCount / recordsInCommit) * recordsInCommit);
@@ -937,7 +937,7 @@ public class DBOutputTable extends Node {
 				// Fix of issue #5711
 				if (useSavepoints && !atomicSQL) {
 					try {
-						savepoint = connection.getSqlConnection().setSavepoint(SAVEPOINT_NAME);
+						savepoint = connection.setSavepoint(SAVEPOINT_NAME);
 					} catch (SQLException e) {
 						logger.warn("Failed to set SAVEPOINT; rest of transaction may be lost", e);
 					}
@@ -960,7 +960,7 @@ public class DBOutputTable extends Node {
 				exThrown = true;
 				
 				if (useSavepoints && savepoint != null) {
-					connection.getSqlConnection().rollback(savepoint);
+					connection.rollback(savepoint);
 				}
 			}
 			for (int i = 0; i < updatedRecord.length; i++) {
@@ -979,11 +979,11 @@ public class DBOutputTable extends Node {
 
 			flushErrorRecords(dataRecordHolder, holderCount, exceptions, rejectedPort);
 			if (atomicSQL) {
-				connection.getSqlConnection().rollback();
+				connection.rollback();
 				logger.info("Atomic SQL is true. Rollback performed.");
 			}
 			if (countError > maxErrors && maxErrors != -1) {
-				errorAction.perform(connection.getSqlConnection());
+				errorAction.perform(connection);
 				if (errorAction == ConnectionAction.ROLLBACK) {
 					logger.info("Rollback performed.");
 					logger.info("Number of commited records: " + (recCount / recordsInCommit) * recordsInCommit);
@@ -1311,8 +1311,7 @@ public class DBOutputTable extends Node {
 			boolean supportsConnectionKeyGenaration = false;
 			try {
 				supportsConnectionKeyGenaration = connection.getJdbcSpecific()
-						.supportsGetGeneratedKeys(
-								connection.getSqlConnection().getMetaData());
+						.supportsGetGeneratedKeys(connection.getMetaData());
 			} catch (SQLException e1) {
 				// TODO Auto-generated catch block
 			}

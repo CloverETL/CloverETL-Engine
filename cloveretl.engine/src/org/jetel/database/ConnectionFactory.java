@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,10 +33,13 @@ import org.jetel.component.ComponentFactory;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.XmlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -50,7 +54,7 @@ public class ConnectionFactory {
     private static Log logger = LogFactory.getLog(ComponentFactory.class);
 
     private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
-    private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
+    private final static Class<?>[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
     private final static Map<String, ConnectionDescription> connectionMap = new HashMap<String, ConnectionDescription>();
     
     public static void init() {
@@ -115,7 +119,7 @@ public class ConnectionFactory {
      *  Method for creating various types of Connection based on connection type & XML parameter definition.
      */
     public final static IConnection createConnection(TransformationGraph graph, String connectionType, Element nodeXML) {
-        Class tClass = getConnectionClass(connectionType);
+        Class<?> tClass = getConnectionClass(connectionType);
 
         try {
             //create instance of connection
@@ -137,17 +141,24 @@ public class ConnectionFactory {
      *  Method for creating various types of Connection based on connection type, parameters and theirs types for connection constructor.
      */
     public final static IConnection createConnection(TransformationGraph graph, String connectionType, Object[] constructorParameters, Class[] parametersType) {
-        Class tClass = getConnectionClass(connectionType);
+        Class<?> tClass = getConnectionClass(connectionType);
 
         try {
             //create instance of connection
-            Constructor constructor = tClass.getConstructor(parametersType);
+            Constructor<?> constructor = tClass.getConstructor(parametersType);
             return (IConnection) constructor.newInstance(constructorParameters);
         } catch(Exception ex) {
             throw new RuntimeException("Can't create object of : " + connectionType, ex);
         }
     }
 
+    /**
+     *  Method for creating various types of Connection based on connection type and attributes passed as {@link Properties}.
+     */
+    public final static IConnection createConnection(TransformationGraph graph, String connectionType, Properties properties) {
+    	Document xmlDocument = XmlUtils.createDocumentFromProperties(TransformationGraphXMLReaderWriter.CONNECTION_ELEMENT, properties);
+    	return createConnection(graph, connectionType, (Element) xmlDocument.getFirstChild());
+    }
     
     /**
      * Method for querying map of descriptors for all registered connection types

@@ -20,8 +20,8 @@ package org.jetel.connection.jdbc.specific.conn;
 
 import java.sql.Connection;
 
-import org.jetel.connection.jdbc.DBConnection;
-import org.jetel.connection.jdbc.specific.JdbcSpecific.OperationType;
+import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.JdbcSpecific.OperationType;
 import org.jetel.exception.JetelException;
 
 /**
@@ -39,8 +39,8 @@ public class MSAccessConnection extends GenericODBCConnection {
 	 * @param operationType
 	 * @throws JetelException
 	 */
-	public MSAccessConnection(DBConnection dbConnection, OperationType operationType) throws JetelException {
-		super(dbConnection, operationType);
+	public MSAccessConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
+		super(dbConnection, connection, operationType);
 	}
 
 	/* (non-Javadoc) We had to ommit holdability settings.

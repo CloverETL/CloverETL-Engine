@@ -5,10 +5,11 @@ import java.io.FileNotFoundException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.DBConnection;
+import org.jetel.connection.jdbc.DBConnectionImpl;
 import org.jetel.connection.jdbc.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.database.sql.DBConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -43,7 +44,7 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test extends CloverTest
 		// metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\db_def_rec.xml"));
 		// aDBConnection = new DBConnection("", "config\\test\\msaccess.clover_test.txt");
 		metadata = xmlReader.read(new FileInputStream("../cloveretl.engine/config/test/rec_def/db_def_rec.xml"));
-		aDBConnection = new DBConnection("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
+		aDBConnection = new DBConnectionImpl("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
 
 		aDBConnection.init();
 

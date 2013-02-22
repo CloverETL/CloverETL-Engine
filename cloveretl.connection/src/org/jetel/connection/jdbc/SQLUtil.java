@@ -35,9 +35,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.connection.jdbc.specific.JdbcSpecific;
 import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
 import org.jetel.data.Defaults;
+import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -102,21 +102,31 @@ public class SQLUtil {
 	 * @return            Description of the Return Value
 	 */
 	public static String assembleInsertSQLStatement(String tableName, String[] dbFields, JdbcSpecific specific) {
+		
+		String quotedTableName = specific.quoteString(tableName);
+		String[] quotedDbFields = new String[dbFields.length];
+    	for (int i = 0; i < dbFields.length; i++) {
+			quotedDbFields[i] = specific.quoteString(dbFields[i]);
+		}
+		return assembleInsertSQLStatement(quotedTableName, quotedDbFields);
+	}
+	
+	public static String assembleInsertSQLStatement(String quotedTableName, String[] quotedDbFields) {
 		StringBuffer strBuf = new StringBuffer("insert into ");
 
-		strBuf.append(specific.quoteString(tableName)).append(" (");
+		strBuf.append(quotedTableName).append(" (");
 
-		for (int i = 0; i < dbFields.length; i++) {
-			strBuf.append(specific.quoteString(dbFields[i]));
-			if (i < dbFields.length - 1) {
+		for (int i = 0; i < quotedDbFields.length; i++) {
+			strBuf.append(quotedDbFields[i]);
+			if (i < quotedDbFields.length - 1) {
 				strBuf.append(", ");
 			}
 		}
 		strBuf.append(") values (");
 
-		for (int i = 0; i < dbFields.length; i++) {
+		for (int i = 0; i < quotedDbFields.length; i++) {
 			strBuf.append("?");
-			if (i < dbFields.length - 1) {
+			if (i < quotedDbFields.length - 1) {
 				strBuf.append(",");
 			}
 		}
