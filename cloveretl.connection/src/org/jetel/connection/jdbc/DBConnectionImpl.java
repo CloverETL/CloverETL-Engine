@@ -528,6 +528,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
         return status;
     }
 
+	@Override
 	public DataRecordMetadata createMetadata(Properties parameters) throws SQLException {
     	if (!isInitialized()) {
     		throw new IllegalStateException("DBConnection has to be initialized to be able to create metadata.");
@@ -569,7 +570,8 @@ public class DBConnectionImpl extends AbstractDBConnection {
         }
     }
 
-    public boolean isThreadSafeConnections() {
+    @Override
+	public boolean isThreadSafeConnections() {
         return threadSafeConnections;
     }
     
@@ -673,6 +675,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		this.driverLibrary = driverLibrary;
 	}
 
+	@Override
 	public String getJdbcSpecificId() {
 		return jdbcSpecificId;
 	}
