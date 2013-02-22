@@ -133,6 +133,7 @@ public class MappingWriter implements MappingVisitor {
 		
 		//write aggregate attributes
 		checkCloverPrefix();
+		writePropertyAsCloverAttribute(element, MappingProperty.DATA_TYPE);
 		writePropertyAsCloverAttribute(element, MappingProperty.WRITE_NULL_ELEMENT);
 		writePropertyAsCloverAttribute(element, MappingProperty.WRITE_NULL_ATTRIBUTE);
 		writePropertyAsCloverAttribute(element, MappingProperty.OMIT_NULL_ATTRIBUTE);

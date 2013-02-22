@@ -173,13 +173,14 @@ public class MappingCompiler extends AbstractVisitor {
 
 		String writeNull = element.getProperty(MappingProperty.WRITE_NULL_ELEMENT);
 		String omitNull = element.getProperty(MappingProperty.OMIT_NULL_ELEMENT);
+		String dataType = element.getProperty(MappingProperty.DATA_TYPE);
 		Set<DataFieldMetadataWrapper> writeNullSet = gatherNullSet(writeNull, omitNull, element.getParent());
 
 		for (DataFieldMetadataWrapper dataFieldWrapper : availableFields) {
 			WritableValue name = WritableValue.newInstance(new StaticValue(dataFieldWrapper.dataFieldMetadata.getName()));
 			WritableValue namespace = WritableValue.newInstance(new StaticValue(dataFieldWrapper.namespace));
 			WritableValue value = WritableValue.newInstance(new NodeValue[] { new DynamicValue(dataFieldWrapper.port, dataFieldWrapper.fieldIndex, dataFieldWrapper.dataFieldMetadata.getContainerType()) });
-			WritableObject subNode = new WritableObject(name, namespace, writeNullSet.contains(dataFieldWrapper), false);
+			WritableObject subNode = new WritableObject(name, namespace, writeNullSet.contains(dataFieldWrapper), false, dataType);
 			subNode.addChild(value);
 			currentParent.addChild(subNode);
 		}
@@ -311,10 +312,11 @@ public class MappingCompiler extends AbstractVisitor {
 		if (isHiddenString != null) {
 			isHidden = Boolean.parseBoolean(isHiddenString);
 		}
+		String dataType = element.getProperty(MappingProperty.DATA_TYPE);
 
 		if (tag != null) {
 			PortBinding portBinding = compilePortBinding(element, tag);
-			writableNode = new WritableObject(name, namespace, isWriteNull(element), portBinding, isHidden, element.getParent() == null);
+			writableNode = new WritableObject(name, namespace, isWriteNull(element), portBinding, isHidden, element.getParent() == null, dataType);
 			if (currentParent != null) {
 				currentParent.addChild(writableNode);
 			}
@@ -323,7 +325,7 @@ public class MappingCompiler extends AbstractVisitor {
 				partitionElement = writableNode;
 			}
 		} else {
-			writableNode = new WritableObject(name, namespace, isWriteNull(element), isHidden, element.getParent() == null);
+			writableNode = new WritableObject(name, namespace, isWriteNull(element), isHidden, element.getParent() == null, dataType);
 			if (currentParent != null) {
 				currentParent.addChild(writableNode);
 			}
