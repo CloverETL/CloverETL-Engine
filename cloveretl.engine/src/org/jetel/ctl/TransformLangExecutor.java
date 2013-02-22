@@ -2313,7 +2313,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			Integer index = stack.popInt();
 			try {
 				stack.push(list.get(index));
-			} catch (ArrayIndexOutOfBoundsException ex) {
+			} catch (IndexOutOfBoundsException ex) {
 				String name = null;
 				if (composite.getId() == TransformLangParserTreeConstants.JJTIDENTIFIER) {
 					CLVFIdentifier id = (CLVFIdentifier) composite;
