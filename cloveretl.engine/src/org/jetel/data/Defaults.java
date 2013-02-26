@@ -30,6 +30,7 @@ import java.util.zip.Deflater;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.MemoryUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
@@ -250,6 +251,8 @@ public final class Defaults {
         PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
         USE_DIRECT_MEMORY = getBooleanProperties("USE_DIRECT_MEMORY", true);
         MAX_MAPPED_FILE_TRANSFER_SIZE = getIntProperties("MAX_MAPPED_FILE_TRANSFER_SIZE", 8388608);
+        CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE = getLongProperties("CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE", MemoryUtils.getDirectMemorySize() / 2);
+        
         
         Record.init();
         DataFieldMetadata.init();
@@ -358,6 +361,14 @@ public final class Defaults {
 	 */
 	public static boolean USE_DIRECT_MEMORY;
 	
+	/**
+	 * Maximal size of direct memory used by clover buffers. By default,
+	 * only half of all direct memory can be used for {@link CloverBuffer} instances.
+	 * WARN: MemoryUtils.getDirectMemorySize() actually returns size of heap, since real 
+	 * size of direct memory is not available
+	 */
+	public static long CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE;// = MemoryUtils.getDirectMemorySize() / 2
+
 	/**
 	 * Defaults regarding DataRecord structure/manipulation
 	 *

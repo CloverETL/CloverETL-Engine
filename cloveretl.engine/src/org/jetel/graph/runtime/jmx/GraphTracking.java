@@ -98,6 +98,6 @@ public interface GraphTracking extends Serializable {
 	/**
 	 * @return size of memory footprint for whole graph (not guaranteed)
 	 */
-	int getUsedMemory();
+	long getUsedMemory();
 
 }
