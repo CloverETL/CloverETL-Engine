@@ -49,20 +49,6 @@ import org.jetel.util.string.StringUtils;
 public abstract class AbstractDBConnection extends GraphElement implements DBConnection {
 
 	public final static String SQL_QUERY_PROPERTY = "sqlQuery";
-
-    public final static String XML_JDBC_SPECIFIC_ATTRIBUTE = "jdbcSpecific";
-    public final static String XML_DRIVER_LIBRARY_ATTRIBUTE = "driverLibrary";
-    public static final String XML_JNDI_NAME_ATTRIBUTE = "jndiName";
-    public static final String XML_DBURL_ATTRIBUTE = "dbURL";
-    public static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
-    public static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
-    public static final String XML_DATABASE_ATTRIBUTE = "database"; // database type - used to lookup in build-in JDBC drivers
-    public static final String XML_PASSWORD_ATTRIBUTE = "password";
-    public static final String XML_USER_ATTRIBUTE = "user";
-    public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
-    public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted";
-    public static final String XML_HOLDABILITY  = "holdability";
-    public static final String XML_TRANSACTION_ISOLATION = "transactionIsolation";
 	
     public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
     
