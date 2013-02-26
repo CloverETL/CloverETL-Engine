@@ -19,10 +19,6 @@
 package org.jetel.util.compile;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -40,16 +36,13 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.LoadClassException;
-import org.jetel.exception.TempFileCreationException;
-import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
-import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
-import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.protocols.sandbox.SandboxConnection;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -241,31 +234,25 @@ public class ClassLoaderUtils {
 		/*
 		 * resolve sandbox URL's
 		 */
-		/*
-		 * commented out by MVa to test CLS-1169
 		for (int i = 0; i < urls.length; ++i) {
 			if (SandboxUrlUtils.isSandboxUrl(urls[i])) {
 				URL localUrl = SandboxUrlUtils.toLocalFileUrl(urls[i]);
 				if (localUrl != null) {
+					// sandbox URL is replaced by URL of local file
 					urls[i] = localUrl;
 				} else {
-					// sandbox URL doesn't have local path
 					try {
-						String filename = urls[i].getFile();
-						filename = filename.substring(filename.lastIndexOf("/"));
-						File locTempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(filename, -1);
-						OutputStream os = new FileOutputStream(locTempFile);
-						StreamUtils.copy(FileUtils.getInputStream(contextUrl, paths[i]), os, true, true);
-						urls[i] = locTempFile.toURI().toURL(); 
-					} catch (IOException e) {
+						// test whether sandbox protocol can be handled
+						// it just proves, there is StreamHandler for sandbox protocol registered
+						// openConnection() doesn't open any connection/stream - we can call it
+						SandboxConnection sc = (SandboxConnection) urls[i].openConnection();
+						// sandbox connection will work fine
+					} catch (Exception e) {
 						throw new RuntimeException("Could not resolve sandbox URL: " + urls[i], e);
-					} catch (TempFileCreationException e) {
-						throw new RuntimeException("Could not create local temp file for URL: " + urls[i], e);
 					}
 				}
 			}
 		}
-		*/
 		for (int i = 0; i < urls.length; ++i) {
 			if (!SandboxUrlUtils.isSandboxUrl(urls[i])) {
 				File file = FileUtils.convertUrlToFile(urls[i]);

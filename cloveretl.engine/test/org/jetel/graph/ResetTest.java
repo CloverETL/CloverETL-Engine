@@ -5,11 +5,15 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.Future;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.apache.commons.io.filefilter.AbstractFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.runtime.EngineInitializer;
@@ -78,7 +82,7 @@ public class ResetTest extends CloverTestCase {
 			if(!graphsDir.exists()){
 				throw new IllegalStateException("Graphs directory " + graphsDir.getAbsolutePath() +" not found");
 			}
-			File[] graphFiles =graphsDir.listFiles(new FileFilter() {
+			IOFileFilter filter = new AbstractFileFilter() {
 				@Override
 				public boolean accept(File pathname) {
 					return pathname.getName().endsWith(".grf") 
@@ -172,13 +176,15 @@ public class ResetTest extends CloverTestCase {
 							&& !pathname.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
 							&& !pathname.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
 							&& !pathname.getName().equals("BeanWriterReader_employees.grf"); // remove after CL-2474 solved
-					
 				}
-			});
+			};
 			
+			@SuppressWarnings("unchecked")
+			Collection<File> filesCollection = org.apache.commons.io.FileUtils.listFiles(graphsDir, filter, TrueFileFilter.INSTANCE);
+			File[] graphFiles = filesCollection.toArray(new File[0]);			
 			Arrays.sort(graphFiles);
 			
-			for( int j = 0; j < graphFiles.length; j++){
+			for(int j = 0; j < graphFiles.length; j++){
 				suite.addTest(new ResetTest(EXAMPLE_PATH[i], graphFiles[j], false, false));
 				suite.addTest(new ResetTest(EXAMPLE_PATH[i], graphFiles[j], true, j == graphFiles.length - 1 ? true : false));
 			}
