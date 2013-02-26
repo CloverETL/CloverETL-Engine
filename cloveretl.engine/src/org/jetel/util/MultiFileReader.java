@@ -180,6 +180,9 @@ public class MultiFileReader {
 				}
 				
 				Object dataSource = ReadableChannelIterator.getPreferredDataSource(contextURL, fName, parser.getPreferredDataSourceType());
+				if (dataSource == null) {
+					dataSource = FileUtils.getReadableChannel(contextURL, fName);
+				}
 				parser.setDataSource(dataSource);
 				
 				parser.setReleaseDataSource(closeLastStream = true);
