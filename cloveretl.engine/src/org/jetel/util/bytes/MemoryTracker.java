@@ -46,7 +46,7 @@ public class MemoryTracker {
 
     private final static Log logger = LogFactory.getLog(MemoryTracker.class);
 	
-	private int usedMemoryByGraph;
+	private long usedMemoryByGraph;
 	
 	private Map<Node, Integer> usedMemoryPerNode = new HashMap<Node, Integer>();
 	
@@ -96,7 +96,7 @@ public class MemoryTracker {
 	/**
 	 * @return number of bytes allocated in memory by the graph
 	 */
-	public synchronized int getUsedMemory() {
+	public synchronized long getUsedMemory() {
 		return usedMemoryByGraph;
 	}
 	

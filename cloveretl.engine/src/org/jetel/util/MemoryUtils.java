@@ -21,6 +21,8 @@ package org.jetel.util;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 
+import org.jetel.data.Defaults;
+
 /**
  * Utility class for measuring memory footprint.
  * 
@@ -145,4 +147,14 @@ public class MemoryUtils {
 		return byteArraySize(arrayLen * OBJECT_ARRAY_ITEM_OVERHEAD);
 	}
 
+	/**
+	 * @return size of available direct memory
+	 * (currently this is just estimation based on size of heap, which equals to size of direct memory by default)
+	 * @note should be changed in the future (https://bug.javlin.eu/browse/CL-2723)
+	 * @see Defaults#CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE
+	 */
+	public static long getDirectMemorySize() {
+		return Runtime.getRuntime().maxMemory();
+	}
+	
 }

@@ -13,7 +13,6 @@ import junit.framework.TestSuite;
 
 import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.runtime.EngineInitializer;
@@ -82,105 +81,112 @@ public class ResetTest extends CloverTestCase {
 			if(!graphsDir.exists()){
 				throw new IllegalStateException("Graphs directory " + graphsDir.getAbsolutePath() +" not found");
 			}
-			IOFileFilter filter = new AbstractFileFilter() {
+			IOFileFilter fileFilter = new AbstractFileFilter() {
 				@Override
-				public boolean accept(File pathname) {
-					return pathname.getName().endsWith(".grf") 
-							&& !pathname.getName().startsWith("TPCH")// ok, performance tests - last very long
-							&& !pathname.getName().contains("Performance")// ok, performance tests - last very long
-							&& !pathname.getName().equals("graphJoinData.grf") // ok, uses class file that is not created
-							&& !pathname.getName().equals("graphJoinHash.grf") // ok, uses class file that is not created
-							&& !pathname.getName().equals("graphOrdersReformat.grf") // ok, uses class file that is not created
-							&& !pathname.getName().equals("graphDataGeneratorExt.grf") // ok, uses class file that is not created
-							&& !pathname.getName().equals("graphApproximativeJoin.grf") // ok, uses class file that is not created
-							&& !pathname.getName().equals("graphDBJoin.grf") // ok, uses class file that is not created
-							&& !pathname.getName().equals("conversionNum2num.grf") // ok, should fail
-							&& !pathname.getName().equals("outPortWriting.grf") // ok, should fail
-							&& !pathname.getName().equals("graphDb2Load.grf") // ok, can only work with db2 client
-							&& !pathname.getName().equals("graphMsSqlDataWriter.grf") // ok, can only work with MsSql client
-							&& !pathname.getName().equals("graphMysqlDataWriter.grf") // ok, can only work with MySql client
-							&& !pathname.getName().equals("graphOracleDataWriter.grf") // ok, can only work with Oracle client
-							&& !pathname.getName().equals("graphPostgreSqlDataWriter.grf") // ok, can only work with postgre client
-							&& !pathname.getName().equals("graphInformixDataWriter.grf") // ok, can only work with informix server
-							&& !pathname.getName().equals("graphInfobrightDataWriter.grf") // ok, can only work with infobright server
-							&& !pathname.getName().equals("graphSystemExecuteWin.grf") // ok, graph for Windows
-							&& !pathname.getName().equals("graphLdapReader_Uninett.grf") // ok, invalid server
-							&& !pathname.getName().equals("graphSequenceChecker.grf") // ok, is to fail
-							&& !pathname.getName().equals("FixedData.grf") // ok, is to fail
-							&& !pathname.getName().equals("xpathReaderStates.grf") // ok, is to fail
-							&& !pathname.getName().equals("graphDataPolicy.grf") // ok, is to fail
-							&& !pathname.getName().equals("conversionDecimal2integer.grf") // ok, is to fail
-							&& !pathname.getName().equals("conversionDecimal2long.grf") // ok, is to fail
-							&& !pathname.getName().equals("conversionDouble2integer.grf") // ok, is to fail							
-							&& !pathname.getName().equals("conversionDouble2long.grf") // ok, is to fail
-							&& !pathname.getName().equals("conversionLong2integer.grf") // ok, is to fail
-							&& !pathname.getName().equals("nativeSortTestGraph.grf") // ok, invalid paths
-							&& !pathname.getName().equals("mountainsInformix.grf") // see issue 2550							
-							&& !pathname.getName().equals("SystemExecuteWin_EchoFromFile.grf") // graph for windows
-							&& !pathname.getName().equals("XLSEncryptedFail.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSXEncryptedFail.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSInvalidFile.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSReaderOrderMappingFail.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSXReaderOrderMappingFail.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSWildcardStrict.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSXWildcardStrict.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSWildcardControlled1.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSXWildcardControlled1.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSWildcardControlled7.grf") // ok, is to fail
-							&& !pathname.getName().equals("XLSXWildcardControlled7.grf") // ok, is to fail
-							&& !pathname.getName().equals("SSWRITER_MultilineInsertIntoTemplate.grf") // uses graph parameter definition from after-commit.ts
-							&& !pathname.getName().equals("SSWRITER_FormatInMetadata.grf") // uses graph parameter definition from after-commit.ts
-							&& !pathname.getName().equals("WSC_NamespaceBindingsDefined.grf") // ok, is to fail
-							&& !pathname.getName().equals("FailingGraph.grf") // ok, is to fail
-							&& !pathname.getName().equals("RunGraph_FailWhenUnderlyingGraphFails.grf") // probably should fail, recheck after added to after-commit.ts
-							&& !pathname.getName().equals("DataIntersection_order_check_A.grf") // ok, is to fail
-							&& !pathname.getName().equals("DataIntersection_order_check_B.grf") // ok, is to fail
-							&& !pathname.getName().equals("UDR_Logging_SFTP_CL1469.grf") // ok, is to fail
-							&& !pathname.getName().startsWith("AddressDoctor") //wrong path to db file, try to fix when AD installed on jenkins machines 
-							&& !pathname.getName().equals("EmailReader_Local.grf") // remove after CL-2167 solved
-							&& !pathname.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
-							&& !pathname.getName().contains("firebird") // remove after CL-2170 solved
-							&& !pathname.getName().startsWith("ListOfRecords_Functions_02_") // remove after CL-2173 solved
-							&& !pathname.getName().equals("UDR_FileURL_OneZipMultipleFilesUnspecified.grf") // remove after CL-2174 solved
-							&& !pathname.getName().equals("UDR_FileURL_OneZipOneFileUnspecified.grf") // remove after CL-2174 solved
-							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Compiled_") // remove after CL-2175 solved
-							&& !pathname.getName().startsWith("MapOfRecords_Functions_01_Interpreted_") // remove after CL-2176 solved
-							&& !pathname.getName().equals("manyRecords.grf") // remove after CL-1825 implemented
-							&& !pathname.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
-							&& !pathname.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
-							&& !pathname.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
-							&& !pathname.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
-							&& !pathname.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
-							&& !pathname.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
-							&& !pathname.getName().equals("HTTPConnector_get_error_unknownhost.grf") // ok, is to fail
-							&& !pathname.getName().equals("HTTPConnector_get_error_unknownprotocol.grf") // ok, is to fail
-							&& !pathname.getName().equals("HTTPConnector_get_inputfield.grf") // ok, is to fail
-							&& !pathname.getName().equals("HTTPConnector_get_inputfileURL.grf") // ok, is to fail
-							&& !pathname.getName().equals("HTTPConnector_get_requestcontent.grf") // ok, is to fail
-							&& !pathname.getName().equals("HTTPConnector_post_error_unknownhost.grf") // ok, is to fail
-							&& !pathname.getName().equals("HTTPConnector_post_error_unknownprotocol.grf") // ok, is to fail
-							&& !pathname.getName().equals("HTTPConnector_inputmapping_null_values.grf") // ok, is to fail
-							&& !pathname.getName().equals("HttpConnector_errHandlingNoRedir.grf") // ok, is to fail
-							&& !pathname.getName().equals("XMLExtract_fileURL_not_xml.grf") // ok, is to fail
-							&& !pathname.getName().equals("XMLExtract_charset_invalid.grf") // ok, is to fail
-							&& !pathname.getName().equals("XMLExtract_mappingURL_missing.grf") // ok, is to fail
-							&& !pathname.getName().equals("XMLExtract_fileURL_not_exists.grf") // ok, is to fail
-							&& !pathname.getName().equals("XMLExtract_charset_not_default_fail.grf") // ok, is to fail
-							&& !pathname.getName().equals("RunGraph_differentOutputMetadataFail.grf") // ok, is to fail
-							&& !pathname.getName().equals("LUTPersistent_wrong_metadata.grf") // ok, is to fail
-							&& !pathname.getName().equals("UDW_nonExistingDir_fail_CL-2478.grf") // ok, is to fail
-							&& !pathname.getName().equals("CTL_lookup_put_fail.grf") // ok, is to fail
-							&& !pathname.getName().equals("SystemExecute_printBatchFile.grf") // ok, is to fail
-							&& !pathname.getName().startsWith("Proxy_") // allowed to run only on virt-cyan as proxy tests
-							&& !pathname.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
-							&& !pathname.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
-							&& !pathname.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
-							&& !pathname.getName().equals("BeanWriterReader_employees.grf"); // remove after CL-2474 solved
+				public boolean accept(File file) {
+					return file.getName().endsWith(".grf") 
+							&& !file.getName().startsWith("TPCH")// ok, performance tests - last very long
+							&& !file.getName().contains("Performance")// ok, performance tests - last very long
+							&& !file.getName().equals("graphJoinData.grf") // ok, uses class file that is not created
+							&& !file.getName().equals("graphJoinHash.grf") // ok, uses class file that is not created
+							&& !file.getName().equals("graphOrdersReformat.grf") // ok, uses class file that is not created
+							&& !file.getName().equals("graphDataGeneratorExt.grf") // ok, uses class file that is not created
+							&& !file.getName().equals("graphApproximativeJoin.grf") // ok, uses class file that is not created
+							&& !file.getName().equals("graphDBJoin.grf") // ok, uses class file that is not created
+							&& !file.getName().equals("conversionNum2num.grf") // ok, should fail
+							&& !file.getName().equals("outPortWriting.grf") // ok, should fail
+							&& !file.getName().equals("graphDb2Load.grf") // ok, can only work with db2 client
+							&& !file.getName().equals("graphMsSqlDataWriter.grf") // ok, can only work with MsSql client
+							&& !file.getName().equals("graphMysqlDataWriter.grf") // ok, can only work with MySql client
+							&& !file.getName().equals("graphOracleDataWriter.grf") // ok, can only work with Oracle client
+							&& !file.getName().equals("graphPostgreSqlDataWriter.grf") // ok, can only work with postgre client
+							&& !file.getName().equals("graphInformixDataWriter.grf") // ok, can only work with informix server
+							&& !file.getName().equals("graphInfobrightDataWriter.grf") // ok, can only work with infobright server
+							&& !file.getName().equals("graphSystemExecuteWin.grf") // ok, graph for Windows
+							&& !file.getName().equals("graphLdapReader_Uninett.grf") // ok, invalid server
+							&& !file.getName().equals("graphSequenceChecker.grf") // ok, is to fail
+							&& !file.getName().equals("FixedData.grf") // ok, is to fail
+							&& !file.getName().equals("xpathReaderStates.grf") // ok, is to fail
+							&& !file.getName().equals("graphDataPolicy.grf") // ok, is to fail
+							&& !file.getName().equals("conversionDecimal2integer.grf") // ok, is to fail
+							&& !file.getName().equals("conversionDecimal2long.grf") // ok, is to fail
+							&& !file.getName().equals("conversionDouble2integer.grf") // ok, is to fail							
+							&& !file.getName().equals("conversionDouble2long.grf") // ok, is to fail
+							&& !file.getName().equals("conversionLong2integer.grf") // ok, is to fail
+							&& !file.getName().equals("nativeSortTestGraph.grf") // ok, invalid paths
+							&& !file.getName().equals("mountainsInformix.grf") // see issue 2550							
+							&& !file.getName().equals("SystemExecuteWin_EchoFromFile.grf") // graph for windows
+							&& !file.getName().equals("XLSEncryptedFail.grf") // ok, is to fail
+							&& !file.getName().equals("XLSXEncryptedFail.grf") // ok, is to fail
+							&& !file.getName().equals("XLSInvalidFile.grf") // ok, is to fail
+							&& !file.getName().equals("XLSReaderOrderMappingFail.grf") // ok, is to fail
+							&& !file.getName().equals("XLSXReaderOrderMappingFail.grf") // ok, is to fail
+							&& !file.getName().equals("XLSWildcardStrict.grf") // ok, is to fail
+							&& !file.getName().equals("XLSXWildcardStrict.grf") // ok, is to fail
+							&& !file.getName().equals("XLSWildcardControlled1.grf") // ok, is to fail
+							&& !file.getName().equals("XLSXWildcardControlled1.grf") // ok, is to fail
+							&& !file.getName().equals("XLSWildcardControlled7.grf") // ok, is to fail
+							&& !file.getName().equals("XLSXWildcardControlled7.grf") // ok, is to fail
+							&& !file.getName().equals("SSWRITER_MultilineInsertIntoTemplate.grf") // uses graph parameter definition from after-commit.ts
+							&& !file.getName().equals("SSWRITER_FormatInMetadata.grf") // uses graph parameter definition from after-commit.ts
+							&& !file.getName().equals("WSC_NamespaceBindingsDefined.grf") // ok, is to fail
+							&& !file.getName().equals("FailingGraph.grf") // ok, is to fail
+							&& !file.getName().equals("RunGraph_FailWhenUnderlyingGraphFails.grf") // probably should fail, recheck after added to after-commit.ts
+							&& !file.getName().equals("DataIntersection_order_check_A.grf") // ok, is to fail
+							&& !file.getName().equals("DataIntersection_order_check_B.grf") // ok, is to fail
+							&& !file.getName().equals("UDR_Logging_SFTP_CL1469.grf") // ok, is to fail
+							&& !file.getName().startsWith("AddressDoctor") //wrong path to db file, try to fix when AD installed on jenkins machines 
+							&& !file.getName().equals("EmailReader_Local.grf") // remove after CL-2167 solved
+							&& !file.getName().equals("EmailReader_Server.grf") // remove after CLD-3437 solved (or mail.javlin.eu has valid certificate)
+							&& !file.getName().contains("firebird") // remove after CL-2170 solved
+							&& !file.getName().startsWith("ListOfRecords_Functions_02_") // remove after CL-2173 solved
+							&& !file.getName().equals("UDR_FileURL_OneZipMultipleFilesUnspecified.grf") // remove after CL-2174 solved
+							&& !file.getName().equals("UDR_FileURL_OneZipOneFileUnspecified.grf") // remove after CL-2174 solved
+							&& !file.getName().startsWith("MapOfRecords_Functions_01_Compiled_") // remove after CL-2175 solved
+							&& !file.getName().startsWith("MapOfRecords_Functions_01_Interpreted_") // remove after CL-2176 solved
+							&& !file.getName().equals("manyRecords.grf") // remove after CL-1825 implemented
+							&& !file.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
+							&& !file.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
+							&& !file.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf
+							&& !file.getName().equals("SQLDataParser_precision_CL2187.grf") // ok, is to fail
+							&& !file.getName().equals("incrementalReadingDB_explicitMapping.grf") // remove after CL-2239 solved
+							&& !file.getName().equals("HTTPConnector_get_bodyparams.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_get_error_unknownhost.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_get_error_unknownprotocol.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_get_inputfield.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_get_inputfileURL.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_get_requestcontent.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_post_error_unknownhost.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_post_error_unknownprotocol.grf") // ok, is to fail
+							&& !file.getName().equals("HTTPConnector_inputmapping_null_values.grf") // ok, is to fail
+							&& !file.getName().equals("HttpConnector_errHandlingNoRedir.grf") // ok, is to fail
+							&& !file.getName().equals("XMLExtract_fileURL_not_xml.grf") // ok, is to fail
+							&& !file.getName().equals("XMLExtract_charset_invalid.grf") // ok, is to fail
+							&& !file.getName().equals("XMLExtract_mappingURL_missing.grf") // ok, is to fail
+							&& !file.getName().equals("XMLExtract_fileURL_not_exists.grf") // ok, is to fail
+							&& !file.getName().equals("XMLExtract_charset_not_default_fail.grf") // ok, is to fail
+							&& !file.getName().equals("RunGraph_differentOutputMetadataFail.grf") // ok, is to fail
+							&& !file.getName().equals("LUTPersistent_wrong_metadata.grf") // ok, is to fail
+							&& !file.getName().equals("UDW_nonExistingDir_fail_CL-2478.grf") // ok, is to fail
+							&& !file.getName().equals("CTL_lookup_put_fail.grf") // ok, is to fail
+							&& !file.getName().equals("SystemExecute_printBatchFile.grf") // ok, is to fail
+							&& !file.getName().startsWith("Proxy_") // allowed to run only on virt-cyan as proxy tests
+							&& !file.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
+							&& !file.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
+							&& !file.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
+							&& !file.getName().equals("BeanWriterReader_employees.grf"); // remove after CL-2474 solved
+				}
+			};
+			
+			IOFileFilter dirFilter = new AbstractFileFilter() {
+				@Override
+				public boolean accept(File file) {
+					return file.isDirectory() && file.getName().equals("hadoop");
 				}
 			};
 			
 			@SuppressWarnings("unchecked")
-			Collection<File> filesCollection = org.apache.commons.io.FileUtils.listFiles(graphsDir, filter, TrueFileFilter.INSTANCE);
+			Collection<File> filesCollection = org.apache.commons.io.FileUtils.listFiles(graphsDir, fileFilter, dirFilter);
 			File[] graphFiles = filesCollection.toArray(new File[0]);			
 			Arrays.sort(graphFiles);
 			

@@ -69,9 +69,6 @@ public class ReadableChannelPortIterator {
 	private FieldDataWrapper fieldDataWrapper;
 	private String charset;
 	
-	private String currentFileName;
-	private String lastFieldName;
-	
 	/**
 	 * Constructor.
 	 * @param inputPort
@@ -153,8 +150,6 @@ public class ReadableChannelPortIterator {
 				// return the first available data stream
 				Object data;
 				if ((data = fieldDataWrapper.getData(preferredDataSource)) != null) {
-					currentFileName = fieldDataWrapper.getCurrentFileName();
-					lastFieldName = fieldDataWrapper.getFieldName();
 					return data;
 				}
 
@@ -219,7 +214,7 @@ public class ReadableChannelPortIterator {
 	 * Returns current field name.
 	 */
 	public String getCurrentFileName() {
-		return currentFileName;
+		return fieldDataWrapper.getCurrentFileName();
 	}
 	
 	/**
@@ -234,7 +229,7 @@ public class ReadableChannelPortIterator {
 	 * @return
 	 */
 	public String getLastFieldName() {
-		return lastFieldName;
+		return fieldDataWrapper.getFieldName();
 	}
 
 	/**
