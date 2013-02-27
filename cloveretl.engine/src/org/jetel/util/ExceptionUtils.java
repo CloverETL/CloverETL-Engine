@@ -156,6 +156,9 @@ public class ExceptionUtils {
 		if (EqualsUtil.areEqual(message, lastMessage)) {
 			message = null;
 		}
+		if (message != null && lastMessage != null && lastMessage.endsWith(": " + message)) {
+			message = null;
+		}
 		
 		//in case the exception was created with "new Throwable(Throwable cause)" constructor
 		//generic message of this exception is useless, since all necessary information are in cause
