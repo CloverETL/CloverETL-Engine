@@ -854,7 +854,7 @@ public class DBOutputTable extends Node {
 	                 chain = chain.getNextException();
 	               }
 					if (rejectedPort != null) {
-		               dataRecordHolder[statementCount][holderCount] = null;
+						dataRecordHolder[statementCount][holderCount] = null;
 						rejectedRecord.copyFieldsByName(inRecord);
 						if (errMessFieldNum != -1) {
 							rejectedRecord.getField(errMessFieldNum).setValue(errmes);
@@ -879,13 +879,13 @@ public class DBOutputTable extends Node {
 			
             // shall we execute batch ?
 			if ((++batchCount % batchSize == 0) || atomicSQL) {
-				executeBatch(dataRecordHolder, holderCount);
+				executeBatch(dataRecordHolder, holderCount+1);
 				batchCount = 0;
 				holderCount = -1;
 			}
 			if ((++recCount % recordsInCommit == 0) || atomicSQL) {
 				if (batchCount != 0) {
-					executeBatch(dataRecordHolder, holderCount);
+					executeBatch(dataRecordHolder, holderCount+1);
 					batchCount = 0;
 					holderCount = -1;
 				}

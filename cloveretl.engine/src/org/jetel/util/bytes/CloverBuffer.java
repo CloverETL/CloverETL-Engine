@@ -30,6 +30,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
@@ -64,6 +65,8 @@ public abstract class CloverBuffer {
 	protected Node associatedNode;
 	
 	private static CloverBufferAllocator allocator = new DynamicCloverBufferAllocator();
+	
+	private static AtomicLong directMemoryUsed = new AtomicLong();
 	
 	public static void setAllocator(CloverBufferAllocator allocator) {
 		CloverBuffer.allocator = allocator;
@@ -176,13 +179,19 @@ public abstract class CloverBuffer {
     	associatedNode = ContextProvider.getNode();
 	}
     
-    protected void memoryAllocated(int memorySize) {
+    protected void memoryAllocated(int memorySize, boolean direct) {
+    	if (direct) {
+    		directMemoryUsed.addAndGet(memorySize);
+    	}
     	if (associatedGraph != null) {
     		associatedGraph.getMemoryTracker().memoryAllocated(associatedNode, memorySize);
     	}
     }
 
-    protected void memoryDeallocated(int memorySize) {
+    protected void memoryDeallocated(int memorySize, boolean direct) {
+    	if (direct) {
+    		directMemoryUsed.addAndGet(-memorySize);
+    	}
     	if (associatedGraph != null) {
     		associatedGraph.getMemoryTracker().memoryDeallocated(associatedNode, memorySize);
     	}
@@ -191,11 +200,15 @@ public abstract class CloverBuffer {
     /**
      * That is attempt to track information about all clover buffers associated with a graph or node. 
      */
-//this was considered two dangerous, 
-//    @Override
-//    protected void finalize() throws Throwable {
-//    	memoryDeallocated(capacity());
-//    }
+    @Override
+    protected final void finalize() throws Throwable {
+    	super.finalize();
+    	try {
+    		memoryDeallocated(capacity(), isDirect());
+    	} catch (Throwable t) {
+    		logger.warn("Finalization of CluverBuffer failed.", t);
+    	}
+    }
     
     /**
      * Returns the underlying NIO buffer instance.
@@ -658,8 +671,9 @@ public abstract class CloverBuffer {
      * Request to prepare a new byte buffer. Memory tracker is updated.
      */
     protected ByteBuffer reallocateByteBuffer(int capacity, boolean direct) {
-    	memoryAllocated(capacity);
-    	return allocateByteBuffer(capacity, direct);
+    	ByteBuffer result = allocateByteBuffer(capacity, direct);
+    	memoryAllocated(capacity, result.isDirect());
+    	return result;
     }
 
     /**
@@ -667,7 +681,7 @@ public abstract class CloverBuffer {
      * Memory tracker is updated. 
      */
     protected void deallocateByteBuffer(ByteBuffer byteBuffer) {
-    	memoryDeallocated(byteBuffer.capacity());
+    	memoryDeallocated(byteBuffer.capacity(), byteBuffer.isDirect());
     }
 
     /**
@@ -679,8 +693,8 @@ public abstract class CloverBuffer {
      * @param direct <code>true</code> if direct buffer is requested
      * @return new {@link ByteBuffer}
      */
-    public static ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
-    	if (direct && Defaults.USE_DIRECT_MEMORY && isDirectMemoryAvailable()) {
+    protected static synchronized ByteBuffer allocateByteBuffer(int capacity, boolean direct) {
+    	if (direct && Defaults.USE_DIRECT_MEMORY && isDirectMemoryAvailable(capacity)) {
     		try {
     			return ByteBuffer.allocateDirect(capacity);
     		} catch (OutOfMemoryError e) {
@@ -698,10 +712,15 @@ public abstract class CloverBuffer {
      * The direct memory is considered unavailable if an unsuccessful attempt to allocate direct
      * memory was performed in last 10 seconds.
      */
-    private static long lastDirectMemoryAllocationFail = 0;
-    private static boolean isDirectMemoryAvailable() {
+    private static volatile long lastDirectMemoryAllocationFail = 0;
+    private static synchronized boolean isDirectMemoryAvailable(int capacity) {
     	if (lastDirectMemoryAllocationFail == 0) {
-    		return true;
+    		if (directMemoryUsed.get() + capacity <= Defaults.CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE) {
+        		return true;
+    		} else {
+    			logger.trace("CloverBuffers are out of direct memory, used " + directMemoryUsed + "B and requested " + capacity + "B.");
+    			return false;
+    		}
     	} else {
 	    	long currentTime = System.currentTimeMillis();
 	    	if (currentTime - lastDirectMemoryAllocationFail > 10000) {

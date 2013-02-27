@@ -166,7 +166,7 @@ public class GraphTrackingDetail implements GraphTracking {
 	}
 
 	@Override
-	public int getUsedMemory() {
+	public long getUsedMemory() {
 		return graph.getMemoryTracker().getUsedMemory();
 	}
 	

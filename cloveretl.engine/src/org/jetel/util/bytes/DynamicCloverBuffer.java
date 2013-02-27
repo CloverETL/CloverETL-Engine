@@ -89,7 +89,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
         this.derived = false;
         this.minimumCapacity = buf.capacity();
         
-    	memoryAllocated(capacity());
+    	memoryAllocated(capacity(), buf.isDirect());
     }
 
     /**
@@ -108,7 +108,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
         	throw new IllegalArgumentException("maximumCapacity cannot be smaller then minimumCapacity");
         }
 
-    	memoryAllocated(capacity());
+    	memoryAllocated(capacity(), buf.isDirect());
     }
 
     /**
@@ -121,8 +121,6 @@ public class DynamicCloverBuffer extends CloverBuffer {
         this.recapacityAllowed = false;
         this.derived = true;
         this.minimumCapacity = parent.minimumCapacity;
-        
-    	memoryAllocated(capacity());
     }
 
 	@Override
