@@ -265,20 +265,21 @@ public class MultiFileReader {
 			try {
 				source = channelIterator.next();
 				if (source == null) continue; // if record no record found
-				if (!channelIterator.isGraphDependentSource()) {
-					autoFilling.setFilename(channelIterator.getCurrentFileName());
-					long fileSize = 0;
-					Date fileTimestamp = null;
-					if (autoFilling.getFilename() != null && FileUtils.isLocalFile(contextURL, autoFilling.getFilename())) {
-						// CL-2631 - Use "FileUtils.getJavaFile()" instead of "new File()" to take context URL into account
-						File tmpFile = FileUtils.getJavaFile(contextURL, autoFilling.getFilename());
-						long timestamp = tmpFile.lastModified();
-						fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
-						fileSize = tmpFile.length();
-					}
-					autoFilling.setFileSize(fileSize);
-					autoFilling.setFileTimestamp(fileTimestamp);
+				
+				String fileName = channelIterator.getCurrentFileName();
+				long fileSize = 0;
+				Date fileTimestamp = null;
+				if (fileName != null && FileUtils.isLocalFile(contextURL, fileName)) {
+					// CL-2631 - Use "FileUtils.getJavaFile()" instead of "new File()" to take context URL into account
+					File tmpFile = FileUtils.getJavaFile(contextURL, fileName);
+					long timestamp = tmpFile.lastModified();
+					fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
+					fileSize = tmpFile.length();
 				}
+				autoFilling.setFilename(fileName);
+				autoFilling.setFileSize(fileSize);
+				autoFilling.setFileTimestamp(fileTimestamp);
+				
 				iSource++;
 				parser.setDataSource(source);
 				if (!channelIterator.isGraphDependentSource()) {
