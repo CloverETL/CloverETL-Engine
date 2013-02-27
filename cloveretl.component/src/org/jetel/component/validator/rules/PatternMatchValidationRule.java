@@ -18,15 +18,20 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.data.DataRecord;
 
 /**
@@ -34,23 +39,22 @@ import org.jetel.data.DataRecord;
  * @created 4.12.2012
  */
 @XmlRootElement(name="patternMatch")
+@XmlType(propOrder={"ignoreCase", "pattern"})
 public class PatternMatchValidationRule extends StringValidationRule {
 	
-	public final static int IGNORE_CASE = 100;
-	public final static int PATTERN = 101;
-	
-	@XmlElement(name="target",required=true)
-	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
 	@XmlElement(name="ignoreCase",required=true)
-	private BooleanValidationParamNode ignoreCase = new BooleanValidationParamNode(IGNORE_CASE, "Ingore case", false);
+	private BooleanValidationParamNode ignoreCase = new BooleanValidationParamNode(false);
 	@XmlElement(name="pattern",required=true)
-	private StringValidationParamNode pattern = new StringValidationParamNode(PATTERN, "Patern to match");
+	private StringValidationParamNode pattern = new StringValidationParamNode();
 	
-	public PatternMatchValidationRule() {
-		super();
-		addParamNode(target);
-		addParamNode(ignoreCase);
-		addParamNode(pattern);
+	public List<ValidationParamNode> initialize() {
+		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		pattern.setName("Patern to match");
+		params.add(pattern);
+		ignoreCase.setName("Ignore case");
+		params.add(ignoreCase);
+		params.addAll(super.initialize());
+		return params;
 	}
 	
 
@@ -91,6 +95,47 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	@Override
 	public boolean isReady() {
 		return !pattern.getValue().isEmpty() && !target.getValue().isEmpty();
+	}
+
+
+	/**
+	 * @return the target
+	 */
+	public StringValidationParamNode getTarget() {
+		return target;
+	}
+
+
+	/**
+	 * @return the ignoreCase
+	 */
+	public BooleanValidationParamNode getIgnoreCase() {
+		return ignoreCase;
+	}
+
+
+	/**
+	 * @return the pattern
+	 */
+	public StringValidationParamNode getPattern() {
+		return pattern;
+	}
+	
+	@Override
+	public TARGET_TYPE getTargetType() {
+		return TARGET_TYPE.ONE_FIELD;
+	}
+
+
+	@Override
+	public String getCommonName() {
+		return "Pattern Match";
+	}
+
+
+	@Override
+	public String getCommonDescription() {
+		return "Checks whether chosen field matches regular expression provided by user.";
 	}
 
 }

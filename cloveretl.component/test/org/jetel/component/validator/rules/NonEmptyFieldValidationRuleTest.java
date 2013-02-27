@@ -31,6 +31,10 @@ import org.junit.Test;
  */
 public class NonEmptyFieldValidationRuleTest extends ValidatorTestCase {
 	
+	private static final String TARGET = "target";
+	private static final String TRIM = "trimInput";
+	private static final String GOAL = "checkForEmptiness";
+	
 	@Test
 	public void testNameability() {
 		testNameability(NonEmptyFieldValidationRule.class);
@@ -42,25 +46,25 @@ public class NonEmptyFieldValidationRuleTest extends ValidatorTestCase {
 	}
 	@Test
 	public void testAttributes() {
-		testBooleanAttribute(NonEmptyFieldValidationRule.class, NonEmptyFieldValidationRule.TRIM, false);
-		testStringAttribute(NonEmptyFieldValidationRule.class, NonEmptyFieldValidationRule.TARGET, "");
-		testBooleanAttribute(NonEmptyFieldValidationRule.class, NonEmptyFieldValidationRule.GOAL, false);
+		testBooleanAttribute(NonEmptyFieldValidationRule.class, TRIM, false);
+		testStringAttribute(NonEmptyFieldValidationRule.class, TARGET, "");
+		testBooleanAttribute(NonEmptyFieldValidationRule.class, GOAL, false);
 	}
 	@Test
 	public void testReadyness() {
 		AbstractValidationRule rule = new NonEmptyFieldValidationRule();
 		assertFalse(rule.isReady());
-		setStringParam(rule, NonEmptyFieldValidationRule.TARGET, "some_text");
+		setStringParam(rule, TARGET, "some_text");
 		assertTrue(rule.isReady());
-		setStringParam(rule, NonEmptyFieldValidationRule.TARGET, "");
+		setStringParam(rule, TARGET, "");
 		assertFalse(rule.isReady());
 	}
 
 	@Test
 	public void testEmptiness() {
 		AbstractValidationRule rule = new NonEmptyFieldValidationRule();
-		setStringParam(rule, NonEmptyFieldValidationRule.TARGET, "email");
-		setBooleanParam(rule, NonEmptyFieldValidationRule.GOAL, true);
+		setStringParam(rule, TARGET, "email");
+		setBooleanParam(rule, GOAL, true);
 		rule.setEnabled(true);
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", ""), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", null), null));
@@ -83,7 +87,7 @@ public class NonEmptyFieldValidationRuleTest extends ValidatorTestCase {
 	@Test
 	public void testNonEmptiness() {
 		AbstractValidationRule rule = new NonEmptyFieldValidationRule();
-		setStringParam(rule, NonEmptyFieldValidationRule.TARGET, "email");
+		setStringParam(rule, TARGET, "email");
 		rule.setEnabled(true);
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", ""), null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", null), null));
@@ -108,8 +112,8 @@ public class NonEmptyFieldValidationRuleTest extends ValidatorTestCase {
 	@Test
 	public void testTrimming() {		
 		AbstractValidationRule rule = new NonEmptyFieldValidationRule();
-		setStringParam(rule, NonEmptyFieldValidationRule.TARGET, "email");
-		setBooleanParam(rule, NonEmptyFieldValidationRule.TRIM, true);
+		setStringParam(rule, TARGET, "email");
+		setBooleanParam(rule, TRIM, true);
 		rule.setEnabled(true);
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "   "), null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null));
@@ -118,9 +122,9 @@ public class NonEmptyFieldValidationRuleTest extends ValidatorTestCase {
 		
 		
 		AbstractValidationRule rule2 = new NonEmptyFieldValidationRule();
-		setStringParam(rule2, NonEmptyFieldValidationRule.TARGET, "email");
-		setBooleanParam(rule2, NonEmptyFieldValidationRule.GOAL, true);
-		setBooleanParam(rule2, NonEmptyFieldValidationRule.TRIM, true);
+		setStringParam(rule2, TARGET, "email");
+		setBooleanParam(rule2, GOAL, true);
+		setBooleanParam(rule2, TRIM, true);
 		rule2.setEnabled(true);
 		assertEquals(State.VALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "   "), null));
 		assertEquals(State.VALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null));

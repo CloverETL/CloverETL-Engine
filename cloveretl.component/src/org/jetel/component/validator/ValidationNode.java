@@ -34,8 +34,8 @@ import org.jetel.data.DataRecord;
 public abstract class ValidationNode {
 	protected final static Log logger = LogFactory.getLog(ValidationNode.class);
 	@XmlAttribute(required=true)
-	private boolean enabled;
-	@XmlAttribute(required=true)
+	private boolean enabled = true;
+	@XmlAttribute(required=false)
 	private String name;
 	
 	public enum State {
@@ -88,4 +88,14 @@ public abstract class ValidationNode {
 		this.name = name;
 	}
 	
+	public abstract String getCommonName();
+	public abstract String getCommonDescription();
+	
+	@Override
+	public String toString() {
+		if(name == null || name.isEmpty()) {
+			return getCommonName();
+		}
+		return name;
+	}
 }

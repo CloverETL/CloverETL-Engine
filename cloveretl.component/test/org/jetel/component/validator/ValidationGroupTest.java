@@ -18,9 +18,13 @@
  */
 package org.jetel.component.validator;
 
+import java.util.List;
+
+import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.ValidationGroup.Conjunction;
 import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.common.ValidatorTestCase;
+import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.data.DataRecord;
 import org.junit.Test;
 
@@ -69,6 +73,7 @@ public class ValidationGroupTest extends ValidatorTestCase {
 	@Test
 	public void testValidating() {
 		ValidationGroup group = new ValidationGroup();
+		group.setEnabled(true);
 		assertEquals(State.NOT_VALIDATED, group.isValid(null, null));
 		
 		group = new ValidationGroup();
@@ -79,6 +84,8 @@ public class ValidationGroupTest extends ValidatorTestCase {
 		assertEquals(State.INVALID, group.isValid(null, null));
 		group.addChild(new AlwaysInvalidRule());
 		assertEquals(State.INVALID, group.isValid(null, null));
+		group.addChild(new AlwaysNotValidatedRule());
+		assertEquals(State.INVALID, group.isValid(null, null));
 		
 		group = new ValidationGroup();
 		group.setEnabled(true);
@@ -92,16 +99,25 @@ public class ValidationGroupTest extends ValidatorTestCase {
 		group = new ValidationGroup();
 		group.setEnabled(true);
 		group.setConjunction(Conjunction.AND);
-		group.addChild(new AlwaysNotValidatedRule());
-		assertEquals(State.VALID, group.isValid(null, null));
+		assertEquals(State.NOT_VALIDATED, group.isValid(null, null));
+		
+		group = new ValidationGroup();
+		group.setEnabled(true);
 		group.setConjunction(Conjunction.OR);
-		assertEquals(State.INVALID, group.isValid(null, null));
+		assertEquals(State.NOT_VALIDATED, group.isValid(null, null));
 		
 		group = new ValidationGroup();
 		group.setEnabled(true);
 		group.setConjunction(Conjunction.AND);
 		group.addChild(new AlwaysNotValidatedRule());
-		assertEquals(State.VALID, group.isValid(null, null));
+		assertEquals(State.NOT_VALIDATED, group.isValid(null, null));
+		group.setConjunction(Conjunction.OR);
+		assertEquals(State.NOT_VALIDATED, group.isValid(null, null));
+		
+		group = new ValidationGroup();
+		group.setEnabled(true);
+		group.setConjunction(Conjunction.AND);
+		group.addChild(new AlwaysNotValidatedRule());
 		group.addChild(new AlwaysInvalidRule());
 		assertEquals(State.INVALID, group.isValid(null, null));
 		
@@ -116,7 +132,6 @@ public class ValidationGroupTest extends ValidatorTestCase {
 		group.setEnabled(true);
 		group.setConjunction(Conjunction.OR);
 		group.addChild(new AlwaysNotValidatedRule());
-		assertEquals(State.INVALID, group.isValid(null, null));
 		group.addChild(new AlwaysInvalidRule());
 		assertEquals(State.INVALID, group.isValid(null, null));
 		
@@ -125,19 +140,129 @@ public class ValidationGroupTest extends ValidatorTestCase {
 		group.setConjunction(Conjunction.OR);
 		group.addChild(new AlwaysNotValidatedRule());
 		group.addChild(new AlwaysValidRule());
+		assertEquals(State.VALID, group.isValid(null, null));
+		
+		group = new ValidationGroup();
+		group.setEnabled(true);
+		group.setConjunction(Conjunction.OR);
+		group.addChild(new AlwaysNotValidatedRule());
+		group.addChild(new AlwaysInvalidRule());
+		assertEquals(State.INVALID, group.isValid(null, null));
+		
+		group = new ValidationGroup();
+		group.setEnabled(true);
+		group.addChild(new AlwaysNotValidatedRule());
+		group.addChild(new AlwaysNotValidatedRule());
+		group.addChild(new AlwaysNotValidatedRule());
+		assertEquals(State.NOT_VALIDATED, group.isValid(null, null));
+		
+		group = new ValidationGroup();
+		group.setEnabled(true);
+		group.setConjunction(Conjunction.OR);
+		group.addChild(new AlwaysInvalidRule());
+		group.addChild(new AlwaysInvalidRule());
+		group.addChild(new AlwaysValidRule());
+		group.addChild(new AlwaysInvalidRule());
 		assertEquals(State.VALID, group.isValid(null, null));
 	}
 	@Test
 	public void testLaziness() {
+		ValidationGroup group = new ValidationGroup();
+		group.setEnabled(true);
+		group.addChild(new AlwaysInvalidRule());
+		CountingRule.resetCounter();
+		group.isValid(null, null);
+		assertEquals(1,CountingRule.getCounter());
 		
+		group = new ValidationGroup();
+		group.setEnabled(true);
+		group.addChild(new AlwaysInvalidRule());
+		group.addChild(new AlwaysInvalidRule());
+		group.addChild(new AlwaysInvalidRule());
+		CountingRule.resetCounter();
+		group.isValid(null, null);
+		assertEquals(1,CountingRule.getCounter());
+		
+		group = new ValidationGroup();
+		group.setEnabled(true);
+		group.addChild(new AlwaysValidRule());
+		group.addChild(new AlwaysInvalidRule());
+		group.addChild(new AlwaysInvalidRule());
+		CountingRule.resetCounter();
+		group.isValid(null, null);
+		assertEquals(2,CountingRule.getCounter());
+		
+		group = new ValidationGroup();
+		group.setEnabled(true);
+		group.setConjunction(Conjunction.OR);
+		group.addChild(new AlwaysValidRule());
+		group.addChild(new AlwaysValidRule());
+		group.addChild(new AlwaysValidRule());
+		CountingRule.resetCounter();
+		group.isValid(null, null);
+		assertEquals(1,CountingRule.getCounter());
+		
+		group = new ValidationGroup();
+		group.setEnabled(true);
+		group.setConjunction(Conjunction.OR);
+		group.addChild(new AlwaysInvalidRule());
+		group.addChild(new AlwaysValidRule());
+		CountingRule.resetCounter();
+		group.isValid(null, null);
+		assertEquals(2,CountingRule.getCounter());
 	}
 	@Test
 	public void testPrelimitaryCondition() {
+		ValidationGroup group = new ValidationGroup();
+		group.setEnabled(true);
+		group.setPrelimitaryCondition(new AlwaysValidRule());
+		group.addChild(new AlwaysValidRule());
+		assertEquals(State.VALID,group.isValid(null, null));
 		
+		group.setPrelimitaryCondition(new AlwaysInvalidRule());
+		assertEquals(State.NOT_VALIDATED,group.isValid(null, null));
+		
+		group.setPrelimitaryCondition(new AlwaysNotValidatedRule());
+		assertEquals(State.VALID,group.isValid(null, null));
 	}
 	
 	/* Some mock objects */
-	private class AlwaysNotReadyRule extends AbstractValidationRule {
+	private static abstract class DummyRule extends AbstractValidationRule {
+
+		@Override
+		public TARGET_TYPE getTargetType() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		@Override
+		public String getCommonName() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		@Override
+		public String getCommonDescription() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		@Override
+		protected List<ValidationParamNode> initialize() {
+			return null;
+		}
+	}
+	
+	private static abstract class CountingRule extends DummyRule {
+		protected static int counter = 0;
+		
+		public static int getCounter() {
+			return counter;
+		}
+		
+		public static void resetCounter() {
+			counter = 0;
+		}
+		
+	}
+	private class AlwaysNotReadyRule extends DummyRule {
 		@Override
 		public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
 			return null;
@@ -147,7 +272,7 @@ public class ValidationGroupTest extends ValidatorTestCase {
 			return false;
 		}
 	}
-	private class AlwaysReadyRule extends AbstractValidationRule {
+	private class AlwaysReadyRule extends DummyRule {
 		@Override
 		public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
 			return null;
@@ -157,9 +282,10 @@ public class ValidationGroupTest extends ValidatorTestCase {
 			return true;
 		}
 	}
-	private class AlwaysValidRule extends AbstractValidationRule {
+	private class AlwaysValidRule extends CountingRule {
 		@Override
 		public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
+			counter++;
 			return State.VALID;
 		}
 		@Override
@@ -167,9 +293,10 @@ public class ValidationGroupTest extends ValidatorTestCase {
 			return true;
 		}
 	}
-	private class AlwaysInvalidRule extends AbstractValidationRule {
+	private class AlwaysInvalidRule extends CountingRule {
 		@Override
 		public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
+			counter++;
 			return State.INVALID;
 		}
 		@Override
@@ -177,9 +304,10 @@ public class ValidationGroupTest extends ValidatorTestCase {
 			return true;
 		}
 	}
-	private class AlwaysNotValidatedRule extends AbstractValidationRule {
+	private class AlwaysNotValidatedRule extends CountingRule {
 		@Override
 		public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
+			counter++;
 			return State.NOT_VALIDATED;
 		}
 		@Override

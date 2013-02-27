@@ -25,11 +25,14 @@ import java.util.Map;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.ValidationError;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.data.DataRecord;
 
 /**
@@ -37,18 +40,18 @@ import org.jetel.data.DataRecord;
  * @created 19.11.2012
  */
 @XmlRootElement(name="nonEmptyField")
+@XmlType(propOrder={"checkForEmptiness"})
 public class NonEmptyFieldValidationRule extends StringValidationRule {
-	public final static int GOAL = 100;
 	
-	@XmlElement(name="target",required=true)
-	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
 	@XmlElement(name="checkForEmptiness",required=true)
-	private BooleanValidationParamNode checkForEmptiness = new BooleanValidationParamNode(GOAL, "Only empty field is valid", false);
+	private BooleanValidationParamNode checkForEmptiness = new BooleanValidationParamNode(false);
 	
-	public NonEmptyFieldValidationRule() {
-		super();
-		addParamNode(target);
-		addParamNode(checkForEmptiness);
+	public List<ValidationParamNode> initialize() {
+		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		checkForEmptiness.setName("Only empty field is valid");
+		params.add(checkForEmptiness);
+		params.addAll(super.initialize());
+		return params;
 	}
 
 	@Override
@@ -94,5 +97,34 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 	public boolean isReady() {
 		String targetField = target.getValue();
 		return !targetField.isEmpty();
+	}
+
+	/**
+	 * @return the target
+	 */
+	public StringValidationParamNode getTarget() {
+		return target;
+	}
+
+	/**
+	 * @return the checkForEmptiness
+	 */
+	public BooleanValidationParamNode getCheckForEmptiness() {
+		return checkForEmptiness;
+	}
+	
+	@Override
+	public TARGET_TYPE getTargetType() {
+		return TARGET_TYPE.ONE_FIELD;
+	}
+
+	@Override
+	public String getCommonName() {
+		return "Empty/Nonempty field";
+	}
+
+	@Override
+	public String getCommonDescription() {
+		return "Checks whether chosen field is empty or nonempty depending on user choice.";
 	}
 }

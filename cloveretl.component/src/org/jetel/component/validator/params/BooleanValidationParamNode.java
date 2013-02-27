@@ -27,12 +27,10 @@ import javax.xml.bind.annotation.XmlValue;
 final public class BooleanValidationParamNode extends ValidationParamNode {
 	@XmlValue
 	boolean b;
+
+	public BooleanValidationParamNode() {} 
 	
-	@SuppressWarnings("unused")
-	private BooleanValidationParamNode() {} // For JAXB 
-	
-	public BooleanValidationParamNode(int key, String name, boolean b) {
-		super(key, name);
+	public BooleanValidationParamNode(boolean b) {
 		this.b = b;
 	}
 	

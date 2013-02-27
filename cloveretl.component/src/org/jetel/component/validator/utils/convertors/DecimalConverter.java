@@ -12,6 +12,7 @@ import java.util.Date;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.util.string.CloverString;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -53,6 +54,13 @@ public class DecimalConverter implements Converter {
 		if (o instanceof Long) {
 			Number number = (Number)o;
 			return DecimalFactory.getDecimal(number.longValue());
+		}
+		if (o instanceof CloverString) {
+			try {
+				return DecimalFactory.getDecimal(((CloverString)o).toString());
+			} catch (NumberFormatException e) {
+				return null;
+			}
 		}
 		if (o instanceof String) {
 			try {

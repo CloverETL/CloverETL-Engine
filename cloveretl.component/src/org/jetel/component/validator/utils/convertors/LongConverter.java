@@ -21,6 +21,7 @@ package org.jetel.component.validator.utils.convertors;
 import java.util.Date;
 
 import org.jetel.data.primitive.Decimal;
+import org.jetel.util.string.CloverString;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
@@ -53,6 +54,13 @@ public class LongConverter implements Converter {
 		}
 		if(o instanceof Boolean) {
 			return Long.valueOf(((Boolean) o).booleanValue() ? 1l : 0l);
+		}
+		if(o instanceof CloverString) {
+			try {
+				return Long.valueOf(((CloverString) o).toString());
+			} catch (NumberFormatException e) {
+				return null;
+			}
 		}
 		if(o instanceof String) {
 			try {

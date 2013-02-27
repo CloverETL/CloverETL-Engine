@@ -18,18 +18,20 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.data.DataRecord;
 import org.jetel.util.string.StringUtils;
 
@@ -38,21 +40,22 @@ import org.jetel.util.string.StringUtils;
  * @created 4.12.2012
  */
 @XmlRootElement(name="enumMatch")
+@XmlType(propOrder={"values" , "ignoreCase"})
 public class EnumMatchValidationRule extends StringValidationRule {
-	public final static int IGNORE_CASE = 100;
-	public final static int VALUES = 101;
-	
-	@XmlElement(name="target",required=true)
-	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
+
 	@XmlElement(name="values",required=true)
-	private StringValidationParamNode values = new StringValidationParamNode(VALUES, "Accept values");
+	private StringValidationParamNode values = new StringValidationParamNode();
 	@XmlElement(name="ignoreCase",required=true)
-	private BooleanValidationParamNode ignoreCase = new BooleanValidationParamNode(IGNORE_CASE, "Ingore case", false);
-	public EnumMatchValidationRule() {
-		super();
-		addParamNode(target);
-		addParamNode(values);
-		addParamNode(ignoreCase);
+	private BooleanValidationParamNode ignoreCase = new BooleanValidationParamNode(false);
+	
+	public List<ValidationParamNode> initialize() {
+		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		values.setName("Accept values");
+		params.add(values);
+		ignoreCase.setName("Ignore case");
+		params.add(ignoreCase);
+		params.addAll(super.initialize());
+		return params;
 	}
 
 	@Override
@@ -81,6 +84,9 @@ public class EnumMatchValidationRule extends StringValidationRule {
 
 	@Override
 	public boolean isReady() {
+		/*if(!isEnabled()) {
+			return true;
+		}*/
 		return !target.getValue().isEmpty() &&
 				!parseValues(false).isEmpty();
 				
@@ -107,6 +113,42 @@ public class EnumMatchValidationRule extends StringValidationRule {
 				input[i] = input[i].substring(1, input[i].length()-1);
 			}
 		}
+	}
+	
+	/**
+	 * @return the target
+	 */
+	public StringValidationParamNode getTarget() {
+		return target;
+	}
+
+	/**
+	 * @return the values
+	 */
+	public StringValidationParamNode getValues() {
+		return values;
+	}
+
+	/**
+	 * @return the ignoreCase
+	 */
+	public BooleanValidationParamNode getIgnoreCase() {
+		return ignoreCase;
+	}
+
+	@Override
+	public TARGET_TYPE getTargetType() {
+		return TARGET_TYPE.ONE_FIELD;
+	}
+
+	@Override
+	public String getCommonName() {
+		return "Enum Match";
+	}
+
+	@Override
+	public String getCommonDescription() {
+		return "Checks whether chosen field contains value from enumeration.";
 	}
 
 }

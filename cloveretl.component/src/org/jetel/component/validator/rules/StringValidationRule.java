@@ -18,24 +18,32 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.data.DataField;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 4.12.2012
  */
+@XmlType(propOrder={"trimInput"})
 public abstract class StringValidationRule extends AbstractValidationRule{
-	public final static int TRIM = 10;
 	
 	@XmlElement(name="trimInput",required=true)
-	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(TRIM, "", false);
+	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
 
-	public StringValidationRule() {
-		this.addParamNode(trimInput);
+	public List<ValidationParamNode> initialize() {
+		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		trimInput.setName("Trim input");
+		params.add(trimInput);
+		return params;
 	}
 	
 	protected String prepareInput(DataField df) {
@@ -44,5 +52,12 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 			return out.trim();
 		}
 		return out;
+	}
+
+	/**
+	 * @return the trimInput
+	 */
+	public BooleanValidationParamNode getTrimInput() {
+		return trimInput;
 	}
 }

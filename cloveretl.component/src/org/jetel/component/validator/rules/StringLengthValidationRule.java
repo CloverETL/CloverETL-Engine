@@ -18,15 +18,20 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.data.DataRecord;
 
 /**
@@ -34,37 +39,45 @@ import org.jetel.data.DataRecord;
  * @created 4.12.2012
  */
 @XmlRootElement(name="stringLength")
+@XmlType(propOrder={"typeJAXB", "from", "to"})
 public class StringLengthValidationRule extends StringValidationRule {
-	public final static int TYPE = 100;
 	public static enum TYPES {
-		EXACT, MINIMAL, MAXIMAL, INTERVAL
+		EXACT, MINIMAL, MAXIMAL, INTERVAL;
+		@Override
+		public String toString() {
+			if(this.equals(EXACT)) {
+				return "Exact";
+			}
+			if(this.equals(MINIMAL)) {
+				return "Minimal";
+			}
+			if(this.equals(MAXIMAL)) {
+				return "Maximal";
+			}
+			return "Interval";
+		}
 	}
-	public final static int FROM = 101;
-	public final static int TO = 102;
 	
-	@XmlElement(name="target",required=true)
-	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
+	private EnumValidationParamNode type = new EnumValidationParamNode(TYPES.values(), TYPES.EXACT);
+	@XmlElement(name="type", required=true)
+	private String getTypeJAXB() { return ((Enum<?>) type.getValue()).name(); }
+	private void setTypeJAXB(String input) { this.type.setFromString(input); }
 	
-	@XmlElement(name="type",required=true)
-	private EnumValidationParamNode type;
 	@XmlElement(name="from",required=true)
-	private IntegerValidationParamNode from = new IntegerValidationParamNode(FROM, "From");
+	private IntegerValidationParamNode from = new IntegerValidationParamNode();
 	@XmlElement(name="to",required=true)
-	private IntegerValidationParamNode to = new IntegerValidationParamNode(TO, "To");
+	private IntegerValidationParamNode to = new IntegerValidationParamNode();
 	
-	public StringLengthValidationRule() {
-		super();
-		
-		HashMap<Object, String> temp = new HashMap<Object, String>();
-		temp.put(TYPES.EXACT, "Exact");
-		temp.put(TYPES.MINIMAL, "At least");
-		temp.put(TYPES.MAXIMAL, "At most");
-		temp.put(TYPES.INTERVAL, "In interval");
-		type = new EnumValidationParamNode(TYPE, "Criterion", temp, TYPES.EXACT);
-		addParamNode(target);
-		addParamNode(type);
-		addParamNode(from);
-		addParamNode(to);
+	public List<ValidationParamNode> initialize() {
+		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		type.setName("Criterion");
+		params.add(type);
+		from.setName("From");
+		params.add(from);
+		to.setName("To");
+		params.add(to);
+		params.addAll(super.initialize());
+		return params;
 	}
 	
 
@@ -108,6 +121,43 @@ public class StringLengthValidationRule extends StringValidationRule {
 						(type.getValue() == TYPES.MINIMAL && from.getValue() != null) ||
 						(type.getValue() == TYPES.INTERVAL && from.getValue() != null && to.getValue() != null)
 				);
+	}
+	/**
+	 * @return the target
+	 */
+	public StringValidationParamNode getTarget() {
+		return target;
+	}
+	/**
+	 * @return the type
+	 */
+	public EnumValidationParamNode getType() {
+		return type;
+	}
+	/**
+	 * @return the from
+	 */
+	public IntegerValidationParamNode getFrom() {
+		return from;
+	}
+	/**
+	 * @return the to
+	 */
+	public IntegerValidationParamNode getTo() {
+		return to;
+	}
+	
+	@Override
+	public TARGET_TYPE getTargetType() {
+		return TARGET_TYPE.ONE_FIELD;
+	}
+	@Override
+	public String getCommonName() {
+		return "String Length";
+	}
+	@Override
+	public String getCommonDescription() {
+		return "Checks whether length of chosen field is of certain length.";
 	}
 
 }

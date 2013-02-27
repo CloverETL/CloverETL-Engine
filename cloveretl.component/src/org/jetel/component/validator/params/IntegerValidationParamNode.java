@@ -28,15 +28,9 @@ final public class IntegerValidationParamNode extends ValidationParamNode {
 	@XmlAttribute
 	Integer value;
 	
-	@SuppressWarnings("unused")
-	private IntegerValidationParamNode() {} // For JAXB
+	public IntegerValidationParamNode() {}
 	
-	public IntegerValidationParamNode(int key, String name) {
-		super(key, name);
-	}
-	
-	public IntegerValidationParamNode(int key, String name, Integer value) {
-		super(key, name);
+	public IntegerValidationParamNode(Integer value) {
 		this.value = value;
 	}
 	

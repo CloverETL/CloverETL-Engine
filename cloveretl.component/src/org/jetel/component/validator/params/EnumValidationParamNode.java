@@ -18,43 +18,44 @@
  */
 package org.jetel.component.validator.params;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlValue;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 10.11.2012
  */
 final public class EnumValidationParamNode extends ValidationParamNode {
-	@XmlValue
-	String value = "";
-	Object realValue;
-	LinkedHashMap<Object, String> options;
+	Enum value;
+	Enum[] options;
 	
 	@SuppressWarnings("unused")
 	private EnumValidationParamNode() {} // For JAXB
 	
-	public EnumValidationParamNode(int key, String name, Map<Object, String> options, Object value) {
-		super(key, name);
-		this.options = new LinkedHashMap<Object, String>(options);
+	public EnumValidationParamNode(Enum[] options, Enum value) {
+		this.options = options;
 		setValue(value);
+		
+	}	
+	public void setValue(Enum value) {
+		for(Object option : options) {
+			if(option.equals(value)) {
+				this.value = value;
+				return;
+			}
+		}
 	}
-	
-	public Object getValue() {
-		return realValue;
+	public Enum getValue() {
+		return value;
 	}
-	public void setValue(Object other) {
-		if(!options.containsKey(other)) return;
-		realValue = other;
-		value = other.toString();
+
+	public void setFromString(String input) {
+		for(Enum option : options) {
+			if(option.name().equals(input)) {
+				value = option;
+				return;
+			}
+		}
 	}
-	public Map<Object, String> getOptions() {
+	public Enum[] getOptions() {
 		return options;
 	}
 

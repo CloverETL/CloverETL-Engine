@@ -18,13 +18,12 @@
  */
 package org.jetel.component.validator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
+import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.rules.EnumMatchValidationRule;
 import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
@@ -48,18 +47,27 @@ import org.jetel.component.validator.rules.StringLengthValidationRule;
 	})
 public abstract class AbstractValidationRule extends ValidationNode {
 	
-	public final static int TARGET = 0;
-	
-	Map<Integer,ValidationParamNode> params = new HashMap<Integer, ValidationParamNode>();
-	
-	public ValidationParamNode getParam(int key) {
-		return params.get(key);
+	public static enum TARGET_TYPE {
+		ONE_FIELD, UNORDERED_FIELDS, ORDERED_FIELDS
 	}
 	
-	protected void addParamNode(ValidationParamNode pn) {
-		params.put(Integer.valueOf(pn.getKey()), pn);
-	}
+	@XmlElement(name="target",required=true)
+	protected StringValidationParamNode target = new StringValidationParamNode();
+	
+	private List<ValidationParamNode> params;
+	
 	public List<ValidationParamNode> getParamNodes() {
-		return new ArrayList<ValidationParamNode>(params.values());
+		if(params == null) {
+			params = initialize();
+		}
+		return params;
 	}
+	
+	protected abstract List<ValidationParamNode> initialize();
+	
+	public StringValidationParamNode getTarget() {
+		return target;
+	}
+	
+	public abstract TARGET_TYPE getTargetType();
 }

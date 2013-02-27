@@ -30,6 +30,11 @@ import org.junit.Test;
  */
 public class EnumMatchValidationRuleTest extends ValidatorTestCase{
 	
+	private static final String TARGET = "target";
+	private static final String TRIM = "trimInput";
+	private static final String VALUES = "values";
+	private static final String IGNORE_CASE = "ignoreCase";
+	
 	@Test
 	public void testNameability() {
 		testNameability(EnumMatchValidationRule.class);
@@ -41,24 +46,24 @@ public class EnumMatchValidationRuleTest extends ValidatorTestCase{
 	}
 	@Test
 	public void testAttributes() {
-		testBooleanAttribute(EnumMatchValidationRule.class, EnumMatchValidationRule.TRIM, false);
-		testStringAttribute(EnumMatchValidationRule.class, EnumMatchValidationRule.TARGET, "");
-		testStringAttribute(EnumMatchValidationRule.class, EnumMatchValidationRule.VALUES, "");
-		testBooleanAttribute(EnumMatchValidationRule.class, EnumMatchValidationRule.IGNORE_CASE, false);
+		testBooleanAttribute(EnumMatchValidationRule.class, TRIM, false);
+		testStringAttribute(EnumMatchValidationRule.class, TARGET, "");
+		testStringAttribute(EnumMatchValidationRule.class, VALUES, "");
+		testBooleanAttribute(EnumMatchValidationRule.class, IGNORE_CASE, false);
 	}
 	@Test
 	public void testReadyness() {
 		AbstractValidationRule rule = new EnumMatchValidationRule();
 		assertFalse(rule.isReady());
-		setStringParam(rule, EnumMatchValidationRule.TARGET, "some_text");
+		setStringParam(rule, TARGET, "some_text");
 		assertFalse(rule.isReady());
-		setStringParam(rule, EnumMatchValidationRule.VALUES, "");
+		setStringParam(rule, VALUES, "");
 		assertFalse(rule.isReady());
-		setStringParam(rule, EnumMatchValidationRule.VALUES, "one");
+		setStringParam(rule, VALUES, "one");
 		assertTrue(rule.isReady());
-		setStringParam(rule, EnumMatchValidationRule.VALUES, "one,two,three");
+		setStringParam(rule, VALUES, "one,two,three");
 		assertTrue(rule.isReady());
-		setStringParam(rule, EnumMatchValidationRule.TARGET, "");
+		setStringParam(rule, TARGET, "");
 		assertFalse(rule.isReady());
 	}
 	
@@ -66,8 +71,8 @@ public class EnumMatchValidationRuleTest extends ValidatorTestCase{
 	public void testNormal() {		
 		AbstractValidationRule rule = new EnumMatchValidationRule();
 		rule.setEnabled(true);
-		setStringParam(rule, EnumMatchValidationRule.TARGET, "field");
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"first,first,second,THIRD,fourth");
+		setStringParam(rule, TARGET, "field");
+		setStringParam(rule, VALUES,"first,first,second,THIRD,fourth");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "second"), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "THIRD"), null));
@@ -83,9 +88,9 @@ public class EnumMatchValidationRuleTest extends ValidatorTestCase{
 	public void testCaseInsensitive() {
 		AbstractValidationRule rule = new EnumMatchValidationRule();
 		rule.setEnabled(true);
-		setStringParam(rule, EnumMatchValidationRule.TARGET, "field");
-		setBooleanParam(rule, EnumMatchValidationRule.IGNORE_CASE, true);
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"first,first,second,THIRD,fourth");
+		setStringParam(rule, TARGET, "field");
+		setBooleanParam(rule, IGNORE_CASE, true);
+		setStringParam(rule, VALUES,"first,first,second,THIRD,fourth");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "second"), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "THIRD"), null));
@@ -107,20 +112,20 @@ public class EnumMatchValidationRuleTest extends ValidatorTestCase{
 	public void testEmptyOption() {
 		AbstractValidationRule rule = new EnumMatchValidationRule();
 		rule.setEnabled(true);
-		setStringParam(rule, EnumMatchValidationRule.TARGET, "field");
-		setStringParam(rule, EnumMatchValidationRule.VALUES,",first,second,,third,fourth");
+		setStringParam(rule, TARGET, "field");
+		setStringParam(rule, VALUES,",first,second,,third,fourth");
 		
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "eight"), null));
 		
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"first,,second,,third,fourth");
+		setStringParam(rule, VALUES,"first,,second,,third,fourth");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "second"), null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "eight"), null));
 		
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"first,second,,third,fourth,");
+		setStringParam(rule, VALUES,"first,second,,third,fourth,");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "fourth"), null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "eight"), null));
@@ -129,9 +134,9 @@ public class EnumMatchValidationRuleTest extends ValidatorTestCase{
 	public void testTrimming() {
 		AbstractValidationRule rule = new EnumMatchValidationRule();
 		rule.setEnabled(true);
-		setStringParam(rule, EnumMatchValidationRule.TARGET, "field");
-		setBooleanParam(rule, EnumMatchValidationRule.TRIM, true);
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"first,second,,THIRD,fourth");
+		setStringParam(rule, TARGET, "field");
+		setBooleanParam(rule, TRIM, true);
+		setStringParam(rule, VALUES,"first,second,,THIRD,fourth");
 		
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", " first "), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", " first"), null));
@@ -153,25 +158,25 @@ public class EnumMatchValidationRuleTest extends ValidatorTestCase{
 	public void testEscaping() {
 		AbstractValidationRule rule = new EnumMatchValidationRule();
 		rule.setEnabled(true);
-		setStringParam(rule, EnumMatchValidationRule.TARGET, "field");
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"first,second,\"thi,rd\",\"fourth\"");
+		setStringParam(rule, TARGET, "field");
+		setStringParam(rule, VALUES,"first,second,\"thi,rd\",\"fourth\"");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "thi,rd"), null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "fourth"), null));
 		
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "\"thi,rd\""), null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "\"fourth\""), null));
 		
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"\"f,,,irst\",second,\"thi,rd\",\"fourth\",");
+		setStringParam(rule, VALUES,"\"f,,,irst\",second,\"thi,rd\",\"fourth\",");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "f,,,irst"), null));
-		setStringParam(rule, EnumMatchValidationRule.VALUES,",\"f,,,irst\",second,\"thi,rd\",\"fourth\",");
+		setStringParam(rule, VALUES,",\"f,,,irst\",second,\"thi,rd\",\"fourth\",");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "f,,,irst"), null));
 		
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"\"\",first,second,\"thi,rd\",\"fourth\"");
+		setStringParam(rule, VALUES,"\"\",first,second,\"thi,rd\",\"fourth\"");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
 		
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"first,second,\"\",third,fourth");
+		setStringParam(rule, VALUES,"first,second,\"\",third,fourth");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		setStringParam(rule, EnumMatchValidationRule.VALUES,"first,second,\",\",third,fourth");
+		setStringParam(rule, VALUES,"first,second,\",\",third,fourth");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ","), null));
 	}
 

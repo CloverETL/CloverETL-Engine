@@ -108,16 +108,21 @@ public class Validator extends Node {
 		super.checkConfig(status);
 		String tempRules;
 		
-		if(!StringUtils.isEmpty(rules)) {
-			tempRules = rules;
-		} else {
+		if(externalRulesURL != null) {
 			tempRules = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), externalRulesURL,null);
+		} else {
+			tempRules = rules;
 		}
 		
 		try {
 			rootGroup = ValidationRulesPersister.deserialize(tempRules);
 		} catch (ValidationRulesPersisterException e) {
 			ConfigurationProblem problem = new ConfigurationProblem("Cannot create validation tree, rules settings are invalid.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+			status.add(problem);
+		}
+		
+		if(rootGroup != null && !rootGroup.isReady()) {
+			ConfigurationProblem problem = new ConfigurationProblem("Validation tree has incomplete settings. Please fix it.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
 			status.add(problem);
 		}
 		return status;

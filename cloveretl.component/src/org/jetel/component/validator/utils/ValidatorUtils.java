@@ -20,30 +20,14 @@ package org.jetel.component.validator.utils;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 4.12.2012
+ * @created 26.2.2013
  */
-public class ValidatorConverter {
+public class ValidatorUtils {
 	
-	public Integer stringToInt(String in) {
-		try {
-			return Integer.parseInt(in);
-		} catch (NumberFormatException e) {
-			return null;
+	public static String[] parseTargets(String target) {
+		if(target == null || target.trim().isEmpty()) {
+			return new String[0];
 		}
-	}
-	public Long stringToLong(String in) {
-		try {
-			return Long.parseLong(in);
-		} catch (NumberFormatException e) {
-			return null;
-		}
-	}
-	
-	public Double stringToDouble(String in) {
-		try {
-			return Double.parseDouble(in);
-		} catch (NumberFormatException e) {
-			return null;
-		}
+		return target.trim().split(",");
 	}
 }

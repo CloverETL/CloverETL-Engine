@@ -18,7 +18,6 @@
  */
 package org.jetel.component.validator.params;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
@@ -29,15 +28,9 @@ final public class StringValidationParamNode extends ValidationParamNode {
 	@XmlValue
 	String value = new String();
 	
-	@SuppressWarnings("unused")
-	private StringValidationParamNode(){} // for JAXB
+	public StringValidationParamNode() {}
 	
-	public StringValidationParamNode(int key, String name) {
-		super(key, name);
-	}
-	
-	public StringValidationParamNode(int key, String name, String value) {
-		super(key, name);
+	public StringValidationParamNode(String value) {
 		this.setValue(value);
 	}
 	public String getValue() {

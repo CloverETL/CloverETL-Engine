@@ -69,6 +69,26 @@ public class ValidationGroup extends ValidationNode {
 	@XmlEnum
 	public enum Conjunction {
 		AND, OR;
+		
+		public static State and(State left, State right) {
+			if(left == State.INVALID || right == State.INVALID) {
+				return State.INVALID;
+			}
+			if(left == State.VALID || right == State.VALID) {
+				return State.VALID;
+			}
+			return State.NOT_VALIDATED;
+		}
+		
+		public static State or(State left, State right) {
+			if(left == State.VALID || right == State.VALID) {
+				return State.VALID;
+			}
+			if(left == State.NOT_VALIDATED && right == State.NOT_VALIDATED) {
+				return State.NOT_VALIDATED;
+			}
+			return State.INVALID;
+		}
 	}
 
 	/**
@@ -111,12 +131,20 @@ public class ValidationGroup extends ValidationNode {
 	public void setLaziness(boolean laziness) {
 		this.laziness = laziness;
 	}
+	
+	public boolean getLaziness() {
+		return laziness;
+	}
 
 	/**
 	 * @param child Validation node to be added into group
 	 */
 	public void addChild(ValidationNode child) {
 		childs.add(child);
+	}
+	
+	public List<ValidationNode> getChildren() {
+		return childs;
 	}
 
 	@Override
@@ -136,30 +164,33 @@ public class ValidationGroup extends ValidationNode {
 			}
 		}
 		logger.trace("Entering group: " + this.getName());
+		State currentState = State.NOT_VALIDATED;
 		State childState;
-		boolean isInvalid = false;
 		for(int i = 0; i < childs.size(); i++) {
 			childState = childs.get(i).isValid(record,ea);
-			if(childState == State.NOT_VALIDATED && conjunction == Conjunction.AND) {
-				childState = State.VALID;
+			if(conjunction == Conjunction.AND) {
+				currentState = Conjunction.and(currentState, childState);
+				if(laziness && currentState == State.INVALID) {
+					break;
+				}
 			}
-			if(childState == State.NOT_VALIDATED && conjunction == Conjunction.OR) {
-				childState = State.INVALID;
-			}
-			if(childState == State.INVALID && laziness) {
-				logger.trace("Group: " + getName() + " is " + State.INVALID);
-				return State.INVALID;
-			}
-			if(childState == State.INVALID && !laziness) {
-				isInvalid = true;
+			if(conjunction == Conjunction.OR) {
+				currentState = Conjunction.or(currentState, childState);
+				if(laziness && currentState == State.VALID) {
+					break;
+				}
 			}
 		}
-		if(isInvalid) {
+		if(currentState == State.INVALID) {
 			logger.trace("Group: " + getName() + " is " + State.INVALID);
 			return State.INVALID;
 		}
-		logger.trace("Group: " + getName() + " is " + State.VALID);
-		return State.VALID;
+		if(currentState == State.VALID) {
+			logger.trace("Group: " + getName() + " is " + State.VALID);
+			return State.VALID;
+		}
+		logger.trace("Group: " + getName() + " is " + State.NOT_VALIDATED);
+		return State.NOT_VALIDATED;
 	}
 	
 	@Override
@@ -170,6 +201,16 @@ public class ValidationGroup extends ValidationNode {
 			}
 		}
 		return true;
+	}
+
+	@Override
+	public String getCommonName() {
+		return "Group";
+	}
+
+	@Override
+	public String getCommonDescription() {
+		return "Groups allow creating of complex rules created by joining multiple rules with AND/OR conjunction.";
 	}
 
 }

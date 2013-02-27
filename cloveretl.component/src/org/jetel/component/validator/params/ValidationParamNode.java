@@ -29,18 +29,12 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlTransient
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class ValidationParamNode {
-	private int key;
 	private String name;
 	
 	protected ValidationParamNode() {} // For JAXB
 	
-	public ValidationParamNode(int key, String name) {
-		this.key = key;
+	public ValidationParamNode(String name) {
 		this.name = name;
-	}
-	
-	public int getKey() {
-		return key;
 	}
 	
 	public String getName() {
@@ -49,6 +43,6 @@ public abstract class ValidationParamNode {
 
 	public void setName(String name) {
 		this.name = name;
-	}	
+	}
 	
 }

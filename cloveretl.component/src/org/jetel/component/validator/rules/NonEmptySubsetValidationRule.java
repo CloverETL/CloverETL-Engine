@@ -18,13 +18,20 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 
 /**
@@ -32,23 +39,22 @@ import org.jetel.data.DataRecord;
  * @created 4.12.2012
  */
 @XmlRootElement(name="nonEmptySubset")
+@XmlType(propOrder={"checkForEmptiness", "count"})
 public class NonEmptySubsetValidationRule extends StringValidationRule {
 	
-	public final static int GOAL = 100;
-	public final static int COUNT = 101;
-	
-	@XmlElement(name="target",required=true)
-	private StringValidationParamNode target = new StringValidationParamNode(TARGET, "Target field");
 	@XmlElement(name="checkForEmptiness",required=true)
-	private BooleanValidationParamNode checkForEmptiness = new BooleanValidationParamNode(GOAL, "Only empty field is valid", false);
+	private BooleanValidationParamNode checkForEmptiness = new BooleanValidationParamNode(false);
 	@XmlElement(name="count",required=true)
-	private IntegerValidationParamNode count = new IntegerValidationParamNode(COUNT, "Number of fields", 1);
+	private IntegerValidationParamNode count = new IntegerValidationParamNode(1);
 	
-	public NonEmptySubsetValidationRule() {
-		super();
-		addParamNode(target);
-		addParamNode(checkForEmptiness);
-		addParamNode(count);
+	public List<ValidationParamNode> initialize() {
+		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		checkForEmptiness.setName("Only empty field is valid");
+		params.add(checkForEmptiness);
+		count.setName("Number of fields");
+		params.add(count);
+		params.addAll(super.initialize());
+		return params;
 	}
 
 	@Override
@@ -64,7 +70,7 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 				+ "Desired count: " + count.getValue() + "\n"
 				+ "Trim input: " + trimInput.getValue());
 		
-		String[] targetField = parseTargets();
+		String[] targetField = ValidatorUtils.parseTargets(target.getValue());
 		int ok = 0;
 		for(int i = 0; i < targetField.length; i++) {
 			tempString = prepareInput(record.getField(targetField[i]));
@@ -88,12 +94,44 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 	@Override
 	public boolean isReady() {
 		return count.getValue() != null && 
-				count.getValue() > 0 &&
-				parseTargets().length > 0;
+				count.getValue().compareTo(Integer.valueOf(0)) > 0 &&
+				ValidatorUtils.parseTargets(target.getValue()).length > 0;
+	}
+
+	/**
+	 * @return the target
+	 */
+	public StringValidationParamNode getTarget() {
+		return target;
+	}
+
+	/**
+	 * @return the checkForEmptiness
+	 */
+	public BooleanValidationParamNode getCheckForEmptiness() {
+		return checkForEmptiness;
+	}
+
+	/**
+	 * @return the count
+	 */
+	public IntegerValidationParamNode getCount() {
+		return count;
 	}
 	
-	private String[] parseTargets() {
-		return target.getValue().split(",");
+	@Override
+	public TARGET_TYPE getTargetType() {
+		return TARGET_TYPE.UNORDERED_FIELDS;
+	}
+
+	@Override
+	public String getCommonName() {
+		return "Empty/Nonempty subset";
+	}
+
+	@Override
+	public String getCommonDescription() {
+		return "Checks whether at least n chosen fields are empty or nonempty depending on user choice.";
 	}
 
 }
