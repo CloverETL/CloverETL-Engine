@@ -30,4 +30,14 @@ public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
 		return new URI(TESTING_URI);
 	}
 
+	@Override
+	public void testInterruptDelete() throws Exception {
+		// FIXME disabled - takes too long in Jenkins
+	}
+
+	@Override
+	public void testInterruptCopy() throws Exception {
+		// FIXME disabled - takes too long in Jenkins
+	}
+
 }
