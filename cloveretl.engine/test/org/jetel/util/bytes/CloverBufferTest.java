@@ -396,5 +396,46 @@ public class CloverBufferTest extends CloverTestCase {
 
     	Defaults.USE_DIRECT_MEMORY = formerUseDirectMemory;
     }
-    
+ 
+    public void testMaxDirectMemoryAllocation() throws InterruptedException {
+    	long formerLimitSize = Defaults.CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE;
+    	try {
+    		execGC();
+    		Defaults.CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE = 1000;
+    		CloverBuffer cb1 = CloverBuffer.allocate(500, true);
+    		assertTrue(cb1.isDirect());
+    		CloverBuffer cb2 = CloverBuffer.allocate(500, true);
+    		assertTrue(cb2.isDirect());
+    		CloverBuffer cb3 = CloverBuffer.allocate(1, true);
+    		assertFalse(cb3.isDirect());
+    		
+    		cb1 = null;
+    		execGC();
+    		CloverBuffer cb4 = CloverBuffer.allocate(500, false);
+    		assertFalse(cb4.isDirect());
+    		CloverBuffer cb5 = CloverBuffer.allocate(500, true);
+    		assertTrue(cb5.isDirect());
+    		CloverBuffer cb6 = CloverBuffer.allocate(1, true);
+    		assertFalse(cb6.isDirect());
+    		
+    		cb2 = cb3 = cb4 = cb5 = cb6 = null;
+    		execGC();
+    		CloverBuffer cb7 = CloverBuffer.allocate(5000, false);
+    		assertFalse(cb7.isDirect());
+    		CloverBuffer cb8 = CloverBuffer.allocate(1001, true);
+    		assertFalse(cb8.isDirect());
+    		
+    	} finally {
+    		Defaults.CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE = formerLimitSize;
+    	}
+    }
+
+    private void execGC() throws InterruptedException {
+    	//cleanup the already allocated clover buffers - this is potential issue
+    	//this is not good enough
+    	for (int i = 0; i < 5; i++) {
+	    	System.gc();
+	    	Thread.sleep(10);
+    	}
+    }
 }

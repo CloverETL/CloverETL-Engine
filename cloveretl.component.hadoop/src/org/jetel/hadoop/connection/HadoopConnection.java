@@ -344,8 +344,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			LOG.debug(getClassPathReport(contextURL, providerClassPath));
 		}
 		
-		System.out.println(getClassPathReport(contextURL, providerClassPath)); // FIXME delete this debug printout for junit test run on jenkins
-		
 		return providerClassPath;
 	}
 
