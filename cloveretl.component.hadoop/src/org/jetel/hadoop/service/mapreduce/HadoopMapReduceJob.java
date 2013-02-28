@@ -22,6 +22,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
+
 import org.jetel.hadoop.mapreduce.HadoopJobRunner;
 
 /**
@@ -131,7 +133,7 @@ public class HadoopMapReduceJob {
 		if (numReducers != null && numReducers <= 0) {
 			throw new IllegalArgumentException("maxReducers must be greater then 0");
 		}
-		if ( timeout < 0) {
+		if (timeout < 0) {
 			throw new IllegalArgumentException("Value of timeout cannot be less then 0.");
 		}
 
