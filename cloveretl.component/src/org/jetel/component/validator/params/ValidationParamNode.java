@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlTransient;
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class ValidationParamNode {
 	private String name;
+	private EnabledHandler enabledHandler;
 	
 	protected ValidationParamNode() {} // For JAXB
 	
@@ -43,6 +44,21 @@ public abstract class ValidationParamNode {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+	
+	public boolean isEnabled() {
+		if(enabledHandler != null) {
+			return enabledHandler.isEnabled();
+		}
+		return true;
+	}
+	
+	public void setEnabledHandler(EnabledHandler handler) {
+		enabledHandler = handler;
+	}
+	
+	public static interface EnabledHandler {
+		public boolean isEnabled();
 	}
 	
 }

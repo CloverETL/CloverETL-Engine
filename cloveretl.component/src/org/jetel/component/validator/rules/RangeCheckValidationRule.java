@@ -167,7 +167,7 @@ public class RangeCheckValidationRule extends AbstractValidationRule {
 		params.add(type);
 		operator.setName("Operator");
 		params.add(operator);
-		value.setName("Value");
+		value.setName("Compare with");
 		params.add(value);
 		boundaries.setName("Boundaries");
 		params.add(boundaries);
@@ -177,6 +177,7 @@ public class RangeCheckValidationRule extends AbstractValidationRule {
 		params.add(to);
 		useType.setName("Use type");
 		params.add(useType);
+		
 		return params;
 	}
 

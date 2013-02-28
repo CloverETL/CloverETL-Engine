@@ -32,6 +32,7 @@ import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.data.DataRecord;
 
 /**
@@ -72,8 +73,29 @@ public class StringLengthValidationRule extends StringValidationRule {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		type.setName("Criterion");
 		params.add(type);
+		//from.setEnabledHandler(); // lambda + isEnabled u param Nodu
+		from.setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				if(type.getValue() == TYPES.MAXIMAL) {
+					return false;
+				}
+				return true;
+			}
+		});
 		from.setName("From");
 		params.add(from);
+		to.setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				if(type.getValue() == TYPES.MINIMAL || type.getValue() == TYPES.EXACT) {
+					return false;
+				}
+				return true;
+			}
+		});
 		to.setName("To");
 		params.add(to);
 		params.addAll(super.initialize());

@@ -48,6 +48,10 @@ public abstract class ValidationNode {
 		}
 	}
 	
+	public ValidationNode() {
+		setName(getCommonName());
+	}
+	
 	/**
 	 * Validates record against self
 	 * @param record Record to be validated
@@ -90,12 +94,4 @@ public abstract class ValidationNode {
 	
 	public abstract String getCommonName();
 	public abstract String getCommonDescription();
-	
-	@Override
-	public String toString() {
-		if(name == null || name.isEmpty()) {
-			return getCommonName();
-		}
-		return name;
-	}
 }
