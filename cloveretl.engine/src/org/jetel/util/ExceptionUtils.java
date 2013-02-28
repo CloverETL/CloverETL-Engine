@@ -152,11 +152,8 @@ public class ExceptionUtils {
 			message = t.getMessage();
 		}
 		
-		//in case the previous message is identical, this message is skipped
-		if (EqualsUtil.areEqual(message, lastMessage)) {
-			message = null;
-		}
-		if (message != null && lastMessage != null && lastMessage.endsWith(": " + message)) {
+		//do not report exception message that is mentioned already in parent exception message
+		if (message != null && lastMessage != null && lastMessage.contains(message)) {
 			message = null;
 		}
 		
