@@ -40,4 +40,9 @@ public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
 		// FIXME disabled - takes too long in Jenkins
 	}
 
+	@Override
+	public void testInterruptMove() throws Exception {
+		// FIXME disabled - takes too long in Jenkins
+	}
+
 }
