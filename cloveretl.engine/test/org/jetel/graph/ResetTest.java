@@ -245,7 +245,7 @@ public class ResetTest extends CloverTestCase {
 		final GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setUseJMX(false);
 	
-		runtimeContext.setContextURL(FileUtils.getFileURL(baseAbsolutePath)); // context URL should be absolute
+		runtimeContext.setContextURL(FileUtils.getFileURL(FileUtils.appendSlash(baseAbsolutePath))); // context URL should be absolute
 		// absolute path in PROJECT parameter is required for graphs using Derby database
 		runtimeContext.addAdditionalProperty("PROJECT", baseAbsolutePath);
 		if (StringUtils.findString(graphFile.getName(), NEEDS_SCENARIOS_CONNECTION) != -1) {
