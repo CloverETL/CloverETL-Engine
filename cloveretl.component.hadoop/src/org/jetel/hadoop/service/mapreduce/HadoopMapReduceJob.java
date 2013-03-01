@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.jetel.hadoop.mapreduce.HadoopJobRunner;
+import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Represents basic configuration of Hadoop map/reduce job. Holds all the information that mandatory for the job to
@@ -153,6 +154,12 @@ public class HadoopMapReduceJob {
 		this.numMappers = numMappers;
 		this.numReducers = numReducers;
 		this.timeout = timeout;
+		
+		if (StringUtils.isEmpty(jobName)) {
+			String file = jobJarFile.getFile();
+			int i = file.lastIndexOf('/');
+			this.jobName = i >= 0 ? file.substring(i + 1) : file;
+		}
 	}
 
 	/**
