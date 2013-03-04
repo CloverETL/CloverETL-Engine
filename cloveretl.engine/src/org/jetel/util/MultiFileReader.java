@@ -18,6 +18,7 @@
  */
 package org.jetel.util;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -244,12 +245,21 @@ public class MultiFileReader {
         this.logger = logger;
     }
     
+    private Object currentSource = null;
+    
 	/**
      * Switch to the next source file.
 	 * @return
 	 * @throws JetelException 
 	 */
 	private boolean nextSource() throws JetelException {
+		if (currentSource instanceof Closeable) {
+			try {
+				((Closeable) currentSource).close();
+			} catch (IOException ioe) {
+				logger.warn("Failed to close the previous source");
+			}
+		}
 
 		// update incremental value from previous source
 		if (iSource >= 0) incrementalReading.nextSource(channelIterator.getCurrentFileName(), parser.getPosition());
@@ -265,6 +275,7 @@ public class MultiFileReader {
 			try {
 				source = channelIterator.next();
 				if (source == null) continue; // if record no record found
+				this.currentSource = source; // store the current source, so that we can close it later
 				
 				String fileName = channelIterator.getCurrentFileName();
 				long fileSize = 0;
