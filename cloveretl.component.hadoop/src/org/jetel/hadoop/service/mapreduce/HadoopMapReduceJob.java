@@ -22,7 +22,10 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
+
 import org.jetel.hadoop.mapreduce.HadoopJobRunner;
+import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Represents basic configuration of Hadoop map/reduce job. Holds all the information that mandatory for the job to
@@ -131,7 +134,7 @@ public class HadoopMapReduceJob {
 		if (numReducers != null && numReducers <= 0) {
 			throw new IllegalArgumentException("maxReducers must be greater then 0");
 		}
-		if ( timeout < 0) {
+		if (timeout < 0) {
 			throw new IllegalArgumentException("Value of timeout cannot be less then 0.");
 		}
 
@@ -151,6 +154,12 @@ public class HadoopMapReduceJob {
 		this.numMappers = numMappers;
 		this.numReducers = numReducers;
 		this.timeout = timeout;
+		
+		if (StringUtils.isEmpty(jobName)) {
+			String file = jobJarFile.getFile();
+			int i = file.lastIndexOf('/');
+			this.jobName = i >= 0 ? file.substring(i + 1) : file;
+		}
 	}
 
 	/**

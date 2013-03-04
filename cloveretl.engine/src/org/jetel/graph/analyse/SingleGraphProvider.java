@@ -35,13 +35,16 @@ import org.jetel.graph.TransformationGraph;
  */
 public class SingleGraphProvider extends AbstractGraphProvider {
 
+	private TransformationGraph graph;
+	
 	private Iterator<Node> componentsIterator;
 	
 	/**
 	 * @param graph
 	 */
 	public SingleGraphProvider(TransformationGraph graph) {
-		componentsIterator = graph.getNodes().values().iterator();
+		this.graph = graph;
+		reset();
 	}
 
 	@Override
@@ -53,4 +56,9 @@ public class SingleGraphProvider extends AbstractGraphProvider {
 		}
 	}
 
+	@Override
+	public void reset() {
+		componentsIterator = graph.getNodes().values().iterator();
+	}
+	
 }

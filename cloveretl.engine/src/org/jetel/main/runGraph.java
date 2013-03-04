@@ -341,7 +341,7 @@ public class runGraph {
     		try {
 				runtimeContext.setRuntimeClassPath(FileUtils.getFileUrls(contextURL, classPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
 			} catch (MalformedURLException e) {
-				logger.error("Given classpath is not valid URL.", e);
+				ExceptionUtils.logException(logger, "Given classpath is not valid URL.", e);
 				System.exit(-1);
 			}
     	}
@@ -349,7 +349,7 @@ public class runGraph {
     		try {
 				runtimeContext.setCompileClassPath(FileUtils.getFileUrls(contextURL, compileClassPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
 			} catch (MalformedURLException e) {
-				logger.error("Given compile classpath is not valid URL.", e);
+				ExceptionUtils.logException(logger, "Given compile classpath is not valid URL.", e);
 				System.exit(-1);
 			}
     	}
@@ -365,7 +365,7 @@ public class runGraph {
         	try {
             	in = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, graphFileName));
             } catch (IOException e) {
-                logger.error("Error - graph definition file can't be read", e);
+            	ExceptionUtils.logException(logger, "Error - graph definition file can't be read", e);
                 System.exit(-1);
             }
         }
@@ -377,16 +377,10 @@ public class runGraph {
 			initializeDictionary(dictionaryValues, graph);
 	        runGraph(graph);
         } catch (XMLConfigurationException e) {
-            logger.error("Error in reading graph from XML !", e);
-            if (runtimeContext.isVerboseMode()) {
-                e.printStackTrace(System.err);
-            }
+            ExceptionUtils.logException(logger, "Error in reading graph from XML !", e);
             System.exit(-1);
         } catch (GraphConfigurationException e) {
-            logger.error("Error - graph's configuration invalid !", e);
-            if (runtimeContext.isVerboseMode()) {
-                e.printStackTrace(System.err);
-            }
+            ExceptionUtils.logException(logger, "Error - graph's configuration invalid !", e);
             System.exit(-1);
 		} 
     }
@@ -416,9 +410,6 @@ public class runGraph {
 			futureResult = executeGraph(graph, graph.getRuntimeContext());			
         } catch (Exception e) {
 			ExceptionUtils.logException(logger, "Error during graph initialization !", e);
-            if (graph.getRuntimeContext().isVerboseMode()) {
-                e.printStackTrace(System.err);
-            }
             System.exit(-1);
 		} 
         
@@ -427,15 +418,9 @@ public class runGraph {
 			result = futureResult.get();
 		} catch (InterruptedException e) {
 			ExceptionUtils.logException(logger, "Graph was unexpectedly interrupted !", e);
-            if (graph.getRuntimeContext().isVerboseMode()) {
-                e.printStackTrace(System.err);
-            }
             System.exit(-1);
 		} catch (ExecutionException e) {
 			ExceptionUtils.logException(logger, "Error during graph processing !", e);
-            if (graph.getRuntimeContext().isVerboseMode()) {
-                e.printStackTrace(System.err);
-            }
             System.exit(-1);
 		}
         

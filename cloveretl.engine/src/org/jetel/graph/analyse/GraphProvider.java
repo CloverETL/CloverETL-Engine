@@ -41,4 +41,9 @@ public interface GraphProvider {
 	 */
 	public InspectedComponent getNextComponent();
 
+	/**
+	 * Resets the provider to initial state. 
+	 */
+	public void reset();
+	
 }
