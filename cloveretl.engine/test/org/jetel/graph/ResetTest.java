@@ -237,17 +237,17 @@ public class ResetTest extends CloverTestCase {
 	@Override
 	protected void runTest() throws Throwable {
 		
-		final String beseAbsolutePath = new File(basePath).getAbsolutePath().replace('\\', '/');
-		logger.info("Project dir: " + beseAbsolutePath);
+		final String baseAbsolutePath = new File(basePath).getAbsolutePath().replace('\\', '/');
+		logger.info("Project dir: " + baseAbsolutePath);
 		logger.info("Analyzing graph " + graphFile.getPath());
 		logger.info("Batch mode: " + batchMode);
 		
 		final GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setUseJMX(false);
 	
-		runtimeContext.setContextURL(FileUtils.getFileURL(basePath));
+		runtimeContext.setContextURL(FileUtils.getFileURL(FileUtils.appendSlash(baseAbsolutePath))); // context URL should be absolute
 		// absolute path in PROJECT parameter is required for graphs using Derby database
-		runtimeContext.addAdditionalProperty("PROJECT", beseAbsolutePath);
+		runtimeContext.addAdditionalProperty("PROJECT", baseAbsolutePath);
 		if (StringUtils.findString(graphFile.getName(), NEEDS_SCENARIOS_CONNECTION) != -1) {
 			final String connDir = new File(SCENARIOS_RELATIVE_PATH + "conn").getAbsolutePath();
 			runtimeContext.addAdditionalProperty("CONN_DIR", connDir);
@@ -261,7 +261,7 @@ public class ResetTest extends CloverTestCase {
 		
 		// for scenarios graphs, add the TRANS dir to the classpath
 		if (basePath.contains("cloveretl.test.scenarios")) {
-			runtimeContext.setRuntimeClassPath(new URL[] {FileUtils.getFileURL(FileUtils.appendSlash(beseAbsolutePath) + TRANS_DIR + "/")});
+			runtimeContext.setRuntimeClassPath(new URL[] {FileUtils.getFileURL(FileUtils.appendSlash(baseAbsolutePath) + TRANS_DIR + "/")});
 			runtimeContext.setCompileClassPath(runtimeContext.getRuntimeClassPath());
 		}
 

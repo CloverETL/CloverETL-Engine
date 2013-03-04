@@ -95,6 +95,20 @@ public final class SandboxUrlUtils {
 	}
 
 	/**
+	 * Extracts a sandbox name from a given sandbox URL.
+	 * 
+	 * @param url sandbox url
+	 * @return sandbox name extracted from the given sandbox URL
+	 */
+	public static String getSandboxName(URL url) {
+		if (!isSandboxUrl(url)) {
+			throw new IllegalArgumentException("sandboxUrl");
+		}
+		
+		return url.getHost();
+	}
+
+	/**
 	 * Extracts a relative URL from a given sandbox URL.
 	 *
 	 * @param sandboxUrl a sandbox URL
@@ -171,4 +185,5 @@ public final class SandboxUrlUtils {
 	private SandboxUrlUtils() {
 		throw new UnsupportedOperationException();
 	}
+
 }

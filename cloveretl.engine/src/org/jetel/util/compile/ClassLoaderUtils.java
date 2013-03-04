@@ -248,7 +248,7 @@ public class ClassLoaderUtils {
 						SandboxConnection sc = (SandboxConnection) urls[i].openConnection();
 						// sandbox connection will work fine
 					} catch (Exception e) {
-						throw new RuntimeException("Could not resolve sandbox URL: " + urls[i], e);
+						throw new SandboxURLException("Could not resolve sandbox URL: " + urls[i], e);
 					}
 				}
 			}
@@ -307,5 +307,14 @@ public class ClassLoaderUtils {
     		throw new LoadClassException("Cannot instantiate class: " + className, e);
     	}
     }
+
+	public static class SandboxURLException extends RuntimeException {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public SandboxURLException(String message, Throwable cause) {
+			super(message, cause);
+		}
+	}
 
 }
