@@ -18,7 +18,9 @@
  */
 package org.jetel.graph.dictionary;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.NotSerializableException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.nio.channels.Channels;
@@ -257,6 +259,18 @@ public final class DictionaryValuesContainer implements Serializable {
 		}
 		result.append(" }");
 		return result.toString();
+	}
+	
+	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+		try{  
+	        out.defaultWriteObject();  
+	    } catch(NotSerializableException nse){ 
+	    	log.error("Can't serialize dictionary content. Serialized data is incomplete! ", nse);
+	    }  
+	}
+	
+	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();  
 	}
 	
 }
