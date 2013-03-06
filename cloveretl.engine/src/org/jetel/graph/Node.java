@@ -48,6 +48,7 @@ import org.jetel.graph.runtime.tracker.ComplexComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.PrimitiveComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ClusterUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -416,7 +417,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         super.init();
 
         runResult = Result.READY;
-        
+
+        refreshBufferedValues();
+
         //initialise component token tracker if necessary
         if (getGraph() != null
         		&& getGraph().getJobType() == JobType.JOBFLOW
@@ -425,8 +428,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         } else {
         	tokenTracker = new PrimitiveComponentTokenTracker(this);
         }
-        
-        refreshBufferedValues();
+
+        //cluster related settings can be used only in cluster environment
+        if (!getGraph().getAuthorityProxy().isClusterEnabled()) {
+        	//cluster components cannot be used in non-cluster environment
+        	if (ClusterUtils.isClusterComponent(getType())) {
+				throw new JetelRuntimeException("Cluster component cannot be used in non-cluster environment.");
+        	}
+			//non empty allocation is not allowed in non-cluster environment
+			EngineComponentAllocation allocation = getAllocation();
+			if (allocation != null && !allocation.isInferedFromNeighbours()) {
+				throw new JetelRuntimeException("Component with some allocation cannot be used in non-cluster environment.");
+			}
+        }
     }
 
     /* (non-Javadoc)

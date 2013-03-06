@@ -477,4 +477,9 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		return ClassLoaderUtils.createClassLoader(urls, parent, greedy);
 	}
 	
+	@Override
+	public boolean isClusterEnabled() {
+		return false;
+	}
+	
 }
