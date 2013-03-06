@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Evaluation Devel" modified="Mon Oct 10 12:17:31 CEST 2011" modifiedBy="avackova" name="EmailValidation" revision="1.48" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="3.4.0.M2" id="1227892536666" licenseType="Commercial" modified="Tue Mar 05 15:10:42 CET 2013" modifiedBy="Pavel" name="EmailValidation" revision="1.59" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="input_record" recordDelimiter="\r\n" type="delimited">
@@ -14,63 +13,89 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="302" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Email Validation" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="485" x="686" y="12">
-<attr name="text"><![CDATA[
-In this example, we are loading a file in order to check the validity of the email address contained within it. The results are written to Accepted and Rejected type output files. Clover offers three types of email validation
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Graylisting Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="239" x="702" y="72">
+<attr name="text"><![CDATA[EmailFilter comes with an anti-graylisting feature that performs retries after predefined time periods (usually in minutes or tens of minutes)
 
-    *      checking that the general email syntax (structure) is valid
-    *      checking that the domain name used within the email address is valid
-    *      checking that the email address itself exists within the domain name referenced by the email address
-]]></attr>
+Thus, SMTP and MAIL level might take excessively long times due to EmailFilter waiting for a retry - this behavior is normal.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="179" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Related Points of Interest" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="485" x="686" y="323">
-<attr name="text"><![CDATA[The three email checks take very different amounts of time. The syntax check is very fast, but the other two are very slow as they need to perform lookups on the web and the responsiveness of the domains is beyond our control.]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="246" x="12" y="72">
+<attr name="text"><![CDATA[We need to check a file with e-mail addresses for correct syntax, proper domains, and even try to validate them using SMTP verify.
+
+We will produce six files in total - an accept/reject pair for each of the three levels of checking.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="60" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Email Validation" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="12" y="13">
+<attr name="text"><![CDATA[Checking the validity of email addresses - using various levels of the EmailFilter data quality component]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="How it works" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="446" x="257" y="72">
+<attr name="text"><![CDATA[EmailFilter has several "levels" to check validity of an email address:
+
+SYNTAX - checks only format of the e-mail address based on RFC822/2822
+DOMAIN - check the MX record of the domain
+SMTP - connects to the domain's SMTP server and tries to verify the email address
+MAIL - sends a test message a waits for a response]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="517" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="E-mail Validation" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="187" x="433" y="265">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+Simple format check
+
+
+
+
+
+
+
+
+
+
+
+
+
+Check domain existence and MX record
+
+
+
+
+
+
+
+
+
+
+
+
+Talk to the SMPT server and try to verify the address]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/emails.txt" guiHeight="101" guiName="Load Emails" guiWidth="128" guiX="107" guiY="54" id="DATA_READER0" type="DATA_READER">
-<attr name="guiDescription"><![CDATA[Read in our email file]]></attr>
-</Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_syntax_accept.txt" guiHeight="85" guiName="Accepted" guiWidth="128" guiX="529" guiY="-15" id="DATA_WRITER0" type="DATA_WRITER">
+<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiName="Check Email DOMAIN" guiX="453" guiY="481" id="CHECK_EMAIL_DOMAIN" level="domain" statusField="status" type="EMAIL_FILTER"/>
+<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiName="Check Email SYNTAX" guiX="455" guiY="310" id="CHECK_EMAIL_SYNTAX" level="syntax" statusField="status" type="EMAIL_FILTER"/>
+<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiName="Check SMTP Validity" guiX="456" guiY="665" id="CHECK_SMTP_VALIDITY" level="smtp" smtpGreylistAttempts="0" statusField="status" type="EMAIL_FILTER"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/emails.txt" guiName="Load Emails" guiX="12" guiY="303" id="DATA_READER0" type="DATA_READER"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_syntax_accept.txt" guiName="Accepted" guiX="813" guiY="265" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Valid emails]]></attr>
 </Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_syntax_reject.txt" guiHeight="85" guiName="Rejected" guiWidth="128" guiX="529" guiY="78" id="DATA_WRITER1" type="DATA_WRITER">
-<attr name="guiDescription"><![CDATA[Invalid emails]]></attr>
-</Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_domain_accept.txt" guiHeight="85" guiName="Accepted" guiWidth="128" guiX="531" guiY="171" id="DATA_WRITER2" type="DATA_WRITER">
-<attr name="guiDescription"><![CDATA[Valid emails]]></attr>
-</Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_domain_reject.txt" guiHeight="85" guiName="Rejected" guiWidth="128" guiX="530" guiY="271" id="DATA_WRITER3" type="DATA_WRITER">
-<attr name="guiDescription"><![CDATA[Invalid emails]]></attr>
-</Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_accept.txt" guiHeight="85" guiName="Accepted" guiWidth="128" guiX="529" guiY="374" id="DATA_WRITER4" type="DATA_WRITER">
-<attr name="guiDescription"><![CDATA[Valid emails]]></attr>
-</Node>
-<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_reject.txt" guiHeight="85" guiName="Rejected" guiWidth="128" guiX="529" guiY="466" id="DATA_WRITER5" type="DATA_WRITER">
-<attr name="guiDescription"><![CDATA[Invalid emails]]></attr>
-</Node>
-<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiHeight="101" guiName="SYNTAX EmailFilter" guiWidth="172" guiX="331" guiY="36" id="EMAIL_FILTER0" level="syntax" statusField="status" type="EMAIL_FILTER">
-<attr name="guiDescription"><![CDATA[Check basic email syntax is OK]]></attr>
-</Node>
-<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiHeight="101" guiName="DOMAIN EmailFilter" guiWidth="175" guiX="331" guiY="210" id="EMAIL_FILTER1" level="domain" statusField="status" type="EMAIL_FILTER">
-<attr name="guiDescription"><![CDATA[Perform email Domain lookup on web]]></attr>
-</Node>
-<Node acceptCondition="STRICT" acceptEmpty="true" enabled="enabled" errorField="error" field="email" guiHeight="101" guiName="SMTP EmailFilter" guiWidth="152" guiX="331" guiY="390" id="EMAIL_FILTER2" level="smtp" smtpGreylistAttempts="0" statusField="status" type="EMAIL_FILTER">
-<attr name="guiDescription"><![CDATA[Check with SMTP server that email address exists]]></attr>
-</Node>
-<Node enabled="enabled" guiHeight="101" guiName="SimpleCopy" guiWidth="128" guiX="107" guiY="254" id="SIMPLE_COPY0" type="SIMPLE_COPY">
-<attr name="guiDescription"><![CDATA[Duplicates the incoming data and outputs all rows on the 3 output ports]]></attr>
-</Node>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="33:0|33:130|-173:130|-173:196" guiLocks="null|null|null" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_COPY0:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER1:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER2:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER1:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER3:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER4:0"/>
-<Edge debugMode="false" fromNode="EMAIL_FILTER2:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER5:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="269:270|269:56" guiLocks="269|262|null" guiRouter="Manual" id="Edge1" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EMAIL_FILTER0:0"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="299:286|299:230" guiLocks="299|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EMAIL_FILTER1:0"/>
-<Edge fromNode="SIMPLE_COPY0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 2 (out)" toNode="EMAIL_FILTER2:0"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_syntax_reject.txt" guiName="Rejected" guiX="813" guiY="344" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_domain_accept.txt" guiName="Accepted" guiX="813" guiY="468" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_domain_reject.txt" guiName="Rejected" guiX="813" guiY="560" id="DATA_WRITER3" type="DATA_WRITER"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_accept.txt" guiName="Accepted" guiX="813" guiY="695" id="DATA_WRITER4" type="DATA_WRITER"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_reject.txt" guiName="Rejected" guiX="813" guiY="787" id="DATA_WRITER5" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="Replicate List [3x]" guiX="190" guiY="462" id="REPLICATE_LIST_3X" type="SIMPLE_COPY"/>
+<Edge debugMode="false" fromNode="CHECK_EMAIL_DOMAIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="false" fromNode="CHECK_EMAIL_DOMAIN:1" guiBendpoints="714:497|714:556" guiLocks="714|850|null" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER3:0"/>
+<Edge debugMode="false" fromNode="CHECK_EMAIL_SYNTAX:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="CHECK_EMAIL_SYNTAX:1" guiBendpoints="706:326|706:340" guiLocks="706|745|null" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="CHECK_SMTP_VALIDITY:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER4:0"/>
+<Edge debugMode="false" fromNode="CHECK_SMTP_VALIDITY:1" guiBendpoints="686:681|686:783" guiLocks="686|844|null" guiRouter="Manual" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER5:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="33:0|33:130|-173:130|-173:196" guiLocks="null|null|null" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REPLICATE_LIST_3X:0"/>
+<Edge fromNode="REPLICATE_LIST_3X:0" guiBendpoints="506:562|506:566" guiLocks="506|263|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CHECK_EMAIL_SYNTAX:0"/>
+<Edge fromNode="REPLICATE_LIST_3X:1" guiBendpoints="299:286|299:230" guiLocks="300|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 1 (out)" toNode="CHECK_EMAIL_DOMAIN:0"/>
+<Edge fromNode="REPLICATE_LIST_3X:2" guiBendpoints="395:356|395:802" guiLocks="387|485|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 2 (out)" toNode="CHECK_SMTP_VALIDITY:0"/>
 </Phase>
 </Graph>

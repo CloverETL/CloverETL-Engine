@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="3.4.0.M2" id="1343739683455" licenseType="Commercial" modified="Wed Mar 06 13:27:57 CET 2013" modifiedBy="Pavel" name="example08_2" revision="1.21" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="sessionID" type="string"/>
+<Field name="serverURL" type="string"/>
+<Field auto_filling="default_value" default="a" name="joiner" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName2" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="id" type="string"/>
+<Field name="first_name" type="string"/>
+<Field name="last_name" type="string"/>
+<Field name="birth_date" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter2"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="128" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Salesforce Web Service" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="20" y="20">
+<attr name="text"><![CDATA[
+1. Retrieve Salesforce credential
+
+2. Extract contacts that have birthday in the last 90 days
+
+3. Write list of matched contacts to an output file]]></attr>
+</Note>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="dtJoiner" output="false" type="string"/>
+<Entry id="DictionaryEntry1" input="true" name="dtSessionID" output="false" type="string"/>
+<Entry id="DictionaryEntry2" input="true" name="dtSessionURL" output="false" type="string"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Get Salesforce Credential" guiX="20" guiY="192" id="GET_SALESFORCE_CREDENTIAL" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.joiner = $in.0.dtJoiner;
+	$out.0.sessionID = $in.0.dtSessionID;
+	$out.0.serverURL = $in.0.dtSessionURL;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/birthday_list.txt" guiName="Output Contact Details" guiX="627" guiY="195" id="OUTPUT_CONTACT_DETAILS" makeDirs="true" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="Retrieve Contacts" guiX="343" guiY="193" id="RETRIEVE_CONTACTS" operationName="{urn:enterprise.soap.sforce.com}SforceService#Soap#query" overrideServerURLFromField="serverURL" type="WEB_SERVICE_CLIENT" useNestedNodes="true" wsdlURL="${DATAIN_DIR}/enterprise.wsdl.xml">
+<attr name="namespaceBindings"><![CDATA[XMLS=http\://www.w3.org/2001/XMLSchema
+incl=http\://www.w3.org/2004/08/xop/include
+pref=urn\:enterprise.soap.sforce.com
+pref1=urn\:fault.enterprise.soap.sforce.com
+]]></attr>
+<attr name="requestHeaderStructure"><![CDATA[<urn:SessionHeader xmlns:urn="urn:enterprise.soap.sforce.com">
+  <urn:sessionId>$sessionID</urn:sessionId>
+</urn:SessionHeader>
+
+
+]]></attr>
+<attr name="requestStructure"><![CDATA[<urn:query xmlns:urn="urn:enterprise.soap.sforce.com">
+  <urn:queryString>SELECT Id, FirstName, LastName, Birthdate FROM Contact WHERE Birthdate = LAST_90_DAYS</urn:queryString>
+</urn:query>
+
+]]></attr>
+<attr name="responseMapping"><![CDATA[<Mappings>
+	<TypeOverride elementPath="/pref:queryResponse/pref:result/pref:records" overridingType="{urn:sobject.enterprise.soap.sforce.com}Contact" />
+	<Mapping element="pref:queryResponse">
+		<Mapping element="pref:result">
+			<Mapping element="pref:records" outPort="0"
+					xmlFields="{urn:sobject.enterprise.soap.sforce.com}FirstName;{urn:sobject.enterprise.soap.sforce.com}Id;{urn:sobject.enterprise.soap.sforce.com}LastName;{urn:sobject.enterprise.soap.sforce.com}Birthdate"
+					cloverFields="first_name;id;last_name;birth_date">
+			</Mapping>
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="GET_SALESFORCE_CREDENTIAL:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (request)" metadata="Metadata0" outPort="Port 0 (out)" toNode="RETRIEVE_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="RETRIEVE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (response)" toNode="OUTPUT_CONTACT_DETAILS:0"/>
+</Phase>
+</Graph>

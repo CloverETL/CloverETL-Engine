@@ -18,13 +18,10 @@ reallybad@nonexistent.domain
 test@cloveretl.net
 info@opensys.com
 sales@opensys.com
-david.pavlis@opensys.com
 nonexistent@opensys.com
 another-nonexistent.com
 really@badone
 test@seznam.cz
 mail@nonexistent.domain
-pavel.na@seznam.cz
-pavel.najvar@javlin.eu
 info@javlin.eu
 info@opensys.com

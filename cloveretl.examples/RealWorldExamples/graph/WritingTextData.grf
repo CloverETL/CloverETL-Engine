@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="3.4.0.M2" id="1280121426438" licenseType="Commercial" modified="Wed Mar 06 17:54:29 CET 2013" modifiedBy="Pavel" name="graphWritingTextData" revision="1.50" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/customers_short.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
+<Property id="GraphParameter0" name="FULL_FILE" value="5555"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="45" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="Gather all customers from the same state into separate files. " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="782" x="33" y="8"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="92" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="A side note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="309" x="259" y="411">
+<attr name="text"><![CDATA[Note the difference how SimpleGather and Concatenate component put data from various inputs together]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="41" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Instead of two big files with customer data create smaller ones with the given number of records each. " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="802" x="33" y="215"/>
+<Dictionary>
+<Entry dictval.key="value" id="DictionaryEntry0" input="true" name="num_files" output="true" type="integer"/>
+<Entry id="DictionaryEntry1" input="true" name="num_rec" output="true" type="integer"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Concatenate" guiX="200" guiY="520" id="CONCATENATE0" type="CONCATENATE"/>
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiName="UTF-8" guiX="33" guiY="460" id="DATA_READER0" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Read customers]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiName="UTF-8" guiX="33" guiY="557" id="DATA_READER1" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Read customers]]></attr>
+</Node>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiName="windows-1250" guiX="33" guiY="269" id="DATA_READER2" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Read customers]]></attr>
+</Node>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region2.csv" guiName="windows-1250" guiX="33" guiY="363" id="DATA_READER3" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Read customers]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region1.csv" guiName="ISO-8859-1" guiX="33" guiY="71" id="DATA_READER4" type="DATA_READER">
+<attr name="guiDescription"><![CDATA[Read customers]]></attr>
+</Node>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${DATAOUT_DIR}/customers/#.txt" guiName="division by state" guiX="698" guiY="71" id="DATA_WRITER0" makeDirs="true" outputFieldNames="true" partitionFileTag="keyNameFileTag" partitionKey="state" type="DATA_WRITER"/>
+<Node charset="windows-1250" enabled="enabled" fileURL="${DATAOUT_DIR}/customers1/customers$.txt" guiName="by records per file" guiX="698" guiY="316" id="DATA_WRITER1" makeDirs="true" partitionFileTag="numberFileTag" recordsPerFile="${FULL_FILE}" type="DATA_WRITER">
+<attr name="guiDescription"><![CDATA[The number of records per file is stored in FULL_FILE parameter.]]></attr>
+</Node>
+<Node enabled="enabled" guiName="ExtSort" guiX="362" guiY="520" id="EXT_SORT0" sortKey="lastname(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="Reformat" guiX="529" guiY="520" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+integer fileNumber = 1;
+integer counter = 0;
+// Transforms input record into output record.
+function integer transform() {
+	$0.customerid = $0.customerid;
+	$0.firstname = $0.firstname;
+	$0.lastname = $0.lastname;
+	$0.address1 = $0.address1;
+	$0.address2 = $0.address2;
+	$0.city = $0.city;
+	$0.state = $0.state;
+	$0.zip = $0.zip;
+	$0.country = $0.country;
+	$0.region = $0.region;
+	$0.email = $0.email;
+	$0.phone = $0.phone;
+	$0.creditcardtype = $0.creditcardtype;
+	$0.creditcard = $0.creditcard;
+	$0.creditcardexpiration = $0.creditcardexpiration;
+	$0.username = $0.username;
+	$0.password = $0.password;
+	$0.age = $0.age;
+	$0.income = $0.income;
+	$0.gender = $0.gender;
+
+   if (counter == ${FULL_FILE}){
+      counter = 1;
+      fileNumber++;
+   }else{
+      counter++;
+   }
+	return 0;
+}
+function void postExecute() {
+   dictionary.num_files = fileNumber;
+   dictionary.num_rec = counter;
+}
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Reformat" guiX="355" guiY="71" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.customerid = $0.customerid;
+	$0.firstname = $0.firstname;
+	$0.lastname = $0.lastname;
+	$0.city = $0.city;
+	$0.state = $0.state;
+	$0.country = $0.country;
+	$0.username = $0.username;
+	$0.password = $0.password;
+	$0.age = $0.age;
+	$0.income = $0.income;
+	$0.gender = $0.gender;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SimpleGather" guiX="260" guiY="328" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customers2/customers$.xml" footer="&lt;/dataset&gt;" guiName="by records per file" guiX="698" guiY="520" header="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#13;&#10;&lt;dataset&gt;" id="STRUCTURE_WRITER0" makeDirs="true" mask="&lt; customers&gt;&#10;&#9;&lt;customerID&gt;$customerID&lt;/customerID&gt;&#10;&#9;&lt;firstname&gt;$firstname&lt;/firstname&gt;&#10;&#9;&lt;lastname&gt;$lastname&lt;/lastname&gt;&#10;&#9;&lt;address1&gt;$address1&lt;/address1&gt;&#10;&#9;&lt;address2&gt;$address2&lt;/address2&gt;&#10;&#9;&lt;city&gt;$city&lt;/city&gt;&#10;&#9;&lt;state&gt;$state&lt;/state&gt;&#10;&#9;&lt;zip&gt;$zip&lt;/zip&gt;&#10;&#9;&lt;country&gt;$country&lt;/country&gt;&#10;&#9;&lt;region&gt;$region&lt;/region&gt;&#10;&#9;&lt;email&gt;$email&lt;/email&gt;&#10;&#9;&lt;phone&gt;$phone&lt;/phone&gt;&#10;&#9;&lt;creditcardtype&gt;$creditcardtype&lt;/creditcardtype&gt;&#10;&#9;&lt;creditcard&gt;$creditcard&lt;/creditcard&gt;&#10;&#9;&lt;creditcardexpiration&gt;$creditcardexpiration&lt;/creditcardexpiration&gt;&#10;&#9;&lt;username&gt;$username&lt;/username&gt;&#10;&#9;&lt;password&gt;$password&lt;/password&gt;&#10;&#9;&lt;age&gt;$age&lt;/age&gt;&#10;&#9;&lt;income&gt;$income&lt;/income&gt;&#10;&#9;&lt;gender&gt;$gender&lt;/gender&gt;&#10;&lt;/customers&gt;&#10;" recordsPerFile="${FULL_FILE}" type="STRUCTURE_WRITER">
+<attr name="guiDescription"><![CDATA[The number of records per file is stored in FULL_FILE parameter.]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="CONCATENATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="183:480|183:538" guiLocks="183|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="CONCATENATE0:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="183:577|183:556" guiLocks="183|null|null" guiRouter="Manual" id="Edge1" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="CONCATENATE0:1"/>
+<Edge fromNode="DATA_READER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="DATA_READER3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:1"/>
+<Edge fromNode="DATA_READER4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (Body port)" metadata="Metadata0" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+</Phase>
+</Graph>

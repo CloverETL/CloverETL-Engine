@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 12:42:20 CEST 2012" guiVersion="3.4.0.M2" id="1343731451896" licenseType="Commercial" modified="Wed Mar 06 15:39:01 CET 2013" modifiedBy="Pavel" name="example09_A" nature="jobflow" revision="1.76" showComponentDetails="true">
+<Global>
+<Metadata id="ExecuteScript_RunResult">
+<Record fieldDelimiter="|" name="ExecuteScript_RunResult" recordDelimiter="\n" type="delimited">
+<Field name="stdOut" type="string"/>
+<Field name="errOut" type="string"/>
+<Field name="startTime" type="date"/>
+<Field name="endTime" type="date"/>
+<Field name="duration" type="long"/>
+<Field name="exitValue" type="long"/>
+<Field name="reachedTimeout" type="boolean"/>
+<Field name="errException" type="string"/>
+<Field name="errMessage" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="ListFiles_Result">
+<Record fieldDelimiter="|" name="ListFiles_Result" recordDelimiter="\n" type="delimited">
+<Field name="uri" type="string"/>
+<Field name="name" type="string"/>
+<Field name="canRead" type="boolean"/>
+<Field name="canWrite" type="boolean"/>
+<Field name="canExecute" type="boolean"/>
+<Field name="isDirectory" type="boolean"/>
+<Field name="isFile" type="boolean"/>
+<Field name="isHidden" type="boolean"/>
+<Field name="lastModified" type="date"/>
+<Field name="size" type="long"/>
+<Field name="result" type="boolean"/>
+<Field name="errorMessage" type="string"/>
+<Field name="listTarget" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="recordName" recordDelimiter="\n" type="delimited">
+<Field name="filePath" type="string"/>
+<Field name="fileName" type="string"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter11" name="BIN_DIR" value="${PROJECT}/bin"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="176" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="350" x="644" y="70">
+<attr name="text"><![CDATA[md5.exe for Windows is placed in the example ./bin folder
+
+More details can be found at http://www.fourmilab.ch/md5/]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="176" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="211" x="14" y="70">
+<attr name="text"><![CDATA[For many file processing tasks, making a file signature (hash) can help identify unique files.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="62" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Get MD5 for a file using an external utility" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="980" x="14" y="9">
+<attr name="text"><![CDATA[This example shows how execute an external utility (md5 binary) from inside a transformation.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="176" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="B. Problem" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="211" x="224" y="70">
+<attr name="text"><![CDATA[We need a way to execute a local application within the workflow as part of the identication process
+
+Also a portable solution is needed in case server OS is Windows or Unix based]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="176" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="C. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="211" x="434" y="70">
+<attr name="text"><![CDATA[Use ExecuteScript to call the application to generate MD5 signature for input files
+
+A condition check to make sure the correct command is sent based on server OS]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="190" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="179" x="371" y="276">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+Check server OS and decide which external command to execute]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="231" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Execute external utility" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="254" x="582" y="259"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Format File Path" guiX="194" guiY="304" id="FORMAT_FILE_PATH" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.filePath = toAbsolutePath($in.0.uri);
+	$out.0.fileName = $in.0.name;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" environmentVariables="INPUT_FILE=&quot;value&quot;;" guiName="Get MD5 Signature (UNIX)" guiX="622" guiY="399" id="GET_MD5_SIGNATURE_UNIX1" type="EXECUTE_SCRIPT">
+<attr name="script"><![CDATA[md5sum $INPUT_FILE | sed 's/\([0-9a-zA-Z]*\).*/\1/']]></attr>
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.1.INPUT_FILE = $in.0.filePath;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.stdOut = $in.1.stdOut;
+	$out.0.errOut = $in.1.errOut;
+	$out.0.startTime = $in.1.startTime;
+	$out.0.endTime = $in.1.endTime;
+	$out.0.duration = $in.1.duration;
+	$out.0.exitValue = $in.1.exitValue;
+	$out.0.reachedTimeout = $in.1.reachedTimeout;
+	$out.0.errException = $in.1.errException;
+	$out.0.errMessage = $in.1.errMessage;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" environmentVariables="INPUT_FILE=&quot;value&quot;;" guiName="Get MD5 Signature (WINDOWS)" guiX="606" guiY="304" id="GET_MD5_SIGNATURE_WINDOWS" stopOnFail="false" type="EXECUTE_SCRIPT" workingDirectory="${BIN_DIR}">
+<attr name="script"><![CDATA[@md5.exe -n %INPUT_FILE%]]></attr>
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.1.INPUT_FILE = $in.0.filePath;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.stdOut = $in.1.stdOut;
+	$out.0.errOut = $in.1.errOut;
+	$out.0.startTime = $in.1.startTime;
+	$out.0.endTime = $in.1.endTime;
+	$out.0.duration = $in.1.duration;
+	$out.0.exitValue = $in.1.exitValue;
+	$out.0.reachedTimeout = $in.1.reachedTimeout;
+	$out.0.errException = $in.1.errException;
+	$out.0.errMessage = $in.1.errMessage;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Job Complete" guiX="863" guiY="304" id="JOB_COMPLETE1" type="SUCCESS"/>
+<Node enabled="enabled" guiName="Job Complete" guiX="863" guiY="399" id="JOB_COMPLETE2" type="SUCCESS"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/ExecuteExternalUtility" guiName="List Files" guiX="17" guiY="304" id="LIST_FILES" target="${DATAIN_09_DIR}" type="LIST_FILES">
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.name = $in.1.name;
+	$out.0.canRead = $in.1.canRead;
+	$out.0.canWrite = $in.1.canWrite;
+	$out.0.canExecute = $in.1.canExecute;
+	$out.0.isDirectory = $in.1.isDirectory;
+	$out.0.isFile = $in.1.isFile;
+	$out.0.isHidden = $in.1.isHidden;
+	$out.0.lastModified = $in.1.lastModified;
+	$out.0.size = $in.1.size;
+	$out.0.result = $in.1.result;
+	$out.0.errorMessage = $in.1.errorMessage;
+	$out.0.uri = $in.1.URL;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Select by OS" guiX="389" guiY="304" id="SELECT_BY_OS" type="CONDITION">
+<attr name="filterExpression"><![CDATA[//#CTL2
+lowerCase(getJavaProperties()["os.name"]).indexOf("win") >= 0
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="FORMAT_FILE_PATH:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SELECT_BY_OS:0"/>
+<Edge debugMode="true" fromNode="GET_MD5_SIGNATURE_UNIX1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="ExecuteScript_RunResult" outPort="Port 0 (out)" toNode="JOB_COMPLETE2:0"/>
+<Edge debugMode="true" fromNode="GET_MD5_SIGNATURE_WINDOWS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="ExecuteScript_RunResult" outPort="Port 0 (out)" toNode="JOB_COMPLETE1:0"/>
+<Edge debugMode="true" fromNode="LIST_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ListFiles_Result" outPort="Port 0 (out)" toNode="FORMAT_FILE_PATH:0"/>
+<Edge debugMode="true" fromNode="SELECT_BY_OS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (true)" toNode="GET_MD5_SIGNATURE_WINDOWS:0"/>
+<Edge debugMode="true" fromNode="SELECT_BY_OS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (false)" toNode="GET_MD5_SIGNATURE_UNIX1:0"/>
+</Phase>
+</Graph>
