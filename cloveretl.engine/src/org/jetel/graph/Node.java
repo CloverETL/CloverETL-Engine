@@ -428,19 +428,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         } else {
         	tokenTracker = new PrimitiveComponentTokenTracker(this);
         }
-
-        //cluster related settings can be used only in cluster environment
-        if (!getGraph().getAuthorityProxy().isClusterEnabled()) {
-        	//cluster components cannot be used in non-cluster environment
-        	if (ClusterUtils.isClusterComponent(getType())) {
-				throw new JetelRuntimeException("Cluster component cannot be used in non-cluster environment.");
-        	}
-			//non empty allocation is not allowed in non-cluster environment
-			EngineComponentAllocation allocation = getAllocation();
-			if (allocation != null && !allocation.isInferedFromNeighbours()) {
-				throw new JetelRuntimeException("Component with some allocation cannot be used in non-cluster environment.");
-			}
-        }
     }
 
     /* (non-Javadoc)
@@ -450,6 +437,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();
     	
+        //cluster related settings can be used only in cluster environment
+        if (!getGraph().getAuthorityProxy().isClusterEnabled()) {
+        	//cluster components cannot be used in non-cluster environment
+        	if (ClusterUtils.isClusterComponent(getType())) {
+				throw new JetelRuntimeException("Cluster component cannot be used in non-cluster environment.");
+        	}
+			//non empty allocation is not allowed in non-cluster environment
+			EngineComponentAllocation allocation = getAllocation();
+			if (allocation != null && !allocation.isInferedFromNeighbours()) {
+				throw new JetelRuntimeException("Component allocation cannot be specified in non-cluster environment.");
+			}
+        }
+
         runResult = Result.RUNNING;
     }
     
