@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="3.4.0.M2" id="1343736408315" licenseType="Commercial" modified="Wed Mar 06 16:39:12 CET 2013" modifiedBy="Pavel" name="example08_A" nature="jobflow" revision="1.49" showComponentDetails="true">
+<Global>
+<Metadata id="ExecuteGraph_RunStatus">
+<Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="runId" nullable="true" shift="0" size="0" type="long"/>
+<Field eofAsDelimiter="false" name="originalJobURL" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" name="startTime" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" name="stopTime" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" name="duration" nullable="true" shift="0" size="0" type="long"/>
+<Field eofAsDelimiter="false" name="status" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="errException" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="errMessage" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="errNode" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="errNodeType" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="dtSessionID" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="dtSessionURL" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="dtJoiner" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Force_credentials" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="user" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="password" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="security_token" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter0" name="FORCE.COM_PASSWORD" value=""/>
+<Property id="GraphParameter1" name="FORCE.COM_SECURITY_TOKEN" value=""/>
+<Property id="GraphParameter2" name="FORCE.COM_USER" value=""/>
+<Property fileURL="workspace.prm" id="GraphParameter3"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="194" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="565" x="457" y="93">
+<attr name="text"><![CDATA[!! Please note that a valid DE Salesforce account is necessary !!!
+Please set FORCE.COM_USER, FORCE.COM_PASSWORD and FORCE.COM_SECURITY_TOKEN parameters
+
+Related Processes:
+- SalesforceWebService.jbf (Main)
+- SalesforceWebService-1.grf
+- SalesforceWebService-2.grf
+- SalesforceWebService-3.grf
+
+Notes:
+- Selected fields in the example may be different from what you have in your account.
+- The EmailSender is intentionally disabled here; please enter correct SMTP details for it to work properly]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="194" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="193" x="31" y="93">
+<attr name="text"><![CDATA[Need to connect to Salesforce.com in order to retrive and store data.
+
+To minimize the authentication attempts, we need to find a way to pass credentials over to subsequent steps after a successful login]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="71" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Salesforce Web Service" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="991" x="31" y="23">
+<attr name="text"><![CDATA[This example shows how to connect to Salesforce, pass credentials over several steps to perform a series of actions (query, insert, update)]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="194" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="C. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="235" x="223" y="93">
+<attr name="text"><![CDATA[We use an ETL graph with a WebServiceClient to log into Salesforce.com and pass the credentials back to this master jobflow, which then passes it onwards.
+
+The two provided steps extract data and update a field - again, using the WebServiceClient component]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="202" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Update Field" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="174" x="1048" y="304">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Calls update() Salesforce webservice to update description field ]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="223" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Extract Contacts" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="174" x="825" y="304">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Calls retrieve() Salesforce webservice to extract contacts who have birthday in the last 90 days]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="375" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Login" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="193" x="399" y="304">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Calls login() Salesforce webservice to retrieve authentication token. 
+
+Passes the token to next processing steps.
+
+
+NOTE: a valid Salesforce DE account  must be filled in SalesforceWebService-1.grf in order for this example to work
+
+(further instructions can be found in SalesforceWebService.grf)]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Check if set" guiX="235" guiY="344" id="CHECK_IF_SET" type="CONDITION">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.user != '' && $in.0.password != '' && $in.0.security_token != '']]></attr>
+</Node>
+<Node enabled="enabled" errorMessage="Force.com credentials missing - Please go to Outline/Parameters and set FORCE.COM_USER, FORCE.COM_PASSWORD and FORCE.COM_SECURITY_TOKEN" guiName="Credentials missing" guiX="235" guiY="583" id="CREDENTIALS_MISSING" type="FAIL"/>
+<Node enabled="enabled" guiName="Get Force.com credentials" guiX="35" guiY="344" id="GET_FORCE_COM_CREDENTIALS" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.user = getParamValue("FORCE.COM_USER");
+	$out.0.password = getParamValue("FORCE.COM_PASSWORD");
+	$out.0.security_token = getParamValue("FORCE.COM_SECURITY_TOKEN");
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Job Complete" guiX="1262" guiY="344" id="JOB_COMPLETE1" type="SUCCESS"/>
+<Node enabled="enabled" guiName="Login Successfull?" guiX="628" guiY="344" id="LOGIN_SUCCESSFULL" type="CONDITION">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.status == "FINISHED_OK"]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Log into Salesforce" guiX="428" guiY="344" id="LOG_INTO_SALESFORCE" jobURL="${GRAPH_DIR}/nested_graphs/SalesforceWebService-1.grf" type="EXECUTE_GRAPH">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.1.USER = $in.0.user;
+	$out.1.PASSWORD = $in.0.password;
+	$out.1.SECURITY_TOKEN = $in.0.security_token;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="outputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.dtSessionID = $in.2.dtSessionID;
+	$out.0.status = $in.1.status;
+	$out.0.dtSessionURL = $in.2.dtSessionURL;
+	$out.0.dtJoiner = $in.2.dtJoiner;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Retrieve Contacts" guiX="847" guiY="344" id="RETRIEVE_CONTACTS" jobURL="${GRAPH_DIR}/nested_graphs/SalesforceWebService-2.grf" type="EXECUTE_GRAPH">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.2.dtSessionID = $in.0.dtSessionID;
+	$out.2.dtSessionURL = $in.0.dtSessionURL;
+	$out.2.dtJoiner = $in.0.dtJoiner;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="outputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.dtSessionID = $in.0.dtSessionID;
+	$out.0.dtSessionURL = $in.0.dtSessionURL;
+	$out.0.dtJoiner = $in.0.dtJoiner;
+	$out.0.runId = $in.0.runId;
+	$out.0.originalJobURL = $in.0.originalJobURL;
+	$out.0.startTime = $in.0.startTime;
+	$out.0.stopTime = $in.0.stopTime;
+	$out.0.duration = $in.0.duration;
+	$out.0.status = $in.0.status;
+	$out.0.errException = $in.0.errException;
+	$out.0.errMessage = $in.0.errMessage;
+	$out.0.errNode = $in.0.errNode;
+	$out.0.errNodeType = $in.0.errNodeType;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="disabled" guiName="Send Email if Failed" guiX="825" guiY="583" id="SEND_EMAIL_IF_FAILED" message="MessageBody=$errMessage&#10;Subject=Login Failed or Extract from Sales Force Unsuccessful&#10;To=user.to@example.com&#10;From=user.from@example.com&#10;" smtpPassword="password" smtpServer="mail.example.com" smtpUser="user.name" type="EMAIL_SENDER"/>
+<Node enabled="enabled" guiName="Update Details" guiX="1071" guiY="344" id="UPDATE_DETAILS" jobURL="${GRAPH_DIR}/nested_graphs/SalesforceWebService-3.grf" type="EXECUTE_GRAPH">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.2.dtSessionID = $in.0.dtSessionID;
+	$out.2.dtSessionURL = $in.0.dtSessionURL;
+	$out.2.dtJoiner = $in.0.dtJoiner;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="outputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.dtSessionID = $in.0.dtSessionID;
+	$out.0.dtSessionURL = $in.0.dtSessionURL;
+	$out.0.dtJoiner = $in.0.dtJoiner;
+	$out.0.runId = $in.0.runId;
+	$out.0.originalJobURL = $in.0.originalJobURL;
+	$out.0.startTime = $in.0.startTime;
+	$out.0.stopTime = $in.0.stopTime;
+	$out.0.duration = $in.0.duration;
+	$out.0.status = $in.0.status;
+	$out.0.errException = $in.0.errException;
+	$out.0.errMessage = $in.0.errMessage;
+	$out.0.errNode = $in.0.errNode;
+	$out.0.errNodeType = $in.0.errNodeType;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge fromNode="CHECK_IF_SET:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (true)" toNode="LOG_INTO_SALESFORCE:0"/>
+<Edge fromNode="CHECK_IF_SET:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (false)" toNode="CREDENTIALS_MISSING:0"/>
+<Edge fromNode="GET_FORCE_COM_CREDENTIALS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CHECK_IF_SET:0"/>
+<Edge debugMode="true" fromNode="LOGIN_SUCCESSFULL:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (true)" toNode="RETRIEVE_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="LOGIN_SUCCESSFULL:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 1 (false)" toNode="SEND_EMAIL_IF_FAILED:0"/>
+<Edge debugMode="true" fromNode="LOG_INTO_SALESFORCE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="LOGIN_SUCCESSFULL:0"/>
+<Edge debugMode="true" fromNode="RETRIEVE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="UPDATE_DETAILS:0"/>
+<Edge debugMode="true" fromNode="UPDATE_DETAILS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="JOB_COMPLETE1:0"/>
+</Phase>
+</Graph>
