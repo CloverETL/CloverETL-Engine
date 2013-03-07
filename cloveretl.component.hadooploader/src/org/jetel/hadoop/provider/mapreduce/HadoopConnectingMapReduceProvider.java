@@ -35,6 +35,7 @@ import org.jetel.hadoop.service.mapreduce.HadoopConnectingMapReduceService;
 import org.jetel.hadoop.service.mapreduce.HadoopJobReporter;
 import org.jetel.hadoop.service.mapreduce.HadoopMapReduceConnectionData;
 import org.jetel.hadoop.service.mapreduce.HadoopMapReduceJob;
+import org.jetel.hadoop.service.mapreduce.HadoopMapReduceJob.APIVersion;
 
 /**
  * 
@@ -42,6 +43,7 @@ import org.jetel.hadoop.service.mapreduce.HadoopMapReduceJob;
  * @author Rastislav Mirek &lt;<a href="mailto:rmirek@mail.muni.cz">rmirek@mail.muni.cz</a>&gt</br> &#169; Javlin, a.s
  *         (<a href="http://www.javlin.eu">www.javlin.eu</a>) &lt;<a
  *         href="mailto:info@cloveretl.com">info@cloveretl.com</a>&gt
+ * @author tkramolis
  * @since rel-3-4-0-M2
  * @created 9.11.2012
  * @see JobClient
@@ -52,8 +54,13 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 	public static final String JOB_TRACKER_NOT_INIT_MESSAGE = "JobTracker is not initialized.";
 	public static final String NO_REDUCER_USED_DEBUG_MESSAGE = "No reducer class set for map/reduce job '%s'. Using default reducer, that does nothing.";
 	public static final String NO_COMBINER_USED_DEBUG_MESSAGE = "No combiner class set for map/reduce job '%s'. Not using combiners.";
+	public static final String NO_PARTITIONER_USED_DEBUG_MESSAGE = "No partitioner class set for map/reduce job '%s'. Using default partitioner.";
 	public static final String NO_INPUT_FORMAT_USED_DEBUG_MESSAGE = "No input format class set for map/reduce job '%s'. Using default TextInputFormat.";
 	public static final String NO_OUTPUT_FORMAT_USED_DEBUG_MESSAGE = "No output format class set for map/reduce job '%s'. Using default TextOutputFormat.";
+	public static final String NO_MAPPER_OUTPUT_KEY_USED_DEBUG_MESSAGE = "No mapper output key class set for map/reduce job '%s'. Using final output key class as default.";
+	public static final String NO_MAPPER_OUTPUT_VALUE_USED_DEBUG_MESSAGE = "No mapper output value class set for map/reduce job '%s'. Using final output value class as default.";
+	public static final String NO_GROUPING_COMPARATOR_DEBUG_MESSAGE = "No grouping comparator class set for map/reduce job '%s'.";
+	public static final String NO_SORTING_COMPARATOR_USED_DEBUG_MESSAGE = "No sorting comparator class set for map/reduce job '%s'.";
 	public static final String CAST_MESSAGE = "Specified class '%s' does not inherit from %s as required.";
 	public static final String CLASS_NOT_FOUND_MESSAGE = "Specified class '%s' could not be found in given JAR file.";
 	public static final String OUTPUT_DIR_CLEANED = "Cleaning output directory for Hadoop job %s: %s '%s' has been deleted.";
@@ -61,14 +68,42 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 	public static final String NAMENODE_URL_KEY = "fs.default.name";
 	public static final String JOBTRACKER_URL_KEY = "mapred.job.tracker";
 	
-	private static final String REDUCER_CLASS_PROPERTY = "mapred.reducer.class";
-	private static final String MAPPER_CLASS_PROPERTY = "mapred.mapper.class";
-	private static final String COMBINER_CLASS_PROPERTY = "mapred.combiner.class";
-	private static final String INPUT_FORMAT_CLASS_PROPERTY = "mapred.input.format.class";
-	private static final String OUTPUT_FORMAT_CLASS_PROPERTY = "mapred.output.format.class";
-	private static final String OUTPUT_KEY_CLASS_PROPERTY = "mapred.output.key.class";
-	private static final String OUTPUT_VALUE_CLASS_PROPERTY = "mapred.output.value.class";
+	public static final String MAPPER_NEW_API = "mapred.mapper.new-api";
+	public static final String REDUCER_NEW_API = "mapred.reducer.new-api";
+	
+	/** Contains job configuration key values for old ("mapred" package) and new ("mapreduce" package) job implementation APIs. */
+	private enum JobConfigKeys {
+		MAPPER_CLASS				("mapred.mapper.class", 			"mapreduce.map.class"),
+		COMBINER_CLASS				("mapred.combiner.class",			"mapreduce.combine.class"),
+		PARTITIONER_CLASS			("mapred.partitioner.class",		"mapreduce.partitioner.class"),
+		REDUCER_CLASS				("mapred.reducer.class",			"mapreduce.reduce.class"),
+		INPUT_FORMAT_CLASS			("mapred.input.format.class",		"mapreduce.inputformat.class"),
+		OUTPUT_FORMAT_CLASS			("mapred.output.format.class",		"mapreduce.outputformat.class"),
+		MAPPER_OUTPUT_KEY_CLASS		("mapred.mapoutput.key.class",		"mapred.mapoutput.key.class"),
+		MAPPER_OUTPUT_VALUE_CLASS	("mapred.mapoutput.value.class",	"mapred.mapoutput.value.class"),
+		GROUPING_COMPARATOR_CLASS	("mapred.output.value.groupfn.class", "mapred.output.value.groupfn.class"),
+		SORT_COMPARATOR_CLASS		("mapred.output.key.comparator.class", "mapred.output.key.comparator.class"),
+		OUTPUT_KEY_CLASS			("mapred.output.key.class", 		"mapred.output.key.class"),
+		OUTPUT_VALUE_CLASS			("mapred.output.value.class",		"mapred.output.value.class");
+		
+		private String mapredAPIValue;
+		private String mapreduceAPIValue;
 
+		private JobConfigKeys(String mapredAPIValue, String mapreduceAPIValue) {
+			this.mapredAPIValue = mapredAPIValue;
+			this.mapreduceAPIValue = mapreduceAPIValue;
+		}
+		
+		/**
+		 * @param mapreduceAPI job implementation API version (API from <code>org.apache.hadoop.mapreduce</code> or
+		 * 		<code>org.apache.hadoop.mapred</code> package).
+		 * @return this job configuration key value with respect to specified job implementation API.
+		 */
+		public String get(APIVersion jobAPIVersion) {
+			return jobAPIVersion == APIVersion.MAPRED ? mapredAPIValue : mapreduceAPIValue;
+		}
+	}
+	
 	private JobClient client;
 
 	@Override
@@ -124,7 +159,7 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 		if (client == null) {
 			throw new IllegalStateException(NOT_CONNECTED_MESSAGE);
 		}
-
+		
 		JobConf job = new JobConf(client.getConf());
 		for (String key : additionalJobSettings.stringPropertyNames()) {
 			job.set(key, additionalJobSettings.getProperty(key));
@@ -137,30 +172,60 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 		if (jobDetails.getJobName() != null) {
 			job.setJobName(jobDetails.getJobName());
 		}
-
-		job.set(MAPPER_CLASS_PROPERTY, jobDetails.getMapper());
+		
+		if (jobDetails.getAPIVersion() != APIVersion.MAPRED) {
+			job.set(MAPPER_NEW_API, Boolean.TRUE.toString());
+			job.set(REDUCER_NEW_API, Boolean.TRUE.toString());
+		}
+		
+		job.set(JobConfigKeys.MAPPER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getMapper());
 		if (jobDetails.getCombiner() == null) {
 			LOGGER.debug(String.format(NO_COMBINER_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
 		} else {
-			job.set(COMBINER_CLASS_PROPERTY, jobDetails.getCombiner());
+			job.set(JobConfigKeys.COMBINER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getCombiner());
+		}
+		if (jobDetails.getPartitioner() == null) {
+			LOGGER.debug(String.format(NO_PARTITIONER_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+		} else {
+			job.set(JobConfigKeys.PARTITIONER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getPartitioner());
 		}
 		if (jobDetails.getReducer() == null) {
 			LOGGER.debug(String.format(NO_REDUCER_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
 		} else {
-			job.set(REDUCER_CLASS_PROPERTY, jobDetails.getReducer());
+			job.set(JobConfigKeys.REDUCER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getReducer());
 		}
 		if (jobDetails.getInputFormat() == null) {
 			LOGGER.debug(String.format(NO_INPUT_FORMAT_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
 		} else {
-			job.set(INPUT_FORMAT_CLASS_PROPERTY, jobDetails.getInputFormat());
+			job.set(JobConfigKeys.INPUT_FORMAT_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getInputFormat());
 		}
 		if (jobDetails.getOutputFormat() == null) {
 			LOGGER.debug(String.format(NO_OUTPUT_FORMAT_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
 		} else {
-			job.set(OUTPUT_FORMAT_CLASS_PROPERTY, jobDetails.getOutputFormat());
+			job.set(JobConfigKeys.OUTPUT_FORMAT_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputFormat());
 		}
-		job.set(OUTPUT_KEY_CLASS_PROPERTY, jobDetails.getOutputKey());
-		job.set(OUTPUT_VALUE_CLASS_PROPERTY, jobDetails.getOutputValue());
+		if (jobDetails.getMapperOutputKey() == null) {
+			LOGGER.debug(String.format(NO_MAPPER_OUTPUT_KEY_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+		} else {
+			job.set(JobConfigKeys.MAPPER_OUTPUT_KEY_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getMapperOutputKey());
+		}
+		if (jobDetails.getMapperOutputValue() == null) {
+			LOGGER.debug(String.format(NO_MAPPER_OUTPUT_VALUE_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+		} else {
+			job.set(JobConfigKeys.MAPPER_OUTPUT_VALUE_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getMapperOutputValue());
+		}
+		if (jobDetails.getGroupingComparator() == null) {
+			LOGGER.debug(String.format(NO_GROUPING_COMPARATOR_DEBUG_MESSAGE, jobDetails.getJobName()));
+		} else {
+			job.set(JobConfigKeys.GROUPING_COMPARATOR_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getGroupingComparator());
+		}
+		if (jobDetails.getSortingComparator() == null) {
+			LOGGER.debug(String.format(NO_SORTING_COMPARATOR_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+		} else {
+			job.set(JobConfigKeys.SORT_COMPARATOR_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getSortingComparator());
+		}
+		job.set(JobConfigKeys.OUTPUT_KEY_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputKey());
+		job.set(JobConfigKeys.OUTPUT_VALUE_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputValue());
 		if (jobDetails.getNumMappers() != null) {
 			job.setNumMapTasks(jobDetails.getNumMappers());
 		}
@@ -175,14 +240,14 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 			FileInputFormat.addInputPath(job, new Path(inputFile));
 		}
 		FileOutputFormat.setOutputPath(job, outputDirectory);
-
+		
 		if (jobDetails.isClearOutputPath() && client.getFs().exists(outputDirectory)) {
 			boolean isFile = client.getFs().isFile(outputDirectory);
 			client.getFs().delete(outputDirectory, true);
 			LOGGER.info(String.format(OUTPUT_DIR_CLEANED, job.getJobName(), isFile ? "File" : "Directory",
 					outputDirectory.toString()));
 		}
-
+		
 		return new HadoopRunningJobReporter(client.submitJob(job));
 	}
 
