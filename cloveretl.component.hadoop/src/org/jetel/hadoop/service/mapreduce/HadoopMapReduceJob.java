@@ -120,7 +120,7 @@ public class HadoopMapReduceJob {
 	 * @param numMappers Number of mappers to be used for job execution or <code>null</code> if not specified. If
 	 *        specified must be greater then 0.
 	 * @param numReducers Number of reducers to be used for job execution or <code>null</code> if not specified. If
-	 *        specified must be greater then 0.
+	 *        specified must be greater or equal to 0.
 	 * @param timeout Time limit for job execution in milliseconds. May not be less then 0. Value of 0 specifies no limit.
 	 */
 	public HadoopMapReduceJob(String jobName, URL jobJarFile, List<URI> inputFiles, URI outputDir,
@@ -156,8 +156,8 @@ public class HadoopMapReduceJob {
 		if (numMappers != null && numMappers <= 0) {
 			throw new IllegalArgumentException("maxMappers must be greater then 0.");
 		}
-		if (numReducers != null && numReducers <= 0) {
-			throw new IllegalArgumentException("maxReducers must be greater then 0");
+		if (numReducers != null && numReducers < 0) {
+			throw new IllegalArgumentException("maxReducers must not be negative.");
 		}
 		if (timeout < 0) {
 			throw new IllegalArgumentException("Value of timeout cannot be less then 0.");
