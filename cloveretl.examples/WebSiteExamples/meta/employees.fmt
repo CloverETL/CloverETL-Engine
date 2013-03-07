@@ -1,0 +1,8 @@
+<Record fieldDelimiter="|" recordSize="-1" name="sampleProfiler_csv" skipSourceRows="1" type="delimited" recordDelimiter="\n">
+<Field  name="firstName" nullable="true" eofAsDelimiter="false" type="string" shift="0" size="0"/>
+<Field  name="lastName" nullable="true" eofAsDelimiter="false" type="string" shift="0" size="0"/>
+<Field  name="sex" nullable="true" eofAsDelimiter="false" type="string" shift="0" size="0"/>
+<Field  name="birthDate" nullable="true" eofAsDelimiter="false" format="yyyy-MM-dd" type="date" shift="0" size="0"/>
+<Field  name="hireDate" nullable="true" eofAsDelimiter="false" type="string" shift="0" size="0"/>
+<Field  name="salary" nullable="true" eofAsDelimiter="false" type="number" shift="0" size="0"/>
+</Record>

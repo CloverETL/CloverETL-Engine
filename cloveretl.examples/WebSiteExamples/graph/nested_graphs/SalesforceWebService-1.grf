@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="3.4.0.M2" id="1343738314141" licenseType="Commercial" modified="Wed Mar 06 14:00:17 CET 2013" modifiedBy="Pavel" name="example08_1" revision="1.33" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="sessionID" type="string"/>
+<Field name="serverURL" type="string"/>
+<Field auto_filling="default_value" default="a" name="joiner" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName2" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="id" type="string"/>
+<Field name="first_name" type="string"/>
+<Field name="last_name" type="string"/>
+</Record>
+</Metadata>
+<Property id="GraphParameter13" name="PASSWORD" value="password"/>
+<Property id="GraphParameter12" name="SECURITY_TOKEN" value="security-token"/>
+<Property id="GraphParameter11" name="USER" value="username"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="370" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Salesforce Web Service" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="20" y="20">
+<attr name="text"><![CDATA[
+1. Log into Salesforce account
+
+2. Store credential after successful login
+
+
+FURTHER INSTRUCTIONS:
+
+- In order for the example to work, you would need a valid Salesforce DE account
+
+- go to http://developer.force.com/, join and log into your account
+
+- go to Setup -> Personal Setup -> My Personal Information -> Reset My Security Token, use the option  [Reset Security Token]
+
+- go to your registered email and check for an email for a new security token
+
+- attach your security token with your password as such: password+security token
+
+- open the 'log into Salesforce' component and go to the 'Request Body Structure', replace the word 'username' with your login email and replace the word 'password' with the combined password+security token
+
+- save settings and run the grap from 06-ExternalInteraction-SalesforceWebServices.jbf]]></attr>
+</Note>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="false" name="dtJoiner" output="true" type="string"/>
+<Entry id="DictionaryEntry1" input="false" name="dtSessionID" output="true" type="string"/>
+<Entry id="DictionaryEntry2" input="false" name="dtSessionURL" output="true" type="string"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="log into Salesforce" guiX="42" guiY="445" id="LOG_INTO_SALESFORCE" operationName="{urn:enterprise.soap.sforce.com}SforceService#Soap#login" type="WEB_SERVICE_CLIENT" useNestedNodes="true" wsdlURL="${DATAIN_DIR}/enterprise.wsdl.xml">
+<attr name="namespaceBindings"><![CDATA[pref=urn:enterprise.soap.sforce.com
+pref1=urn:fault.enterprise.soap.sforce.com
+XMLS=http://www.w3.org/2001/XMLSchema
+incl=http://www.w3.org/2004/08/xop/include]]></attr>
+<attr name="requestStructure"><![CDATA[<urn:login xmlns:urn="urn:enterprise.soap.sforce.com">
+  <urn:username>${USER}</urn:username>
+  <urn:password>${PASSWORD}${SECURITY_TOKEN}</urn:password>
+</urn:login>
+
+]]></attr>
+<attr name="responseMapping"><![CDATA[<Mappings>
+	<Mapping element="pref:loginResponse">
+		<Mapping element="pref:result" outPort="0"
+				xmlFields="pref:sessionId;pref:serverUrl"
+				cloverFields="sessionID;serverURL">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Store Credential" guiX="425" guiY="445" id="STORE_CREDENTIAL1" type="SET_JOB_OUTPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.dtSessionID = $in.0.sessionID;
+	$out.0.dtSessionURL = $in.0.serverURL;
+	$out.0.dtJoiner = $in.0.joiner;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="LOG_INTO_SALESFORCE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (response)" toNode="STORE_CREDENTIAL1:0"/>
+</Phase>
+</Graph>

@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -308,6 +309,10 @@ public class PluginDescriptor {
             }
         }
         return ret;
+    }
+    
+    public List<Extension> getExtensions() {
+    	return Collections.unmodifiableList(extensions);
     }
     
     public void addLibrary(String library) {
