@@ -2,8 +2,26 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL 3-4-0-M2
+------------
+
+* Cleanup of error reporting in graph log
+* Allow DataGenerator to generate variable number of records
+* Denormalizer should work also without key/group specification
+* XSLTransformer - support XSLT v2.0
+- Update JSch SFTP library
+- HadoopReader and HadoopWriter for local files
+- New CTL2 function sha256()
+- FIXES:
+	- Sequence does not allow using numbers higher than integer limit.
+	- Graph with 2 simple gathers runs forever
+	- Implement connection pooling
+- BACKWARDS INCOMPATIBILITY:
+	* Database connection refactoring
+	* Maximum number of processed records has long precision
+
 REL 3-4-0-M1
----------
+------------
 
 * Hadoop support
 	- Hadoop connection

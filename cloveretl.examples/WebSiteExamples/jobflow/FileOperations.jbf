@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="3.4.0.M2" id="1343742976656" licenseType="Commercial" modified="Wed Mar 06 16:34:23 CET 2013" modifiedBy="Pavel" name="example01_A" nature="jobflow" revision="1.79" showComponentDetails="true">
+<Global>
+<Metadata id="CopyFiles_Result1">
+<Record fieldDelimiter="|" name="CopyFiles_Result" recordDelimiter="\n" type="delimited">
+<Field name="sourceURL" type="string"/>
+<Field name="targetURL" type="string"/>
+<Field name="resultURL" type="string"/>
+<Field name="result" type="boolean"/>
+<Field name="errorMessage" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="DeleteFiles_Result">
+<Record fieldDelimiter="|" name="DeleteFiles_Result" recordDelimiter="\n" type="delimited">
+<Field name="fileURL" type="string"/>
+<Field name="result" type="boolean"/>
+<Field name="errorMessage" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="ExecuteGraph_RunStatus" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="runId" nullable="true" shift="0" size="0" type="long"/>
+<Field eofAsDelimiter="false" name="originalJobURL" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" name="startTime" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd" name="endTime" nullable="true" shift="0" size="0" type="date"/>
+<Field eofAsDelimiter="false" name="duration" nullable="true" shift="0" size="0" type="long"/>
+<Field eofAsDelimiter="false" name="status" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="errException" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="errMessage" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="errComponent" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="errComponentType" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="dtFileInfo" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="ListFiles_Result">
+<Record fieldDelimiter="|" name="ListFiles_Result" recordDelimiter="\n" type="delimited">
+<Field name="URL" type="string"/>
+<Field name="name" type="string"/>
+<Field name="canRead" type="boolean"/>
+<Field name="canWrite" type="boolean"/>
+<Field name="canExecute" type="boolean"/>
+<Field name="isDirectory" type="boolean"/>
+<Field name="isFile" type="boolean"/>
+<Field name="isHidden" type="boolean"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="lastModified" type="date"/>
+<Field name="size" type="long"/>
+<Field name="result" type="boolean"/>
+<Field name="errorMessage" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="121" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="302" x="611" y="81">
+<attr name="text"><![CDATA[Related Processes:
+- BasicFileOperations.jbf (Main)
+- BasicFileOperations.grf]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="121" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="211" x="13" y="81">
+<attr name="text"><![CDATA[A lot of ETL processes require some sort of file handling before and after the actual process - moving files to a staging area, cleaning up intermediate files, etc.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="66" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="File Operations" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="900" x="13" y="16">
+<attr name="text"><![CDATA[This example shows how to setup a simple file operation environment around an ETL job.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="121" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="C. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="389" x="223" y="81">
+<attr name="text"><![CDATA[1. We first copy the source files to a staging area
+2. The next step lists the files
+3. Each listed file is then sent to an ETL job for processing
+4. After successful process, the file is removed from the staging area]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="200" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Process File" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="174" x="538" y="228">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Processes each file independently using an ETL graph]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Copy Files" guiX="13" guiY="262" id="COPY_FILES" makeParentDirs="true" sourceURL="${DATAIN_DIR}/customer_details_*.dat" targetURL="${DATATMP_DIR}/" type="COPY_FILES" verboseOutput="false">
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.sourceURL = $in.1.sourceURL;
+	$out.0.targetURL = $in.1.targetURL;
+	$out.0.resultURL = $in.1.resultURL;
+	$out.0.result = $in.1.result;
+	$out.0.errorMessage = $in.1.errorMessage;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Delete Files" guiX="751" guiY="261" id="DELETE_FILES" type="DELETE_FILES">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.fileURL = $in.0.dtFileInfo;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.fileURL = $in.1.fileURL;
+	$out.0.result = $in.1.result;
+	$out.0.errorMessage = $in.1.errorMessage;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="File Processing Complete" guiX="924" guiY="261" id="FILE_PROCESSING_COMPLETE" type="SUCCESS"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/" guiName="ListFiles" guiX="188" guiY="262" id="LIST_FILES0" type="LIST_FILES">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.fileURL = $in.0.targetURL;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.result = $in.0.result;
+	$out.0.errorMessage = $in.0.errorMessage;
+	$out.0.URL = $in.1.URL;
+	$out.0.name = $in.1.name;
+	$out.0.canRead = $in.1.canRead;
+	$out.0.canWrite = $in.1.canWrite;
+	$out.0.canExecute = $in.1.canExecute;
+	$out.0.isDirectory = $in.1.isDirectory;
+	$out.0.isFile = $in.1.isFile;
+	$out.0.isHidden = $in.1.isHidden;
+	$out.0.lastModified = $in.1.lastModified;
+	$out.0.size = $in.1.size;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Only files" guiX="368" guiY="262" id="ONLY_FILES" type="CONDITION">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.isFile == true]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Process Each File" guiX="561" guiY="262" id="PROCESS_EACH_FILE" jobURL="${GRAPH_DIR}/nested_graphs/FileOperations.grf" type="EXECUTE_GRAPH">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.1.PRM_OUTPUT_DIR = "${DATAOUT_DIR}";
+	$out.1.PRM_INPUT_FILE = $in.0.URL;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="outputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.runId = $in.1.runId;
+	$out.0.originalJobURL = $in.1.originalJobURL;
+	$out.0.startTime = $in.1.startTime;
+	$out.0.endTime = $in.1.endTime;
+	$out.0.duration = $in.1.duration;
+	$out.0.status = $in.1.status;
+	$out.0.errException = $in.1.errException;
+	$out.0.errMessage = $in.1.errMessage;
+	$out.0.errComponent = $in.1.errComponent;
+	$out.0.errComponentType = $in.1.errComponentType;
+	$out.0.dtFileInfo = $in.0.URL;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="COPY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="CopyFiles_Result1" outPort="Port 0 (out)" toNode="LIST_FILES0:0"/>
+<Edge debugMode="true" fromNode="DELETE_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="DeleteFiles_Result" outPort="Port 0 (out)" toNode="FILE_PROCESSING_COMPLETE:0"/>
+<Edge debugMode="true" fromNode="LIST_FILES0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ListFiles_Result" outPort="Port 0 (out)" toNode="ONLY_FILES:0"/>
+<Edge fromNode="ONLY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="ListFiles_Result" outPort="Port 0 (true)" toNode="PROCESS_EACH_FILE:0"/>
+<Edge debugMode="true" fromNode="PROCESS_EACH_FILE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="DELETE_FILES:0"/>
+</Phase>
+</Graph>

@@ -562,4 +562,6 @@ public abstract class IAuthorityProxy {
 
 	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 	
+	public abstract boolean isClusterEnabled();
+	
 }

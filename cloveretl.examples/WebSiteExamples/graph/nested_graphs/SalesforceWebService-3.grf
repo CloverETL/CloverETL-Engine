@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="3.4.0.M2" id="1343740977688" licenseType="Commercial" modified="Wed Mar 06 13:28:10 CET 2013" modifiedBy="Pavel" name="example08_3" revision="1.16" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="sessionID" type="string"/>
+<Field name="serverURL" type="string"/>
+<Field auto_filling="default_value" default="a" name="joiner" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record fieldDelimiter="|" name="recordName4" recordDelimiter="\r\n" type="delimited">
+<Field name="result" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName6" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="sessionID" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="serverURL" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="id" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="description" nullable="true" shift="0" size="0" type="string"/>
+<Field name="externalID" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter2"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="160" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Salesforce Web Service" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="20" y="20">
+<attr name="text"><![CDATA[
+1. Retrieve Salesforce credential
+
+2. Retrieve one contact from Salesforce
+
+3. Check the Description field for a key value
+
+4. Update the Description field accordingly]]></attr>
+</Note>
+<Dictionary>
+<Entry id="DictionaryEntry0" input="true" name="dtJoiner" output="false" type="string"/>
+<Entry id="DictionaryEntry1" input="true" name="dtSessionID" output="false" type="string"/>
+<Entry id="DictionaryEntry2" input="true" name="dtSessionURL" output="false" type="string"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Evaluate Description Field" guiX="497" guiY="237" id="EVALUATE_DESCRIPTION_FIELD" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.description == "Original Description"]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Get Salesforce Credential" guiX="20" guiY="237" id="GET_SALESFORCE_CREDENTIAL1" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.joiner = $in.0.dtJoiner;
+	$out.0.sessionID = $in.0.dtSessionID;
+	$out.0.serverURL = $in.0.dtSessionURL;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Retrieve a Contact" guiX="280" guiY="237" id="RETRIEVE_A_CONTACT" operationName="{urn:enterprise.soap.sforce.com}SforceService#Soap#retrieve" overrideServerURLFromField="serverURL" type="WEB_SERVICE_CLIENT" useNestedNodes="true" wsdlURL="${DATAIN_DIR}/enterprise.wsdl.xml">
+<attr name="namespaceBindings"><![CDATA[pref=urn:enterprise.soap.sforce.com
+pref1=urn:fault.enterprise.soap.sforce.com
+XMLS=http://www.w3.org/2001/XMLSchema
+incl=http://www.w3.org/2004/08/xop/include]]></attr>
+<attr name="requestHeaderStructure"><![CDATA[<urn:SessionHeader xmlns:urn="urn:enterprise.soap.sforce.com">
+  <urn:sessionId>$sessionID</urn:sessionId>
+</urn:SessionHeader>
+
+
+]]></attr>
+<attr name="faultMapping"><![CDATA[<Mappings>
+	<Mapping element="{urn:fault.partner.soap.sforce.com}InvalidIdFault" outPort="1"
+			xmlFields="{urn:fault.partner.soap.sforce.com}exceptionMessage"
+			cloverFields="field1">
+	</Mapping>
+	<Mapping element="{urn:fault.partner.soap.sforce.com}UnexpectedErrorFault" outPort="1"
+			xmlFields="{urn:fault.partner.soap.sforce.com}exceptionMessage"
+			cloverFields="field1">
+	</Mapping>
+	<Mapping element="{urn:fault.partner.soap.sforce.com}InvalidFieldFault" outPort="1"
+			xmlFields="{urn:fault.partner.soap.sforce.com}exceptionMessage"
+			cloverFields="field1">
+	</Mapping>
+	<Mapping element="{urn:fault.partner.soap.sforce.com}InvalidSObjectFault" outPort="1"
+			xmlFields="{urn:fault.partner.soap.sforce.com}exceptionMessage"
+			cloverFields="field1">
+	</Mapping>
+	<Mapping element="{urn:fault.partner.soap.sforce.com}MalformedQueryFault" outPort="1"
+			xmlFields="{urn:fault.partner.soap.sforce.com}exceptionMessage"
+			cloverFields="field1">
+	</Mapping>
+</Mappings>
+]]></attr>
+<attr name="requestStructure"><![CDATA[<urn:retrieve xmlns:urn="urn:enterprise.soap.sforce.com">
+  <urn:fieldList>Id, FirstName, LastName, Description</urn:fieldList>
+  <urn:sObjectType>Contact</urn:sObjectType>
+  <!--Zero or more repetitions:-->
+  <urn:ids>003d000000C4CWCAA3</urn:ids>
+</urn:retrieve>
+
+]]></attr>
+<attr name="responseMapping"><![CDATA[<Mappings>
+	<TypeOverride elementPath="/pref:retrieveResponse/pref:result" overridingType="{urn:sobject.enterprise.soap.sforce.com}Contact" />
+	<Mapping element="pref:retrieveResponse">
+		<Mapping element="pref:result" outPort="0"
+				xmlFields="{urn:sobject.enterprise.soap.sforce.com}Description;{urn:sobject.enterprise.soap.sforce.com}FirstName;{urn:sobject.enterprise.soap.sforce.com}Id;{urn:sobject.enterprise.soap.sforce.com}LastName"
+				cloverFields="description;first_name;id;last_name">
+			<FieldMapping inputField="serverURL" outputField="serverURL" />
+			<FieldMapping inputField="sessionID" outputField="sessionID" />
+		</Mapping>
+	</Mapping>
+	<Mapping element="{urn:partner.soap.sforce.com}retrieveResponse">
+		<Mapping element="{urn:partner.soap.sforce.com}result" outPort="0"
+				xmlFields="{urn:sobject.partner.soap.sforce.com}Description;{urn:sobject.partner.soap.sforce.com}FirstName;{urn:sobject.partner.soap.sforce.com}Id;{urn:sobject.partner.soap.sforce.com}LastName"
+				cloverFields="description;first_name;id;last_name">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Trash" guiX="1057" guiY="235" id="TRASH11" type="TRASH"/>
+<Node enabled="enabled" guiName="Update Description Field" guiX="751" guiY="237" id="UPDATE_DESCRIPTION_FIELD" operationName="{urn:enterprise.soap.sforce.com}SforceService#Soap#update" overrideServerURLFromField="serverURL" type="WEB_SERVICE_CLIENT" useNestedNodes="true" wsdlURL="${DATAIN_DIR}/enterprise.wsdl.xml">
+<attr name="namespaceBindings"><![CDATA[pref=urn:enterprise.soap.sforce.com
+pref1=urn:fault.enterprise.soap.sforce.com
+XMLS=http://www.w3.org/2001/XMLSchema
+incl=http://www.w3.org/2004/08/xop/include]]></attr>
+<attr name="requestHeaderStructure"><![CDATA[<urn:SessionHeader xmlns:urn="urn:enterprise.soap.sforce.com">
+  <urn:sessionId>$sessionID</urn:sessionId>
+</urn:SessionHeader>
+
+
+
+]]></attr>
+<attr name="requestStructure"><![CDATA[<urn:update xmlns:urn="urn:enterprise.soap.sforce.com" xmlns:urn1="urn:sobject.enterprise.soap.sforce.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!--Zero or more repetitions:-->
+  <urn:sObjects xsi:type="urn1:Contact">
+    <urn1:Id>$id</urn1:Id>
+    <urn1:Description>Updated Description</urn1:Description>
+  </urn:sObjects>
+</urn:update>
+
+]]></attr>
+<attr name="responseMapping"><![CDATA[<Mappings>
+	<Mapping element="pref:updateResponse">
+		<Mapping element="pref:result" outPort="0"
+				xmlFields="pref:success"
+				cloverFields="result">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Update Description Field" guiX="751" guiY="394" id="UPDATE_DESCRIPTION_FIELD1" operationName="{urn:enterprise.soap.sforce.com}SforceService#Soap#update" overrideServerURLFromField="serverURL" type="WEB_SERVICE_CLIENT" useNestedNodes="true" wsdlURL="${DATAIN_DIR}/enterprise.wsdl.xml">
+<attr name="namespaceBindings"><![CDATA[pref=urn:enterprise.soap.sforce.com
+pref1=urn:fault.enterprise.soap.sforce.com
+XMLS=http://www.w3.org/2001/XMLSchema
+incl=http://www.w3.org/2004/08/xop/include]]></attr>
+<attr name="requestHeaderStructure"><![CDATA[<urn:SessionHeader xmlns:urn="urn:enterprise.soap.sforce.com">
+  <urn:sessionId>$sessionID</urn:sessionId>
+</urn:SessionHeader>
+
+]]></attr>
+<attr name="faultMapping"><![CDATA[<Mappings>
+	<Mapping element="{urn:fault.partner.soap.sforce.com}InvalidIdFault" outPort="1"
+			xmlFields="{urn:fault.partner.soap.sforce.com}exceptionMessage"
+			cloverFields="field1">
+	</Mapping>
+	<Mapping element="{urn:fault.partner.soap.sforce.com}UnexpectedErrorFault" outPort="1"
+			xmlFields="{urn:fault.partner.soap.sforce.com}exceptionMessage"
+			cloverFields="field1">
+	</Mapping>
+	<Mapping element="{urn:fault.partner.soap.sforce.com}InvalidFieldFault" outPort="1"
+			xmlFields="{urn:fault.partner.soap.sforce.com}exceptionMessage"
+			cloverFields="field1">
+	</Mapping>
+	<Mapping element="{urn:fault.partner.soap.sforce.com}InvalidSObjectFault" outPort="1"
+			xmlFields="{urn:fault.partner.soap.sforce.com}exceptionMessage"
+			cloverFields="field1">
+	</Mapping>
+</Mappings>
+]]></attr>
+<attr name="requestStructure"><![CDATA[<urn:update xmlns:urn="urn:enterprise.soap.sforce.com" xmlns:urn1="urn:sobject.enterprise.soap.sforce.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <!--Zero or more repetitions:-->
+  <urn:sObjects xsi:type="Contact">
+    <urn1:Id>$id</urn1:Id>
+    <urn1:Description>Original Description</urn1:Description>
+  </urn:sObjects>
+</urn:update>
+
+]]></attr>
+<attr name="responseMapping"><![CDATA[<Mappings>
+	<Mapping element="pref:updateResponse" outPort="0">
+		<Mapping element="pref:result"
+				xmlFields="pref:success"
+				cloverFields="result">
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="EVALUATE_DESCRIPTION_FIELD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge23" inPort="Port 0 (request)" metadata="Metadata5" outPort="Port 0 (accepted)" toNode="UPDATE_DESCRIPTION_FIELD:0"/>
+<Edge debugMode="true" fromNode="EVALUATE_DESCRIPTION_FIELD:1" guiBendpoints="" guiRouter="Manhattan" id="Edge24" inPort="Port 0 (request)" metadata="Metadata5" outPort="Port 1 (rejected)" toNode="UPDATE_DESCRIPTION_FIELD1:0"/>
+<Edge debugMode="true" fromNode="GET_SALESFORCE_CREDENTIAL1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge22" inPort="Port 0 (request)" metadata="Metadata0" outPort="Port 0 (out)" toNode="RETRIEVE_A_CONTACT:0"/>
+<Edge debugMode="true" fromNode="RETRIEVE_A_CONTACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge21" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (response)" toNode="EVALUATE_DESCRIPTION_FIELD:0"/>
+<Edge debugMode="true" fromNode="UPDATE_DESCRIPTION_FIELD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge25" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (response)" toNode="TRASH11:0"/>
+<Edge debugMode="true" fromNode="UPDATE_DESCRIPTION_FIELD1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge34" inPort="Port 1 (in)" metadata="Metadata3" outPort="Port 0 (response)" toNode="TRASH11:1"/>
+</Phase>
+</Graph>

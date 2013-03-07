@@ -255,6 +255,8 @@ public class MultiFileReader {
 	private boolean nextSource() throws JetelException {
 		if (currentSource instanceof Closeable) {
 			try {
+				// CL-2732: Does not fix the situation when currentSource is a File or a URL.
+				// The Parsers should be fixed, too.
 				((Closeable) currentSource).close();
 			} catch (IOException ioe) {
 				logger.warn("Failed to close the previous source");

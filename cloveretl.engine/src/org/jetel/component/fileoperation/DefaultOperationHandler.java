@@ -40,6 +40,7 @@ import org.jetel.component.fileoperation.SimpleParameters.ReadParameters;
 import org.jetel.component.fileoperation.SimpleParameters.ResolveParameters;
 import org.jetel.component.fileoperation.SimpleParameters.WriteParameters;
 import org.jetel.component.fileoperation.result.CopyResult;
+import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.util.file.FileUtils;
@@ -195,7 +196,7 @@ public class DefaultOperationHandler implements IOperationHandler {
 		InfoResult targetInfo = manager.info(target);
 		if (targetInfo.exists()) {
 			sourceInfo = manager.info(source);
-			URI sourceUri = sourceInfo.getURI();
+			URI sourceUri = sourceInfo.exists() ? sourceInfo.getURI() : source.toURI();
 			URI targetUri = targetInfo.getURI();
 			if (sourceUri.normalize().equals(targetUri.normalize())) {
 				throw new SameFileException(sourceUri, targetUri);
@@ -226,10 +227,14 @@ public class DefaultOperationHandler implements IOperationHandler {
 		}
 		
 		CopyResult copyResult = manager.copy(source, target, COPY_RECURSIVE.clone().setOverwriteMode(params.getOverwriteMode()).setMakeParents(params.isMakeParents()));
-		if (copyResult.success() && manager.delete(source, DELETE_RECURSIVE).success()) {
-			return copyResult.getResult(0);
+		if (!copyResult.success()) {
+			throw new IOException("Copy failed", copyResult.getFirstError());
 		}
-		return null;
+		DeleteResult deleteResult = manager.delete(source, DELETE_RECURSIVE);
+		if (!deleteResult.success()) {
+			throw new IOException("Delete failed", deleteResult.getFirstError());
+		}
+		return copyResult.getResult(0);
 	}
 
 	@Override
