@@ -561,7 +561,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			
 		case CLVFLookupNode.OP_PUT:
 			if (!node.getLookupTable().isPutSupported()) {
-				error(node,"Lookup table does not support the put() operation");
+				error(node,"Lookup table '" + node.getLookupName() + "' does not support the put() operation");
 				node.setType(TLType.ERROR);
 				return node;
 			}
