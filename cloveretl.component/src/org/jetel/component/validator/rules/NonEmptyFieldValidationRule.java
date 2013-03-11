@@ -27,13 +27,16 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationError;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -92,11 +95,22 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 		params.put("target", target.getValue());		
 		return new ValidationError("100", message, this.getName(), fields, params, new HashMap<String, String>());
 	}
-
+	
 	@Override
-	public boolean isReady() {
-		String targetField = target.getValue();
-		return !targetField.isEmpty();
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+		if(!isEnabled()) {
+			return true;
+		}
+		boolean state = true;
+		if(target.getValue().isEmpty()) {
+			accumulator.addError(target, this, "Target is empty.");
+			state = false;
+		}
+		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			state = false;
+		}
+		return state;
 	}
 
 	/**

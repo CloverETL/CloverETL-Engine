@@ -25,11 +25,14 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.rules.ComparisonValidationRule;
+import org.jetel.component.validator.rules.DateValidationRule;
 import org.jetel.component.validator.rules.EnumMatchValidationRule;
+import org.jetel.component.validator.rules.IntervalValidationRule;
 import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
 import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
+import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
-import org.jetel.component.validator.rules.RangeCheckValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
 
 /**
@@ -43,7 +46,10 @@ import org.jetel.component.validator.rules.StringLengthValidationRule;
 		NonEmptySubsetValidationRule.class, 
 		PatternMatchValidationRule.class, 
 		StringLengthValidationRule.class,
-		RangeCheckValidationRule.class
+		IntervalValidationRule.class,
+		ComparisonValidationRule.class,
+		DateValidationRule.class,
+		NumberValidationRule.class
 	})
 public abstract class AbstractValidationRule extends ValidationNode {
 	

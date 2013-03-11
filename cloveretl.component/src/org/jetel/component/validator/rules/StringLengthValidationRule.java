@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
@@ -33,7 +34,9 @@ import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
+import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -73,7 +76,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		type.setName("Criterion");
 		params.add(type);
-		//from.setEnabledHandler(); // lambda + isEnabled u param Nodu
+		from.setPlaceholder("Not set");
 		from.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -86,6 +89,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 		});
 		from.setName("From");
 		params.add(from);
+		to.setPlaceholder("Not set");
 		to.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -133,17 +137,32 @@ public class StringLengthValidationRule extends StringValidationRule {
 		logger.trace("Validation rule: " + getName() + " on length '" + length + "' is " + result);
 		return result;
 	}
-
+	
 	@Override
-	public boolean isReady() {
-		return !target.getValue().isEmpty() &&
-				(
-						(type.getValue() == TYPES.EXACT && from.getValue() != null) ||
-						(type.getValue() == TYPES.MAXIMAL && to.getValue() != null) ||
-						(type.getValue() == TYPES.MINIMAL && from.getValue() != null) ||
-						(type.getValue() == TYPES.INTERVAL && from.getValue() != null && to.getValue() != null)
-				);
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+		if(!isEnabled()) {
+			return true;
+		}
+		boolean state = true;
+		if(target.getValue().isEmpty()) {
+			accumulator.addError(target, this, "Target is empty.");
+			state = false;
+		}
+		if((type.getValue() == TYPES.EXACT || type.getValue() == TYPES.MINIMAL || type.getValue() == TYPES.INTERVAL) && from.getValue() == null) {
+			accumulator.addError(from, this, "Parameter From is unset.");
+			state = false;
+		}
+		if((type.getValue() == TYPES.MAXIMAL || type.getValue() == TYPES.INTERVAL) && to.getValue() == null) {
+			accumulator.addError(to, this, "Parameter To is unset.");
+			state = false;
+		}
+		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			state = false;
+		}
+		return state;
 	}
+
 	/**
 	 * @return the target
 	 */

@@ -24,7 +24,9 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -33,19 +35,17 @@ import org.jetel.data.DataRecord;
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class ValidationNode {
 	protected final static Log logger = LogFactory.getLog(ValidationNode.class);
+	
 	@XmlAttribute(required=true)
 	private boolean enabled = true;
 	@XmlAttribute(required=false)
 	private String name;
 	
+	/**
+	 * Result states of validation
+	 */
 	public enum State {
 		VALID, NOT_VALIDATED, INVALID;
-		
-		@Override
-		public String toString() {
-			// TODO Auto-generated method stub
-			return super.toString();
-		}
 	}
 	
 	public ValidationNode() {
@@ -53,45 +53,56 @@ public abstract class ValidationNode {
 	}
 	
 	/**
-	 * Validates record against self
+	 * Validates given record against the rule.
 	 * @param record Record to be validated
-	 * @param ea Error accumulator where all errors of validation are stored
-	 * @return Validity state
+	 * @param ea Error accumulator where all errors are stored, can be null
+	 * @return Not null validation state, NOT_VALIDATED when rule is disabled
 	 */
 	public abstract State isValid(DataRecord record, ValidationErrorAccumulator ea);
 	
 	/**
-	 * Returns true when validation node is ready for validation
-	 * e.g. it has all mandatory parameters
-	 * @return true when ready for validation
+	 * Return whether the rule parameters are valid and therefore is ready to validate.
+	 * Always not lazy to obtain all errors.
+	 * @param inputMetadata Input metadata from graph, used for checking if target fields are present
+	 * @param accumulator Error accumulator in which all errors with human readable messages 
+	 * @return true if parameters are valid, false otherwise
 	 */
-	public abstract boolean isReady();
+	public abstract boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator);
 	
 	/**
-	 * @return the enabled
+	 * @return Returns true when rule is enabled 
 	 */
 	public boolean isEnabled() {
 		return enabled;
 	}
 	/**
-	 * @param enabled the enabled to set
+	 * Sets whether the rule is enabled/disabled
+	 * @param enabled
 	 */
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
 	/**
-	 * @return the name
+	 * @return Returns current name
 	 */
 	public String getName() {
 		return name;
 	}
 	/**
-	 * @param name the name to set
+	 * Sets name of rule
+	 * @param name New name
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+	/**
+	 * Returns common name of rule type. Used for default name of new rules.  
+	 * @return Name
+	 */
 	public abstract String getCommonName();
+	/**
+	 * Returns common description of rule type
+	 * @return Description
+	 */
 	public abstract String getCommonDescription();
 }

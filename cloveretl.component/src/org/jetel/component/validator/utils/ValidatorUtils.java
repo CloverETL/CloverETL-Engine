@@ -18,6 +18,8 @@
  */
 package org.jetel.component.validator.utils;
 
+import org.jetel.metadata.DataRecordMetadata;
+
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 26.2.2013
@@ -29,5 +31,25 @@ public class ValidatorUtils {
 			return new String[0];
 		}
 		return target.trim().split(",");
+	}
+	
+	public static boolean isValidField(String fieldName, DataRecordMetadata inputMetadata) {
+		if(inputMetadata.getField(fieldName) == null) {
+			return false;
+		}
+		return true;
+	}
+	
+	public static boolean areValidFields(String fields, DataRecordMetadata inputMetadata) {
+		String[] temp = ValidatorUtils.parseTargets(fields);
+		if (temp.length == 0) {
+			return false;
+		}
+		for(int i = 0; i < temp.length; i++) {
+			if(inputMetadata.getField(temp[i]) == null) {
+				return false;
+			}
+		}
+		return true;
 	}
 }

@@ -28,11 +28,14 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -51,6 +54,7 @@ public class EnumMatchValidationRule extends StringValidationRule {
 	public List<ValidationParamNode> initialize() {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		values.setName("Accept values");
+		values.setPlaceholder("Comma separated list of values");
 		params.add(values);
 		ignoreCase.setName("Ignore case");
 		params.add(ignoreCase);
@@ -81,16 +85,28 @@ public class EnumMatchValidationRule extends StringValidationRule {
 			return State.INVALID;
 		}
 	}
-
+	
 	@Override
-	public boolean isReady() {
-		/*if(!isEnabled()) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+		if(!isEnabled()) {
 			return true;
-		}*/
-		return !target.getValue().isEmpty() &&
-				!parseValues(false).isEmpty();
-				
+		}
+		boolean state = true;
+		if(target.getValue().isEmpty()) {
+			accumulator.addError(target, this, "Target is empty.");
+			state = false;
+		}
+		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			state = false;
+		}
+		if(parseValues(false).isEmpty()) {
+			accumulator.addError(values, this, "No values for matching were provided.");
+			state = false;
+		}
+		return state;
 	}
+
 	private Set<String> parseValues(boolean ignoreCase) {
 		Set<String> temp;
 		if(ignoreCase) {

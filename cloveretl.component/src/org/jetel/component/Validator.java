@@ -18,11 +18,16 @@
  */
 package org.jetel.component;
 
+import java.util.List;
+import java.util.Map.Entry;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
+import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.ValidationRulesPersister;
 import org.jetel.component.validator.utils.ValidationRulesPersisterException;
 import org.jetel.data.DataRecord;
@@ -121,9 +126,18 @@ public class Validator extends Node {
 			status.add(problem);
 		}
 		
-		if(rootGroup != null && !rootGroup.isReady()) {
-			ConfigurationProblem problem = new ConfigurationProblem("Validation tree has incomplete settings. Please fix it.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
-			status.add(problem);
+		ReadynessErrorAcumulator accumulator = new ReadynessErrorAcumulator();
+		if(rootGroup != null && !rootGroup.isReady(getInputPort(INPUT_PORT).getMetadata(), accumulator)) {
+			String tempName = new String();
+			for(Entry<ValidationParamNode, List<String>> errors: accumulator.getErrors().entrySet()) {
+				for(String message : errors.getValue()) {
+					if(accumulator.getParentRule(errors.getKey()) != null) {
+						tempName = accumulator.getParentRule(errors.getKey()).getName() + ": ";
+					}
+					ConfigurationProblem problem = new ConfigurationProblem(tempName + message, ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+					status.add(problem);
+				}
+			}
 		}
 		return status;
 	}

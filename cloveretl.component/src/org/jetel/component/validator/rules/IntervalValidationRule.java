@@ -30,11 +30,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.AbstractValidationRule;
+import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.component.validator.utils.comparators.DecimalComparator;
 import org.jetel.component.validator.utils.comparators.DoubleComparator;
 import org.jetel.component.validator.utils.comparators.LongComparator;
@@ -47,55 +49,21 @@ import org.jetel.component.validator.utils.convertors.StringConverter;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 8.1.2013
  */
-@XmlRootElement(name="rangeCheck")
-@XmlType(propOrder={"typeJAXB" , "operatorJAXB", "value", "boundariesJAXB", "from", "to", "useTypeJAXB" })
-public class RangeCheckValidationRule extends AbstractValidationRule {
+@XmlRootElement(name="interval")
+@XmlType(propOrder={"boundariesJAXB", "from", "to", "useTypeJAXB" })
+public class IntervalValidationRule extends AbstractValidationRule {
 	
-	// TYPE: Comparasion
-	//  + Operator: ==, <=, >=, <, >, !=
-	//  + Value:
 	// TYPE: Interval
 	//  + Boundaries: [), (], (), []
 	//  + From:
 	//  + To:
 	
-	public static enum TYPES {
-		COMPARISON, INTERVAL;
-		@Override
-		public String toString() {
-			if(this.equals(COMPARISON)) {
-				return "Comparison";
-			}
-			return "Interval";
-		}
-	};
-	public static enum OPERATOR_TYPE {
-		LE, GE, E, NE, L, G;
-		@Override
-		public String toString() {
-			if(this.equals(LE)) {
-				return "Lower or equal";
-			}
-			if(this.equals(GE)) {
-				return "Greater or equal";
-			}
-			if(this.equals(E)) {
-				return "Equal";
-			}
-			if(this.equals(NE)) {
-				return "Not equal";
-			}
-			if(this.equals(L)) {
-				return "Lower";
-			}
-			return "Greater";
-		}
-	};
 	public static enum BOUNDARIES_TYPE {
 		OPEN_CLOSED, CLOSED_OPEN, OPEN_OPEN, CLOSED_CLOSED;
 		@Override
@@ -132,19 +100,6 @@ public class RangeCheckValidationRule extends AbstractValidationRule {
 		}
 	}
 	
-	private EnumValidationParamNode type = new EnumValidationParamNode(TYPES.values(), TYPES.COMPARISON);
-	@XmlElement(name="type", required=true)
-	private String getTypeJAXB() { return ((Enum<?>) type.getValue()).name(); }
-	private void setTypeJAXB(String input) { this.type.setFromString(input); }
-	
-	private EnumValidationParamNode operator = new EnumValidationParamNode(OPERATOR_TYPE.values(), OPERATOR_TYPE.E);
-	@XmlElement(name="operator", required=true)
-	private String getOperatorJAXB() { return ((Enum<?>) operator.getValue()).name(); }
-	private void setOperatorJAXB(String input) { this.operator.setFromString(input); }
-	
-	@XmlElement(name="value")
-	private StringValidationParamNode value = new StringValidationParamNode();
-	
 	private EnumValidationParamNode boundaries = new EnumValidationParamNode(BOUNDARIES_TYPE.values(), BOUNDARIES_TYPE.CLOSED_CLOSED);
 	@XmlElement(name="boundaries")
 	private String getBoundariesJAXB() { return ((Enum<?>) boundaries.getValue()).name(); }
@@ -163,21 +118,16 @@ public class RangeCheckValidationRule extends AbstractValidationRule {
 	
 	protected List<ValidationParamNode> initialize() {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
-		type.setName("Type");
-		params.add(type);
-		operator.setName("Operator");
-		params.add(operator);
-		value.setName("Compare with");
-		params.add(value);
 		boundaries.setName("Boundaries");
 		params.add(boundaries);
 		from.setName("From");
+		from.setPlaceholder("Not set");
 		params.add(from);
 		to.setName("To");
+		to.setPlaceholder("Not set");
 		params.add(to);
 		useType.setName("Use type");
 		params.add(useType);
-		
 		return params;
 	}
 
@@ -189,14 +139,10 @@ public class RangeCheckValidationRule extends AbstractValidationRule {
 		}
 		logger.trace("Validation rule: " + this.getName() + "\n"
 				+ "Target fields: " + target.getValue() + "\n"
-				+ "Type: " + type.getValue() + "\n"
-				+ " Comparison parameters: \n"
-				+ "  Operator: " + operator.getValue() + "\n"
-				+ "  Value: " + value.getValue() + "\n"
-				+ " Interval parameters: \n"
 				+ "  Boundaries: " + boundaries.getValue() + "\n"
 				+ "  From: " + from.getValue() + "\n"
 				+ "  To: " + to.getValue() + "\n");
+		//FIXME: usedType
 		
 		DataField field = record.getField(target.getValue());
 		DataFieldType fieldType = field.getMetadata().getDataType();
@@ -246,81 +192,55 @@ public class RangeCheckValidationRule extends AbstractValidationRule {
 		if(record == null) {
 			return State.INVALID;
 		}
-		if(this.type.getValue() == TYPES.COMPARISON) {
-			final OPERATOR_TYPE operator = (OPERATOR_TYPE) this.operator.getValue();
-			T value = converter.convert(this.value.getValue());
-			if(value == null) {
-				return State.INVALID;
-			}
-			if(operator == OPERATOR_TYPE.E && comparator.compare(record, value) == 0) {
-				return State.VALID;
-			} else if(operator == OPERATOR_TYPE.NE && comparator.compare(record, value) != 0) {
-				return State.VALID;
-			} else if(operator == OPERATOR_TYPE.G && comparator.compare(record, value) > 0) {
-				return State.VALID;
-			} else if(operator == OPERATOR_TYPE.L && comparator.compare(record, value) < 0) {
-				return State.VALID;
-			} else if(operator == OPERATOR_TYPE.LE && comparator.compare(record, value) <= 0) {
-				return State.VALID;
-			} else if(operator == OPERATOR_TYPE.GE && comparator.compare(record, value) >= 0) {
-				return State.VALID;
-			} else {
-				return State.INVALID;
-			}
+		final BOUNDARIES_TYPE boundaries = (BOUNDARIES_TYPE) this.boundaries.getValue();
+		T from = converter.convert(this.from.getValue());
+		T to = converter.convert(this.to.getValue());
+		if(from == null || to == null) {
+			return State.INVALID;
+		}
+		if(boundaries == BOUNDARIES_TYPE.CLOSED_CLOSED && comparator.compare(record, from) >= 0 && comparator.compare(record, to) <= 0) {
+			return State.VALID;
+		} else if(boundaries == BOUNDARIES_TYPE.CLOSED_OPEN && comparator.compare(record, from) >= 0 && comparator.compare(record, to) < 0) {
+			return State.VALID;
+		} else if(boundaries == BOUNDARIES_TYPE.OPEN_CLOSED && comparator.compare(record, from) > 0 && comparator.compare(record, to) <= 0) {
+			return State.VALID;
+		} else if(boundaries == BOUNDARIES_TYPE.OPEN_OPEN && comparator.compare(record, from) > 0 && comparator.compare(record, to) < 0) {
+			return State.VALID;
 		} else {
-			final BOUNDARIES_TYPE boundaries = (BOUNDARIES_TYPE) this.boundaries.getValue();
-			T from = converter.convert(this.from.getValue());
-			T to = converter.convert(this.to.getValue());
-			if(from == null || to == null) {
-				return State.INVALID;
-			}
-			if(boundaries == BOUNDARIES_TYPE.CLOSED_CLOSED && comparator.compare(record, from) >= 0 && comparator.compare(record, to) <= 0) {
-				return State.VALID;
-			} else if(boundaries == BOUNDARIES_TYPE.CLOSED_OPEN && comparator.compare(record, from) >= 0 && comparator.compare(record, to) < 0) {
-				return State.VALID;
-			} else if(boundaries == BOUNDARIES_TYPE.OPEN_CLOSED && comparator.compare(record, from) > 0 && comparator.compare(record, to) <= 0) {
-				return State.VALID;
-			} else if(boundaries == BOUNDARIES_TYPE.OPEN_OPEN && comparator.compare(record, from) > 0 && comparator.compare(record, to) < 0) {
-				return State.VALID;
-			} else {
-				return State.INVALID;
-			}
+			return State.INVALID;
 		}
 	}
 	
 	@Override
-	public boolean isReady() {
-		if(target.getValue().isEmpty()) {
-			return false;
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+		if(!isEnabled()) {
+			return true;
 		}
-		return true;
+		boolean state = true;
+		if(target.getValue().isEmpty()) {
+			accumulator.addError(target, this, "Target is empty.");
+			state = false;
+		}
+		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			state = false;
+		}
+		if(from.getValue().isEmpty()) {
+			accumulator.addError(from, this, "Value From is empty.");
+			state = false;
+		}
+		if(to.getValue().isEmpty()) {
+			accumulator.addError(to, this, "Value To is empty.");
+			state = false;
+		}
+		return state;
 	}
-
 
 	/**
 	 * @return the target
 	 */
 	public StringValidationParamNode getTarget() {
 		return target;
-	}
-
-
-	/**
-	 * @return the type
-	 */
-	public EnumValidationParamNode getType() {
-		return type;
-	}
-	
-	public EnumValidationParamNode getOperator() {
-		return operator;
-	}
-
-	/**
-	 * @return the value
-	 */
-	public StringValidationParamNode getValue() {
-		return value;
 	}
 
 
@@ -361,11 +281,11 @@ public class RangeCheckValidationRule extends AbstractValidationRule {
 	}
 	@Override
 	public String getCommonName() {
-		return "Range Check";
+		return "Interval";
 	}
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether chosen field satisfies some numeric criterion such as comparison or range.";
+		return "Checks whether value of chosen field is in provided interval.";
 	}
 
 }

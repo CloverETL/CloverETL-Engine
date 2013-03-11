@@ -18,55 +18,37 @@
  */
 package org.jetel.component.validator.params;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.XmlValue;
+
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 28.11.2012
+ * @created 11.03.2013
  */
-@XmlTransient
-@XmlAccessorType(XmlAccessType.NONE)
-public abstract class ValidationParamNode {
-	private String name;
-	private String placeholder;
-	private EnabledHandler enabledHandler;
+final public class StringEnumValidationParamNode extends ValidationParamNode {
+	@XmlValue
+	String value = new String();
+	String[] options;
 	
-	protected ValidationParamNode() {} // For JAXB
+	public StringEnumValidationParamNode() {}
 	
-	public ValidationParamNode(String name) {
-		this.name = name;
+	public StringEnumValidationParamNode(String value) {
+		setValue(value);
+		
+	}	
+	public void setValue(String value) {
+		if(value != null) {
+			this.value = value;
+		}
 	}
-	
-	public String getName() {
-		return name;
+	public String getValue() {
+		return value;
+	}
+	public String[] getOptions() {
+		return options;
+	}
+	public void setOptions(String[] options) {
+		this.options = options;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-	
-	public boolean isEnabled() {
-		if(enabledHandler != null) {
-			return enabledHandler.isEnabled();
-		}
-		return true;
-	}
-	
-	public void setEnabledHandler(EnabledHandler handler) {
-		enabledHandler = handler;
-	}
-	
-	public static interface EnabledHandler {
-		public boolean isEnabled();
-	}
-	
-	public void setPlaceholder(String placeholder) {
-		this.placeholder = placeholder;
-	}
-	public String getPlaceholder() {
-		return placeholder;
-	}
-	
 }

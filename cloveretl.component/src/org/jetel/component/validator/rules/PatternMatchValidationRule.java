@@ -27,12 +27,15 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -49,7 +52,8 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	
 	public List<ValidationParamNode> initialize() {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
-		pattern.setName("Patern to match");
+		pattern.setName("Pattern to match");
+		pattern.setPlaceholder("Regular expression, for syntax see documentation");
 		params.add(pattern);
 		ignoreCase.setName("Ignore case");
 		params.add(ignoreCase);
@@ -91,12 +95,27 @@ public class PatternMatchValidationRule extends StringValidationRule {
 			return State.INVALID;
 		}
 	}
-
+	
 	@Override
-	public boolean isReady() {
-		return !pattern.getValue().isEmpty() && !target.getValue().isEmpty();
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+		if(!isEnabled()) {
+			return true;
+		}
+		boolean state = true;
+		if(target.getValue().isEmpty()) {
+			accumulator.addError(target, this, "Target is empty.");
+			state = false;
+		}
+		if(pattern.getValue().isEmpty()) {
+			accumulator.addError(pattern, this, "Match pattern is empty.");
+			state = false;
+		}
+		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			state = false;
+		}
+		return state;
 	}
-
 
 	/**
 	 * @return the target

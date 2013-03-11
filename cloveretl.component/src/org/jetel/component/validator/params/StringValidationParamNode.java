@@ -1,5 +1,5 @@
 /*
- * jETeL/CloverETL - Java based ETL application framework.
+y * jETeL/CloverETL - Java based ETL application framework.
  * Copyright (c) Javlin, a.s. (info@cloveretl.com)
  *  
  * This library is free software; you can redistribute it and/or

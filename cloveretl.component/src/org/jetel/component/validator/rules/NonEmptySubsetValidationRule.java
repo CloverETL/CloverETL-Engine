@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
@@ -33,6 +34,7 @@ import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -90,12 +92,26 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 		logger.trace("Validation rule: " + getName() + " is " + State.INVALID);
 		return State.INVALID;
 	}
-
+	
 	@Override
-	public boolean isReady() {
-		return count.getValue() != null && 
-				count.getValue().compareTo(Integer.valueOf(0)) > 0 &&
-				ValidatorUtils.parseTargets(target.getValue()).length > 0;
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+		if(!isEnabled()) {
+			return true;
+		}
+		boolean state = true;
+		if(target.getValue().isEmpty()) {
+			accumulator.addError(target, this, "Target is empty.");
+			state = false;
+		}
+		if(count.getValue() == null || count.getValue().compareTo(Integer.valueOf(0)) <= 0) {
+			accumulator.addError(count, this, "Count of fields must be greater than zero.");
+			state = false;
+		}
+		if(!ValidatorUtils.areValidFields(target.getValue(), inputMetadata)) { 
+			accumulator.addError(target, this, "Some of target fields are not present in input metadata.");
+			state = false;
+		}
+		return state;
 	}
 
 	/**
