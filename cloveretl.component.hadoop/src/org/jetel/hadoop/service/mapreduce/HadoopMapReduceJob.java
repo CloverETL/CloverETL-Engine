@@ -45,6 +45,15 @@ import org.jetel.util.string.StringUtils;
  * @see HadoopJobRunner#runJobLogProgress(HadoopMapReduceService, HadoopMapReduceJob, Properties, boolean)
  */
 public class HadoopMapReduceJob {
+
+	/** Enum representing versions of map/reduce job implementation APIs. */
+	public enum APIVersion {
+		/** New <code>org.apache.hadoop.mapreduce</code> package API. */
+		MAPREDUCE,
+		/** Old <code>org.apache.hadoop.mapred</code> package API. */
+		MAPRED
+	}
+	
 	private String jobName;
 
 	private URL jobJarFile;
@@ -53,17 +62,24 @@ public class HadoopMapReduceJob {
 	private URI workingDirectory;
 	private boolean clearOutputDir;
 
+	private APIVersion apiVersion;
 	private String mapper;
 	private String combiner;
+	private String partitioner;
 	private String reducer;
 	private String inputFormat;
 	private String outputFormat;
+	private String mapperOutputKey;
+	private String mapperOutputValue;
+	private String groupingComparator;
+	private String sortingComparator;
 	private String outputKey;
 	private String outputValue;
 	private Integer numMappers;
 	private Integer numReducers;
 	private long timeout;
-
+	
+	
 	/**
 	 * Initializes new {@code HadoopMapReduceJob} that contains at least the mandatory configuration required to execute
 	 * the job. If not stated otherwise parameters can be <code>null</code> (not specified).
@@ -82,14 +98,21 @@ public class HadoopMapReduceJob {
 	 *        previous working directory.
 	 * @param clearOutputDir If {@code true} then in case that output directory of the job already exists it should be
 	 *        deleted before execution of the job.
+	 * @param apiVersion version of API used to implement map/reduce job classes.
 	 * @param mapper Fully qualified name of class that is to be used as mapper class of the map/reduce job. This class
 	 *        is typically contained in job JAR file. May not be <code>null</code> not empty.
 	 * @param combiner Fully qualified name of the class that is to be used as combiner of map/reduce job. This class is
+	 *        typically contained in job JAR file.
+	 * @param partitioner Fully qualified name of the class that is to be used as partitioner of map/reduce job. This class is
 	 *        typically contained in job JAR file.
 	 * @param reducer Fully qualified name of the class that is to be used as reducer of map/reduce job. This class is
 	 *        typically contained in job JAR file.
 	 * @param inputFormat Fully qualified name of input format class for this map/reduce job.
 	 * @param outputFormat Fully qualified name of output format class for this map/reduce job.
+	 * @param mapperOutKey Fully qualified name of mapper output key class.
+	 * @param mapperOutValue Fully qualified name of mapper output value class.
+	 * @param groupingComparator FQN of comparator that controls which keys are grouped together for a single call to reducer's reduce method.
+	 * @param sortingComparator FQN of comparator that controls how the keys are sorted before they are passed to the reducer.
 	 * @param outputKey Fully qualified name of output records key class for this map/reduce job. May not be
 	 *        <code>null</code>.
 	 * @param outputValue Fully qualified name of output records value class for this map/reduce job. May not be
@@ -97,12 +120,14 @@ public class HadoopMapReduceJob {
 	 * @param numMappers Number of mappers to be used for job execution or <code>null</code> if not specified. If
 	 *        specified must be greater then 0.
 	 * @param numReducers Number of reducers to be used for job execution or <code>null</code> if not specified. If
-	 *        specified must be greater then 0.
+	 *        specified must be greater or equal to 0.
 	 * @param timeout Time limit for job execution in milliseconds. May not be less then 0. Value of 0 specifies no limit.
 	 */
 	public HadoopMapReduceJob(String jobName, URL jobJarFile, List<URI> inputFiles, URI outputDir,
-			URI workingDirectory, boolean clearOutputDir, String mapper, String combiner, String reducer,
-			String inputFormat, String outputFormat, String outputKey, String outputValue, Integer numMappers,
+			URI workingDirectory, boolean clearOutputDir, APIVersion apiVersion, String mapper, String combiner, 
+			String partitioner, String reducer, String inputFormat, String outputFormat,
+			String mapperOutKey, String mapperOutValue, String groupingComparator, String sortingComparator,
+			String outputKey, String outputValue, Integer numMappers,
 			Integer numReducers, long timeout) {
 		if (jobJarFile == null) {
 			throw new NullPointerException("jobJarFile");
@@ -131,8 +156,8 @@ public class HadoopMapReduceJob {
 		if (numMappers != null && numMappers <= 0) {
 			throw new IllegalArgumentException("maxMappers must be greater then 0.");
 		}
-		if (numReducers != null && numReducers <= 0) {
-			throw new IllegalArgumentException("maxReducers must be greater then 0");
+		if (numReducers != null && numReducers < 0) {
+			throw new IllegalArgumentException("maxReducers must not be negative.");
 		}
 		if (timeout < 0) {
 			throw new IllegalArgumentException("Value of timeout cannot be less then 0.");
@@ -144,11 +169,17 @@ public class HadoopMapReduceJob {
 		this.workingDirectory = workingDirectory;
 		this.clearOutputDir = clearOutputDir;
 		this.jobName = jobName;
+		this.apiVersion = apiVersion;
 		this.mapper = mapper;
 		this.combiner = combiner;
+		this.partitioner = partitioner;
 		this.reducer = reducer;
 		this.inputFormat = inputFormat;
 		this.outputFormat = outputFormat;
+		this.mapperOutputKey = mapperOutKey;
+		this.mapperOutputValue = mapperOutValue;
+		this.groupingComparator = groupingComparator;
+		this.sortingComparator = sortingComparator;
 		this.outputKey = outputKey;
 		this.outputValue = outputValue;
 		this.numMappers = numMappers;
@@ -217,6 +248,14 @@ public class HadoopMapReduceJob {
 	}
 
 	/**
+	 * Returns job implementation API version.
+	 * @return job implementation API version.
+	 */
+	public APIVersion getAPIVersion() {
+		return apiVersion;
+	}
+	
+	/**
 	 * Gets name of mapper class of the job.
 	 * @return Fully qualified name of class that is to be used as mapper class of the map/reduce job. This class is
 	 *         typically contained in job JAR file.
@@ -232,6 +271,15 @@ public class HadoopMapReduceJob {
 	 */
 	public String getCombiner() {
 		return combiner;
+	}
+
+	/**
+	 * Gets name of partitioner class of the job.
+	 * @return Fully qualified name of the class that is to be used as partitioner of map/reduce job or <code>null</code> if
+	 *         not specified. This class is typically contained in job JAR file.
+	 */
+	public String getPartitioner() {
+		return partitioner;
 	}
 
 	/**
@@ -258,6 +306,22 @@ public class HadoopMapReduceJob {
 	 */
 	public String getOutputFormat() {
 		return outputFormat;
+	}
+	
+	public String getMapperOutputKey() {
+		return mapperOutputKey;
+	}
+	
+	public String getMapperOutputValue() {
+		return mapperOutputValue;
+	}
+	
+	public String getGroupingComparator() {
+		return groupingComparator;
+	}
+	
+	public String getSortingComparator() {
+		return sortingComparator;
 	}
 
 	/**
@@ -307,9 +371,11 @@ public class HadoopMapReduceJob {
 	public String toString() {
 		return "HadoopMapReduceJob [jobName=" + jobName + ", jobJarFile=" + jobJarFile + ", inputFiles=" + inputFiles
 				+ ", outputDir=" + outputDir + ", workingDirectory=" + workingDirectory + ", clearOutputDir="
-				+ clearOutputDir + ", mapper=" + mapper + ", combiner=" + combiner + ", reducer=" + reducer
-				+ ", inputFormat=" + inputFormat + ", outputFormat=" + outputFormat + ", outputKey=" + outputKey
-				+ ", outputValue=" + outputValue + ", numMappers=" + numMappers + ", numReducers=" + numReducers
-				+ ", timeout=" + timeout + "]";
+				+ clearOutputDir + ", APIVersion=" + apiVersion + ", mapper=" + mapper + ", combiner=" + combiner
+				+ ", partitioner=" + partitioner + ", reducer=" + reducer + ", inputFormat=" + inputFormat
+				+ ", outputFormat=" + outputFormat + ", mapperOutputKey=" + mapperOutputKey
+				+ ", mapperOutputValue=" + mapperOutputValue + ", groupingComparator=" + groupingComparator
+				+ ", sortComparator=" + sortingComparator + ", outputKey=" + outputKey + ", outputValue=" + outputValue
+				+ ", numMappers=" + numMappers + ", numReducers=" + numReducers + ", timeout=" + timeout + "]";
 	}
 }
