@@ -60,9 +60,7 @@ public abstract class CloverURI {
 		this.context = context;
 	}
 	
-	protected static String preprocess(String uriString) {
-		uriString = uriString.replace(BACKSLASH_CHAR, SLASH_CHAR);
-		uriString = SPACE_PATTERN.matcher(uriString).replaceAll("%20"); //$NON-NLS-1$
+	protected static String fileToUri(String uriString) {
 		if (uriString.startsWith(PATH_SEPARATOR)) { // handles Linux absolute paths and UNC pathnames on Windows
 			return "file://" + uriString; //$NON-NLS-1$
 		}
@@ -73,6 +71,12 @@ public abstract class CloverURI {
 				return "file:/" + uriString; //$NON-NLS-1$
 			}
 		}
+		return uriString;
+	}
+	
+	protected static String preprocess(String uriString) {
+		uriString = uriString.replace(BACKSLASH_CHAR, SLASH_CHAR);
+		uriString = SPACE_PATTERN.matcher(uriString).replaceAll("%20"); //$NON-NLS-1$
 		return uriString;
 	}
 	
@@ -95,9 +99,13 @@ public abstract class CloverURI {
 		uriString = preprocess(uriString);
 		if (uriString.contains(SEPARATOR)) {
 			String[] uris = uriString.split(SEPARATOR);
+			for (int i = 0; i < uris.length; i++) {
+				uris[i] = fileToUri(uris[i]);
+			}
 			result = new MultiCloverURI(uris); 
 			result.context = base;
 		} else {
+			uriString = fileToUri(uriString);
 			result = new SingleCloverURI(base, uriString);
 		}
 		return result;
@@ -137,7 +145,7 @@ public abstract class CloverURI {
 		if (uri.contains(SEPARATOR)) {
 			throw new IllegalArgumentException(FileOperationMessages.getString("CloverURI.not_a_single_URI")); //$NON-NLS-1$
 		}
-		uri = preprocess(uri);
+		uri = fileToUri(preprocess(uri));
 		return new SingleCloverURI(context, uri);
 	}
 	
