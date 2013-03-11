@@ -19,8 +19,10 @@
 package org.jetel.component.fileoperation;
 
 import java.net.URI;
+import java.util.List;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
+import org.jetel.util.exec.PlatformUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -28,11 +30,12 @@ import junit.framework.TestCase;
  *
  * @created 6.3.2012
  */
-public class CloverURITest extends TestCase {
+public class CloverURITest extends CloverTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		initEngine();
 	}
 
 	@Override
@@ -50,6 +53,16 @@ public class CloverURITest extends TestCase {
 //		System.out.println(resolvedUri);
 		System.out.println(URI.create("ahoj/?nazdar/").resolve("fff"));
 //		System.out.println(CloverURI.createURI("file://C:/myDire/?ctory/aaa/", "bbb"));
+	}
+	
+	public void testCreateURI() throws Exception {
+		String input = PlatformUtils.isWindowsPlatform() ? "file:/C:/Windows;C:/Windows" : "file:/home/milan;/home/milan";
+		MultiCloverURI uri = (MultiCloverURI) CloverURI.createURI(input);
+		List<SingleCloverURI> uris = uri.split();
+		assertEquals(2, uris.size());
+		for (SingleCloverURI u: uris) {
+			assertTrue(u.getPath().startsWith("file:"));
+		}
 	}
 
 }
