@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -37,17 +38,20 @@ import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.ValidatorUtils;
+import org.jetel.component.validator.utils.comparators.DateComparator;
 import org.jetel.component.validator.utils.comparators.DecimalComparator;
 import org.jetel.component.validator.utils.comparators.DoubleComparator;
 import org.jetel.component.validator.utils.comparators.LongComparator;
 import org.jetel.component.validator.utils.comparators.StringComparator;
 import org.jetel.component.validator.utils.convertors.Converter;
+import org.jetel.component.validator.utils.convertors.DateConverter;
 import org.jetel.component.validator.utils.convertors.DecimalConverter;
 import org.jetel.component.validator.utils.convertors.DoubleConverter;
 import org.jetel.component.validator.utils.convertors.LongConverter;
 import org.jetel.component.validator.utils.convertors.StringConverter;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -56,8 +60,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 8.1.2013
  */
 @XmlRootElement(name="interval")
-@XmlType(propOrder={"boundariesJAXB", "from", "to", "useTypeJAXB" })
-public class IntervalValidationRule extends AbstractValidationRule {
+@XmlType(propOrder={"boundariesJAXB", "from", "to"})
+public class IntervalValidationRule extends ConversionValidationRule {
 	
 	// TYPE: Interval
 	//  + Boundaries: [), (], (), []
@@ -80,25 +84,6 @@ public class IntervalValidationRule extends AbstractValidationRule {
 			return "[]";
 		}
 	};
-	public static enum METADATA_TYPES {
-		DEFAULT, STRING, LONG, NUMBER, DECIMAL;
-		@Override
-		public String toString() {
-			if(this.equals(DEFAULT)) {
-				return "Use from metadata";
-			}
-			if(this.equals(STRING)) {
-				return "As string";
-			}
-			if(this.equals(LONG)) {
-				return "As long";
-			}
-			if(this.equals(NUMBER)) {
-				return "As number";
-			}
-			return "Decimal";
-		}
-	}
 	
 	private EnumValidationParamNode boundaries = new EnumValidationParamNode(BOUNDARIES_TYPE.values(), BOUNDARIES_TYPE.CLOSED_CLOSED);
 	@XmlElement(name="boundaries")
@@ -109,11 +94,6 @@ public class IntervalValidationRule extends AbstractValidationRule {
 	private StringValidationParamNode from = new StringValidationParamNode();
 	@XmlElement(name="to")
 	private StringValidationParamNode to = new StringValidationParamNode();
-	
-	private EnumValidationParamNode useType = new EnumValidationParamNode(METADATA_TYPES.values(), METADATA_TYPES.DEFAULT);
-	@XmlElement(name="useType")
-	private String getUseTypeJAXB() { return ((Enum<?>) useType.getValue()).name(); }
-	private void setUseTypeJAXB(String input) { this.useType.setFromString(input); }
 	
 	
 	protected List<ValidationParamNode> initialize() {
@@ -126,8 +106,7 @@ public class IntervalValidationRule extends AbstractValidationRule {
 		to.setName("To");
 		to.setPlaceholder("Not set");
 		params.add(to);
-		useType.setName("Use type");
-		params.add(useType);
+		params.addAll(super.initialize());
 		return params;
 	}
 
@@ -141,20 +120,13 @@ public class IntervalValidationRule extends AbstractValidationRule {
 				+ "Target fields: " + target.getValue() + "\n"
 				+ "  Boundaries: " + boundaries.getValue() + "\n"
 				+ "  From: " + from.getValue() + "\n"
-				+ "  To: " + to.getValue() + "\n");
-		//FIXME: usedType
+				+ "  To: " + to.getValue() + "\n"
+				+ "  Compare as: " + useType.getValue() + "\n"
+				+ "  Format mask: " + format.getValue() + "\n"
+				+ "  Strict mode: " + strict.getValue() + "\n");
 		
 		DataField field = record.getField(target.getValue());
-		DataFieldType fieldType = field.getMetadata().getDataType();
-		if(useType.getValue() == METADATA_TYPES.STRING) {
-			fieldType = DataFieldType.STRING;
-		} else if(useType.getValue() == METADATA_TYPES.LONG) {
-			fieldType = DataFieldType.LONG;
-		} else if(useType.getValue() == METADATA_TYPES.NUMBER) {
-			fieldType = DataFieldType.NUMBER;
-		} else if(useType.getValue() == METADATA_TYPES.DECIMAL) {
-			fieldType = DataFieldType.DECIMAL;
-		}
+		DataFieldType fieldType = computeType(field);
 		
 		State status = null;
 		if (fieldType == DataFieldType.STRING) {
@@ -162,12 +134,17 @@ public class IntervalValidationRule extends AbstractValidationRule {
 			status = checkInType(field, StringConverter.getInstance(), StringComparator.getInstance());
 		} else if (fieldType == DataFieldType.INTEGER
 				|| fieldType == DataFieldType.LONG
-				|| fieldType == DataFieldType.DATE
 				|| fieldType == DataFieldType.BYTE
 				|| fieldType == DataFieldType.CBYTE
 				|| fieldType == DataFieldType.BOOLEAN) {
 			System.out.println("Validation rule: " + getName() + ": Comparing as longs");
 			status = checkInType(field, LongConverter.getInstance(), LongComparator.getInstance());
+		} else if (fieldType == DataFieldType.DATE) {
+			String localeString = (record.getMetadata().getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : record.getField(target.getValue()).getMetadata().getLocaleStr(); 
+			Locale locale = new Locale(localeString);
+			// FIXME: store it for later
+			DateConverter converter = DateConverter.newInstance(format.getValue(), strict.getValue(), locale);
+			status = checkInType(field, converter, DateComparator.getInstance());
 		} else if (fieldType == DataFieldType.NUMBER) {
 			System.out.println("Validation rule: " + getName() + ": Comparing as numbers");
 			status = checkInType(field, DoubleConverter.getInstance(), DoubleComparator.getInstance());
@@ -233,6 +210,7 @@ public class IntervalValidationRule extends AbstractValidationRule {
 			accumulator.addError(to, this, "Value To is empty.");
 			state = false;
 		}
+		state &= super.isReady(inputMetadata, accumulator);
 		return state;
 	}
 

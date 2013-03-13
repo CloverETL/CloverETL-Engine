@@ -70,9 +70,11 @@ public class LongConverter implements Converter {
 			}
 		}
 		if(o instanceof Decimal || o instanceof Number) {
+			// It is sometime convertible, decision to not do it as behaviour would be unpredictible
 			return null;
 		}
 		if(o instanceof byte[]) {
+			// Decision to take length instead of content
 			return Long.valueOf(((byte[]) o).length);
 		}
 		if(o instanceof Date) {

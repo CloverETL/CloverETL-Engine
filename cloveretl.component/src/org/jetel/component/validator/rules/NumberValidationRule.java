@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,6 +40,7 @@ import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -56,24 +58,9 @@ import org.joda.time.format.DateTimeFormatter;
 @XmlRootElement(name="number")
 @XmlType(propOrder={"format", "strict"})
 public class NumberValidationRule extends StringValidationRule {
-	
-	/**
-	 * @see (NumericFormatAttributeType)
-	 */
-	private final String[] commonFormats = {
-		"#",
-		"#.#",
-		"#.###",
-		"000",
-		"000.#",
-		"#.### %",
-		"### \u00A4",
-		"### a string",
-		"-###",
-	};
 
 	@XmlElement(name="format",required=true)
-	private StringEnumValidationParamNode format = new StringEnumValidationParamNode(commonFormats[0]);	
+	private StringEnumValidationParamNode format = new StringEnumValidationParamNode(CommonFormats.defaultNumber);	
 	
 	@XmlElement(name="strict",required=false)
 	private BooleanValidationParamNode strict = new BooleanValidationParamNode(false);
@@ -82,7 +69,7 @@ public class NumberValidationRule extends StringValidationRule {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		format.setName("Format mask");
 		format.setPlaceholder("Number format, for syntax see documentation.");
-		format.setOptions(commonFormats);
+		format.setOptions(CommonFormats.numbers);
 		params.add(format);
 		strict.setName("Strict mode");
 		params.add(strict);
@@ -107,33 +94,32 @@ public class NumberValidationRule extends StringValidationRule {
 					+ "Strict mode: " + strict.getValue() + "\n"
 					+ "Trim input: " + trimInput.getValue());
 		
-		String localeString = (record.getMetadata().getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : record.getMetadata().getLocaleStr(); 
+		String localeString = (record.getMetadata().getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : record.getField(target.getValue()).getMetadata().getLocaleStr(); 
 		Locale locale = new Locale(localeString);
 		
 		String tempString = prepareInput(record.getField(target.getValue()));
 		try {
 			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(locale);
-			numberFormat.setParseBigDecimal(true);
-			if(!format.getValue().isEmpty()) {
+			if(format.getValue().equals(CommonFormats.defaultNumber)) {
+				numberFormat.applyLocalizedPattern("#");
+				numberFormat.setParseIntegerOnly(true);
+			} else if(!format.getValue().isEmpty()) {
 				numberFormat.applyLocalizedPattern(format.getValue());
 			}
-			BigDecimal parsedNumber = (BigDecimal) numberFormat.parse(tempString);
-			// FIXME: ugly hack for rounding problem when #.# is used on 1.48 (-> 1.5 instead of 1.48)
-			// REALLY?
-			int decimalPlaces = 0;
-			if(parsedNumber.toPlainString().indexOf(".") > 0) {
-				decimalPlaces = parsedNumber.toPlainString().length() - 1 - parsedNumber.toPlainString().indexOf(".");
-				numberFormat.setMinimumFractionDigits(decimalPlaces);
-			}
-			if(strict.getValue() && !numberFormat.format(parsedNumber).equals(tempString.trim())) {
-				logger.warn(parsedNumber + " " + numberFormat.format(parsedNumber) + " " + tempString.trim());
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.INVALID);
+			ParsePosition pos = new ParsePosition(0);
+			numberFormat.setMinimumFractionDigits(0);
+			numberFormat.setMaximumFractionDigits(0);
+			numberFormat.setMaximumIntegerDigits(0);
+			Number parsedNumber = numberFormat.parse(tempString, pos);
+			System.err.println(parsedNumber);
+			if(parsedNumber == null || (strict.getValue() && pos.getIndex() != tempString.length())) {
+				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedNumber + "' is " + State.INVALID);
 				return State.INVALID;
 			}
-			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
+			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedNumber + "' is " + State.VALID);
 			return State.VALID;
 		} catch (Exception ex) {
-			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.INVALID);
+			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' could not parse, therefore is " + State.INVALID);
 			return State.INVALID;
 		}
 	}

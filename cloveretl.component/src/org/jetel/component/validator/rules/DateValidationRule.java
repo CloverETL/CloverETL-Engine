@@ -33,6 +33,7 @@ import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -49,34 +50,9 @@ import org.joda.time.format.DateTimeFormatter;
 @XmlRootElement(name="date")
 @XmlType(propOrder={"format", "strict"})
 public class DateValidationRule extends StringValidationRule {
-	
-	/**
-	 * @see (DateFormatAttributeType)
-	 */
-	private final String[] commonFormats = {
-		"yyyy-MM-dd HH:mm:ss",
-		"yyyy-MM-dd",
-		"HH:mm:ss",
-		"dd.MM.yy",
-		"dd/MM/yy",
-		"dd.MM.yyyy",
-		"MM.dd.yyyy",
-		"yyyy-MM-dd hh:mm:ss 'text'",
-		"yyyy.MM.dd HH:mm:ss.SSS z",
-		"EEE, MMM d, yy",
-		"joda:yyyy-MM-dd HH:mm:ss",
-		"joda:yyyy-MM-dd",
-		"joda:HH:mm:ss",
-		"joda:dd.MM.yy",
-		"joda:dd/MM/yy",
-		"joda:dd.MM.yyyy",
-		"joda:MM.dd.yyyy",
-		"joda:yyyy-MM-dd hh:mm:ss 'text'",
-		"joda:EEE, MMM d, yy",
-	};
 
 	@XmlElement(name="format",required=true)
-	private StringEnumValidationParamNode format = new StringEnumValidationParamNode(commonFormats[0]);	
+	private StringEnumValidationParamNode format = new StringEnumValidationParamNode(CommonFormats.defaultDate);
 	
 	@XmlElement(name="strict",required=false)
 	private BooleanValidationParamNode strict = new BooleanValidationParamNode(false);
@@ -85,7 +61,7 @@ public class DateValidationRule extends StringValidationRule {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		format.setName("Format mask");
 		format.setPlaceholder("Date format, for syntax see documentation");
-		format.setOptions(commonFormats);
+		format.setOptions(CommonFormats.dates);
 		params.add(format);
 		strict.setName("Strict mode");
 		params.add(strict);
@@ -111,7 +87,7 @@ public class DateValidationRule extends StringValidationRule {
 					+ "Trim input: " + trimInput.getValue());
 		
 		// TODO: add timezone support
-		String localeString = (record.getMetadata().getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : record.getMetadata().getLocaleStr(); 
+		String localeString = (record.getMetadata().getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : record.getField(target.getValue()).getMetadata().getLocaleStr(); 
 		Locale locale = new Locale(localeString);
 		
 		String tempString = prepareInput(record.getField(target.getValue()));
@@ -143,13 +119,13 @@ public class DateValidationRule extends StringValidationRule {
 				formatter = formatter.withLocale(locale);
 				DateTime parsedDate = formatter.parseDateTime(tempString);
 				if(strict.getValue() && !parsedDate.toString(formatter).equals(tempString.trim())) {
-					logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.INVALID);
+					logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedDate.toString() + "' is " + State.INVALID);
 					return State.INVALID;
 				}
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
+				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedDate.toString() + "' is " + State.VALID);
 				return State.VALID;
 			} catch (Exception ex) {
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.INVALID);
+				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' could not be parsed, therefore is " + State.INVALID);
 				return State.INVALID;
 			}
 		}

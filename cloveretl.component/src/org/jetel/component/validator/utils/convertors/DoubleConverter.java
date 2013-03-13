@@ -36,22 +36,21 @@ public class DoubleConverter implements Converter {
 			return (Double)o;
 		}
 		if (o instanceof BigDecimal) {
-			// FIXME: BigDecimal is more precise than Number?
+			// Possible precision loss
+			return null;
 		}
 		if (o instanceof BigInteger) {
-			BigInteger bi = (BigInteger)o;
-			//return DecimalFactory.getDecimal(new BigDecimal(bi));
+			// Possible overflow -> unwanted value
+			return null;
 		}
 		if (o instanceof Integer) {
-			//return DecimalFactory.getDecimal(number.intValue());
-		}
-		if (o instanceof Number) {
-			//Number number = (Number)o;
-			//return DecimalFactory.getDecimal(number.doubleValue());
+			return ((Integer) o).doubleValue();
 		}
 		if (o instanceof Long) {
-			//Number number = (Number)o;
-			//return DecimalFactory.getDecimal(number.longValue());
+			return ((Long) o).doubleValue();
+		}
+		if (o instanceof Date) {
+			return Long.valueOf(((Date) o).getTime()).doubleValue();
 		}
 		if (o instanceof CloverString) {
 			try {
