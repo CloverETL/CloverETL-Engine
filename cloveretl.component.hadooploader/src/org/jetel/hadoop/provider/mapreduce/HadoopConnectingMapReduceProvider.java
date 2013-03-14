@@ -67,6 +67,7 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 	public static final String OUTPUT_DIR_CLEANED = "Cleaning output directory for Hadoop job %s: %s '%s' has been deleted.";
 	public static final String JOB_CONF_PARAM_SET_MESSAGE = "Parameter '%s' set to '%s' in configuration of job '%s'";
 	public static final String JOB_CONF_METHOD_USED_MESSAGE = "%s set to '%s' in configuration of job '%s'";
+	public static final String JOB_CONF_INPUT_FILE_ADDED_MESSAGE = "Added input file '%s' in configuration of job '%s'";
 
 	public static final String NAMENODE_URL_KEY = "fs.default.name";
 	public static final String JOBTRACKER_URL_KEY = "mapred.job.tracker";
@@ -231,27 +232,39 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 		} else {
 			setJobConfParam(job, JobConfigKeys.SORT_COMPARATOR_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getSortingComparator(), jobName);
 		}
+		
 		setJobConfParam(job, JobConfigKeys.OUTPUT_KEY_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputKey(), jobName);
 		setJobConfParam(job, JobConfigKeys.OUTPUT_VALUE_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputValue(), jobName);
-		if (jobDetails.getNumMappers() != null) {
-			job.setNumMapTasks(jobDetails.getNumMappers());
+		
+		Integer numMappers = jobDetails.getNumMappers();
+		if (numMappers != null) {
+			job.setNumMapTasks(numMappers);
+			LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Number of mappers ", numMappers, jobName));
 		}
-		if (jobDetails.getNumReducers() != null) {
-			job.setNumReduceTasks(jobDetails.getNumReducers());
+		
+		Integer numReducers = jobDetails.getNumReducers();
+		if (numReducers != null) {
+			job.setNumReduceTasks(numReducers);
+			LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Number of reducers", numReducers, jobName));
 		}
-		if (jobDetails.getWorkingDirectory() != null) {
-			job.setWorkingDirectory(new Path(jobDetails.getWorkingDirectory()));
+		
+		URI workingDirectory = jobDetails.getWorkingDirectory();
+		if (workingDirectory != null) {
+			job.setWorkingDirectory(new Path(workingDirectory));
+			LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Working directory", workingDirectory, jobName));
 		}
 		Path outputDirectory = new Path(jobDetails.getOutputDir());
 		for (URI inputFile : jobDetails.getInputFiles()) {
 			FileInputFormat.addInputPath(job, new Path(inputFile));
+			LOGGER.debug(String.format(JOB_CONF_INPUT_FILE_ADDED_MESSAGE, inputFile, jobName));
 		}
 		FileOutputFormat.setOutputPath(job, outputDirectory);
+		LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Output directory", workingDirectory, jobName));
 		
 		if (LOGGER.isTraceEnabled()) {
 			StringWriter sw = new StringWriter();
 			job.writeXml(sw);
-			LOGGER.trace("Complete configuration of job '" + jobName + "':\n" + sw.toString());
+			LOGGER.trace("Complete configuration of the job '" + jobName + "':\n" + sw.toString());
 		}
 		
 		if (jobDetails.isClearOutputPath() && client.getFs().exists(outputDirectory)) {
