@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><Record fieldDelimiter="\t" label="weblogs_parse.txt" name="weblogs_parse_txt" previewAttachment="${DATAIN_DIR}/weblogs_parse.txt" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\n" skipSourceRows="0" type="delimited">
+<Field delimiter="\t" eofAsDelimiter="false" name="client_ip" type="string"/>
+<Field name="full_request_date" type="string"/>
+<Field name="day" type="string"/>
+<Field name="month" type="string"/>
+<Field name="month_num" type="integer"/>
+<Field name="year" type="string"/>
+<Field name="hour" type="string"/>
+<Field name="minute" type="string"/>
+<Field name="second" type="string"/>
+<Field name="timezone" type="string"/>
+<Field name="http_verb" type="string"/>
+<Field name="uri" type="string"/>
+<Field name="http_status_code" type="string"/>
+<Field name="bytes_returned" type="string"/>
+<Field name="referrer" type="string"/>
+<Field name="user_agent" type="string"/>
+</Record>
