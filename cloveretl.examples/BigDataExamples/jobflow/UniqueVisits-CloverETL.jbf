@@ -58,7 +58,7 @@ Step 2: The second step sorts and converts the text file into an Excel report fo
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="Count Unique Visitors using CloverETL" guiX="20" guiY="395" id="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL" jobURL="${GRAPH_DIR}/RunJobInCloverETL.grf" type="EXECUTE_GRAPH">
+<Node enabled="enabled" guiName="Count Unique Visitors using CloverETL" guiX="20" guiY="395" id="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL" jobURL="${GRAPH_DIR}/CloverETL-CountVisits.grf" type="EXECUTE_GRAPH">
 <attr name="outputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
