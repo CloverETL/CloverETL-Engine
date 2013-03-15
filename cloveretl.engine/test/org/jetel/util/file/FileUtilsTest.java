@@ -94,20 +94,17 @@ public class FileUtilsTest extends CloverTestCase {
 
     	}
 
-    	try {
-			FileUtils.getFileURL("C:/Windows", "unknownprotocol://home/agad/fileManipulation/graph/");
-			fail("MalformedURLException expected");
-		} catch (MalformedURLException ex) {}
+    	testInvalidURL("C:/Windows", "unknownprotocol://home/agad/fileManipulation/graph/");
 
-		try {
-			FileUtils.getFileURL("unknownprotocol://home/agad/fileManipulation/graph/", "home/user");
-			fail("MalformedURLException expected");
-		} catch (MalformedURLException ex) {}
-
-		try {
-			FileUtils.getFileURL("C:/Windows", "unknownprotocol:(C:/Users/file.txt)");
-			fail("MalformedURLException expected");
-		} catch (MalformedURLException ex) {}
+    	testInvalidURL("C:/Windows", "unknownprotocol:(C:/Users/file.txt)");
+		
+		{
+			URL result;
+			result = FileUtils.getFileURL("https://user%40gooddata.com:password@secure-di.gooddata.com/");
+			assertEquals(new URL("https://user%40gooddata.com:password@secure-di.gooddata.com/"), result);
+		}
+		
+		testInvalidURL(null, "https://user@gooddata.com:password@secure-di.gooddata.com/");
 	}
 	
 	public void testGetFileURLLinux() throws MalformedURLException {
@@ -226,20 +223,13 @@ public class FileUtilsTest extends CloverTestCase {
 		fileURL = FileUtils.getFileURL(new URL("http://www.cloveret.com/clover"), "/home/test");
 		assertEquals(new URL("file:/home/test"), fileURL);
 
-		try {
-			FileUtils.getFileURL("/home/user", "unknownprotocol://home/agad/fileManipulation/graph/");
-			fail("MalformedURLException expected");
-		} catch (MalformedURLException ex) {}
+		testInvalidURL("/home/user", "unknownprotocol://home/agad/fileManipulation/graph/");
 
-		try {
-			FileUtils.getFileURL("unknownprotocol://home/agad/fileManipulation/graph/", "home/user");
-			fail("MalformedURLException expected");
-		} catch (MalformedURLException ex) {}
+		testInvalidURL("unknownprotocol://home/agad/fileManipulation/graph/", "home/user");
 
-		try {
-			FileUtils.getFileURL("/home/user", "unknownprotocol:(/home/test)");
-			fail("MalformedURLException expected");
-		} catch (MalformedURLException ex) {}
+		testInvalidURL("/home/user", "unknownprotocol:(/home/test)");
+
+		testInvalidURL("file://home/user/workspace/myproject/", "ftp://user@server:myfile.txt");
 
 		{
 			URL result;
@@ -249,28 +239,48 @@ public class FileUtilsTest extends CloverTestCase {
 
 			result = FileUtils.getFileURL((URL) null, "jar:file:/home/duke/duke.jar!/");
 			assertEquals(new URL("jar:file:/home/duke/duke.jar!/"), result);
+			
+			FileUtils.getFileURL("port:$0.field1:discrete"); // must not fail
+			
+			FileUtils.getFileURL("dict:path:source"); // must not fail
+		}
+	}
+	
+	private void testInvalidURL(String urlString) {
+		testInvalidURL(null, urlString);
+	}
+	
+	private void testInvalidURL(String context, String urlString) {
+		Exception ex = null;
+		
+		try {
+			try {
+				if (context != null) {
+					FileUtils.getFileURL(context); // first check the contextURL, if any
+				}
+				new URL(urlString);
+				// both URLs are valid, unexpected
+				throw new RuntimeException("Valid URL: " + urlString);
+			} catch (MalformedURLException e) {
+				ex = e;
+			}
+			if (context != null) { 
+				FileUtils.getFileURL(context, urlString);
+			} else {
+				FileUtils.getFileURL(urlString);
+			}
+			fail("Should fail for url: " + urlString + " with reason: " + ex);
+		} catch (MalformedURLException e) {
+			assertEquals(ex.getClass(), e.getClass());
+			assertEquals(ex.getMessage(), e.getMessage());
+			// same exception class, same message
 		}
 	}
 
-// this issue was commented out due low priority and non-trivial possible fix
-//	public void testInvalidURL() {
-//		
-//		String urlString;
-//		Exception ex = null;
-//		
-//		try {
-//			urlString = "ftp://user@server:myfile.txt";
-//			FileUtils.getFileURL(new URL("file://home/user/workspace/myproject/"), urlString);
-//			try {
-//				new URL(urlString);
-//			}catch (MalformedURLException e) {
-//				ex = e;
-//			}
-//			fail("Should fail for url: " + urlString + " with reason: " + ex);
-//		} catch (MalformedURLException e) {
-//			//OK
-//		}
-//	}
+	public void testInvalidURL() throws MalformedURLException {
+		testInvalidURL("ftp://user@server:myfile.txt");
+		testInvalidURL("https://user@gooddata.com:password@secure-di.gooddata.com/");
+	}
 	
 	public void testNormalizeFilePath() {
 		if (PlatformUtils.isWindowsPlatform()) {
