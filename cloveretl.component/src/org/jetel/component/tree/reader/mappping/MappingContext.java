@@ -19,6 +19,8 @@
 package org.jetel.component.tree.reader.mappping;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -37,8 +39,8 @@ public class MappingContext extends MappingElement {
 	private String sequenceField;
 	private String sequenceId;
 	
-	private List<FieldMapping> fieldMappingChildren = new ArrayList<FieldMapping>();
-	private List<MappingContext> mappingContextChildren = new ArrayList<MappingContext>();
+	private List<FieldMapping> fieldMappingChildren = new LinkedList<FieldMapping>();
+	private List<MappingContext> mappingContextChildren = new LinkedList<MappingContext>();
 
 	@Override
 	public void acceptVisitor(MappingVisitor visitor) {
@@ -105,17 +107,17 @@ public class MappingContext extends MappingElement {
 	}
 
 	public List<MappingElement> getChildren() {
-		List<MappingElement> l = new ArrayList<MappingElement>(mappingContextChildren.size() + fieldMappingChildren.size());
-		l.addAll(fieldMappingChildren);
-		l.addAll(mappingContextChildren);
-		return l;
+		List<MappingElement> result = new ArrayList<MappingElement>(mappingContextChildren.size() + fieldMappingChildren.size());
+		result.addAll(fieldMappingChildren);
+		result.addAll(mappingContextChildren);
+		return result;
 	}
 	
 	public List<FieldMapping> getFieldMappingChildren() {
-		return fieldMappingChildren;
+		return Collections.unmodifiableList(fieldMappingChildren);
 	}
 	
 	public List<MappingContext> getMappingContextChildren() {
-		return mappingContextChildren;
+		return Collections.unmodifiableList(mappingContextChildren);
 	}
 }
