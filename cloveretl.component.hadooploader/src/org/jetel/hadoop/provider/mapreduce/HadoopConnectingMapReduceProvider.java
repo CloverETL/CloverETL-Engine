@@ -19,6 +19,7 @@
 package org.jetel.hadoop.provider.mapreduce;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
 import java.util.Properties;
@@ -64,6 +65,9 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 	public static final String CAST_MESSAGE = "Specified class '%s' does not inherit from %s as required.";
 	public static final String CLASS_NOT_FOUND_MESSAGE = "Specified class '%s' could not be found in given JAR file.";
 	public static final String OUTPUT_DIR_CLEANED = "Cleaning output directory for Hadoop job %s: %s '%s' has been deleted.";
+	public static final String JOB_CONF_PARAM_SET_MESSAGE = "Parameter '%s' set to '%s' in configuration of job '%s'";
+	public static final String JOB_CONF_METHOD_USED_MESSAGE = "%s set to '%s' in configuration of job '%s'";
+	public static final String JOB_CONF_INPUT_FILE_ADDED_MESSAGE = "Added input file '%s' in configuration of job '%s'";
 
 	public static final String NAMENODE_URL_KEY = "fs.default.name";
 	public static final String JOBTRACKER_URL_KEY = "mapred.job.tracker";
@@ -160,86 +164,108 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 			throw new IllegalStateException(NOT_CONNECTED_MESSAGE);
 		}
 		
+		String jobName = jobDetails.getJobName();
+
 		JobConf job = new JobConf(client.getConf());
 		for (String key : additionalJobSettings.stringPropertyNames()) {
-			job.set(key, additionalJobSettings.getProperty(key));
+			setJobConfParam(job, key, additionalJobSettings.getProperty(key), jobName);
 		}
-		job.setJar(getJarFileURL(jobDetails.getJobJarFile()));
+		
+		String jarFileURL = getJarFileURL(jobDetails.getJobJarFile());
+		job.setJar(jarFileURL);
+		LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Job jar file", jarFileURL, jobName));
 		
 		// Don't use classloader, at least for now; Potential memory leak - loaded classes may sustain in memory
 		// ClassLoader loader = new URLClassLoader(new URL[] { jobDetails.getJobJarFile() }, getClass().getClassLoader());
 		
-		if (jobDetails.getJobName() != null) {
-			job.setJobName(jobDetails.getJobName());
-		}
+		job.setJobName(jobName);
+		LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Job name", jobName, jobName));
 		
 		if (jobDetails.getAPIVersion() != APIVersion.MAPRED) {
-			job.set(MAPPER_NEW_API, Boolean.TRUE.toString());
-			job.set(REDUCER_NEW_API, Boolean.TRUE.toString());
+			setJobConfParam(job, MAPPER_NEW_API, Boolean.TRUE.toString(), jobName);
+			setJobConfParam(job, REDUCER_NEW_API, Boolean.TRUE.toString(), jobName);
 		}
 		
-		job.set(JobConfigKeys.MAPPER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getMapper());
+		setJobConfParam(job, JobConfigKeys.MAPPER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getMapper(), jobName);
 		if (jobDetails.getCombiner() == null) {
-			LOGGER.debug(String.format(NO_COMBINER_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+			LOGGER.debug(String.format(NO_COMBINER_USED_DEBUG_MESSAGE, jobName));
 		} else {
-			job.set(JobConfigKeys.COMBINER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getCombiner());
+			setJobConfParam(job, JobConfigKeys.COMBINER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getCombiner(), jobName);
 		}
 		if (jobDetails.getPartitioner() == null) {
-			LOGGER.debug(String.format(NO_PARTITIONER_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+			LOGGER.debug(String.format(NO_PARTITIONER_USED_DEBUG_MESSAGE, jobName));
 		} else {
-			job.set(JobConfigKeys.PARTITIONER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getPartitioner());
+			setJobConfParam(job, JobConfigKeys.PARTITIONER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getPartitioner(), jobName);
 		}
 		if (jobDetails.getReducer() == null) {
-			LOGGER.debug(String.format(NO_REDUCER_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+			LOGGER.debug(String.format(NO_REDUCER_USED_DEBUG_MESSAGE, jobName));
 		} else {
-			job.set(JobConfigKeys.REDUCER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getReducer());
+			setJobConfParam(job, JobConfigKeys.REDUCER_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getReducer(), jobName);
 		}
 		if (jobDetails.getInputFormat() == null) {
-			LOGGER.debug(String.format(NO_INPUT_FORMAT_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+			LOGGER.debug(String.format(NO_INPUT_FORMAT_USED_DEBUG_MESSAGE, jobName));
 		} else {
-			job.set(JobConfigKeys.INPUT_FORMAT_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getInputFormat());
+			setJobConfParam(job, JobConfigKeys.INPUT_FORMAT_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getInputFormat(), jobName);
 		}
 		if (jobDetails.getOutputFormat() == null) {
-			LOGGER.debug(String.format(NO_OUTPUT_FORMAT_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+			LOGGER.debug(String.format(NO_OUTPUT_FORMAT_USED_DEBUG_MESSAGE, jobName));
 		} else {
-			job.set(JobConfigKeys.OUTPUT_FORMAT_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputFormat());
+			setJobConfParam(job, JobConfigKeys.OUTPUT_FORMAT_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputFormat(), jobName);
 		}
 		if (jobDetails.getMapperOutputKey() == null) {
-			LOGGER.debug(String.format(NO_MAPPER_OUTPUT_KEY_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+			LOGGER.debug(String.format(NO_MAPPER_OUTPUT_KEY_USED_DEBUG_MESSAGE, jobName));
 		} else {
-			job.set(JobConfigKeys.MAPPER_OUTPUT_KEY_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getMapperOutputKey());
+			setJobConfParam(job, JobConfigKeys.MAPPER_OUTPUT_KEY_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getMapperOutputKey(), jobName);
 		}
 		if (jobDetails.getMapperOutputValue() == null) {
-			LOGGER.debug(String.format(NO_MAPPER_OUTPUT_VALUE_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+			LOGGER.debug(String.format(NO_MAPPER_OUTPUT_VALUE_USED_DEBUG_MESSAGE, jobName));
 		} else {
-			job.set(JobConfigKeys.MAPPER_OUTPUT_VALUE_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getMapperOutputValue());
+			setJobConfParam(job, JobConfigKeys.MAPPER_OUTPUT_VALUE_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getMapperOutputValue(), jobName);
 		}
 		if (jobDetails.getGroupingComparator() == null) {
-			LOGGER.debug(String.format(NO_GROUPING_COMPARATOR_DEBUG_MESSAGE, jobDetails.getJobName()));
+			LOGGER.debug(String.format(NO_GROUPING_COMPARATOR_DEBUG_MESSAGE, jobName));
 		} else {
-			job.set(JobConfigKeys.GROUPING_COMPARATOR_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getGroupingComparator());
+			setJobConfParam(job, JobConfigKeys.GROUPING_COMPARATOR_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getGroupingComparator(), jobName);
 		}
 		if (jobDetails.getSortingComparator() == null) {
-			LOGGER.debug(String.format(NO_SORTING_COMPARATOR_USED_DEBUG_MESSAGE, jobDetails.getJobName()));
+			LOGGER.debug(String.format(NO_SORTING_COMPARATOR_USED_DEBUG_MESSAGE, jobName));
 		} else {
-			job.set(JobConfigKeys.SORT_COMPARATOR_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getSortingComparator());
+			setJobConfParam(job, JobConfigKeys.SORT_COMPARATOR_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getSortingComparator(), jobName);
 		}
-		job.set(JobConfigKeys.OUTPUT_KEY_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputKey());
-		job.set(JobConfigKeys.OUTPUT_VALUE_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputValue());
-		if (jobDetails.getNumMappers() != null) {
-			job.setNumMapTasks(jobDetails.getNumMappers());
+		
+		setJobConfParam(job, JobConfigKeys.OUTPUT_KEY_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputKey(), jobName);
+		setJobConfParam(job, JobConfigKeys.OUTPUT_VALUE_CLASS.get(jobDetails.getAPIVersion()), jobDetails.getOutputValue(), jobName);
+		
+		Integer numMappers = jobDetails.getNumMappers();
+		if (numMappers != null) {
+			job.setNumMapTasks(numMappers);
+			LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Number of mappers ", numMappers, jobName));
 		}
-		if (jobDetails.getNumReducers() != null) {
-			job.setNumReduceTasks(jobDetails.getNumReducers());
+		
+		Integer numReducers = jobDetails.getNumReducers();
+		if (numReducers != null) {
+			job.setNumReduceTasks(numReducers);
+			LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Number of reducers", numReducers, jobName));
 		}
-		if (jobDetails.getWorkingDirectory() != null) {
-			job.setWorkingDirectory(new Path(jobDetails.getWorkingDirectory()));
+		
+		URI workingDirectory = jobDetails.getWorkingDirectory();
+		if (workingDirectory != null) {
+			job.setWorkingDirectory(new Path(workingDirectory));
+			LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Working directory", workingDirectory, jobName));
 		}
 		Path outputDirectory = new Path(jobDetails.getOutputDir());
 		for (URI inputFile : jobDetails.getInputFiles()) {
 			FileInputFormat.addInputPath(job, new Path(inputFile));
+			LOGGER.debug(String.format(JOB_CONF_INPUT_FILE_ADDED_MESSAGE, inputFile, jobName));
 		}
 		FileOutputFormat.setOutputPath(job, outputDirectory);
+		LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Output directory", workingDirectory, jobName));
+		
+		if (LOGGER.isTraceEnabled()) {
+			StringWriter sw = new StringWriter();
+			job.writeXml(sw);
+			LOGGER.trace("Complete configuration of the job '" + jobName + "':\n" + sw.toString());
+		}
 		
 		if (jobDetails.isClearOutputPath() && client.getFs().exists(outputDirectory)) {
 			boolean isFile = client.getFs().isFile(outputDirectory);
@@ -249,6 +275,13 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 		}
 		
 		return new HadoopRunningJobReporter(client.submitJob(job));
+	}
+	
+	private static void setJobConfParam(JobConf jobConf, String paramName, String paramValue, String jobName) {
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug(String.format(JOB_CONF_PARAM_SET_MESSAGE, paramName, paramValue, jobName));
+		}
+		jobConf.set(paramName, paramValue);
 	}
 
 	private String getJarFileURL(URL jobJarFile) {

@@ -254,7 +254,7 @@ public class ClassLoaderUtils {
 			}
 		}
 		for (int i = 0; i < urls.length; ++i) {
-			if (!SandboxUrlUtils.isSandboxUrl(urls[i])) {
+			if ("file".equals(urls[i].getProtocol())) {
 				File file = FileUtils.convertUrlToFile(urls[i]);
 				if (file.isDirectory() && !urls[i].toString().endsWith("/")) {
 					urls[i] = new URL(urls[i].toString() + "/");
