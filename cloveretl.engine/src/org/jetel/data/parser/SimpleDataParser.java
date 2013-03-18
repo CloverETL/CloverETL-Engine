@@ -61,7 +61,6 @@ public class SimpleDataParser extends AbstractTextParser {
 
 	private IParserExceptionHandler exceptionHandler;
 	private int numFields;
-	private boolean releaseInputSource = true;
 	private char[][] delimiters;
 	private Reader reader;
 
@@ -212,13 +211,8 @@ public class SimpleDataParser extends AbstractTextParser {
 	}
 
 	@Override
-	public void setReleaseDataSource(boolean releaseInputSource) {
-		this.releaseInputSource = releaseInputSource;
-	}
-
-	@Override
 	public void setDataSource(Object inputDataSource) {
-		if (releaseInputSource)
+		if (releaseDataSource)
 			releaseDataSource();
 
 		recordCounter = 0;// reset record counter
@@ -246,14 +240,15 @@ public class SimpleDataParser extends AbstractTextParser {
 	 * Release data source
 	 * 
 	 */
-	private void releaseDataSource() {
+	@Override
+	protected void releaseDataSource() {
 		if (reader == null) {
 			return;
 		}
 		try {
 			reader.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.warn("Failed to release data source", e);
 		}
 		reader = null;
 	}
@@ -488,7 +483,7 @@ public class SimpleDataParser extends AbstractTextParser {
 
 	@Override
 	public void reset() {
-		if (releaseInputSource)
+		if (releaseDataSource)
 			releaseDataSource();
 		recordCounter = 0;// reset record counter
 	}

@@ -31,6 +31,8 @@ import java.nio.charset.CharsetDecoder;
 
 import javax.naming.OperationNotSupportedException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -63,7 +65,6 @@ public class CharByteDataParser extends AbstractTextParser {
 	private CharByteInputReader.DoubleMarkCharByteInputReader verboseInputReader;
 	private InputConsumer[] fieldConsumers;
 	private RecordSkipper recordSkipper;
-	private boolean releaseInputSource;
 	private int numConsumers;
 	private Charset charset;
 	private IParserExceptionHandler exceptionHandler;
@@ -76,6 +77,8 @@ public class CharByteDataParser extends AbstractTextParser {
 	private String lastRawRecord;
 	private int numFields;
 	
+	static Log logger = LogFactory.getLog(CharByteDataParser.class);
+
 	/**
 	 * Sole constructor
 	 * @param cfg
@@ -88,7 +91,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 		charset = Charset.forName(charsetName);
 		policyType = cfg.getPolicyType();
-		releaseInputSource = false;
+		releaseDataSource = false;
 		recordSkipper = null;
 		isInitialized = false;
 		exceptionHandler = cfg.getExceptionHandler();
@@ -524,9 +527,25 @@ public class CharByteDataParser extends AbstractTextParser {
 			fieldConsumers[numConsumers++] = new CharDelimConsumer(inputReader, needCharInput ? getCharDelimSearcher() : getByteDelimSearcher(), RECORD_DELIMITER_IDENTIFIER, metadata.getField(lastNonAutoFilledField).isEofAsDelimiter(), cfg.isTryToMatchLongerDelimiter());
 		}
 	}
+	
+	private void closeInputSource() throws IOException {
+		if (inputSource != null) {
+			inputSource.close();
+		}
+	}
+
+	@Override
+	protected void releaseDataSource() {
+		try {
+			closeInputSource(); 
+		} catch (IOException ioe) {
+			logger.warn("Failed to close data source", ioe);
+		}
+	}
 
 	@Override
 	public void setDataSource(Object inputDataSource) throws IOException, ComponentNotReadyException {
+		super.setDataSource(inputDataSource);
 		recordCounter = 0;
 		if (inputDataSource instanceof ReadableByteChannel) {
 			inputSource = (ReadableByteChannel) inputDataSource;
@@ -575,17 +594,8 @@ public class CharByteDataParser extends AbstractTextParser {
 	}
 
 	@Override
-	public void setReleaseDataSource(boolean releaseInputSource) {
-		this.releaseInputSource = releaseInputSource;
-	}
-
-	@Override
 	public void close() throws IOException {
-		try {
-			free();
-		} catch (ComponentNotReadyException e) {
-			e.printStackTrace();
-		}
+		free();
 	}
 
 	@Override
@@ -595,12 +605,13 @@ public class CharByteDataParser extends AbstractTextParser {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		inputReader.setInputSource(null);
+		releaseDataSource();
 	}
 
 	@Override
-	public void free() throws ComponentNotReadyException, IOException {
-		if (releaseInputSource) {
-			inputSource.close();
+	public void free() throws IOException {
+		if (releaseDataSource) {
+			closeInputSource();
 		}
 	}
 

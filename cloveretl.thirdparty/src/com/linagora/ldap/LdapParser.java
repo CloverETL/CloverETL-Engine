@@ -229,6 +229,11 @@ public class LdapParser extends AbstractParser {
 		} 
 	}
 
+	@Override
+	protected void releaseDataSource() {
+		// setDataSource() is not supported 
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */

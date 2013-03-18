@@ -597,8 +597,13 @@ public class DataRecordGenerator extends AbstractParser {
 	}
 
 	@Override
+	protected void releaseDataSource() {
+		// nonsense for this implementation
+	}
+
+	@Override
 	public void setReleaseDataSource(boolean releaseInputSource) {
-		// nonsence for this implementation
+		// nonsense for this implementation
 	}
 
 	@Override

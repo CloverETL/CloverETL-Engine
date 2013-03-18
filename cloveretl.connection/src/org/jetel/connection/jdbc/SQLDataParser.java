@@ -286,6 +286,12 @@ public class SQLDataParser extends AbstractParser {
 	 */
 	@Override
 	public void setReleaseDataSource(boolean releaseInputSource)  {
+		// always close data source
+	}
+
+	@Override
+	protected void releaseDataSource() {
+		close();
 	}
 
 	/* (non-Javadoc)
