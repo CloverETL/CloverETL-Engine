@@ -277,24 +277,6 @@ public class FileUtils {
     }
     
     /**
-     * Returns <code>true</code> if <code>protocol</code> specifies an unknown protocol.
-     * Assumes that standard Java protocols have already been checked.
-     * 
-     * @param protocol
-     * @return
-     */
-    private static boolean isUnknownProtocol(String protocol) {
-    	if (protocol != null) {
-    		if (protocol.equals(PORT_PROTOCOL) || protocol.equals(DICTIONARY_PROTOCOL)) {
-    			return false;
-    		}
-    		return true;
-    	}
-		
-		return false;
-    }
-    
-    /**
      * Creates URL object based on specified fileURL string. Handles
      * situations when <code>fileURL</code> contains only path to file
      * <i>(without "file:" string)</i>. 
@@ -1173,10 +1155,18 @@ public class FileUtils {
 		return SandboxUrlUtils.isSandboxUrl(input);
 	}
 	
+	private static boolean isDictionary(String input) {
+		return input.startsWith(DICTIONARY_PROTOCOL);
+	}
+	
+	private static boolean isPort(String input) {
+		return input.startsWith(PORT_PROTOCOL);
+	}
+	
 	public static boolean isLocalFile(URL contextUrl, String input) {
 		if (input.startsWith("file:")) {
 			return true;
-		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input)) {
+		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input) || isDictionary(input) || isPort(input)) {
 			return false;
 		} else {
 			try {

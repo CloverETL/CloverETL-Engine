@@ -22,6 +22,7 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.file.FileUtils.ArchiveURLStreamHandler;
@@ -39,6 +40,16 @@ public class FileUtilsTest extends CloverTestCase {
 	public void testGetJavaFile() throws MalformedURLException {
 		File file = FileUtils.getJavaFile(FileUtils.getFileURL("./kokon/"), "neco/data.txt");
 		assertEquals(file.getAbsolutePath(), new File("kokon/neco/data.txt").getAbsolutePath());
+		
+		try {
+			FileUtils.getJavaFile(null, "dict:filename");
+			fail();
+		} catch (JetelRuntimeException jre) {}
+
+		try {
+			FileUtils.getJavaFile(null, "port:$0.field1:discrete");
+			fail();
+		} catch (JetelRuntimeException jre) {}
 	}
 
 	public void testGetFileURL() throws MalformedURLException {
@@ -205,17 +216,18 @@ public class FileUtilsTest extends CloverTestCase {
 //		assertEquals(new URL("ftp://user:password@server/myfile.txt"), fileURL);
 
 		//sftp
+		SFTPStreamHandler sftpHandler = FileUtils.sFtpStreamHandler;
 		fileURL = FileUtils.getFileURL(new URL("file:/home/user/workspace/myproject/"), "sftp://user@server/myfile.txt");
-		assertEquals(new URL(null, "sftp://user@server/myfile.txt", new SFTPStreamHandler()), fileURL);
+		assertEquals(new URL(null, "sftp://user@server/myfile.txt", sftpHandler), fileURL);
 
 		fileURL = FileUtils.getFileURL("sftp://user@server/myfile.txt");
-		assertEquals(new URL(null, "sftp://user@server/myfile.txt", new SFTPStreamHandler()), fileURL);
+		assertEquals(new URL(null, "sftp://user@server/myfile.txt", sftpHandler), fileURL);
 
 		fileURL = FileUtils.getFileURL(new URL("file:/home/user/workspace/myproject/"), "sftp://user:password@server/myfile.txt");
-		assertEquals(new URL(null, "sftp://user:password@server/myfile.txt", new SFTPStreamHandler()), fileURL);
+		assertEquals(new URL(null, "sftp://user:password@server/myfile.txt", sftpHandler), fileURL);
 
 		fileURL = FileUtils.getFileURL(new URL("file:/home/user/workspace/myproject/"), "sftp://user:password@server:123/myfile.txt");
-		assertEquals(new URL(null, "sftp://user:password@server:123/myfile.txt", new SFTPStreamHandler()), fileURL);
+		assertEquals(new URL(null, "sftp://user:password@server:123/myfile.txt", sftpHandler), fileURL);
 		
 		fileURL = FileUtils.getFileURL(new URL("jar:file:/clover-executor/clover-executor-86.0.0-SNAPSHOT.jar!/com/gooddata/clover"), "/home/test");
 		assertEquals(new URL("file:/home/test"), fileURL);
@@ -240,9 +252,14 @@ public class FileUtilsTest extends CloverTestCase {
 			result = FileUtils.getFileURL((URL) null, "jar:file:/home/duke/duke.jar!/");
 			assertEquals(new URL("jar:file:/home/duke/duke.jar!/"), result);
 			
-			FileUtils.getFileURL("port:$0.field1:discrete"); // must not fail
+			result = FileUtils.getFileURL("port:$0.field1:discrete"); // must not fail
+			assertEquals("port:$0.field1:discrete", result.toString());
 			
-			FileUtils.getFileURL("dict:path:source"); // must not fail
+			result = FileUtils.getFileURL("dict:path:source"); // must not fail
+			assertEquals("dict:path:source", result.toString());
+
+			result = FileUtils.getFileURL("dict:path"); // must not fail
+			assertEquals("dict:path", result.toString());
 		}
 	}
 	
@@ -280,6 +297,16 @@ public class FileUtilsTest extends CloverTestCase {
 	public void testInvalidURL() throws MalformedURLException {
 		testInvalidURL("ftp://user@server:myfile.txt");
 		testInvalidURL("https://user@gooddata.com:password@secure-di.gooddata.com/");
+	}
+	
+	public void testIsLocalFile() {
+		assertFalse(FileUtils.isLocalFile(null, "dict:filename"));
+		assertFalse(FileUtils.isLocalFile(null, "port:$0.field1:discrete"));
+	}
+	
+	public void testIsRemoteFile() {
+		assertFalse(FileUtils.isRemoteFile("dict:filename"));
+		assertFalse(FileUtils.isRemoteFile("port:$0.field1:discrete"));
 	}
 	
 	public void testNormalizeFilePath() {
