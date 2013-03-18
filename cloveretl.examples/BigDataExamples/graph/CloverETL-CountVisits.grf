@@ -1,27 +1,34 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360266035" licenseType="Commercial" modified="Wed Mar 13 14:41:37 CET 2013" modifiedBy="mtomcanyi" name="RunJobInCloverETL" revision="1.27" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360266035" licenseType="Commercial" modified="Mon Mar 18 13:18:44 CET 2013" modifiedBy="Pavel" name="RunJobInCloverETL" revision="1.32" showComponentDetails="true">
 <Global>
-<Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1" previewAttachmentCharset="ISO-8859-1"/>
+<Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata2"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="180" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Weblog (zipped)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="208" x="24" y="50">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="233" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read Weblog (zipped)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="208" x="30" y="217">
 <attr name="text"><![CDATA[
 Reads data directly from a zipped Apache access log file.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="187" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Extract data and IP" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="218" x="31" y="296">
-<attr name="text"><![CDATA[Extracts year, month and ip adress fields. We can drop all other fields as they are not needed for further calculation.]]></attr>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="233" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Extract data and IP" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="271" y="217">
+<attr name="text"><![CDATA[
+Extracts year, month and ip adress fields. We can drop all other fields as they are not needed for further calculation.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="191" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Calculate number of unique visitors" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="419" x="294" y="294">
-<attr name="text"><![CDATA[Input data is aggregated to produce number to calculate number of unique visitors for each month. Sorting before aggregation groups the data and allows the Aggregator to run in more efficient "sorted" mode. ]]></attr>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="235" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Calculate the number of unique visitors" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="419" x="534" y="215">
+<attr name="text"><![CDATA[
+Input data is aggregated to produce number to calculate number of unique visitors for each month. Sorting before aggregation groups the data and allows the Aggregator to run in more efficient "sorted" mode. ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="200" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Temp file with results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="221" x="825" y="463">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="235" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Save temp file with results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="247" x="982" y="215">
 <attr name="text"><![CDATA[
 Writes calculated statistics into a temporary output file which will be converted to Excel report in the next step of processing.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="38" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This graph is part of the &quot;UniqueVisits-CloverETL.jbf&quot; jobflow." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="929" x="30" y="129"/>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="84" id="Note4" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverETL Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="30" y="46">
+<attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="Extract Date and IP Fields" guiX="61" guiY="384" id="EXTRACT_DATE_AND_IP_FIELDS" type="REFORMAT">
+<Node enabled="enabled" guiName="Extract Date and IP Fields" guiX="296" guiY="326" id="EXTRACT_DATE_AND_IP_FIELDS" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -51,12 +58,12 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/weblogs_parse.zip)#weblogs_parse.txt" guiName="Read Web Access Log" guiX="54" guiY="137" id="READ_WEB_ACCESS_LOG" quotedStrings="true" type="DATA_READER"/>
-<Node enabled="enabled" guiName="Sort by  Date and IP" guiX="310" guiY="384" id="SORT_BY_DATE_AND_IP" sortKey="key_year_month(a);value_ip_address(a)" type="FAST_SORT"/>
-<Node aggregateKey="key_year_month" enabled="enabled" guiName="Unique visitors per month" guiX="493" guiY="384" id="UNIQUE_VISITORS_PER_MONTH" mapping="$year_month:=$key_year_month;$ip_count:=countunique($value_ip_address);" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/unique_visitors.txt" guiName="Write Unique Visitors Count" guiX="844" guiY="572" id="WRITE_UNIQUE_VISITORS_COUNT" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/weblogs_parse.zip)#weblogs_parse.txt" guiName="Read Web Access Log" guiX="55" guiY="325" id="READ_WEB_ACCESS_LOG" quotedStrings="true" type="DATA_READER"/>
+<Node enabled="enabled" guiName="Sort by  Date and IP" guiX="560" guiY="326" id="SORT_BY_DATE_AND_IP" sortKey="key_year_month(a);value_ip_address(a)" type="FAST_SORT"/>
+<Node aggregateKey="key_year_month" enabled="enabled" guiName="Unique visitors per month" guiX="743" guiY="326" id="UNIQUE_VISITORS_PER_MONTH" mapping="$year_month:=$key_year_month;$ip_count:=countunique($value_ip_address);" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/unique_visitors.txt" guiName="Write Unique Visitors Count" guiX="1022" guiY="326" id="WRITE_UNIQUE_VISITORS_COUNT" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="EXTRACT_DATE_AND_IP_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SORT_BY_DATE_AND_IP:0"/>
-<Edge debugMode="true" fromNode="READ_WEB_ACCESS_LOG:0" guiBendpoints="222:157|222:280|14:280|14:404" guiLocks="222|14|280" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXTRACT_DATE_AND_IP_FIELDS:0"/>
+<Edge debugMode="true" fromNode="READ_WEB_ACCESS_LOG:0" guiBendpoints="222:157|222:280|14:280|14:404" guiLocks="222|14|482" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXTRACT_DATE_AND_IP_FIELDS:0"/>
 <Edge debugMode="true" fromNode="SORT_BY_DATE_AND_IP:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="UNIQUE_VISITORS_PER_MONTH:0"/>
 <Edge debugMode="true" fromNode="UNIQUE_VISITORS_PER_MONTH:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_UNIQUE_VISITORS_COUNT:0"/>
 </Phase>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360543511" licenseType="Commercial" modified="Wed Mar 13 20:21:04 CET 2013" modifiedBy="mtomcanyi" name="ProcessLog_CloverETL" nature="jobflow" revision="1.26" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360543511" licenseType="Commercial" modified="Mon Mar 18 13:52:45 CET 2013" modifiedBy="Pavel" name="ProcessLog_CloverETL" nature="jobflow" revision="1.30" showComponentDetails="true">
 <Global>
 <Metadata id="ExecuteGraph_RunStatus">
 <Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
@@ -15,24 +15,12 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="716" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Configuration Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="716" y="122">
 <attr name="text"><![CDATA[If you are using different version of Hadoop distrbution download the JAR files from your installation.
 
 Additional or different libraries might be needed for both Hadoop and Hive connections. Generally try copying (all) libraries from /usr/lib/hadoop-* or /usrlib/hive/* when setting up connection classpath.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="233" x="20" y="103">
-<attr name="text"><![CDATA[The job generates a report with number of unique visits (i.e. number of unique IP addresses connecting to webserver) in any given month. 
-
-Months with highest number of unique visits are listed first.
-
-The source data is standard Apache access log file.
-]]></attr>
-</Note>
-<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data Example: Process Web Access Log" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="20" y="20">
-<attr name="text"><![CDATA[
-Using different methods (CloverETL, Hadoop HIVE, and Hadoop MapReduce) to report number of unique visitors in a month from a web access log]]></attr>
-</Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Important" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="484" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Hadoop/Hive Configuration" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="484" y="122">
 <attr name="text"><![CDATA[Before running the job you need to setup the Hadoop HDFS and Hive connections in underlying jobs.
 
 The necessary Hive and Hadoop libraries are located in "lib" directory of this project"
@@ -45,24 +33,39 @@ Hive (both CDH-3u5 and CDH-4.1.2)
 - lib/hive/cdh3u5/*.jar
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="B. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="252" y="103">
-<attr name="text"><![CDATA[The end-to-end solution is composed of the following steps:
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="CloverETL feeding data to Hive" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="251" y="122">
+<attr name="text"><![CDATA[
+The end-to-end solution is composed of the following steps:
 
-Step 1: Parses the log file on local disks, extracts the (year+month, ip) pairs and uploads them directly to HDFS
+Step 1: Parse the log file on local disks, extract the (year+month, ip) pairs and upload it to to HDFS
 
-Step 2: Loads the HDFS file into Hive table
+Step 2: Load the HDFS file into Hive table
 
-Step 3: Issues Hive query to count the unique visitors and outputs interim text file.
+Step 3: Issue Hive query to count the unique visitors
 
-Step 4: Sorts the interim text file and produces an Excel report.]]></attr>
+Step 4: Sorts the output file and generate an Excel report]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="142" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Hive query" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="516" x="241" y="402"/>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors):  Hadoop Hive Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="19" y="39">
+<attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="233" x="19" y="122">
+<attr name="text"><![CDATA[
+Web servers under heavy load can generate web access logs in orders of tens or hundreds of gigabytes per day.
+
+Preparing such data for analytics in a timely basis is crucial to fast operating businesses.
+
+In this example we demonstrate how to produce a simple "uniques per month" report from a standard Apache access_log file.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="Count Unique Visitors using Hive Query" guiX="477" guiY="376" id="COUNT_UNIQUE_VISITORS_USING_HIVE_QUERY1" jobURL="${GRAPH_DIR}/HadoopHive-CountVisits.grf" type="EXECUTE_GRAPH"/>
-<Node enabled="enabled" guiName="Generate Report" guiX="785" guiY="376" id="GENERATE_REPORT" jobURL="${GRAPH_DIR}/GenerateReport.grf" type="EXECUTE_GRAPH"/>
-<Node enabled="enabled" guiName="Load Data to Hive table" guiX="243" guiY="376" id="LOAD_DATA_TO_HIVE_TABLE1" jobURL="${GRAPH_DIR}/HadoopHive-LoadData.grf" type="EXECUTE_GRAPH"/>
-<Node enabled="enabled" guiName="Upload Inputs to HDFS" guiX="20" guiY="376" id="UPLOAD_INPUTS_TO_HDFS" jobURL="${GRAPH_DIR}/PrepareInputData.grf" type="EXECUTE_GRAPH">
+<Node enabled="enabled" guiName="Count Unique Visitors using Hive Query" guiX="477" guiY="449" id="COUNT_UNIQUE_VISITORS_USING_HIVE_QUERY1" jobURL="${GRAPH_DIR}/HadoopHive-CountVisits.grf" type="EXECUTE_GRAPH"/>
+<Node enabled="enabled" guiName="Generate Report" guiX="820" guiY="449" id="GENERATE_REPORT" jobURL="${GRAPH_DIR}/GenerateReport.grf" type="EXECUTE_GRAPH"/>
+<Node enabled="enabled" guiName="Load Data into Hive table" guiX="262" guiY="449" id="LOAD_DATA_INTO_HIVE_TABLE" jobURL="${GRAPH_DIR}/HadoopHive-LoadData.grf" type="EXECUTE_GRAPH"/>
+<Node enabled="enabled" guiName="Upload Inputs to HDFS" guiX="19" guiY="449" id="UPLOAD_INPUTS_TO_HDFS" jobURL="${GRAPH_DIR}/PrepareInputData.grf" type="EXECUTE_GRAPH">
 <attr name="outputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -101,7 +104,7 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Edge fromNode="COUNT_UNIQUE_VISITORS_USING_HIVE_QUERY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="GENERATE_REPORT:0"/>
-<Edge debugMode="true" fromNode="LOAD_DATA_TO_HIVE_TABLE1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="COUNT_UNIQUE_VISITORS_USING_HIVE_QUERY1:0"/>
-<Edge debugMode="true" fromNode="UPLOAD_INPUTS_TO_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="LOAD_DATA_TO_HIVE_TABLE1:0"/>
+<Edge debugMode="true" fromNode="LOAD_DATA_INTO_HIVE_TABLE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="COUNT_UNIQUE_VISITORS_USING_HIVE_QUERY1:0"/>
+<Edge debugMode="true" fromNode="UPLOAD_INPUTS_TO_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="LOAD_DATA_INTO_HIVE_TABLE:0"/>
 </Phase>
 </Graph>
