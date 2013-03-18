@@ -129,19 +129,22 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	
 	private void finishWriting() {
 		
-		try {
-			if (wb.getNumberOfSheets() == 0) {
-				// Fix of issue #5567: If there's nothing in the workbook, write empty sheet so that resulting file is readable.
-				wb.createSheet("EmptySheet", 0);
-				wb.write();
+		if (wb != null) {
+			try {
+				if (wb.getNumberOfSheets() == 0) {
+					// Fix of issue #5567: If there's nothing in the workbook, write empty sheet so that resulting file
+					// is readable.
+					wb.createSheet("EmptySheet", 0);
+					wb.write();
+				}
+			} catch (Exception e) {
+				logger.warn("Could not create empty sheet. The file may be unreadable.", e);
 			}
-		} catch (Exception e) {
-			logger.warn("Could not create empty sheet. The file may be unreadable.", e);
-		}
-		try {
-			wb.close();
-		} catch (Exception e) {
-			logger.warn("Failed to close Excel Workbook.", e);
+			try {
+				wb.close();
+			} catch (Exception e) {
+				logger.warn("Failed to close Excel Workbook.", e);
+			}
 		}
 
 		sheet = null;
