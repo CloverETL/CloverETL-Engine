@@ -50,6 +50,9 @@ import jxl.write.biff.RowsExceededException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
+import org.jetel.exception.TempFileCreationException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordParsingType;
@@ -279,14 +282,15 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         try{
             WorkbookSettings settings = new WorkbookSettings();
             if (charset != null) settings.setEncoding(charset);
-            if (isInMemory()) {
-            	settings.setGCDisabled( false );
-            	settings.setUseTemporaryFileDuringWrite( false );
-            }else{
-            	settings.setGCDisabled( true );
-            	settings.setUseTemporaryFileDuringWrite( true );   
-            	settings.setTemporaryFileDuringWriteDirectory(tmpDir);
-            }
+			if (inMemory) {
+				settings.setGCDisabled(false);
+				settings.setUseTemporaryFileDuringWrite(false);
+			} else {
+				createTempDir();
+				settings.setGCDisabled(true);
+				settings.setUseTemporaryFileDuringWrite(true);
+				settings.setTemporaryFileDuringWriteDirectory(tmpDir);
+			}
     		os = null;
     		InputStream is = null;
     		if (outputDataTarget instanceof Object[]) {
@@ -363,6 +367,15 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			} catch (IOException e) {
 				logger.warn("Failed to delete temp directory " + tmpDir.getAbsolutePath(), e);
 			}
+		}
+	}
+	
+	private void createTempDir() {
+		try {
+			IAuthorityProxy proxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
+			tmpDir = proxy.newTempDir("xls-tmp", -1);
+		} catch (TempFileCreationException e) {
+			throw new RuntimeException(e); 
 		}
 	}
 	
