@@ -181,7 +181,7 @@ public final class HadoopProvidersFactory {
 		} catch (NoClassDefFoundError err) {
 			classLoaderCache.remove(new HashSet<URL>(libraries));
 			LOG.debug("  classloader removed from cache; classloader classpath: " + libraries);
-			throw new HadoopException("Could not found required class definition. Some Hadoop libraries might be missing.", err);
+			throw new HadoopException("Could not find required class definition. Some Hadoop libraries might be missing.", err);
 		} catch (ClassNotFoundException ex) {
 			throw new HadoopVersionDictionaryException("Could not load " + serviceName + " provider class '"
 					+ providerClassName + "'", ex);
