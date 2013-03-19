@@ -1,11 +1,13 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361367492640" licenseType="Commercial" modified="Wed Mar 13 15:42:59 CET 2013" modifiedBy="mtomcanyi" name="RunJobInHadoopHIVE" revision="1.34" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361367492640" licenseType="Commercial" modified="Mon Mar 18 13:17:08 CET 2013" modifiedBy="Pavel" name="RunJobInHadoopHIVE" revision="1.37" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/Hive.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="210" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0: Drop Hive table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="23" y="49">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="210" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0: Drop Hive table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="20" y="189">
 <attr name="text"><![CDATA[
+
+
 
 
 
@@ -15,8 +17,10 @@
 
 Drop table in Hive (if already exists) including any data it already contains.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="210" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 1: Re-create Hive table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="307" y="98">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="210" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 1: Re-create Hive table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="348" y="238">
 <attr name="text"><![CDATA[
+
+
 
 
 
@@ -25,8 +29,10 @@ Drop table in Hive (if already exists) including any data it already contains.]]
 
 Recreates an empty Hive table to be populated with data.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="210" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 2: Load data from HDFS to Hive" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="594" y="138">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="210" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 2: Load data from HDFS to Hive" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="675" y="298">
 <attr name="text"><![CDATA[
+
+
 
 
 
@@ -35,22 +41,27 @@ Recreates an empty Hive table to be populated with data.]]></attr>
 
 Loads data from HDFS filesystem into a Hive table. The LOAD DATA command uses absolute path without LOCAL keyword causing Hive to MOVE the load file to table.]]></attr>
 </Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="78" id="Note4" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors):  Hadoop Hive Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="20" y="26">
+<attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="38" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This graph is part of the &quot;UniqueVisits-HadoopHive.jbf&quot; jobflow." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="929" x="20" y="103"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="Drop WebLogTable [HIVE]" guiX="55" guiY="98" id="DROP_WEB_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="Drop WebLogTable [HIVE]" guiX="69" guiY="254" id="DROP_WEB_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[DROP TABLE IF EXISTS WebLogTable]]></attr>
 </Node>
 </Phase>
 <Phase number="1">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="Create WebLogTable [HIVE]" guiX="352" guiY="138" id="CREATE_WEB_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="Create WebLogTable [HIVE]" guiX="393" guiY="298" id="CREATE_WEB_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[CREATE TABLE IF NOT EXISTS WebLogTable (YEAR_MONTH STRING, IP_ADDRESS STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE]]></attr>
 </Node>
 </Phase>
 <Phase number="2">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="Load data to WebLogTable [HIVE]" guiX="630" guiY="173" id="LOAD_DATA_TO_WEB_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="Load data to WebLogTable [HIVE]" guiX="704" guiY="352" id="LOAD_DATA_TO_WEB_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[LOAD DATA INPATH '/tmp/bigdata_examples/key-value-pairs' OVERWRITE INTO TABLE WebLogTable;]]></attr>
 </Node>
 </Phase>

@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361367492640" licenseType="Commercial" modified="Wed Mar 13 15:43:16 CET 2013" modifiedBy="mtomcanyi" name="RunJobInHadoopHIVE" revision="1.36" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361367492640" licenseType="Commercial" modified="Mon Mar 18 13:17:20 CET 2013" modifiedBy="Pavel" name="RunJobInHadoopHIVE" revision="1.39" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/Hive.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="225" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Unique Visitors using Hive Query" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="284" x="32" y="67">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="255" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Unique Visitors using Hive Query" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="153" y="223">
 <attr name="text"><![CDATA[
 
 
@@ -14,12 +14,17 @@
 
 
 
-Calculates number of unique visitors using a Hive query. 
+
+
+Calculates the number of unique visitors using a Hive query. 
 
 The components uses Hive JDBC connector to issue the query and retrieve results.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="223" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Temp file with results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="234" x="502" y="69">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="255" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Temp file with results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="262" x="594" y="223">
 <attr name="text"><![CDATA[
+
+
+
 
 
 
@@ -30,15 +35,20 @@ The components uses Hive JDBC connector to issue the query and retrieve results.
 Writes calculated statistics into a temporary output file which will be converted to Excel report in the next 
 step of processing.]]></attr>
 </Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="78" id="Note4" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors):  Hadoop Hive Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="30" y="36">
+<attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="38" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This graph is part of the &quot;UniqueVisits-HadoopHive.jbf&quot; jobflow." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="929" x="30" y="113"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="Count Unique Visitors [HIVE]" guiX="62" guiY="119" id="COUNT_UNIQUE_VISITORS_HIVE" type="DB_INPUT_TABLE">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="Count Unique Visitors [HIVE]" guiX="182" guiY="279" id="COUNT_UNIQUE_VISITORS_HIVE" type="DB_INPUT_TABLE">
 <attr name="sqlQuery"><![CDATA[select $ip_count:=count(distinct ip_address) as cnt, $year_month:=year_month
 from weblogtable 
 group by year_month]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/unique_visitors.txt" guiName="Write Unique Visitors Count" guiX="517" guiY="119" id="WRITE_UNIQUE_VISITORS_COUNT" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/unique_visitors.txt" guiName="Write Unique Visitors Count" guiX="632" guiY="279" id="WRITE_UNIQUE_VISITORS_COUNT" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="COUNT_UNIQUE_VISITORS_HIVE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_UNIQUE_VISITORS_COUNT:0"/>
 </Phase>
 </Graph>
