@@ -18,13 +18,15 @@
  */
 package org.jetel.component.tree.reader.mappping;
 
+import org.jetel.exception.JetelException;
+
 /**
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 2.12.2011
  */
-public class MalformedMappingException extends Exception {
+public class MalformedMappingException extends JetelException {
 	
 	private static final long serialVersionUID = 1L;
 
