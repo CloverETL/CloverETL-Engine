@@ -73,15 +73,15 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		@Override
 		public String toString() {
 			if(this.equals(OPEN_CLOSED)) {
-				return "(]";
+				return "Left open, right closed";
 			}
 			if(this.equals(CLOSED_OPEN)) {
-				return "[)";
+				return "Left closed right open";
 			}
 			if(this.equals(OPEN_OPEN)) {
-				return "()";
+				return "Open";
 			}
-			return "[]";
+			return "Closed";
 		}
 	};
 	

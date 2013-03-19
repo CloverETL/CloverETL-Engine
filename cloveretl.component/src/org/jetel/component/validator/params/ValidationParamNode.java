@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlTransient;
 public abstract class ValidationParamNode {
 	private String name;
 	private String placeholder;
+	private String tooltip;
 	private EnabledHandler enabledHandler;
 	
 	protected ValidationParamNode() {} // For JAXB
@@ -67,6 +68,13 @@ public abstract class ValidationParamNode {
 	}
 	public String getPlaceholder() {
 		return placeholder;
+	}
+	
+	public void setTooltip(String tooltip) {
+		this.tooltip = tooltip;
+	}
+	public String getTooltip() {
+		return tooltip;
 	}
 	
 }

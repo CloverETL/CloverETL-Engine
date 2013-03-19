@@ -81,7 +81,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 				return ">=";
 			}
 			if(this.equals(E)) {
-				return "==";
+				return "=";
 			}
 			if(this.equals(NE)) {
 				return "!=";

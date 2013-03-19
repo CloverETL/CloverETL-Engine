@@ -54,6 +54,7 @@ public class EnumMatchValidationRule extends StringValidationRule {
 	public List<ValidationParamNode> initialize() {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		values.setName("Accept values");
+		values.setTooltip("For example:\nfirst,second\nfirst,\"second,third\",fourth");
 		values.setPlaceholder("Comma separated list of values");
 		params.add(values);
 		ignoreCase.setName("Ignore case");
