@@ -21,13 +21,14 @@ package org.jetel.hadoop.connection;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -78,7 +79,7 @@ public final class HadoopProvidersFactory {
 	public static final String MAPRED_PROVIDER_KEY = "mapredProviderKey";
 	public static final String MAPRED_INFO_PROVIDER_KEY = "mapredInfoProviderKey";
 	
-	private static Map<Set<URL>, ClassLoader> classLoaderCache = new HashMap<Set<URL>, ClassLoader>();
+	private static Map<Set<URL>, ClassLoader> classLoaderCache = new ConcurrentHashMap<Set<URL>, ClassLoader>();
 	
 	private static final Log LOG = LogFactory.getLog(HadoopProvidersFactory.class);
 	
@@ -178,6 +179,8 @@ public final class HadoopProvidersFactory {
 			Class<?> provClass = getClassLoader(libraries).loadClass(providerClassName);
 			return (T) provClass.newInstance();
 		} catch (NoClassDefFoundError err) {
+			classLoaderCache.remove(new HashSet<URL>(libraries));
+			LOG.debug("  classloader removed from cache; classloader classpath: " + libraries);
 			throw new HadoopException("Could not found required class definition. Some Hadoop libraries might be missing.", err);
 		} catch (ClassNotFoundException ex) {
 			throw new HadoopVersionDictionaryException("Could not load " + serviceName + " provider class '"
@@ -290,9 +293,19 @@ public final class HadoopProvidersFactory {
 		 */
 		protected final <RT, EX extends Exception> RT doInContext(final Call<RT, EX> operation) throws EX {
 			ClassLoader formerContextClassLoader = Thread.currentThread().getContextClassLoader();
-			Thread.currentThread().setContextClassLoader(provider.getClass().getClassLoader());
+			ClassLoader hadoopContextClassLoader = provider.getClass().getClassLoader();
+			Thread.currentThread().setContextClassLoader(hadoopContextClassLoader);
 			try {
 				return operation.execute();
+			} catch (NoClassDefFoundError e) {
+				classLoaderCache.values().remove(hadoopContextClassLoader);
+				if (hadoopContextClassLoader instanceof URLClassLoader) {
+					LOG.debug("  classloader removed from cache; classloader classpath: " + Arrays.toString(((URLClassLoader)hadoopContextClassLoader).getURLs()));
+				} else {
+					// shouldn't happen
+					LOG.debug("  classloader removed from cache");
+				}
+				throw e;
 			} finally {
 				Thread.currentThread().setContextClassLoader(formerContextClassLoader);
 			}
