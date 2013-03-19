@@ -19,6 +19,7 @@
 package org.jetel.component;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,6 +53,7 @@ import java.util.StringTokenizer;
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
@@ -412,36 +414,41 @@ public class HttpConnector extends Node {
     private static final int RP_CONTENT_INDEX = 0;
     private static final String RP_CONTENT_NAME = "content";
 
-	/**
+    /**
+     * Result field representing the BYTE content of the response
+     */
+    private static final int RP_CONTENT_BYTE_INDEX = 1;
+    private static final String RP_CONTENT_BYTE_NAME = "contentByte";
+
+    /**
 	 * Result field representing the URL of an output file
 	 */
-    private static final int RP_OUTPUTFILE_INDEX = 1;
+    private static final int RP_OUTPUTFILE_INDEX = 2;
     private static final String RP_OUTPUTFILE_NAME = "outputFilePath";
     
 	/**
 	 * Result field representing the status code of the response
 	 */
-    private static final int RP_STATUS_CODE_INDEX = 2;
+    private static final int RP_STATUS_CODE_INDEX = 3;
     private static final String RP_STATUS_CODE_NAME = "statusCode";
 
     /**
      * Result field representing the header of the response
      */
-    private static final int RP_HEADER_INDEX = 3;
+    private static final int RP_HEADER_INDEX = 4;
     private static final String RP_HEADER_NAME = "header";
 
    	/**
 	 * Result field representing HTTP headers sent by server in a raw format
 	 */
-    private static final int RP_RAW_HTTP_HAEDERS_INDEX = 4;
+    private static final int RP_RAW_HTTP_HAEDERS_INDEX = 5;
     private static final String RP_RAW_HTTP_HAEDERS_NAME = "rawHeaders";
 
     /**
 	 * Result field representing the error message (can have a value only if error port is redirected to std port)
 	 */
-    private static final int RP_MESSAGE_INDEX = 5;
+    private static final int RP_MESSAGE_INDEX = 6;
     private static final String RP_MESSAGE_NAME = "errorMessage";
-
     
     /*  === Error metadata ===  */
 
@@ -468,15 +475,41 @@ public class HttpConnector extends Node {
 	private class ResponseByValueWriter implements ResponseWriter {
 
 		private final DataField outputField;
+		private final DataField outputFieldByte;
 
-		public ResponseByValueWriter(DataField outputField) {
+		public ResponseByValueWriter(DataField outputField, DataField outputFieldByte) {
 			this.outputField = outputField;
+			this.outputFieldByte = outputFieldByte;
 		}
 
 		@Override
 		public void writeResponse(HttpResponse response) throws IOException {
+			if (outputField == null && outputFieldByte == null) {
+				return;
+			}
+			
+			InputStream responseInputStream = null;
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				responseInputStream = entity.getContent();
+			}
+			
+			if (outputFieldByte != null) {
+				if (responseInputStream != null) {
+					byte[] responseBytes = getResponseContentAsByteArray(responseInputStream);
+					outputFieldByte.setValue(responseBytes);
+					responseInputStream = new ByteArrayInputStream(responseBytes); // original responseInputStream cannot be read for 2nd time
+				} else {
+					outputFieldByte.setNull(true);
+				}
+			}
+			
 			if (outputField != null) {
-				outputField.setValue(getResponseContent(response));
+				if (responseInputStream != null) {
+					outputField.setValue(getResponseContentAsString(responseInputStream));
+				} else {
+					outputField.setNull(true);
+				}
 			}
 		}
 	}
@@ -1225,7 +1258,7 @@ public class HttpConnector extends Node {
 
 		tryToInit(false);
 		
-		// create response writer based on the configuration
+		// create response writer based on the configuration  XXX is this really needed? Happens in preProcessForRecord() too
 		if (getOutputFileUrl() != null) {
 			responseWriter = new ResponseFileWriter(outField, outputFileUrl);
 			
@@ -1233,7 +1266,7 @@ public class HttpConnector extends Node {
 			responseWriter = new ResponseTempFileWriter(outField, temporaryFilePrefix);
 			
 		} else {
-			responseWriter = new ResponseByValueWriter(outField);
+			responseWriter = new ResponseByValueWriter(outField, null);
 		}
 	}
 
@@ -1399,7 +1432,9 @@ public class HttpConnector extends Node {
 			responseWriter = new ResponseTempFileWriter(resultRecord != null? resultRecord.getField(RP_OUTPUTFILE_INDEX) : null, temporaryFilePrefixToUse);
 			
 		} else {
-			responseWriter = new ResponseByValueWriter(resultRecord != null? resultRecord.getField(RP_CONTENT_INDEX) : null);
+			responseWriter = new ResponseByValueWriter(
+					resultRecord != null ? resultRecord.getField(RP_CONTENT_INDEX) : null,
+					resultRecord != null ? resultRecord.getField(RP_CONTENT_BYTE_INDEX) : null);
 		}
 
 		// filter multipart entities (ignored fields are removed from multipart entities record)
@@ -3010,18 +3045,12 @@ public class HttpConnector extends Node {
 	 * 
 	 * @throws IOException
 	 */
-	private String getResponseContent(HttpResponse response) throws IOException {
-		InputStream result = null;
-		HttpEntity entity = response.getEntity();
-		if (entity != null) {
-			result = entity.getContent();
-		}
-
+	private String getResponseContentAsString(InputStream responseInputStream) throws IOException {
 		BufferedReader reader;
 		if (charsetToUse == null) {
-			reader = new BufferedReader(new InputStreamReader(result));
+			reader = new BufferedReader(new InputStreamReader(responseInputStream));
 		} else {
-			reader = new BufferedReader(new InputStreamReader(result, charsetToUse));
+			reader = new BufferedReader(new InputStreamReader(responseInputStream, charsetToUse));
 		}
 		StringBuilder sb = new StringBuilder();
 		String line = null;
@@ -3032,15 +3061,27 @@ public class HttpConnector extends Node {
 		} catch (IOException e) {
 			throw new JetelRuntimeException("Unable to read request result.", e);
 		} finally {
-			try {
-				result.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			closeStreamSilent(responseInputStream);
 		}
 		return sb.toString();
-	}	
+	}
+
+	private byte[] getResponseContentAsByteArray(InputStream responseInputStream) throws IOException {
+		try {
+			return IOUtils.toByteArray(responseInputStream);
+		} finally {
+			closeStreamSilent(responseInputStream);
+		}
+	}
 	
+	private void closeStreamSilent(InputStream inputStream) {
+		try {
+			inputStream.close();
+		} catch (IOException e) {
+			logger.warn("Could not close response input stream", e);
+		}
+	}
+
 	/** Populates the input parameter record with the parameters used.
 	 * 
 	 */
@@ -3176,6 +3217,7 @@ public class HttpConnector extends Node {
 		DataRecordMetadata metadata = new DataRecordMetadata(HttpConnector.RESULT_RECORD_NAME);
 		
 		metadata.addField(RP_CONTENT_INDEX, new DataFieldMetadata(RP_CONTENT_NAME, DataFieldType.STRING, null));
+		metadata.addField(RP_CONTENT_BYTE_INDEX, new DataFieldMetadata(RP_CONTENT_BYTE_NAME, DataFieldType.BYTE, null));
 		metadata.addField(RP_OUTPUTFILE_INDEX, new DataFieldMetadata(RP_OUTPUTFILE_NAME, DataFieldType.STRING, null));
 		metadata.addField(RP_STATUS_CODE_INDEX, new DataFieldMetadata(RP_STATUS_CODE_NAME, DataFieldType.INTEGER, null));
 		metadata.addField(RP_HEADER_INDEX, new DataFieldMetadata(RP_HEADER_NAME, DataFieldType.STRING, null, DataFieldContainerType.MAP));
