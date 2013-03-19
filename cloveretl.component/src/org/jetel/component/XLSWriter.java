@@ -479,9 +479,7 @@ public class XLSWriter extends Node {
         if (!StringUtils.isEmpty(excludeFields)) {
             xmlElement.setAttribute(XML_EXCLUDE_FIELDS_ATTRIBUTE, excludeFields);
         }
-        if (formatterProvider.isInMemory() != null) {
-			xmlElement.setAttribute(XML_IN_MEMORY_ATTRIBUTE, String.valueOf(formatterProvider.isInMemory()));
-		}
+		xmlElement.setAttribute(XML_IN_MEMORY_ATTRIBUTE, String.valueOf(formatterProvider.isInMemory()));
    }
 
 	@Override

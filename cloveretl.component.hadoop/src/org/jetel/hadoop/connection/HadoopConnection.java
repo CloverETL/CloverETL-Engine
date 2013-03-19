@@ -30,7 +30,6 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.Defaults;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.AttributeNotFoundException;
@@ -94,11 +93,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	public static final String CONNECTION_TYPE_ID = "HADOOP";
 	public static final String HADOOP_PROVIDER_JAR = "./lib/cloveretl.hadoop.provider.jar";
 	public static final String HADOOP_VERSION = "hadoop-0.20.2"; // temporary constant
-	/**
-	 * Used as separator character for URLs to Hadoop API libraries. TODO: this should be removed and
-	 * Defaults.DEFAULT_PATH_SEPARATOR_REGEX should be somehow used instead.
-	 */
-	public static final String LIB_PATH_SEPARATOR = ";";
 
 	// XML key constants
 	// TODO change these constants together with their counterparts in designer to allow better user understanding of
@@ -133,13 +127,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	
 	// connection info needed by the Hadoop services
 	private HadoopFileSystemConnectionData fsConnectionData;
-	
-	// relative paths (in XML_HADOOP_CORE_LIBRARY_ATTRIBUTE property) are within this context; used from Designer (validate connection)
-	// TODO this attribute is a hack that can potentially cause trouble and should be removed. Relative paths to
-	// libraries should either be allowed to be relative only to graph folder or relative paths should be resolved in
-	// designer and only absolute path should be provided to HadoopConnection. The last option is to add method for
-	// getting this context to TransformationGraph.
-	private URL contextURL;
 	
 	/**
 	 * Creates new instance of {@code HadoopConnection}. Initialization is delayed to init method. This just transforms
@@ -264,7 +251,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 
 		List<URL> libraries;
 		try {
-			libraries = getProviderClassPathURLList(contextURL, prop.getProperty(XML_CORE_LIBRARY_KEY));
+			libraries = getProviderClassPathURLList(getContextURL(null), prop.getProperty(XML_CORE_LIBRARY_KEY));
 		} catch (MalformedURLException ex) {
 			throw new ComponentNotReadyException(String.format(INVALID_URL_MESSAGE_WITH_ID, getId()), ex);
 		}
@@ -302,7 +289,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		Properties config = new Properties();
 		InputStream stream = null;
 		try {
-			stream = Channels.newInputStream(FileUtils.getReadableChannel(getContextURL(contextURL), configFileLocation));
+			stream = Channels.newInputStream(FileUtils.getReadableChannel(getContextURL(null), configFileLocation));
 			config.load(stream);
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException("Configuration file for Hadoop connection not found ("
@@ -367,21 +354,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 			return ContextProvider.getContextURL();
 		}
 		return contextURL;
-	}
-
-	/**
-	 * <p>Splits given string containing .jar URLs into separate URL strings.</p>
-	 * 
-	 * TODO This method splits locations base on {@link #LIB_PATH_SEPARATOR}. Replace by
-	 * {@link Defaults#DEFAULT_PATH_SEPARATOR_REGEX}.
-	 * @param jars String containing list of URLs separated by divider.
-	 * @return Array of separate URL strings.
-	 */
-	public static String[] parseHadoopJarsList(String jars) {
-		if (jars == null) {
-			return null;
-		}
-		return jars.split(LIB_PATH_SEPARATOR);
 	}
 
 	@Override
@@ -590,21 +562,6 @@ public class HadoopConnection extends GraphElement implements IConnection {
 				mapReduceInfoService = null;
 			}
 		}
-	}
-
-	/**
-	 * <p>Sets context URL that is used to resolve relative paths to Hadoop API libraries.</p>
-	 * 
-	 * <p>TODO This contextURL attribute can potentially cause trouble and should be removed. Relative paths to
-	 * libraries should either be allowed to be relative only to graph folder (see
-	 * {@link TransformationGraph#getRuntimeContext()}) or relative paths should be resolved in designer and only
-	 * absolute path should be provided to HadoopConnection. The last option is to add method for getting this context
-	 * to TransformationGraph.</p>
-	 * 
-	 * @param contextURL Context to be used. If <code>null</code> relative paths are not resolved.
-	 */
-	public void setContextURL(URL contextURL) {
-		this.contextURL = contextURL;
 	}
 
 	/**

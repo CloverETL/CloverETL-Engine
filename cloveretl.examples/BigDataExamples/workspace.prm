@@ -1,7 +1,9 @@
-PROJECT= .
-# (Please use slash '/' character as a path delimiter in all path specifications, e.g. C:/Users/username/workspace/project)
-#Properties file
-#Tue Dec 04 11:41:42 CET 2012
+##Project path
+#Tue Mar 12 12:25:01 CET 2013
+PROJECT=.
+
+
+#Tue Mar 12 12:25:01 CET 2013
 CONN_DIR=${PROJECT}/conn
 SEQ_DIR=${PROJECT}/seq
 DATAOUT_DIR=${PROJECT}/data-out
@@ -10,6 +12,7 @@ GRAPH_DIR=${PROJECT}/graph
 TRANS_DIR=${PROJECT}/trans
 DATATMP_DIR=${PROJECT}/data-tmp
 META_DIR=${PROJECT}/meta
-JOBFLOW_DIR=${PROJECT}/jobflow
-LOOKUP_DIR=${PROJECT}/lookup
+LIB_DIR=${PROJECT}/lib
 DATAIN_DIR=${PROJECT}/data-in
+LOOKUP_DIR=${PROJECT}/lookup
+JOBFLOW_DIR=${PROJECT}/jobflow

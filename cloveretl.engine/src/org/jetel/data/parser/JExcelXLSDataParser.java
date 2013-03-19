@@ -18,6 +18,7 @@
  */
 package org.jetel.data.parser;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -91,9 +92,7 @@ public class JExcelXLSDataParser extends XLSParser {
 
 	@Override
 	public void close() {
-		if (wb != null) {
-			wb.close();
-		}
+		closeWorkbook();
 	}
 
 	@Override
@@ -409,20 +408,31 @@ public class JExcelXLSDataParser extends XLSParser {
 
 		return cell.getContents();
 	}
+	
+	private void closeWorkbook() {
+		if (wb != null) {
+			wb.close();
+		}
+	}
+
+	@Override
+	protected void releaseDataSource() {
+		closeWorkbook();
+		sheetNumberIterator = null;
+	}
 
 	@Override
 	public void setDataSource(Object inputDataSource)
 			throws ComponentNotReadyException {
-		if (releaseDataSource && wb != null) {
-			wb.close();
-			sheetNumberIterator = null;
+		if (releaseDataSource) {
+			releaseDataSource();
 		}
         WorkbookSettings settings = new WorkbookSettings();
 		settings.setEncoding(charset);
 		InputStream input;
 		if (inputDataSource instanceof InputStream) {
-			input = (InputStream)inputDataSource;
-		}else{
+			input = (InputStream) inputDataSource;
+		} else {
 			input = Channels.newInputStream((ReadableByteChannel)inputDataSource);
 		}
 		// creating workbook from input stream
@@ -430,6 +440,15 @@ public class JExcelXLSDataParser extends XLSParser {
 			wb = Workbook.getWorkbook(input, settings);
 		} catch (Exception ex) {
 			throw new ComponentNotReadyException(ex);
+		} finally {
+			// the stream can be closed immediately
+			if (releaseDataSource && (input != null)) {
+				try {
+					input.close();
+				} catch (IOException ioe) {
+					logger.warn("Failed to close input stream", ioe);
+				}
+			}
 		}
 		sheet = null;
 		currentRow = firstRow;
@@ -451,9 +470,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	public void reset() throws ComponentNotReadyException {
 		super.reset();
 
-		if (wb != null) {
-			wb.close();
-		}
+		closeWorkbook();
 
         sheet = null;
 	}

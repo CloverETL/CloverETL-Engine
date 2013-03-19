@@ -26,6 +26,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
@@ -36,6 +38,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.file.FileUtils;
 
 /**
  * Parser of records from InputStream.
@@ -51,6 +54,8 @@ import org.jetel.util.bytes.CloverBuffer;
  * @created 5 May 2010
  */
 public class ByteBufferParser extends AbstractParser {
+
+	private final static Log logger = LogFactory.getLog(ByteBufferParser.class);
 
 	ReadableByteChannel reader;
 	/*
@@ -114,15 +119,10 @@ public class ByteBufferParser extends AbstractParser {
 
 	@Override
 	public void close() {
-		if (reader != null && reader.isOpen()) {
-			try {
-				reader.close();
-				if (backendStream != null) {
-					backendStream.close();
-				}
-			} catch (IOException e) {
-				throw new JetelRuntimeException(e);
-			}
+		try {
+			doReleaseDataSource();
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e);
 		}
 		buffer.clear();
 		buffer.limit(0);
@@ -274,6 +274,9 @@ public class ByteBufferParser extends AbstractParser {
 
 	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
+		if (releaseDataSource) {
+			releaseDataSource();
+		}
 		if (inputDataSource instanceof InputStream) {
 			backendStream = (InputStream) inputDataSource;
 			reader = Channels.newChannel(backendStream);
@@ -285,9 +288,20 @@ public class ByteBufferParser extends AbstractParser {
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 		this.exceptionHandler = handler;
 	}
+	
+	private void doReleaseDataSource() throws IOException {
+		if (reader != null && reader.isOpen()) {
+			FileUtils.closeAll(reader, backendStream);
+		}
+	}
 
 	@Override
-	public void setReleaseDataSource(boolean releaseInputSource) {
+	protected void releaseDataSource() {
+		try {
+			doReleaseDataSource();
+		} catch (IOException ioe) {
+			logger.warn("Failed to release data source", ioe);
+		}
 	}
 
 	@Override

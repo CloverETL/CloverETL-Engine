@@ -42,6 +42,8 @@ import net.sf.saxon.sxpath.IndependentContext;
 import net.sf.saxon.sxpath.XPathEvaluator;
 import net.sf.saxon.trans.XPathException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.sequence.Sequence;
@@ -74,6 +76,8 @@ import org.xml.sax.XMLReader;
  */
 public class XPathParser extends AbstractParser {
 
+	private final static Log logger = LogFactory.getLog(XPathParser.class);
+	
 	//                                                        str1 =     "|'   str2    "|'
 	private final static Pattern NAMESPACE = Pattern.compile("(.+)[=]([\"]|['])(.+)([\"]|['])$");
 	//                                                                     "|'   str2    "|'
@@ -118,6 +122,8 @@ public class XPathParser extends AbstractParser {
 
 	private SupportedDataModels dataModel = SupportedDataModels.CLOVER_ETL;
 	
+	private InputStream input;
+
 	public XPathParser() {
 	}
 	
@@ -477,6 +483,21 @@ public class XPathParser extends AbstractParser {
 		}
 	}
 	
+	private void closeInputSource() throws IOException {
+		 if (input != null) {
+			 input.close();
+		 }
+	}
+	
+	@Override
+	protected void releaseDataSource() {
+		try {
+			closeInputSource();
+		} catch (IOException ioe) {
+			logger.warn("Failed to release data source", ioe);
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
@@ -493,10 +514,12 @@ public class XPathParser extends AbstractParser {
 	 */
 	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
-		InputStream input;
+		if (releaseDataSource) {
+			releaseDataSource();
+		}
 		if (inputDataSource instanceof InputStream) {
 			input = (InputStream)inputDataSource;
-		}else{
+		} else {
 			input = Channels.newInputStream((ReadableByteChannel)inputDataSource);
 		}
 		try {
@@ -512,7 +535,10 @@ public class XPathParser extends AbstractParser {
 	 *@since    May 2, 2002
 	 */
 	@Override
-	public void close() {
+	public void close() throws IOException {
+		if (releaseDataSource) {
+			closeInputSource();
+		}
 	}
 
 	/**
@@ -647,10 +673,13 @@ public class XPathParser extends AbstractParser {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		reset();
+		if (releaseDataSource) {
+			releaseDataSource();
+		}
 	}
 
 	@Override
-	public void free() {
+	public void free() throws IOException {
 		close();
 	}
 

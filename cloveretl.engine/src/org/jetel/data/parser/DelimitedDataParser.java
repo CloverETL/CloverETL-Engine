@@ -95,8 +95,6 @@ public class DelimitedDataParser extends AbstractParser {
 	
 	private QuotingDecoder qdecoder;
 	
-	private boolean releaseInputSource = true;
-	
 	public DelimitedDataParser(DataRecordMetadata metadata) {
 		this(metadata,Defaults.DataParser.DEFAULT_CHARSET_DECODER, new QuotingDecoder());		
 	}
@@ -231,16 +229,8 @@ public class DelimitedDataParser extends AbstractParser {
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
 	@Override
-	public void setReleaseDataSource(boolean releaseInputSource)  {
-		this.releaseInputSource = releaseInputSource;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
-	@Override
 	public void setDataSource(Object inputDataSource) {
-		if (releaseInputSource)	releaseDataSource();
+		if (releaseDataSource)	releaseDataSource();
 
 		decoder.reset();// reset CharsetDecoder
 		dataBuffer.clear();
@@ -291,7 +281,8 @@ public class DelimitedDataParser extends AbstractParser {
 	 * Release data source
 	 *
 	 */
-	private void releaseDataSource() {
+	@Override
+	protected void releaseDataSource() {
 		if (reader == null || !reader.isOpen()) {
 			return;
 		}
@@ -679,7 +670,7 @@ public class DelimitedDataParser extends AbstractParser {
      */
 	@Override
 	public void reset() {
-		if (releaseInputSource)	
+		if (releaseDataSource)	
 			releaseDataSource();
 
 		decoder.reset();// reset CharsetDecoder

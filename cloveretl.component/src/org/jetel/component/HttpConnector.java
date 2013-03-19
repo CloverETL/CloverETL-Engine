@@ -1677,6 +1677,7 @@ public class HttpConnector extends Node {
 		//create output records for error output mapping
 		if (hasErrorOutputPort) {
 			errorOutputMappingOutRecords = new DataRecord[] { null, errorOutputRecord };
+			errorOutputMappingTransformation.addOutputRecord(STANDARD_OUTPUT_RECORD_NAME, null);
 			errorOutputMappingTransformation.addOutputRecord(ERROR_OUTPUT_RECORD_NAME, errorOutputRecord);
 		} else {
 			errorOutputMappingOutRecords = new DataRecord[] { };

@@ -20,13 +20,17 @@ package org.jetel.database.dbf;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -50,7 +54,9 @@ import org.jetel.util.string.StringUtils;
 
 public class DBFDataParser extends AbstractParser {
 
-    private static final String METADATA_PROPERTY_CHARSET="charset";
+	private final static Log logger = LogFactory.getLog(DBFDataParser.class);
+
+	private static final String METADATA_PROPERTY_CHARSET="charset";
     
     private IParserExceptionHandler exceptionHandler;
 
@@ -78,8 +84,6 @@ public class DBFDataParser extends AbstractParser {
     
 	private boolean[] isAutoFilling;
 
-	private boolean releaseInputSource = true;
-	
 	private int bytesProcessed;
 
 	private int read;
@@ -123,13 +127,10 @@ public class DBFDataParser extends AbstractParser {
      */
     @Override
 	public void close() {
-        if(dbfFile == null || !dbfFile.isOpen()) {
-            return;
-        }
         try {
-            dbfFile.close();
+            doReleaseDataSource();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            logger.warn("Failed to close data source", ex);
         }
     }
 
@@ -255,13 +256,20 @@ public class DBFDataParser extends AbstractParser {
 			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
 		}
     }
+    
+    private void doReleaseDataSource() throws IOException {
+        if (dbfFile != null && dbfFile.isOpen()) {
+        	dbfFile.close();
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
 	@Override
-	public void setReleaseDataSource(boolean releaseInputSource)  {
-		this.releaseInputSource = releaseInputSource;
+	protected void releaseDataSource() {
+        try {
+            doReleaseDataSource();
+        } catch (IOException ex) {
+            logger.warn("Failed to release data source", ex);
+        }
 	}
 
     /* (non-Javadoc)
@@ -269,7 +277,7 @@ public class DBFDataParser extends AbstractParser {
      */
     @Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
-        if (releaseInputSource) close();
+        if (releaseDataSource) close();
         
         if (inputDataSource instanceof FileInputStream){
             dbfFile = ((FileInputStream)inputDataSource).getChannel();
@@ -277,7 +285,9 @@ public class DBFDataParser extends AbstractParser {
             dbfFile = (FileChannel)inputDataSource;
 		} else if (inputDataSource instanceof ReadableByteChannel) {
 			dbfFile = ((ReadableByteChannel) inputDataSource);
-        }else{
+        } else if (inputDataSource instanceof InputStream) {
+        	dbfFile = Channels.newChannel((InputStream) inputDataSource);
+        } else{
             throw new RuntimeException("Invalid input data object passed - isn't an InputStream or FileChannel");
         }
         
@@ -521,6 +531,9 @@ public class DBFDataParser extends AbstractParser {
     
 	@Override
     public void postExecute() throws ComponentNotReadyException {    	
+		if (releaseDataSource) {
+			releaseDataSource();
+		}
     	reset();
     }
     

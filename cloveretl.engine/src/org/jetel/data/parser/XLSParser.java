@@ -94,7 +94,6 @@ public abstract class XLSParser extends AbstractParser {
 	protected int mappingType = -1;
 	protected int[][] fieldNumber ; //mapping of xls fields and clover fields
 	protected boolean[] isAutoFilling;
-	protected boolean releaseDataSource = true;
 	
 	protected final int XLS_NUMBER = 0;
 	protected final int CLOVER_NUMBER = 1;
@@ -224,11 +223,6 @@ public abstract class XLSParser extends AbstractParser {
 	
 	@Override
 	public abstract void setDataSource(Object inputDataSource) throws ComponentNotReadyException;
-
-	@Override
-	public void setReleaseDataSource(boolean releaseDataSource)  {
-		this.releaseDataSource = releaseDataSource;
-	}
 
 	@Override
 	public int skip(int nRec) {

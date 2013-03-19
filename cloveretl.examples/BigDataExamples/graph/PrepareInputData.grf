@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361358390393" licenseType="Commercial" modified="Mon Mar 18 13:16:55 CET 2013" modifiedBy="Pavel" name="PrepareInputData" revision="1.62" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata1"/>
+<Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata0"/>
+<Connection config="${CONN_DIR}/Hadoop-CDH-3u5.cfg" id="CDH3" type="HADOOP"/>
+<Connection config="${CONN_DIR}/Hadoop-CDH-4.1.2.cfg" id="CDH4" type="HADOOP"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="272" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Prepare Key/Value Pair Format" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="244" x="329" y="196">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+
+Extract fields that are relevant for metric calulation the report. Remaining fields are dropped in the process.
+
+Year and Month fields are additionally concatenated into a Key and IP Address is used the Value.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="272" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Write Data to HDFS" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="214" x="661" y="196">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+
+Outputs the Key/Value pairs into a text file stored directly on HDFS file system. The file is then processed by MapReduce or loaded into a Hive table.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="78" id="Note4" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors): Hadoop solutions" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="30" y="36">
+<attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="38" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This graph is part of &quot;UniqueVisits-HadoopHive.jbf&quot; and &quot;UniqueVisits-HadoopMapReduce.jbf&quot; jobflows." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="929" x="30" y="113"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Extract Date and IP Fields" guiX="367" guiY="236" id="EXTRACT_DATE_AND_IP_FIELDS" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.value_ip_address = $in.0.client_ip;
+	$out.0.key_year_month = concat($in.0.year,".",upperCase($in.0.month));
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="zip:(${DATAIN_DIR}/weblogs_parse.zip)#weblogs_parse.txt" guiName="Read Web Access Log" guiX="76" guiY="236" id="READ_WEB_ACCESS_LOG" quotedStrings="true" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="hdfs://CDH3/tmp/bigdata_examples/key-value-pairs" guiName="Write to HDFS" guiX="695" guiY="236" id="WRITE_TO_HDFS" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="EXTRACT_DATE_AND_IP_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_TO_HDFS:0"/>
+<Edge debugMode="true" fromNode="READ_WEB_ACCESS_LOG:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXTRACT_DATE_AND_IP_FIELDS:0"/>
+</Phase>
+</Graph>

@@ -107,8 +107,6 @@ public class DataParser extends AbstractTextParser {
 
 	private boolean[] eofAsDelimiters;
 
-	private boolean releaseInputSource = true;
-	
 	private boolean hasRecordDelimiter = false;
 	
 	private boolean hasDefaultFieldDelimiter = false;
@@ -274,13 +272,8 @@ public class DataParser extends AbstractTextParser {
 	}
 
     @Override
-	public void setReleaseDataSource(boolean releaseInputSource)  {
-		this.releaseInputSource = releaseInputSource;
-	}
-
-    @Override
 	public void setDataSource(Object inputDataSource) throws IOException {
-		if (releaseInputSource) releaseDataSource();
+		if (releaseDataSource) releaseDataSource();
 
 		decoder.reset();// reset CharsetDecoder
 		byteBuffer.clear();
@@ -345,12 +338,17 @@ public class DataParser extends AbstractTextParser {
 	 * @throws IOException 
 	 *
 	 */
-	private void releaseDataSource() throws IOException {
+	@Override
+	protected void releaseDataSource() {
 		if (reader == null) {
 			return;
 		}
 		
-		reader.close();
+		try {
+			reader.close();
+		} catch (IOException ioe) {
+			logger.warn("Failed to release data source", ioe);
+		}
 		
 		reader = null;		
 	}
@@ -360,7 +358,7 @@ public class DataParser extends AbstractTextParser {
 	 */
 	@Override
 	public void close() throws IOException {
-		if(reader != null && reader.isOpen()) {
+		if (reader != null && reader.isOpen()) {
 			reader.close();
 		}
 	}
@@ -992,12 +990,8 @@ public class DataParser extends AbstractTextParser {
 
     @Override
 	public void reset() {
-		if (releaseInputSource) {	
-			try {
-				releaseDataSource();
-			} catch (IOException e) {
-				e.printStackTrace(); //TODO
-			}
+		if (releaseDataSource) {	
+			releaseDataSource();
 		}
 		decoder.reset();// reset CharsetDecoder
 		recordCounter = 0;// reset record counter

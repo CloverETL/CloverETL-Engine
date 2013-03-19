@@ -11,7 +11,6 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.test.CloverTestCase;
 import org.jetel.util.file.FileUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
@@ -22,7 +21,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *
  * @since Feb 18, 2009
  */
-public class DataParserTest extends CloverTestCase {
+public class DataParserTest extends AbstractParserTestCase {
 
 	private final static String TEST_FILE_UTF8 = "data/street-names.utf8.dat";
 	private final static String TEST_FILE_CP1250 = "data/street-names.cp1250.dat";
@@ -88,6 +87,8 @@ public class DataParserTest extends CloverTestCase {
 		parserISO88591 = new DataParser(parserISO88591Cfg);
 		
 		oldBufferSize = Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
+
+		super.setUp();
 	}
 
 	public void testParsers() throws Exception {
@@ -254,6 +255,13 @@ public class DataParserTest extends CloverTestCase {
 	@Override
 	@SuppressWarnings(value = "ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD")
 	protected void tearDown() throws Exception {
+		super.tearDown();
 		Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE = oldBufferSize;
+	}
+
+	@Override
+	protected Parser createParser() throws Exception {
+		TextParserConfiguration cfg = new TextParserConfiguration(metadata);
+		return new DataParser(cfg);
 	}
 }
