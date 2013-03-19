@@ -18,6 +18,10 @@
  */
 package org.jetel.data.parser;
 
+import java.io.IOException;
+
+import org.jetel.exception.ComponentNotReadyException;
+
 /**
  * Abstract implementation of {@link Parser} interface.
  * 
@@ -27,6 +31,30 @@ package org.jetel.data.parser;
  * @created 11 Jan 2012
  */
 public abstract class AbstractParser implements Parser {
+	
+	protected boolean releaseDataSource = true;
+	
+	@Override
+	public void setReleaseDataSource(boolean releaseDataSource) {
+		this.releaseDataSource = releaseDataSource;
+	}
+	
+	/**
+	 * This method should close the previous data sources
+	 * when switching to the next source.
+	 */
+	protected abstract void releaseDataSource();
+
+	/*
+	 * The default implementation does nothing except for
+	 * releasing the previous data source.
+	 */
+	@Override
+	public void setDataSource(Object inputDataSource) throws IOException, ComponentNotReadyException {
+		if (releaseDataSource) {
+			releaseDataSource();
+		}
+	}
 	
 	@Override
 	public DataSourceType getPreferredDataSourceType() {

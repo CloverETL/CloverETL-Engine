@@ -67,6 +67,11 @@ public class XLSXDataParser extends XLSParser {
 	}
 	
 	@Override
+	protected void releaseDataSource() {
+		// not used, data source is closed immediately
+	}
+
+	@Override
 	public void setDataSource(Object dataSource) throws ComponentNotReadyException {
 		if (dataSource == null) {
 			throw new NullPointerException("dataSource");

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="tkramolis" created="Thu Feb 21 10:30:53 CET 2013" guiVersion="3.4.0.M2" id="1361448467277" licenseType="Commercial" modified="Mon Mar 18 13:21:20 CET 2013" modifiedBy="Pavel" name="ProcessLog_HadoopMapReduce" revision="1.54" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata2"/>
+<Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
+<Metadata id="Metadata1" previewAttachment="hdfs://LOCAL_HADOOP/tmp/WebLogIPsResult/part-00000" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="\t" label="part-00000" name="WebLogIPsResult" previewAttachment="hdfs://LOCAL_HADOOP/tmp/WebLogIPsResult/part-00000" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\n" skipSourceRows="0" type="delimited">
+<Field name="YearMonth" type="string"/>
+<Field eofAsDelimiter="false" name="UniqueIPs" type="long"/>
+</Record>
+</Metadata>
+<Connection config="${CONN_DIR}/Hadoop-CDH-4.1.2.cfg" id="CDH4" type="HADOOP"/>
+<Connection config="${CONN_DIR}/Hadoop-CDH-3u5.cfg" id="CDH3" type="HADOOP"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="244" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read MapReduce Results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="286" x="198" y="204">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+
+
+Results from MapReduce job are stored on HDFS - this step downloads the results file for further processing.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="78" id="Note4" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors): Hadoop MapReduce" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="40" y="46">
+<attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="38" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This graph is part of the &quot;UniqueVisits-HadoopMapReduce.jbf&quot; jobflow." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="929" x="40" y="123"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="hdfs://CDH3/tmp/WebLogIPsResult/part-*" guiName="Read MapReduce Results from HDFS" guiX="223" guiY="257" id="READ_MAP_REDUCE_RESULTS_FROM_HDFS" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/unique_visitors.txt" guiName="Write Unique Visitors Count" guiX="640" guiY="257" id="WRITE_UNIQUE_VISITORS_COUNT" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="READ_MAP_REDUCE_RESULTS_FROM_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="WRITE_UNIQUE_VISITORS_COUNT:0"/>
+</Phase>
+</Graph>

@@ -55,18 +55,6 @@ public abstract class AbstractTextParser extends AbstractParser implements TextP
 	}
 
 	@Override
-	public void setDataSource(Object inputDataSource) throws IOException, ComponentNotReadyException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void setReleaseDataSource(boolean releaseInputSource) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void close() throws IOException {
 		// TODO Auto-generated method stub
 		

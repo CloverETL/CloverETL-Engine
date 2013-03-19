@@ -179,12 +179,19 @@ public class CloverDataParser extends AbstractParser {
         recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
-	@Override
-	public void setReleaseDataSource(boolean releaseInputSource)  {
+	private void doReleaseDataSource() throws IOException {
+		FileUtils.closeAll(recordFile, indexFile);
 	}
+	
+	@Override
+	protected void releaseDataSource() {
+		try {
+			doReleaseDataSource();
+		} catch (IOException ioe) {
+			logger.warn("Failed to release data source", ioe);
+		}
+	}
+
 
     /* (non-Javadoc)
      * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
@@ -193,6 +200,9 @@ public class CloverDataParser extends AbstractParser {
      */
     @Override
 	public void setDataSource(Object in) throws ComponentNotReadyException {
+    	if (releaseDataSource) {
+    		releaseDataSource();
+    	}
     	sourceRecordCounter = 0;
     	currentIndexPosition = 0;
     	indexFile = null;
@@ -303,22 +313,7 @@ public class CloverDataParser extends AbstractParser {
 	 */
 	@Override
 	public void close() {
-		if (recordFile != null) {
-			try {
-				if (recordFile.isOpen()) {
-					recordFile.close();
-				}
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
-		if (indexFile != null) {
-			try {
-				indexFile.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
+		releaseDataSource();
 	}
 
 	/* (non-Javadoc)
@@ -412,7 +407,10 @@ public class CloverDataParser extends AbstractParser {
     }
     
 	@Override
-    public void postExecute() throws ComponentNotReadyException {    	
+    public void postExecute() throws ComponentNotReadyException {
+		if (releaseDataSource) {
+			releaseDataSource();
+		}
     }
     
 	@Override

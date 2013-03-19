@@ -615,6 +615,7 @@
 	
 	<target name="runtests" depends="init,compile-tests" if="tests-available">
 		<mkdir dir="${dir.testsresult}"/>
+		<echo message="Running all tests from ${dir.src.test} excluding ${test.exclude}"/>
 		<junit 
 				haltonerror="false" 
 				haltonfailure="false" 
@@ -642,7 +643,7 @@
     			<path refid="cp.cobertura"/>
 			</classpath>
 			<batchtest todir="${dir.testsresult}">
-				<fileset dir="${dir.src.test}">
+				<fileset dir="${dir.src.test}" excludes="${test.exclude}">
 					<include name="**/*Test.java" />
 					<include name="**/Test*.java" />
 				</fileset>

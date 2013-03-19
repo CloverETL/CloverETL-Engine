@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360543511" licenseType="Commercial" modified="Mon Mar 18 13:53:36 CET 2013" modifiedBy="Pavel" name="ProcessLog_CloverETL" nature="jobflow" revision="1.26" showComponentDetails="true">
+<Global>
+<Metadata id="ExecuteGraph_RunStatus">
+<Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
+<Field name="runId" type="long"/>
+<Field name="originalJobURL" type="string"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="startTime" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="endTime" type="date"/>
+<Field name="duration" type="long"/>
+<Field name="status" type="string"/>
+<Field name="errException" type="string"/>
+<Field name="errMessage" type="string"/>
+<Field name="errComponent" type="string"/>
+<Field name="errComponentType" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="ExecuteGraph_RunStatus1">
+<Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
+<Field name="runId" type="long"/>
+<Field name="originalJobURL" type="string"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="startTime" type="date"/>
+<Field format="yyyy-MM-dd HH:mm:ss" name="endTime" type="date"/>
+<Field name="duration" type="long"/>
+<Field name="status" type="string"/>
+<Field name="errException" type="string"/>
+<Field name="errMessage" type="string"/>
+<Field name="errComponent" type="string"/>
+<Field name="errComponentType" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="228" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="233" x="20" y="119">
+<attr name="text"><![CDATA[
+Web servers under heavy load can generate web access logs in orders of tens or hundreds of gigabytes per day.
+
+Preparing such data for analytics in a timely basis is crucial to fast operating businesses.
+
+In this example we demonstrate how to produce a simple "uniques per month" report from a standard Apache access_log file.
+]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverETL Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="20" y="36">
+<attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
+(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="228" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Possible optimization" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="465" x="484" y="119">
+<attr name="text"><![CDATA[
+It is not necessary to split the processing into two steps; the processing could be completely streamlined into a single ETL graph.
+
+However, we wanted to reuse the "Generate Report" step for all three example implementations.
+]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="228" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Pure CloverETL approach" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="252" y="119">
+<attr name="text"><![CDATA[
+The processing is split into two steps. 
+
+Step 1: The first step calculates number of unique visits using built-in CloverETL components and outputs a text file with aggregated counts. 
+
+Step 2: The second step is common to all three solutions - it sorts and converts the generated file into an Excel report.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="182" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read input and process it directly in CloverETL" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="329" x="216" y="381"/>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Count Unique Visitors using CloverETL" guiX="261" guiY="445" id="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL" jobURL="${GRAPH_DIR}/CloverETL-CountVisits.grf" type="EXECUTE_GRAPH">
+<attr name="outputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.runId = $in.1.runId;
+	$out.0.originalJobURL = $in.1.originalJobURL;
+	$out.0.startTime = $in.1.startTime;
+	$out.0.endTime = $in.1.endTime;
+	$out.0.duration = $in.1.duration;
+	$out.0.status = $in.1.status;
+	$out.0.errException = $in.1.errException;
+	$out.0.errMessage = $in.1.errMessage;
+	$out.0.errComponent = $in.1.errComponent;
+	$out.0.errComponentType = $in.1.errComponentType;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Generate Report" guiX="585" guiY="445" id="GENERATE_REPORT" jobURL="${GRAPH_DIR}/GenerateReport.grf" type="EXECUTE_GRAPH"/>
+<Edge debugMode="true" fromNode="COUNT_UNIQUE_VISITORS_USING_CLOVER_ETL:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus1" outPort="Port 0 (out)" toNode="GENERATE_REPORT:0"/>
+</Phase>
+</Graph>

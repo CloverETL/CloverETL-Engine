@@ -40,6 +40,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.net.URLStreamHandler;
+import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -2194,6 +2195,9 @@ public class FileUtils {
 			
 			for (Closeable closeable: closeables) {
 				if (closeable != null) {
+					if ((closeable instanceof Channel) && !((Channel) closeable).isOpen()) {
+						continue; // channel is already closed
+					}
 					try {
 						closeable.close();
 					} catch (IOException ex) {

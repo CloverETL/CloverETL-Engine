@@ -39,6 +39,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.file.FileUtils;
 
 /**
  * A simple class for retrieving records from binary files created by BinaryDataFormatter
@@ -115,17 +116,7 @@ public class BinaryDataParser extends AbstractParser {
 	public void close() {
 		if (reader != null && reader.isOpen()) {
 			try {
-				reader.close();
-				if (backendStream != null) {
-					backendStream.close();
-				}
-				if (deleteOnClose != null) {
-					if (!deleteOnClose.delete()) {
-						LogFactory.getLog(BinaryDataParser.class).error("Failed to delete temp file: " + deleteOnClose.getAbsolutePath());
-					} else {
-						LogFactory.getLog(BinaryDataParser.class).debug("Temp file deleted: " + deleteOnClose.getAbsolutePath());
-					}
-				}
+				doReleaseDataSource();
 			} catch (IOException e) {
 				throw new JetelRuntimeException(e);
 			}
@@ -285,9 +276,35 @@ public class BinaryDataParser extends AbstractParser {
 		eofReached = false;
 		processedBytes = 0;
 	}
+	
+	private void doReleaseDataSource() throws IOException {
+		if (reader != null) {
+			FileUtils.closeAll(backendStream, reader);
+			if (deleteOnClose != null) {
+				if (!deleteOnClose.delete()) {
+					LogFactory.getLog(BinaryDataParser.class).error("Failed to delete temp file: " + deleteOnClose.getAbsolutePath());
+				} else {
+					deleteOnClose = null;
+					LogFactory.getLog(BinaryDataParser.class).debug("Temp file deleted: " + deleteOnClose.getAbsolutePath());
+				}
+			}
+		}
+	}
+
+	@Override
+	protected void releaseDataSource() {
+		try {
+			doReleaseDataSource();
+		} catch (IOException ioe) {
+			ioe.printStackTrace(); // TODO
+		}
+	}
 
 	@Override
 	public void setDataSource(Object inputDataSource) {
+		if (releaseDataSource) {
+			releaseDataSource();
+		}
 		if (inputDataSource instanceof File) {
 			try {
 				backendStream = new FileInputStream((File) inputDataSource);
@@ -304,11 +321,6 @@ public class BinaryDataParser extends AbstractParser {
 	@Override
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 		this.exceptionHandler = handler;
-	}
-
-	@Override
-	public void setReleaseDataSource(boolean releaseInputSource) {
-
 	}
 
 	@Override

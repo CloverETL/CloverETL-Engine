@@ -78,8 +78,6 @@ public abstract class FixLenDataParser extends AbstractParser implements TextPar
 	protected int recordIdx;
 	protected int bytesProcessed;
 
-	private boolean releaseInputSource = true;
-	
 	FixLenDataParser(DataRecordMetadata metadata, String charset) {
 		this.metadata = metadata;
 		// initialize charset decoder
@@ -129,7 +127,7 @@ public abstract class FixLenDataParser extends AbstractParser implements TextPar
 
 	@Override
 	public void reset() {
-		if (releaseInputSource) releaseDataSource();
+		if (releaseDataSource) releaseDataSource();
 		byteBuffer.clear();
 		byteBuffer.flip();
 		decoder.reset();
@@ -160,16 +158,8 @@ public abstract class FixLenDataParser extends AbstractParser implements TextPar
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
 	@Override
-	public void setReleaseDataSource(boolean releaseInputSource)  {
-		this.releaseInputSource = releaseInputSource;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
-	 */
-	@Override
 	public void setDataSource(Object inputDataSource) {
-		if (releaseInputSource) releaseDataSource();
+		if (releaseDataSource) releaseDataSource();
 		byteBuffer.clear();
 		byteBuffer.flip();
 		decoder.reset();
@@ -197,7 +187,8 @@ public abstract class FixLenDataParser extends AbstractParser implements TextPar
 	/**
 	 * Release data source.  
 	 */
-	private void releaseDataSource() {
+	@Override
+	protected void releaseDataSource() {
 		if (inChannel == null || !inChannel.isOpen()) {
 			return;
 		}

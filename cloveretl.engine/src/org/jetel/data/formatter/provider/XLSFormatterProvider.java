@@ -48,7 +48,7 @@ public class XLSFormatterProvider implements FormatterProvider {
 	private String charset;
 
 	private String[] excludedFieldNames;
-	private Boolean inMemory;
+	private boolean inMemory;
 
 	public XLSFormatterProvider(boolean append, boolean removeSheets) {
 		this(append, removeSheets, Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
@@ -74,15 +74,9 @@ public class XLSFormatterProvider implements FormatterProvider {
 		formatter.setFirstRow(firstRow);
 		formatter.setNamesRow(namesRow);
 		formatter.setExcludedFieldNames(excludedFieldNames);
-		if (inMemory != null) {
+		
+		if (formatter instanceof JExcelXLSDataFormatter) {
 			formatter.setInMemory(inMemory);
-		} else {
-			try {
-				IAuthorityProxy proxy = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph());
-				formatter.setTmpDir(proxy.newTempDir("xls-tmp", -1));
-			} catch (TempFileCreationException e) {
-				throw new RuntimeException(e);
-			}
 		}
 		return formatter;
 	}
@@ -196,7 +190,7 @@ public class XLSFormatterProvider implements FormatterProvider {
 	 * @return true if Formatter is to process formatting in memory <br>
 	 * 			false if Formatter is to create temporary files when formating
 	 */
-	public Boolean isInMemory() {
+	public boolean isInMemory() {
 		return inMemory;
 	}
 

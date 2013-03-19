@@ -32,6 +32,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.parser.AbstractParser;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -49,7 +50,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
 
-public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
+public class HadoopSequenceFileParser extends AbstractParser implements IHadoopSequenceFileParser {
 
 	private static final String SANDBOX_TO_FILE_URL_ERROR = "Failed to convert %s to a local file URL";
 
@@ -155,6 +156,9 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	
 	@Override
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
+		if (releaseDataSource) {
+			releaseDataSource();
+		}
 		if (inputDataSource instanceof SequenceFile.Reader) {
 			reader = (SequenceFile.Reader) inputDataSource;
 			return;
@@ -251,8 +255,12 @@ public class HadoopSequenceFileParser implements IHadoopSequenceFileParser {
 	}
 
 	@Override
-	public void setReleaseDataSource(boolean releaseInputSource) {
-		// TODO Auto-generated method stub
+	protected void releaseDataSource() {
+		try {
+			close();
+		} catch (IOException e) {
+			logger.warn("Failed to release data source", e);
+		}
 	}
 
 	@Override
