@@ -37,6 +37,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
@@ -111,6 +112,14 @@ public class Validator extends Node {
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
+		
+		InputPort inputPort = getInputPort(INPUT_PORT);
+		if(inputPort == null || inputPort.getMetadata() == null) {
+			ConfigurationProblem problem = new ConfigurationProblem("No input metadata.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+			status.add(problem);
+			return status;
+		}
+		
 		String tempRules;
 		
 		if(externalRulesURL != null) {
@@ -127,7 +136,7 @@ public class Validator extends Node {
 		}
 		
 		ReadynessErrorAcumulator accumulator = new ReadynessErrorAcumulator();
-		if(rootGroup != null && !rootGroup.isReady(getInputPort(INPUT_PORT).getMetadata(), accumulator)) {
+		if(rootGroup != null && !rootGroup.isReady(inputPort.getMetadata(), accumulator)) {
 			String tempName = new String();
 			for(Entry<ValidationParamNode, List<String>> errors: accumulator.getErrors().entrySet()) {
 				for(String message : errors.getValue()) {
