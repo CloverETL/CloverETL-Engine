@@ -83,6 +83,11 @@ public class WritableObject extends WritableContainer {
 			}
 		}
 	}
+	
+	public void addChild(WritableValue value) {
+		super.addChild(value);
+		value.dataType = dataType;
+	}
 
 	@Override
 	public boolean isNodeEmpty(TreeFormatter formatter, DataRecord[] availableData) {
