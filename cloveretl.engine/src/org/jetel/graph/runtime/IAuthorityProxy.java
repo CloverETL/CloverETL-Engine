@@ -154,7 +154,7 @@ public abstract class IAuthorityProxy {
 		
 		public RuntimeException getException() {
 			if (status.code() < 0 || status == Result.N_A) {
-				return new JetelRuntimeException("Job " + jobUrl + "(#" + runId + ") finished with final status " + status + ".",
+				return new JetelRuntimeException("Job " + jobUrl + (runId > 0 ? ("(#" + runId + ")") : "") + " finished with final status " + status + ".",
 						new StackTraceWrapperException(errMessage, errException));
 			} else {
 				return null;
