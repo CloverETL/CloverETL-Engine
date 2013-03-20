@@ -93,9 +93,25 @@ public class ExceptionUtils {
      * @return resulted overall message
      */
     public static String getMessage(String message, Throwable exception) {
-    	return getMessage(new JetelRuntimeException(message, exception), 0);
+    	List<ErrorMessage> errMessages = getMessages(new JetelRuntimeException(message, exception), 0);
+    	StringBuilder result = new StringBuilder();
+    	for (ErrorMessage errMessage : errMessages) {
+    		appendMessage(result, errMessage.message, errMessage.depth);
+    	}
+    	return result.toString();
     }
 
+    private static class ErrorMessage {
+    	int depth;
+    	
+    	String message;
+
+    	public ErrorMessage(int depth, String message) {
+    		this.depth = depth;
+    		this.message = message;
+		}
+    }
+    
     /**
      * Extract message from the given exception chain. All messages from all exceptions are concatenated
      * to the resulted string.
@@ -103,8 +119,8 @@ public class ExceptionUtils {
      * @param exception converted exception
      * @return resulted overall message
      */
-    private static String getMessage(Throwable exception, int depth) {
-    	StringBuilder result = new StringBuilder();
+    private static List<ErrorMessage> getMessages(Throwable exception, int depth) {
+    	List<ErrorMessage> result = new ArrayList<ErrorMessage>();
     	Throwable exceptionIterator = exception;
     	String lastMessage = "";
     	while (true) {
@@ -112,7 +128,7 @@ public class ExceptionUtils {
     		String newMessage = getMessageNonRecurisve(exceptionIterator, lastMessage);
     		
     		if (newMessage != null) {
-    			appendMessage(result, newMessage, depth);
+    			result.add(new ErrorMessage(depth, newMessage));
 	    		depth++;
 	    		lastMessage = newMessage;
     		}
@@ -120,13 +136,7 @@ public class ExceptionUtils {
     		//CompoundException needs special handling
     		if (exceptionIterator instanceof CompoundException) {
     			for (Throwable t : ((CompoundException) exceptionIterator).getCauses()) {
-    				String messageOfNestedException = getMessage(t, depth);
-    				if (!StringUtils.isEmpty(messageOfNestedException)) {
-	        			if (!StringUtils.isEmpty(result)) {
-	        				result.append("\n");
-	        			}
-	        			result.append(messageOfNestedException);
-    				}
+    				result.addAll(getMessages(t, depth));
     			}
     			break;
     		}
@@ -137,7 +147,7 @@ public class ExceptionUtils {
     			exceptionIterator = exceptionIterator.getCause();
     		}
     	}
-    	return result.toString();
+    	return result;
     }
     
     private static String getMessageNonRecurisve(Throwable t, String lastMessage) {
