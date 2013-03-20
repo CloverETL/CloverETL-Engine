@@ -525,7 +525,7 @@ public class XmlWriter extends Node {
 						portDefinition.dataRecords.add(record);
 					}
 				} catch (InterruptedException e) {
-					logger.error(getId() + ": thread forcibly aborted", e);
+					logger.debug(getId() + ": thread forcibly aborted", e);
 					return;
 				} catch (Exception e) {
 					logger.error(getId() + ": thread failed", e);
@@ -703,7 +703,7 @@ public class XmlWriter extends Node {
 				try {
 					portReaders[idx].join(1000);
 				} catch (InterruptedException e) {
-					logger.warn(getId() + " thread interrupted, it will interrupt child threads", e);
+					logger.debug(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}// while

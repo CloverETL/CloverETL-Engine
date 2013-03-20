@@ -499,7 +499,7 @@ public class HashJoin extends Node {
 				try {
 					slaveReader[idx].join(1000);
 				} catch (InterruptedException e) {
-					logger.warn(getId() + " thread interrupted, it will interrupt child threads", e);
+					logger.debug(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}
@@ -1069,7 +1069,7 @@ public class HashJoin extends Node {
 					}
 					map.put(record.duplicate());
 				} catch (InterruptedException e) {
-					logger.error(getId() + ": thread forcibly aborted", e);
+					logger.debug(getId() + ": thread forcibly aborted", e);
 					return;
 				} catch (IOException e) {
 					logger.error(getId() + ": thread failed", e);

@@ -742,7 +742,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				try {
 					thread.join(1000);
 				} catch (InterruptedException e) {
-					LOG.warn(getId() + " thread interrupted, it will interrupt child threads", e);
+					LOG.debug(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}

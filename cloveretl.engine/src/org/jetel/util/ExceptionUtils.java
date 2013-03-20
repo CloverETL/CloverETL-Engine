@@ -93,7 +93,7 @@ public class ExceptionUtils {
      * @return resulted overall message
      */
     public static String exceptionChainToMessage(String message, Throwable exception) {
-    	return exceptionChainToMessage(new JetelRuntimeException(message, exception), 0);
+    	return getMessage(new JetelRuntimeException(message, exception), 0);
     }
 
     /**
@@ -103,13 +103,13 @@ public class ExceptionUtils {
      * @param exception converted exception
      * @return resulted overall message
      */
-    private static String exceptionChainToMessage(Throwable exception, int depth) {
+    private static String getMessage(Throwable exception, int depth) {
     	StringBuilder result = new StringBuilder();
     	Throwable exceptionIterator = exception;
     	String lastMessage = "";
     	while (true) {
     		//extract message from current exception
-    		String newMessage = getMessage(exceptionIterator, lastMessage);
+    		String newMessage = getMessageNonRecurisve(exceptionIterator, lastMessage);
     		
     		if (newMessage != null) {
     			appendMessage(result, newMessage, depth);
@@ -120,7 +120,7 @@ public class ExceptionUtils {
     		//CompoundException needs special handling
     		if (exceptionIterator instanceof CompoundException) {
     			for (Throwable t : ((CompoundException) exceptionIterator).getCauses()) {
-    				String messageOfNestedException = exceptionChainToMessage(t, depth);
+    				String messageOfNestedException = getMessage(t, depth);
     				if (!StringUtils.isEmpty(messageOfNestedException)) {
 	        			if (!StringUtils.isEmpty(result)) {
 	        				result.append("\n");
@@ -140,7 +140,7 @@ public class ExceptionUtils {
     	return result.toString();
     }
     
-    private static String getMessage(Throwable t, String lastMessage) {
+    private static String getMessageNonRecurisve(Throwable t, String lastMessage) {
     	String message = null;
     	//NPE is handled in special way
 		if (t instanceof NullPointerException 
@@ -191,7 +191,7 @@ public class ExceptionUtils {
 	 * @param t
 	 */
 	public static void logException(Logger logger, String message, Throwable t) {
-        logger.error(ExceptionUtils.exceptionChainToMessage(message, t));
+		logger.error(ExceptionUtils.exceptionChainToMessage(message, t));
         logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
 	}
 	
@@ -250,6 +250,61 @@ public class ExceptionUtils {
 		}
 		
 		return result;
+	}
+
+	/**
+	 * Print given message to logger. The message is surrounded in an ascii-art frame.  
+	 * @param message printed message
+	 */
+	public static void logHighlightedMessage(Logger logger, String message) {
+		final String LEFT_BORDER = "|| ";
+		final String RIGHT_BORDER = " ||";
+		final char TOP_BORDER = '=';
+		final String TOP_BORDER_LABEL = " Error message ";
+		final int TOP_BORDER_LABEL_LOCATION = 3;
+		final char BOTTOM_BORDER = '=';
+		
+		if (!StringUtils.isEmpty(message)) {
+			StringBuilder sb = new StringBuilder();
+			String[] messageLines = message.split("\n");
+			int maxLength = 0;
+			for (String messageLine : messageLines) {
+				if (messageLine.length() > maxLength) {
+					maxLength = messageLine.length();
+				}
+			}
+			for (int i = 0; i < maxLength + LEFT_BORDER.length() + RIGHT_BORDER.length(); i++) {
+				if (i >= TOP_BORDER_LABEL_LOCATION && i < TOP_BORDER_LABEL.length() + TOP_BORDER_LABEL_LOCATION) {
+					sb.append(TOP_BORDER_LABEL.charAt(i - TOP_BORDER_LABEL_LOCATION));
+				} else {
+					sb.append(TOP_BORDER);
+				}
+			}
+			logger.error(sb.toString()); sb.setLength(0);
+			for (String messageLine : messageLines) {
+				sb.append(LEFT_BORDER);
+				sb.append(messageLine);
+				for (int i = messageLine.length(); i < maxLength; i++) {
+					sb.append(' ');
+				}
+				sb.append(RIGHT_BORDER);
+				logger.error(sb.toString()); sb.setLength(0);
+			}
+			for (int i = 0; i < maxLength + LEFT_BORDER.length() + RIGHT_BORDER.length(); i++) {
+				sb.append(BOTTOM_BORDER);
+			}
+			logger.error(sb.toString()); sb.setLength(0);
+		}
+	}
+
+	/**
+	 * Print out error message of the given exception. The message is surrounded in an ascii-art frame.
+	 * @param logger
+	 * @param message
+	 * @param exception
+	 */
+	public static void logHighlightedException(Logger logger, String message, Throwable exception) {
+		logHighlightedMessage(logger, exceptionChainToMessage(message, exception));
 	}
 	
 }

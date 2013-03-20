@@ -469,7 +469,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				case ERROR:
 					causeException = ((ErrorMsgBody) message.getBody()).getSourceException();
 					causeGraphElement = message.getSender();
-					ExceptionUtils.logException(logger, "Graph execution finished with error", causeException);
+					ExceptionUtils.logException(logger, null, causeException);
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {
@@ -732,19 +732,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     }
 
     public String getErrorMessage() {
-    	StringBuilder message = new StringBuilder();
-    	
-    	IGraphElement graphElement = getCauseGraphElement();
-    	if (graphElement != null) {
-    		message.append(graphElement.getId() + ": ");
-    	}
-    	
-    	Throwable throwable = getCauseException();
-    	if (throwable != null) {
-    		message.append(ExceptionUtils.exceptionChainToMessage(throwable));
-    	}
-    	
-    	return message.length() > 0 ? message.toString() : null;
+    	return ExceptionUtils.exceptionChainToMessage(getCauseException());
     }
     
     /**

@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -47,6 +46,7 @@ import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
+import org.jetel.graph.runtime.CloverFuture;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IThreadManager;
@@ -342,6 +342,7 @@ public class runGraph {
 				runtimeContext.setRuntimeClassPath(FileUtils.getFileUrls(contextURL, classPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
 			} catch (MalformedURLException e) {
 				ExceptionUtils.logException(logger, "Given classpath is not valid URL.", e);
+				ExceptionUtils.logHighlightedException(logger, "Given classpath is not valid URL.", e);
 				System.exit(-1);
 			}
     	}
@@ -350,6 +351,7 @@ public class runGraph {
 				runtimeContext.setCompileClassPath(FileUtils.getFileUrls(contextURL, compileClassPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
 			} catch (MalformedURLException e) {
 				ExceptionUtils.logException(logger, "Given compile classpath is not valid URL.", e);
+				ExceptionUtils.logHighlightedException(logger, "Given compile classpath is not valid URL.", e);
 				System.exit(-1);
 			}
     	}
@@ -366,6 +368,7 @@ public class runGraph {
             	in = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, graphFileName));
             } catch (IOException e) {
             	ExceptionUtils.logException(logger, "Error - graph definition file can't be read", e);
+            	ExceptionUtils.logHighlightedException(logger, "Error - graph definition file can't be read", e);
                 System.exit(-1);
             }
         }
@@ -378,9 +381,11 @@ public class runGraph {
 	        runGraph(graph);
         } catch (XMLConfigurationException e) {
             ExceptionUtils.logException(logger, "Error in reading graph from XML !", e);
+            ExceptionUtils.logHighlightedException(logger, "Error in reading graph from XML !", e);
             System.exit(-1);
         } catch (GraphConfigurationException e) {
             ExceptionUtils.logException(logger, "Error - graph's configuration invalid !", e);
+            ExceptionUtils.logHighlightedException(logger, "Error - graph's configuration invalid !", e);
             System.exit(-1);
 		} 
     }
@@ -402,25 +407,28 @@ public class runGraph {
 	}
 	
 	private static void runGraph(TransformationGraph graph) {
-        Future<Result> futureResult = null;
+        CloverFuture cloverFuture = null;
 		try {
 			if (!graph.isInitialized()) {
 				EngineInitializer.initGraph(graph);
 			}
-			futureResult = executeGraph(graph, graph.getRuntimeContext());			
+			cloverFuture = executeGraph(graph, graph.getRuntimeContext());			
         } catch (Exception e) {
 			ExceptionUtils.logException(logger, "Error during graph initialization !", e);
+            ExceptionUtils.logHighlightedException(logger, "Error during graph initialization !", e);
             System.exit(-1);
 		} 
         
         Result result = Result.N_A;
 		try {
-			result = futureResult.get();
+			result = cloverFuture.get();
 		} catch (InterruptedException e) {
 			ExceptionUtils.logException(logger, "Graph was unexpectedly interrupted !", e);
+			ExceptionUtils.logHighlightedException(logger, "Graph was unexpectedly interrupted !", e);
             System.exit(-1);
 		} catch (ExecutionException e) {
 			ExceptionUtils.logException(logger, "Error during graph processing !", e);
+			ExceptionUtils.logHighlightedException(logger, "Error during graph processing !", e);
             System.exit(-1);
 		}
         
@@ -441,13 +449,15 @@ public class runGraph {
             break;
         default:
             logger.error("Execution of graph failed !");
+            ExceptionUtils.logHighlightedException(logger, cloverFuture.getWatchDog().getErrorMessage(),
+            				cloverFuture.getWatchDog().getCauseException());
             System.exit(result.code());
         }
 
     }
 
 
-	public static Future<Result> executeGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
+	public static CloverFuture executeGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
 		if (!graph.isInitialized()) {
 			EngineInitializer.initGraph(graph);
 		}
