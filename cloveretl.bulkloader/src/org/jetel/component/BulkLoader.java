@@ -538,9 +538,8 @@ public abstract class BulkLoader extends Node {
 	 */
 	protected File createTempFile(String prefix, String suffix) throws ComponentNotReadyException {
 		try {
-			//File file = File.createTempFile(prefix, suffix, getTempDir());
-			//file.delete();
 			File file = getGraph().getAuthorityProxy().newTempFile(prefix, suffix, -1);
+			file.delete();
 			return file;
 		} catch (TempFileCreationException e) {
 			free();
