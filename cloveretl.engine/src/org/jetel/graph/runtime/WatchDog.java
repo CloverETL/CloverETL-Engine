@@ -732,7 +732,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     }
 
     public String getErrorMessage() {
-    	return ExceptionUtils.exceptionChainToMessage(getCauseException());
+    	return ExceptionUtils.getMessage(getCauseException());
     }
     
     /**

@@ -1266,7 +1266,7 @@ public class XmlWriter extends Node {
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage("Can't parse XML mapping schema.", e), Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage("Can't parse XML mapping schema.", e), Severity.ERROR, this, Priority.NORMAL));
 		}
         
 		//...

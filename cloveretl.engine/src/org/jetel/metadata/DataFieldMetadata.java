@@ -1165,7 +1165,7 @@ public class DataFieldMetadata implements Serializable {
 				}
 			} catch (ParseBooleanException e) {
 				status.add(new ConfigurationProblem(
-						ExceptionUtils.exceptionChainToMessage("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will not be parsable.", e),
+						ExceptionUtils.getMessage("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + trueO + "' will not be parsable.", e),
 						Severity.WARNING, null, Priority.NORMAL));
 			}
 
@@ -1177,7 +1177,7 @@ public class DataFieldMetadata implements Serializable {
 				}
 			} catch (ParseBooleanException e) {
 				status.add(new ConfigurationProblem(
-						ExceptionUtils.exceptionChainToMessage("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will not be parsable.", e),
+						ExceptionUtils.getMessage("Wrong boolean format '" + formatStr + "' for field '" + name + "' in the record metadata element '" + dataRecordMetadata.getName() + "' - reverse check for true output string defined by the format '" + falseO + "' will not be parsable.", e),
 						Severity.WARNING, null, Priority.NORMAL));
 			}
 		}

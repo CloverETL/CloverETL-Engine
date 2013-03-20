@@ -300,7 +300,7 @@ public class DBFDataWriter extends Node {
         	try{
         		DBFTypes.cloverType2dbf(field.getDataType());
         	}catch(Exception ex){
-        		status.add(String.format("Error at field \"%s\". %s",field.getName(),ExceptionUtils.exceptionChainToMessage(ex)),ConfigurationStatus.Severity.ERROR,this,
+        		status.add(String.format("Error at field \"%s\". %s",field.getName(),ExceptionUtils.getMessage(ex)),ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         	}
         }
@@ -318,7 +318,7 @@ public class DBFDataWriter extends Node {
                             Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
                 }
             } catch (IllegalArgumentException exception) {
-                status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(exception), Severity.ERROR, this,
+                status.add(new ConfigurationProblem(ExceptionUtils.getMessage(exception), Severity.ERROR, this,
                         Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
             }
         }

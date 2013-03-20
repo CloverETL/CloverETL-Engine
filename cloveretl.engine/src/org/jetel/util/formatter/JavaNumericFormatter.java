@@ -146,7 +146,7 @@ public class JavaNumericFormatter implements NumericFormatter {
 		try {
 			return (BigDecimal) numberFormat.parse(seq.toString());
 		} catch (NumberFormatException e) {
-			throw new ParseException(ExceptionUtils.exceptionChainToMessage(e), -1);
+			throw new ParseException(ExceptionUtils.getMessage(e), -1);
 		}
 	}
 

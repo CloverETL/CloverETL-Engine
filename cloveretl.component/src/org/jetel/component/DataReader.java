@@ -279,13 +279,13 @@ public class DataReader extends Node {
 							((IntegerDataField) logRecord.getField(1))
 									.setValue(bdfe.getFieldNumber() + 1);
 							setCharSequenceToField(bdfe.getRawRecord(), logRecord.getField(2));
-							setCharSequenceToField(ExceptionUtils.exceptionChainToMessage(bdfe), logRecord.getField(3));
+							setCharSequenceToField(ExceptionUtils.getMessage(bdfe), logRecord.getField(3));
 							if (hasFileNameField) {
 								setCharSequenceToField(reader.getSourceName(), logRecord.getField(4));
 							}
 							writeRecord(LOG_PORT, logRecord);
 						} else {
-							logger.warn(ExceptionUtils.exceptionChainToMessage("Error in input source: " + reader.getSourceName(), bdfe));
+							logger.warn(ExceptionUtils.getMessage("Error in input source: " + reader.getSourceName(), bdfe));
 						}
 						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
 							logger.error("DataParser (" + getName()
@@ -599,7 +599,7 @@ public class DataReader extends Node {
     		}
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

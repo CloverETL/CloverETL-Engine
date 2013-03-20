@@ -215,7 +215,7 @@ public class InfobrightDataWriter extends Node {
 		try {
 			chset = Charset.forName(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		} catch (Exception e) {
-			status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE);
+			status.add(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CHARSET_ATTRIBUTE);
 		}
 
 		//check debug file
@@ -258,7 +258,7 @@ public class InfobrightDataWriter extends Node {
 				status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
 				return status;
 			} catch (JetelException e) {
-				status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
+				status.add(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION_ATTRIBUTE);
 				return status;
 			}
 		}        
@@ -291,9 +291,9 @@ public class InfobrightDataWriter extends Node {
 			try {
 				bRecord = createBrighthouseRecord(metadata, dbConnection.getJdbcSpecific(), log);
 			} catch (SQLException e) {//probably table doesn't exist yet
-				status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.WARNING, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
+				status.add(ExceptionUtils.getMessage(e), Severity.WARNING, this, Priority.NORMAL, XML_TABLE_ATTRIBUTE);
 			}catch (Exception e) {
-				status.add(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CLOVER_FIELDS_ATTRIBUTE);
+				status.add(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_CLOVER_FIELDS_ATTRIBUTE);
 			}
 		}
 		return status;
@@ -875,20 +875,20 @@ public class InfobrightDataWriter extends Node {
                     SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){
-				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
+				resultMsg = ExceptionUtils.getMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			}catch (InterruptedException ex){
 				resultCode =  Result.ABORTED;
 			}catch(Exception ex){
-				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
+				resultMsg = ExceptionUtils.getMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			} finally{
 				try {
 					loader.stop();
 				} catch (Exception e) {
-					resultMsg = ExceptionUtils.exceptionChainToMessage(e);
+					resultMsg = ExceptionUtils.getMessage(e);
 					resultCode = Result.ERROR;
 					resultException = e;
 				}
@@ -954,20 +954,20 @@ public class InfobrightDataWriter extends Node {
 					SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){	
-				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
+				resultMsg = ExceptionUtils.getMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			}catch (InterruptedException ex){
 				resultCode = Result.ABORTED;
 			}catch(Exception ex){
-				resultMsg = ExceptionUtils.exceptionChainToMessage(ex);
+				resultMsg = ExceptionUtils.getMessage(ex);
 				resultCode = Result.ERROR;
 				resultException = ex;
 			}finally{
 				try {
 					parser.close();
                 } catch (Exception e) {
-    				resultMsg = ExceptionUtils.exceptionChainToMessage(e);
+    				resultMsg = ExceptionUtils.getMessage(e);
     				resultCode = Result.ERROR;
     				resultException = e;
                 }

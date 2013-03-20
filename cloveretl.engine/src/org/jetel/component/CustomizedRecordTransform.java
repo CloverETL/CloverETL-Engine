@@ -2304,14 +2304,14 @@ class ConstantRule extends Rule {
 				tmp.fromString(source);
 				value = tmp.getValue();
 			} catch (BadDataFormatException e) {
-				error(ExceptionUtils.exceptionChainToMessage(e));
+				error(ExceptionUtils.getMessage(e));
 			}
 		} else {
 			try {
 				tmp.setValue(value);
 				source = tmp.toString();
 			} catch (BadDataFormatException e) {
-				error(ExceptionUtils.exceptionChainToMessage(e));
+				error(ExceptionUtils.getMessage(e));
 			}
 		}
 	}
@@ -2383,7 +2383,7 @@ class ParameterRule extends Rule {
 			tmp.fromString(paramValue);
 			value = tmp.getValue();
 		} catch (BadDataFormatException e) {
-			error(ExceptionUtils.exceptionChainToMessage(e));
+			error(ExceptionUtils.getMessage(e));
 		}
 	}
 

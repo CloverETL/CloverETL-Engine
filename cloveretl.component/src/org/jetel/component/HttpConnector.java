@@ -2455,7 +2455,7 @@ public class HttpConnector extends Node {
         try {
         	tryToInit(true);
         } catch (Exception e) {
-        	status.add("Initialization failed. " + ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL);
+        	status.add("Initialization failed. " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL);
         }
 		
         

@@ -102,7 +102,7 @@ public final class CTLRecordPartitionAdapter extends CTLAbstractTransformAdapter
 			throw new TransformException("Partitioning failed!", exception);
 		}
 
-		onErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return getOutputPortImpl(getOuputPortOnErrorFunction, record, onErrorArguments);

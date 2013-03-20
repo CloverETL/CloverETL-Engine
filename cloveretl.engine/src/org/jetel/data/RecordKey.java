@@ -587,7 +587,7 @@ public class RecordKey {
     		incomparable = new Integer[0];
     		isNull = true;
     	}catch(RuntimeException e) {
-    		problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute); 
+    		problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute); 
     		status.add(problem);
     		incomparable = new Integer[0];
     	}
@@ -600,7 +600,7 @@ public class RecordKey {
     		incomparable = new Integer[0];
     		isNull = true;
     	}catch(RuntimeException e) {
-    		problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute);
+    		problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, component, Priority.NORMAL, masterAttribute);
     		status.add(problem);
     		incomparable = new Integer[0];
     	}

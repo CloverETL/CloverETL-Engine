@@ -104,7 +104,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		this.inputRecord = inputRecord;
 
 		try {
-			initGroupOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception), ExceptionUtils.stackTraceToString(exception), groupAccumulator);
+			initGroupOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception), groupAccumulator);
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Rollup failed!", exception);
@@ -182,7 +182,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		this.inputRecord = inputRecord;
 
 		try {
-			result = updateGroupOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception),
+			result = updateGroupOnErrorDelegate(ExceptionUtils.getMessage(null, exception),
 					ExceptionUtils.stackTraceToString(exception), groupAccumulator);
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
@@ -263,7 +263,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		this.inputRecord = inputRecord;
 
 		try {
-			result = finishGroupOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception),
+			result = finishGroupOnErrorDelegate(ExceptionUtils.getMessage(null, exception),
 					ExceptionUtils.stackTraceToString(exception), groupAccumulator);
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
@@ -349,7 +349,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		this.outputRecords = outputRecords;
 
 		try {
-			result = updateTransformOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception),
+			result = updateTransformOnErrorDelegate(ExceptionUtils.getMessage(null, exception),
 					ExceptionUtils.stackTraceToString(exception), counter, groupAccumulator);
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
@@ -437,7 +437,7 @@ public abstract class CTLRecordRollup extends CTLAbstractTransform implements Re
 		this.outputRecords = outputRecords;
 
 		try {
-			result = transformOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception),
+			result = transformOnErrorDelegate(ExceptionUtils.getMessage(null, exception),
 					ExceptionUtils.stackTraceToString(exception), counter, groupAccumulator);
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails

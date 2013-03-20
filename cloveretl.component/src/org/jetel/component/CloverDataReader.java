@@ -306,7 +306,7 @@ public class CloverDataReader extends Node {
 				tempChannel = FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), url.toString());
     		}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
         } finally {
             try {
                 if (tempChannel != null && tempChannel.isOpen()) {

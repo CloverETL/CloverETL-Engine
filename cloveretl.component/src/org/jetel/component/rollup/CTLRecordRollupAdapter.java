@@ -228,7 +228,7 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
     private Object[] initGroupArguments(Exception exception, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message and stack trace
-	    	groupOnErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+	    	groupOnErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
 	    	groupOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 	    	// if group accumulator is empty we use an empty record for better error reporting in scope of CTL
@@ -298,7 +298,7 @@ public final class CTLRecordRollupAdapter extends CTLAbstractTransformAdapter im
     private Object[] initTransformArguments(Exception exception, int counter, DataRecord groupAccumulator) {
     	if (exception != null) {
     		// provide exception message, stack trace and call counter
-	    	transformOnErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+	    	transformOnErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
 	    	transformOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 	    	transformOnErrorArguments[2] = counter;
 

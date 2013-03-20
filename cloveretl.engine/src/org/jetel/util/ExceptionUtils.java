@@ -81,8 +81,8 @@ public class ExceptionUtils {
      * @param exception converted exception
      * @return resulted overall message
      */
-    public static String exceptionChainToMessage(Throwable exception) {
-    	return exceptionChainToMessage(null, exception);
+    public static String getMessage(Throwable exception) {
+    	return getMessage(null, exception);
     }
 
     /**
@@ -92,7 +92,7 @@ public class ExceptionUtils {
      * @param exception converted exception
      * @return resulted overall message
      */
-    public static String exceptionChainToMessage(String message, Throwable exception) {
+    public static String getMessage(String message, Throwable exception) {
     	return getMessage(new JetelRuntimeException(message, exception), 0);
     }
 
@@ -191,7 +191,7 @@ public class ExceptionUtils {
 	 * @param t
 	 */
 	public static void logException(Logger logger, String message, Throwable t) {
-		logger.error(ExceptionUtils.exceptionChainToMessage(message, t));
+		logger.error(ExceptionUtils.getMessage(message, t));
         logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
 	}
 	
@@ -304,7 +304,7 @@ public class ExceptionUtils {
 	 * @param exception
 	 */
 	public static void logHighlightedException(Logger logger, String message, Throwable exception) {
-		logHighlightedMessage(logger, exceptionChainToMessage(message, exception));
+		logHighlightedMessage(logger, getMessage(message, exception));
 	}
 	
 }

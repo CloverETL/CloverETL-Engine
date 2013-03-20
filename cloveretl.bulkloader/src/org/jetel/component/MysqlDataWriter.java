@@ -971,7 +971,7 @@ public class MysqlDataWriter extends BulkLoader {
 			}
 			
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	Severity.ERROR, this, Priority.NORMAL));
 		}
 		if (ignoreRows != UNUSED_INT && ignoreRows < 0) {
 			status.add(new ConfigurationProblem(XML_IGNORE_ROWS_ATTRIBUTE + " mustn't be less than 0.",	Severity.ERROR,
@@ -1020,7 +1020,7 @@ public class MysqlDataWriter extends BulkLoader {
 			initDataFile();
 			createCommandFile();
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	Severity.ERROR, this, Priority.NORMAL));
 		}
 		deleteTempFiles();
 		return status;

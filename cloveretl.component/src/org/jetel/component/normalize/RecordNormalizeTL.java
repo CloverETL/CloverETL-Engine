@@ -114,7 +114,7 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 			throw new TransformException("Normalization failed!", exception);
 		}
 
-		countOnErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		countOnErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
 		countOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return countImpl(countOnErrorFunction, COUNT_ON_ERROR_FUNCTION_NAME, source, countOnErrorArguments);
@@ -145,7 +145,7 @@ public class RecordNormalizeTL extends AbstractTransformTL implements RecordNorm
 			throw new TransformException("Normalization failed!", exception);
 		}
 
-		transformOnErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		transformOnErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
 		transformOnErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 		transformOnErrorArguments[2].getNumeric().setValue(idx);
 

@@ -108,7 +108,7 @@ public abstract class CTLRecordNormalize extends CTLAbstractTransform implements
 		inputRecord = source;
 
 		try {
-			result = countOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			result = countOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Normalization failed!", exception);

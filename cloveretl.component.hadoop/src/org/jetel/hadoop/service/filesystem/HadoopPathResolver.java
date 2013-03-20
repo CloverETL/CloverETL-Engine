@@ -75,7 +75,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 						HadoopDataInput istream = hconn.open(new URI(inputURI.getPath()));
 						return istream.getDataInputStream();
 					} catch (ComponentNotReadyException e) {
-						log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s",e.getGraphElement().getId(), e.getGraphElement().getName(), ExceptionUtils.exceptionChainToMessage(e)));
+						log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s",e.getGraphElement().getId(), e.getGraphElement().getName(), ExceptionUtils.getMessage(e)));
 						throw new IOException("Cannot connect to HDFS", e);
 					}
 				}
@@ -171,7 +171,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 					}
 					((HadoopConnection)conn).getFileSystemService(); // just testing that we can connect, we don't store the connection
 				} catch (ComponentNotReadyException e) {
-					log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s", e.getGraphElement().getId(), e.getGraphElement().getName(), ExceptionUtils.exceptionChainToMessage(e)));
+					log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s", e.getGraphElement().getId(), e.getGraphElement().getName(), ExceptionUtils.getMessage(e)));
 					throw new IOException("Cannot connect to HDFS", e);
 				}
 				// release connection

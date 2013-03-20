@@ -165,7 +165,7 @@ public abstract class IAuthorityProxy {
 		 * Sets {@link #errMessage} and {@link #errException} based on given {@link Exception}.
 		 */
 		public void setException(Exception e) {
-			errMessage = ExceptionUtils.exceptionChainToMessage(null, e);
+			errMessage = ExceptionUtils.getMessage(null, e);
 			errException = ExceptionUtils.stackTraceToString(e);
 			
 			//try to find caused graph element id

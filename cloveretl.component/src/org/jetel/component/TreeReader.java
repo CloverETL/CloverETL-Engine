@@ -539,7 +539,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				bdfe.setFieldNumber(e.getFieldMetadata().getNumber());
 				bdfe.setFieldName(e.getFieldMetadata().getName());
 				bdfe.setRecordName(e.getFieldMetadata().getDataRecordMetadata().getName());
-				String errorMsg = ExceptionUtils.exceptionChainToMessage(bdfe) + "; output port: " + e.getPortIndex();
+				String errorMsg = ExceptionUtils.getMessage(bdfe) + "; output port: " + e.getPortIndex();
 				if (!sourceIterator.isSingleSource()) {
 					errorMsg += "; input source: " + sourceIterator.getCurrentFileName();
 				}
@@ -559,7 +559,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		errorLogRecord.getField(i++).setValue(e.getFieldMetadata().getNumber() + 1);
 		setCharSequenceToField(e.getFieldMetadata().getName(), errorLogRecord.getField(i++));
 		setCharSequenceToField(e.getCause().getOffendingValue(), errorLogRecord.getField(i++));
-		setCharSequenceToField(ExceptionUtils.exceptionChainToMessage(e.getCause()), errorLogRecord.getField(i++));
+		setCharSequenceToField(ExceptionUtils.getMessage(e.getCause()), errorLogRecord.getField(i++));
 		if (errorLogRecord.getNumFields() > i) {
 			setCharSequenceToField(sourceIterator.getCurrentFileName(), errorLogRecord.getField(i++));
 		}

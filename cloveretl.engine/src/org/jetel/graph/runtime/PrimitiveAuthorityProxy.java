@@ -124,14 +124,14 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
     		} catch (ComponentNotReadyException e) {
             	rr.endTime = new Date(System.currentTimeMillis());
             	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-    			rr.errMessage = ExceptionUtils.exceptionChainToMessage("Error during graph initialization.", e);           
+    			rr.errMessage = ExceptionUtils.getMessage("Error during graph initialization.", e);           
             	rr.errException = ExceptionUtils.stackTraceToString(e);
             	rr.status = Result.ERROR;
             	return rr;
             } catch (RuntimeException e) {
             	rr.endTime = new Date(System.currentTimeMillis());
             	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-            	rr.errMessage = ExceptionUtils.exceptionChainToMessage("Error during graph initialization.", e);           
+            	rr.errMessage = ExceptionUtils.getMessage("Error during graph initialization.", e);           
             	rr.errException = ExceptionUtils.stackTraceToString(e);
             	rr.status = Result.ERROR;
             	return rr;
@@ -154,14 +154,14 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
     		} catch (InterruptedException e) {
             	rr.endTime = new Date(System.currentTimeMillis());
             	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-    			rr.errMessage = ExceptionUtils.exceptionChainToMessage("Graph was unexpectedly interrupted !", e);            
+    			rr.errMessage = ExceptionUtils.getMessage("Graph was unexpectedly interrupted !", e);            
             	rr.errException = ExceptionUtils.stackTraceToString(e);
             	rr.status = Result.ERROR;
             	return rr;
     		} catch (ExecutionException e) {
             	rr.endTime = new Date(System.currentTimeMillis());
             	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-    			rr.errMessage = ExceptionUtils.exceptionChainToMessage("Error during graph processing !", e);            
+    			rr.errMessage = ExceptionUtils.getMessage("Error during graph processing !", e);            
             	rr.errException = ExceptionUtils.stackTraceToString(e);
             	rr.status = Result.ERROR;
             	return rr;
@@ -204,7 +204,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         } catch (IOException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-        	rr.errMessage = ExceptionUtils.exceptionChainToMessage("Error - graph definition file can't be read!", e);
+        	rr.errMessage = ExceptionUtils.getMessage("Error - graph definition file can't be read!", e);
         	rr.errException = ExceptionUtils.stackTraceToString(e);
         	rr.status = Result.ERROR;
         	return rr;
@@ -220,14 +220,14 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         } catch (XMLConfigurationException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-        	rr.errMessage = ExceptionUtils.exceptionChainToMessage("Error in reading graph from XML!", e);
+        	rr.errMessage = ExceptionUtils.getMessage("Error in reading graph from XML!", e);
         	rr.errException = ExceptionUtils.stackTraceToString(e);
         	rr.status = Result.ERROR;
         	return rr;
         } catch (GraphConfigurationException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
-        	rr.errMessage = ExceptionUtils.exceptionChainToMessage("Error - graph's configuration invalid!", e);
+        	rr.errMessage = ExceptionUtils.getMessage("Error - graph's configuration invalid!", e);
         	rr.errException = ExceptionUtils.stackTraceToString(e);
         	rr.status = Result.ERROR;
         	return rr;

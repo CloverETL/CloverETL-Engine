@@ -585,7 +585,7 @@ public class DBExecute extends Node {
 					errRecord.getField(errorCodeFieldNum).setValue(e.getErrorCode());
 				}
 				if (errMessFieldNum != -1) {
-					errRecord.getField(errMessFieldNum).setValue(ExceptionUtils.exceptionChainToMessage(e));
+					errRecord.getField(errMessFieldNum).setValue(ExceptionUtils.getMessage(e));
 				}
 				errPort.writeRecord(errRecord);
 			}else if (errorLog != null){
@@ -593,10 +593,10 @@ public class DBExecute extends Node {
 				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
 				errorLog.write(String.valueOf(e.getErrorCode()));
 				errorLog.write(Defaults.Component.KEY_FIELDS_DELIMITER);
-				errorLog.write(ExceptionUtils.exceptionChainToMessage(e));
+				errorLog.write(ExceptionUtils.getMessage(e));
 				errorLog.write("\n");
 			}else{
-				logger.warn(ExceptionUtils.exceptionChainToMessage(e));
+				logger.warn(ExceptionUtils.getMessage(e));
 			}
 		}else{
 			if (errorLog != null){
@@ -999,7 +999,7 @@ public class DBExecute extends Node {
             	status.add(new ConfigurationProblem("Output port must be defined when output parameters are set.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
             }
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

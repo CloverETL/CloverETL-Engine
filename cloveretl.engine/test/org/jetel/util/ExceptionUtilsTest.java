@@ -42,89 +42,89 @@ public class ExceptionUtilsTest extends CloverTestCase {
 	}
 
 	public void testExceptionChainToMessage() {
-		assertEquals("", ExceptionUtils.exceptionChainToMessage(null, null));
+		assertEquals("", ExceptionUtils.getMessage(null, null));
 		
-		assertEquals("", ExceptionUtils.exceptionChainToMessage("", null));
+		assertEquals("", ExceptionUtils.getMessage("", null));
 		
-		assertEquals("abc", ExceptionUtils.exceptionChainToMessage("abc", null));
+		assertEquals("abc", ExceptionUtils.getMessage("abc", null));
 		
-		assertEquals("", ExceptionUtils.exceptionChainToMessage(null, new Exception()));
+		assertEquals("", ExceptionUtils.getMessage(null, new Exception()));
 
-		assertEquals("", ExceptionUtils.exceptionChainToMessage("", new Exception()));
+		assertEquals("", ExceptionUtils.getMessage("", new Exception()));
 
-		assertEquals("abc", ExceptionUtils.exceptionChainToMessage("abc", new Exception()));
+		assertEquals("abc", ExceptionUtils.getMessage("abc", new Exception()));
 
-		assertEquals("first", ExceptionUtils.exceptionChainToMessage(null, new Exception("first")));
+		assertEquals("first", ExceptionUtils.getMessage(null, new Exception("first")));
 
-		assertEquals("first", ExceptionUtils.exceptionChainToMessage("", new Exception("first")));
+		assertEquals("first", ExceptionUtils.getMessage("", new Exception("first")));
 		
-		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first")));
+		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first")));
 
-		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception())));
+		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception())));
 
-		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception(""))));
+		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception(""))));
 
-		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first"))));
+		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first"))));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("second"))));
+		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("second"))));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception(null, new Exception("second")))));
+		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception(null, new Exception("second")))));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("", new Exception("second")))));
+		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("", new Exception("second")))));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new Exception("second")))));
+		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new Exception("second")))));
 
-		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception())))));
+		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception())))));
 
-		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new CompoundException("", new Exception())))));
+		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("", new Exception())))));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception("second"))))));
+		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception("second"))))));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception())))));
+		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception())))));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""))))));
+		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""))))));
 		
-		assertEquals("abc\n first\n  second\n   third", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception("third"))))));
+		assertEquals("abc\n first\n  second\n   third", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception("third"))))));
 
-		assertEquals("abc\n first\n  second\n   third\n   forth", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception("third"), new Exception("forth"))))));
+		assertEquals("abc\n first\n  second\n   third\n   forth", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception("third"), new Exception("forth"))))));
 
-		assertEquals("abc\n first\n  third\n  forth", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception("third"), new Exception("forth"))))));
+		assertEquals("abc\n first\n  third\n  forth", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException(new Exception("third"), new Exception("forth"))))));
 
-		assertEquals("abc\n first\n  second\n   forth", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""), new Exception("forth"))))));
+		assertEquals("abc\n first\n  second\n   forth", ExceptionUtils.getMessage("abc", new Exception("first", new Exception("first", new CompoundException("second", new Exception(""), new Exception("forth"))))));
 
 		assertEquals("abc\n first\n  second\n  second2\n   third\n    third1\n    third2\n     third3\n   forth", 
-				ExceptionUtils.exceptionChainToMessage("abc", 
+				ExceptionUtils.getMessage("abc", 
 						new Exception("first", 
 								new Exception("first", 
 										new CompoundException("second\nsecond2", 
 												new CompoundException("third", new Exception("third1"), new Exception("third2", new Exception("third3"))), 
 												new Exception("forth"))))));
 
-		assertEquals("Unexpected null value.", ExceptionUtils.exceptionChainToMessage(null, new NullPointerException()));
+		assertEquals("Unexpected null value.", ExceptionUtils.getMessage(null, new NullPointerException()));
 		
-		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new NullPointerException()));
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.getMessage("abc", new NullPointerException()));
 
-		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new NullPointerException("first")));
+		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new NullPointerException("first")));
 
-		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new NullPointerException("")));
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.getMessage("abc", new NullPointerException("")));
 
-		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new NullPointerException("null")));
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.getMessage("abc", new NullPointerException("null")));
 
-		assertEquals("abc\n first\n  Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new NullPointerException("null"))));
+		assertEquals("abc\n first\n  Unexpected null value.", ExceptionUtils.getMessage("abc", new Exception("first", new NullPointerException("null"))));
 
-		assertEquals("abc", ExceptionUtils.exceptionChainToMessage("abc", new Exception()));
+		assertEquals("abc", ExceptionUtils.getMessage("abc", new Exception()));
 
-		assertEquals("abc", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new Exception())));
+		assertEquals("abc", ExceptionUtils.getMessage("abc", new Exception(new Exception())));
 		
-		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new Exception("first"))));
+		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception(new Exception("first"))));
 
-		assertEquals("abc\n first", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new NullPointerException("first"))));
+		assertEquals("abc\n first", ExceptionUtils.getMessage("abc", new Exception(new NullPointerException("first"))));
 
-		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new NullPointerException())));
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.getMessage("abc", new Exception(new NullPointerException())));
 
-		assertEquals("abc\n first\n  second", ExceptionUtils.exceptionChainToMessage("abc", new Exception("first", new Exception(new Exception(new Exception(new Exception("second")))))));
+		assertEquals("abc\n first\n  second", ExceptionUtils.getMessage("abc", new Exception("first", new Exception(new Exception(new Exception(new Exception("second")))))));
 
-		assertEquals("abc\n Unexpected null value.", ExceptionUtils.exceptionChainToMessage("abc", new Exception(new Exception(new NullPointerException()))));
+		assertEquals("abc\n Unexpected null value.", ExceptionUtils.getMessage("abc", new Exception(new Exception(new NullPointerException()))));
 	}
 
 	public void testInstanceOf() {

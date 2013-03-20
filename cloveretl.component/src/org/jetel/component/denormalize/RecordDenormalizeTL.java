@@ -108,7 +108,7 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		onErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
 		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return appendImpl(appendOnErrorFunction, inRecord, onErrorArguments);
@@ -130,7 +130,7 @@ public class RecordDenormalizeTL extends AbstractTransformTL implements RecordDe
 			throw new TransformException("Denormalization failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		onErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
 		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return transformImpl(transformFunction, outRecord, onErrorArguments);

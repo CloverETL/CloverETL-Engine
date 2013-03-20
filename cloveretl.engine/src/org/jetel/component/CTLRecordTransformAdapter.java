@@ -111,7 +111,7 @@ public final class CTLRecordTransformAdapter extends CTLAbstractTransformAdapter
 			throw new TransformException("Transform failed!", exception);
 		}
 
-		onErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return transformImpl(transformOnErrorFunction, inputRecords, outputRecords, onErrorArguments);
