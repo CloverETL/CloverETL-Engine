@@ -1082,7 +1082,7 @@ public final class TransformationGraph extends GraphElement {
 	        	try {
 	        		connection.checkConfig(status);
 	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, connection, Priority.HIGH);
+	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, connection, Priority.HIGH);
 	        		problem.setCauseException(e);
 	        		status.add(problem);
 	        	}
@@ -1093,7 +1093,7 @@ public final class TransformationGraph extends GraphElement {
 	        	try {
 	        		lookupTable.checkConfig(status);
 	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
+	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, lookupTable, Priority.HIGH);
 	        		problem.setCauseException(e);
 	        		status.add(problem);
 	        	}
@@ -1104,7 +1104,7 @@ public final class TransformationGraph extends GraphElement {
 	        	try {
 	        		sequence.checkConfig(status);
 	        	} catch (Exception e) {
-	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, sequence, Priority.HIGH);
+	        		ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, sequence, Priority.HIGH);
 	        		problem.setCauseException(e);
 	        		status.add(problem);
 	        	}

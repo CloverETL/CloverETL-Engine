@@ -102,7 +102,7 @@ public class RecordTransformTL extends AbstractTransformTL implements RecordTran
 			throw new TransformException("Transform failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		onErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
 		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return transformImpl(transformOnErrorFunction, inputRecords, outputRecords, onErrorArguments);

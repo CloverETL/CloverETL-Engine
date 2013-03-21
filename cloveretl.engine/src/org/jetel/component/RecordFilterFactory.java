@@ -25,6 +25,7 @@ import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangParser;
@@ -39,6 +40,11 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class RecordFilterFactory {
 
+	public static RecordFilter createFilter(String className, Node node) throws ComponentNotReadyException {
+		
+		return RecordTransformFactory.loadClassInstance(className, RecordFilter.class, node);
+	}
+	
 	public static RecordFilter createFilter(String filterExpression, DataRecordMetadata metadata, TransformationGraph graph, String id, Log logger) throws ComponentNotReadyException {
 		RecordFilter filter;
 		

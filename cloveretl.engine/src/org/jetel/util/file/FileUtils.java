@@ -255,34 +255,26 @@ public class FileUtils {
     }
     
     private static Pattern DRIVE_LETTER_PATTERN = Pattern.compile("\\A\\p{Alpha}:[/\\\\]");
+    private static Pattern PROTOCOL_PATTERN = Pattern.compile("\\A(\\p{Alnum}+):");
     
     private static final String PORT_PROTOCOL = "port";
     private static final String DICTIONARY_PROTOCOL = "dict";
     
-    /**
-     * Returns <code>true</code> if <code>fileURL</code> specifies a protocol.
-     * On Windows, single letters are not considered protocol names.
-     * 
-     * @param fileURL
-     * @return
-     */
-    private static boolean isUnknownProtocol(String fileURL) {
-    	if (fileURL != null) {
-    		try {
-    			URL url = new URL(null, fileURL, GENERIC_HANDLER);
-    			String protocol = url.getProtocol();
-    			if (!protocol.isEmpty() && !protocol.equals(PORT_PROTOCOL) && !protocol.equals(DICTIONARY_PROTOCOL)) {
-    				if (protocol.length() == 1 && PlatformUtils.isWindowsPlatform()) {
-    					return !DRIVE_LETTER_PATTERN.matcher(fileURL).find(); 
-    				}
-    				
-    				return true;
-    			}
-    		} catch (MalformedURLException ex) {
+    private static String getProtocol(String fileURL) {
+    	if (fileURL == null) {
+    		throw new NullPointerException("fileURL is null");
+    	}
+    	Matcher m = PROTOCOL_PATTERN.matcher(fileURL); 
+    	if (m.find()) {
+    		String protocol = m.group(1);
+    		if ((protocol.length() == 1) && PlatformUtils.isWindowsPlatform() && DRIVE_LETTER_PATTERN.matcher(fileURL).find()) {
+    			return null;
+    		} else {
+    			return protocol;
     		}
     	}
 		
-		return false;
+		return null;
     }
     
     /**
@@ -344,20 +336,26 @@ public class FileUtils {
 			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, new ArchiveURLStreamHandler(contextURL));
 		}
 		
-		// throw and exception if fileURL specifies a protocol (drive letters are ignored)
-		if (isUnknownProtocol(fileURL)) {
+		String protocol = getProtocol(fileURL);
+		if (DICTIONARY_PROTOCOL.equalsIgnoreCase(protocol) || PORT_PROTOCOL.equalsIgnoreCase(protocol)) {
+			return new URL(contextURL, fileURL, GENERIC_HANDLER);
+		} else if (!StringUtils.isEmpty(protocol)) {
 			// unknown protocol will throw an exception,
 			// standard Java protocols will be ignored;
 			// all Clover-specific protocols must be checked before this call
 			new URL(fileURL);
 		}
-
-		// file url
-		String prefix = FILE_PROTOCOL + ":";
-		if (addStrokePrefix && new File(fileURL).isAbsolute() && !fileURL.startsWith("/")) {
-			prefix += "/";
+		
+		if (StringUtils.isEmpty(protocol)) {
+			// file url
+			String prefix = FILE_PROTOCOL + ":";
+			if (addStrokePrefix && new File(fileURL).isAbsolute() && !fileURL.startsWith("/")) {
+				prefix += "/";
+			}
+	        return new URL(contextURL, prefix + fileURL);
 		}
-        return new URL(contextURL, prefix + fileURL);
+
+		return new URL(contextURL, fileURL);
     }
     
     /**
@@ -1055,6 +1053,7 @@ public class FileUtils {
     			connection, 
     			url.getUserInfo(), 
     			URLConnectionRequest.URL_CONNECTION_AUTHORIZATION);
+    	// FIXME does not work for HTTPS via proxy
     	connection = URLConnectionRequest.getAuthorizedConnection( // set proxy authentication
         		connection,
         		proxyUserInfo, 
@@ -1167,10 +1166,18 @@ public class FileUtils {
 		return SandboxUrlUtils.isSandboxUrl(input);
 	}
 	
+	private static boolean isDictionary(String input) {
+		return input.startsWith(DICTIONARY_PROTOCOL);
+	}
+	
+	private static boolean isPort(String input) {
+		return input.startsWith(PORT_PROTOCOL);
+	}
+	
 	public static boolean isLocalFile(URL contextUrl, String input) {
 		if (input.startsWith("file:")) {
 			return true;
-		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input)) {
+		} else if (isRemoteFile(input) || isConsole(input) || isSandbox(input) || isArchive(input) || isDictionary(input) || isPort(input)) {
 			return false;
 		} else {
 			for (CustomPathResolver resolver: customPathResolvers) {

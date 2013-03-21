@@ -478,7 +478,7 @@ public class DataWriter extends Node {
                             Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
                 }
             } catch (IllegalArgumentException exception) {
-                status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(exception), Severity.ERROR, this,
+                status.add(new ConfigurationProblem(ExceptionUtils.getMessage(exception), Severity.ERROR, this,
                         Priority.NORMAL, XML_EXCLUDE_FIELDS_ATTRIBUTE));
             }
         }

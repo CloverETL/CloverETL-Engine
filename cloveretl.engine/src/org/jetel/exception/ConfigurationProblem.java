@@ -21,7 +21,6 @@ package org.jetel.exception;
 import org.apache.commons.logging.Log;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
-import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
@@ -142,7 +141,7 @@ public class ConfigurationProblem {
 	 */
 	public ConfigurationException toException() {
 		if (getSeverity() == Severity.ERROR) {
-			return new ConfigurationException(createMessage(), getCauseException(), getGraphElementID());
+			return new ConfigurationException(message, getCauseException(), getGraphElementID(), getGraphElementName(), getAttributeName());
 		} else {
 			return null;
 		}
@@ -150,23 +149,8 @@ public class ConfigurationProblem {
 	
 	@Override
     public String toString() {
-		String result = createMessage();
-    	if (getCauseException() != null) {
-    		result += "\n" + ExceptionUtils.stackTraceToString(getCauseException());
-    	}
-    	
-    	return result;
+		ConfigurationException e = new ConfigurationException(message, getCauseException(), getGraphElementID(), getGraphElementName(), getAttributeName());
+		return ExceptionUtils.stackTraceToString(e);
     }
-	
-	private String createMessage() {
-		StringBuilder result = new StringBuilder();
-    	if (getGraphElementID() != null) {
-    		result.append("Error in " + GraphElement.identifiersToString(getGraphElementID(), getGraphElementName()) + (getAttributeName() != null ? ("." + getAttributeName()) : ""));
-    	}
-    	if (message != null) {
-    		result.append(" - " + ExceptionUtils.exceptionChainToMessage(message, causeException));
-    	}
-    	return result.toString();
-	}
 	
 }

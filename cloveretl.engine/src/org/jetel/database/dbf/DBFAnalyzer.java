@@ -321,7 +321,7 @@ public class DBFAnalyzer {
 			}
 			DataRecordMetadataXMLReaderWriter.write(dbf.getCloverMetadata(), outstream);
 		}catch(IOException ex){
-			System.err.println(ExceptionUtils.exceptionChainToMessage(ex));
+			System.err.println(ExceptionUtils.getMessage(ex));
 			System.exit(-1);
 		}
 		System.exit(0);

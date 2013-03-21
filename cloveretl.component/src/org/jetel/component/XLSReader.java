@@ -477,7 +477,7 @@ public class XLSReader extends Node {
 				status.add(new ConfigurationProblem("Data source issue - cannot be closed.", Severity.ERROR, this, Priority.NORMAL));
 			}
         } catch (IllegalArgumentException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.ERROR,
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR,
                     this, ConfigurationStatus.Priority.NORMAL);
             problem.setAttributeName(XML_SHEETNUMBER_ATTRIBUTE);
             status.add(problem);
@@ -606,7 +606,7 @@ public class XLSReader extends Node {
                     broadcastEOF();
                     throw bdfe;
                 } else {
-                    logger.info(ExceptionUtils.exceptionChainToMessage(bdfe));
+                    logger.info(ExceptionUtils.getMessage(bdfe));
                     if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
                         logger.error("DataParser (" + getName() + "): Max error count exceeded.");
                         broadcastEOF();

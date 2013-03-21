@@ -21,6 +21,7 @@ package org.jetel.connection.jdbc.specific.conn;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -105,4 +106,10 @@ public class SybaseConnection extends BasicSqlConnection {
 		return s.executeQuery("EXECUTE sp_tables @table_type = \"'TABLE', 'VIEW'\"");
 	}
 
+	@Override
+	public ResultSetMetaData getColumns(String schema, String owner, String table) throws SQLException {
+		Statement s = connection.createStatement();
+		s.execute("USE " + schema);		
+		return s.executeQuery("EXECUTE sp_columns \"" + table + "\", null, null, \"%\"").getMetaData();
+	}
 }

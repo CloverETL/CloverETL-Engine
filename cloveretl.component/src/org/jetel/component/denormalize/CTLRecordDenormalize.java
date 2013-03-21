@@ -109,7 +109,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 		inputRecord = inRecord;
 
 		try {
-			result = appendOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			result = appendOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Denormalization failed!", exception);
@@ -180,7 +180,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 		outputRecord = outRecord;
 
 		try {
-			result = transformOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			result = transformOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Denormalization failed!", exception);

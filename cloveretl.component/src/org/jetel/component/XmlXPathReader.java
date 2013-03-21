@@ -259,7 +259,7 @@ public class XmlXPathReader extends Node {
 			        if(policyType == PolicyType.STRICT) {
 			            throw bdfe;
 			        } else {
-			            logger.info(ExceptionUtils.exceptionChainToMessage(bdfe));
+			            logger.info(ExceptionUtils.getMessage(bdfe));
 			        }
 			    }
 			    SynchronizeUtils.cloverYield();

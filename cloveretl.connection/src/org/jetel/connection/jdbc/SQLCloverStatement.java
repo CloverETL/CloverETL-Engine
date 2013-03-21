@@ -307,7 +307,7 @@ public class SQLCloverStatement {
 		try{
 			init();
 		}catch (Exception e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, element, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, element, Priority.NORMAL));
 			return status;
 		}
 		if (record != null) {
@@ -323,7 +323,7 @@ public class SQLCloverStatement {
 		try {
 			prepareMapping(outRecord);
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, element, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, element, Priority.NORMAL));
 		}finally{//"reset" mapping
 			cloverOutputFieldsIndex = null;
 		}

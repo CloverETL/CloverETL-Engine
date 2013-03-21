@@ -123,7 +123,7 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 		int result = 0;
 
 		try {
-			result = getOutputPortOnErrorDelegate(ExceptionUtils.exceptionChainToMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
+			result = getOutputPortOnErrorDelegate(ExceptionUtils.getMessage(null, exception), ExceptionUtils.stackTraceToString(exception));
 		} catch (UnsupportedOperationException ex) {
 			// no custom error handling implemented, throw an exception so the transformation fails
 			throw new TransformException("Partitioning failed!", exception);

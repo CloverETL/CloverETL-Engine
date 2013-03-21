@@ -399,14 +399,14 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 			status.add(new ConfigurationProblem("Key metadata are null.", Severity.WARNING, this, Priority.NORMAL, XML_LOOKUP_KEY));
 			indexKey = null; // we have to create it once again in init method after creating metadata from stub
 		} catch (RuntimeException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_KEY));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_KEY));
 		}
 
 		if (fileURL != null) {
 			try {
 				FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), fileURL);
 			} catch (IOException e) {
-				status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL));
+				status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILE_URL));
 			}
 		}
 

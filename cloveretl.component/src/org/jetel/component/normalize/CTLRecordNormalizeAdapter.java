@@ -112,7 +112,7 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
 			throw new TransformException("Normalizer failed!", exception);
 		}
 
-		countOnErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+		countOnErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
 		countOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return countImpl(countOnErrorFunction, source, countOnErrorArguments);
@@ -146,7 +146,7 @@ public final class CTLRecordNormalizeAdapter extends CTLAbstractTransformAdapter
 			throw new TransformException("Normalizer failed!", exception);
 		}
 
-		transformOnErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+		transformOnErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
 		transformOnErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 		transformOnErrorArguments[2] = idx;
 

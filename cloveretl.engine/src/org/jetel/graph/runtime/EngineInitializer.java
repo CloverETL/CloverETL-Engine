@@ -262,12 +262,10 @@ public class EngineInitializer {
 		logger.info("Checking graph configuration...");
 		ConfigurationStatus status = graph.checkConfig(null);
 		if (status.isError()) {
-			logger.error("Graph configuration is invalid.");
-			status.log();
+			logger.warn("Graph configuration is invalid.");
 			throw new ComponentNotReadyException(graph, "Graph configuration is invalid.", status.toException());
 		} else {
 			logger.info("Graph configuration is valid.");
-			status.log();
 		}
 	}
 	

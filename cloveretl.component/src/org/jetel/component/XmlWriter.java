@@ -525,7 +525,7 @@ public class XmlWriter extends Node {
 						portDefinition.dataRecords.add(record);
 					}
 				} catch (InterruptedException e) {
-					logger.error(getId() + ": thread forcibly aborted", e);
+					logger.debug(getId() + ": thread forcibly aborted", e);
 					return;
 				} catch (Exception e) {
 					logger.error(getId() + ": thread failed", e);
@@ -703,7 +703,7 @@ public class XmlWriter extends Node {
 				try {
 					portReaders[idx].join(1000);
 				} catch (InterruptedException e) {
-					logger.warn(getId() + " thread interrupted, it will interrupt child threads", e);
+					logger.debug(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}// while
@@ -1266,7 +1266,7 @@ public class XmlWriter extends Node {
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage("Can't parse XML mapping schema.", e), Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage("Can't parse XML mapping schema.", e), Severity.ERROR, this, Priority.NORMAL));
 		}
         
 		//...

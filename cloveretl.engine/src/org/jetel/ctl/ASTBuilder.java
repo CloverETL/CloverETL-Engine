@@ -478,7 +478,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			}
 		} catch (Exception e) {
 			// underlying lookup cannot be initialized
-			error(node, ExceptionUtils.exceptionChainToMessage("Lookup table has configuration error", e));
+			error(node, ExceptionUtils.getMessage("Lookup table has configuration error", e));
 			node.setType(TLType.ERROR);
 			return node;
 		} 
@@ -529,7 +529,7 @@ public class ASTBuilder extends NavigatingVisitor {
 				return node;
 			} catch (ComponentNotReadyException e) {
 				// underlying lookup is misconfigured
-				error(node, ExceptionUtils.exceptionChainToMessage("Lookup table has configuration errors", e));
+				error(node, ExceptionUtils.getMessage("Lookup table has configuration errors", e));
 				node.setType(TLType.ERROR);
 				return node;
 			}
@@ -869,11 +869,11 @@ public class ASTBuilder extends NavigatingVisitor {
 		} catch (ParseException e) {
 			switch (lit.getTokenKind()) {
 			case TransformLangParserConstants.DATE_LITERAL:
-				errorMessage = ExceptionUtils.exceptionChainToMessage(e);
+				errorMessage = ExceptionUtils.getMessage(e);
 				hint = "Date literal must match format pattern 'YYYY-MM-dd' and has to be valid date value.";
 				break;
 			case TransformLangParserConstants.DATETIME_LITERAL:
-				errorMessage = ExceptionUtils.exceptionChainToMessage(e);
+				errorMessage = ExceptionUtils.getMessage(e);
 				hint = "Date-time literal must match format pattern 'YYYY-MM-DD HH:MM:SS' and has to be valid date-time value.";
 				break;
 			default:

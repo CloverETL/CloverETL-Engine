@@ -94,7 +94,7 @@ public class CTLRecordGenerateAdapter extends CTLAbstractTransformAdapter implem
 			throw new TransformException("Generate failed!", exception);
 		}
 
-		onErrorArguments[0] = ExceptionUtils.exceptionChainToMessage(null, exception);
+		onErrorArguments[0] = ExceptionUtils.getMessage(null, exception);
 		onErrorArguments[1] = ExceptionUtils.stackTraceToString(exception);
 
 		return generateImpl(generateOnErrorFunction, outputRecords, onErrorArguments);

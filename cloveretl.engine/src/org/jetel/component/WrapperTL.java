@@ -158,10 +158,10 @@ public class WrapperTL {
             parseTree = parser.Start();
             parseTree.init();
         }catch(ParseException ex){
-            errorMessage = ExceptionUtils.exceptionChainToMessage(ex);
+            errorMessage = ExceptionUtils.getMessage(ex);
             throw new ComponentNotReadyException(ex);
         }catch(Exception ex){
-            errorMessage = ExceptionUtils.exceptionChainToMessage(ex);
+            errorMessage = ExceptionUtils.getMessage(ex);
             throw new ComponentNotReadyException(ex);
         }
         
@@ -188,7 +188,7 @@ public class WrapperTL {
         try{
             executor.visit(parseTree,null);
         }catch (Exception ex){
-            errorMessage = ExceptionUtils.exceptionChainToMessage(ex);
+            errorMessage = ExceptionUtils.getMessage(ex);
             throw new ComponentNotReadyException(ex);
         }
     	
