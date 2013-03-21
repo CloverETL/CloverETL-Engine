@@ -1,0 +1,4 @@
+#Tue Mar 19 20:02:57 CET 2013
+HADOOP_JOBTRACKER_HOST=jobtracker.yourhost.com
+HADOOP_HIVE_URL=jdbc\:hive\://hive.yourhost.com\:10000/default
+HADOOP_NAMENODE_HOST=namenode.yourhost.com

@@ -45,12 +45,12 @@ public class SimpleThreadManager implements IThreadManager {
 	 * @see org.jetel.graph.runtime.IThreadManager#executeWatchDog(org.jetel.graph.runtime.WatchDog)
 	 */
 	@Override
-	public Future<Result> executeWatchDog(WatchDog watchDog) {
-		FutureTask<Result> futureTask = new FutureTask<Result>(watchDog); 
-		Thread watchdogThread = new Thread(futureTask, "WatchDog");
+	public CloverFuture executeWatchDog(WatchDog watchDog) {
+		CloverFutureImpl cloverFuture = new CloverFutureImpl(watchDog); 
+		Thread watchdogThread = new Thread(cloverFuture, "WatchDog");
 		watchdogThread.start();
 		
-		return futureTask;
+		return cloverFuture;
 	}
 
 	/* (non-Javadoc)
@@ -137,6 +137,24 @@ public class SimpleThreadManager implements IThreadManager {
 	@Override
 	public void freeNow() {
 		// DO NOTHING
+	}
+
+	/**
+	 * {@link FutureTask} decorated by {@link WatchDog} instance.
+	 */
+	private class CloverFutureImpl extends FutureTask<Result> implements CloverFuture {
+		private WatchDog watchDog;
+		
+		public CloverFutureImpl(WatchDog watchDog) {
+			super(watchDog);
+			
+			this.watchDog = watchDog;
+		}
+		
+		@Override
+		public WatchDog getWatchDog() {
+			return watchDog;
+		}
 	}
 
 }

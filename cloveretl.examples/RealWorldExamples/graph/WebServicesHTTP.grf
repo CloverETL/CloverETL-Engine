@@ -43,7 +43,7 @@ This graph shows a Weather Forecast web service being called.
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/SOAPWeatherRequest.xml " guiHeight="103" guiName="Get SOAP Request" guiWidth="165" guiX="44" guiY="26" id="DATA_READER0" type="DATA_READER">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/SOAPWeatherRequest.xml" guiHeight="103" guiName="Get SOAP Request" guiWidth="165" guiX="44" guiY="26" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[XML SOAP request is passed into the graph]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="103" guiName="Make SOAP Call" guiWidth="145" guiX="252" guiY="81" headerProperties="Content-Type=application/soap+xml&#10;" id="HTTP_CONNECTOR0" inputField="XMLString" outputField="XMLString" requestMethod="POST" responseAsFileName="false" type="HTTP_CONNECTOR">

@@ -92,6 +92,11 @@ public abstract class WritableContainer extends BaseWritable {
 			child.setParentContainer(this);
 		}
 	}
+	
+	public void addChild(WritableValue value) {
+		addChild((Writable)value);
+		value.writeNull = writeNull;
+	}
 
 	public void addAttribute(WritableAttribute element) {
 		WritableAttribute[] newArray = new WritableAttribute[attributes.length + 1];

@@ -267,7 +267,7 @@ public class XmlSaxParser {
 			try {
 				mappingResult = mappingParser.parseMapping(nodeXML);
 			} catch (XMLMappingDefinitionParseException e) {
-				return Collections.singletonList(ExceptionUtils.exceptionChainToMessage(e));
+				return Collections.singletonList(ExceptionUtils.getMessage(e));
 			}
 			
 			if (!mappingResult.isSuccessful()) {

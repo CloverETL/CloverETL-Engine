@@ -192,7 +192,7 @@ public class DBFDataReader extends Node {
 					if (policyType == PolicyType.STRICT) {
 						throw bdfe;
 					} else {
-						logger.info(ExceptionUtils.exceptionChainToMessage(bdfe));
+						logger.info(ExceptionUtils.getMessage(bdfe));
 					}
 				}
 				SynchronizeUtils.cloverYield();
@@ -418,7 +418,7 @@ public class DBFDataReader extends Node {
     		}
             reader.checkConfig(metadata);
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

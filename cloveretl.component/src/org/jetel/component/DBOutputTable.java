@@ -719,10 +719,10 @@ public class DBOutputTable extends Node {
 				} catch(SQLException ex) {
 					countError++;
 					exception = ex;
-					errmes = "Exeption thrown by: " + statement[i].getQuery() + ". Message: " + ExceptionUtils.exceptionChainToMessage(ex);
+					errmes = "Exeption thrown by: " + statement[i].getQuery() + ". Message: " + ExceptionUtils.getMessage(ex);
 					SQLException chain = ex.getNextException();
 					while (chain != null) {
-						errmes += "\n  Caused by: " + ExceptionUtils.exceptionChainToMessage(chain);
+						errmes += "\n  Caused by: " + ExceptionUtils.getMessage(chain);
 						chain = chain.getNextException();
 					}
 
@@ -846,11 +846,11 @@ public class DBOutputTable extends Node {
 				}catch(SQLException ex){
 	               countError++;
 	               exception = ex;
-	               errmes = "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.exceptionChainToMessage(ex);
+	               errmes = "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.getMessage(ex);
 	               //for this record statement won't be executed 
 	               SQLException chain = ex.getNextException();
 	               while(chain!=null) {
-	                 errmes += "\n  Caused by: "+ExceptionUtils.exceptionChainToMessage(chain);
+	                 errmes += "\n  Caused by: "+ExceptionUtils.getMessage(chain);
 	                 chain = chain.getNextException();
 	               }
 					if (rejectedPort != null) {
@@ -952,10 +952,10 @@ public class DBOutputTable extends Node {
 				statement[statementCount].clearBatch();
 				exceptions[statementCount] = ex;
 				exception = ex;
-				errmes += "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.exceptionChainToMessage(ex) + "\n";
+				errmes += "Exeption thrown by: " + statement[statementCount].getQuery() + ". Message: " + ExceptionUtils.getMessage(ex) + "\n";
 				if (ex.getNextException() != null) {
 					// With PostgreSQL, 1. exception is good for nothing, append next one
-					errmes += "  Caused by: " + ExceptionUtils.exceptionChainToMessage(ex.getNextException());
+					errmes += "  Caused by: " + ExceptionUtils.getMessage(ex.getNextException());
 				}
 				exThrown = true;
 				
@@ -1033,7 +1033,7 @@ public class DBOutputTable extends Node {
 							if (exception != null) {
 								if (errMessFieldNum != -1) {
 									records[i][count].getField(errMessFieldNum).setValue("Exeption thrown by: " + 
-											statement[i].getQuery() + ". Message: " + ExceptionUtils.exceptionChainToMessage(exception));
+											statement[i].getQuery() + ". Message: " + ExceptionUtils.getMessage(exception));
 								}
 								if (errorCodeFieldNum != -1){
 									records[i][count].getField(errorCodeFieldNum).setValue(exception.getErrorCode());
@@ -1041,7 +1041,7 @@ public class DBOutputTable extends Node {
 							}
 							if (exception != null && countError <= MAX_WARNINGS) {
 								logger.warn("Exeption thrown by: " + statement[i].getQuery() + 
-										". Message: " + ExceptionUtils.exceptionChainToMessage(exception));
+										". Message: " + ExceptionUtils.getMessage(exception));
 							} else if (exception == null && countError <= MAX_WARNINGS) {
 								logger.warn("Record not inserted to database");
 							} else if (countError == MAX_WARNINGS + 1) {
@@ -1406,7 +1406,7 @@ public class DBOutputTable extends Node {
     		problem.setCauseException(uoe);
     		status.add(problem);
     	} catch (ComponentAlmostNotReadyException e1) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e1),
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e1),
 					ConfigurationStatus.Severity.WARNING, this,
 					ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e1.getAttributeName())) {
@@ -1414,7 +1414,7 @@ public class DBOutputTable extends Node {
 			}
 			status.add(problem);
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e),
 					ConfigurationStatus.Severity.ERROR, this,
 					ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {

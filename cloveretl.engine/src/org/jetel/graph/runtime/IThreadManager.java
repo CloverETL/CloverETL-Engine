@@ -21,8 +21,6 @@ package org.jetel.graph.runtime;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
-import org.jetel.graph.Result;
-
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
@@ -43,7 +41,7 @@ public interface IThreadManager {
 	 * @param watchDog
 	 * @return
 	 */
-	public Future<Result> executeWatchDog(WatchDog watchDog);
+	public CloverFuture executeWatchDog(WatchDog watchDog);
 	
 	/**
 	 * Runs given runnable class via inner instance of executor service.

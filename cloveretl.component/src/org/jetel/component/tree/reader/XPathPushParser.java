@@ -21,8 +21,8 @@ package org.jetel.component.tree.reader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Stack;
 
+import org.jetel.collection.Stack;
 import org.jetel.component.tree.reader.mappping.FieldMapping;
 import org.jetel.component.tree.reader.mappping.MappingContext;
 import org.jetel.component.tree.reader.mappping.MappingElement;

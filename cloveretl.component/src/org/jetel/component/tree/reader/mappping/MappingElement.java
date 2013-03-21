@@ -33,7 +33,7 @@ import java.util.Map;
 public abstract class MappingElement {
 
 	protected String xpath;
-	protected Map<String, String> namespaceBinding = new HashMap<String, String>(1);
+	protected Map<String, String> namespaceBinding = null;
 	
 	protected MappingElement parent;
 	
@@ -58,10 +58,16 @@ public abstract class MappingElement {
 	}
 	
 	public void addDefaultNamespace(String uri) {
+		if (namespaceBinding == null) {
+			namespaceBinding = new HashMap<String, String>(1);
+		}
 		namespaceBinding.put("", uri);
 	}
 	
 	public void addNamespaceBinding(String prefix, String uri) {
+		if (namespaceBinding == null) {
+			namespaceBinding = new HashMap<String, String>(1);
+		}
 		namespaceBinding.put(prefix, uri);
 	}
 	
@@ -69,7 +75,7 @@ public abstract class MappingElement {
 	 * @return the namespaceBinding
 	 */
 	public Map<String, String> getNamespaceBinding() {
-		return Collections.unmodifiableMap(namespaceBinding);
+		return namespaceBinding == null ? Collections.<String, String>emptyMap() : Collections.unmodifiableMap(namespaceBinding);
 	}
 	
 	/**

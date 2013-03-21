@@ -243,7 +243,7 @@ public class TransformFactory<T> {
         		TLCompilerFactory.createCompiler(component.getGraph(), inMetadata, outMetadata, charset);
         	List<ErrorMessage> msgs = compiler.compile(transformCode, transformDescriptor.getCompiledCTL2TransformClass(), component.getId());
         	if (compiler.errorCount() > 0) {
-        		String report = ErrorMessage.listToString(msgs, component.getLog());
+        		String report = ErrorMessage.listToString(msgs, null); // message does not need to be logged here, will be thrown up as part of an exception
         		String message = "CTL code compilation finished with " + compiler.errorCount() + " errors." + report;
         		for (ErrorMessage msg: msgs) {
         			if (msg.getDetail() instanceof MetadataErrorDetail) {

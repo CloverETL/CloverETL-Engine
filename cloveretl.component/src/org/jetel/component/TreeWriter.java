@@ -189,7 +189,7 @@ public abstract class TreeWriter extends Node {
 		try {
 			validateMapping(status);
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());
 			}
@@ -512,7 +512,7 @@ public abstract class TreeWriter extends Node {
 				try {
 					inputReader.join(1000);
 				} catch (InterruptedException e) {
-					LOGGER.warn(getId() + " thread interrupted, it will interrupt child threads", e);
+					LOGGER.debug(getId() + " thread interrupted, it will interrupt child threads", e);
 					killIt = true;
 				}
 			}
@@ -633,7 +633,7 @@ public abstract class TreeWriter extends Node {
 					}
 
 				} catch (InterruptedException e) {
-					LOGGER.error(getId() + ": thread forcibly aborted", e);
+					LOGGER.debug(getId() + ": thread forcibly aborted", e);
 					return;
 				} catch (Exception e) {
 					LOGGER.error(getId() + ": thread failed", e);

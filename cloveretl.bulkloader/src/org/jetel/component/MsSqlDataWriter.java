@@ -1135,7 +1135,7 @@ public class MsSqlDataWriter extends BulkLoader {
 		try {
 			initDataFile();
 		} catch (ComponentNotReadyException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e),	ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e),	ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
 		deleteTempFiles();
 		return status;

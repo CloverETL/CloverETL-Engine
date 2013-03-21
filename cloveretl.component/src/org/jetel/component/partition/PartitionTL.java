@@ -108,7 +108,7 @@ public class PartitionTL extends AbstractTransformTL implements PartitionFunctio
 			throw new TransformException("Partitioning failed!", exception);
 		}
 
-		onErrorArguments[0].setValue(ExceptionUtils.exceptionChainToMessage(null, exception));
+		onErrorArguments[0].setValue(ExceptionUtils.getMessage(null, exception));
 		onErrorArguments[1].setValue(ExceptionUtils.stackTraceToString(exception));
 
 		return getOutputPortImpl(getOutputPortOnErrorFunction, GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME,

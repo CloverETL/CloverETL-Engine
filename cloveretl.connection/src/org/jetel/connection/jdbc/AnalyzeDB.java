@@ -166,7 +166,7 @@ public class AnalyzeDB {
 					if (config.getProperty("dbURL") != null) optionSwitch |= 0x02;
 					if (config.getProperty("database") != null) optionSwitch |= 0x03;
 				}catch(Exception ex){
-					System.err.println("[Error] " + ExceptionUtils.exceptionChainToMessage(ex));
+					System.err.println("[Error] " + ExceptionUtils.getMessage(ex));
 					System.exit(-1);
 				}
 			} else if (argv[i].equalsIgnoreCase("-plugins")) {
@@ -198,11 +198,11 @@ public class AnalyzeDB {
 				reader.close();
 			}
 			catch (FileNotFoundException ex) {
-				System.err.println(ExceptionUtils.exceptionChainToMessage("[Error]", ex));
+				System.err.println(ExceptionUtils.getMessage("[Error]", ex));
 				System.exit(-1);
 			}
 			catch (IOException ex) {
-				System.err.println(ExceptionUtils.exceptionChainToMessage("[Error]", ex));
+				System.err.println(ExceptionUtils.getMessage("[Error]", ex));
 				System.exit(-1);
 			}
 			query = stringBuf.toString();
@@ -217,7 +217,7 @@ public class AnalyzeDB {
 			doAnalyze(config);
 		}
 		catch (Exception ex) {
-			System.err.println(ExceptionUtils.exceptionChainToMessage("\n[Error]", ex));
+			System.err.println(ExceptionUtils.getMessage("\n[Error]", ex));
 			System.exit(-1);
 		}
 	}

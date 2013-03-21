@@ -33,6 +33,7 @@ import org.jetel.data.IntegerDataField;
 import org.jetel.data.parser.TextParser;
 import org.jetel.data.parser.TextParserConfiguration;
 import org.jetel.data.parser.TextParserFactory;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -46,6 +47,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.DataRecordUtils;
 import org.jetel.util.ExceptionUtils;
@@ -219,7 +221,7 @@ public class DataReader extends Node {
 				logging = true;
 			} else {
 				throw new ComponentNotReadyException(this.getName() + "|" + this.getId() + ": The log port metadata has invalid format " + 
-						"(expected data fields - integer (record number), integer (field number), string (raw record), string (error message), string (file name - OPTIONAL");
+						"(expected data fields - long (record number), integer (field number), string (raw record), string (error message), string (file name - OPTIONAL");
 			}
 		}
 		
@@ -274,18 +276,18 @@ public class DataReader extends Node {
 					} else {
 						if (logging) {
 							// TODO implement log port framework
-							((IntegerDataField) logRecord.getField(0))
+							((Numeric) logRecord.getField(0))
 									.setValue(bdfe.getRecordNumber());
 							((IntegerDataField) logRecord.getField(1))
 									.setValue(bdfe.getFieldNumber() + 1);
 							setCharSequenceToField(bdfe.getRawRecord(), logRecord.getField(2));
-							setCharSequenceToField(ExceptionUtils.exceptionChainToMessage(bdfe), logRecord.getField(3));
+							setCharSequenceToField(ExceptionUtils.getMessage(bdfe), logRecord.getField(3));
 							if (hasFileNameField) {
 								setCharSequenceToField(reader.getSourceName(), logRecord.getField(4));
 							}
 							writeRecord(LOG_PORT, logRecord);
 						} else {
-							logger.warn(ExceptionUtils.exceptionChainToMessage("Error in input source: " + reader.getSourceName(), bdfe));
+							logger.warn(ExceptionUtils.getMessage("Error in input source: " + reader.getSourceName(), bdfe));
 						}
 						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
 							logger.error("DataParser (" + getName()
@@ -350,8 +352,8 @@ public class DataReader extends Node {
 
         int numFields = logMetadata.getNumFields();
         boolean ret = (numFields == 4 || numFields == 5)
-        	&& logMetadata.getField(0).getType() == DataFieldMetadata.INTEGER_FIELD
-        	&& logMetadata.getField(1).getType() == DataFieldMetadata.INTEGER_FIELD
+        	&& (logMetadata.getField(0).getDataType() == DataFieldType.INTEGER || logMetadata.getField(0).getDataType() == DataFieldType.LONG)
+        	&& logMetadata.getField(1).getDataType() == DataFieldType.INTEGER
             && isStringOrByte(logMetadata.getField(2))
             && isStringOrByte(logMetadata.getField(3))
             && (numFields != 5 || isStringOrByte(logMetadata.getField(4)));
@@ -599,7 +601,7 @@ public class DataReader extends Node {
     		}
     		reader.checkConfig(getOutputPort(OUTPUT_PORT).getMetadata());
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());
             }

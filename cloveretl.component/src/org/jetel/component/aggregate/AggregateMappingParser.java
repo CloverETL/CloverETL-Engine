@@ -275,7 +275,7 @@ public class AggregateMappingParser {
 			} catch (AggregationException e) {
 				String message = "Invalid mapping '" + expr2 + "'";
 				if (lenient) {
-					errors.add(ExceptionUtils.exceptionChainToMessage(message, e));
+					errors.add(ExceptionUtils.getMessage(message, e));
 				} else {
 					throw new AggregationException(message, e);
 				}

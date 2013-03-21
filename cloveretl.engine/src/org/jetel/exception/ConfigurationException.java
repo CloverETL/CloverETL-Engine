@@ -18,6 +18,8 @@
  */
 package org.jetel.exception;
 
+import org.jetel.graph.GraphElement;
+
 
 /**
  * Exception derived from {@link ConfigurationProblem}.
@@ -34,11 +36,15 @@ public class ConfigurationException extends Exception {
 	private static final long serialVersionUID = -4610905816299033384L;
 	
 	private String causedGraphElementId;
+	private String causedGraphElementName;
+	private String attributeName;
 	
-	public ConfigurationException(String message, Throwable cause, String causedGraphElementId) {
-		super(message, cause);
+	public ConfigurationException(String message, Throwable cause, String causedGraphElementId, String causedGraphElementName, String attributeName) {
+		super(new JetelRuntimeException(message, cause));
 		
 		this.causedGraphElementId = causedGraphElementId;
+		this.causedGraphElementName = causedGraphElementName;
+		this.attributeName = attributeName;
 	}
 
 	/**
@@ -46,6 +52,17 @@ public class ConfigurationException extends Exception {
 	 */
 	public String getCausedGraphElementId() {
 		return causedGraphElementId;
+	}
+
+	@Override
+	public String getMessage() {
+    	if (getCausedGraphElementId() != null) {
+    		StringBuilder result = new StringBuilder();
+    		result.append("Issue in component " + GraphElement.identifiersToString(causedGraphElementId, causedGraphElementName) + (attributeName != null ? ("." + attributeName) : ""));
+        	return result.toString();
+    	} else {
+    		return null;
+    	}
 	}
 
 }

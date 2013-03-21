@@ -535,7 +535,7 @@ public class XMLExtract extends Node {
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: " + ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL));
 		} finally {
 			parser.reset();
 		}
@@ -585,7 +585,7 @@ public class XMLExtract extends Node {
 				}
 			}
 		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL);
 			if (!StringUtils.isEmpty(e.getAttributeName())) {
 				problem.setAttributeName(e.getAttributeName());
 			}

@@ -803,7 +803,7 @@ public class DB2DataWriter extends Node {
 			try {
 				initDataFile();
 			} catch (ComponentNotReadyException e) {
-				status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE));
+				status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILEURL_ATTRIBUTE));
 			}
 		}
 		
@@ -821,7 +821,7 @@ public class DB2DataWriter extends Node {
 			try {
 				fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName, true);
 			} catch (Exception e) {
-				status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILEMETADATA_ATTRIBUTE));
+				status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_FILEMETADATA_ATTRIBUTE));
 			}
 			if (fileMetadata == null) {
 				status.add(new ConfigurationProblem("File metadata ID is not valid", Severity.ERROR, this, Priority.NORMAL,
@@ -849,9 +849,9 @@ public class DB2DataWriter extends Node {
 				status.add(new ConfigurationProblem("Can not create batch file", Severity.ERROR, this, Priority.NORMAL));
 			}
 		} catch (IOException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
 		} catch (TempFileCreationException e) {
-			status.add(new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
+			status.add(new ConfigurationProblem(ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL, XML_BATCHURL_ATTRIBUTE));
 		}
         return status;
 	}

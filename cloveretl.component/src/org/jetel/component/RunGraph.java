@@ -738,7 +738,7 @@ public class RunGraph extends Node{
         try {
             init();
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.exceptionChainToMessage(e), 
+            ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), 
             		Severity.ERROR, this, Priority.NORMAL);
             if (!StringUtils.isEmpty(e.getAttributeName())) {
                 problem.setAttributeName(e.getAttributeName());

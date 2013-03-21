@@ -81,8 +81,8 @@ public class ExceptionUtils {
      * @param exception converted exception
      * @return resulted overall message
      */
-    public static String exceptionChainToMessage(Throwable exception) {
-    	return exceptionChainToMessage(null, exception);
+    public static String getMessage(Throwable exception) {
+    	return getMessage(null, exception);
     }
 
     /**
@@ -92,27 +92,43 @@ public class ExceptionUtils {
      * @param exception converted exception
      * @return resulted overall message
      */
-    public static String exceptionChainToMessage(String message, Throwable exception) {
-    	return exceptionChainToMessage(new JetelRuntimeException(message, exception), 0);
-    }
-
-    /**
-     * Extract message from the given exception chain. All messages from all exceptions are concatenated
-     * to the resulted string.
-     * @param message prefixed message text which will be in the start of resulted string
-     * @param exception converted exception
-     * @return resulted overall message
-     */
-    private static String exceptionChainToMessage(Throwable exception, int depth) {
+    public static String getMessage(String message, Throwable exception) {
+    	List<ErrorMessage> errMessages = getMessages(new JetelRuntimeException(message, exception), 0);
     	StringBuilder result = new StringBuilder();
+    	for (ErrorMessage errMessage : errMessages) {
+    		appendMessage(result, errMessage.message, errMessage.depth);
+    	}
+    	return result.toString();
+    }
+
+    private static class ErrorMessage {
+    	int depth;
+    	
+    	String message;
+
+    	public ErrorMessage(int depth, String message) {
+    		this.depth = depth;
+    		this.message = message;
+		}
+    }
+    
+    /**
+     * Extract message from the given exception chain. All messages from all exceptions are concatenated
+     * to the resulted string.
+     * @param message prefixed message text which will be in the start of resulted string
+     * @param exception converted exception
+     * @return resulted overall message
+     */
+    private static List<ErrorMessage> getMessages(Throwable exception, int depth) {
+    	List<ErrorMessage> result = new ArrayList<ErrorMessage>();
     	Throwable exceptionIterator = exception;
     	String lastMessage = "";
     	while (true) {
     		//extract message from current exception
-    		String newMessage = getMessage(exceptionIterator, lastMessage);
+    		String newMessage = getMessageNonRecurisve(exceptionIterator, lastMessage);
     		
     		if (newMessage != null) {
-    			appendMessage(result, newMessage, depth);
+    			result.add(new ErrorMessage(depth, newMessage));
 	    		depth++;
 	    		lastMessage = newMessage;
     		}
@@ -120,13 +136,7 @@ public class ExceptionUtils {
     		//CompoundException needs special handling
     		if (exceptionIterator instanceof CompoundException) {
     			for (Throwable t : ((CompoundException) exceptionIterator).getCauses()) {
-    				String messageOfNestedException = exceptionChainToMessage(t, depth);
-    				if (!StringUtils.isEmpty(messageOfNestedException)) {
-	        			if (!StringUtils.isEmpty(result)) {
-	        				result.append("\n");
-	        			}
-	        			result.append(messageOfNestedException);
-    				}
+    				result.addAll(getMessages(t, depth));
     			}
     			break;
     		}
@@ -137,10 +147,10 @@ public class ExceptionUtils {
     			exceptionIterator = exceptionIterator.getCause();
     		}
     	}
-    	return result.toString();
+    	return result;
     }
     
-    private static String getMessage(Throwable t, String lastMessage) {
+    private static String getMessageNonRecurisve(Throwable t, String lastMessage) {
     	String message = null;
     	//NPE is handled in special way
 		if (t instanceof NullPointerException 
@@ -191,7 +201,7 @@ public class ExceptionUtils {
 	 * @param t
 	 */
 	public static void logException(Logger logger, String message, Throwable t) {
-        logger.error(ExceptionUtils.exceptionChainToMessage(message, t));
+		logger.error(ExceptionUtils.getMessage(message, t));
         logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
 	}
 	
@@ -250,6 +260,61 @@ public class ExceptionUtils {
 		}
 		
 		return result;
+	}
+
+	/**
+	 * Print given message to logger. The message is surrounded in an ascii-art frame.  
+	 * @param message printed message
+	 */
+	public static void logHighlightedMessage(Logger logger, String message) {
+		final String LEFT_BORDER = "|| ";
+		final String RIGHT_BORDER = " ||";
+		final char TOP_BORDER = '=';
+		final String TOP_BORDER_LABEL = " Error message ";
+		final int TOP_BORDER_LABEL_LOCATION = 3;
+		final char BOTTOM_BORDER = '=';
+		
+		if (!StringUtils.isEmpty(message)) {
+			StringBuilder sb = new StringBuilder();
+			String[] messageLines = message.split("\n");
+			int maxLength = 0;
+			for (String messageLine : messageLines) {
+				if (messageLine.length() > maxLength) {
+					maxLength = messageLine.length();
+				}
+			}
+			for (int i = 0; i < maxLength + LEFT_BORDER.length() + RIGHT_BORDER.length(); i++) {
+				if (i >= TOP_BORDER_LABEL_LOCATION && i < TOP_BORDER_LABEL.length() + TOP_BORDER_LABEL_LOCATION) {
+					sb.append(TOP_BORDER_LABEL.charAt(i - TOP_BORDER_LABEL_LOCATION));
+				} else {
+					sb.append(TOP_BORDER);
+				}
+			}
+			logger.error(sb.toString()); sb.setLength(0);
+			for (String messageLine : messageLines) {
+				sb.append(LEFT_BORDER);
+				sb.append(messageLine);
+				for (int i = messageLine.length(); i < maxLength; i++) {
+					sb.append(' ');
+				}
+				sb.append(RIGHT_BORDER);
+				logger.error(sb.toString()); sb.setLength(0);
+			}
+			for (int i = 0; i < maxLength + LEFT_BORDER.length() + RIGHT_BORDER.length(); i++) {
+				sb.append(BOTTOM_BORDER);
+			}
+			logger.error(sb.toString()); sb.setLength(0);
+		}
+	}
+
+	/**
+	 * Print out error message of the given exception. The message is surrounded in an ascii-art frame.
+	 * @param logger
+	 * @param message
+	 * @param exception
+	 */
+	public static void logHighlightedException(Logger logger, String message, Throwable exception) {
+		logHighlightedMessage(logger, getMessage(message, exception));
 	}
 	
 }
