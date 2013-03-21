@@ -29,9 +29,11 @@ import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
+import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.rules.StringLengthValidationRule.TYPES;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
@@ -41,19 +43,33 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 4.12.2012
  */
 @XmlRootElement(name="nonEmptySubset")
-@XmlType(propOrder={"checkForEmptiness", "count"})
+@XmlType(propOrder={"goalJAXB", "count"})
 public class NonEmptySubsetValidationRule extends StringValidationRule {
 	
-	@XmlElement(name="checkForEmptiness",required=true)
-	private BooleanValidationParamNode checkForEmptiness = new BooleanValidationParamNode(false);
+	public static enum GOALS {
+		EMPTY, NONEMPTY;
+		@Override
+		public String toString() {
+			if(this.equals(EMPTY)) {
+				return "Empty fields";
+			}
+			return "Nonempty fields";
+		}
+	}
+	
+	private EnumValidationParamNode goal = new EnumValidationParamNode(GOALS.values(), GOALS.NONEMPTY);
+	@XmlElement(name="goal", required=true)
+	private String getGoalJAXB() { return ((Enum<?>) goal.getValue()).name(); }
+	private void setGoalJAXB(String input) { goal.setFromString(input); }
+	
 	@XmlElement(name="count",required=true)
 	private IntegerValidationParamNode count = new IntegerValidationParamNode(1);
 	
 	public List<ValidationParamNode> initialize() {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
-		checkForEmptiness.setName("Only empty field is valid");
-		params.add(checkForEmptiness);
-		count.setName("Number of fields");
+		goal.setName("Count");
+		params.add(goal);
+		count.setName("Minimal count");
 		params.add(count);
 		params.addAll(super.initialize());
 		return params;
@@ -68,7 +84,7 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 		String tempString;
 		logger.trace("Validation rule: " + this.getName() + "\n"
 				+ "Target fields: " + target.getValue() + "\n"
-				+ "Check for emptiness: " + checkForEmptiness.getValue() + "\n"
+				+ "Goal: " + goal.getValue() + "\n"
 				+ "Desired count: " + count.getValue() + "\n"
 				+ "Trim input: " + trimInput.getValue());
 		
@@ -76,8 +92,8 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 		int ok = 0;
 		for(int i = 0; i < targetField.length; i++) {
 			tempString = prepareInput(record.getField(targetField[i]));
-			if(checkForEmptiness.getValue() && tempString.isEmpty() ||
-					!checkForEmptiness.getValue() && !tempString.isEmpty()) {
+			if(goal.getValue() == GOALS.EMPTY && tempString.isEmpty() ||
+					goal.getValue() == GOALS.NONEMPTY && !tempString.isEmpty()) {
 				ok++;
 			}
 			if(ok >= count.getValue()) {
@@ -122,10 +138,10 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 	}
 
 	/**
-	 * @return the checkForEmptiness
+	 * @return the goal
 	 */
-	public BooleanValidationParamNode getCheckForEmptiness() {
-		return checkForEmptiness;
+	public EnumValidationParamNode getGoal() {
+		return goal;
 	}
 
 	/**

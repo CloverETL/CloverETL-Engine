@@ -32,8 +32,10 @@ import org.jetel.component.validator.ValidationError;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
+import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.rules.NonEmptySubsetValidationRule.GOALS;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
@@ -43,16 +45,29 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 19.11.2012
  */
 @XmlRootElement(name="nonEmptyField")
-@XmlType(propOrder={"checkForEmptiness"})
+@XmlType(propOrder={"goalJAXB"})
 public class NonEmptyFieldValidationRule extends StringValidationRule {
 	
-	@XmlElement(name="checkForEmptiness",required=true)
-	private BooleanValidationParamNode checkForEmptiness = new BooleanValidationParamNode(false);
+	public static enum GOALS {
+		EMPTY, NONEMPTY;
+		@Override
+		public String toString() {
+			if(this.equals(EMPTY)) {
+				return "Empty field";
+			}
+			return "Nonempty field";
+		}
+	}
+	
+	private EnumValidationParamNode goal = new EnumValidationParamNode(GOALS.values(), GOALS.NONEMPTY);
+	@XmlElement(name="goal", required=true)
+	private String getGoalJAXB() { return ((Enum<?>) goal.getValue()).name(); }
+	private void setGoalJAXB(String input) { goal.setFromString(input); }
 	
 	public List<ValidationParamNode> initialize() {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
-		checkForEmptiness.setName("Only empty field is valid");
-		params.add(checkForEmptiness);
+		goal.setName("Valid");
+		params.add(goal);
 		params.addAll(super.initialize());
 		return params;
 	}
@@ -66,13 +81,13 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 		String tempString = prepareInput(record.getField(target.getValue()));
 		logger.trace("Validation rule: " + this.getName() + "\n"
 				+ "Target field: " + target.getValue() + "\n"
-				+ "Check for emptiness: " + checkForEmptiness.getValue() + "\n"
+				+ "Check for emptiness: " + goal.getValue() + "\n"
 				+ "Trim input: " + trimInput.getValue());
-		if(checkForEmptiness.getValue() && tempString.isEmpty()) {
+		if(goal.getValue() == GOALS.EMPTY && tempString.isEmpty()) {
 			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
 			return State.VALID;
 		}
-		if(!checkForEmptiness.getValue() && !tempString.isEmpty()) {
+		if(goal.getValue() == GOALS.NONEMPTY && !tempString.isEmpty()) {
 			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
 			return State.VALID;
 		}
@@ -87,7 +102,7 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 		List<String> fields = new ArrayList<String>();
 		fields.add(target.getValue());
 		Map<String, String> params = new HashMap<String, String>();
-		if(checkForEmptiness.getValue()) {
+		if(goal.getValue() == GOALS.EMPTY) {
 			params.put("emptiness", "true");
 		} else {
 			params.put("emptiness", "false");
@@ -121,10 +136,10 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 	}
 
 	/**
-	 * @return the checkForEmptiness
+	 * @return the goal
 	 */
-	public BooleanValidationParamNode getCheckForEmptiness() {
-		return checkForEmptiness;
+	public EnumValidationParamNode getGoal() {
+		return goal;
 	}
 	
 	@Override
