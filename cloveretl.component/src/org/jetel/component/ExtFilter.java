@@ -274,7 +274,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 				filter.setFilterClass(xattribs.getString(XML_FILTERCLASS_ATTRIBUTE));
 			}
 			if (filter.filterClass == null && filter.filterExpression == null) {
-				throw new Exception("One of 'filterExpression' or 'filterClass' attributes is required.");
+				throw new XMLConfigurationException("One of 'filterExpression' or 'filterClass' attributes is required.");
 			}
 		return filter;
 	}
