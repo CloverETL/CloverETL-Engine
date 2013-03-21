@@ -145,6 +145,7 @@ import org.w3c.dom.Text;
 public class ExtFilter extends org.jetel.graph.Node {
 
 	private static final String XML_FILTEREXPRESSION_ATTRIBUTE = "filterExpression";
+	private static final String XML_FILTERCLASS_ATTRIBUTE = "filterClass";
 	public final static String COMPONENT_TYPE="EXT_FILTER";
 	private final static int READ_FROM_PORT=0;
 	
@@ -154,6 +155,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 	
 	private RecordFilter filter = null;
 	private String filterExpression;
+	private String filterClass;
 	
     static Log logger = LogFactory.getLog(ExtFilter.class);
     
@@ -211,7 +213,16 @@ public class ExtFilter extends org.jetel.graph.Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		if (filterExpression != null) {
+			initFilterExpression();
+		} else if (filterClass != null) {
+			filter = RecordFilterFactory.createFilter(filterClass, this);
+		} else {
+			throw new ComponentNotReadyException("Either filter expression or filter class is expected.");
+		}
+	}
 		
+	private void initFilterExpression() throws ComponentNotReadyException {
 		filter = RecordFilterFactory.createFilter(filterExpression, getInMetadata().get(READ_FROM_PORT), getGraph(), getId(), logger);
 	}
 	
@@ -224,13 +235,17 @@ public class ExtFilter extends org.jetel.graph.Node {
 	@Override
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
+		if (filterExpression != null) {
 		Document doc = xmlElement.getOwnerDocument();
 		Element childElement = doc.createElement("attr");
 		childElement.setAttribute("name", XML_FILTEREXPRESSION_ATTRIBUTE);
-		// join given SQL commands
 		Text textElement = doc.createTextNode(filterExpression);
 		childElement.appendChild(textElement);
 		xmlElement.appendChild(childElement);
+	}
+		if (filterClass != null) {
+			xmlElement.setAttribute(XML_FILTERCLASS_ATTRIBUTE, filterClass);
+		}
 	}
 
 	/**
@@ -252,9 +267,15 @@ public class ExtFilter extends org.jetel.graph.Node {
 			try {
 				filter.setFilterExpression(xattribs.getText(xmlElement, false));
 			} catch (AttributeNotFoundException e) {
-				throw new AttributeNotFoundException(XML_FILTEREXPRESSION_ATTRIBUTE);
+					// ignore
 			}
 		}
+			if (xattribs.exists(XML_FILTERCLASS_ATTRIBUTE)) {
+				filter.setFilterClass(xattribs.getString(XML_FILTERCLASS_ATTRIBUTE));
+			}
+			if (filter.filterClass == null && filter.filterExpression == null) {
+				throw new Exception("One of 'filterExpression' or 'filterClass' attributes is required.");
+			}
 		return filter;
 	}
 
@@ -271,7 +292,11 @@ public class ExtFilter extends org.jetel.graph.Node {
         checkMetadata(status, getInMetadata(), getOutMetadata());
 
         try {
-            init();
+        	if (filterExpression != null) {
+        		initFilterExpression();
+        	} else if (filterClass == null) {
+        		throw new ComponentNotReadyException("Either 'filterClass' or 'filterExpression' is required.");
+        	}
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
@@ -290,6 +315,13 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 */
 	public void setFilterExpression(String filterExpression) {
 		this.filterExpression = filterExpression;
+	}
+	
+	/**
+	 * @param filterClass the filterClass to set
+	 */
+	public void setFilterClass(String filterClass) {
+		this.filterClass = filterClass;
 	}
 	
 	@Override
@@ -311,7 +343,6 @@ public class ExtFilter extends org.jetel.graph.Node {
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new BasicComponentTokenTracker(this);
 	}
-
 }
 
 
