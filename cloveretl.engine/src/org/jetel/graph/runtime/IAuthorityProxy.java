@@ -40,6 +40,7 @@ import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -51,6 +52,7 @@ import org.jetel.util.FileConstrains;
 import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertiesUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -174,8 +176,12 @@ public abstract class IAuthorityProxy {
 				if (t instanceof ConfigurationException) {
 					errComponent = ((ConfigurationException) t).getCausedGraphElementId();
 				} else if (t instanceof ComponentNotReadyException) {
-					errComponent = ((ComponentNotReadyException) t).getGraphElement().getId();
-				} else {
+					IGraphElement graphElement = ((ComponentNotReadyException) t).getGraphElement();
+					if (graphElement != null) {
+						errComponent = graphElement.getId();
+					}
+				}
+				if (!StringUtils.isEmpty(errComponent) || t.getCause() == null || t == t.getCause()) {
 					break;
 				}
 				t = t.getCause();

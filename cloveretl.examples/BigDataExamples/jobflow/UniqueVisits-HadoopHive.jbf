@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360543511" licenseType="Commercial" modified="Mon Mar 18 13:52:45 CET 2013" modifiedBy="Pavel" name="ProcessLog_CloverETL" nature="jobflow" revision="1.30" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360543511" licenseType="Commercial" modified="Tue Mar 19 19:59:34 CET 2013" modifiedBy="mtomcanyi" name="ProcessLog_CloverETL" nature="jobflow" revision="1.34" showComponentDetails="true">
 <Global>
 <Metadata id="ExecuteGraph_RunStatus">
 <Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
@@ -14,7 +14,8 @@
 <Field name="errComponentType" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Property fileURL="workspace.prm" id="GraphParameter3"/>
+<Property fileURL="hadoop.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Configuration Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="716" y="122">
 <attr name="text"><![CDATA[If you are using different version of Hadoop distrbution download the JAR files from your installation.
 
@@ -62,10 +63,68 @@ In this example we demonstrate how to produce a simple "uniques per month" repor
 <Dictionary/>
 </Global>
 <Phase number="0">
+<Node enabled="enabled" guiName="Check required parameters" guiX="-180" guiY="449" id="CHECK_REQUIRED_PARAMETERS" jobURL="${GRAPH_DIR}/CheckParameters-Hive.grf" type="EXECUTE_GRAPH">
+<attr name="errorMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.1.errMessage = $in.1.errMessage;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
 <Node enabled="enabled" guiName="Count Unique Visitors using Hive Query" guiX="477" guiY="449" id="COUNT_UNIQUE_VISITORS_USING_HIVE_QUERY1" jobURL="${GRAPH_DIR}/HadoopHive-CountVisits.grf" type="EXECUTE_GRAPH"/>
 <Node enabled="enabled" guiName="Generate Report" guiX="820" guiY="449" id="GENERATE_REPORT" jobURL="${GRAPH_DIR}/GenerateReport.grf" type="EXECUTE_GRAPH"/>
 <Node enabled="enabled" guiName="Load Data into Hive table" guiX="262" guiY="449" id="LOAD_DATA_INTO_HIVE_TABLE" jobURL="${GRAPH_DIR}/HadoopHive-LoadData.grf" type="EXECUTE_GRAPH"/>
-<Node enabled="enabled" guiName="Upload Inputs to HDFS" guiX="19" guiY="449" id="UPLOAD_INPUTS_TO_HDFS" jobURL="${GRAPH_DIR}/PrepareInputData.grf" type="EXECUTE_GRAPH">
+<Node enabled="enabled" guiName="Required Parameters Missing" guiX="-66" guiY="576" id="REQUIRED_PARAMETERS_MISSING" type="FAIL">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.errorMessage = $in.0.errMessage;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Upload Inputs to HDFS" guiX="58" guiY="449" id="UPLOAD_INPUTS_TO_HDFS" jobURL="${GRAPH_DIR}/PrepareInputData.grf" type="EXECUTE_GRAPH">
 <attr name="outputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -103,6 +162,8 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
+<Edge fromNode="CHECK_REQUIRED_PARAMETERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="UPLOAD_INPUTS_TO_HDFS:0"/>
+<Edge fromNode="CHECK_REQUIRED_PARAMETERS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 1 (error)" toNode="REQUIRED_PARAMETERS_MISSING:0"/>
 <Edge fromNode="COUNT_UNIQUE_VISITORS_USING_HIVE_QUERY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="GENERATE_REPORT:0"/>
 <Edge debugMode="true" fromNode="LOAD_DATA_INTO_HIVE_TABLE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="COUNT_UNIQUE_VISITORS_USING_HIVE_QUERY1:0"/>
 <Edge debugMode="true" fromNode="UPLOAD_INPUTS_TO_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="LOAD_DATA_INTO_HIVE_TABLE:0"/>
