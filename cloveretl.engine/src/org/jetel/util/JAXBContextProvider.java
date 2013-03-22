@@ -1,0 +1,141 @@
+/*
+ * Copyright 2006-2009 Opensys TM by Javlin, a.s. All rights reserved.
+ * Opensys TM by Javlin PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
+ *
+ * Opensys TM by Javlin a.s.; Kremencova 18; Prague; Czech Republic
+ * www.cloveretl.com; info@cloveretl.com
+ *
+ */
+
+package org.jetel.util;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+
+import org.jetel.exception.JetelRuntimeException;
+
+/**
+ * JAXB contexts cache to prevent class leaks caused by their repeated creation,
+ * see https://issues.apache.org/jira/browse/CXF-2939
+ * Anyway, JAXBContext is a heavy-weight object - it should be cached.
+ * 
+ * 
+ * @author jan.michalica (info@cloveretl.com)
+ *         (c) Opensys TM by Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 25.1.2013
+ */
+public class JAXBContextProvider {
+
+	private static final JAXBContextProvider instance = new JAXBContextProvider();
+	
+	private Map<ContextKey, JAXBContext> cache = new HashMap<ContextKey, JAXBContext>();
+	
+	private JAXBContextProvider() {}
+	
+	public static JAXBContextProvider getInstance() {
+		return instance;
+	}
+	
+	/**
+	 * Use this instead of {@link JAXBContext#newInstance(Class...)}
+	 * @param types
+	 * @return
+	 * @throws JAXBException
+	 */
+	public JAXBContext getContext(Class<?> ... types) throws JAXBException {
+		
+		return getContext(new ContextKey(types));
+	}
+	
+	/**
+	 * Use this instead of {@link JAXBContext#newInstance(String, ClassLoader)}
+	 * @param types
+	 * @return
+	 * @throws JAXBException
+	 */
+	public JAXBContext getContext(String contextPath, ClassLoader classLoader) throws JAXBException {
+		
+		return getContext(new ContextKey(contextPath, classLoader));
+	}
+	
+	private synchronized JAXBContext getContext(ContextKey key) throws JAXBException {
+		
+		JAXBContext ctx = cache.get(key);
+		if (ctx == null) {
+			ctx = key.createContext();
+			cache.put(key, ctx);
+		}
+		return ctx;
+	}
+	
+	private static class ContextKey {
+		
+		private Set<Class<?>> types;
+		private String contextPath;
+		private ClassLoader classLoader;
+		
+		public ContextKey(Class<?> ... types) {
+			this.types = new HashSet<Class<?>>(Arrays.asList(types));
+		}
+		
+		public ContextKey(String contextPath, ClassLoader classLoader) {
+			this.contextPath = contextPath;
+			this.classLoader = classLoader;
+		}
+		
+		public JAXBContext createContext() throws JAXBException {
+			if (types != null) {
+				return JAXBContext.newInstance(types.toArray(new Class<?>[types.size()]));
+			} if (contextPath != null && classLoader != null) {
+				return JAXBContext.newInstance(contextPath, classLoader);
+			} else {
+				throw new JetelRuntimeException("Invalid arguments for context creation.");
+			}
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((classLoader == null) ? 0 : classLoader.hashCode());
+			result = prime * result + ((contextPath == null) ? 0 : contextPath.hashCode());
+			result = prime * result + ((types == null) ? 0 : types.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ContextKey other = (ContextKey) obj;
+			if (classLoader == null) {
+				if (other.classLoader != null)
+					return false;
+			} else if (!classLoader.equals(other.classLoader))
+				return false;
+			if (contextPath == null) {
+				if (other.contextPath != null)
+					return false;
+			} else if (!contextPath.equals(other.contextPath))
+				return false;
+			if (types == null) {
+				if (other.types != null)
+					return false;
+			} else if (!types.equals(other.types))
+				return false;
+			return true;
+		}
+	}
+}
+
