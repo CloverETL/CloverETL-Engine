@@ -277,15 +277,15 @@ public class BinaryDataParser extends AbstractParser {
 		processedBytes = 0;
 	}
 	
-	private synchronized void doReleaseDataSource() throws IOException {
+	private void doReleaseDataSource() throws IOException {
 		if (reader != null) {
 			FileUtils.closeAll(backendStream, reader);
 			if (deleteOnClose != null) {
 				if (!deleteOnClose.delete()) {
 					LogFactory.getLog(BinaryDataParser.class).error("Failed to delete temp file: " + deleteOnClose.getAbsolutePath());
 				} else {
-					deleteOnClose = null;
 					LogFactory.getLog(BinaryDataParser.class).debug("Temp file deleted: " + deleteOnClose.getAbsolutePath());
+					deleteOnClose = null;
 				}
 			}
 		}
