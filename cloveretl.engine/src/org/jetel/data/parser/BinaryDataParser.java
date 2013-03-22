@@ -277,7 +277,7 @@ public class BinaryDataParser extends AbstractParser {
 		processedBytes = 0;
 	}
 	
-	private void doReleaseDataSource() throws IOException {
+	private synchronized void doReleaseDataSource() throws IOException {
 		if (reader != null) {
 			FileUtils.closeAll(backendStream, reader);
 			if (deleteOnClose != null) {
