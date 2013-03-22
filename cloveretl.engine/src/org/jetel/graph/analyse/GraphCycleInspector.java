@@ -19,9 +19,7 @@
 package org.jetel.graph.analyse;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Stack;
 
 import org.jetel.enums.EdgeTypeEnum;
@@ -48,7 +46,7 @@ public class GraphCycleInspector {
 
 	private GraphProvider graphProvider;
 
-	private Set<InspectedComponent> visitedComponents = new HashSet<InspectedComponent>();
+	private List<InspectedComponent> visitedComponents = new ArrayList<InspectedComponent>();
 	
 	public GraphCycleInspector(GraphProvider graphProvider) {
 		this.graphProvider = graphProvider;
@@ -75,30 +73,43 @@ public class GraphCycleInspector {
 		Stack<InspectedComponent> componentsStack = new Stack<InspectedComponent>();
 		
 		componentsStack.push(component);
-		visitedComponents.add(component);
 		while (!componentsStack.isEmpty()) {
 			//what is current component?
 			InspectedComponent topComponent = componentsStack.peek();
 			//what is following component?
 			InspectedComponent nextComponent = topComponent.getNextComponent();
 			if (nextComponent != null) {
-				visitedComponents.add(component);
-				//following component found
-				if (componentsStack.contains(nextComponent)) {
-					//cycle found
-					componentsStack.push(nextComponent);
-					cycleFound(componentsStack);
-				} else {
-					//recursion can go deeper 
-					componentsStack.push(nextComponent);
+				if (!alreadyVisitedFromTheDirection(visitedComponents, nextComponent)) {
+					//following component found
+					if (componentsStack.contains(nextComponent)) {
+						//cycle found
+						componentsStack.push(nextComponent);
+						cycleFound(componentsStack);
+					} else {
+						//recursion can go deeper 
+						componentsStack.push(nextComponent);
+					}
 				}
 			} else {
-				//no other follower, let's step back in recursion
+				visitedComponents.add(topComponent);
+				//no other follower, let's step back in the stack
 				componentsStack.pop();
 			}
 		}
 	}
 
+	/**
+	 * Checks whether the given component is already reached from the same direction (from the same entry edge).
+	 */
+	private boolean alreadyVisitedFromTheDirection(List<InspectedComponent> visitedComponents, InspectedComponent nextComponent) {
+		for (InspectedComponent component : visitedComponents) {
+			if (component.equals(nextComponent) && component.getEntryEdge() == nextComponent.getEntryEdge()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Cycle in the graph found - first regularly oriented edge is marked as BUFFERED. 
 	 */
@@ -112,7 +123,7 @@ public class GraphCycleInspector {
 		int index = 0;
 		//Go back in the cycle and find first regularly oriented edge, which can be changed to BUFFERED.
 		//The cycle is interrupted and recursive cycle detection can continue.
-		//Moreover the founded cycle is checked, whether is uniformly oriented - exception is thrown.
+		//Moreover the founded cycle is checked, whether is uniformly oriented - exception is thrown in that case
 		do {
 			Edge entryEdge = component.getEntryEdge();
 			if (entryEdge.getReader() == component.getComponent()) {
