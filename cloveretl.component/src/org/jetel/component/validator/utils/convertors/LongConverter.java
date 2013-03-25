@@ -21,6 +21,7 @@ package org.jetel.component.validator.utils.convertors;
 import java.util.Date;
 
 import org.jetel.data.primitive.Decimal;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.CloverString;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -81,6 +82,23 @@ public class LongConverter implements Converter {
 			return ((Date) o).getTime();
 		}
 		return null;
+	}
+	
+	/**
+	 * {@link ComponentXMLAttributes.getLong(String)}
+	 */
+	@Override
+	public Long convertFromCloverLiteral(String o) {
+        if (o.equalsIgnoreCase(ComponentXMLAttributes.STR_MIN_LONG)){
+            return Long.MIN_VALUE;
+        } else if (o.equalsIgnoreCase(ComponentXMLAttributes.STR_MAX_LONG)){
+            return Long.MAX_VALUE;
+        }
+        try {
+        	return Long.parseLong(o);
+        } catch(NumberFormatException ex){
+        	return null; 
+        }
 	}
 
 }

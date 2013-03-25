@@ -19,7 +19,10 @@
 package org.jetel.component.validator.rules;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
@@ -32,7 +35,20 @@ import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.component.validator.utils.CommonFormats;
+import org.jetel.component.validator.utils.ValidatorUtils;
+import org.jetel.component.validator.utils.comparators.DateComparator;
+import org.jetel.component.validator.utils.comparators.DecimalComparator;
+import org.jetel.component.validator.utils.comparators.DoubleComparator;
+import org.jetel.component.validator.utils.comparators.LongComparator;
+import org.jetel.component.validator.utils.comparators.StringComparator;
+import org.jetel.component.validator.utils.convertors.Converter;
+import org.jetel.component.validator.utils.convertors.DateConverter;
+import org.jetel.component.validator.utils.convertors.DecimalConverter;
+import org.jetel.component.validator.utils.convertors.DoubleConverter;
+import org.jetel.component.validator.utils.convertors.LongConverter;
+import org.jetel.component.validator.utils.convertors.StringConverter;
 import org.jetel.data.DataField;
+import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -40,7 +56,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 12.3.2013
  */
-@XmlType(propOrder={"useTypeJAXB", "format", "strict" })
+@XmlType(propOrder={"useTypeJAXB", "format", "locale", "timezone" })
 public abstract class ConversionValidationRule extends AbstractValidationRule {
 
 	public static enum METADATA_TYPES {
@@ -74,8 +90,14 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 	@XmlElement(name="format", required=false)
 	protected StringEnumValidationParamNode format = new StringEnumValidationParamNode();
 	
-	@XmlElement(name="strict", required=true)
-	protected BooleanValidationParamNode strict = new BooleanValidationParamNode(false);
+	@XmlElement(name="locale", required=false)
+	protected StringEnumValidationParamNode locale = new StringEnumValidationParamNode(Defaults.DEFAULT_LOCALE);
+	
+	@XmlElement(name="timezone", required=false)
+	protected StringEnumValidationParamNode timezone = new StringEnumValidationParamNode(Calendar.getInstance().getTimeZone().getID());
+	
+	protected Converter tempConverter;
+	protected Comparator tempComparator;
 	
 	@Override
 	protected List<ValidationParamNode> initialize() {
@@ -86,6 +108,7 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 		format.setName("Format mask");
 		format.setOptions(CommonFormats.all);
 		format.setPlaceholder("Number/date format, for syntax see documentation.");
+		params.add(format);
 		format.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -96,9 +119,11 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 				return false;
 			}
 		});
-		params.add(format);
-		strict.setName("Strict mode");
-		strict.setEnabledHandler(new EnabledHandler() {
+		locale.setName("Locale");
+		locale.setOptions(CommonFormats.locales);
+		locale.setTooltip("Locale code of record field");
+		params.add(locale);
+		locale.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
 			public boolean isEnabled() {
@@ -108,15 +133,80 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 				return false;
 			}
 		});
-		params.add(strict);	
+		timezone.setName("Timezone");
+		timezone.setOptions(CommonFormats.timezones);
+		timezone.setTooltip("Timezone code of record field");
+		params.add(timezone);
+		timezone.setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				if(useType.getValue() == METADATA_TYPES.DATE) {
+					return true;
+				}
+				return false;
+			}
+		});
 		return params;
 	}
+	
+	public void initConversionUtils(DataFieldType fieldType) {
+		if(tempComparator == null) {
+			if (fieldType == DataFieldType.STRING) {
+				tempComparator = StringComparator.getInstance();
+			} else if (fieldType == DataFieldType.INTEGER
+					|| fieldType == DataFieldType.LONG
+					|| fieldType == DataFieldType.BYTE
+					|| fieldType == DataFieldType.CBYTE
+					|| fieldType == DataFieldType.BOOLEAN) {
+				tempComparator = LongComparator.getInstance();
+			} else if (fieldType == DataFieldType.DATE) {
+				tempComparator = DateComparator.getInstance();
+			} else if (fieldType == DataFieldType.NUMBER) {
+				tempComparator = DoubleComparator.getInstance();
+			} else if (fieldType == DataFieldType.DECIMAL) {
+				tempComparator = DecimalComparator.getInstance();
+			} else {
+				throw new IllegalArgumentException("Cannot determine comparator for validation.");
+			}
+		}
+		if(tempConverter == null) {
+			if (fieldType == DataFieldType.STRING) {
+				tempConverter = StringConverter.getInstance();
+			} else if (fieldType == DataFieldType.INTEGER
+					|| fieldType == DataFieldType.LONG
+					|| fieldType == DataFieldType.BYTE
+					|| fieldType == DataFieldType.CBYTE
+					|| fieldType == DataFieldType.BOOLEAN) {
+				tempConverter = LongConverter.getInstance();
+			} else if (fieldType == DataFieldType.DATE) {
+				tempConverter = DateConverter.newInstance(format.getValue(), ValidatorUtils.localeFromString(locale.getValue()), TimeZone.getTimeZone(timezone.getValue()));
+			} else if (fieldType == DataFieldType.NUMBER) {
+				tempConverter = DoubleConverter.newInstance(format.getValue(), ValidatorUtils.localeFromString(locale.getValue()));
+			} else if (fieldType == DataFieldType.DECIMAL) {
+				tempConverter = DecimalConverter.newInstance(format.getValue(), ValidatorUtils.localeFromString(locale.getValue()));
+			} else {
+				throw new IllegalArgumentException("Cannot determine converter for validation.");
+			}
+		}
+	}
+	
 	
 	@Override
 	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
 		if(useType.getValue() == METADATA_TYPES.DATE || useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL) {
 			if(format.getValue().isEmpty() && inputMetadata.getField(target.getValue()).getDataType() == DataFieldType.STRING) {
-				accumulator.addError(format, this, "Format mask to parse incoming field, value from and to must be filled.");
+				accumulator.addError(format, this, "Format mask to parse incoming field must be filled.");
+				return false;
+			}
+			if(locale.getValue().isEmpty()) {
+				accumulator.addError(format, this, "Locale of incoming field must be filled.");
+				return false;
+			}
+		}
+		if(useType.getValue() == METADATA_TYPES.DATE) {
+			if(timezone.getValue().isEmpty()) {
+				accumulator.addError(format, this, "Timezone of incoming field must be filled.");
 				return false;
 			}
 		}
@@ -139,12 +229,16 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 		return fieldType;
 	}
 
-	public BooleanValidationParamNode getStrict() {
-		return strict;
+	public StringEnumValidationParamNode getTimezone() {
+		return timezone;
 	}
 	
 	public StringEnumValidationParamNode getFormat() {
 		return format;
+	}
+	
+	public StringEnumValidationParamNode getLocale() {
+		return locale;
 	}
 
 	public EnumValidationParamNode getUseType() {

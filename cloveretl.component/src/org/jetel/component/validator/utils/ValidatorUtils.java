@@ -18,6 +18,8 @@
  */
 package org.jetel.component.validator.utils;
 
+import java.util.Locale;
+
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -51,5 +53,19 @@ public class ValidatorUtils {
 			}
 		}
 		return true;
+	}
+	
+	public static Locale localeFromString(String locale) {
+		String[] temp = locale.split("\\.");
+		if(temp.length == 0) {
+			return Locale.ENGLISH;
+		}
+		if(temp.length == 3) {
+			return new Locale(temp[0], temp[1], temp[2]);
+		}
+		if(temp.length == 2) {
+			return new Locale(temp[0], temp[1]);
+		}
+		return new Locale(temp[0]);
 	}
 }

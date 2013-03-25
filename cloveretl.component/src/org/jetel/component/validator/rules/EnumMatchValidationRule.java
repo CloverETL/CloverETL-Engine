@@ -20,6 +20,8 @@ package org.jetel.component.validator.rules;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -28,13 +30,22 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
+import org.jetel.component.validator.rules.ComparisonValidationRule.OPERATOR_TYPE;
 import org.jetel.component.validator.utils.ValidatorUtils;
+import org.jetel.component.validator.utils.comparators.StringComparator;
+import org.jetel.component.validator.utils.convertors.Converter;
+import org.jetel.component.validator.utils.convertors.StringConverter;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -43,13 +54,17 @@ import org.jetel.util.string.StringUtils;
  * @created 4.12.2012
  */
 @XmlRootElement(name="enumMatch")
-@XmlType(propOrder={"values" , "ignoreCase"})
-public class EnumMatchValidationRule extends StringValidationRule {
+@XmlType(propOrder={"values" , "ignoreCase", "trimInput"})
+public class EnumMatchValidationRule extends ConversionValidationRule {
 
 	@XmlElement(name="values",required=true)
 	private StringValidationParamNode values = new StringValidationParamNode();
-	@XmlElement(name="ignoreCase",required=true)
+	@XmlElement(name="ignoreCase",required=false)
 	private BooleanValidationParamNode ignoreCase = new BooleanValidationParamNode(false);
+	@XmlElement(name="trimInput",required=false)
+	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
+	
+	private Set<Object> tempValues;
 	
 	public List<ValidationParamNode> initialize() {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
@@ -57,14 +72,36 @@ public class EnumMatchValidationRule extends StringValidationRule {
 		values.setTooltip("For example:\nfirst,second\nfirst,\"second,third\",fourth");
 		values.setPlaceholder("Comma separated list of values");
 		params.add(values);
+		params.addAll(super.initialize());
 		ignoreCase.setName("Ignore case");
 		params.add(ignoreCase);
-		params.addAll(super.initialize());
+		ignoreCase.setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				if(useType.getValue() == METADATA_TYPES.STRING ) {
+					return true;
+				}
+				return false;
+			}
+		});
+		trimInput.setName("Trim input");
+		params.add(trimInput);
+		trimInput.setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				if(useType.getValue() == METADATA_TYPES.STRING ) {
+					return true;
+				}
+				return false;
+			}
+		});
 		return params;
 	}
 
 	@Override
-	public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
+	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
 			return State.NOT_VALIDATED;
@@ -72,19 +109,83 @@ public class EnumMatchValidationRule extends StringValidationRule {
 		logger.trace("Validation rule: " + this.getName() + "\n"
 					+ "Target field: " + target.getValue() + "\n"
 					+ "Accepted values: " + values.getValue() + "\n"
+					+ "Compare as: " + useType.getValue() + "\n"
+					+ "Format mask: " + format.getValue() + "\n"
+					+ "Locale: " + locale.getValue() + "\n"
+					+ "Timezone: " + timezone.getValue() + "\n"
 					+ "Ignoring case: " + ignoreCase.getValue() + "\n"
 					+ "Trim input: " + trimInput.getValue());
 		
-		String tempString = prepareInput(record.getField(target.getValue()));
-		Set<String> values = parseValues(ignoreCase.getValue());
-		if(values.contains(tempString)) {
-			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
-			return State.VALID;
-		} else {
-			// TODO: error reporting
-			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.INVALID);
+		DataField field = record.getField(target.getValue());
+		DataFieldType fieldType = computeType(field);
+		try {
+			initConversionUtils(fieldType);
+		} catch (IllegalArgumentException ex) {
+			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (cannot determine type to compare in)");
 			return State.INVALID;
 		}
+		
+		try {
+			getParsedValues();
+		} catch (NullPointerException ex) {
+			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (cannot parse accepted values)");
+			return State.INVALID;
+		}
+		
+		State status = checkInType(field);
+		
+		if(status == State.VALID) {
+			logger.trace("Validation rule: " + getName() + " is " + State.VALID);
+			return State.VALID;
+		} else {
+			logger.trace("Validation rule: " + getName() + " is " + State.INVALID);
+			return State.INVALID;
+		}
+	}
+	
+	private Set<Object> getParsedValues() {
+		if(tempValues == null) {
+			Set<String> values = parseValues(ignoreCase.getValue());
+			Set<Object> out = new HashSet<Object>();
+			for(String value : values) {
+				Object temp = tempConverter.convertFromCloverLiteral(value);
+				if(temp == null) {
+					throw new NullPointerException("Cannot parse values;");
+				}
+				out.add(temp);
+			}
+			tempValues = out;
+		}
+		return tempValues;
+	}
+	
+	private <T> State checkInType(DataField dataField) {
+		T record = tempConverter.convert(dataField.getValue());
+		if(record == null) {
+			return State.INVALID;
+		}
+		
+		Set<Object> temp = getParsedValues();
+		for(Object item : temp) {
+			if(tempComparator instanceof StringComparator) {
+				if(trimInput.getValue()) {
+					record = (T) ((String) record).trim();
+				}
+				if(ignoreCase.getValue()) {
+					record = (T) ((String) record).toLowerCase();
+					item = (T) ((String) item).toLowerCase();
+				}
+				System.err.println(record);
+				System.err.println(item);
+				if(tempComparator.compare(record, item) == 0) {
+					return State.VALID;		
+				}	
+			} else
+			if(tempComparator.compare(item, record) == 0) {
+				return State.VALID;		
+			}
+		}
+		return State.INVALID;
 	}
 	
 	@Override
@@ -151,6 +252,10 @@ public class EnumMatchValidationRule extends StringValidationRule {
 	 */
 	public BooleanValidationParamNode getIgnoreCase() {
 		return ignoreCase;
+	}
+	
+	public BooleanValidationParamNode getTrimInput() {
+		return trimInput;
 	}
 
 	@Override

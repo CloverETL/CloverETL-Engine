@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -31,9 +32,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.AbstractValidationRule;
+import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
+import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -101,17 +104,18 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		boundaries.setName("Boundaries");
 		params.add(boundaries);
 		from.setName("From");
-		from.setPlaceholder("Not set");
+		from.setPlaceholder("Standard Clover format, for details see documentation.");
 		params.add(from);
 		to.setName("To");
 		to.setPlaceholder("Not set");
+		to.setPlaceholder("Standard Clover format, for details see documentation.");
 		params.add(to);
 		params.addAll(super.initialize());
 		return params;
 	}
 
 	@Override
-	public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
+	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
 			return State.NOT_VALIDATED;
@@ -123,37 +127,21 @@ public class IntervalValidationRule extends ConversionValidationRule {
 				+ "  To: " + to.getValue() + "\n"
 				+ "  Compare as: " + useType.getValue() + "\n"
 				+ "  Format mask: " + format.getValue() + "\n"
-				+ "  Strict mode: " + strict.getValue() + "\n");
+				+ "  Locale: " + locale.getValue() + "\n"
+				+ "  Timezone: " + timezone.getValue() + "\n"
+				);
 		
 		DataField field = record.getField(target.getValue());
 		DataFieldType fieldType = computeType(field);
 		
-		State status = null;
-		if (fieldType == DataFieldType.STRING) {
-			System.out.println("Validation rule: " + getName() + ": Comparing as strings");
-			status = checkInType(field, StringConverter.getInstance(), StringComparator.getInstance());
-		} else if (fieldType == DataFieldType.INTEGER
-				|| fieldType == DataFieldType.LONG
-				|| fieldType == DataFieldType.BYTE
-				|| fieldType == DataFieldType.CBYTE
-				|| fieldType == DataFieldType.BOOLEAN) {
-			System.out.println("Validation rule: " + getName() + ": Comparing as longs");
-			status = checkInType(field, LongConverter.getInstance(), LongComparator.getInstance());
-		} else if (fieldType == DataFieldType.DATE) {
-			String localeString = (record.getMetadata().getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : record.getField(target.getValue()).getMetadata().getLocaleStr(); 
-			Locale locale = new Locale(localeString);
-			// FIXME: store it for later
-			DateConverter converter = DateConverter.newInstance(format.getValue(), strict.getValue(), locale);
-			status = checkInType(field, converter, DateComparator.getInstance());
-		} else if (fieldType == DataFieldType.NUMBER) {
-			System.out.println("Validation rule: " + getName() + ": Comparing as numbers");
-			status = checkInType(field, DoubleConverter.getInstance(), DoubleComparator.getInstance());
-		} else if (fieldType == DataFieldType.DECIMAL) {
-			System.out.println("Validation rule: " + getName() + ": Comparing as decimals");
-			status = checkInType(field, DecimalConverter.getInstance(), DecimalComparator.getInstance());
-		} else {
-			System.out.println("Validation rule: " + getName() + ": No comparing, unknown data type");
+		try {
+			initConversionUtils(fieldType);
+		} catch (IllegalArgumentException ex) {
+			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (cannot determine type to compare in)");
+			return State.INVALID;
 		}
+		
+		State status = checkInType(field, tempConverter, tempComparator);
 		
 		if(status == State.VALID) {
 			logger.trace("Validation rule: " + getName() + " is " + State.VALID);
@@ -170,8 +158,8 @@ public class IntervalValidationRule extends ConversionValidationRule {
 			return State.INVALID;
 		}
 		final BOUNDARIES_TYPE boundaries = (BOUNDARIES_TYPE) this.boundaries.getValue();
-		T from = converter.convert(this.from.getValue());
-		T to = converter.convert(this.to.getValue());
+		T from = converter.convertFromCloverLiteral(this.from.getValue());
+		T to = converter.convertFromCloverLiteral(this.to.getValue());
 		if(from == null || to == null) {
 			return State.INVALID;
 		}

@@ -23,6 +23,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -31,6 +32,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.AbstractValidationRule;
+import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
@@ -106,13 +108,14 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		operator.setName("Operator");
 		params.add(operator);
 		value.setName("Compare with");
+		value.setPlaceholder("Standard Clover format, for details see documentation.");
 		params.add(value);
 		params.addAll(super.initialize());
 		return params;
 	}
 
 	@Override
-	public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
+	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
 			return State.NOT_VALIDATED;
@@ -123,37 +126,20 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 				+ "  Value: " + value.getValue() + "\n"
 				+ "  Compare as: " + useType.getValue() + "\n"
 				+ "  Format mask: " + format.getValue() + "\n"
-				+ "  Strict mode: " + strict.getValue() + "\n");
+				+ "  Locale: " + locale.getValue() + "\n"
+				+ "  Timezone: " + timezone.getValue() + "\n"
+				);
 		
 		DataField field = record.getField(target.getValue());
 		DataFieldType fieldType = computeType(field);
-		
-		State status = null;
-		if (fieldType == DataFieldType.STRING) {
-			System.out.println("Validation rule: " + getName() + ": Comparing as strings");
-			status = checkInType(field, StringConverter.getInstance(), StringComparator.getInstance());
-		} else if (fieldType == DataFieldType.INTEGER
-				|| fieldType == DataFieldType.LONG
-				|| fieldType == DataFieldType.BYTE
-				|| fieldType == DataFieldType.CBYTE
-				|| fieldType == DataFieldType.BOOLEAN) {
-			System.out.println("Validation rule: " + getName() + ": Comparing as longs");
-			status = checkInType(field, LongConverter.getInstance(), LongComparator.getInstance());
-		} else if (fieldType == DataFieldType.DATE) {
-			String localeString = (record.getMetadata().getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : record.getField(target.getValue()).getMetadata().getLocaleStr(); 
-			Locale locale = new Locale(localeString);
-			// FIXME: store it for later
-			DateConverter converter = DateConverter.newInstance(format.getValue(), strict.getValue(), locale);
-			status = checkInType(field, converter, DateComparator.getInstance());
-		} else if (fieldType == DataFieldType.NUMBER) {
-			System.out.println("Validation rule: " + getName() + ": Comparing as numbers");
-			status = checkInType(field, DoubleConverter.getInstance(), DoubleComparator.getInstance());
-		} else if (fieldType == DataFieldType.DECIMAL) {
-			System.out.println("Validation rule: " + getName() + ": Comparing as decimals");
-			status = checkInType(field, DecimalConverter.getInstance(), DecimalComparator.getInstance());
-		} else {
-			System.out.println("Validation rule: " + getName() + ": No comparing, unknown data type");
+		try {
+			initConversionUtils(fieldType);
+		} catch (IllegalArgumentException ex) {
+			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (cannot determine type to compare in)");
+			return State.INVALID;
 		}
+		
+		State status = checkInType(field, tempConverter, tempComparator);
 		
 		if(status == State.VALID) {
 			logger.trace("Validation rule: " + getName() + " is " + State.VALID);
@@ -171,7 +157,8 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		}
 
 		final OPERATOR_TYPE operator = (OPERATOR_TYPE) this.operator.getValue();
-		T value = converter.convert(this.value.getValue());
+		
+		T value = converter.convertFromCloverLiteral(this.value.getValue());
 		if(value == null) {
 			return State.INVALID;
 		}
@@ -213,30 +200,12 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		state &= super.isReady(inputMetadata, accumulator);
 		return state;
 	}
-
-	/**
-	 * @return the target
-	 */
-	public StringValidationParamNode getTarget() {
-		return target;
-	}
 	
 	public EnumValidationParamNode getOperator() {
 		return operator;
 	}
-
-	/**
-	 * @return the value
-	 */
 	public StringValidationParamNode getValue() {
 		return value;
-	}
-
-	/**
-	 * @return the useType
-	 */
-	public EnumValidationParamNode getUseType() {
-		return useType;
 	}
 	
 	@Override

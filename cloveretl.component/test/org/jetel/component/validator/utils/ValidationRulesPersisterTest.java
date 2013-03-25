@@ -28,7 +28,6 @@ import org.jetel.component.validator.rules.EnumMatchValidationRule;
 import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
 import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
-import org.jetel.component.validator.rules.RangeCheckValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
 import org.junit.Test;
 
@@ -99,12 +98,11 @@ public class ValidationRulesPersisterTest extends ValidatorTestCase {
 //		ValidationGroup subgroup = new ValidationGroup();
 //		subgroup.setName("Podskupina");
 //		subgroup.setEnabled(true);
-		br = new StringLengthValidationRule();
-		br.setName("MinimaRl length is 2");
-		br.setEnabled(true);
-		setStringParam(br, "target", "name");
-		setEnumParam(br, "type", StringLengthValidationRule.TYPES.MINIMAL);
-		setIntegerParam(br, "from", 10);
+		StringLengthValidationRule br1 = new StringLengthValidationRule();
+		br1.setName("MinimaRl length is 2");
+		br1.getTarget().setValue("name");
+		br1.getFrom().setValue(10);
+		br1.getType().setValue(StringLengthValidationRule.TYPES.MINIMAL);
 //		subgroup.setPrelimitaryCondition(br);
 //		br = new EnumMatchValidationRule();
 //		br.setEnabled(true);

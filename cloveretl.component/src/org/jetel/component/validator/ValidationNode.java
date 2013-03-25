@@ -56,9 +56,10 @@ public abstract class ValidationNode {
 	 * Validates given record against the rule.
 	 * @param record Record to be validated
 	 * @param ea Error accumulator where all errors are stored, can be null
+	 * @param graphWrapper Object which holds graph instance
 	 * @return Not null validation state, NOT_VALIDATED when rule is disabled
 	 */
-	public abstract State isValid(DataRecord record, ValidationErrorAccumulator ea);
+	public abstract State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper);
 	
 	/**
 	 * Return whether the rule parameters are valid and therefore is ready to validate.

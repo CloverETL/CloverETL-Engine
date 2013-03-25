@@ -21,6 +21,7 @@ package org.jetel.component.validator.rules;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -33,6 +34,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.ValidationNode.State;
@@ -42,6 +44,7 @@ import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldFormatType;
@@ -56,14 +59,14 @@ import org.joda.time.format.DateTimeFormatter;
  * @created 10.3.2013
  */
 @XmlRootElement(name="number")
-@XmlType(propOrder={"format", "strict"})
+@XmlType(propOrder={"format", "locale"})
 public class NumberValidationRule extends StringValidationRule {
 
 	@XmlElement(name="format",required=true)
 	private StringEnumValidationParamNode format = new StringEnumValidationParamNode(CommonFormats.defaultNumber);	
 	
-	@XmlElement(name="strict",required=false)
-	private BooleanValidationParamNode strict = new BooleanValidationParamNode(false);
+	@XmlElement(name="locale",required=true)
+	private StringEnumValidationParamNode locale = new StringEnumValidationParamNode(Defaults.DEFAULT_LOCALE);
 	
 	public List<ValidationParamNode> initialize() {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
@@ -71,8 +74,10 @@ public class NumberValidationRule extends StringValidationRule {
 		format.setPlaceholder("Number format, for syntax see documentation.");
 		format.setOptions(CommonFormats.numbers);
 		params.add(format);
-		strict.setName("Strict mode");
-		params.add(strict);
+		locale.setName("Locale");
+		locale.setOptions(CommonFormats.locales);
+		locale.setTooltip("Locale code of record field");
+		params.add(locale);
 		params.addAll(super.initialize());
 		return params;
 	}
@@ -83,7 +88,7 @@ public class NumberValidationRule extends StringValidationRule {
 	}
 
 	@Override
-	public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
+	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
 			return State.NOT_VALIDATED;
@@ -91,28 +96,33 @@ public class NumberValidationRule extends StringValidationRule {
 		logger.trace("Validation rule: " + this.getName() + "\n"
 					+ "Target field: " + target.getValue() + "\n"
 					+ "Format mask: " + format.getValue() + "\n"
-					+ "Strict mode: " + strict.getValue() + "\n"
+					+ "Locale: " + locale.getValue() + "\n"
 					+ "Trim input: " + trimInput.getValue());
 		
-		String localeString = (record.getMetadata().getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : record.getField(target.getValue()).getMetadata().getLocaleStr(); 
-		Locale locale = new Locale(localeString);
+		DataField field = record.getField(target.getValue());
+		if(field.isNull()) {
+			logger.trace("Validation rule: " + getName() + "  on null is " + State.VALID);
+			return State.VALID;
+		}
 		
+		Locale realLocale = ValidatorUtils.localeFromString(locale.getValue());
 		String tempString = prepareInput(record.getField(target.getValue()));
 		try {
-			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(locale);
+			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(realLocale);
 			if(format.getValue().equals(CommonFormats.defaultNumber)) {
 				numberFormat.applyLocalizedPattern("#");
 				numberFormat.setParseIntegerOnly(true);
 			} else if(!format.getValue().isEmpty()) {
-				numberFormat.applyLocalizedPattern(format.getValue());
+				//numberFormat.applyLocalizedPattern(format.getValue());
+				numberFormat.applyPattern(format.getValue());
 			}
 			ParsePosition pos = new ParsePosition(0);
-			numberFormat.setMinimumFractionDigits(0);
-			numberFormat.setMaximumFractionDigits(0);
-			numberFormat.setMaximumIntegerDigits(0);
+//			numberFormat.setMinimumFractionDigits(0);
+//			numberFormat.setMaximumFractionDigits(0);
+//			numberFormat.setMaximumIntegerDigits(0);
 			Number parsedNumber = numberFormat.parse(tempString, pos);
 			System.err.println(parsedNumber);
-			if(parsedNumber == null || (strict.getValue() && pos.getIndex() != tempString.length())) {
+			if(parsedNumber == null || pos.getIndex() != tempString.length()) {
 				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedNumber + "' is " + State.INVALID);
 				return State.INVALID;
 			}
@@ -154,7 +164,7 @@ public class NumberValidationRule extends StringValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "Validate number";
+		return "Number";
 	}
 
 	@Override
@@ -166,7 +176,7 @@ public class NumberValidationRule extends StringValidationRule {
 		return format;
 	}
 
-	public BooleanValidationParamNode getStrict() {
-		return strict;
+	public StringEnumValidationParamNode getLocale() {
+		return locale;
 	}
 }

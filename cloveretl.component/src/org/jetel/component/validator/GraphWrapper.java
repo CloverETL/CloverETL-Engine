@@ -16,38 +16,28 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.validator.utils.convertors;
+package org.jetel.component.validator;
+
+import java.util.Iterator;
+
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 15.1.2013
+ * @created 24.3.2013
  */
-public class StringConverter implements Converter {
-	
-	private static StringConverter instance;
-	private StringConverter() {}
-	
-	public static StringConverter getInstance() {
-		if(instance == null) {
-			instance = new StringConverter();
-		}
-		return instance;
-	}
-
-	@Override
-	public String convert(Object o) {
-		if(o == null) {
-			return null;
-		} else if(o instanceof byte[]) {
-			return "" + ((byte[]) o).length;
-		}
-		
-		return o.toString();
+public class GraphWrapper {
+	private TransformationGraph graph;
+	public GraphWrapper(TransformationGraph graph) {
+		this.graph = graph;
 	}
 	
-	@Override
-	public String convertFromCloverLiteral(String o) {
-		return o;
+	public Iterator<String> getLookupTables() {
+		return graph.getLookupTables();
 	}
-
+	
+	public LookupTable getLookupTable(String name) {
+		return graph.getLookupTable(name);
+	}
 }

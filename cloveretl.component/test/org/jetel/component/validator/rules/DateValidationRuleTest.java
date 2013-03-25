@@ -30,128 +30,98 @@ import org.junit.Test;
  */
 public class DateValidationRuleTest extends ValidatorTestCase {
 	
-//	private static final String TARGET = "target";
-//	private static final String TRIM = "trimInput";
-//	private static final String PATTERN = "pattern";
-//	private static final String IGNORE_CASE = "ignoreCase";
+	@Test
+	public void testNameability() {
+		testNameability(DateValidationRule.class);
+	}
 	
-//	@Test
-//	public void testNameability() {
-//		testNameability(PatternMatchValidationRule.class);
-//	}
-//	
-//	@Test
-//	public void testDisablity() {
-//		testDisability(PatternMatchValidationRule.class);
-//	}
-//	@Test
-//	public void testAttributes() {
-//		testBooleanAttribute(PatternMatchValidationRule.class, IGNORE_CASE, false);
-//		testBooleanAttribute(PatternMatchValidationRule.class, TRIM, false);
-//		testStringAttribute(PatternMatchValidationRule.class, TARGET, "");
-//		testStringAttribute(PatternMatchValidationRule.class, PATTERN, "");
-//	}
-//	@Test
-//	public void testReadyness() {
-//		AbstractValidationRule rule = new PatternMatchValidationRule();
-//		assertFalse(rule.isReady());
-//		setStringParam(rule, TARGET, "some_text");
-//		assertFalse(rule.isReady());
-//		setStringParam(rule, PATTERN , "");
-//		assertFalse(rule.isReady());
-//		setStringParam(rule, PATTERN , "pattern");
-//		assertTrue(rule.isReady());
-//		setStringParam(rule, TARGET, "");
-//		assertFalse(rule.isReady());
-//	}
+	@Test
+	public void testDisability() {
+		testDisability(DateValidationRule.class);
+	}
+	@Test
+	public void testReadyness() {
+		// TODO
+	}
+	@Test
+	public void testNullInput() {
+		DateValidationRule rule = new DateValidationRule();
+		rule.getTarget().setValue("field");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", null), null, null));
+	}
 	@Test
 	public void testJavaSyntax() {
 		DateValidationRule rule = new DateValidationRule();
-		rule.setEnabled(true);
 		rule.getTarget().setValue("field");
 		
 		// Default pattern (DateTime)
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08 10:20:30"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-6-8 10:20:30"), null));
-		// assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-13-08 10:20:30"), null));
-		// assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-2-29 10:20:30"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-asdf"), null));
-		
-		// Own pattern
-		rule.getFormat().setValue("yyyy-MM-DD");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08"), null));
-		//assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-600-08"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-cc"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-0a-32"), null));
-		
-		rule.getFormat().setValue("yyMMddHHmmssZ");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "010704120856-0700"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "010704120856"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "010704120856abc"), null));
-		
-		rule.getFormat().setValue("h:mm a");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12:08 PM"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12a:08 PM"), null));
-		
-		rule.getFormat().setValue("EEE, MMM d, ''yy");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Wed, Jul 4, '01"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SSS, Jul 4, '01"), null));
-		
-		rule.getFormat().setValue("yyyy.MM.dd G 'at' HH:mm:ss z");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2001.07.04 AD at 12:08:56 PDT"), null));
-		
-		rule.getFormat().setValue("hh 'o''clock' a, zzzz");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12 o'clock PM, Pacific Daylight Time"), null));
-	}
-	@Test
-	public void testJavaSyntaxStrictMode() {
-		DateValidationRule rule = new DateValidationRule();
-		rule.setEnabled(true);
-		rule.getTarget().setValue("field");
-		rule.getStrict().setValue(true);
-		
-		// Default pattern (DateTime)
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08 10:20:30"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-6-8 10:20:30"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-13-08 10:20:30"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-2-29 10:20:30"), null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08 10:20:30"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-6-8 10:20:30"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-13-08 10:20:30"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-2-29 10:20:30"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-asdf"), null, null));
 		
 		// Own pattern
 		rule.getFormat().setValue("yyyy-MM-dd");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-13-08"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-600-08"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-cc"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-0a-32"), null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-600-08"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-cc"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-0a-32"), null, null));
+		
+		rule.getFormat().setValue("MM");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "01"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "13"), null, null));
+		
+		rule.getFormat().setValue("yyMMddHHmmssZ");
+		rule.getTimezone().setValue("America/Los_Angeles");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "010704120856-0700"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "010704120856"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "010704120856abc"), null, null));
+		
+		rule.getLocale().setValue("en.US");
+		rule.getFormat().setValue("h:mm a");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12:08 PM"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12a:08 PM"), null, null));
+		
+		rule.getFormat().setValue("EEE, MMM d, ''yy");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Wed, Jul 4, '01"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SSS, Jul 4, '01"), null, null));
+		
+		rule.getFormat().setValue("yyyy.MM.dd G 'at' HH:mm:ss z");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2001.07.04 AD at 12:08:56 PDT"), null, null));
+		
+		// Will parse completely wrong
+		//rule.getFormat().setValue("hh 'o''clock' a, zzzz");
+		//assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12 o'clock PM, Pacific Daylight Time"), null));
 	}
 	
 	@Test
 	public void testJodaSyntax() {
 		DateValidationRule rule = new DateValidationRule();
-		rule.setEnabled(true);
 		rule.getTarget().setValue("field");
 		
 		rule.getFormat().setValue("joda:yyyy-MM-dd");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-02-02"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-02-29"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012a-02-02"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-2-2"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-2-2a"), null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-02-02"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-02-29"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012a-02-02"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-2-2"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-2-2a"), null, null));
+	}
+	
+	public void testLocale() {
+		DateValidationRule rule = new DateValidationRule();
+		rule.getTarget().setValue("field");
+		
+		rule.getLocale().setValue("hi.IN");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "२०११-०३-०३ १६:५३:०९"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-01-01 10:30:40"), null, null));
 	}
 	
 	@Test
-	public void testJodaSyntaxStrictMode() {
-		DateValidationRule rule = new DateValidationRule();
-		rule.setEnabled(true);
-		rule.getTarget().setValue("field");
-		
-		rule.getFormat().setValue("joda:yyyy-MM-dd");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-02-02"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-02-29"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012a-02-02"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-2-2"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-2-2a"), null));
+	public void testNonStringInput() {
+		// TODO
 	}
+	
 }

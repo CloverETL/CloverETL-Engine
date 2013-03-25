@@ -8,10 +8,15 @@ package org.jetel.component.validator.utils.convertors;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.Date;
+import java.util.Locale;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.CloverString;
 
 /**
@@ -20,14 +25,16 @@ import org.jetel.util.string.CloverString;
  */
 public class DoubleConverter implements Converter {
 	
-	private static DoubleConverter instance;
-	private DoubleConverter() {}
+	private String format;
+	private Locale locale;
 	
-	public static DoubleConverter getInstance() {
-		if(instance == null) {
-			instance = new DoubleConverter();
-		}
-		return instance;
+	private DoubleConverter(String format, Locale locale) {
+		this.format = format;
+		this.locale = locale;
+	}
+	
+	public static DoubleConverter newInstance(String format, Locale locale) {
+		return new DoubleConverter(format, locale);
 	}
 
 	@Override
@@ -54,15 +61,19 @@ public class DoubleConverter implements Converter {
 		}
 		if (o instanceof CloverString) {
 			try {
-				return Double.parseDouble(((CloverString) o).toString());
-			} catch (NumberFormatException e) {
+				DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance(locale);
+				format.applyLocalizedPattern(this.format);
+				return format.parse(((CloverString) o).toString()).doubleValue(); 
+			} catch (ParseException e) {
 				return null;
 			}
 		}
 		if (o instanceof String) {
 			try {
-				return Double.parseDouble((String) o);
-			} catch (NumberFormatException e) {
+				DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance(locale);
+				format.applyLocalizedPattern(this.format);
+				return format.parse((String) o).doubleValue(); 
+			} catch (ParseException e) {
 				return null;
 			}
 		}
@@ -74,6 +85,23 @@ public class DoubleConverter implements Converter {
 		}
 		// TODO: add cbyte, byte, date, list, map
 		return null;
+	}
+	
+	/**
+	 * {@link ComponentXMLAttributes#getDouble(String)}
+	 */
+	@Override
+	public Double convertFromCloverLiteral(String o) {
+		if (o.equalsIgnoreCase(ComponentXMLAttributes.STR_MIN_DOUBLE)) {
+			return Double.MIN_VALUE;
+		} else if (o.equalsIgnoreCase(ComponentXMLAttributes.STR_MAX_DOUBLE)) {
+			return Double.MAX_VALUE;
+		}
+		try {
+			return Double.parseDouble(o);
+		} catch (NumberFormatException ex) {
+			return null;
+		}
 	}
 
 }

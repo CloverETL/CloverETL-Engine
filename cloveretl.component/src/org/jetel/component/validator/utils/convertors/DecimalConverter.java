@@ -9,9 +9,12 @@ package org.jetel.component.validator.utils.convertors;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.data.primitive.NumericFormat;
 import org.jetel.util.string.CloverString;
 
 /**
@@ -19,15 +22,16 @@ import org.jetel.util.string.CloverString;
  * @created 15.1.2013
  */
 public class DecimalConverter implements Converter {
+	private String format;
+	private Locale locale;
 	
-	private static DecimalConverter instance;
-	private DecimalConverter() {}
+	private DecimalConverter(String format, Locale locale) {
+		this.format = format;
+		this.locale = locale;
+	}
 	
-	public static DecimalConverter getInstance() {
-		if(instance == null) {
-			instance = new DecimalConverter();
-		}
-		return instance;
+	public static DecimalConverter newInstance(String format, Locale locale) {
+		return new DecimalConverter(format, locale);
 	}
 
 	@Override
@@ -57,14 +61,18 @@ public class DecimalConverter implements Converter {
 		}
 		if (o instanceof CloverString) {
 			try {
-				return DecimalFactory.getDecimal(((CloverString)o).toString());
+				NumericFormat nf = new NumericFormat(locale);
+				nf.applyLocalizedPattern(format);
+				return DecimalFactory.getDecimal(((CloverString)o).toString(), nf);
 			} catch (NumberFormatException e) {
 				return null;
 			}
 		}
 		if (o instanceof String) {
 			try {
-				return DecimalFactory.getDecimal((String)o);
+				NumericFormat nf = new NumericFormat(locale);
+				nf.applyLocalizedPattern(format);
+				return DecimalFactory.getDecimal((String)o, nf);
 			} catch (NumberFormatException e) {
 				return null;
 			}
@@ -76,6 +84,15 @@ public class DecimalConverter implements Converter {
 			return DecimalFactory.getDecimal(((Date) o).getTime());
 		}
 		return null;
+	}
+	
+	@Override
+	public Decimal convertFromCloverLiteral(String o) {
+		try {
+			return DecimalFactory.getDecimal(o);
+		} catch (NumberFormatException ex) {
+			return null;
+		}
 	}
 
 }

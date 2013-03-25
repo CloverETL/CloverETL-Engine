@@ -20,26 +20,33 @@ package org.jetel.component.validator.rules;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
+import javax.swing.text.DateFormatter;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
+import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -48,14 +55,17 @@ import org.joda.time.format.DateTimeFormatter;
  * @created 10.3.2013
  */
 @XmlRootElement(name="date")
-@XmlType(propOrder={"format", "strict"})
+@XmlType(propOrder={"format", "locale", "timezone"})
 public class DateValidationRule extends StringValidationRule {
 
 	@XmlElement(name="format",required=true)
 	private StringEnumValidationParamNode format = new StringEnumValidationParamNode(CommonFormats.defaultDate);
 	
-	@XmlElement(name="strict",required=false)
-	private BooleanValidationParamNode strict = new BooleanValidationParamNode(false);
+	@XmlElement(name="locale",required=true)
+	private StringEnumValidationParamNode locale = new StringEnumValidationParamNode(Defaults.DEFAULT_LOCALE);
+	
+	@XmlElement(name="timezone",required=true)
+	private StringEnumValidationParamNode timezone = new StringEnumValidationParamNode(Calendar.getInstance().getTimeZone().getID());
 	
 	public List<ValidationParamNode> initialize() {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
@@ -63,8 +73,14 @@ public class DateValidationRule extends StringValidationRule {
 		format.setPlaceholder("Date format, for syntax see documentation");
 		format.setOptions(CommonFormats.dates);
 		params.add(format);
-		strict.setName("Strict mode");
-		params.add(strict);
+		locale.setName("Locale");
+		locale.setOptions(CommonFormats.locales);
+		locale.setTooltip("Locale code of record field");
+		params.add(locale);
+		timezone.setName("Timezone");
+		timezone.setOptions(CommonFormats.timezones);
+		timezone.setTooltip("Timezone code of record field");
+		params.add(timezone);
 		params.addAll(super.initialize());
 		return params;
 	}
@@ -75,7 +91,7 @@ public class DateValidationRule extends StringValidationRule {
 	}
 
 	@Override
-	public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
+	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
 			return State.NOT_VALIDATED;
@@ -83,27 +99,33 @@ public class DateValidationRule extends StringValidationRule {
 		logger.trace("Validation rule: " + this.getName() + "\n"
 					+ "Target field: " + target.getValue() + "\n"
 					+ "Format mask: " + format.getValue() + "\n"
-					+ "Strict mode: " + strict.getValue() + "\n"
+					+ "Locale: " + locale.getValue() + "\n"
+					+ "Timezone: " + timezone.getValue() + "\n"
 					+ "Trim input: " + trimInput.getValue());
 		
-		// TODO: add timezone support
-		String localeString = (record.getMetadata().getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : record.getField(target.getValue()).getMetadata().getLocaleStr(); 
-		Locale locale = new Locale(localeString);
+		DataField field = record.getField(target.getValue());
+		if(field.isNull()) {
+			logger.trace("Validation rule: " + getName() + "  on null is " + State.VALID);
+			return State.VALID;
+		}
 		
-		String tempString = prepareInput(record.getField(target.getValue()));
+		Locale realLocale = ValidatorUtils.localeFromString(locale.getValue());
+		
+		String tempString = prepareInput(field);
 		DataFieldFormatType formatType = DataFieldFormatType.getFormatType(format.getValue());
 	
 		if(formatType == DataFieldFormatType.JAVA || formatType == null) {
 			try {
 				SimpleDateFormat dateFormat;
 				if (formatType == null) {
-					dateFormat = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT, locale);
+					dateFormat = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT, realLocale);
 				} else {
-					 dateFormat = new SimpleDateFormat(formatType.getFormat(format.getValue()), locale);
+					dateFormat = new SimpleDateFormat(formatType.getFormat(format.getValue()), realLocale);
 				}
+				dateFormat.setTimeZone(TimeZone.getTimeZone(timezone.getValue()));
 				
 				Date parsedDate = dateFormat.parse(tempString);
-				if(strict.getValue() && !dateFormat.format(parsedDate).equals(tempString.trim())) {
+				if(!dateFormat.format(parsedDate).equals(tempString.trim())) {
 					logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.INVALID);
 					return State.INVALID;
 				}
@@ -116,9 +138,10 @@ public class DateValidationRule extends StringValidationRule {
 		} else {
 			try {
 				DateTimeFormatter formatter = DateTimeFormat.forPattern(formatType.getFormat(format.getValue()));
-				formatter = formatter.withLocale(locale);
+				formatter = formatter.withLocale(realLocale);
+				formatter = formatter.withZone(DateTimeZone.forID(timezone.getValue()));
 				DateTime parsedDate = formatter.parseDateTime(tempString);
-				if(strict.getValue() && !parsedDate.toString(formatter).equals(tempString.trim())) {
+				if(!parsedDate.toString(formatter).equals(tempString.trim())) {
 					logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedDate.toString() + "' is " + State.INVALID);
 					return State.INVALID;
 				}
@@ -145,6 +168,14 @@ public class DateValidationRule extends StringValidationRule {
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
+		if(locale.getValue().isEmpty()) {
+			accumulator.addError(locale, this, "Locale is empty.");
+			state = false;
+		}
+		if(timezone.getValue().isEmpty()) {
+			accumulator.addError(timezone, this, "Timezone is empty.");
+			state = false;
+		}
 		DataFieldFormatType formatType = DataFieldFormatType.getFormatType(format.getValue());
 		if(formatType == DataFieldFormatType.JAVA || formatType == null) {
 			try {
@@ -169,7 +200,7 @@ public class DateValidationRule extends StringValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "Validate date";
+		return "Date";
 	}
 
 	@Override
@@ -181,7 +212,12 @@ public class DateValidationRule extends StringValidationRule {
 		return format;
 	}
 
-	public BooleanValidationParamNode getStrict() {
-		return strict;
+	public StringEnumValidationParamNode getLocale() {
+		return locale;
 	}
+
+	public StringEnumValidationParamNode getTimezone() {
+		return timezone;
+	}
+
 }

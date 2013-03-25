@@ -166,7 +166,7 @@ public class ValidationGroup extends ValidationNode {
 	}
 
 	@Override
-	public State isValid(DataRecord record, ValidationErrorAccumulator ea) {
+	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return State.NOT_VALIDATED;
 		}
@@ -176,7 +176,7 @@ public class ValidationGroup extends ValidationNode {
 					+ "Lazy: " + laziness + "\n"
 					+ "Prelimitary condition: " + ((prelimitaryCondition == null)? "not present": prelimitaryCondition.getName()));
 		if(prelimitaryCondition != null) { 
-			if(prelimitaryCondition.isValid(record, null) == State.INVALID) {
+			if(prelimitaryCondition.isValid(record, null, graphWrapper) == State.INVALID) {
 				logger.trace("Skipping group: " + this.getName() + " (due to prelimitary condition).");
 				return State.NOT_VALIDATED;
 			}
@@ -185,7 +185,7 @@ public class ValidationGroup extends ValidationNode {
 		State currentState = State.NOT_VALIDATED;
 		State childState;
 		for(int i = 0; i < childs.size(); i++) {
-			childState = childs.get(i).isValid(record,ea);
+			childState = childs.get(i).isValid(record,ea, graphWrapper);
 			if(conjunction == Conjunction.AND) {
 				currentState = Conjunction.and(currentState, childState);
 				if(laziness && currentState == State.INVALID) {

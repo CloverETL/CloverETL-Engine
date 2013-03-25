@@ -26,10 +26,17 @@ package org.jetel.component.validator.utils.convertors;
 public interface Converter {
 
 	/**
-	 * Converts given object to specific type. The type is determined by class having this method.
-	 * If converting fails null is returned instead of Comparable 
-	 * @param o
-	 * @return
+	 * Converts given object to specific type. The target type is determined by the implementing class.
+	 * If converting fails null is returned, otherwise value is returend
+	 * @param o Object to convert
+	 * @return Parsed value (or null)
 	 */
 	public <T> T convert(Object o);
+	
+	/**
+	 * Converts given string from Clover literal into target type depending on the implementing class.
+	 * @param o String to convert
+	 * @return Parsed value (or null)
+	 */
+	public <T> T convertFromCloverLiteral(String o);
 }

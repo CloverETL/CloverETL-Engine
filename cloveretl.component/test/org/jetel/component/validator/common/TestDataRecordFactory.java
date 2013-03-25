@@ -20,6 +20,7 @@ package org.jetel.component.validator.common;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
@@ -39,12 +40,14 @@ public class TestDataRecordFactory {
 		return DataRecordFactory.newRecord(metadata);
 	}
 	
-	private static DataRecord extendRecord(DataRecord record, DataFieldType newFieldType, String newFieldName, Object newFieldValue) {
+	private static DataRecord extendRecord(DataRecord record, DataFieldType newFieldType, String newFieldName, Object newFieldValue, String locale) {
 		if(record == null) {
 			record = newRecord();
 		}
 		DataRecordMetadata newMetadata = record.getMetadata();
-		newMetadata.addField(new DataFieldMetadata(newFieldName, newFieldType, ";"));
+		DataFieldMetadata fieldMetadata = new DataFieldMetadata(newFieldName, newFieldType, ";");
+		fieldMetadata.setLocaleStr(locale);
+		newMetadata.addField(fieldMetadata);
 		DataRecord out = DataRecordFactory.newRecord(newMetadata); 
 		out.init();
 		out.copyFrom(record);
@@ -53,27 +56,45 @@ public class TestDataRecordFactory {
 	}
 	
 	public static DataRecord addStringField(DataRecord record, String name, String value) {
-		return extendRecord(record, DataFieldType.STRING, name, value);
+		return addStringField(record, name, value, Defaults.DEFAULT_LOCALE);
+	}
+	public static DataRecord addStringField(DataRecord record, String name, String value, String locale) {
+		return extendRecord(record, DataFieldType.STRING, name, value, locale);
 	}
 	
 	public static DataRecord addIntegerField(DataRecord record, String name, Integer value) {
-		return extendRecord(record, DataFieldType.INTEGER, name, value);
+		return addIntegerField(record, name, value, Defaults.DEFAULT_LOCALE);
+	}
+	public static DataRecord addIntegerField(DataRecord record, String name, Integer value, String locale) {
+		return extendRecord(record, DataFieldType.INTEGER, name, value, locale);
 	}
 	
 	public static DataRecord addLongField(DataRecord record, String name, Long value) {
-		return extendRecord(record, DataFieldType.LONG, name, value);
+		return addLongField(record, name, value, Defaults.DEFAULT_LOCALE);
+	}
+	public static DataRecord addLongField(DataRecord record, String name, Long value, String locale) {
+		return extendRecord(record, DataFieldType.LONG, name, value, locale);
 	}
 	
 	public static DataRecord addBooleanField(DataRecord record, String name, Boolean value) {
-		return extendRecord(record, DataFieldType.BOOLEAN, name, value);
+		return addBooleanField(record, name, value, Defaults.DEFAULT_LOCALE);
+	}
+	public static DataRecord addBooleanField(DataRecord record, String name, Boolean value, String locale) {
+		return extendRecord(record, DataFieldType.BOOLEAN, name, value, locale);
 	}
 	
 	public static DataRecord addNumberField(DataRecord record, String name, Double value) {
-		return extendRecord(record, DataFieldType.NUMBER, name, value);
+		return addNumberField(record, name, value, Defaults.DEFAULT_LOCALE);
+	}
+	public static DataRecord addNumberField(DataRecord record, String name, Double value, String locale) {
+		return extendRecord(record, DataFieldType.NUMBER, name, value, locale);
 	}
 	
 	public static DataRecord addDecimalField(DataRecord record, String name, Decimal value) {
-		return extendRecord(record, DataFieldType.DECIMAL, name, value);
+		return addDecimalField(record, name, value, Defaults.DEFAULT_LOCALE);
+	}
+	public static DataRecord addDecimalField(DataRecord record, String name, Decimal value, String locale) {
+		return extendRecord(record, DataFieldType.DECIMAL, name, value, locale);
 	}
 	
 }

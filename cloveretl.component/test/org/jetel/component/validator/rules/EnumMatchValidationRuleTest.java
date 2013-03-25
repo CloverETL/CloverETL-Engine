@@ -30,11 +30,6 @@ import org.junit.Test;
  */
 public class EnumMatchValidationRuleTest extends ValidatorTestCase{
 	
-	private static final String TARGET = "target";
-	private static final String TRIM = "trimInput";
-	private static final String VALUES = "values";
-	private static final String IGNORE_CASE = "ignoreCase";
-	
 	@Test
 	public void testNameability() {
 		testNameability(EnumMatchValidationRule.class);
@@ -45,139 +40,98 @@ public class EnumMatchValidationRuleTest extends ValidatorTestCase{
 		testDisability(EnumMatchValidationRule.class);
 	}
 	@Test
-	public void testAttributes() {
-		testBooleanAttribute(EnumMatchValidationRule.class, TRIM, false);
-		testStringAttribute(EnumMatchValidationRule.class, TARGET, "");
-		testStringAttribute(EnumMatchValidationRule.class, VALUES, "");
-		testBooleanAttribute(EnumMatchValidationRule.class, IGNORE_CASE, false);
-	}
-	@Test
 	public void testReadyness() {
-		AbstractValidationRule rule = new EnumMatchValidationRule();
-		assertFalse(rule.isReady());
-		setStringParam(rule, TARGET, "some_text");
-		assertFalse(rule.isReady());
-		setStringParam(rule, VALUES, "");
-		assertFalse(rule.isReady());
-		setStringParam(rule, VALUES, "one");
-		assertTrue(rule.isReady());
-		setStringParam(rule, VALUES, "one,two,three");
-		assertTrue(rule.isReady());
-		setStringParam(rule, TARGET, "");
-		assertFalse(rule.isReady());
+		// TODO: 
 	}
 	
 	@Test
 	public void testNormal() {		
-		AbstractValidationRule rule = new EnumMatchValidationRule();
-		rule.setEnabled(true);
-		setStringParam(rule, TARGET, "field");
-		setStringParam(rule, VALUES,"first,first,second,THIRD,fourth");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "second"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "THIRD"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "fourth"), null));
+		EnumMatchValidationRule rule = new EnumMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getValues().setValue("first,first,second,THIRD,fourth");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "second"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "THIRD"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "fourth"), null,null));
 		
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "five"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "FIRST"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SeCoNd"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Fourth"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "third"), null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "five"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "FIRST"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SeCoNd"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Fourth"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "third"), null,null));
+	}
+	
+	public void testNumbers() {
+		EnumMatchValidationRule rule = new EnumMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getValues().setValue("10,20,30,40");
+		rule.getUseType().setValue(ConversionValidationRule.METADATA_TYPES.LONG);
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "20"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "30"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "40"), null,null));
+		
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "15"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "-10"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "21"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "20.5"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "40.0"), null,null));
+	}
+	
+	public void testLocale() {
+		EnumMatchValidationRule rule = new EnumMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getValues().setValue("\"10.5\",20,\"30.6\",40");
+		rule.getLocale().setValue("cs.CZ");
+		rule.getUseType().setValue(ConversionValidationRule.METADATA_TYPES.NUMBER);
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10,5"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "20"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "30,6"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "40"), null,null));
+		
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10.5"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "20"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "30.6"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "40"), null,null));
+		
 	}
 	@Test
 	public void testCaseInsensitive() {
-		AbstractValidationRule rule = new EnumMatchValidationRule();
-		rule.setEnabled(true);
-		setStringParam(rule, TARGET, "field");
-		setBooleanParam(rule, IGNORE_CASE, true);
-		setStringParam(rule, VALUES,"first,first,second,THIRD,fourth");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "second"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "THIRD"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "fourth"), null));
-		
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "FIRST"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SECOND"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "third"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "FOURTH"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "FiRsT"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Second"), null));
-		
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "five"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "FIVE"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SiX"), null));
+		EnumMatchValidationRule rule = new EnumMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getIgnoreCase().setValue(true);
+		rule.getValues().setValue("first,first,SeCoND,THIRD,fourth");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SeCoND"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "THIRD"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "fourth"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "First"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "FIRST"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SeCoNd"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Fourth"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "third"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Five"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "five"), null,null));
 	}
 	@Test
 	public void testEmptyOption() {
-		AbstractValidationRule rule = new EnumMatchValidationRule();
-		rule.setEnabled(true);
-		setStringParam(rule, TARGET, "field");
-		setStringParam(rule, VALUES,",first,second,,third,fourth");
-		
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "eight"), null));
-		
-		setStringParam(rule, VALUES,"first,,second,,third,fourth");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "second"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "eight"), null));
-		
-		setStringParam(rule, VALUES,"first,second,,third,fourth,");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "fourth"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "eight"), null));
 	}
 	@Test
 	public void testTrimming() {
-		AbstractValidationRule rule = new EnumMatchValidationRule();
-		rule.setEnabled(true);
-		setStringParam(rule, TARGET, "field");
-		setBooleanParam(rule, TRIM, true);
-		setStringParam(rule, VALUES,"first,second,,THIRD,fourth");
-		
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", " first "), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", " first"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first "), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", " "), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "\n"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "	"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "\nfirst\n"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "\nfirst"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first\n"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "	first	"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "	first"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "first	"), null));
-		
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "FiRST"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "   five   "), null));
+		EnumMatchValidationRule rule = new EnumMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getTrimInput().setValue(true);
+		rule.getValues().setValue("first,first,SeCoND,THIRD,fourth");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "  first  "), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SeCoND   "), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "  THIRD"), null,null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "  fourth  "), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Five"), null,null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "five"), null,null));
 	}
 	@Test
 	public void testEscaping() {
-		AbstractValidationRule rule = new EnumMatchValidationRule();
-		rule.setEnabled(true);
-		setStringParam(rule, TARGET, "field");
-		setStringParam(rule, VALUES,"first,second,\"thi,rd\",\"fourth\"");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "thi,rd"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "fourth"), null));
-		
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "\"thi,rd\""), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "\"fourth\""), null));
-		
-		setStringParam(rule, VALUES,"\"f,,,irst\",second,\"thi,rd\",\"fourth\",");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "f,,,irst"), null));
-		setStringParam(rule, VALUES,",\"f,,,irst\",second,\"thi,rd\",\"fourth\",");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "f,,,irst"), null));
-		
-		setStringParam(rule, VALUES,"\"\",first,second,\"thi,rd\",\"fourth\"");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		
-		setStringParam(rule, VALUES,"first,second,\"\",third,fourth");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		setStringParam(rule, VALUES,"first,second,\",\",third,fourth");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ","), null));
+		// TODO:
 	}
 
 }

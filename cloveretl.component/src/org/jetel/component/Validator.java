@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.ValidationGroup;
@@ -46,7 +47,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -90,6 +90,7 @@ public class Validator extends Node {
 		ComponentXMLAttributes attrs = new ComponentXMLAttributes(xmlElement, graph);
 		try {
 			validator = new Validator(attrs.getString(XML_ID_ATTRIBUTE));
+			validator.setGraph(graph);
 			if(attrs.exists(XML_RULES_ATTRIBUTE)) {
 				validator.setRules(attrs.getString(XML_RULES_ATTRIBUTE));
 			}
@@ -172,6 +173,8 @@ public class Validator extends Node {
 		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		record.init();
 		
+		// Prepare provider for accessing graph
+		GraphWrapper graphWrapper = new GraphWrapper(getGraph());
 		
 		// Iterate over data
 		boolean hasData = true;
@@ -184,7 +187,7 @@ public class Validator extends Node {
 			processedRecords++;
 			logger.trace("Validation of record number " + processedRecords + " has started.");
 			record.deserialize(recordBuffer);
-			if(root.isValid(record,ea) != ValidationNode.State.INVALID) {
+			if(root.isValid(record,ea, graphWrapper) != ValidationNode.State.INVALID) {
 				recordBuffer.rewind();
 				validPort.writeRecordDirect(recordBuffer);
 				logger.trace("Record number " + processedRecords + " is VALID.");

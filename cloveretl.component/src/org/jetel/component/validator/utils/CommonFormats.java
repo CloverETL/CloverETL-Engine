@@ -18,6 +18,13 @@
  */
 package org.jetel.component.validator.utils;
 
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+
 import org.jetel.util.crypto.CombinedDecryptor;
 
 /**
@@ -100,5 +107,30 @@ public class CommonFormats {
 		"joda:yyyy-MM-dd hh:mm:ss 'text'",
 		"joda:EEE, MMM d, yy"
 	};
+	
+	/** 
+	 * @see (LocaleAttributeType)
+	 */
+	public static final String[] locales;
+	
+	static {
+		Locale[] availableLocales = DateFormat.getAvailableLocales();
+		List<String> result = new ArrayList<String>();
+		for (Locale locale : availableLocales) {
+			String localeString;
+			if (locale.getCountry().equals("")) {
+				localeString = locale.getLanguage();
+			} else {
+				localeString = locale.getLanguage() + "." + locale.getCountry();
+			}
+			result.add(localeString);
+		}
+		
+		Collections.sort(result);
+
+		locales = (String[]) result.toArray(new String[result.size()]); 
+	}
+	
+	public static final String[] timezones = TimeZone.getAvailableIDs();
 		
 }
