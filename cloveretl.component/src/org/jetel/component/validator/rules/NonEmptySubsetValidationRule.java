@@ -25,18 +25,25 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
+import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
+import org.jetel.component.validator.rules.NonEmptyFieldValidationRule.GOALS;
 import org.jetel.component.validator.rules.StringLengthValidationRule.TYPES;
 import org.jetel.component.validator.utils.ValidatorUtils;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -44,8 +51,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 4.12.2012
  */
 @XmlRootElement(name="nonEmptySubset")
-@XmlType(propOrder={"goalJAXB", "count"})
-public class NonEmptySubsetValidationRule extends StringValidationRule {
+@XmlType(propOrder={"goalJAXB", "count", "trimInput"})
+public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 	
 	public static enum GOALS {
 		EMPTY, NONEMPTY;
@@ -66,13 +73,34 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 	@XmlElement(name="count",required=true)
 	private IntegerValidationParamNode count = new IntegerValidationParamNode(1);
 	
+	@XmlElement(name="trimInput",required=false)
+	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
+	
 	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		final DataRecordMetadata inputMetadata = inMetadata;
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		goal.setName("Count");
 		params.add(goal);
 		count.setName("Minimal count");
 		params.add(count);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
+		trimInput.setName("Trim input");
+		trimInput.setTooltip("Trim input before validation.");
+		params.add(trimInput);
+		trimInput.setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				String[] targetField = ValidatorUtils.parseTargets(target.getValue());
+				DataFieldMetadata fieldMetadata;
+				for(int i = 0; i < targetField.length; i++) {
+					fieldMetadata = inputMetadata.getField(targetField[i]);
+					if(fieldMetadata != null && fieldMetadata.getDataType() == DataFieldType.STRING) {
+						return true;
+					}	
+				}
+				return false;
+			}
+		});
 		return params;
 	}
 
@@ -82,7 +110,6 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
 			return State.NOT_VALIDATED;
 		}
-		String tempString;
 		logger.trace("Validation rule: " + this.getName() + "\n"
 				+ "Target fields: " + target.getValue() + "\n"
 				+ "Goal: " + goal.getValue() + "\n"
@@ -90,11 +117,23 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 				+ "Trim input: " + trimInput.getValue());
 		
 		String[] targetField = ValidatorUtils.parseTargets(target.getValue());
+		DataField field;
 		int ok = 0;
 		for(int i = 0; i < targetField.length; i++) {
-			tempString = prepareInput(record.getField(targetField[i]));
-			if(goal.getValue() == GOALS.EMPTY && tempString.isEmpty() ||
-					goal.getValue() == GOALS.NONEMPTY && !tempString.isEmpty()) {
+			field = record.getField(targetField[i]);
+			if(field.getMetadata().getDataType() == DataFieldType.STRING) {
+				String tempString = field.toString();
+				if(trimInput.getValue()) {
+					tempString = tempString.trim();
+				}
+				if(goal.getValue() == GOALS.EMPTY && tempString.isEmpty()) {
+					ok++;	
+				}
+				if(goal.getValue() == GOALS.NONEMPTY && !tempString.isEmpty()) {
+					ok++;
+				}
+			} else if(goal.getValue() == GOALS.EMPTY && field.isNull() ||
+					goal.getValue() == GOALS.NONEMPTY && !field.isNull()) {
 				ok++;
 			}
 			if(ok >= count.getValue()) {
@@ -150,6 +189,12 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 	 */
 	public IntegerValidationParamNode getCount() {
 		return count;
+	}
+	/**
+	 * @return the trimInput
+	 */
+	public BooleanValidationParamNode getTrimInput() {
+		return trimInput;
 	}
 	
 	@Override

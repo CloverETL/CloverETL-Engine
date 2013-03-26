@@ -34,6 +34,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
@@ -48,6 +49,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldFormatType;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.formatter.NumericFormatter;
 import org.joda.time.DateTime;
@@ -59,8 +61,11 @@ import org.joda.time.format.DateTimeFormatter;
  * @created 10.3.2013
  */
 @XmlRootElement(name="number")
-@XmlType(propOrder={"format", "locale"})
-public class NumberValidationRule extends StringValidationRule {
+@XmlType(propOrder={"trimInput", "format", "locale"})
+public class NumberValidationRule extends AbstractValidationRule {
+	
+	@XmlElement(name="trimInput",required=false)
+	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
 
 	@XmlElement(name="format",required=true)
 	private StringEnumValidationParamNode format = new StringEnumValidationParamNode(CommonFormats.defaultNumber);	
@@ -70,6 +75,9 @@ public class NumberValidationRule extends StringValidationRule {
 	
 	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		trimInput.setName("Trim input");
+		trimInput.setTooltip("Trim input before validation.");
+		params.add(trimInput);
 		format.setName("Format mask");
 		format.setPlaceholder("Number format, for syntax see documentation.");
 		format.setOptions(CommonFormats.numbers);
@@ -78,7 +86,6 @@ public class NumberValidationRule extends StringValidationRule {
 		locale.setOptions(CommonFormats.locales);
 		locale.setTooltip("Locale code of record field");
 		params.add(locale);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 
@@ -104,9 +111,17 @@ public class NumberValidationRule extends StringValidationRule {
 			logger.trace("Validation rule: " + getName() + "  on null is " + State.VALID);
 			return State.VALID;
 		}
+		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
+			logger.trace("Validation rule: " + getName() + "  on null is " + State.INVALID + " (incoming field is not a string)");
+			return State.INVALID;
+		}
+		
+		String tempString = field.toString();
+		if(trimInput.getValue()) {
+			tempString = tempString.trim();
+		}
 		
 		Locale realLocale = ValidatorUtils.localeFromString(locale.getValue());
-		String tempString = prepareInput(record.getField(target.getValue()));
 		try {
 			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(realLocale);
 			if(format.getValue().equals(CommonFormats.defaultNumber)) {
@@ -143,15 +158,18 @@ public class NumberValidationRule extends StringValidationRule {
 		if(target.getValue().isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
+		} else {
+			if(inputMetadata.getField(target.getValue()) != null && inputMetadata.getField(target.getValue()).getDataType() != DataFieldType.STRING) {
+				accumulator.addError(target, this, "Target field is not string.");
+				state = false;	
+			}
 		}
 		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
 		try {
-			String localeString = (inputMetadata.getLocaleStr() == null) ? Defaults.DEFAULT_LOCALE : inputMetadata.getLocaleStr(); 
-			Locale locale = new Locale(localeString);
-			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(locale);
+			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance();
 			if(!format.getValue().isEmpty()) {
 				numberFormat.applyLocalizedPattern(format.getValue());
 			}

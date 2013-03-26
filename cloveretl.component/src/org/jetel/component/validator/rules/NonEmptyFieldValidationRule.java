@@ -27,18 +27,24 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationError;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
+import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.component.validator.rules.NonEmptySubsetValidationRule.GOALS;
 import org.jetel.component.validator.utils.ValidatorUtils;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -46,8 +52,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created 19.11.2012
  */
 @XmlRootElement(name="nonEmptyField")
-@XmlType(propOrder={"goalJAXB"})
-public class NonEmptyFieldValidationRule extends StringValidationRule {
+@XmlType(propOrder={"goalJAXB", "trimInput"})
+public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 	
 	public static enum GOALS {
 		EMPTY, NONEMPTY;
@@ -65,11 +71,28 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 	private String getGoalJAXB() { return ((Enum<?>) goal.getValue()).name(); }
 	private void setGoalJAXB(String input) { goal.setFromString(input); }
 	
+	@XmlElement(name="trimInput",required=false)
+	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
+	
 	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		final DataRecordMetadata inputMetadata = inMetadata;
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		goal.setName("Valid");
 		params.add(goal);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
+		trimInput.setName("Trim input");
+		trimInput.setTooltip("Trim input before validation.");
+		params.add(trimInput);
+		trimInput.setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
+				if(fieldMetadata != null && fieldMetadata.getDataType() == DataFieldType.STRING) {
+					return true;
+				}
+				return false;
+			}
+		});
 		return params;
 	}
 
@@ -79,24 +102,38 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
 			return State.NOT_VALIDATED;
 		}
-		String tempString = prepareInput(record.getField(target.getValue()));
 		logger.trace("Validation rule: " + this.getName() + "\n"
 				+ "Target field: " + target.getValue() + "\n"
 				+ "Check for emptiness: " + goal.getValue() + "\n"
 				+ "Trim input: " + trimInput.getValue());
-		if(goal.getValue() == GOALS.EMPTY && tempString.isEmpty()) {
-			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
+		
+		DataField field = record.getField(target.getValue());
+		
+		if(field.getMetadata().getDataType() == DataFieldType.STRING) {
+			String tempString = field.toString();
+			if(trimInput.getValue()) {
+				tempString = tempString.trim();
+			}
+			if(goal.getValue() == GOALS.EMPTY && tempString.isEmpty()) {
+				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
+				return State.VALID;	
+			}
+			if(goal.getValue() == GOALS.NONEMPTY && !tempString.isEmpty()) {
+				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
+				return State.VALID;	
+			}
+		} else if(goal.getValue() == GOALS.EMPTY && field.isNull()) {
+			logger.trace("Validation rule: " + getName() + "  on '" + field + "' is " + State.VALID);
 			return State.VALID;
-		}
-		if(goal.getValue() == GOALS.NONEMPTY && !tempString.isEmpty()) {
-			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
+		} else if(goal.getValue() == GOALS.NONEMPTY && !field.isNull()) {
+			logger.trace("Validation rule: " + getName() + "  on '" + field+ "' is " + State.VALID);
 			return State.VALID;
 		}
 		if(ea != null) {
 			// TODO: Error reporting
 			//ea.addError(new Error("NonEmptyRule", "NonEmptyRule failed", getName(), ArrayList(), params, values))
 		}
-		logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.INVALID);
+		logger.trace("Validation rule: " + getName() + "  on '" + field + "' is " + State.INVALID);
 		return State.INVALID;
 	}
 	private ValidationError prepareError(String message) {
@@ -141,6 +178,13 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 	 */
 	public EnumValidationParamNode getGoal() {
 		return goal;
+	}
+	
+	/**
+	 * @return the trimInput
+	 */
+	public BooleanValidationParamNode getTrimInput() {
+		return trimInput;
 	}
 	
 	@Override

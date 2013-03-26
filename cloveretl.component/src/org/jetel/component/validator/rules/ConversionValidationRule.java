@@ -51,6 +51,7 @@ import org.jetel.component.validator.utils.convertors.LongConverter;
 import org.jetel.component.validator.utils.convertors.StringConverter;
 import org.jetel.data.DataField;
 import org.jetel.data.Defaults;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -213,12 +214,23 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 			}
 		}
 	}
+	// TODO: refactor out
+	public DataFieldMetadata safeGetFieldMetadata(DataRecordMetadata inputMetadata, String name) {
+		String[] allFieldNames = inputMetadata.getFieldNamesArray();
+		for(String temp : allFieldNames) {
+			if(temp.equals(name)) {
+				return inputMetadata.getField(name);
+			}
+		}
+		return null;
+	}
 	
 	@Override
 	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
 		boolean status = true;
 		if(useType.getValue() == METADATA_TYPES.DATE || useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL) {
-			if(format.getValue().isEmpty() && inputMetadata.getField(target.getValue()).getDataType() == DataFieldType.STRING) {
+			DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+			if(format.getValue().isEmpty() && fieldMetadata != null && fieldMetadata.getDataType() == DataFieldType.STRING) {
 				accumulator.addError(format, this, "Format mask to parse incoming field must be filled.");
 				status &= false;
 			}

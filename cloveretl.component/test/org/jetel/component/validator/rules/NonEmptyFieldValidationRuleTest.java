@@ -45,91 +45,90 @@ public class NonEmptyFieldValidationRuleTest extends ValidatorTestCase {
 		testDisability(NonEmptyFieldValidationRule.class);
 	}
 	@Test
-	public void testAttributes() {
-		testBooleanAttribute(NonEmptyFieldValidationRule.class, TRIM, false);
-		testStringAttribute(NonEmptyFieldValidationRule.class, TARGET, "");
-		testBooleanAttribute(NonEmptyFieldValidationRule.class, GOAL, false);
-	}
-	@Test
 	public void testReadyness() {
-		AbstractValidationRule rule = new NonEmptyFieldValidationRule();
-		assertFalse(rule.isReady());
-		setStringParam(rule, TARGET, "some_text");
-		assertTrue(rule.isReady());
-		setStringParam(rule, TARGET, "");
-		assertFalse(rule.isReady());
+		// TODO:
 	}
 
 	@Test
 	public void testEmptiness() {
-		AbstractValidationRule rule = new NonEmptyFieldValidationRule();
-		setStringParam(rule, TARGET, "email");
-		setBooleanParam(rule, GOAL, true);
-		rule.setEnabled(true);
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", ""), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", null), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", null), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", null), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", null), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", null), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", null), null));
+		NonEmptyFieldValidationRule rule = new NonEmptyFieldValidationRule();
+		rule.getTarget().setValue("email");
+		rule.getGoal().setValue(NonEmptyFieldValidationRule.GOALS.EMPTY);
 		
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "some text"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "          "), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", 0l), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", 0), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", true), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", false), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", DecimalFactory.getDecimal(0)), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", 0d), null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", ""), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", null), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", null), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", null), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", null), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", null), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", null), null, null));
+		
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "some text"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "          "), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", 0l), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", 0), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", true), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", false), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", DecimalFactory.getDecimal(0)), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", 0d), null, null));
 	}
 	@Test
 	public void testNonEmptiness() {
-		AbstractValidationRule rule = new NonEmptyFieldValidationRule();
-		setStringParam(rule, TARGET, "email");
-		rule.setEnabled(true);
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", ""), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", null), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", null), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", null), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", null), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", null), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", null), null));
+		NonEmptyFieldValidationRule rule = new NonEmptyFieldValidationRule();
+		rule.getTarget().setValue("email");
+		rule.getGoal().setValue(NonEmptyFieldValidationRule.GOALS.NONEMPTY);
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", ""), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", null), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", null), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", null), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", null), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", null), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", null), null, null));
 		
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "some text"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "          "), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", 0l), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", 0), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", true), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", false), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", DecimalFactory.getDecimal(0)), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", 0d), null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "some text"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "          "), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", 0l), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", 0), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", true), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", false), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", DecimalFactory.getDecimal(0)), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", 0d), null, null));
 		
 	}
 	
 	@Test
 	public void testTrimming() {		
-		AbstractValidationRule rule = new NonEmptyFieldValidationRule();
-		setStringParam(rule, TARGET, "email");
-		setBooleanParam(rule, TRIM, true);
-		rule.setEnabled(true);
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "   "), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "\n"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "  some text  "), null));
+		NonEmptyFieldValidationRule rule = new NonEmptyFieldValidationRule();
+		rule.getTarget().setValue("email");
+		rule.getGoal().setValue(NonEmptyFieldValidationRule.GOALS.NONEMPTY);
+		rule.getTrimInput().setValue(true);
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "   "), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "\n"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "  some text  "), null, null));
 		
 		
-		AbstractValidationRule rule2 = new NonEmptyFieldValidationRule();
-		setStringParam(rule2, TARGET, "email");
-		setBooleanParam(rule2, GOAL, true);
-		setBooleanParam(rule2, TRIM, true);
-		rule2.setEnabled(true);
-		assertEquals(State.VALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "   "), null));
-		assertEquals(State.VALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null));
-		assertEquals(State.VALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "\n"), null));
-		assertEquals(State.INVALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "  some text  "), null));
+		NonEmptyFieldValidationRule rule2 = new NonEmptyFieldValidationRule();
+		rule2.getTarget().setValue("email");
+		rule2.getTrimInput().setValue(true);
+		rule2.getGoal().setValue(NonEmptyFieldValidationRule.GOALS.EMPTY);
+		assertEquals(State.VALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "   "), null, null));
+		assertEquals(State.VALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), null, null));
+		assertEquals(State.VALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "\n"), null, null));
+		assertEquals(State.INVALID, rule2.isValid(TestDataRecordFactory.addStringField(null, "email", "  some text  "), null, null));
+	}
+	
+	public void testNonStringType() {
+		NonEmptyFieldValidationRule rule = new NonEmptyFieldValidationRule();
+		rule.getTarget().setValue("email");
+		rule.getGoal().setValue(NonEmptyFieldValidationRule.GOALS.NONEMPTY);
+		rule.getTrimInput().setValue(true);
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", null), null, null));
+		
+		rule.getGoal().setValue(NonEmptyFieldValidationRule.GOALS.EMPTY);
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", null), null, null));
 	}
 	
 

@@ -51,7 +51,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 4.12.2012
  */
-@XmlType(propOrder={"trimInput"})
+@XmlType(propOrder={"format", "locale", "timezone", "trimInput"})
 public abstract class StringValidationRule extends AbstractValidationRule{
 	
 	@XmlElement(name="format", required=false)

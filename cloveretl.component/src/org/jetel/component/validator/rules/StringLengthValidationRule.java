@@ -30,6 +30,7 @@ import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
+import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
@@ -121,7 +122,15 @@ public class StringLengthValidationRule extends StringValidationRule {
 				+ "Upper bound: " + to.getValue() + "\n"
 				+ "Trim input: " + trimInput.getValue());
 		
-		Integer length = Integer.valueOf(prepareInput(record.getField(target.getValue())).length());
+		
+		String tempString = null;
+		try {
+			tempString = prepareInput(record, target.getValue());
+		} catch (IllegalArgumentException ex) {
+			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.INVALID + " (unknown field)");
+			return State.INVALID;
+		}
+		Integer length = Integer.valueOf(tempString.length());
 		State result = State.INVALID;
 		if(type.getValue() == TYPES.EXACT && length.equals(from.getValue())) {
 			result = State.VALID;
@@ -161,6 +170,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
+		state &= super.isReady(inputMetadata, accumulator);
 		return state;
 	}
 

@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
@@ -44,6 +45,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldFormatType;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -55,9 +57,12 @@ import org.joda.time.format.DateTimeFormatter;
  * @created 10.3.2013
  */
 @XmlRootElement(name="date")
-@XmlType(propOrder={"format", "locale", "timezone"})
-public class DateValidationRule extends StringValidationRule {
-
+@XmlType(propOrder={"trimInput", "format", "locale", "timezone"})
+public class DateValidationRule extends AbstractValidationRule {
+	
+	@XmlElement(name="trimInput",required=false)
+	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
+	
 	@XmlElement(name="format",required=true)
 	private StringEnumValidationParamNode format = new StringEnumValidationParamNode(CommonFormats.defaultDate);
 	
@@ -69,6 +74,9 @@ public class DateValidationRule extends StringValidationRule {
 	
 	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		trimInput.setName("Trim input");
+		trimInput.setTooltip("Trim input before validation.");
+		params.add(trimInput);
 		format.setName("Format mask");
 		format.setPlaceholder("Date format, for syntax see documentation");
 		format.setOptions(CommonFormats.dates);
@@ -81,7 +89,6 @@ public class DateValidationRule extends StringValidationRule {
 		timezone.setOptions(CommonFormats.timezones);
 		timezone.setTooltip("Timezone code of record field");
 		params.add(timezone);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 
@@ -109,11 +116,18 @@ public class DateValidationRule extends StringValidationRule {
 			return State.VALID;
 		}
 		
-		Locale realLocale = ValidatorUtils.localeFromString(locale.getValue());
+		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
+			logger.trace("Validation rule: " + getName() + "  on null is " + State.INVALID + " (incoming field is not a string)");
+			return State.INVALID;
+		}
 		
-		String tempString = prepareInput(field);
+		String tempString = field.toString();
+		if(trimInput.getValue()) {
+			tempString = tempString.trim();
+		}
 		DataFieldFormatType formatType = DataFieldFormatType.getFormatType(format.getValue());
 	
+		Locale realLocale = ValidatorUtils.localeFromString(locale.getValue());
 		if(formatType == DataFieldFormatType.JAVA || formatType == null) {
 			try {
 				SimpleDateFormat dateFormat;
@@ -163,6 +177,11 @@ public class DateValidationRule extends StringValidationRule {
 		if(target.getValue().isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
+		} else {
+			if(inputMetadata.getField(target.getValue()) != null && inputMetadata.getField(target.getValue()).getDataType() != DataFieldType.STRING) {
+				accumulator.addError(target, this, "Target field is not string.");
+				state = false;	
+			}
 		}
 		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
