@@ -411,6 +411,7 @@ public class DataParser extends AbstractTextParser {
 							if (fieldBuffer.length() == 0 && !inQuote) { //first quote character
 								if (qDecoder.isStartQuote((char) character)) {
 									inQuote = true;
+									skipLBlanks = isSkipLeadingBlanks[fieldCounter];
 									continue;
 								}
 							} else {
@@ -430,6 +431,9 @@ public class DataParser extends AbstractTextParser {
 											findFirstRecordDelimiter();
 											return parsingErrorFound("Bad quote format", record, fieldCounter);
 										}
+										if (skipTBlanks) {
+											StringUtils.trimTrailing(fieldBuffer);
+										}
 										break;
 									}
 								}
@@ -446,9 +450,9 @@ public class DataParser extends AbstractTextParser {
 
 						//test field delimiter
 						if (!inQuote) {
-							if(delimiterSearcher.isPattern(fieldCounter)) {
+							if (delimiterSearcher.isPattern(fieldCounter)) {
 //							    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
-								if(!skipLBlanks) {
+								if (!skipLBlanks) {
 								    fieldBuffer.setLength(Math.max(0, fieldBuffer.length() - delimiterSearcher.getMatchLength()));
                                 }
 								if (skipTBlanks) {
