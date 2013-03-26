@@ -34,6 +34,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.dictionary.jaxb.Entry;
 import org.jetel.graph.dictionary.jaxb.ObjectFactory;
 import org.jetel.graph.dictionary.jaxb.Property;
+import org.jetel.util.JAXBContextProvider;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -58,10 +59,11 @@ public class DictionaryFactory {
 	 * @return
 	 * @throws ComponentNotReadyException
 	 */
+	@SuppressWarnings("unchecked")
 	public static Dictionary loadDictionary(InputStream is) throws ComponentNotReadyException {
 		JAXBContext jaxbContext;
 		try {
-			jaxbContext = JAXBContext.newInstance(DICTIONARY_PACKAGE_NAME, org.jetel.graph.dictionary.jaxb.Dictionary.class.getClassLoader());
+			jaxbContext = JAXBContextProvider.getInstance().getContext(DICTIONARY_PACKAGE_NAME, org.jetel.graph.dictionary.jaxb.Dictionary.class.getClassLoader());
 			Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 			org.jetel.graph.dictionary.jaxb.Dictionary jaxbDictionary = ((JAXBElement<org.jetel.graph.dictionary.jaxb.Dictionary>) unmarshaller.unmarshal(is)).getValue();
 			return loadDictionary(jaxbDictionary);
@@ -111,7 +113,7 @@ public class DictionaryFactory {
 		org.jetel.graph.dictionary.jaxb.Dictionary jaxbDictionary = saveDictionary(dictionary);
 		JAXBContext jaxbContext;
 		try {
-			jaxbContext = JAXBContext.newInstance(DICTIONARY_PACKAGE_NAME, org.jetel.graph.dictionary.jaxb.Dictionary.class.getClassLoader());
+			jaxbContext = JAXBContextProvider.getInstance().getContext(DICTIONARY_PACKAGE_NAME, org.jetel.graph.dictionary.jaxb.Dictionary.class.getClassLoader());
 			Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.marshal((new ObjectFactory()).createDictionary(jaxbDictionary), os);
 		} catch (JAXBException e) {

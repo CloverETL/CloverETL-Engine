@@ -550,11 +550,17 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         edge.free();
     }
 
-    @Override public int hashCode(){
+    @Override
+    public int hashCode() {
         return getId().hashCode();
     }
 
-    @Override public boolean equals(Object obj){
+    public int hashCodeIdentity() {
+    	return super.hashCode();
+    }
+    
+    @Override
+    public boolean equals(Object obj){
         if (obj instanceof Edge){
             return ((Edge)obj).getId().equals(getId());
         }else{

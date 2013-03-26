@@ -22,10 +22,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.Edge;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -111,4 +115,72 @@ public class GraphAnalyserTest  extends CloverTestCase {
 		}
 	}
 
+	public void testAnalyseGraph_07() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setContextURL(new File("data").toURI().toURL());
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_07.grf"), runtimeContext);
+		GraphAnalyser.analyseGraph(graph);
+		
+		assertBufferedEdges(graph);
+	}
+
+	public void testAnalyseGraph_08() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setContextURL(new File("data").toURI().toURL());
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_08.grf"), runtimeContext);
+		GraphAnalyser.analyseGraph(graph);
+		
+		assertBufferedEdges(graph, "Edge5_buffered", "Edge3_buffered", "Edge4_buffered",
+				"Edge2_buffered", "Edge7_buffered");
+	}
+
+	public void testAnalyseGraph_09() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setContextURL(new File("data").toURI().toURL());
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_09.grf"), runtimeContext);
+		GraphAnalyser.analyseGraph(graph);
+		
+		assertBufferedEdges(graph, "Edge5_buffered", "Edge5_buffered1", "Edge3_buffered",
+				"Edge4_buffered", "Edge4_buffered1", "Edge3_buffered1", "Edge2_buffered",
+				"Edge7_buffered", "Edge7_buffered1", "Edge2_buffered1");
+	}
+
+	public void testAnalyseGraph_10() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setContextURL(new File("data").toURI().toURL());
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_10.grf"), runtimeContext);
+		GraphAnalyser.analyseGraph(graph);
+		
+		assertBufferedEdges(graph, "Edge5_buffered", "Edge5_buffered1", "Edge3_buffered",
+				"Edge4_buffered", "Edge4_buffered1", "Edge3_buffered1", "Edge10_buffered",
+				"Edge2_buffered", "Edge7_buffered");
+	}
+
+	public void testAnalyseGraph_11() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
+		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
+		runtimeContext.setContextURL(new File("data").toURI().toURL());
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_11.grf"), runtimeContext);
+		GraphAnalyser.analyseGraph(graph);
+		
+		assertBufferedEdges(graph, "Edge5_buffered", "Edge5_buffered1", "Edge3_buffered",
+				"Edge4_buffered", "Edge2__buffered", "Edge4_buffered1", "Edge3_buffered1",
+				"Edge10__buffered", "Edge2_buffered", "Edge7_buffered", "Edge3__buffered");
+	}
+
+	private void assertBufferedEdges(TransformationGraph graph, String... bufferedEdges) {
+		List<String> bufferedEdgesList = bufferedEdges != null ? Arrays.asList(bufferedEdges) : new ArrayList<String>();
+		
+		for (Edge edge : graph.getEdges().values()) {
+			boolean isBuffered = edge.getEdgeType() == EdgeTypeEnum.BUFFERED;
+			boolean shouldBeBuffered = bufferedEdgesList.contains(edge.getId());
+			assertEquals(edge.getId(), shouldBeBuffered, isBuffered);
+		}
+		
+		for (String edgeId : bufferedEdgesList) {
+			Edge edge = graph.getEdges().get(edgeId);
+			assertTrue(edge != null);
+			assertTrue(edge.getEdgeType() == EdgeTypeEnum.BUFFERED);
+		}
+	}
+	
 }

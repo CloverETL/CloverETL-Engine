@@ -25,16 +25,16 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
-import java.sql.Connection;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import javax.sql.DataSource;
 
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Level;
@@ -443,12 +443,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 	
 	@Override
-	public Properties getProfilerResultsDatabaseConnectionProperties() {
-		throw new UnsupportedOperationException("Profiler results storage is available only in CloverETL Server environment");
-	}
-	
-	@Override
-	public Connection getProfilerResultsDatabaseConnection() {
+	public DataSource getProfilerResultsDataSource() {
 		throw new UnsupportedOperationException("Profiler results storage is available only in CloverETL Server environment");
 	}
 	

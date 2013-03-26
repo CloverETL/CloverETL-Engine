@@ -511,6 +511,8 @@
 			<keep name="com.cloveretl.profiler.engine.functions.*"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.model.*"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.store.ProfilerStore"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.store.ProfilerStoreFactory"><field access="protected public"/><method access="protected public"/></keep>
+			<keep name="com.cloveretl.profiler.engine.store.init.ProfilerStoreInitializer"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.store.ConnectionValidator"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.utils.ModelUtils"><field access="protected public"/><method access="protected public"/></keep>
 			<keep name="com.cloveretl.profiler.engine.components.Profiler"><field access="protected public"/><method access="protected public"/></keep>
