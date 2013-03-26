@@ -28,11 +28,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.AbstractValidationRule;
+import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode.ChangeHandler;
 import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
@@ -91,7 +93,7 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 	protected StringEnumValidationParamNode format = new StringEnumValidationParamNode();
 	
 	@XmlElement(name="locale", required=false)
-	protected StringEnumValidationParamNode locale = new StringEnumValidationParamNode(Defaults.DEFAULT_LOCALE);
+	protected StringEnumValidationParamNode locale = new StringEnumValidationParamNode();
 	
 	@XmlElement(name="timezone", required=false)
 	protected StringEnumValidationParamNode timezone = new StringEnumValidationParamNode(Calendar.getInstance().getTimeZone().getID());
@@ -100,7 +102,28 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 	protected Comparator tempComparator;
 	
 	@Override
-	protected List<ValidationParamNode> initialize() {
+	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		final DataRecordMetadata inputMetadata = inMetadata;
+		target.setChangeHandler(new ChangeHandler() {
+			
+			@Override
+			public void changed(Object o) {
+				String field = (String) o;
+				String[] allFieldNames = inputMetadata.getFieldNamesArray();
+				for(String temp : allFieldNames) {
+					if(temp.equals(field)) {
+						if(inputMetadata.getField(temp).getLocaleStr() == null) {
+							locale.setValue(Defaults.DEFAULT_LOCALE);
+						} else {
+							locale.setValue(inputMetadata.getField(temp).getLocaleStr());
+						}
+						return;
+					}
+				}
+				
+			}
+		});
+		
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		useType.setName("Compare as");
 		params.add(useType);
@@ -191,26 +214,26 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 		}
 	}
 	
-	
 	@Override
 	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+		boolean status = true;
 		if(useType.getValue() == METADATA_TYPES.DATE || useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL) {
 			if(format.getValue().isEmpty() && inputMetadata.getField(target.getValue()).getDataType() == DataFieldType.STRING) {
 				accumulator.addError(format, this, "Format mask to parse incoming field must be filled.");
-				return false;
+				status &= false;
 			}
 			if(locale.getValue().isEmpty()) {
 				accumulator.addError(format, this, "Locale of incoming field must be filled.");
-				return false;
+				status &= false;
 			}
 		}
 		if(useType.getValue() == METADATA_TYPES.DATE) {
 			if(timezone.getValue().isEmpty()) {
 				accumulator.addError(format, this, "Timezone of incoming field must be filled.");
-				return false;
+				status &= false;
 			}
 		}
-		return true;
+		return status;
 	}
 	
 	protected DataFieldType computeType(DataField field) {

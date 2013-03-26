@@ -66,13 +66,13 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	
 	private Set<Object> tempValues;
 	
-	public List<ValidationParamNode> initialize() {
+	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		values.setName("Accept values");
 		values.setTooltip("For example:\nfirst,second\nfirst,\"second,third\",fourth");
 		values.setPlaceholder("Comma separated list of values");
 		params.add(values);
-		params.addAll(super.initialize());
+		params.addAll(super.initialize(inMetadata, graphWrapper));
 		ignoreCase.setName("Ignore case");
 		params.add(ignoreCase);
 		ignoreCase.setEnabledHandler(new EnabledHandler() {

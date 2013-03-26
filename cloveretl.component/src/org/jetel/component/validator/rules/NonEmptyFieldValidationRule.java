@@ -65,11 +65,11 @@ public class NonEmptyFieldValidationRule extends StringValidationRule {
 	private String getGoalJAXB() { return ((Enum<?>) goal.getValue()).name(); }
 	private void setGoalJAXB(String input) { goal.setFromString(input); }
 	
-	public List<ValidationParamNode> initialize() {
+	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		goal.setName("Valid");
 		params.add(goal);
-		params.addAll(super.initialize());
+		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 

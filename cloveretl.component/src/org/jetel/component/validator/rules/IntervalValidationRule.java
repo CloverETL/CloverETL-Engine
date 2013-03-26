@@ -99,7 +99,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	private StringValidationParamNode to = new StringValidationParamNode();
 	
 	
-	protected List<ValidationParamNode> initialize() {
+	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		boundaries.setName("Boundaries");
 		params.add(boundaries);
@@ -110,7 +110,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		to.setPlaceholder("Not set");
 		to.setPlaceholder("Standard Clover format, for details see documentation.");
 		params.add(to);
-		params.addAll(super.initialize());
+		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 

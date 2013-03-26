@@ -67,7 +67,7 @@ public class DateValidationRule extends StringValidationRule {
 	@XmlElement(name="timezone",required=true)
 	private StringEnumValidationParamNode timezone = new StringEnumValidationParamNode(Calendar.getInstance().getTimeZone().getID());
 	
-	public List<ValidationParamNode> initialize() {
+	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		format.setName("Format mask");
 		format.setPlaceholder("Date format, for syntax see documentation");
@@ -81,7 +81,7 @@ public class DateValidationRule extends StringValidationRule {
 		timezone.setOptions(CommonFormats.timezones);
 		timezone.setTooltip("Timezone code of record field");
 		params.add(timezone);
-		params.addAll(super.initialize());
+		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 

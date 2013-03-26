@@ -18,8 +18,15 @@
  */
 package org.jetel.component.validator.common;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 import org.jetel.component.validator.ValidationNode;
 import org.jetel.component.validator.ValidationNode.State;
+import org.jetel.data.primitive.Decimal;
+import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.test.CloverTestCase;
 
 /**
@@ -64,5 +71,19 @@ public class ValidatorTestCase extends CloverTestCase {
 		assertFalse(rule.isEnabled());
 		assertEquals(State.NOT_VALIDATED, rule.isValid(TestDataRecordFactory.newRecord(), null, null));
 		assertFalse(rule.isEnabled());
+	}
+	
+	protected Date getDate(String input, String timezone) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		dateFormat.setTimeZone(TimeZone.getTimeZone(timezone));
+		try {
+			return dateFormat.parse(input);
+		} catch (ParseException e) {
+			return null;
+		}
+	}
+	
+	protected Decimal getDecimal(String input) {
+		return DecimalFactory.getDecimal(input);
 	}
 }

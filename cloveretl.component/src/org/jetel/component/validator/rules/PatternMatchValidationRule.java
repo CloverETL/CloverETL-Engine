@@ -51,14 +51,14 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	@XmlElement(name="pattern",required=true)
 	private StringValidationParamNode pattern = new StringValidationParamNode();
 	
-	public List<ValidationParamNode> initialize() {
+	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		pattern.setName("Pattern to match");
 		pattern.setPlaceholder("Regular expression, for syntax see documentation");
 		params.add(pattern);
 		ignoreCase.setName("Ignore case");
 		params.add(ignoreCase);
-		params.addAll(super.initialize());
+		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 	
@@ -73,9 +73,20 @@ public class PatternMatchValidationRule extends StringValidationRule {
 				+ "Target field: " + target.getValue() + "\n"
 				+ "Ignore case: " + ignoreCase.getValue() + "\n"
 				+ "Pattern: " + pattern.getValue() + "\n"
-				+ "Trim input: " + trimInput.getValue());
+				+ "Formatting mask: " + format.getValue() + "\n"
+				+ "Locale: " + locale.getValue() + "\n"
+				+ "Timezone: " + timezone.getValue() + "\n"
+				+ "Trim input: " + trimInput.getValue()
+				);
 		
-		String tempString = prepareInput(record.getField(target.getValue()));
+		String tempString = null;
+		try {
+			tempString = prepareInput(record, target.getValue());
+		} catch (IllegalArgumentException ex) {
+			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.INVALID + " (unknown field)");
+			return State.INVALID;
+		}
+		System.err.println("In string: " + tempString);
 		Pattern pm;
 		try {
 			if(ignoreCase.getValue()) {
@@ -115,6 +126,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
+		state &= super.isReady(inputMetadata, accumulator);
 		return state;
 	}
 

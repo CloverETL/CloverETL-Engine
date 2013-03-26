@@ -18,6 +18,8 @@
  */
 package org.jetel.component.validator.common;
 
+import java.util.Date;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -88,6 +90,13 @@ public class TestDataRecordFactory {
 	}
 	public static DataRecord addNumberField(DataRecord record, String name, Double value, String locale) {
 		return extendRecord(record, DataFieldType.NUMBER, name, value, locale);
+	}
+	
+	public static DataRecord addDateField(DataRecord record, String name, Date value) {
+		return addDateField(record, name, value, Defaults.DEFAULT_LOCALE);
+	}
+	public static DataRecord addDateField(DataRecord record, String name, Date value, String locale) {
+		return extendRecord(record, DataFieldType.DATE, name, value, locale);
 	}
 	
 	public static DataRecord addDecimalField(DataRecord record, String name, Decimal value) {

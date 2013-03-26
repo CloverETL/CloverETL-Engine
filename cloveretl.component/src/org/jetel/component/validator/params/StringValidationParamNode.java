@@ -18,6 +18,7 @@ y * jETeL/CloverETL - Java based ETL application framework.
  */
 package org.jetel.component.validator.params;
 
+import javax.swing.text.ChangedCharSetException;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
@@ -39,6 +40,9 @@ final public class StringValidationParamNode extends ValidationParamNode {
 	public void setValue(String other) {
 		if(other != null) {
 			value = other;
+			if(getChangeHandler() != null) {
+				getChangeHandler().changed(other);
+			}
 		}
 	}
 

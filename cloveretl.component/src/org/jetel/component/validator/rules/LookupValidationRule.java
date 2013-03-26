@@ -19,18 +19,27 @@
 package org.jetel.component.validator.rules;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.ValidationNode.State;
+import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
+import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -38,14 +47,23 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 25.3.2013
  */
+@XmlRootElement(name="lookup")
+@XmlType(propOrder={"lookup"})
 public class LookupValidationRule extends AbstractValidationRule {
-	
-	private StringValidationParamNode lookup = new StringValidationParamNode();
+	@XmlElement(name="lookup",required=true)
+	private StringEnumValidationParamNode lookup = new StringEnumValidationParamNode();
 
 	@Override
-	protected List<ValidationParamNode> initialize() {
+	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		lookup.setName("Lookup name");
+		HashSet<String> lookups = new HashSet<String>();
+		Iterator<String> temp = graphWrapper.getLookupTables();
+		while(temp.hasNext()) {
+			lookups.add(temp.next());
+		}
+		lookup.setOptions(lookups.toArray(new String[0]));
+		params.add(lookup);
 		return params;
 	}
 
@@ -65,6 +83,26 @@ public class LookupValidationRule extends AbstractValidationRule {
 			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (unknown lookup table)");
 			return State.INVALID;
 		}
+		DataRecordMetadata metadata = null;
+		try {
+			metadata = lookupTable.getKeyMetadata();
+		} catch (Exception ex) {
+			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (no key metadata)");
+			return State.INVALID;
+		}
+		Lookup lookup = null;
+		try {
+			lookup = lookupTable.createLookup(new RecordKey(metadata.getFieldNamesArray(), metadata));
+		} catch (Exception ex) {
+			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (lookup not ready)");
+			return State.INVALID;
+		}
+		System.err.println(lookup);
+		System.err.println(lookup.getKey());
+		while (lookup.hasNext()) {
+			System.err.println(lookup.next());
+		}
+		lookupTable.free();
 		return State.INVALID;
 	}
 

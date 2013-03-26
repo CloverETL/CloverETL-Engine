@@ -68,7 +68,7 @@ public class NumberValidationRule extends StringValidationRule {
 	@XmlElement(name="locale",required=true)
 	private StringEnumValidationParamNode locale = new StringEnumValidationParamNode(Defaults.DEFAULT_LOCALE);
 	
-	public List<ValidationParamNode> initialize() {
+	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		format.setName("Format mask");
 		format.setPlaceholder("Number format, for syntax see documentation.");
@@ -78,7 +78,7 @@ public class NumberValidationRule extends StringValidationRule {
 		locale.setOptions(CommonFormats.locales);
 		locale.setTooltip("Locale code of record field");
 		params.add(locale);
-		params.addAll(super.initialize());
+		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 

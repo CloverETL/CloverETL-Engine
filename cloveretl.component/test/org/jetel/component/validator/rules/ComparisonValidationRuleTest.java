@@ -311,8 +311,5 @@ public class ComparisonValidationRuleTest extends ValidatorTestCase {
 		rule.getUseType().setValue(t);
 		return rule;
 	}
-	private Decimal getDecimal(String input) {
-		return DecimalFactory.getDecimal(input);
-	}
 
 }

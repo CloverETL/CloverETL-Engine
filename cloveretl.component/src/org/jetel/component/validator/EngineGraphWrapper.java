@@ -25,11 +25,20 @@ import org.jetel.graph.TransformationGraph;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 24.3.2013
+ * @created 25.3.2013
  */
-public interface GraphWrapper {
-
-	public Iterator<String> getLookupTables();
+public class EngineGraphWrapper implements GraphWrapper {
+	private TransformationGraph graph;
 	
-	public LookupTable getLookupTable(String name);
+	public EngineGraphWrapper(TransformationGraph graph) {
+		this.graph = graph;
+	}
+	
+	public Iterator<String> getLookupTables() {
+		return graph.getLookupTables();
+	}
+	
+	public LookupTable getLookupTable(String name) {
+		return graph.getLookupTable(name);
+	}
 }

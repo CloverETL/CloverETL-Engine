@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.validator.EngineGraphWrapper;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
@@ -174,7 +175,7 @@ public class Validator extends Node {
 		record.init();
 		
 		// Prepare provider for accessing graph
-		GraphWrapper graphWrapper = new GraphWrapper(getGraph());
+		GraphWrapper graphWrapper = new EngineGraphWrapper(getGraph());
 		
 		// Iterate over data
 		boolean hasData = true;

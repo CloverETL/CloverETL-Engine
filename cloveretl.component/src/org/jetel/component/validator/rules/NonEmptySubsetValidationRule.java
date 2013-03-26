@@ -66,13 +66,13 @@ public class NonEmptySubsetValidationRule extends StringValidationRule {
 	@XmlElement(name="count",required=true)
 	private IntegerValidationParamNode count = new IntegerValidationParamNode(1);
 	
-	public List<ValidationParamNode> initialize() {
+	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		goal.setName("Count");
 		params.add(goal);
 		count.setName("Minimal count");
 		params.add(count);
-		params.addAll(super.initialize());
+		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 

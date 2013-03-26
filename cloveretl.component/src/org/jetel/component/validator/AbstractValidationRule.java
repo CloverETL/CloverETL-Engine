@@ -29,11 +29,13 @@ import org.jetel.component.validator.rules.ComparisonValidationRule;
 import org.jetel.component.validator.rules.DateValidationRule;
 import org.jetel.component.validator.rules.EnumMatchValidationRule;
 import org.jetel.component.validator.rules.IntervalValidationRule;
+import org.jetel.component.validator.rules.LookupValidationRule;
 import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
 import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
 import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -49,7 +51,8 @@ import org.jetel.component.validator.rules.StringLengthValidationRule;
 		IntervalValidationRule.class,
 		ComparisonValidationRule.class,
 		DateValidationRule.class,
-		NumberValidationRule.class
+		NumberValidationRule.class,
+		LookupValidationRule.class
 	})
 public abstract class AbstractValidationRule extends ValidationNode {
 	
@@ -62,14 +65,14 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	
 	private List<ValidationParamNode> params;
 	
-	public List<ValidationParamNode> getParamNodes() {
+	public List<ValidationParamNode> getParamNodes(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		if(params == null) {
-			params = initialize();
+			params = initialize(inMetadata, graphWrapper);
 		}
 		return params;
 	}
 	
-	protected abstract List<ValidationParamNode> initialize();
+	protected abstract List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper);
 	
 	public StringValidationParamNode getTarget() {
 		return target;

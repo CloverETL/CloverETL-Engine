@@ -30,11 +30,6 @@ import org.junit.Test;
  */
 public class PatternMatchValidationRuleTest extends ValidatorTestCase {
 	
-	private static final String TARGET = "target";
-	private static final String TRIM = "trimInput";
-	private static final String PATTERN = "pattern";
-	private static final String IGNORE_CASE = "ignoreCase";
-	
 	@Test
 	public void testNameability() {
 		testNameability(PatternMatchValidationRule.class);
@@ -45,108 +40,193 @@ public class PatternMatchValidationRuleTest extends ValidatorTestCase {
 		testDisability(PatternMatchValidationRule.class);
 	}
 	@Test
-	public void testAttributes() {
-		testBooleanAttribute(PatternMatchValidationRule.class, IGNORE_CASE, false);
-		testBooleanAttribute(PatternMatchValidationRule.class, TRIM, false);
-		testStringAttribute(PatternMatchValidationRule.class, TARGET, "");
-		testStringAttribute(PatternMatchValidationRule.class, PATTERN, "");
-	}
-	@Test
 	public void testReadyness() {
-		AbstractValidationRule rule = new PatternMatchValidationRule();
-		assertFalse(rule.isReady());
-		setStringParam(rule, TARGET, "some_text");
-		assertFalse(rule.isReady());
-		setStringParam(rule, PATTERN , "");
-		assertFalse(rule.isReady());
-		setStringParam(rule, PATTERN , "pattern");
-		assertTrue(rule.isReady());
-		setStringParam(rule, TARGET, "");
-		assertFalse(rule.isReady());
+		// TODO:
 	}
 	@Test
 	public void testNormal() {
-		AbstractValidationRule rule = new PatternMatchValidationRule();
-		rule.setEnabled(true);
-		setStringParam(rule, TARGET, "field");
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
 		
 		// Simple test that Java regexp really works, no deep testing!
-		setStringParam(rule, PATTERN, "^starting$");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting some text"), null));
+		rule.getPattern().setValue("^starting$");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting some text"), null, null));
 		
-		setStringParam(rule, PATTERN, "^(\\d)*$");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "9"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1257"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "text"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "9e0"), null));
+		rule.getPattern().setValue("^(\\d)*$");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "9"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1257"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "text"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "9e0"), null, null));
 		
-		setStringParam(rule, PATTERN, "^[abc]?$");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "a"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "b"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "c"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "e"), null));
+		rule.getPattern().setValue("^[abc]?$");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "a"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "b"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "c"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "e"), null, null));
 		
-		setStringParam(rule, PATTERN, "asdfčě+š=é+$$$.\\\\sdf?*-9+?");
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "some text"), null));
+		rule.getPattern().setValue("asdfčě+š=é+$$$.\\\\sdf?*-9+?");
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "some text"), null, null));
 	}
 	@Test
 	public void testCaseInsensitive() {
-		AbstractValidationRule rule = new PatternMatchValidationRule();
-		rule.setEnabled(true);
-		setStringParam(rule, TARGET, "field");
-		setBooleanParam(rule, IGNORE_CASE, true);
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getIgnoreCase().setValue(true);
 		
-		setStringParam(rule, PATTERN, "^starting$");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "STARTING"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "sTarTinG"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting some text"), null));
+		rule.getPattern().setValue("^starting$");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "STARTING"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "sTarTinG"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting some text"), null, null));
 		
-		setStringParam(rule, PATTERN, "^(\\d)*$");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "9"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1257"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "text"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "9e0"), null));
+		rule.getPattern().setValue("^(\\d)*$");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "9"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1257"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "text"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "9e0"), null, null));
 		
-		setStringParam(rule, PATTERN, "^[abc]?$");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "a"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "A"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "b"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "B"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "c"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "C"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "e"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "E"), null));
+		rule.getPattern().setValue("^[abc]?$");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "a"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "A"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "b"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "B"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "c"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "C"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "e"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "E"), null, null));
 		
-		setStringParam(rule, PATTERN, "asdfčě+š=é+$$$.\\\\sdf?*-9+?");
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "some text"), null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SOME TEXT"), null));
+		rule.getPattern().setValue("asdfčě+š=é+$$$.\\\\sdf?*-9+?");
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "some text"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SOME TEXT"), null, null));
 			
 	}
 	@Test
 	public void testTrimming() {
-		AbstractValidationRule rule = new PatternMatchValidationRule();
-		rule.setEnabled(true);
-		setStringParam(rule, TARGET, "field");
-		setBooleanParam(rule, TRIM, true);
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getTrimInput().setValue(true);
 		
-		setStringParam(rule, PATTERN, "^starting$");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", " starting "), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting "), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", " starting"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "\nstarting\n"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "	starting	"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "	starting"), null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting	"), null));
+		rule.getPattern().setValue("^starting$");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", " starting "), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting "), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", " starting"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "\nstarting\n"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "	starting	"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "	starting"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "starting	"), null, null));
 	}
+	
+	public void testBooleanInput() {
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		
+		rule.getPattern().setValue("^True$");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "field", true), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "field", false), null, null));
+		
+		rule.getPattern().setValue("^False$");
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "field", true), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "field", false), null, null));
+	}
+	
+	public void testDateInput() {
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		
+		rule.getPattern().setValue("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$");
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDateField(null, "field", getDate("2013-03-23 10:00:00","UTC")), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Some value"), null, null));
+	}
+	
+	public void testDateInputInCustomFormat() {
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getPattern().setValue("^\\d{4}-\\d{2}-\\d{2}$");
+		rule.getFormat().setValue("yyyy-MM-dd");
+		
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDateField(null, "field", getDate("2013-03-23 10:00:00","UTC")), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Some value"), null, null));
+	}
+	
+	public void testNumberInput() {
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getPattern().setValue("^[-]?\\d{1,}\\.?\\d{0,}$");
+		
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 0d), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 10.2), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", -28.333), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 1.15), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Some value"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10,5"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10.5"), null, null));
+	}
+	
+	public void testDecimalInput() {
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getPattern().setValue("^[-]?\\d{1,}\\.?\\d{0,}$");
+		
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("0")), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("10.2")), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("-28.333")), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("1.15")), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Some value"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10,5"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10.5"), null, null));
+	}
+	
+	public void testIntegerAndLongInput() {
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getPattern().setValue("^[-]?\\d{1,}");
+		
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "field", 123), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addLongField(null, "field", 10l), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addLongField(null, "field", 0l), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addLongField(null, "field", -185898l), null, null));
+	}
+	
+	public void testNumberInputInLocale() {
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getPattern().setValue("^[-]?\\d{1,}\\,?\\d{0,}$");
+		rule.getLocale().setValue("cs.CZ");
+		
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 0d), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 10.2), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", -28.333), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 1.15), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Some value"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10,5"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10.5"), null, null));
+	}
+	
+	public void testNumberInputInCustomFormat() {
+		PatternMatchValidationRule rule = new PatternMatchValidationRule();
+		rule.getTarget().setValue("field");
+		rule.getPattern().setValue("^[-]?\\d{1,}\\,?\\d? Kč$");
+		rule.getFormat().setValue("#,# 'Kč'");
+		rule.getLocale().setValue("cs.CZ");
+		
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 0d), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 10.2), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", -28.333), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 1.15), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Some value"), null, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10,5"), null, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10,5 Kč"), null, null));
+	}
+	
+	
 }

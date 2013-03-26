@@ -33,6 +33,7 @@ public abstract class ValidationParamNode {
 	private String placeholder;
 	private String tooltip;
 	private EnabledHandler enabledHandler;
+	private ChangeHandler changeHandler;
 	
 	protected ValidationParamNode() {} // For JAXB
 	
@@ -59,8 +60,18 @@ public abstract class ValidationParamNode {
 		enabledHandler = handler;
 	}
 	
+	public void setChangeHandler(ChangeHandler handler) {
+		changeHandler = handler;
+	}
+	public ChangeHandler getChangeHandler() {
+		return changeHandler;
+	}
+	
 	public static interface EnabledHandler {
 		public boolean isEnabled();
+	}
+	public static interface ChangeHandler {
+		public void changed(Object o);
 	}
 	
 	public void setPlaceholder(String placeholder) {

@@ -103,14 +103,14 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 	@XmlElement(name="value")
 	private StringValidationParamNode value = new StringValidationParamNode();
 	
-	protected List<ValidationParamNode> initialize() {
+	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		operator.setName("Operator");
 		params.add(operator);
 		value.setName("Compare with");
 		value.setPlaceholder("Standard Clover format, for details see documentation.");
 		params.add(value);
-		params.addAll(super.initialize());
+		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 
