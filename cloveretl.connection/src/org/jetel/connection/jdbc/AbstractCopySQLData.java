@@ -1015,11 +1015,10 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			String fieldVal = resultSet.getString(fieldSQL);
 			if (resultSet.wasNull()) {
-				field.fromString(null);
+				field.setValue(null);
 			} else {
-				// TODO: Issue 3650; consider using setValue() for string fields here, fromString() takes the nullValue
-				// attribute into account and that might lead to incorrect results when the value equals nullValue
-				field.fromString(fieldVal);
+				// CL-949, CL-2748: replaced fromString() with setValue()
+				field.setValue(fieldVal);
 			}
 		}
 
@@ -1027,11 +1026,10 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		public void setJetel(CallableStatement statement) throws SQLException {
 			String fieldVal = statement.getString(fieldSQL);
 			if (statement.wasNull()) {
-				field.fromString(null);
+				field.setValue(null);
 			} else {
-				// TODO: Issue 3650; consider using setValue() for string fields here, fromString() takes the nullValue
-				// attribute into account and that might lead to incorrect results when the value equals nullValue
-				field.fromString(fieldVal);
+				// CL-949, CL-2748: replaced fromString() with setValue()
+				field.setValue(fieldVal);
 			}
 		}
 
