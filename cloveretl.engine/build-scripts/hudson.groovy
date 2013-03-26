@@ -139,7 +139,7 @@ if( !runTests ){
 		antTarget = "run-scenarios-with-engine-build"
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
 		trustStoreF = new File(testEnvironmentD, "truststore/proxyTests.truststore")
-		antArgs += "-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore\=${trustStoreF}"
+		antArgs += "-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore\\=${trustStoreF}"
 	}
 	if (testName == "night") { //night tests need more memory
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
