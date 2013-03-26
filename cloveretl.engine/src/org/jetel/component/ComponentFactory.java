@@ -43,7 +43,6 @@ import org.w3c.dom.Element;
  *
  * @author     dpavlis
  * @since    May 27, 2002
- * @revision $Revision$
  */
 public class ComponentFactory {
 

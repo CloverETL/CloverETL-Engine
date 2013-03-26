@@ -104,7 +104,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       June 28, 2004
- * @revision    $Revision$
  * @see         org.jetel.database.dbf.DBFDataParser
  */
 

@@ -49,7 +49,6 @@ import org.w3c.dom.Element;
 /**
  * @author dpavlis
  * @since  31.5.2005
- * @revision    $Revision$
  *
  * Simple class implementing Sequence interface. It uses internally "long" datatype to
  * store sequence's value. The value is persistent (stored on disk under specified name).<br>

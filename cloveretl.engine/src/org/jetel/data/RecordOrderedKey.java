@@ -41,7 +41,6 @@ import org.jetel.util.key.RecordKeyTokens;
  *
  * @author      dpavlis
  * @since       May 2, 2002
- * @revision    $Revision: 3471 $
  * @created     January 26, 2003
  */
 public class RecordOrderedKey extends RecordKey {

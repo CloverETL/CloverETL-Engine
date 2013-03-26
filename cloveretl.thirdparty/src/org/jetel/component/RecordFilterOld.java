@@ -35,7 +35,6 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author      dpavlis
  * @since       9. prosinec 2003
- * @revision    $Revision$
  */
 public class RecordFilterOld {
 
@@ -248,7 +247,6 @@ public class RecordFilterOld {
 	 *
 	 * @author      dpavlis
 	 * @since
-	 * @revision    $Revision$
 	 */
 	private class FilterItem {
 
@@ -349,7 +347,6 @@ public class RecordFilterOld {
 	 *
 	 * @author      dpavlis
 	 * @since
-	 * @revision    $Revision$
 	 */
 	private class RegexField {
 

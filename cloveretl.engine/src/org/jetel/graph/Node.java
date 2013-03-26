@@ -61,7 +61,6 @@ import org.w3c.dom.Element;
  *@created     January 31, 2003
  *@since       April 2, 2002
  *@see         org.jetel.component
- *@revision    $Revision$
  */
 public abstract class Node extends GraphElement implements Runnable, CloverWorkerListener {
 

@@ -66,7 +66,6 @@ import org.jetel.util.string.StringUtils;
  *
  * @author      dpavlis
  * @since       October 7, 2002
- * @revision    $Revision$
  * @created     8. ???ervenec 2003
  */
 public abstract class AbstractCopySQLData implements CopySQLData {
@@ -666,7 +665,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyNumeric extends AbstractCopySQLData {
@@ -749,7 +747,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyDecimal extends AbstractCopySQLData {
@@ -831,7 +828,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       2. b???ezen 2004
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyInteger extends AbstractCopySQLData {
@@ -987,7 +983,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyString extends AbstractCopySQLData {
@@ -1070,7 +1065,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyDate extends AbstractCopySQLData {
@@ -1213,7 +1207,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyTime extends AbstractCopySQLData {
@@ -1309,7 +1302,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyTimestamp extends AbstractCopySQLData {
@@ -1410,7 +1402,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       November 27, 2003
-	 * @revision    $Revision$
 	 */
 	public static class CopyBoolean extends AbstractCopySQLData {
 

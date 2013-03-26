@@ -92,7 +92,6 @@ import org.w3c.dom.Element;
  * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  * @since       June 27, 2005
- * @revision    $Revision: 2670 $
  */
 public class Aggregate extends Node {
 	/** Name of the component. */

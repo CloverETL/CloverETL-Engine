@@ -25,7 +25,6 @@ import org.jetel.exception.JetelException;
  * 
  * @author Rastislav Mirek &lt;<a href="mailto:rmirek@mail.muni.cz">rmirek@mail.muni.cz</a>&gt</br> &#169; Javlin, a.s
  *         &lt;<a href="http://www.javlin.eu">http://www.javlin.eu</a>&gt
- * @version $Revision$, $Date$
  * @since rel-3-4-0-M1
  * @created 17.11.2012
  */

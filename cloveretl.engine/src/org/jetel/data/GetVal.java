@@ -28,7 +28,6 @@ import org.jetel.data.primitive.Numeric;
  *
  * @author     dpavlis
  * @since    August 20, 2002
- * @revision    $Revision$
  */
 public class GetVal {
 

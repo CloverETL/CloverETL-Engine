@@ -93,7 +93,6 @@ import org.w3c.dom.Element;
  *
  * @author      Jan Ausperger
  * @since       January 5, 2007
- * @revision    $Revision:  $
  */
 public class SequenceChecker extends Node {
 

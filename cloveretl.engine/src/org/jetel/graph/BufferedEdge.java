@@ -40,7 +40,6 @@ import org.jetel.util.bytes.CloverBuffer;
  * @see InputPort
  * @see OutputPort
  *
- * @revision $Revision$
  */
 public class BufferedEdge extends EdgeBase {
 

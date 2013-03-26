@@ -109,7 +109,6 @@ import org.w3c.dom.Element;
  *
  * @author      Martin Zatopek, David Pavlis, Javlin Consulting s.r.o. (www.javlinconsulting.cz)
  * @since       April 4, 2002
- * @revision    $Revision: 1.11 $
  * @see         org.jetel.data.parser.DelimitedDataParser
  */
 public class DataReader extends Node {

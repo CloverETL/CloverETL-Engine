@@ -59,7 +59,6 @@ import org.jetel.util.string.StringUtils;
  * @since September 29, 2005
  * @see Parser
  * @see org.jetel.data.Defaults
- * @revision $Revision: 1.9 $
  */
 public class DataParser extends AbstractTextParser {
 	

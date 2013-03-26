@@ -216,7 +216,6 @@ import org.w3c.dom.Element;
  * </pre>
  * @author      dpavlis, avackova (agata.vackova@javlinconsulting.cz)
  * @since       September 27, 2002
- * @revision    $Revision$
  * @created     22. July 2003
  * @see         org.jetel.database.AnalyzeDB
  */

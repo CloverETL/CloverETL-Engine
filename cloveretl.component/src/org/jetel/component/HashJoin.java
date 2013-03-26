@@ -180,7 +180,6 @@ import org.w3c.dom.Element;
  *	  
  * @author      dpavlis, Jan Hadrava
  * @since       March 09, 2004
- * @revision    $Revision$
  * @created     09. March 2004
  *
  *

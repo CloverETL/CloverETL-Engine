@@ -84,7 +84,6 @@ import org.w3c.dom.Element;
  *
  * @author      David Pavlis
  * @since       April 4, 2002
- * @revision    $Revision$
  */
 public class Sort extends Node {
 

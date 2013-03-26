@@ -114,7 +114,6 @@ import org.w3c.dom.Element;
  *	  
  * @author      david pavlis
  * @since       Sep, 2006
- * @revision    $Revision: $
  * @created     Sep, 2006
  */
     public class CheckForeignKey extends Node {

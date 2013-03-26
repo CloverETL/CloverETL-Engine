@@ -168,7 +168,6 @@ import org.w3c.dom.Text;
  *
  * @author      dpavlis, avackova (avackova@javlinconsulting.cz)
  * @since       Jan 17 2004
- * @revision    $Revision$
  * @created     22. ?ervenec 2003
  * @see         org.jetel.database.AnalyzeDB
  */

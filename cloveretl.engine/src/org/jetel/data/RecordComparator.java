@@ -42,7 +42,6 @@ import org.jetel.util.key.RecordKeyTokens;
  *@author     dpavlis
  *@created    February 28, 2004
  *@since      February 28, 2004
- *@revision    $Revision$
  */
 public class RecordComparator implements Comparator<DataRecord> {
 

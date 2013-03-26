@@ -34,7 +34,6 @@ import org.jetel.util.bytes.CloverBuffer;
  * @since       April 2, 2002
  * @see        org.jetel.graph.InputPort
  * @see        org.jetel.graph.OutputPort
- * @revision   $Revision: 337 $
  */
 public class DirectEdgeFastPropagate extends EdgeBase {
     

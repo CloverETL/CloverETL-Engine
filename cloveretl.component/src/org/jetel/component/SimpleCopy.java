@@ -69,7 +69,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       April 4, 2002
- * @revision    $Revision$
  * @see         org.jetel.graph.TransformationGraph
  * @see         org.jetel.graph.Node
  * @see         org.jetel.graph.Edge

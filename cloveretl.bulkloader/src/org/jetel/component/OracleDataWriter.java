@@ -105,7 +105,6 @@ import org.w3c.dom.Element;
  *  </table>
  *
  * @author      Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
- * @revision    $Revision: 1388 $
  * @see         org.jetel.graph.TransformationGraph
  * @see         org.jetel.graph.Node
  * @see         org.jetel.graph.Edge

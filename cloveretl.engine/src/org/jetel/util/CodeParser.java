@@ -100,7 +100,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * </table>
  * @author                          David Pavlis, Martin Zatopek
  * @since
- * @revision                        $Revision$
  * <h4>Example:</h4>
  * <pre>
  * String variable1 = Integer.parseInt(${in.0.OrderID});
@@ -989,7 +988,6 @@ public class CodeParser {
 	 *
 	 * @author       dpavlis
 	 * @since
-	 * @revision     $Revision$
 	 * @param  argv  The command line arguments
 	 */
 //	public static void main(String[] argv) {
@@ -1026,7 +1024,6 @@ public class CodeParser {
 	 *
 	 * @author      dpavlis
 	 * @since
-	 * @revision    $Revision$
 	 */
 	static class Token {
 		String token;

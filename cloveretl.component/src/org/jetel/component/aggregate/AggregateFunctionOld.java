@@ -44,7 +44,6 @@ import org.jetel.util.crypto.Base64;
  * @author      Martin Zatopek, Javlin Consulting s.r.o. (www.javlinconsulting.cz)
  * 
  * @since       June 27, 2005
- * @revision    $Revision$
  */
 public class AggregateFunctionOld implements Iterator {
 
@@ -375,7 +374,6 @@ public class AggregateFunctionOld implements Iterator {
 	 *
 	 * @author      Martin Zatopek, Javlin Consulting. (www.javlinconsulting.cz)
 	 * @since
-	 * @revision    $Revision$
 	 */
 	private class AggregateItem {
 		boolean firstLoop;

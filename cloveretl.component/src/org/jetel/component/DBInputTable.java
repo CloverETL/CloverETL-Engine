@@ -147,7 +147,6 @@ import org.w3c.dom.Text;
  *	
  * @author      dpavlis
  * @since       September 27, 2002
- * @revision    $Revision$
  * @see         org.jetel.database.AnalyzeDB
  */
 public class DBInputTable extends Node {

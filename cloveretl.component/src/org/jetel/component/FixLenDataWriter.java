@@ -96,7 +96,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       April 4, 2002
- * @revision    $Revision$
  */
 public class FixLenDataWriter extends Node {
 	private static final String XML_APPEND_ATTRIBUTE = "append";

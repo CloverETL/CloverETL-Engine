@@ -61,7 +61,6 @@ import org.jetel.util.primitive.MultiValueMap;
  *
  * @author      dpavlis
  * @since       July 29, 2002
- * @revision    $Revision$
  */
 public class WatchDog implements Callable<Result>, CloverPost {
 

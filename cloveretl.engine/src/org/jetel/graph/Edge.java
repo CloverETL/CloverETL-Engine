@@ -46,7 +46,6 @@ import org.w3c.dom.Element;
  * @see        org.jetel.graph.InputPort
  * @see        org.jetel.graph.OutputPort
  * @see EdgeFactory
- * @revision   $Revision$
  */
 public class Edge extends GraphElement implements InputPort, OutputPort, InputPortDirect, OutputPortDirect {
 

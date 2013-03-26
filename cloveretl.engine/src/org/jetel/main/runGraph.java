@@ -110,7 +110,6 @@ import org.jetel.util.file.FileUtils;
  *  </pre></tt>
  * @author      dpavlis
  * @since	2003/09/09
- * @revision    $Revision$
  */
 public class runGraph {
     private static Logger logger = Logger.getLogger(runGraph.class);

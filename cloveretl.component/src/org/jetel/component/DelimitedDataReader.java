@@ -91,7 +91,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       April 4, 2002
- * @revision    $Revision$
  * @see         org.jetel.data.parser.DelimitedDataParser
  */
 public class DelimitedDataReader extends Node {

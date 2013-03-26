@@ -90,7 +90,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       April 4, 2002
- * @revision    $Revision$
  */
 public class Dedup extends Node {
     private static final Log logger = LogFactory.getLog(Dedup.class);

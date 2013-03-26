@@ -83,7 +83,6 @@ import org.w3c.dom.Element;
  *
  * @author      Martin Zatopek, Javlin Consulting s.r.o. (www.javlinconsulting.cz)
  * @since       June 27, 2005
- * @revision    $Revision$
  */
 public class AggregateOld extends Node {
 

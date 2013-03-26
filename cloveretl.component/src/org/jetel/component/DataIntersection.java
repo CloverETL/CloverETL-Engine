@@ -150,7 +150,6 @@ import org.w3c.dom.Element;
  *&lt;/Node&gt;</pre>
  * @author      dpavlis
  * @since       April 29, 2005
- * @revision    $Revision$
  * @created     29. April 2005
  */
 public class DataIntersection extends Node {

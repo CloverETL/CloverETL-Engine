@@ -169,7 +169,6 @@ import org.w3c.dom.Element;
  *&lt;/Node&gt;</pre>
  * @author      dpavlis, Jan Hadrava
  * @since       April 4, 2002
- * @revision    $Revision$
  * @created     4. June 2003
  *
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
