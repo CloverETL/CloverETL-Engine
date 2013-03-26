@@ -22,17 +22,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
@@ -295,10 +292,7 @@ public abstract class IAuthorityProxy {
 	
 	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
 
-	@Deprecated
-	public abstract Properties getProfilerResultsDatabaseConnectionProperties();
-	
-	public abstract Connection getProfilerResultsDatabaseConnection() throws MalformedURLException, SQLException, NamingException;
+	public abstract DataSource getProfilerResultsDataSource();
 	
 	/**
 	 * This method is used for tracking a running graphs. For already finished graphs this method returns

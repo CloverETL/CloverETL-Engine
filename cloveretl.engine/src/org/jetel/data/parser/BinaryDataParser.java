@@ -284,8 +284,8 @@ public class BinaryDataParser extends AbstractParser {
 				if (!deleteOnClose.delete()) {
 					LogFactory.getLog(BinaryDataParser.class).error("Failed to delete temp file: " + deleteOnClose.getAbsolutePath());
 				} else {
-					deleteOnClose = null;
 					LogFactory.getLog(BinaryDataParser.class).debug("Temp file deleted: " + deleteOnClose.getAbsolutePath());
+					deleteOnClose = null;
 				}
 			}
 		}

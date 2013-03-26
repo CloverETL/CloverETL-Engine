@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Kokon" created="Fri Jan 04 16:25:48 CET 2013" guiVersion="0.0.0.devel" id="1357313230622" licenseType="Commercial" modified="Thu Mar 21 17:14:34 CET 2013" modifiedBy="Kokon" name="g" revision="1.148" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="recordName1" recordDelimiter="\r\n" type="delimited">
+<Field name="field1" type="string"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Dictionary>
+<Entry contentType="integer" id="DictionaryEntry0" input="true" name="input" output="true" type="long"/>
+</Dictionary>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="DATA_GENERATOR" guiX="85" guiY="98" id="DATA_GENERATOR" recordsNumber="1" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="DATA_GENERATOR" guiX="91" guiY="313" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SIMPLE_COPY1" guiX="272" guiY="32" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SIMPLE_COPY2" guiX="272" guiY="158" id="SIMPLE_COPY2" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SIMPLE_COPY2" guiX="278" guiY="373" id="SIMPLE_COPY3" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SIMPLE_COPY1" guiX="278" guiY="247" id="SIMPLE_COPY4" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SIMPLE_GATHER1" guiX="493" guiY="98" id="SIMPLE_GATHER1" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="SIMPLE_GATHER2" guiX="698" guiY="30" id="SIMPLE_GATHER2" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="SIMPLE_GATHER2" guiX="705" guiY="243" id="SIMPLE_GATHER3" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="SIMPLE_GATHER1" guiX="499" guiY="313" id="SIMPLE_GATHER4" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="Trash" guiX="875" guiY="111" id="TRASH" type="TRASH"/>
+<Node enabled="enabled" guiName="Trash" guiX="881" guiY="326" id="TRASH1" type="TRASH"/>
+<Edge fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
+<Edge fromNode="DATA_GENERATOR:1" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_COPY2:0"/>
+<Edge fromNode="DATA_GENERATOR:2" guiBendpoints="" guiRouter="Manhattan" id="Edge5_buffered" inPort="Port 2 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="SIMPLE_GATHER1:2"/>
+<Edge fromNode="DATA_GENERATOR1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY4:0"/>
+<Edge fromNode="DATA_GENERATOR1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_COPY3:0"/>
+<Edge fromNode="DATA_GENERATOR1:2" guiBendpoints="" guiRouter="Manhattan" id="Edge5_buffered1" inPort="Port 2 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="SIMPLE_GATHER4:2"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3_buffered" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:0"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_GATHER2:0"/>
+<Edge fromNode="SIMPLE_COPY2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4_buffered" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER1:1"/>
+<Edge fromNode="SIMPLE_COPY2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge2__buffered" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_GATHER3:1"/>
+<Edge fromNode="SIMPLE_COPY3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4_buffered1" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER4:1"/>
+<Edge fromNode="SIMPLE_COPY4:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3_buffered1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER4:0"/>
+<Edge fromNode="SIMPLE_COPY4:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10__buffered" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_GATHER3:0"/>
+<Edge fromNode="SIMPLE_GATHER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2_buffered" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH:0"/>
+<Edge fromNode="SIMPLE_GATHER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7_buffered" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH:1"/>
+<Edge fromNode="SIMPLE_GATHER2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3__buffered" inPort="Port 2 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_GATHER3:2"/>
+<Edge fromNode="SIMPLE_GATHER3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH1:1"/>
+<Edge fromNode="SIMPLE_GATHER4:0" guiBendpoints="" guiRouter="Manhattan" id="Edge21" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="TRASH1:0"/>
+</Phase>
+</Graph>

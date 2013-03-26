@@ -181,7 +181,8 @@ public final class HadoopProvidersFactory {
 		} catch (NoClassDefFoundError err) {
 			classLoaderCache.remove(new HashSet<URL>(libraries));
 			LOG.debug("  classloader removed from cache; classloader classpath: " + libraries);
-			throw new HadoopException("Could not find required class definition. Some Hadoop libraries might be missing.", err);
+			throw new HadoopNoClassDefFoundException("Failed to load " + serviceName + " provider class '"
+					+ providerClassName + "'.\n" + getNoClassDefFoundDiagnosticMessage(libraries, err), err);
 		} catch (ClassNotFoundException ex) {
 			throw new HadoopVersionDictionaryException("Could not load " + serviceName + " provider class '"
 					+ providerClassName + "'", ex);
@@ -195,6 +196,33 @@ public final class HadoopProvidersFactory {
 			throw new HadoopProviderDefinitionException("Type '" + providerClassName + "' does not implement "
 					+ serviceName + " service as required.", ex);
 		}
+	}
+
+	/**
+	 * Constructs error message intended to be displayed in a reaction to NoClassDefFoundError.
+	 * The message contains result of verification that input stream from specified Hadoop lib URLs can be opened.
+	 */
+	private static String getNoClassDefFoundDiagnosticMessage(List<URL> libraries, NoClassDefFoundError ex) {
+		StringBuilder sb = new StringBuilder();
+		for (URL url : libraries) {
+			try {
+				url.openStream().close();
+			} catch (IOException e) {
+				sb.append("\n   " + url);
+			}
+		}
+		
+		String reason;
+		if (sb.length() == 0) {
+			if (libraries.isEmpty()) {
+				reason = "Most likely because no Hadoop libraries have been specified in the Hadoop connection.";
+			} else {
+				reason = "Diagnostic check confirmed that all specified Hadoop library files are reachable. Therefore some required library has to be missing from the list.";
+			}
+		} else {
+			reason = "Following Hadoop libraries could not be reached:" + sb;
+		}
+		return "Could not found required class definition: " + ex.getMessage() + "\n" + reason;
 	}
 
 	/**
@@ -298,19 +326,61 @@ public final class HadoopProvidersFactory {
 			try {
 				return operation.execute();
 			} catch (NoClassDefFoundError e) {
-				classLoaderCache.values().remove(hadoopContextClassLoader);
-				if (hadoopContextClassLoader instanceof URLClassLoader) {
-					LOG.debug("  classloader removed from cache; classloader classpath: " + Arrays.toString(((URLClassLoader)hadoopContextClassLoader).getURLs()));
-				} else {
-					// shouldn't happen
-					LOG.debug("  classloader removed from cache");
-				}
+				handleNoClassDefFoundError(e, hadoopContextClassLoader);
+				throw getHadoopNoClassDefFoundException(e, hadoopContextClassLoader);
+			} catch (RuntimeException e) {
+				handleNoClassDefFoundInExceptionChain(e, hadoopContextClassLoader);
 				throw e;
+			} catch (Exception e) {
+				handleNoClassDefFoundInExceptionChain(e, hadoopContextClassLoader);
+				throw (EX) e; // this would be unsafe without RuntimeException caught above 
 			} finally {
 				Thread.currentThread().setContextClassLoader(formerContextClassLoader);
 			}
 		}
-
+		
+		private static void handleNoClassDefFoundError(NoClassDefFoundError e, ClassLoader hadoopContextClassLoader) {
+			classLoaderCache.values().remove(hadoopContextClassLoader);
+			if (hadoopContextClassLoader instanceof URLClassLoader) {
+				List<URL> libraries = Arrays.asList(((URLClassLoader) hadoopContextClassLoader).getURLs());
+				LOG.debug("  classloader removed from cache; classloader classpath: " + libraries);
+			} else {
+				// shouldn't happen; the classloader should be GreedyURLClassLoader
+				LOG.debug("  classloader removed from cache");
+			}
+		}
+		
+		private static void handleNoClassDefFoundInExceptionChain(Exception e, ClassLoader hadoopContextClassLoader) {
+			Throwable t = e;
+			while (t.getCause() != null) {
+				t = t.getCause();
+				if (t instanceof NoClassDefFoundError) {
+					NoClassDefFoundError noClassDefFoundError = (NoClassDefFoundError) t;
+					handleNoClassDefFoundError(noClassDefFoundError, hadoopContextClassLoader);
+					String msg = getNoClassDefFoundDiagnosticMessage(noClassDefFoundError, hadoopContextClassLoader);
+					if (msg != null) {
+						LOG.error("NoClassDefFoundError detected in exception chain of a Hadoop operation. Diagnosis:\n" + msg);
+					}
+				}
+			}
+		}
+		
+		private static HadoopNoClassDefFoundException getHadoopNoClassDefFoundException(NoClassDefFoundError e, ClassLoader hadoopContextClassLoader) {
+			String diagnosticMessage = getNoClassDefFoundDiagnosticMessage(e, hadoopContextClassLoader);
+			if (diagnosticMessage != null) {
+				return  new HadoopNoClassDefFoundException(diagnosticMessage, e);
+			}
+			return new HadoopNoClassDefFoundException(e);
+		}
+		
+		private static String getNoClassDefFoundDiagnosticMessage(NoClassDefFoundError e, ClassLoader hadoopContextClassLoader) {
+			if (!(hadoopContextClassLoader instanceof URLClassLoader)) {
+				return null;
+			}
+			List<URL> libraries = Arrays.asList(((URLClassLoader) hadoopContextClassLoader).getURLs());
+			return HadoopProvidersFactory.getNoClassDefFoundDiagnosticMessage(libraries, e);
+		}
+		
 		@Override
 		public final void connect(final E connData, final Properties additionalProperties) throws IOException {
 			doInContext(new Call<Void, IOException>() {

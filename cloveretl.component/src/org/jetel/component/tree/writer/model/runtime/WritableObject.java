@@ -84,6 +84,7 @@ public class WritableObject extends WritableContainer {
 		}
 	}
 	
+	@Override
 	public void addChild(WritableValue value) {
 		super.addChild(value);
 		value.dataType = dataType;
