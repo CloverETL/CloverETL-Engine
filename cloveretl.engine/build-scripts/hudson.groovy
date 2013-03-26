@@ -138,7 +138,7 @@ if( !runTests ){
 	if( testName == "after-commit-proxy" ){
 		antTarget = "run-scenarios-with-engine-build"
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
-		trustStoreF = new File(testEnvironmentD, "truststore/proxyTests.truststore")
+		trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/proxyTests.truststore")
 		antArgs += "-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	}
 	if (testName == "night") { //night tests need more memory
