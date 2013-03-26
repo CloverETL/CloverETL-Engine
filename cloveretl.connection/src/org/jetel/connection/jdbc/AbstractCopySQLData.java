@@ -1014,22 +1014,22 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			String fieldVal = resultSet.getString(fieldSQL);
+			// uses fromString - field should _not_ be a StringDataField
 			if (resultSet.wasNull()) {
-				field.setValue(null);
+				field.fromString(null);
 			} else {
-				// CL-949, CL-2748: replaced fromString() with setValue()
-				field.setValue(fieldVal);
+				field.fromString(fieldVal);
 			}
 		}
 
 		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			String fieldVal = statement.getString(fieldSQL);
+			// uses fromString - field should _not_ be a StringDataField
 			if (statement.wasNull()) {
-				field.setValue(null);
+				field.fromString(null);
 			} else {
-				// CL-949, CL-2748: replaced fromString() with setValue()
-				field.setValue(fieldVal);
+				field.fromString(fieldVal);
 			}
 		}
 
@@ -1156,6 +1156,55 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 			return statement.wasNull() ? null : date;
 		}
 
+	}
+	
+	/**
+	 * CL-2748
+	 * 
+	 * This class should be used instead of {@link CopyString}
+	 * when the target field is a {@link StringDataField}.
+	 * Uses {@link StringDataField#setValue(Object)}
+	 * instead of {@link DataField#fromString(CharSequence)}
+	 * so that empty strings are not replaced with <code>null</code>.
+	 *  
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 26, 2013
+	 */
+	public static class CopyStringToString extends CopyString {
+
+		/**
+		 * @param record
+		 * @param fieldSQL
+		 * @param fieldJetel
+		 */
+		public CopyStringToString(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+		}
+
+		@Override
+		public void setJetel(ResultSet resultSet) throws SQLException {
+			String fieldVal = resultSet.getString(fieldSQL);
+			// CL-949, CL-2748: use setValue() instead of fromString()
+			if (resultSet.wasNull()) {
+				field.setValue(null);
+			} else {
+				field.setValue(fieldVal);
+			}
+		}
+
+		@Override
+		public void setJetel(CallableStatement statement) throws SQLException {
+			String fieldVal = statement.getString(fieldSQL);
+			// CL-949, CL-2748: use setValue() instead of fromString()
+			if (statement.wasNull()) {
+				field.setValue(null);
+			} else {
+				field.setValue(fieldVal);
+			}
+		}
+		
 	}
 
 
