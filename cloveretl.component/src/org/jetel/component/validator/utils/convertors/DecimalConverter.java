@@ -73,7 +73,7 @@ public class DecimalConverter implements Converter {
 				NumericFormat nf = new NumericFormat(locale);
 				nf.applyLocalizedPattern(format);
 				return DecimalFactory.getDecimal((String)o, nf);
-			} catch (NumberFormatException e) {
+			} catch (Exception e) {
 				return null;
 			}
 		}
@@ -90,7 +90,7 @@ public class DecimalConverter implements Converter {
 	public Decimal convertFromCloverLiteral(String o) {
 		try {
 			return DecimalFactory.getDecimal(o);
-		} catch (NumberFormatException ex) {
+		} catch (Exception ex) {
 			return null;
 		}
 	}

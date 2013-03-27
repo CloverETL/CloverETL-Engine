@@ -163,6 +163,11 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		if(from == null || to == null) {
 			return State.INVALID;
 		}
+		/*System.err.println("From: " + from);
+		System.err.println("To:" + to);
+		System.err.println("REcord: " + record);
+		System.err.println("REcord vs from: " + comparator.compare(record, from));
+		System.err.println("REcord vs to: " + comparator.compare(record, to));*/
 		if(boundaries == BOUNDARIES_TYPE.CLOSED_CLOSED && comparator.compare(record, from) >= 0 && comparator.compare(record, to) <= 0) {
 			return State.VALID;
 		} else if(boundaries == BOUNDARIES_TYPE.CLOSED_OPEN && comparator.compare(record, from) >= 0 && comparator.compare(record, to) < 0) {

@@ -64,7 +64,7 @@ public class DoubleConverter implements Converter {
 				DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance(locale);
 				format.applyLocalizedPattern(this.format);
 				return format.parse(((CloverString) o).toString()).doubleValue(); 
-			} catch (ParseException e) {
+			} catch (Exception e) {
 				return null;
 			}
 		}
@@ -99,7 +99,7 @@ public class DoubleConverter implements Converter {
 		}
 		try {
 			return Double.parseDouble(o);
-		} catch (NumberFormatException ex) {
+		} catch (Exception ex) {
 			return null;
 		}
 	}

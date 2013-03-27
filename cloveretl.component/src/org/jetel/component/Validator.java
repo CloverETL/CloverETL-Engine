@@ -51,6 +51,9 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**
+ * Component for validation incoming records against user defined set of rules.
+ * Records are taken one by one, there is no inner state of this component.
+ *
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 23.10.2012
  */
@@ -130,10 +133,16 @@ public class Validator extends Node {
 			tempRules = rules;
 		}
 		
+		if(tempRules == null || tempRules.isEmpty()) {
+			ConfigurationProblem problem = new ConfigurationProblem("No validation rules.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+			status.add(problem);
+			return status;
+		}
+		
 		try {
 			rootGroup = ValidationRulesPersister.deserialize(tempRules);
 		} catch (ValidationRulesPersisterException e) {
-			ConfigurationProblem problem = new ConfigurationProblem("Cannot create validation tree, rules settings are invalid.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+			ConfigurationProblem problem = new ConfigurationProblem("Cannot parse validation rules.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
 			status.add(problem);
 		}
 		

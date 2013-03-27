@@ -66,7 +66,7 @@ public class LongConverter implements Converter {
 		if(o instanceof String) {
 			try {
 				return Long.valueOf((String) o);
-			} catch (NumberFormatException e) {
+			} catch (Exception e) {
 				return null;
 			}
 		}
@@ -96,7 +96,7 @@ public class LongConverter implements Converter {
         }
         try {
         	return Long.parseLong(o);
-        } catch(NumberFormatException ex){
+        } catch(Exception ex){
         	return null; 
         }
 	}

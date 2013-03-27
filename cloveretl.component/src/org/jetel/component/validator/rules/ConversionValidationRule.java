@@ -235,13 +235,13 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 				status &= false;
 			}
 			if(locale.getValue().isEmpty()) {
-				accumulator.addError(format, this, "Locale of incoming field must be filled.");
+				accumulator.addError(locale, this, "Locale of incoming field must be filled.");
 				status &= false;
 			}
 		}
 		if(useType.getValue() == METADATA_TYPES.DATE) {
 			if(timezone.getValue().isEmpty()) {
-				accumulator.addError(format, this, "Timezone of incoming field must be filled.");
+				accumulator.addError(timezone, this, "Timezone of incoming field must be filled.");
 				status &= false;
 			}
 		}
