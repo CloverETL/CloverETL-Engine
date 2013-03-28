@@ -62,7 +62,7 @@ public class DecimalConverter implements Converter {
 		if (o instanceof CloverString) {
 			try {
 				NumericFormat nf = new NumericFormat(locale);
-				nf.applyLocalizedPattern(format);
+				nf.applyPattern(format);
 				return DecimalFactory.getDecimal(((CloverString)o).toString(), nf);
 			} catch (NumberFormatException e) {
 				return null;
@@ -71,7 +71,7 @@ public class DecimalConverter implements Converter {
 		if (o instanceof String) {
 			try {
 				NumericFormat nf = new NumericFormat(locale);
-				nf.applyLocalizedPattern(format);
+				nf.applyPattern(format);
 				return DecimalFactory.getDecimal((String)o, nf);
 			} catch (Exception e) {
 				return null;

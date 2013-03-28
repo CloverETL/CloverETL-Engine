@@ -9,13 +9,10 @@ package org.jetel.component.validator.utils.convertors;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.Locale;
 
-import org.jetel.data.primitive.Decimal;
-import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.CloverString;
 
@@ -62,7 +59,7 @@ public class DoubleConverter implements Converter {
 		if (o instanceof CloverString) {
 			try {
 				DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance(locale);
-				format.applyLocalizedPattern(this.format);
+				format.applyPattern(this.format);
 				return format.parse(((CloverString) o).toString()).doubleValue(); 
 			} catch (Exception e) {
 				return null;
@@ -71,7 +68,7 @@ public class DoubleConverter implements Converter {
 		if (o instanceof String) {
 			try {
 				DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance(locale);
-				format.applyLocalizedPattern(this.format);
+				format.applyPattern(this.format);
 				return format.parse((String) o).doubleValue(); 
 			} catch (ParseException e) {
 				return null;

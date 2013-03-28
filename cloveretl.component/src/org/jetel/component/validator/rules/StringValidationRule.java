@@ -82,6 +82,7 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		format.setName("Format mask");
 		format.setOptions(CommonFormats.all);
+		format.setTooltip("Format mask to format input field before validation.\n");
 		format.setPlaceholder("Number/date format, for syntax see documentation.");
 		params.add(format);
 		format.setEnabledHandler(new EnabledHandler() {
@@ -147,6 +148,9 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 			throw new IllegalArgumentException("Unknown field.");
 		}
 		DataField field = record.getField(name);
+		if(field.isNull()) {
+			return "";
+		}
 		if(fieldMetadata.getDataType() == DataFieldType.BOOLEAN) {
 			if(((BooleanDataField) field).getValue()) {
 				return "True";
@@ -168,11 +172,15 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 				|| fieldMetadata.getDataType() == DataFieldType.NUMBER
 				|| fieldMetadata.getDataType() == DataFieldType.LONG
 				|| fieldMetadata.getDataType() == DataFieldType.INTEGER) {
+			if(format.getValue().isEmpty()) {
+				return field.getValue().toString();
+			}
 			DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance(ValidatorUtils.localeFromString(locale.getValue()));
-			if(!format.getValue().isEmpty()) {
-				decimalFormat.applyLocalizedPattern(format.getValue());
+			if(format.getValue().equals(CommonFormats.INTEGER)) {
+				decimalFormat.applyPattern("#");
+				decimalFormat.setGroupingUsed(false); // Suppress grouping of thousand by default
 			} else {
-				decimalFormat.setGroupingUsed(false);	// Suppress grouping of thousand by default
+				decimalFormat.applyPattern(format.getValue());
 			}
 			if(fieldMetadata.getDataType() == DataFieldType.DECIMAL) {
 				return decimalFormat.format(((DecimalDataField) field).getBigDecimal());

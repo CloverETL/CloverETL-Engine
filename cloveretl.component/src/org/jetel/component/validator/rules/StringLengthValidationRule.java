@@ -19,7 +19,6 @@
 package org.jetel.component.validator.rules;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -29,10 +28,8 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
-import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
-import org.jetel.component.validator.ValidationNode.State;
-import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
+import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
@@ -131,6 +128,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 			return State.INVALID;
 		}
 		Integer length = Integer.valueOf(tempString.length());
+		System.err.println(tempString + " delka: " + length);
 		State result = State.INVALID;
 		if(type.getValue() == TYPES.EXACT && length.equals(from.getValue())) {
 			result = State.VALID;

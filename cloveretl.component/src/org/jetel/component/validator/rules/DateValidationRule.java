@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import javax.swing.text.DateFormatter;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -37,7 +36,6 @@ import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
-import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;

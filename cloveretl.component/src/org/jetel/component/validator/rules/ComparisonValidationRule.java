@@ -20,43 +20,22 @@ package org.jetel.component.validator.rules;
 
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
-import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
-import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
-import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
-import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.component.validator.utils.ValidatorUtils;
-import org.jetel.component.validator.utils.comparators.DateComparator;
-import org.jetel.component.validator.utils.comparators.DecimalComparator;
-import org.jetel.component.validator.utils.comparators.DoubleComparator;
-import org.jetel.component.validator.utils.comparators.LongComparator;
-import org.jetel.component.validator.utils.comparators.StringComparator;
 import org.jetel.component.validator.utils.convertors.Converter;
-import org.jetel.component.validator.utils.convertors.DateConverter;
-import org.jetel.component.validator.utils.convertors.DecimalConverter;
-import org.jetel.component.validator.utils.convertors.DoubleConverter;
-import org.jetel.component.validator.utils.convertors.LongConverter;
-import org.jetel.component.validator.utils.convertors.StringConverter;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 

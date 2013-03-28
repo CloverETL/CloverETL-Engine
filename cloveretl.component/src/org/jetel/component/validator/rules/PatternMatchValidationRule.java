@@ -30,7 +30,6 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
-import org.jetel.component.validator.AbstractValidationRule.TARGET_TYPE;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -56,9 +55,9 @@ public class PatternMatchValidationRule extends StringValidationRule {
 		pattern.setName("Pattern to match");
 		pattern.setPlaceholder("Regular expression, for syntax see documentation");
 		params.add(pattern);
+		params.addAll(super.initialize(inMetadata, graphWrapper));
 		ignoreCase.setName("Ignore case");
 		params.add(ignoreCase);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
 	}
 	

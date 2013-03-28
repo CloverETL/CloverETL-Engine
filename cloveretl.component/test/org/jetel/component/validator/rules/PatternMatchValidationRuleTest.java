@@ -201,6 +201,7 @@ public class PatternMatchValidationRuleTest extends ValidatorTestCase {
 		PatternMatchValidationRule rule = new PatternMatchValidationRule();
 		rule.getTarget().setValue("field");
 		rule.getPattern().setValue("^[-]?\\d{1,}\\,?\\d{0,}$");
+		// TODO: fixme (without format english style is used)
 		rule.getLocale().setValue("cs.CZ");
 		
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 0d), null, null));

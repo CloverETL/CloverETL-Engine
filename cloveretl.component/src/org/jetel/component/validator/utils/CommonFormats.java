@@ -33,11 +33,13 @@ import org.jetel.util.crypto.CombinedDecryptor;
  */
 public class CommonFormats {
 	
+	public static final String INTEGER = "INTEGER";
+	
 	/**
 	 * @see (NumericFormatAttributeType)
 	 */
 	public static final String[] numbers = {
-		"INTEGER",
+		INTEGER,
 		"#",
 		"#.#",
 		"#.###",
@@ -77,7 +79,7 @@ public class CommonFormats {
 	public static final String defaultDate = dates[0];
 
 	public static final String[] all = {
-		"INTEGER",
+		INTEGER,
 		"#",
 		"#.#",
 		"#.###",

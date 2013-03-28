@@ -18,15 +18,9 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -38,23 +32,16 @@ import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
-import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
-import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.formatter.NumericFormatter;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -125,7 +112,7 @@ public class NumberValidationRule extends AbstractValidationRule {
 		try {
 			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(realLocale);
 			if(format.getValue().equals(CommonFormats.defaultNumber)) {
-				numberFormat.applyLocalizedPattern("#");
+				numberFormat.applyPattern("#");
 				numberFormat.setParseIntegerOnly(true);
 			} else if(!format.getValue().isEmpty()) {
 				//numberFormat.applyLocalizedPattern(format.getValue());
