@@ -22,6 +22,7 @@ import java.util.Iterator;
 
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.property.PropertyRefResolver;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -29,9 +30,11 @@ import org.jetel.graph.TransformationGraph;
  */
 public class EngineGraphWrapper implements GraphWrapper {
 	private TransformationGraph graph;
+	private PropertyRefResolver refResolver = null;
 	
 	public EngineGraphWrapper(TransformationGraph graph) {
 		this.graph = graph;
+		this.refResolver = new PropertyRefResolver(graph.getGraphProperties());
 	}
 	
 	public Iterator<String> getLookupTables() {
@@ -40,5 +43,9 @@ public class EngineGraphWrapper implements GraphWrapper {
 	
 	public LookupTable getLookupTable(String name) {
 		return graph.getLookupTable(name);
+	}
+	
+	public PropertyRefResolver getRefResolver() {
+		return refResolver;
 	}
 }
