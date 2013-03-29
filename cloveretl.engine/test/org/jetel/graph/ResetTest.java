@@ -174,9 +174,6 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
 							&& !file.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
 							&& !file.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
-							&& !file.getName().equals("JavaBeanReader_MULE-73.grf") // disabled until CLO-304 fixed
-							&& !file.getName().equals("MapWriter_TimeTypesConversion.grf") // disabled until CLO-304 fixed
-							&& !file.getName().equals("MapWriterBeanReader_employees.grf") // disabled until CLO-304 fixed
 							&& !file.getName().equals("BeanWriterReader_employees.grf"); // remove after CL-2474 solved
 				}
 			};
