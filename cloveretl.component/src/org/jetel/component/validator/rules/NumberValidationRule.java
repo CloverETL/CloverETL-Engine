@@ -42,6 +42,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -50,6 +51,9 @@ import org.jetel.metadata.DataRecordMetadata;
 @XmlRootElement(name="number")
 @XmlType(propOrder={"trimInput", "format", "locale"})
 public class NumberValidationRule extends AbstractValidationRule {
+	
+	public static final int ERROR_LEFTOVERS = 401;
+	public static final int ERROR_PARSING = 402;
 	
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
@@ -84,22 +88,18 @@ public class NumberValidationRule extends AbstractValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
+			logNotValidated("Rule not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		logger.trace("Validation rule: " + this.getName() + "\n"
-					+ "Target field: " + target.getValue() + "\n"
-					+ "Format mask: " + format.getValue() + "\n"
-					+ "Locale: " + locale.getValue() + "\n"
-					+ "Trim input: " + trimInput.getValue());
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		DataField field = record.getField(target.getValue());
 		if(field.isNull()) {
-			logger.trace("Validation rule: " + getName() + "  on null is " + State.VALID);
+			logSuccess("Field '" + target.getValue() + "' is null.");
 			return State.VALID;
 		}
 		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
-			logger.trace("Validation rule: " + getName() + "  on null is " + State.INVALID + " (incoming field is not a string)");
+			logError("Field '" + target.getValue() + "' is not a string.");
 			return State.INVALID;
 		}
 		
@@ -123,15 +123,16 @@ public class NumberValidationRule extends AbstractValidationRule {
 //			numberFormat.setMaximumFractionDigits(0);
 //			numberFormat.setMaximumIntegerDigits(0);
 			Number parsedNumber = numberFormat.parse(tempString, pos);
-			System.err.println(parsedNumber);
 			if(parsedNumber == null || pos.getIndex() != tempString.length()) {
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedNumber + "' is " + State.INVALID);
+				logError("Field '" + target.getValue() + "' with value '" + tempString + "' contains leftovers after parsed value.");
+				raiseError(ea, ERROR_PARSING, "The target field contains leftovers after parsed value.", target.getValue(), tempString);
 				return State.INVALID;
 			}
-			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedNumber + "' is " + State.VALID);
+			logSuccess("Field '" + target.getValue() + "' parsed as '" + parsedNumber + "'");
 			return State.VALID;
 		} catch (Exception ex) {
-			logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' could not parse, therefore is " + State.INVALID);
+			logError("Field '" + target.getValue() + "' with value '" + tempString + "' could not be parsed.");
+			raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", target.getValue(), tempString);
 			return State.INVALID;
 		}
 	}

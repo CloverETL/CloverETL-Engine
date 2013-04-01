@@ -40,5 +40,10 @@ final public class IntegerValidationParamNode extends ValidationParamNode {
 	public void setValue(Integer other) {
 		value = other;
 	}
+	
+	@Override
+	public String toString() {
+		return value.toString();
+	}
 
 }

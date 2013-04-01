@@ -186,10 +186,12 @@ public class Validator extends Node {
 		// Prepare provider for accessing graph
 		GraphWrapper graphWrapper = new EngineGraphWrapper(getGraph());
 		
+		ValidationErrorAccumulator errorAccumulator = null;
+		
 		// Iterate over data
 		boolean hasData = true;
 		while(hasData && runIt) {
-			ValidationErrorAccumulator ea = new ValidationErrorAccumulator();
+			errorAccumulator = new ValidationErrorAccumulator();
 			if(!inPort.readRecordDirect(recordBuffer)) {
 				hasData = false;
 				continue;
@@ -197,8 +199,9 @@ public class Validator extends Node {
 			processedRecords++;
 			logger.trace("Validation of record number " + processedRecords + " has started.");
 			record.deserialize(recordBuffer);
-			if(root.isValid(record,ea, graphWrapper) != ValidationNode.State.INVALID) {
+			if(root.isValid(record,errorAccumulator, graphWrapper) != ValidationNode.State.INVALID) {
 				recordBuffer.rewind();
+				// Create new record
 				validPort.writeRecordDirect(recordBuffer);
 				logger.trace("Record number " + processedRecords + " is VALID.");
 			} else {

@@ -19,9 +19,7 @@
 package org.jetel.component.validator.rules;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -30,7 +28,6 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
-import org.jetel.component.validator.ValidationError;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
@@ -43,6 +40,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -51,6 +49,9 @@ import org.jetel.metadata.DataRecordMetadata;
 @XmlRootElement(name="nonEmptyField")
 @XmlType(propOrder={"goalJAXB", "trimInput"})
 public class NonEmptyFieldValidationRule extends AbstractValidationRule {
+	
+	public static int ERROR_FIELD_EMPTY = 101;
+	public static int ERROR_FIELD_NONEMPTY = 102;
 	
 	public static enum GOALS {
 		EMPTY, NONEMPTY;
@@ -96,54 +97,40 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
+			logNotValidated("Rule not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		logger.trace("Validation rule: " + this.getName() + "\n"
-				+ "Target field: " + target.getValue() + "\n"
-				+ "Check for emptiness: " + goal.getValue() + "\n"
-				+ "Trim input: " + trimInput.getValue());
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		DataField field = record.getField(target.getValue());
+		String inputString = field.toString();
 		
 		if(field.getMetadata().getDataType() == DataFieldType.STRING) {
-			String tempString = field.toString();
 			if(trimInput.getValue()) {
-				tempString = tempString.trim();
+				inputString = inputString.trim();
 			}
-			if(goal.getValue() == GOALS.EMPTY && tempString.isEmpty()) {
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
+			if(goal.getValue() == GOALS.EMPTY && inputString.isEmpty()) {
+				logSuccess("Field '" + target.getValue() + "' is empty.");
 				return State.VALID;	
 			}
-			if(goal.getValue() == GOALS.NONEMPTY && !tempString.isEmpty()) {
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
+			if(goal.getValue() == GOALS.NONEMPTY && !inputString.isEmpty()) {
+				logSuccess("Field '" + target.getValue() + "' with value '" + inputString + "' is nonempty.");
 				return State.VALID;	
-			}
+			} 
 		} else if(goal.getValue() == GOALS.EMPTY && field.isNull()) {
-			logger.trace("Validation rule: " + getName() + "  on '" + field + "' is " + State.VALID);
+			logSuccess("Field '" + target.getValue() + "' is empty.");
 			return State.VALID;
 		} else if(goal.getValue() == GOALS.NONEMPTY && !field.isNull()) {
-			logger.trace("Validation rule: " + getName() + "  on '" + field+ "' is " + State.VALID);
+			logSuccess("Field '" + target.getValue() + "' with value '" + field.getValue() + "' is nonempty.");
 			return State.VALID;
 		}
-		if(ea != null) {
-			// TODO: Error reporting
-			//ea.addError(new Error("NonEmptyRule", "NonEmptyRule failed", getName(), ArrayList(), params, values))
-		}
-		logger.trace("Validation rule: " + getName() + "  on '" + field + "' is " + State.INVALID);
-		return State.INVALID;
-	}
-	private ValidationError prepareError(String message) {
-		List<String> fields = new ArrayList<String>();
-		fields.add(target.getValue());
-		Map<String, String> params = new HashMap<String, String>();
-		if(goal.getValue() == GOALS.EMPTY) {
-			params.put("emptiness", "true");
+		// Error reporting
+		if(goal.getValue() == GOALS.NONEMPTY) {
+			raiseError(ea, ERROR_FIELD_EMPTY, "The target field is empty, expected to be nonempty.", target.getValue(), inputString);
 		} else {
-			params.put("emptiness", "false");
+			raiseError(ea, ERROR_FIELD_NONEMPTY, "The target field is nonempty, expected to be empty.", target.getValue(), inputString);
 		}
-		params.put("target", target.getValue());		
-		return new ValidationError("100", message, this.getName(), fields, params, new HashMap<String, String>());
+		return State.INVALID;
 	}
 	
 	@Override

@@ -51,4 +51,8 @@ final public class StringEnumValidationParamNode extends ValidationParamNode {
 		this.options = options;
 	}
 
+	@Override
+	public String toString() {
+		return value;
+	}
 }

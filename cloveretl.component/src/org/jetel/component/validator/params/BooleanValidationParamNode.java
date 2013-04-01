@@ -40,5 +40,13 @@ final public class BooleanValidationParamNode extends ValidationParamNode {
 	public void setValue(boolean b) {
 		this.b = b;
 	}
+	
+	@Override
+	public String toString() {
+		if(b) {
+			return "True";
+		}
+		return "False";
+	}
 
 }

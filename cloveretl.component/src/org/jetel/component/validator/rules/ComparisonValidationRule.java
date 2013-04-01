@@ -38,6 +38,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -96,18 +97,10 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
+			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		logger.trace("Validation rule: " + this.getName() + "\n"
-				+ "Target fields: " + target.getValue() + "\n"
-				+ "  Operator: " + operator.getValue() + "\n"
-				+ "  Value: " + value.getValue() + "\n"
-				+ "  Compare as: " + useType.getValue() + "\n"
-				+ "  Format mask: " + format.getValue() + "\n"
-				+ "  Locale: " + locale.getValue() + "\n"
-				+ "  Timezone: " + timezone.getValue() + "\n"
-				);
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		DataField field = record.getField(target.getValue());
 		DataFieldType fieldType = computeType(field);

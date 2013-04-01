@@ -36,6 +36,7 @@ import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -44,6 +45,9 @@ import org.jetel.metadata.DataRecordMetadata;
 @XmlRootElement(name="patternMatch")
 @XmlType(propOrder={"ignoreCase", "pattern"})
 public class PatternMatchValidationRule extends StringValidationRule {
+	
+	public static final int ERROR_INVALID_PATTERN = 601;
+	public static final int ERROR_NO_MATCH = 602;
 	
 	@XmlElement(name="ignoreCase",required=true)
 	private BooleanValidationParamNode ignoreCase = new BooleanValidationParamNode(false);
@@ -65,27 +69,19 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
+			logNotValidated("Rule not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		logger.trace("Validation rule: " + this.getName() + "\n"
-				+ "Target field: " + target.getValue() + "\n"
-				+ "Ignore case: " + ignoreCase.getValue() + "\n"
-				+ "Pattern: " + pattern.getValue() + "\n"
-				+ "Formatting mask: " + format.getValue() + "\n"
-				+ "Locale: " + locale.getValue() + "\n"
-				+ "Timezone: " + timezone.getValue() + "\n"
-				+ "Trim input: " + trimInput.getValue()
-				);
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		String tempString = null;
+		// FIXME: shouldn't be needed, remove?
 		try {
 			tempString = prepareInput(record, target.getValue());
 		} catch (IllegalArgumentException ex) {
 			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.INVALID + " (unknown field)");
 			return State.INVALID;
 		}
-		System.err.println("In string: " + tempString);
 		Pattern pm;
 		try {
 			if(ignoreCase.getValue()) {
@@ -94,15 +90,16 @@ public class PatternMatchValidationRule extends StringValidationRule {
 				pm = Pattern.compile(pattern.getValue(), Pattern.UNICODE_CASE);
 			}
 		} catch (PatternSyntaxException e) {
-			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.INVALID + " (pattern is invalid)");
+			logError("Pattern '" + pattern.getValue() + "' is invalid.");
+			raiseError(ea, ERROR_INVALID_PATTERN, "The pattern is invalid.", target.getValue(), tempString);
 			return State.INVALID;
 		}
 		if(pm.matcher(tempString).matches()) {
-			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.VALID);
+			logSuccess("Field '" + target.getValue() +  "' with value '" + tempString + "' has some match.");
 			return State.VALID;
 		} else {
-			// TODO: Add error reporting
-			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.INVALID);
+			logError("Field '" + target.getValue() +  "' with value '" + tempString + "' has  no match.");
+			raiseError(ea, ERROR_NO_MATCH, "No match.", target.getValue(), tempString);
 			return State.INVALID;
 		}
 	}

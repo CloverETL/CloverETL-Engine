@@ -227,7 +227,6 @@ public class PatternMatchValidationRuleTest extends ValidatorTestCase {
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Some value"), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10,5"), null, null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10,5 Kč"), null, null));
-	}
-	
+	}	
 	
 }

@@ -168,20 +168,20 @@ public class ValidationGroup extends ValidationNode {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
+			logNotValidated("Group not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		AbstractValidationRule prelimitaryCondition = getPrelimitaryCondition();
-		logger.trace("Group: " + this.getName() + "\n"
-					+ "Conjunction: " + conjunction + "\n"
-					+ "Lazy: " + laziness + "\n"
-					+ "Prelimitary condition: " + ((prelimitaryCondition == null)? "not present": prelimitaryCondition.getName()));
+		logParams("Conjunction: " + conjunction + "\n" +
+						"Lazy: " + laziness + "\n" +
+						"Prelimitary condition: " + ((prelimitaryCondition == null)? null: prelimitaryCondition.getName()));
+		
 		if(prelimitaryCondition != null) { 
 			if(prelimitaryCondition.isValid(record, null, graphWrapper) == State.INVALID) {
-				logger.trace("Skipping group: " + this.getName() + " (due to prelimitary condition).");
+				logNotValidated("Prelimitary condition of group was invalid.");
 				return State.NOT_VALIDATED;
 			}
 		}
-		logger.trace("Entering group: " + this.getName());
 		State currentState = State.NOT_VALIDATED;
 		State childState;
 		for(int i = 0; i < childs.size(); i++) {
@@ -200,14 +200,14 @@ public class ValidationGroup extends ValidationNode {
 			}
 		}
 		if(currentState == State.INVALID) {
-			logger.trace("Group: " + getName() + " is " + State.INVALID);
+			logError("");
 			return State.INVALID;
 		}
 		if(currentState == State.VALID) {
-			logger.trace("Group: " + getName() + " is " + State.VALID);
+			logSuccess("");
 			return State.VALID;
 		}
-		logger.trace("Group: " + getName() + " is " + State.NOT_VALIDATED);
+		logNotValidated("Group has no children.");
 		return State.NOT_VALIDATED;
 	}
 	

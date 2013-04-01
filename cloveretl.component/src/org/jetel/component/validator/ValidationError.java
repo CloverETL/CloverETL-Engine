@@ -21,28 +21,154 @@ package org.jetel.component.validator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.util.StringUtil;
+import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 
 /**
+ * Carries information about error from validation rule to reporting.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 20.11.2012
  */
 public class ValidationError {
-	private String code;
+	private int code;
 	private String message;
 	private String name;
 	private List<String> fields;
-	private Map<String,String> params;
 	private Map<String,String> values;
+	private Map<String,String> params;
 	private DateTime timestamp;
 	
-	public ValidationError(String code, String message, String name, List<String> fields, Map<String,String> params, Map<String,String> values) {
-		this.code = code;
-		this.message = message;
-		this.name = name;
-		this.fields = fields;
-		this.params = params;
-		this.values = values;
+	public ValidationError() {
 		timestamp = new DateTime();
 	}
+
+	/**
+	 * @return the code
+	 */
+	public int getCode() {
+		return code;
+	}
+
+	/**
+	 * @return the message
+	 */
+	public String getMessage() {
+		return message;
+	}
+
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * @return the fields
+	 */
+	public List<String> getFields() {
+		return fields;
+	}
+	
+	public String getFieldsInString() {
+		if(fields == null) {
+			return null;
+		}
+		return StringUtils.stringArraytoString(fields.toArray(new String[]{}),",");
+	}
+
+	/**
+	 * @return the values
+	 */
+	public Map<String, String> getValues() {
+		return values;
+	}
+	
+	public String getValuesInString() {
+		if(values == null) {
+			return null;
+		}
+		return StringUtils.mapToString(values, "=", ",");
+	}
+
+	/**
+	 * @return the params
+	 */
+	public Map<String, String> getParams() {
+		return params;
+	}
+	public String getParamsInString() {
+		if(params == null) {
+			return null;
+		}
+		return StringUtils.mapToString(params, "=", ",");
+	}
+
+	/**
+	 * @return the timestamp
+	 */
+	public DateTime getTimestamp() {
+		return timestamp;
+	}
+
+	/**
+	 * @param code the code to set
+	 */
+	public void setCode(int code) {
+		this.code = code;
+	}
+
+	/**
+	 * @param message the message to set
+	 */
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * @param fields the fields to set
+	 */
+	public void setFields(List<String> fields) {
+		this.fields = fields;
+	}
+
+	/**
+	 * @param values the values to set
+	 */
+	public void setValues(Map<String, String> values) {
+		this.values = values;
+	}
+
+	/**
+	 * @param params the params to set
+	 */
+	public void setParams(Map<String, String> params) {
+		this.params = params;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		buffer.append("Validation error\n");
+		buffer.append("----------------\n");
+		buffer.append("Validation rule: " + name + "\n");
+		buffer.append("Timestamp: " + timestamp.toString() + "\n");
+		buffer.append("Code: " + code + "\n");
+		buffer.append("Message: " + message + "\n");
+		buffer.append("Fields: " + getFieldsInString() + "\n");
+		buffer.append("Values: " + getValuesInString() + "\n");
+		buffer.append("Params: " + getParamsInString() + "\n");
+		return buffer.toString();
+	}
+	
+	
 }

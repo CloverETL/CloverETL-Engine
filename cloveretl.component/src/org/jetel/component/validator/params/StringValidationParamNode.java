@@ -45,5 +45,10 @@ final public class StringValidationParamNode extends ValidationParamNode {
 			}
 		}
 	}
+	
+	@Override
+	public String toString() {
+		return value;
+	}
 
 }

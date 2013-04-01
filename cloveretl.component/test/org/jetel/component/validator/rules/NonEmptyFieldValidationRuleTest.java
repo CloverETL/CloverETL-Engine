@@ -19,6 +19,8 @@
 package org.jetel.component.validator.rules;
 
 import org.jetel.component.validator.AbstractValidationRule;
+import org.jetel.component.validator.ValidationError;
+import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.common.TestDataRecordFactory;
 import org.jetel.component.validator.common.ValidatorTestCase;
@@ -30,10 +32,6 @@ import org.junit.Test;
  * @created 10.12.2012
  */
 public class NonEmptyFieldValidationRuleTest extends ValidatorTestCase {
-	
-	private static final String TARGET = "target";
-	private static final String TRIM = "trimInput";
-	private static final String GOAL = "checkForEmptiness";
 	
 	@Test
 	public void testNameability() {
@@ -129,6 +127,36 @@ public class NonEmptyFieldValidationRuleTest extends ValidatorTestCase {
 		
 		rule.getGoal().setValue(NonEmptyFieldValidationRule.GOALS.EMPTY);
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", null), null, null));
+	}
+	
+	public void testErrorAccumulator() {
+		NonEmptyFieldValidationRule rule = new NonEmptyFieldValidationRule();
+		rule.getTarget().setValue("email");
+		rule.getGoal().setValue(NonEmptyFieldValidationRule.GOALS.EMPTY);
+		ValidationErrorAccumulator accumulator = new ValidationErrorAccumulator();
+		
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", ""), accumulator, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", null), accumulator, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", null), accumulator, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", null), accumulator, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", null), accumulator, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", null), accumulator, null));
+		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", null), accumulator, null));
+		
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "some text"), accumulator, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "          "), accumulator, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "email", "	"), accumulator, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addLongField(null, "email", 0l), accumulator, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addIntegerField(null, "email", 0), accumulator, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", true), accumulator, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addBooleanField(null, "email", false), accumulator, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addDecimalField(null, "email", DecimalFactory.getDecimal(0)), accumulator, null));
+		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "email", 0d), accumulator, null));
+		
+		
+		for(ValidationError error : accumulator) {
+			System.err.println(error.toString());
+		}
 	}
 	
 

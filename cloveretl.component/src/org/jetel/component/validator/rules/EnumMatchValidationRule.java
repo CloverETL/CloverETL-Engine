@@ -51,6 +51,11 @@ import org.jetel.util.string.StringUtils;
 @XmlRootElement(name="enumMatch")
 @XmlType(propOrder={"values" , "ignoreCase", "trimInput"})
 public class EnumMatchValidationRule extends ConversionValidationRule {
+	
+	public static final int ERROR_INIT_CONVERSION = 701;
+	public static final int ERROR_PARSING_VALUES = 702;
+	public static final int ERROR_CONVERSION = 703;
+	public static final int ERROR_NO_MATCH = 704;
 
 	@XmlElement(name="values",required=true)
 	private StringValidationParamNode values = new StringValidationParamNode();
@@ -98,25 +103,18 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
+			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		logger.trace("Validation rule: " + this.getName() + "\n"
-					+ "Target field: " + target.getValue() + "\n"
-					+ "Accepted values: " + values.getValue() + "\n"
-					+ "Compare as: " + useType.getValue() + "\n"
-					+ "Format mask: " + format.getValue() + "\n"
-					+ "Locale: " + locale.getValue() + "\n"
-					+ "Timezone: " + timezone.getValue() + "\n"
-					+ "Ignoring case: " + ignoreCase.getValue() + "\n"
-					+ "Trim input: " + trimInput.getValue());
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		DataField field = record.getField(target.getValue());
 		DataFieldType fieldType = computeType(field);
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (cannot determine type to compare in)");
+			logError("Cannot initialize conversion and comparator tools.");
+			raiseError(ea, ERROR_INIT_CONVERSION, "The target has wrong length.", target.getValue(), field.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -124,16 +122,15 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 			getParsedValues();
 		} catch (NullPointerException ex) {
 			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (cannot parse accepted values)");
+			raiseError(ea, ERROR_PARSING_VALUES, "The target has wrong length.", target.getValue(), field.getValue().toString());
 			return State.INVALID;
 		}
 		
-		State status = checkInType(field);
+		State status = checkInType(field, ea);
 		
 		if(status == State.VALID) {
-			logger.trace("Validation rule: " + getName() + " is " + State.VALID);
 			return State.VALID;
 		} else {
-			logger.trace("Validation rule: " + getName() + " is " + State.INVALID);
 			return State.INVALID;
 		}
 	}
@@ -154,9 +151,11 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		return tempValues;
 	}
 	
-	private <T> State checkInType(DataField dataField) {
+	private <T> State checkInType(DataField dataField, ValidationErrorAccumulator ea) {
 		T record = tempConverter.convert(dataField.getValue());
 		if(record == null) {
+			logError("Conversion of field '" + target.getValue() + "' with value '" + dataField.getValue() + "' failed.");
+			raiseError(ea, ERROR_CONVERSION, "Conversion failed.", target.getValue(),dataField.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -170,16 +169,17 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 					record = (T) ((String) record).toLowerCase();
 					item = (T) ((String) item).toLowerCase();
 				}
-				System.err.println(record);
-				System.err.println(item);
 				if(tempComparator.compare(record, item) == 0) {
+					logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' matched item '" + item.toString() + "' as strings.");
 					return State.VALID;		
 				}	
 			} else
 			if(tempComparator.compare(item, record) == 0) {
+				logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' matched item '" + item.toString() + "'.");
 				return State.VALID;		
 			}
 		}
+		raiseError(ea, ERROR_NO_MATCH, "No match.", target.getValue(), record.toString());
 		return State.INVALID;
 	}
 	
@@ -212,7 +212,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 			temp = new TreeSet<String>();
 		}
 		String[] temp2 = StringUtils.split(values.getValue(),",");
-		stripDoubleQuotes(temp2);
+		stripDoubleQuotesAndTrim(temp2);
 		temp.addAll(Arrays.asList(temp2));
 		// Workaround because split ignores "something,else," <-- last comma
 		if(values.getValue().endsWith(",")) {
@@ -220,8 +220,9 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		}
 		return temp;
 	}
-	private void stripDoubleQuotes(String[] input) {
+	private void stripDoubleQuotesAndTrim(String[] input) {
 		for(int i = 0; i < input.length; i++) {
+			input[i] = input[i].trim();
 			if(input[i].startsWith("\"") && input [i].endsWith("\"")) {
 				input[i] = input[i].substring(1, input[i].length()-1);
 			}

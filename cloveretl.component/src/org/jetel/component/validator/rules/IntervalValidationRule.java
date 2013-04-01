@@ -38,6 +38,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -57,15 +58,15 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		@Override
 		public String toString() {
 			if(this.equals(OPEN_CLOSED)) {
-				return "Left open, right closed";
+				return "From inclusive, to exclusive";
 			}
 			if(this.equals(CLOSED_OPEN)) {
-				return "Left closed right open";
+				return "From exclusive, to inclusive";
 			}
 			if(this.equals(OPEN_OPEN)) {
-				return "Open";
+				return "From exclusive, to exclusive";
 			}
-			return "Closed";
+			return "From inclusive, to inclusive";
 		}
 	};
 	
@@ -98,19 +99,10 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
+			logNotValidated("Rule not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		logger.trace("Validation rule: " + this.getName() + "\n"
-				+ "Target fields: " + target.getValue() + "\n"
-				+ "  Boundaries: " + boundaries.getValue() + "\n"
-				+ "  From: " + from.getValue() + "\n"
-				+ "  To: " + to.getValue() + "\n"
-				+ "  Compare as: " + useType.getValue() + "\n"
-				+ "  Format mask: " + format.getValue() + "\n"
-				+ "  Locale: " + locale.getValue() + "\n"
-				+ "  Timezone: " + timezone.getValue() + "\n"
-				);
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		DataField field = record.getField(target.getValue());
 		DataFieldType fieldType = computeType(field);

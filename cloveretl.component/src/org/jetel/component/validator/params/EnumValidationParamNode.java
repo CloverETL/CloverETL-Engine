@@ -58,5 +58,10 @@ final public class EnumValidationParamNode extends ValidationParamNode {
 	public Enum[] getOptions() {
 		return options;
 	}
+	
+	@Override
+	public String toString() {
+		return value.name();
+	}
 
 }

@@ -19,6 +19,7 @@
 package org.jetel.component.validator.rules;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -49,6 +50,9 @@ import org.jetel.metadata.DataRecordMetadata;
 @XmlRootElement(name="nonEmptySubset")
 @XmlType(propOrder={"goalJAXB", "count", "trimInput"})
 public class NonEmptySubsetValidationRule extends AbstractValidationRule {
+	
+	public static int ERROR_NOT_ENOUGH_EMPTY = 201;
+	public static int ERROR_NOT_ENOUGH_NONEMPTY = 202;
 	
 	public static enum GOALS {
 		EMPTY, NONEMPTY;
@@ -103,7 +107,7 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
+			logNotValidated("Rule not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		logger.trace("Validation rule: " + this.getName() + "\n"
@@ -113,19 +117,22 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 				+ "Trim input: " + trimInput.getValue());
 		
 		String[] targetField = ValidatorUtils.parseTargets(target.getValue());
+		HashMap<String, String> values = new HashMap<String, String>();
 		DataField field;
 		int ok = 0;
+		String inputString = null;
 		for(int i = 0; i < targetField.length; i++) {
 			field = record.getField(targetField[i]);
+			inputString = field.toString();
+			values.put(targetField[i], inputString);
 			if(field.getMetadata().getDataType() == DataFieldType.STRING) {
-				String tempString = field.toString();
 				if(trimInput.getValue()) {
-					tempString = tempString.trim();
+					inputString = inputString.trim();
 				}
-				if(goal.getValue() == GOALS.EMPTY && tempString.isEmpty()) {
+				if(goal.getValue() == GOALS.EMPTY && inputString.isEmpty()) {
 					ok++;	
 				}
-				if(goal.getValue() == GOALS.NONEMPTY && !tempString.isEmpty()) {
+				if(goal.getValue() == GOALS.NONEMPTY && !inputString.isEmpty()) {
 					ok++;
 				}
 			} else if(goal.getValue() == GOALS.EMPTY && field.isNull() ||
@@ -133,15 +140,20 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 				ok++;
 			}
 			if(ok >= count.getValue()) {
-				logger.trace("Validation rule: " + getName() + " is " + State.VALID);
+				if(goal.getValue() == GOALS.EMPTY) {
+					logSuccess(ok + " fields of required " + count.getValue() + " empty");
+				} else {
+					logSuccess(ok + " fields of required " + count.getValue() + " nonempty");
+				}
 				return State.VALID;
 			}
 		}
-		if(ea != null) {
-			// TODO: Error reporting
-			//ea.addError(new Error("NonEmptyRule", "NonEmptyRule failed", getName(), ArrayList(), params, values))
+		// Error reporting
+		if(goal.getValue() == GOALS.EMPTY) {
+			raiseError(ea, ERROR_NOT_ENOUGH_NONEMPTY, "Only " + ok + " field(s) empty, " + count.getValue() +" empty field(s) required." , targetField, values);
+		} else {
+			raiseError(ea, ERROR_NOT_ENOUGH_EMPTY, "Only " + ok + " field(s) nonempty, " + count.getValue() +" nonempty field(s) required.", targetField, values);
 		}
-		logger.trace("Validation rule: " + getName() + " is " + State.INVALID);
 		return State.INVALID;
 	}
 	

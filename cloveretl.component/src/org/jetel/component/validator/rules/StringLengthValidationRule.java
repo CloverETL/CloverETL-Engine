@@ -36,6 +36,7 @@ import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -44,6 +45,9 @@ import org.jetel.metadata.DataRecordMetadata;
 @XmlRootElement(name="stringLength")
 @XmlType(propOrder={"typeJAXB", "from", "to"})
 public class StringLengthValidationRule extends StringValidationRule {
+	
+	public static final int ERROR_WRONG_LENGTH = 501;
+	
 	public static enum TYPES {
 		EXACT, MINIMAL, MAXIMAL, INTERVAL;
 		@Override
@@ -109,26 +113,20 @@ public class StringLengthValidationRule extends StringValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
+			logNotValidated("Rule not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		logger.trace("Validation rule: " + this.getName() + "\n"
-				+ "Target field: " + target.getValue() + "\n"
-				+ "Type: " + type.getValue() + "\n"
-				+ "Lower bound: " + from.getValue() + "\n"
-				+ "Upper bound: " + to.getValue() + "\n"
-				+ "Trim input: " + trimInput.getValue());
-		
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		String tempString = null;
+		// FIXME: shouldn't be needed, remove?
 		try {
 			tempString = prepareInput(record, target.getValue());
 		} catch (IllegalArgumentException ex) {
-			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.INVALID + " (unknown field)");
+			logError("Field '" + target.getValue() + "' is unknown.");
 			return State.INVALID;
 		}
 		Integer length = Integer.valueOf(tempString.length());
-		System.err.println(tempString + " delka: " + length);
 		State result = State.INVALID;
 		if(type.getValue() == TYPES.EXACT && length.equals(from.getValue())) {
 			result = State.VALID;
@@ -142,7 +140,13 @@ public class StringLengthValidationRule extends StringValidationRule {
 		if(type.getValue() == TYPES.INTERVAL && length.compareTo(from.getValue()) >= 0 && length.compareTo(to.getValue()) <= 0) {
 			result = State.VALID;
 		}
-		logger.trace("Validation rule: " + getName() + " on length '" + length + "' is " + result);
+		if(result == State.VALID) {
+			logSuccess("Field '" + target.getValue() + "' with value '" + tempString + "' has length " + length);
+		} else {
+			logError("Field '" + target.getValue() + "' with value '" + tempString + "' has length " + length);
+			raiseError(ea, ERROR_WRONG_LENGTH, "The target has wrong length.", target.getValue(), tempString);
+		}
+		
 		return result;
 	}
 	

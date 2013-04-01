@@ -45,6 +45,7 @@ import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -57,6 +58,9 @@ import org.joda.time.format.DateTimeFormatter;
 @XmlRootElement(name="date")
 @XmlType(propOrder={"trimInput", "format", "locale", "timezone"})
 public class DateValidationRule extends AbstractValidationRule {
+	
+	public static final int ERROR_DOUBLE_CHECK = 301;
+	public static final int ERROR_PARSING = 302;
 	
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
@@ -98,24 +102,19 @@ public class DateValidationRule extends AbstractValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logger.trace("Validation rule: " + getName() + " is " + State.NOT_VALIDATED);
+			logNotValidated("Rule not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		logger.trace("Validation rule: " + this.getName() + "\n"
-					+ "Target field: " + target.getValue() + "\n"
-					+ "Format mask: " + format.getValue() + "\n"
-					+ "Locale: " + locale.getValue() + "\n"
-					+ "Timezone: " + timezone.getValue() + "\n"
-					+ "Trim input: " + trimInput.getValue());
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		DataField field = record.getField(target.getValue());
 		if(field.isNull()) {
-			logger.trace("Validation rule: " + getName() + "  on null is " + State.VALID);
+			logSuccess("Field '" + target.getValue() + "' is null.");
 			return State.VALID;
 		}
 		
 		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
-			logger.trace("Validation rule: " + getName() + "  on null is " + State.INVALID + " (incoming field is not a string)");
+			logError("Field '" + target.getValue() + "' is not a string.");
 			return State.INVALID;
 		}
 		
@@ -138,13 +137,15 @@ public class DateValidationRule extends AbstractValidationRule {
 				
 				Date parsedDate = dateFormat.parse(tempString);
 				if(!dateFormat.format(parsedDate).equals(tempString.trim())) {
-					logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.INVALID);
+					logError("Field '" + target.getValue() + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
+					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", target.getValue(), tempString);
 					return State.INVALID;
 				}
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.VALID);
+				logSuccess("Field '" + target.getValue() + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
 				return State.VALID;
 			} catch (Exception ex) {
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' is " + State.INVALID);
+				logError("Field '" + target.getValue() + "' with value '" + tempString + "' is not a date with given settings.");
+				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", target.getValue(), tempString);
 				return State.INVALID;	
 			}
 		} else {
@@ -154,13 +155,15 @@ public class DateValidationRule extends AbstractValidationRule {
 				formatter = formatter.withZone(DateTimeZone.forID(timezone.getValue()));
 				DateTime parsedDate = formatter.parseDateTime(tempString);
 				if(!parsedDate.toString(formatter).equals(tempString.trim())) {
-					logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedDate.toString() + "' is " + State.INVALID);
+					logError("Field '" + target.getValue() + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
+					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", target.getValue(), tempString);
 					return State.INVALID;
 				}
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' parsed as '" + parsedDate.toString() + "' is " + State.VALID);
+				logSuccess("Field '" + target.getValue() + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
 				return State.VALID;
 			} catch (Exception ex) {
-				logger.trace("Validation rule: " + getName() + "  on '" + tempString + "' could not be parsed, therefore is " + State.INVALID);
+				logError("Field '" + target.getValue() + "' with value '" + tempString + "' is not a date with given settings.");
+				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", target.getValue(), tempString);
 				return State.INVALID;
 			}
 		}

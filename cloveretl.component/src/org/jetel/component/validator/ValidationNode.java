@@ -24,11 +24,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Abstract shared part of each validation rule or group.
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.11.2012
  */
@@ -57,7 +57,7 @@ public abstract class ValidationNode {
 	 * @param record Record to be validated
 	 * @param ea Error accumulator where all errors are stored, can be null
 	 * @param graphWrapper Object which holds graph instance
-	 * @return Not null validation state, NOT_VALIDATED when rule is disabled
+	 * @return Not null validation state, NOT_VALIDATED when rule is disabled or group not entered
 	 */
 	public abstract State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper);
 	
@@ -69,6 +69,22 @@ public abstract class ValidationNode {
 	 * @return true if parameters are valid, false otherwise
 	 */
 	public abstract boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator);
+	
+	public void logSuccess(String message) {
+		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.VALID + ": " + message);
+	}
+	
+	public void logNotValidated(String message) {
+		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.NOT_VALIDATED + ": " + message);
+	}
+	
+	public void logError(String message) {
+		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.INVALID + ": " + message);
+	}
+	
+	public void logParams(String params) {
+		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parameters:\n" + params);
+	}
 	
 	/**
 	 * @return Returns true when rule is enabled 
@@ -96,6 +112,7 @@ public abstract class ValidationNode {
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	/**
 	 * Returns common name of rule type. Used for default name of new rules.  
 	 * @return Name
