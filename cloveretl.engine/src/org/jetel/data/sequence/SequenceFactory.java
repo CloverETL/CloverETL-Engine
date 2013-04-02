@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,10 +33,13 @@ import org.jetel.component.ComponentFactory;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.XmlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -145,6 +149,14 @@ public class SequenceFactory {
         } catch(Exception ex) {
             throw new RuntimeException("Can't create object of : " + sequenceType, ex);
         }
+    }
+
+    /**
+     *  Method for creating various types of sequences based on type and attributes passed as {@link Properties}.
+     */
+    public final static Sequence createSequence(TransformationGraph graph, String sequenceType, Properties properties) {
+    	Document xmlDocument = XmlUtils.createDocumentFromProperties(TransformationGraphXMLReaderWriter.SEQUENCE_ELEMENT, properties);
+    	return createSequence(graph, sequenceType, (Element) xmlDocument.getFirstChild());
     }
 
 }

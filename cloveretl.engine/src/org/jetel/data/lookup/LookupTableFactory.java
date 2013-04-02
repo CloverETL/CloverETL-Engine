@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,14 +38,17 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -219,7 +223,15 @@ public class LookupTableFactory {
         
         return result;
     }
-    
+ 
+    /**
+     *  Method for creating various types of lookup tables based on type and attributes passed as {@link Properties}.
+     */
+    public final static LookupTable createLookupTable(TransformationGraph graph, String lookupTableType, Properties properties) {
+    	Document xmlDocument = XmlUtils.createDocumentFromProperties(TransformationGraphXMLReaderWriter.LOOKUP_TABLE_ELEMENT, properties);
+    	return createLookupTable(graph, lookupTableType, (Element) xmlDocument.getFirstChild());
+    }
+
 }
 
 

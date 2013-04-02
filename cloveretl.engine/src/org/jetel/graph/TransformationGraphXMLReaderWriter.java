@@ -163,13 +163,13 @@ public class TransformationGraphXMLReaderWriter {
 	public static final String JOBFLOW_NATURE = "jobflow";
 	private final static String GRAPH_ELEMENT = "Graph";
 	//unused private final static String GLOBAL_ELEMENT = "Global";
-	private final static String NODE_ELEMENT = "Node";
+	public final static String NODE_ELEMENT = "Node";
 	private final static String EDGE_ELEMENT = "Edge";
 	private final static String METADATA_ELEMENT = "Metadata";
 	private final static String PHASE_ELEMENT = "Phase";
 	public final static String CONNECTION_ELEMENT = "Connection";
-	private final static String SEQUENCE_ELEMENT = "Sequence";
-	private final static String LOOKUP_TABLE_ELEMENT = "LookupTable";
+	public final static String SEQUENCE_ELEMENT = "Sequence";
+	public final static String LOOKUP_TABLE_ELEMENT = "LookupTable";
 	private final static String METADATA_RECORD_ELEMENT = "Record";
 	private final static String PROPERTY_ELEMENT = "Property";
 	

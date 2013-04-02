@@ -25,17 +25,21 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.XmlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
@@ -181,6 +185,15 @@ public class ComponentFactory {
             throw new RuntimeException("Can't create component of type '" + componentType + "'.", e);
         }
     }
+    
+    /**
+     *  Method for creating various types of components based on component type and attributes passed as {@link Properties}.
+     */
+    public final static Node createComponent(TransformationGraph graph, String componentType, Properties properties) {
+    	Document xmlDocument = XmlUtils.createDocumentFromProperties(TransformationGraphXMLReaderWriter.NODE_ELEMENT, properties);
+    	return createComponent(graph, componentType, (Element) xmlDocument.getFirstChild());
+    }
+
 }
 
 
