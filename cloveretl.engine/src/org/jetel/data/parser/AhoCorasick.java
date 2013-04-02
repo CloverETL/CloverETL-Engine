@@ -122,6 +122,7 @@ public class AhoCorasick {
 			for(int i = 0; i < s.length(); i++) {
 				if(iterator.children[s.charAt(i)] == null) {
 					iterator.children[s.charAt(i)] = new NodeTrie(iterator, s.charAt(i));
+					iterator.resetChildrenList();
 				}
 				iterator = iterator.children[s.charAt(i)]; 
 			}
@@ -147,6 +148,7 @@ public class AhoCorasick {
 				byte b = bb.get();
 				if(iterator.children[b] == null) {
 					iterator.children[b] = new NodeTrie(iterator, (char)b);
+					iterator.resetChildrenList();
 				}
 				iterator = iterator.children[b]; 
 			}
@@ -183,11 +185,7 @@ public class AhoCorasick {
 	}
 	
 	public boolean canUpdateWithoutFail() {
-		List<NodeTrie> children = currentNode.getChildren();
-		if (children == null || children.size() == 0) {
-			return false;
-		}
-		return true;
+		return currentNode.hasChildren();
 	}
 	
 	public int getMatchLength() {
@@ -241,6 +239,7 @@ public class AhoCorasick {
 		Set<MyInt> patterns;
         boolean[] patternsFinal;
 		NodeTrie fail;
+		List<NodeTrie> childrenList; //lazily initialised from children array
 		
 		/**
 		 * Constructor.
@@ -260,15 +259,30 @@ public class AhoCorasick {
 		}
 		
 		/**
+		 * Should be invoked whenever <code>children</code> array has been changed.
+		 */
+		public void resetChildrenList() {
+			childrenList = null;
+		}
+
+		/**
 		 * Returns all children of this node.
 		 * @return all children of this node
 		 */
 		public List<NodeTrie> getChildren() {
-			List<NodeTrie> ch = new ArrayList<NodeTrie>();
-			for(int i = 0; i < children.length; i++) {
-				if(children[i] != null) ch.add(children[i]);
+			if (childrenList == null) {
+				childrenList = new ArrayList<NodeTrie>();
+				for (int i = 0; i < children.length; i++) {
+					if (children[i] != null) {
+						childrenList.add(children[i]);
+					}
+				}
 			}
-			return ch;
+			return childrenList;
+		}
+		
+		public boolean hasChildren() {
+			return getChildren().size() != 0;
 		}
 		
 		@Override
