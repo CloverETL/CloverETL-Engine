@@ -18,6 +18,7 @@
  */
 package org.jetel.component.validator;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -38,10 +39,10 @@ public class ValidationError {
 	private List<String> fields;
 	private Map<String,String> values;
 	private Map<String,String> params;
-	private DateTime timestamp;
+	private Date timestamp;
 	
 	public ValidationError() {
-		timestamp = new DateTime();
+		timestamp = new Date();
 	}
 
 	/**
@@ -109,7 +110,7 @@ public class ValidationError {
 	/**
 	 * @return the timestamp
 	 */
-	public DateTime getTimestamp() {
+	public Date getTimestamp() {
 		return timestamp;
 	}
 

@@ -26,6 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.validator.EngineGraphWrapper;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
+import org.jetel.component.validator.ValidationError;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
@@ -34,7 +35,12 @@ import org.jetel.component.validator.utils.ValidationRulesPersister;
 import org.jetel.component.validator.utils.ValidationRulesPersisterException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.DateDataField;
 import org.jetel.data.Defaults;
+import org.jetel.data.IntegerDataField;
+import org.jetel.data.ListDataField;
+import org.jetel.data.MapDataField;
+import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -45,6 +51,12 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldContainerType;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CTLMapping;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -64,16 +76,37 @@ public class Validator extends Node {
 	
 	public final static String XML_RULES_ATTRIBUTE = "rules";
 	public final static String XML_EXTERNAL_RULES_URL_ATTRIBUTE = "externalRulesURL";
+	public final static String XML_ERROR_MAPPING = "errorMapping";
+	
+	public final static String MAPPING_INPUT_RECORD = "record";
+	public final static String MAPPING_INPUT_ERROR = "error";
+	public final static String MAPPING_OUTPUT_RECORD = "output";
+	
+	public final static String ERROR_OUTPUT_METADATA_NAME = "Report";
+	public static enum ERROR_OUTPUT {
+		CODE, MESSAGE, NAME, FIELDS, VALUES, PARAMS, GRAPH, SERIAL_NUMBER, CREATED;
+		
+		@Override
+		public String toString() {
+			return name().toLowerCase();
+		}
+	}
 	
 	private final static int INPUT_PORT = 0;
 	private final static int VALID_OUTPUT_PORT = 0;
 	private final static int INVALID_OUTPUT_PORT = 1;
 	
-	private int processedRecords = 0;
 	private String rules;
 	private String externalRulesURL;
+	private String errorMappingCode;
+	
+	private int processedRecords = 0;
 	private ValidationGroup rootGroup;
 	
+	private CTLMapping errorMapping;
+	private DataRecord inputRecord;
+	private DataRecord errorRecord;
+	private DataRecord outputRecord;
 	
 	/**
 	 * Minimalistic constructor to ensure component name init
@@ -101,6 +134,9 @@ public class Validator extends Node {
 			if(attrs.exists(XML_EXTERNAL_RULES_URL_ATTRIBUTE)) {
 				validator.setExternalRulesURL(attrs.getString(XML_EXTERNAL_RULES_URL_ATTRIBUTE));
 			}
+			if(attrs.exists(XML_ERROR_MAPPING)) {
+				validator.setErrorMappingCode(attrs.getString(XML_ERROR_MAPPING));
+			}
 			return validator;
 		} catch (Exception ex) {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ": Invalid XML configuration.", ex);
@@ -112,6 +148,9 @@ public class Validator extends Node {
 	
 	private void setExternalRulesURL(String value) {
 		externalRulesURL = value;
+	}
+	private void setErrorMappingCode(String value) {
+		errorMappingCode = value;
 	}
 	
 	@Override
@@ -159,6 +198,33 @@ public class Validator extends Node {
 				}
 			}
 		}
+		
+		if(!getInputPort(INPUT_PORT).getMetadata().equals(getOutputPort(INVALID_OUTPUT_PORT)) && (errorMappingCode == null || errorMappingCode.isEmpty())) {
+			ConfigurationProblem problem = new ConfigurationProblem("Metadata on error output port differs from input metadata but no error mapping was provided.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+			status.add(problem);
+			return status;
+		}
+		
+		if(errorMappingCode != null && !errorMappingCode.isEmpty() && getOutputPort(INVALID_OUTPUT_PORT) != null) {
+			errorMapping = new CTLMapping("Error output", this);
+			errorMapping.setTransformation(errorMappingCode);
+			inputRecord = errorMapping.addInputMetadata(MAPPING_INPUT_RECORD, getInputPort(INPUT_PORT).getMetadata());
+			errorRecord = errorMapping.addInputMetadata(MAPPING_INPUT_ERROR, createErrorOutputMetadata());
+			errorMapping.addOutputMetadata("DUMMY", null);	// Dummy metadata to reach to error port 
+			errorMapping.addOutputMetadata(MAPPING_OUTPUT_RECORD, getOutputPort(INVALID_OUTPUT_PORT).getMetadata());
+			
+			try {
+				errorMapping.init(XML_ERROR_MAPPING);
+			} catch(Exception e) {
+				ConfigurationProblem problem = new ConfigurationProblem("Cannot initialize error output mapping", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+				status.add(problem);
+				return status;
+			}
+			errorMapping.preExecute();
+		} else {
+			inputRecord = DataRecordFactory.newRecord(getInputPort(INPUT_PORT).getMetadata());
+			inputRecord.init();
+		}
 		return status;
 	}
 	
@@ -166,11 +232,13 @@ public class Validator extends Node {
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 		
+		
 	}
 
 	@Override
 	protected Result execute() throws Exception {
 		logger.trace("Executing Validator component");
+		
 		// Prepare validation tree
 		ValidationGroup root = rootGroup;
 		
@@ -178,14 +246,11 @@ public class Validator extends Node {
 		InputPortDirect inPort = getInputPortDirect(INPUT_PORT);
 		OutputPortDirect validPort = getOutputPortDirect(VALID_OUTPUT_PORT);
 		OutputPortDirect invalidPort = getOutputPortDirect(INVALID_OUTPUT_PORT);
-		
-		DataRecord record = DataRecordFactory.newRecord(getInputPort(INPUT_PORT).getMetadata());
+	
 		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-		record.init();
-		
+	
 		// Prepare provider for accessing graph
 		GraphWrapper graphWrapper = new EngineGraphWrapper(getGraph());
-		
 		ValidationErrorAccumulator errorAccumulator = null;
 		
 		// Iterate over data
@@ -198,16 +263,23 @@ public class Validator extends Node {
 			}
 			processedRecords++;
 			logger.trace("Validation of record number " + processedRecords + " has started.");
-			record.deserialize(recordBuffer);
-			if(root.isValid(record,errorAccumulator, graphWrapper) != ValidationNode.State.INVALID) {
-				recordBuffer.rewind();
-				// Create new record
-				validPort.writeRecordDirect(recordBuffer);
+			inputRecord.reset();
+			inputRecord.init();
+			inputRecord.deserialize(recordBuffer);
+			if(root.isValid(inputRecord,errorAccumulator, graphWrapper) != ValidationNode.State.INVALID) {
+				MiscUtils.sendRecordToPort(validPort, inputRecord);
 				logger.trace("Record number " + processedRecords + " is VALID.");
 			} else {
-				recordBuffer.rewind();
 				if(invalidPort != null) {
-					invalidPort.writeRecordDirect(recordBuffer);
+					if(errorMapping != null) {
+						for(ValidationError error : errorAccumulator) {
+							populateErrorRecord(error);
+							errorMapping.execute();
+							MiscUtils.sendRecordToPort(invalidPort, errorMapping.getOutputRecord(MAPPING_OUTPUT_RECORD));
+						}
+					} else {
+						MiscUtils.sendRecordToPort(invalidPort, inputRecord);	
+					}
 				}
 				logger.trace("Record number " + processedRecords + " is INVALID.");
 			}
@@ -215,6 +287,48 @@ public class Validator extends Node {
 		}
 		broadcastEOF();
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	public static DataRecordMetadata createErrorOutputMetadata() {
+		DataRecordMetadata metadata = new DataRecordMetadata(ERROR_OUTPUT_METADATA_NAME);
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.CODE.toString(), DataFieldType.INTEGER, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.SERIAL_NUMBER.toString(), DataFieldType.INTEGER, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.MESSAGE.toString(), DataFieldType.STRING, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.NAME.toString(), DataFieldType.STRING, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.FIELDS.toString(), DataFieldType.STRING, "", DataFieldContainerType.LIST));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.VALUES.toString(), DataFieldType.STRING, "", DataFieldContainerType.MAP));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.PARAMS.toString(), DataFieldType.STRING, "", DataFieldContainerType.MAP));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.CREATED.toString(), DataFieldType.DATE, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.GRAPH.toString(), DataFieldType.STRING, ""));
+			
+		return metadata;
+	}
+	
+	private void populateErrorRecord(ValidationError error) {
+		errorRecord.reset();
+		errorRecord.init();
+		
+		IntegerDataField serial_number = new IntegerDataField(errorRecord.getField(ERROR_OUTPUT.SERIAL_NUMBER.toString()).getMetadata(), (processedRecords -1));
+		errorRecord.getField(ERROR_OUTPUT.SERIAL_NUMBER.toString()).setValue(serial_number);
+		
+		StringDataField graphName = new StringDataField(errorRecord.getField(ERROR_OUTPUT.GRAPH.toString()).getMetadata(), getGraph().getName());
+		errorRecord.getField(ERROR_OUTPUT.GRAPH.toString()).setValue(graphName);
+		
+		IntegerDataField code = new IntegerDataField(errorRecord.getField(ERROR_OUTPUT.CODE.toString()).getMetadata(), error.getCode());
+		errorRecord.getField(ERROR_OUTPUT.CODE.toString()).setValue(code);
+		
+		StringDataField message = new StringDataField(errorRecord.getField(ERROR_OUTPUT.MESSAGE.toString()).getMetadata(), error.getMessage());
+		errorRecord.getField(ERROR_OUTPUT.MESSAGE.toString()).setValue(message);
+		
+		StringDataField name = new StringDataField(errorRecord.getField(ERROR_OUTPUT.NAME.toString()).getMetadata(), error.getName());
+		errorRecord.getField(ERROR_OUTPUT.NAME.toString()).setValue(name);
+		
+		((ListDataField) errorRecord.getField(ERROR_OUTPUT.FIELDS.toString())).setValue(error.getFields());
+		((MapDataField) errorRecord.getField(ERROR_OUTPUT.VALUES.toString())).setValue(error.getValues());
+		((MapDataField) errorRecord.getField(ERROR_OUTPUT.PARAMS.toString())).setValue(error.getParams());
+		
+		DateDataField created = new DateDataField(errorRecord.getField(ERROR_OUTPUT.CREATED.toString()).getMetadata(), error.getTimestamp());
+		errorRecord.getField(ERROR_OUTPUT.CREATED.toString()).setValue(created);
 	}
 
 }

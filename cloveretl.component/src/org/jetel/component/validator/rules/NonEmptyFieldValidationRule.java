@@ -97,7 +97,7 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule not enabled.");
+			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));

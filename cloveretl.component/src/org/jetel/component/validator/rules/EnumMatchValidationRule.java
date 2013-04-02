@@ -54,7 +54,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	
 	public static final int ERROR_INIT_CONVERSION = 701;
 	public static final int ERROR_PARSING_VALUES = 702;
-	public static final int ERROR_CONVERSION = 703;
+	public static final int ERROR_FIELD_CONVERSION = 703;
 	public static final int ERROR_NO_MATCH = 704;
 
 	@XmlElement(name="values",required=true)
@@ -113,16 +113,14 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			logError("Cannot initialize conversion and comparator tools.");
-			raiseError(ea, ERROR_INIT_CONVERSION, "The target has wrong length.", target.getValue(), field.getValue().toString());
+			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", target.getValue(), field.getValue().toString());
 			return State.INVALID;
 		}
 		
 		try {
 			getParsedValues();
 		} catch (NullPointerException ex) {
-			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (cannot parse accepted values)");
-			raiseError(ea, ERROR_PARSING_VALUES, "The target has wrong length.", target.getValue(), field.getValue().toString());
+			raiseError(ea, ERROR_PARSING_VALUES, "Cannot parse given enum in given type.", target.getValue(), field.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -142,7 +140,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 			for(String value : values) {
 				Object temp = tempConverter.convertFromCloverLiteral(value);
 				if(temp == null) {
-					throw new NullPointerException("Cannot parse values;");
+					throw new NullPointerException("Cannot parse values");
 				}
 				out.add(temp);
 			}
@@ -154,8 +152,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	private <T> State checkInType(DataField dataField, ValidationErrorAccumulator ea) {
 		T record = tempConverter.convert(dataField.getValue());
 		if(record == null) {
-			logError("Conversion of field '" + target.getValue() + "' with value '" + dataField.getValue() + "' failed.");
-			raiseError(ea, ERROR_CONVERSION, "Conversion failed.", target.getValue(),dataField.getValue().toString());
+			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", target.getValue(),(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 		

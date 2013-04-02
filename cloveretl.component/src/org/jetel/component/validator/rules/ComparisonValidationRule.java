@@ -48,6 +48,11 @@ import org.jetel.util.string.StringUtils;
 @XmlType(propOrder={"operatorJAXB", "value" })
 public class ComparisonValidationRule extends ConversionValidationRule {
 	
+	public static final int ERROR_INIT_CONVERSION = 901;
+	public static final int ERROR_FIELD_CONVERSION = 902;
+	public static final int ERROR_VALUE_CONVERSION = 903;
+	public static final int ERROR_CONDITION_NOT_MET = 904;
+	
 	// TYPE: Comparasion
 	//  + Operator: ==, <=, >=, <, >, !=
 	//  + Value:
@@ -107,24 +112,23 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			logger.trace("Validation rule: " + getName() + " is " + State.INVALID + " (cannot determine type to compare in)");
+			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", target.getValue(), field.getValue().toString());
 			return State.INVALID;
 		}
 		
-		State status = checkInType(field, tempConverter, tempComparator);
+		State status = checkInType(field, tempConverter, tempComparator, ea);
 		
 		if(status == State.VALID) {
-			logger.trace("Validation rule: " + getName() + " is " + State.VALID);
 			return State.VALID;
 		} else {
-			logger.trace("Validation rule: " + getName() + " is " + State.INVALID);
 			return State.INVALID;
 		}
 	}
 	
-	private <T> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator) {
+	private <T> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
 		T record = converter.convert(dataField.getValue());
 		if(record == null) {
+			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion failed.", target.getValue(),(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 
@@ -132,21 +136,29 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		
 		T value = converter.convertFromCloverLiteral(this.value.getValue());
 		if(value == null) {
+			raiseError(ea, ERROR_VALUE_CONVERSION, "Conversion of value failed.", target.getValue(),this.value.getValue());
 			return State.INVALID;
 		}
 		if(operator == OPERATOR_TYPE.E && comparator.compare(record, value) == 0) {
+			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' = '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.NE && comparator.compare(record, value) != 0) {
+			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' != '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.G && comparator.compare(record, value) > 0) {
+			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' > '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.L && comparator.compare(record, value) < 0) {
+			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' < '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.LE && comparator.compare(record, value) <= 0) {
+			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' <= '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.GE && comparator.compare(record, value) >= 0) {
+			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' >= '" + value.toString() + "'.");
 			return State.VALID;
 		} else {
+			raiseError(ea, ERROR_CONDITION_NOT_MET, "Incoming value did not met the condition.", target.getValue(),dataField.getValue().toString());
 			return State.INVALID;
 		}
 	}

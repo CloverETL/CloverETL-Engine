@@ -107,7 +107,7 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule not enabled.");
+			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		logger.trace("Validation rule: " + this.getName() + "\n"
