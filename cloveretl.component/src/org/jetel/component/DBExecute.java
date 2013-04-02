@@ -63,9 +63,7 @@ import org.jetel.util.joinKey.JoinKeyUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 /**
  *  <h3>DatabaseExecute Component</h3>
@@ -740,78 +738,6 @@ public class DBExecute extends Node {
 				sendOut = false;
 			}
 			
-		}
-	}
-	
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     September 27, 2002
-	 */
-	@Override public void toXML(Element xmlElement) {
-		
-		// set attributes of DBExecute
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, this.dbConnectionName);
-		xmlElement.setAttribute(XML_PRINTSTATEMENTS_ATTRIBUTE, String.valueOf(this.printStatements));
-		xmlElement.setAttribute(XML_INTRANSACTION_ATTRIBUTE, String.valueOf(this.transaction));
-		xmlElement.setAttribute(XML_PROCEDURE_CALL_ATTRIBUTE,String.valueOf(procedureCall));
-        
-        if (sqlStatementDelimiter!=null){
-            xmlElement.setAttribute(XML_STATEMENT_DELIMITER, sqlStatementDelimiter);
-        }
-        
-        if (outputFields != null){
-        	xmlElement.setAttribute(XML_OUTPUT_FIELDS, StringUtils.stringArraytoString(outputFields, Defaults.Component.KEY_FIELDS_DELIMITER));
-        }
-        
-        StringBuilder attr = new StringBuilder();
-        if (inParams != null) {
-        	for (int i = 0; i < inParams.length; i++) {
-				attr.append(StringUtils.mapToString(inParams[i], Defaults.ASSIGN_SIGN, Defaults.Component.KEY_FIELDS_DELIMITER));
-				attr.append(PARAMETERS_SET_DELIMITER);
-			}
-        	xmlElement.setAttribute(XML_IN_PARAMETERS, attr.toString());
-        }
-        
-        attr.setLength(0);
-        if (outParams != null) {
-        	for (int i = 0; i < outParams.length; i++) {
-				attr.append(StringUtils.mapToString(outParams[i], Defaults.ASSIGN_SIGN, Defaults.Component.KEY_FIELDS_DELIMITER));
-				attr.append(PARAMETERS_SET_DELIMITER);
-			}
-        	xmlElement.setAttribute(XML_OUT_PARAMETERS, attr.toString());
-        }
-
-        // use attribute for single SQL command, SQLCode element for multiple
-		if (this.dbSQL.length == 1) {
-			xmlElement.setAttribute(XML_SQLQUERY_ATTRIBUTE, this.dbSQL[0]);
-		}else if (fileUrl != null){
-			xmlElement.setAttribute(XML_URL_ATTRIBUTE, fileUrl);
-			if (charset != null) {
-				xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-			}
-		}else {
-			Document doc = xmlElement.getOwnerDocument();
-			Element childElement = doc.createElement(ComponentXMLAttributes.XML_ATTRIBUTE_NODE_NAME);
-            childElement.setAttribute(ComponentXMLAttributes.XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE, XML_SQLCODE_ELEMENT);
-			// join given SQL commands
-			StringBuffer buf = new StringBuffer(dbSQL[0]);
-            String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
-			for (int i=1; i<dbSQL.length; i++) {
-				buf.append(delimiter + dbSQL[i] + "\n");
-			}
-			Text textElement = doc.createTextNode(buf.toString());
-			childElement.appendChild(textElement);
-			xmlElement.appendChild(childElement);
-		}
-		if (errorActionsString != null){
-			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
-		}
-		
-		if (errorLogURL != null){
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
 		}
 	}
 

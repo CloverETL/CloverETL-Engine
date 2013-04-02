@@ -21,7 +21,6 @@ package org.jetel.component;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -765,57 +764,6 @@ public class HashJoin extends Node {
 			throw new ComponentNotReadyException(e);
 		}
 
-	}
-
-	/**
-	 * Description of the Method
-	 * 
-	 * @return Description of the Returned Value
-	 * @since May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-		if (transformClassName != null) {
-			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
-		}
-
-		if (transformSource != null) {
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE, transformSource);
-		}
-
-		if (transformURL != null) {
-			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
-		}
-
-		if (charset != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, createJoinSpec(driverJoiners, slaveJoiners));
-
-		xmlElement.setAttribute(XML_JOINTYPE_ATTRIBUTE, join == Join.FULL_OUTER ? "fullOuter" : join == Join.LEFT_OUTER ? "leftOuter" : "inner");
-
-		if (hashTableInitialCapacity > DEFAULT_HASH_TABLE_INITIAL_CAPACITY) {
-			xmlElement.setAttribute(XML_HASHTABLESIZE_ATTRIBUTE, String.valueOf(hashTableInitialCapacity));
-		}
-
-		if (slaveDuplicates) {
-			xmlElement.setAttribute(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, String.valueOf(slaveDuplicates));
-		}
-		if (errorActionsString != null) {
-			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
-		}
-
-		if (errorLogURL != null) {
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
-		}
-
-		Enumeration propertyAtts = transformationParameters.propertyNames();
-		while (propertyAtts.hasMoreElements()) {
-			String attName = (String) propertyAtts.nextElement();
-			xmlElement.setAttribute(attName, transformationParameters.getProperty(attName));
-		}
 	}
 
 	private static String createJoinSpec(String[][] driverJoiners, String[][] slaveJoiners) {

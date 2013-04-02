@@ -381,37 +381,6 @@ public class XSLDataTransformer extends Node {
 		if (mapping == null && (xmlInputFile == null || xmlOutputFile == null)) throw new ComponentNotReadyException(ERR_MAPPING_FILE_NOT_FOUND);
 	}
 	
-    @Override
-	public void reset() throws ComponentNotReadyException {
-    	super.reset();
-    }
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-        xmlElement.setAttribute(XML_MAPPING_ATTRIBUTE, mapping);
-		if (xsltFile != null) {
-			xmlElement.setAttribute(XML_XSLT_FILE_ATTRIBUTE, xsltFile);
-		}
-        if (xslt != null){
-            xmlElement.setAttribute(XML_XSLT_ATTRIBUTE, xslt);
-        }
-        if (xmlInputFile != null){
-            xmlElement.setAttribute(XML_XML_INPUT_FILE_ATTRIBUTE, xmlInputFile);
-        }
-        if (xmlOutputFile != null){
-            xmlElement.setAttribute(XML_XML_OUTPUT_FILE_ATTRIBUTE, xmlOutputFile);
-        }
-        if (charset != null){
-            xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-        }
-	}
-
 	/**
 	 *  Description of the Method
 	 *

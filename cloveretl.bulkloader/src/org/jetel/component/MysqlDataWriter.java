@@ -901,29 +901,6 @@ public class MysqlDataWriter extends BulkLoader {
 		return mysqlDataWriter;
 	}
 
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-		xmlElement.setAttribute(XML_MYSQL_PATH_ATTRIBUTE, loadUtilityPath);
-
-		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
-			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
-		}
-		if (!StringUtils.isEmpty(host)) {
-			xmlElement.setAttribute(XML_HOST_ATTRIBUTE, host);
-		}
-		if (!StringUtils.isEmpty(commandURL)) {
-			xmlElement.setAttribute(XML_COMMAND_URL_ATTRIBUTE, commandURL);
-		}
-		if (lockTable) {
-		    xmlElement.setAttribute(XML_LOCK_TABLE_ATTRIBUTE, Boolean.toString(lockTable));
-		}
-		if (ignoreRows != UNUSED_INT) {
-			xmlElement.setAttribute(XML_IGNORE_ROWS_ATTRIBUTE, String.valueOf(ignoreRows));
-		}
-	}
-	
 	/** Description of the Method */
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {

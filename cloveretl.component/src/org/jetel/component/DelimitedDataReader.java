@@ -272,29 +272,6 @@ public class DelimitedDataReader extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-	    super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
-		// returns either user specified charset, or default value
-		String charSet = this.parser.getCharsetName();
-		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
-		}
-		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		if (parser.getTrim() != null) {
-			xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, String.valueOf(parser.getTrim()));
-		}		
-		
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
 	 * @throws AttributeNotFoundException 

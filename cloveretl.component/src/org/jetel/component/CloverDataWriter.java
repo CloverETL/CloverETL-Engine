@@ -328,27 +328,6 @@ public class CloverDataWriter extends Node {
 		return aDataWriter;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	@Override
-	public void toXML(org.w3c.dom.Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE,String.valueOf(append));
-		xmlElement.setAttribute(XML_SAVEMETADATA_ATTRIBUTE,String.valueOf(saveMetadata));
-		xmlElement.setAttribute(XML_SAVEINDEX_ATRRIBUTE,String.valueOf(formatter.isSaveIndex()));
-		if (compressLevel > -1){
-			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE,String.valueOf(compressLevel));
-		}
-		if (skip != 0){
-			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
-		}
-		if (numRecords != 0){
-			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
-		}
-	}
-
 	public void setSaveMetadata(boolean saveMetadata) {
 		this.saveMetadata = saveMetadata;
 	}

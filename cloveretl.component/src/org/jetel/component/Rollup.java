@@ -20,7 +20,6 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -329,53 +328,6 @@ public class Rollup extends Node {
 
     public void setEqualNULL(boolean equalNULL) {
         this.equalNULL = equalNULL;
-    }
-
-    @Override
-    public void toXML(Element xmlElement) {
-        super.toXML(xmlElement);
-
-        if (groupKeyFields != null && groupKeyFields.length != 0) {
-            xmlElement.setAttribute(XML_GROUP_KEY_FIELDS_ATTRIBUTE,
-                    StringUtils.stringArraytoString(groupKeyFields, Defaults.Component.KEY_FIELDS_DELIMITER));
-        }
-
-        if (!StringUtils.isEmpty(groupAccumulatorMetadataId)) {
-            xmlElement.setAttribute(XML_GROUP_ACCUMULATOR_METADATA_ID_ATTRIBUTE, groupAccumulatorMetadataId);
-        }
-
-        if (!StringUtils.isEmpty(transform)) {
-            xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE, transform);
-        }
-
-        if (!StringUtils.isEmpty(transformUrl)) {
-            xmlElement.setAttribute(XML_TRANSFORM_URL_ATTRIBUTE, transformUrl);
-        }
-
-        if (!StringUtils.isEmpty(transformUrlCharset)) {
-            xmlElement.setAttribute(XML_TRANSFORM_URL_CHARSET_ATTRIBUTE, transformUrlCharset);
-        }
-
-        if (!StringUtils.isEmpty(transformClassName)) {
-            xmlElement.setAttribute(XML_TRANSFORM_CLASS_NAME_ATTRIBUTE, transformClassName);
-        }
-
-        if (transformParameters != null) {
-        	Enumeration<?> propertyNames = transformParameters.propertyNames();
-
-        	while (propertyNames.hasMoreElements()) {
-        		String propertyName = (String) propertyNames.nextElement();
-            	xmlElement.setAttribute(propertyName, transformParameters.getProperty(propertyName));
-        	}
-        }
-
-        if (!inputSorted) {
-            xmlElement.setAttribute(XML_INPUT_SORTED_ATTRIBUTE, Boolean.toString(inputSorted));
-        }
-
-        if (!equalNULL) {
-            xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, Boolean.toString(equalNULL));
-        }
     }
 
     @Override

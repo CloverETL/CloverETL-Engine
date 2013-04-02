@@ -301,48 +301,6 @@ import org.w3c.dom.Element;
 			super.reset();
 		}
 
-
-		/**
-    	 *  Description of the Method
-    	 *
-    	 * @return    Description of the Returned Value
-    	 * @since     May 21, 2002
-    	 */
-    	@Override
-		public void toXML(Element xmlElement) {
-    		super.toXML(xmlElement);
-    		
-    		if (primaryKeys != null) {
-    			String jKeys = primaryKeys[0];
-    			for (int i=1; i< primaryKeys.length; i++) {
-    				jKeys += Defaults.Component.KEY_FIELDS_DELIMITER + primaryKeys[i]; 
-    			}
-    			xmlElement.setAttribute(XML_PRIMARYKEY_ATTRIBUTE, jKeys);
-    		}
-    		
-    		if (foreignKeys != null) {
-    			String overKeys = foreignKeys[0];
-    			for (int i=1; i< foreignKeys.length; i++) {
-    				overKeys += Defaults.Component.KEY_FIELDS_DELIMITER + foreignKeys[i]; 
-    			}
-    			xmlElement.setAttribute(XML_FOREIGNKEY_ATTRIBUTE, overKeys);
-    		}
-            
-            if (defaultForeignKeys != null) {
-                String overKeys = defaultForeignKeys[0];
-                for (int i=1; i< defaultForeignKeys.length; i++) {
-                    overKeys += Defaults.Component.KEY_FIELDS_DELIMITER + defaultForeignKeys[i]; 
-                }
-                xmlElement.setAttribute(XML_DEFAULTFOREIGNKEY_ATTRIBUTE, overKeys);
-            }
-    		
-    		if (hashTableInitialCapacity > DEFAULT_HASH_TABLE_INITIAL_CAPACITY ) {
-    			xmlElement.setAttribute(XML_HASHTABLESIZE_ATTRIBUTE, String.valueOf(hashTableInitialCapacity));
-    		}
-            
-    	}
-    
-    
     	/**
     	 *  Description of the Method
     	 *

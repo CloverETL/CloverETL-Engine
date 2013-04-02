@@ -321,29 +321,6 @@ public class Trash extends Node {
 		}
 	}
 
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-		xmlElement.setAttribute(XML_DEBUGPRINT_ATTRIBUTE, String.valueOf(this.debugPrint));
-		if (debugFilename != null) {
-			xmlElement.setAttribute(XML_DEBUGFILENAME_ATTRIBUTE, this.debugFilename);
-		}
-		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
-		}
-		if (compressLevel > -1) {
-			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE, String.valueOf(compressLevel));
-		}
-		if (mode != null) {
-			if (mode.equals(Mode.PERFORMANCE)) {
-				xmlElement.setAttribute(XML_MODE, PERFORMANCE);
-			} else if (mode.equals(Mode.VALIDATE_RECORDS)) {
-				xmlElement.setAttribute(XML_MODE, VALIDATE_RECORDS);
-			}
-		}
-	}
-
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Trash trash = new Trash(xattribs.getString(XML_ID_ATTRIBUTE));

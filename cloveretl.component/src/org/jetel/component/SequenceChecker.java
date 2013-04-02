@@ -254,46 +254,6 @@ public class SequenceChecker extends Node {
         recordComparator.updateCollators(metadata);
 	}
 
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-	}
-	
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     January 5, 2007
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		if (keyFieldNames != null) {
-			StringBuffer buf = new StringBuffer(keyFieldNames[0]);
-			for (int i=1; i< keyFieldNames.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + keyFieldNames[i]).
-				append("(").append(sortOrderings[i]).append(")"); 
-			}
-			xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE,buf.toString());
-		}
-        
-        if (useI18N){
-            xmlElement.setAttribute(XML_USE_I18N_ATTRIBUTE, String.valueOf(useI18N));
-        }
-        
-        if (localeStr!=null){
-            xmlElement.setAttribute(XML_LOCALE_ATTRIBUTE, localeStr);
-        }
-
-        // equal NULL attribute
-		xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULL));
-		
-		// unique keys attribute
-		xmlElement.setAttribute(XML_UNIQUE_ATTRIBUTE, String.valueOf(uniqueKeys));
-
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *
@@ -302,7 +262,7 @@ public class SequenceChecker extends Node {
 	 * @throws AttributeNotFoundException 
 	 * @since           January 5, 2007
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		SequenceChecker checker;
 		checker = new SequenceChecker(xattribs.getString(XML_ID_ATTRIBUTE),

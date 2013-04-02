@@ -192,26 +192,6 @@ public class AggregateOld extends Node {
 		aggregateFunction.init();
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-    @Override public void toXML(Element xmlElement) {
-        super.toXML(xmlElement);
-        xmlElement.setAttribute("aggregateFunctions",aggregateFunctionStr);
-        if (aggregateKeys.length>0){
-        	xmlElement.setAttribute("aggregateKey",StringUtils.stringArraytoString(aggregateKeys,Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
-        }
-        xmlElement.setAttribute("sorted",String.valueOf(sorted));
-        xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE,String.valueOf(equalNULLs));
-        if (charset != null) {
-        	xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-        }
-    }
-
 	/**
 	 *  Description of the Method
 	 *

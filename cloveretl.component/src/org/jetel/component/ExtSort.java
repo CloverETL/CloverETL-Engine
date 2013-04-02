@@ -290,42 +290,6 @@ public class ExtSort extends Node {
         internalBufferCapacity = size;
     }
     
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Returned Value
-     * @since     May 21, 2002
-     */
-    @Override
-	public void toXML(org.w3c.dom.Element xmlElement) {
-       super.toXML(xmlElement);
-       
-       // sortKey attribute
-       String sortKeys = this.sortKeysNames[0] 
-            + KEY_FIELDS_ORDERING_1ST_DELIMETER + this.sortOrderings[0]
-            + KEY_FIELDS_ORDERING_2ND_DELIMETER;
-       for (int i=1; i < this.sortKeysNames.length; i++) {
-       		sortKeys += Defaults.Component.KEY_FIELDS_DELIMITER + sortKeysNames[i]
-       		+ KEY_FIELDS_ORDERING_1ST_DELIMETER + this.sortOrderings[i] 
-            + KEY_FIELDS_ORDERING_2ND_DELIMETER;
-       }
-       
-       xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE, sortKeys);
-
-       // sortOrder attribute - deprecated
-       /*xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE, sortOrderingsString);*/
-       
-       // numberOfTapes attribute
-       if (getNumberOfTapes() != DEFAULT_NUMBER_OF_TAPES) {
-       		xmlElement.setAttribute(XML_NUMBEROFTAPES_ATTRIBUTE,String.valueOf(getNumberOfTapes()));
-       }
-       
-       // sorterInitialCapacity
-       if (this.internalBufferCapacity > 0) {
-       		xmlElement.setAttribute(XML_BUFFER_CAPACITY_ATTRIBUTE, String.valueOf(this.internalBufferCapacity));
-       }
-    }
-
 	/**
      *  Description of the Method
      *

@@ -240,42 +240,6 @@ public class LdapWriter extends Node {
 	}
 
 	/**
-	 *  This method enable to write the xml description 
-	 *  matching the component.
-	 *  @param xmlElement the xmlElement to write to.
-	 */
-	@Override
-	public void toXML(org.w3c.dom.Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_LDAPURL_ATTRIBUTE,this.ldapUrl);
-		//add the action
-		String xml_action_attribute = null;
-		switch (this.action) {
-		case LdapFormatter.ADD_ENTRY:
-			xml_action_attribute = LdapWriter.XML_ADD_ENTRY_VALUE;
-			break;
-		case LdapFormatter.REMOVE_ENTRY:
-			xml_action_attribute = LdapWriter.XML_REMOVE_ENTRY_VALUE;
-			break;
-		case LdapFormatter.REPLACE_ATTRIBUTES:
-			xml_action_attribute = LdapWriter.XML_REPLACE_ATTRIBUTES_VALUE;
-			break;
-		case LdapFormatter.REMOVE_ATTRIBUTES:
-			xml_action_attribute = LdapWriter.XML_REMOVE_ATTRIBUTES_VALUE;
-			break;
-		default: // TODO replace by default ?
-			xml_action_attribute = LdapWriter.XML_REPLACE_ATTRIBUTES_VALUE;
-			break;
-		}
-		xmlElement.setAttribute(XML_ACTION_ATTRIBUTE,xml_action_attribute);
-		if(null != this.user && null != this.passwd) {
-			xmlElement.setAttribute(XML_USER_ATTRIBUTE,this.user);
-			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE,this.passwd);
-		}
-	} 
-
-	
-	/**
 	 *  This method read from an xml tree the description of
 	 *  the component and initialize it according to the
 	 *  configuration.

@@ -292,23 +292,6 @@ public class SortWithinGroups extends Node {
         return numberOfTapes;
     }
 
-    @Override
-    public void toXML(Element xmlElement) {
-        super.toXML(xmlElement);
-
-        xmlElement.setAttribute(XML_ATTRIBUTE_GROUP_KEY,
-                StringUtils.stringArraytoString(groupKeyFields, Defaults.Component.KEY_FIELDS_DELIMITER));
-        xmlElement.setAttribute(XML_ATTRIBUTE_SORT_KEY, formatSortKey(sortKeyFields, sortKeyOrdering));
-
-        if (bufferCapacity != DEFAULT_BUFFER_CAPACITY) {
-            xmlElement.setAttribute(XML_ATTRIBUTE_BUFFER_CAPACITY, Integer.toString(bufferCapacity));
-        }
-
-        if (numberOfTapes != DEFAULT_NUMBER_OF_TAPES) {
-            xmlElement.setAttribute(XML_ATTRIBUTE_NUMBER_OF_TAPES, Integer.toString(numberOfTapes));
-        }
-    }
-
     private String formatSortKey(String[] sortKeyFields, boolean[] sortKeyOrdering) {
         StringBuilder stringBuilder = new StringBuilder();
 

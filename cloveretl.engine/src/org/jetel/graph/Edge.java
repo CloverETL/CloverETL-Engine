@@ -33,7 +33,6 @@ import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.EdgeDebugUtils;
 import org.jetel.util.bytes.CloverBuffer;
-import org.w3c.dom.Element;
 
 /**
  *  A class that represents Edge Proxy - surrogate which directs calls to
@@ -566,11 +565,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
             return false;
         }
     }
-
-	public void toXML(Element xmlElement) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	/**
 	 * Sets specific {@link EdgeBase} instance which is used as real edge algorithm.

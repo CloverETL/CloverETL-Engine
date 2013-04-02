@@ -341,29 +341,6 @@ public class Aggregate extends Node {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-        if (aggregateKeys.length > 0){
-        	xmlElement.setAttribute(XML_AGGREGATE_KEY_ATTRIBUTE,
-        			StringUtils.stringArraytoString(aggregateKeys, Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
-        }
-        if (newMapping != null){
-        	xmlElement.setAttribute(XML_MAPPING_ATTRIBUTE,newMapping);
-        }
-        xmlElement.setAttribute(XML_SORTED_ATTRIBUTE, String.valueOf(sorted));
-        
-        xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
-        if (charset != null) {
-        	xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-        }
-	}
-
-	
-	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
 	@Override

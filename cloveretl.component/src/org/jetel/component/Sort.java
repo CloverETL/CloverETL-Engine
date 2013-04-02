@@ -219,37 +219,6 @@ public class Sort extends Node {
         }
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		if (sortKeys != null) {
-			StringBuffer buf = new StringBuffer(sortKeys[0]);
-			for (int i=1; i< sortKeys.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + sortKeys[i]); 
-			}
-			xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE,buf.toString());
-		}
-		if (sortOrderAscending == false) {
-			xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE, "Descending");
-		}
-        
-        if (useI18N){
-            xmlElement.setAttribute(XML_USE_I18N_ATTRIBUTE, String.valueOf(useI18N));
-        }
-        
-        if (localeStr!=null){
-            xmlElement.setAttribute(XML_LOCALE_ATTRIBUTE, localeStr);
-        }
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *
@@ -258,7 +227,7 @@ public class Sort extends Node {
 	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Sort sort;
 		sort = new Sort(xattribs.getString(XML_ID_ATTRIBUTE),
@@ -275,42 +244,37 @@ public class Sort extends Node {
 		return sort;
 	}
 
-
 	/**
 	 *  Description of the Method
 	 *
 	 * @return    Description of the Return Value
 	 */
-        @Override
-        public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-    		super.checkConfig(status);
-   		 
-            status.add(new ConfigurationProblem(
-            		"Component is of type SORT, which is deprecated",
-            		Severity.WARNING, this, Priority.NORMAL));
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
 
+		status.add(new ConfigurationProblem("Component is of type SORT, which is deprecated", Severity.WARNING, this, Priority.NORMAL));
 
-    		if(!checkInputPorts(status, 1, 1)
-    				|| !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
-    			return status;
-    		}
-    		
-            checkMetadata(status, getInMetadata(), getOutMetadata());
+		if (!checkInputPorts(status, 1, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
+			return status;
+		}
 
-            try {
-                init();
-            } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-                if(!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-                status.add(problem);
-            } finally {
-            	free();
-            }
-            
-            return status;
-       }
+		checkMetadata(status, getInMetadata(), getOutMetadata());
+
+		try {
+			init();
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+			if (!StringUtils.isEmpty(e.getAttributeName())) {
+				problem.setAttributeName(e.getAttributeName());
+			}
+			status.add(problem);
+		} finally {
+			free();
+		}
+
+		return status;
+	}
 	
 	@Override
 	public String getType(){

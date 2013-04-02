@@ -721,36 +721,6 @@ public class SystemExecute extends Node{
 		this.workingDirectory = new File(string);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	@Override public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_COMMAND_ATTRIBUTE,command);
-		xmlElement.setAttribute(XML_ERROR_LINES_ATTRIBUTE,String.valueOf(capturedErrorLines));
-		if (interpreter!=null){
-			xmlElement.setAttribute(XML_INTERPRETER_ATTRIBUTE,interpreter);
-		}
-		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE,String.valueOf(append));
-		if (outputFile!=null){
-			xmlElement.setAttribute(XML_OUTPUT_FILE_ATTRIBUTE,outputFileName);
-		}
-		if (!environment.isEmpty()){
-			StringBuilder env = new StringBuilder();
-			for (Entry variable : environment.entrySet()) {
-				env.append(variable.getKey()).append('=').append(variable.getValue()).append(Defaults.Component.KEY_FIELDS_DELIMITER);
-			}		
-			env.setLength(env.length() - 1);
-			xmlElement.setAttribute(XML_ENVIRONMENT_ATTRIBUTE,env.toString());
-		}
-		if (workingDirectory != null) {
-			xmlElement.setAttribute(XML_WORKING_DIRECTORY_ATTRIBUTE,workingDirectory.getPath());
-		}
-		if (charset != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE,charset);
-		}
-	}
-	
 	/**
 	 * Sets output file 
 	 * 

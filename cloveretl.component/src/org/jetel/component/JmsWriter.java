@@ -19,7 +19,6 @@
 package org.jetel.component;
 
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.Properties;
 
 import javax.jms.DeliveryMode;
@@ -260,35 +259,6 @@ public class JmsWriter extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-	
-		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getId());
-		if (conId != null) {
-			xmlElement.setAttribute(XML_CONNECTION_ATTRIBUTE, conId);
-		}
-		if (psorCode != null) {
-			xmlElement.setAttribute(XML_PSORCODE_ATTRIBUTE, psorCode);
-		}
-		if (psorClass != null) {
-			xmlElement.setAttribute(XML_PSORCLASS_ATTRIBUTE, psorClass);
-		}
-		if (psorURL != null) {
-			xmlElement.setAttribute(XML_PSORURL_ATTRIBUTE, psorURL);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-		// set processor attributes
-		for (Enumeration<Object> names = psorProperties.keys(); names.hasMoreElements();) {
-			Object name = names.nextElement();
-			Object value = psorProperties.get(name);
-			xmlElement.setAttribute((String)name, (String)value);
-		}
-	}
-	
 	/** Creates an instance according to XML specification.
 	 * @param graph
 	 * @param xmlElement

@@ -21,7 +21,6 @@ package org.jetel.component;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -201,38 +200,6 @@ public class JavaExecute extends Node {
 		
         return status;
 	}
-	
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		
-		if (runnable!=null){
-			xmlElement.setAttribute(XML_RUNNABLE_ATTRIBUTE,runnable);
-		}
-		
-		if (runnableClass != null) {
-			xmlElement.setAttribute(XML_RUNNABLECLASS_ATTRIBUTE, runnableClass);
-		} 
-		
-		if (runnableURL != null) {
-			xmlElement.setAttribute(XML_RUNNABLEURL_ATTRIBUTE, runnableURL);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-				
-		Enumeration propertyAtts = runnableParameters.propertyNames();		
-		StringBuffer result = new StringBuffer();
-		while (propertyAtts.hasMoreElements()) {
-			String attName = (String)propertyAtts.nextElement();
-			result.append(attName + "=" + runnableParameters.getProperty(attName) + "\n");
-			
-		}
-		xmlElement.setAttribute(XML_PROPERTIES_ATTRIBUTE, result.toString());
-				
-	}
-
 	
 	/**
 	 * Creates new instance of this Component from XML definition.

@@ -21,7 +21,6 @@ package org.jetel.component;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -580,75 +579,6 @@ public class Denormalizer extends Node {
 
 	public void setErrorActions(String string) {
 		this.errorActionsString = string;		
-	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		if (xformClass != null) {
-			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, xformClass);
-		} 
-
-		if (xform!=null){
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,xform);
-		}
-
-		if (xformURL != null) {
-			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, xformURL);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-		if (size > 0) {
-			xmlElement.setAttribute(XML_SIZE_ATTRIBUTE, String.valueOf(size));
-		}
-		String orderString = "";
-		if (order == Order.ASC) {
-			orderString = "asc";
-		} else if (order == Order.DESC) {
-			orderString = "desc";
-		} if (order == Order.IGNORE) {
-			orderString = "ignore";
-		} if (order == Order.AUTO) {
-			orderString = "auto";
-		}		
-		xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE, orderString);
-
-		StringBuilder keyList = new StringBuilder();
-		for (int i = 0; true; i++) {
-			keyList.append(key[i]);
-			if (i >= key.length) {
-				break;
-			}
-			keyList.append(",");
-		}
-		if (xform!=null){
-			xmlElement.setAttribute(XML_KEY_ATTRIBUTE,xform);
-		}
-		if (errorActionsString != null){
-			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
-		}
-		
-		if (errorLogURL != null){
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
-		}
-		
-		Enumeration<?> propertyAtts = transformationParameters.propertyNames();
-		while (propertyAtts.hasMoreElements()) {
-			String attName = (String)propertyAtts.nextElement();
-			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
-		}
-
-        if (!equalNULL) {
-            xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, Boolean.toString(equalNULL));
-        }
 	}
 
 	public String getCharset() {
