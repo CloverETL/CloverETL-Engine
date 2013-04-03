@@ -67,7 +67,9 @@ public class StringLengthValidationRule extends StringValidationRule {
 	
 	private EnumValidationParamNode type = new EnumValidationParamNode(TYPES.values(), TYPES.EXACT);
 	@XmlElement(name="type", required=true)
+	@SuppressWarnings("unused")
 	private String getTypeJAXB() { return ((Enum<?>) type.getValue()).name(); }
+	@SuppressWarnings("unused")
 	private void setTypeJAXB(String input) { this.type.setFromString(input); }
 	
 	@XmlElement(name="from",required=true)

@@ -20,6 +20,7 @@ package org.jetel.component.validator.rules;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -124,7 +125,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 			return State.INVALID;
 		}
 		
-		State status = checkInType(field, ea);
+		State status = checkInType(field, tempComparator, ea);
 		
 		if(status == State.VALID) {
 			return State.VALID;
@@ -149,7 +150,8 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		return tempValues;
 	}
 	
-	private <T> State checkInType(DataField dataField, ValidationErrorAccumulator ea) {
+	@SuppressWarnings("unchecked")
+	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea) {
 		T record = tempConverter.convert(dataField.getValue());
 		if(record == null) {
 			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", target.getValue(),(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
@@ -157,23 +159,30 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		}
 		
 		Set<Object> temp = getParsedValues();
+		String stringRecord;
+		String stringItem;
 		for(Object item : temp) {
-			if(tempComparator instanceof StringComparator) {
+			if(comparator instanceof StringComparator) {
 				if(trimInput.getValue()) {
-					record = (T) ((String) record).trim();
+					stringRecord = ((String) record).trim();
+				} else {
+					stringRecord = (String) record;
 				}
+				stringItem = ((String) item);
 				if(ignoreCase.getValue()) {
-					record = (T) ((String) record).toLowerCase();
-					item = (T) ((String) item).toLowerCase();
+					stringRecord = stringRecord.toLowerCase();
+					stringItem = stringItem.toLowerCase();
 				}
-				if(tempComparator.compare(record, item) == 0) {
+				if(((StringComparator) comparator).compare(stringRecord, stringItem) == 0) {
 					logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' matched item '" + item.toString() + "' as strings.");
 					return State.VALID;		
 				}	
-			} else
-			if(tempComparator.compare(item, record) == 0) {
-				logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' matched item '" + item.toString() + "'.");
-				return State.VALID;		
+			} else {
+				// Explicit cast to T, implicit assumption that the type right because of right pair of convertor and comparator
+				if(comparator.compare((T) item, record) == 0) {
+					logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' matched item '" + item.toString() + "'.");
+					return State.VALID;		
+				}
 			}
 		}
 		raiseError(ea, ERROR_NO_MATCH, "No match.", target.getValue(), record.toString());

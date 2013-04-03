@@ -83,14 +83,18 @@ public class Validator extends Node {
 	public final static String MAPPING_OUTPUT_RECORD = "output";
 	
 	public final static String ERROR_OUTPUT_METADATA_NAME = "Report";
-	public static enum ERROR_OUTPUT {
-		CODE, MESSAGE, NAME, FIELDS, VALUES, PARAMS, GRAPH, SERIAL_NUMBER, CREATED;
-		
-		@Override
-		public String toString() {
-			return name().toLowerCase();
-		}
-	}
+	public final static String ERROR_OUTPUT_CODE = "code";
+	public final static String ERROR_OUTPUT_MESSAGE = "message";
+	public final static String ERROR_OUTPUT_NAME = "name";
+	public final static String ERROR_OUTPUT_FIELDS = "fields";
+	public final static String ERROR_OUTPUT_VALUES = "values";
+	public final static String ERROR_OUTPUT_PARAMS = "params";
+	public final static String ERROR_OUTPUT_GRAPH = "graph";
+	public final static String ERROR_OUTPUT_SERIAL_NUMBER = "serial_number";
+	public final static String ERROR_OUTPUT_CREATED = "created";
+	
+	public final static String CUSTOM_RULE_RESULT = "result";
+	public final static String CUSTOM_RULE_MESSAGE = "message";
 	
 	private final static int INPUT_PORT = 0;
 	private final static int VALID_OUTPUT_PORT = 0;
@@ -251,12 +255,12 @@ public class Validator extends Node {
 	
 		// Prepare provider for accessing graph
 		GraphWrapper graphWrapper = new EngineGraphWrapper(getGraph());
-		ValidationErrorAccumulator errorAccumulator = null;
+		ValidationErrorAccumulator errorAccumulator = new ValidationErrorAccumulator();
 		
 		// Iterate over data
 		boolean hasData = true;
 		while(hasData && runIt) {
-			errorAccumulator = new ValidationErrorAccumulator();
+			errorAccumulator.reset();
 			if(!inPort.readRecordDirect(recordBuffer)) {
 				hasData = false;
 				continue;
@@ -291,15 +295,15 @@ public class Validator extends Node {
 	
 	public static DataRecordMetadata createErrorOutputMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(ERROR_OUTPUT_METADATA_NAME);
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.CODE.toString(), DataFieldType.INTEGER, ""));
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.SERIAL_NUMBER.toString(), DataFieldType.INTEGER, ""));
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.MESSAGE.toString(), DataFieldType.STRING, ""));
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.NAME.toString(), DataFieldType.STRING, ""));
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.FIELDS.toString(), DataFieldType.STRING, "", DataFieldContainerType.LIST));
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.VALUES.toString(), DataFieldType.STRING, "", DataFieldContainerType.MAP));
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.PARAMS.toString(), DataFieldType.STRING, "", DataFieldContainerType.MAP));
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.CREATED.toString(), DataFieldType.DATE, ""));
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT.GRAPH.toString(), DataFieldType.STRING, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_CODE, DataFieldType.INTEGER, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_SERIAL_NUMBER, DataFieldType.INTEGER, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_MESSAGE, DataFieldType.STRING, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_NAME, DataFieldType.STRING, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_FIELDS, DataFieldType.STRING, "", DataFieldContainerType.LIST));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_VALUES, DataFieldType.STRING, "", DataFieldContainerType.MAP));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_PARAMS, DataFieldType.STRING, "", DataFieldContainerType.MAP));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_CREATED, DataFieldType.DATE, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_GRAPH, DataFieldType.STRING, ""));
 			
 		return metadata;
 	}
@@ -308,27 +312,34 @@ public class Validator extends Node {
 		errorRecord.reset();
 		errorRecord.init();
 		
-		IntegerDataField serial_number = new IntegerDataField(errorRecord.getField(ERROR_OUTPUT.SERIAL_NUMBER.toString()).getMetadata(), (processedRecords -1));
-		errorRecord.getField(ERROR_OUTPUT.SERIAL_NUMBER.toString()).setValue(serial_number);
+		IntegerDataField serial_number = new IntegerDataField(errorRecord.getField(ERROR_OUTPUT_SERIAL_NUMBER).getMetadata(), (processedRecords -1));
+		errorRecord.getField(ERROR_OUTPUT_SERIAL_NUMBER).setValue(serial_number);
 		
-		StringDataField graphName = new StringDataField(errorRecord.getField(ERROR_OUTPUT.GRAPH.toString()).getMetadata(), getGraph().getName());
-		errorRecord.getField(ERROR_OUTPUT.GRAPH.toString()).setValue(graphName);
+		StringDataField graphName = new StringDataField(errorRecord.getField(ERROR_OUTPUT_GRAPH).getMetadata(), getGraph().getName());
+		errorRecord.getField(ERROR_OUTPUT_GRAPH).setValue(graphName);
 		
-		IntegerDataField code = new IntegerDataField(errorRecord.getField(ERROR_OUTPUT.CODE.toString()).getMetadata(), error.getCode());
-		errorRecord.getField(ERROR_OUTPUT.CODE.toString()).setValue(code);
+		IntegerDataField code = new IntegerDataField(errorRecord.getField(ERROR_OUTPUT_CODE).getMetadata(), error.getCode());
+		errorRecord.getField(ERROR_OUTPUT_CODE).setValue(code);
 		
-		StringDataField message = new StringDataField(errorRecord.getField(ERROR_OUTPUT.MESSAGE.toString()).getMetadata(), error.getMessage());
-		errorRecord.getField(ERROR_OUTPUT.MESSAGE.toString()).setValue(message);
+		StringDataField message = new StringDataField(errorRecord.getField(ERROR_OUTPUT_MESSAGE).getMetadata(), error.getMessage());
+		errorRecord.getField(ERROR_OUTPUT_MESSAGE).setValue(message);
 		
-		StringDataField name = new StringDataField(errorRecord.getField(ERROR_OUTPUT.NAME.toString()).getMetadata(), error.getName());
-		errorRecord.getField(ERROR_OUTPUT.NAME.toString()).setValue(name);
+		StringDataField name = new StringDataField(errorRecord.getField(ERROR_OUTPUT_NAME).getMetadata(), error.getName());
+		errorRecord.getField(ERROR_OUTPUT_NAME).setValue(name);
 		
-		((ListDataField) errorRecord.getField(ERROR_OUTPUT.FIELDS.toString())).setValue(error.getFields());
-		((MapDataField) errorRecord.getField(ERROR_OUTPUT.VALUES.toString())).setValue(error.getValues());
-		((MapDataField) errorRecord.getField(ERROR_OUTPUT.PARAMS.toString())).setValue(error.getParams());
+		((ListDataField) errorRecord.getField(ERROR_OUTPUT_FIELDS)).setValue(error.getFields());
+		((MapDataField) errorRecord.getField(ERROR_OUTPUT_VALUES)).setValue(error.getValues());
+		((MapDataField) errorRecord.getField(ERROR_OUTPUT_PARAMS)).setValue(error.getParams());
 		
-		DateDataField created = new DateDataField(errorRecord.getField(ERROR_OUTPUT.CREATED.toString()).getMetadata(), error.getTimestamp());
-		errorRecord.getField(ERROR_OUTPUT.CREATED.toString()).setValue(created);
+		DateDataField created = new DateDataField(errorRecord.getField(ERROR_OUTPUT_CREATED).getMetadata(), error.getTimestamp());
+		errorRecord.getField(ERROR_OUTPUT_CREATED).setValue(created);
+	}
+	
+	public static DataRecordMetadata createCustomRuleOutputMetadata() {
+		DataRecordMetadata metadata = new DataRecordMetadata(ERROR_OUTPUT_METADATA_NAME);
+		metadata.addField(new DataFieldMetadata(CUSTOM_RULE_RESULT, DataFieldType.BOOLEAN, ""));
+		metadata.addField(new DataFieldMetadata(CUSTOM_RULE_MESSAGE, DataFieldType.STRING, ""));
+		return metadata;
 	}
 
 }

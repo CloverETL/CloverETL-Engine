@@ -53,10 +53,6 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 	public static final int ERROR_VALUE_CONVERSION = 903;
 	public static final int ERROR_CONDITION_NOT_MET = 904;
 	
-	// TYPE: Comparasion
-	//  + Operator: ==, <=, >=, <, >, !=
-	//  + Value:
-	
 	public static enum OPERATOR_TYPE {
 		LE, GE, E, NE, L, G;
 		@Override
@@ -81,8 +77,10 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 	};
 	
 	private EnumValidationParamNode operator = new EnumValidationParamNode(OPERATOR_TYPE.values(), OPERATOR_TYPE.E);
+	@SuppressWarnings("unused")
 	@XmlElement(name="operator", required=true)
 	private String getOperatorJAXB() { return ((Enum<?>) operator.getValue()).name(); }
+	@SuppressWarnings("unused")
 	private void setOperatorJAXB(String input) { this.operator.setFromString(input); }
 	
 	@XmlElement(name="value")
@@ -116,6 +114,11 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 			return State.INVALID;
 		}
 		
+		if(field.isNull()) {
+			logSuccess("Field '" + target.getValue() + "' is null.");
+			return State.VALID;
+		}
+		
 		State status = checkInType(field, tempConverter, tempComparator, ea);
 		
 		if(status == State.VALID) {
@@ -125,7 +128,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		}
 	}
 	
-	private <T> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
 		T record = converter.convert(dataField.getValue());
 		if(record == null) {
 			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion failed.", target.getValue(),(dataField.getValue() == null) ? "null" : dataField.getValue().toString());

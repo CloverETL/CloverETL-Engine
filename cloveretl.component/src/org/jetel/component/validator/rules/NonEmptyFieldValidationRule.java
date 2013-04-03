@@ -66,7 +66,9 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 	
 	private EnumValidationParamNode goal = new EnumValidationParamNode(GOALS.values(), GOALS.NONEMPTY);
 	@XmlElement(name="goal", required=true)
+	@SuppressWarnings("unused")
 	private String getGoalJAXB() { return ((Enum<?>) goal.getValue()).name(); }
+	@SuppressWarnings("unused")
 	private void setGoalJAXB(String input) { goal.setFromString(input); }
 	
 	@XmlElement(name="trimInput",required=false)

@@ -54,11 +54,6 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	public static final int ERROR_TO_CONVERSION = 804;
 	public static final int ERROR_NOT_IN_INTERVAL = 805;
 	
-	// TYPE: Interval
-	//  + Boundaries: [), (], (), []
-	//  + From:
-	//  + To:
-	
 	public static enum BOUNDARIES_TYPE {
 		OPEN_CLOSED, CLOSED_OPEN, OPEN_OPEN, CLOSED_CLOSED;
 		@Override
@@ -78,7 +73,9 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	
 	private EnumValidationParamNode boundaries = new EnumValidationParamNode(BOUNDARIES_TYPE.values(), BOUNDARIES_TYPE.CLOSED_CLOSED);
 	@XmlElement(name="boundaries")
+	@SuppressWarnings("unused")
 	private String getBoundariesJAXB() { return ((Enum<?>) boundaries.getValue()).name(); }
+	@SuppressWarnings("unused")
 	private void setBoundariesJAXB(String input) { this.boundaries.setFromString(input); }
 	
 	@XmlElement(name="from")
@@ -121,6 +118,11 @@ public class IntervalValidationRule extends ConversionValidationRule {
 			return State.INVALID;
 		}
 		
+		if(field.isNull()) {
+			logSuccess("Field '" + target.getValue() + "' is null.");
+			return State.VALID;
+		}
+		
 		State status = checkInType(field, tempConverter, tempComparator, ea);
 		
 		if(status == State.VALID) {
@@ -130,7 +132,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		}
 	}
 	
-	private <T> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
 		T record = converter.convert(dataField.getValue());
 		if(record == null) {
 			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", target.getValue(),(dataField.getValue() == null) ? "null" : dataField.getValue().toString());

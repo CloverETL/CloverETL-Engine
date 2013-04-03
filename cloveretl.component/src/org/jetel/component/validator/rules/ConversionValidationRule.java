@@ -86,7 +86,9 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 	
 	protected EnumValidationParamNode useType = new EnumValidationParamNode(METADATA_TYPES.values(), METADATA_TYPES.DEFAULT);
 	@XmlElement(name="useType")
+	@SuppressWarnings("unused")
 	private String getUseTypeJAXB() { return ((Enum<?>) useType.getValue()).name(); }
+	@SuppressWarnings("unused")
 	private void setUseTypeJAXB(String input) { this.useType.setFromString(input); }
 	
 	@XmlElement(name="format", required=false)
@@ -99,7 +101,7 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 	protected StringEnumValidationParamNode timezone = new StringEnumValidationParamNode(Calendar.getInstance().getTimeZone().getID());
 	
 	protected Converter tempConverter;
-	protected Comparator tempComparator;
+	protected Comparator<?> tempComparator;
 	
 	@Override
 	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {

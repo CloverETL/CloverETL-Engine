@@ -36,9 +36,7 @@ import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
-import org.jetel.data.SetVal;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.metadata.DataRecordMetadata;
@@ -67,7 +65,9 @@ public class LookupValidationRule extends AbstractValidationRule {
 	
 	private EnumValidationParamNode policy = new EnumValidationParamNode(POLICY.values(), POLICY.REJECT_MISSING);
 	@XmlElement(name="policy", required=true)
+	@SuppressWarnings("unused")
 	private String getPolicyJAXB() { return ((Enum<?>) policy.getValue()).name(); }
+	@SuppressWarnings("unused")
 	private void setPolicyJAXB(String input) { this.policy.setFromString(input); }
 
 	@Override

@@ -35,4 +35,8 @@ public class ValidationErrorAccumulator implements Iterable<ValidationError> {
 	public Iterator<ValidationError> iterator() {
 		return errors.iterator();
 	}
+	
+	public void reset() {
+		errors.clear();
+	}
 }
