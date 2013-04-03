@@ -160,3 +160,6 @@ PortReadingWriting.DATA_LENGTH = 2048
 # Since direct memory is out of control java virtual machine, try to turn off 
 # usage of direct memory in case OutOfMemory exception occurs. 
 # USE_DIRECT_MEMORY = true;
+
+# Applies for decimal division and double to decimal assignment.
+# CTL.DECIMAL_PRECISION = 32
