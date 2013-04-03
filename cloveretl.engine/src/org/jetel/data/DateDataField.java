@@ -43,7 +43,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see DateFormatter
  * @see DateFormatterFactory
  *
- * @revision $Revision$
  */
 @SuppressWarnings("EI")
 public class DateDataField extends DataField implements Comparable<Object> {

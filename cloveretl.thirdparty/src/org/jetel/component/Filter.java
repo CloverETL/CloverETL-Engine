@@ -161,18 +161,6 @@ public class Filter extends Node {
 		}
 	}
 	
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     July 23, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILTEREXPRESSION_ATTRIBUTE,this.recordFilter.getFilterExpression());
-	}
-
 	public void setRecordFilter(RecordFilterOld rf)
 	{
 		recordFilter = rf;

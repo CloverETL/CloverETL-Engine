@@ -21,7 +21,6 @@ package org.jetel.component;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -150,7 +149,6 @@ import org.w3c.dom.Element;
  *&lt;/Node&gt;</pre>
  * @author      dpavlis
  * @since       April 29, 2005
- * @revision    $Revision$
  * @created     29. April 2005
  */
 public class DataIntersection extends Node {
@@ -654,68 +652,6 @@ public class DataIntersection extends Node {
     public void setTransformationParameters(Properties transformationParameters) {
         this.transformationParameters = transformationParameters;
     }
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		
-		if (joinKeys != null) {
-			StringBuffer buf = new StringBuffer(joinKeys[0]);
-			for (int i=1; i< joinKeys.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + joinKeys[i]); 
-			}
-			xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE,buf.toString());
-		}
-		
-		if (slaveOverrideKeys!= null) {
-			StringBuffer buf = new StringBuffer(slaveOverrideKeys[0]);
-			for (int i=1; i< slaveOverrideKeys.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverrideKeys[i]); 
-			}
-			xmlElement.setAttribute(XML_SLAVEOVERRIDEKEY_ATTRIBUTE,buf.toString());
-		}
-		
-		if (transformClassName != null) {
-			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE,transformClassName);
-		} 
-		
-		if (transformSource!=null){
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
-		}
-		
-		if (transformURL != null) {
-			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-        
-		if (errorActionsString != null){
-			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
-		}
-		
-		if (errorLogURL != null){
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
-		}
-		
-		// equal NULL attribute
-        xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
-		xmlElement.setAttribute(XML_KEY_DUPLICATES_ATTRIBUTE, String.valueOf(keyDuplicates));
-		if (transformationParameters != null) {
-			Enumeration propertyAtts = transformationParameters.propertyNames();
-			while (propertyAtts.hasMoreElements()) {
-				String attName = (String)propertyAtts.nextElement();
-				xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
-			}
-		}
-		
-	}
-
 
 	/**
 	 *  Description of the Method

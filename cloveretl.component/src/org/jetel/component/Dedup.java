@@ -90,7 +90,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       April 4, 2002
- * @revision    $Revision$
  */
 public class Dedup extends Node {
     private static final Log logger = LogFactory.getLog(Dedup.class);
@@ -562,42 +561,6 @@ public class Dedup extends Node {
         }
 	}
 	
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		// dedupKeys attribute
-		if (dedupKeys != null) {
-			String keys = this.dedupKeys[0];
-			for (int i=1; i<this.dedupKeys.length; i++) {
-				keys += Defaults.Component.KEY_FIELDS_DELIMITER + this.dedupKeys[i];
-			}
-			xmlElement.setAttribute(XML_DEDUPKEY_ATTRIBUTE, keys);
-		}
-		
-		// keep attribute
-		switch (this.keep){
-			case KEEP_FIRST: xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "First");
-				break;
-			case KEEP_LAST: xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "Last");
-				break;
-			case KEEP_UNIQUE: xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "Unique");
-				break;
-		}
-		
-		// equal NULL attribute
-		xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
-		
-		if (noDupRecord != DEFAULT_NO_DUP_RECORD) {
-			xmlElement.setAttribute(XML_NO_DUP_RECORD_ATTRIBUTE, String.valueOf(noDupRecord));
-		}
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *

@@ -40,6 +40,7 @@ import org.jetel.connection.jdbc.AbstractCopySQLData.CopyInteger;
 import org.jetel.connection.jdbc.AbstractCopySQLData.CopyLong;
 import org.jetel.connection.jdbc.AbstractCopySQLData.CopyNumeric;
 import org.jetel.connection.jdbc.AbstractCopySQLData.CopyString;
+import org.jetel.connection.jdbc.AbstractCopySQLData.CopyStringToString;
 import org.jetel.connection.jdbc.AbstractCopySQLData.CopyTime;
 import org.jetel.connection.jdbc.AbstractCopySQLData.CopyTimestamp;
 import org.jetel.connection.jdbc.SQLUtil;
@@ -277,7 +278,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	@Override
 	public CopySQLData createCopyObject(int sqlType, DataFieldMetadata fieldMetadata, DataRecord record, int fromIndex, int toIndex) {
 		String format = fieldMetadata.getFormat();
-		char jetelType = fieldMetadata.getType();
+		DataFieldType jetelType = fieldMetadata.getDataType();
 		CopySQLData obj = null;
 		switch (sqlType) {
 			case Types.ARRAY:
@@ -286,11 +287,17 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
 			case Types.VARCHAR:
-				obj = new CopyString(record, fromIndex, toIndex);
+				if (jetelType == DataFieldType.STRING) {
+					// copy from string DB fields to string Clover fields
+					obj = new CopyStringToString(record, fromIndex, toIndex);
+				} else {
+					// copy from string DB fields to any Clover type
+					obj = new CopyString(record, fromIndex, toIndex);
+				}
 				break;
 			case Types.INTEGER:
 			case Types.SMALLINT:
-				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
+				if (jetelType == DataFieldType.BOOLEAN) {
 					obj = new CopyBoolean(record, fromIndex, toIndex);
 				} else {
 					obj = new CopyInteger(record, fromIndex, toIndex);
@@ -306,11 +313,11 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 				// fix for copying when target is numeric and
 				// clover source is integer - no precision can be
 				// lost so we can use CopyInteger
-				if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
+				if (jetelType == DataFieldType.INTEGER) {
 					obj = new CopyInteger(record, fromIndex, toIndex);
-				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
+				} else if (jetelType == DataFieldType.LONG) {
 					obj = new CopyLong(record, fromIndex, toIndex);
-				} else if(jetelType == DataFieldMetadata.NUMERIC_FIELD) {
+				} else if(jetelType == DataFieldType.NUMBER) {
 				    obj = new CopyNumeric(record, fromIndex, toIndex);
 				} else {
 					obj = new CopyDecimal(record, fromIndex, toIndex);
@@ -319,13 +326,13 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			case Types.NUMERIC:
 				// Oracle doesn't have boolean type, data type SMALLINT is the same as NUMBER(38);
 				// see issue #3815
-				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
+				if (jetelType == DataFieldType.BOOLEAN) {
 					obj = new CopyBoolean(record, fromIndex, toIndex);
-				}else if (jetelType == DataFieldMetadata.INTEGER_FIELD) {
+				}else if (jetelType == DataFieldType.INTEGER) {
 					obj = new CopyInteger(record, fromIndex, toIndex);
-				} else if (jetelType == DataFieldMetadata.LONG_FIELD) {
+				} else if (jetelType == DataFieldType.LONG) {
 					obj = new CopyLong(record, fromIndex, toIndex);
-				} else if(jetelType == DataFieldMetadata.NUMERIC_FIELD) {
+				} else if(jetelType == DataFieldType.NUMBER) {
 				    obj = new CopyNumeric(record, fromIndex, toIndex);
 				} else {
 					obj = new CopyDecimal(record, fromIndex, toIndex);
@@ -360,7 +367,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 				break;
 			case Types.BOOLEAN:
 			case Types.BIT:
-				if (jetelType == DataFieldMetadata.BOOLEAN_FIELD) {
+				if (jetelType == DataFieldType.BOOLEAN) {
 					obj = new CopyBoolean(record, fromIndex, toIndex);
 					break;
 				} 

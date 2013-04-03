@@ -46,7 +46,6 @@ import org.jetel.util.bytes.CloverBuffer;
  * @author     David Pavlis
  * @since      December 30, 2002
  * @see        FixLenDataParser
- * @revision   $Revision$
  */
 public class FixLenDataFormatter extends AbstractFormatter {
 

@@ -163,7 +163,7 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 			if(!notNullOwner.isEmpty())
 				tablePrefix += quoteIdentifier(notNullOwner);
 		} else {
-			tablePrefix = schema+"."+notNullOwner;
+			tablePrefix = notNullOwner.isEmpty() ? schema : (schema+"."+notNullOwner);
 		}
 		return tablePrefix;
 	}

@@ -38,7 +38,6 @@ import org.jetel.util.primitive.BitArray;
  *
  * @author      D.Pavlis
  * @since       March 26, 2002
- * @revision    $Revision$
  * @created     May 18, 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */

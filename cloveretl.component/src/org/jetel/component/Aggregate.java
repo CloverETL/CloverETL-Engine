@@ -92,7 +92,6 @@ import org.w3c.dom.Element;
  * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  * @since       June 27, 2005
- * @revision    $Revision: 2670 $
  */
 public class Aggregate extends Node {
 	/** Name of the component. */
@@ -114,9 +113,9 @@ public class Aggregate extends Node {
 	private static int UNDETECTED_DIRECTION = Integer.MAX_VALUE;
 
 	private String[] aggregateKeys;
-	private String mapping;
+	private String newMapping;
+	private String oldMapping;
 	private boolean sorted;
-	private boolean oldMapping; // true if old mapping format is used
 	
 	private boolean equalNULLs;
 	private String charset;
@@ -134,11 +133,11 @@ public class Aggregate extends Node {
 	 * @param sorted specifies if the input is sorted.
 	 * @param oldMapping set to <tt>true</tt> if the function mapping is in the old format.
 	 */
-	public Aggregate(String id, String[] aggregateKeys, String mapping, boolean sorted, boolean oldMapping) {
+	public Aggregate(String id, String[] aggregateKeys, String mapping, boolean sorted, String oldMapping) {
 		super(id);
 		
 		this.aggregateKeys = aggregateKeys;
-		this.mapping = mapping;
+		this.newMapping = mapping;
 		this.sorted = sorted;
 		this.oldMapping = oldMapping;
 	}
@@ -260,8 +259,22 @@ public class Aggregate extends Node {
 		// specify whether two fields with NULL value indicator set are considered equal
 		recordKey.setEqualNULLs(equalNULLs);
 		
+		String mapping;
+		boolean isOldMapping;
+		if (newMapping != null) {
+			mapping = newMapping;
+			isOldMapping = false;
+		}
+		else if (oldMapping != null) {
+			mapping = oldMapping;
+			isOldMapping = true;
+		}
+		else {
+			throw new ComponentNotReadyException(XML_MAPPING_ATTRIBUTE + " attribute not specified");
+		}
+		
 		try {
-			processor = new AggregateProcessor(mapping, oldMapping, recordKey, sorted, 
+			processor = new AggregateProcessor(mapping, isOldMapping, recordKey, sorted, 
 					getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT).getMetadata(),
 					charset);
 		} catch (AggregationException e) {
@@ -280,8 +293,8 @@ public class Aggregate extends Node {
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		String[] aggregateKey = new String[0];
-		String mapping = null;
-		boolean oldMapping = false;
+		String newMapping = null;
+		String oldMapping = null;
         boolean sorted = true;
 
     	//read aggregate key attribute
@@ -292,20 +305,15 @@ public class Aggregate extends Node {
         
         //read mapping attribute
         if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
-        	mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE);
+        	newMapping = xattribs.getString(XML_MAPPING_ATTRIBUTE);
         }
 
         //read old mapping attribute
         if (xattribs.exists(XML_OLD_MAPPING_ATTRIBUTE)) {
-        	if (mapping != null) {
-        		throw new XMLConfigurationException("New and old aggregation function mappings " +
-        				"used simultaneously");
-        	}
-        	mapping = xattribs.getString(XML_OLD_MAPPING_ATTRIBUTE);
-        	oldMapping = true;
+        	oldMapping = xattribs.getString(XML_OLD_MAPPING_ATTRIBUTE);
         }
         
-        if (mapping == null) {
+        if (newMapping == null && oldMapping == null) {
         	throw new XMLConfigurationException("Aggregation mapping must be provided in the " +
         			XML_MAPPING_ATTRIBUTE + " or " + XML_OLD_MAPPING_ATTRIBUTE + " attribute");
         }
@@ -317,7 +325,7 @@ public class Aggregate extends Node {
         //make an instance of the component
 	    Aggregate aggregate = new Aggregate(xattribs.getString("id"), 
 	    		aggregateKey,
-				mapping,
+				newMapping,
                 sorted,
                 oldMapping);
 		
@@ -332,29 +340,6 @@ public class Aggregate extends Node {
 		return aggregate;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-        if (aggregateKeys.length > 0){
-        	xmlElement.setAttribute(XML_AGGREGATE_KEY_ATTRIBUTE,
-        			StringUtils.stringArraytoString(aggregateKeys, Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
-        }
-        if (mapping != null){
-        	xmlElement.setAttribute(XML_MAPPING_ATTRIBUTE,mapping);
-        }
-        xmlElement.setAttribute(XML_SORTED_ATTRIBUTE, String.valueOf(sorted));
-        
-        xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
-        if (charset != null) {
-        	xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-        }
-	}
-
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
@@ -371,6 +356,18 @@ public class Aggregate extends Node {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
             		ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        }
+        
+        if (newMapping == null && oldMapping == null) {
+        	status.add(new ConfigurationProblem("Mapping not specified", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        	return status;
+        }
+        
+        if (newMapping != null && oldMapping != null) {
+        	status.add(new ConfigurationProblem(
+        			"Both " + XML_MAPPING_ATTRIBUTE + " and " + XML_OLD_MAPPING_ATTRIBUTE + " attributes specified",
+        			ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+        	return status;
         }
 
         try {

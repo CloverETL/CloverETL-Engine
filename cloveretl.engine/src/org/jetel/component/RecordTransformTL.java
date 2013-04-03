@@ -38,7 +38,6 @@ import org.jetel.util.ExceptionUtils;
  *
  * @author      dpavlis
  * @since       June 25, 2006
- * @revision    $Revision: $
  * @created     June 25, 2006
  * @see         org.jetel.component.RecordTransform
  */

@@ -19,6 +19,8 @@
 package org.jetel.util.formatter;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.text.ParseException;
 
 import javolution.text.TypeFormat;
@@ -32,6 +34,20 @@ import org.jetel.ctl.TransformLangExecutor;
  * @created Jun 29, 2010
  */
 public class JavolutionNumericFormatter implements NumericFormatter {
+	
+	private MathContext precision;
+	
+	public JavolutionNumericFormatter() {
+		this(TransformLangExecutor.MAX_PRECISION);
+	}
+
+	public JavolutionNumericFormatter(int precision) {
+		this(new MathContext(precision, RoundingMode.DOWN));
+	}
+
+	private JavolutionNumericFormatter(MathContext precision) {
+		this.precision = precision;
+	}
 
 	@Override
 	public String toString() {
@@ -79,7 +95,7 @@ public class JavolutionNumericFormatter implements NumericFormatter {
 
 	@Override
 	public BigDecimal parseBigDecimal(CharSequence seq) {
-		return new BigDecimal(seq.toString(), TransformLangExecutor.MAX_PRECISION);
+		return new BigDecimal(seq.toString(), precision);
 	}
 
 	@Override

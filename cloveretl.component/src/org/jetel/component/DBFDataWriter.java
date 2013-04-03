@@ -436,44 +436,6 @@ public class DBFDataWriter extends Node {
 		return aDataWriter;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	@Override
-	public void toXML(org.w3c.dom.Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		if (charsetName != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.charsetName);
-		}
-		xmlElement.setAttribute(XML_DBF_TYPE, String.valueOf(dbfType));
-		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
-		if (skip != 0){
-			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
-		}
-		if (numRecords != 0){
-			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
-		}
-		if (recordsPerFile > 0) {
-			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
-		}
-		if (partition != null) {
-			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, partition);
-		} else if (lookupTable != null) {
-			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, lookupTable.getId());
-		}
-		if (attrPartitionKey != null) {
-			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
-		}
-		if (attrPartitionOutFields != null) {
-			xmlElement.setAttribute(XML_PARTITION_OUTFIELDS_ATTRIBUTE, attrPartitionOutFields);
-		}
-		if (!StringUtils.isEmpty(excludeFields)) {
-            xmlElement.setAttribute(XML_EXCLUDE_FIELDS_ATTRIBUTE, excludeFields);
-        }
-		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
-	}
-	
     /**
      * Sets number of skipped records in next call of getNext() method.
      * @param skip

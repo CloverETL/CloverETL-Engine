@@ -571,26 +571,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		return postgreSQLDataWriter;
 	}
 	
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-		if (!failOnError) {
-			xmlElement.setAttribute(XML_FAIL_ON_ERROR_ATTRIBUTE, Boolean.toString(failOnError));
-		}
-
-		xmlElement.setAttribute(XML_PSQL_PATH_ATTRIBUTE, loadUtilityPath);
-		if (!StringUtils.isEmpty(commandURL)) {
-			xmlElement.setAttribute(XML_COMMAND_URL_ATTRIBUTE, commandURL);
-		}
-		if (!StringUtils.isEmpty(host)) {
-			xmlElement.setAttribute(XML_HOST_ATTRIBUTE, host);
-		}
-		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
-			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
-		}
-	}
-
 	/** Description of the Method */
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {

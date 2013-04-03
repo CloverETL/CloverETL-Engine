@@ -46,7 +46,6 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author      dpavlis
  * @since       September 25, 2002
- * @revision    $Revision: 1.10
  * @created     January 24, 2003
  */
 public class SQLUtil {

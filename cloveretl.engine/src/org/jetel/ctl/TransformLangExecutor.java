@@ -109,6 +109,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DecimalDataField;
+import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
@@ -148,7 +149,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 *  <li>assigning double to decimal</li>
 	 *  </ul>
 	 */
-	public static final int DECIMAL_MAX_PRECISION = 32;
+	public static final int DECIMAL_MAX_PRECISION = Defaults.CTL.DECIMAL_PRECISION;
 	public static final MathContext MAX_PRECISION = new MathContext(DECIMAL_MAX_PRECISION,RoundingMode.DOWN);
 	
 	

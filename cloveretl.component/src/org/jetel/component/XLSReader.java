@@ -389,44 +389,6 @@ public class XLSReader extends Node {
 	}
 	
     @Override
-	public void toXML(Element xmlElement) {
-        super.toXML(xmlElement);
-
-        xmlElement.setAttribute(XML_PARSER_ATTRIBUTE, parserType.name());
-        xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
-        xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-
-        if (fieldMap != null) {
-            String[] fm = new String[fieldMap.length];
-
-            for (int i = 0; i < fm.length; i++) {
-                fm[i] = StringUtils.stringArraytoString(fieldMap[i], Defaults.ASSIGN_SIGN);
-            }
-
-            xmlElement.setAttribute(XML_FIELDMAP_ATTRIBUTE, StringUtils.stringArraytoString(fm,
-                    Defaults.Component.KEY_FIELDS_DELIMITER));
-        }
-
-        if (maxErrorCount > -1) {
-            xmlElement.setAttribute(XML_MAXERRORCOUNT_ATTRIBUTE, String.valueOf(maxErrorCount));
-        }
-
-        if (metadataRow > 0) {
-            xmlElement.setAttribute(XML_METADATAROW_ATTRIBUTE, String.valueOf(metadataRow));
-        }
-
-        if (sheetName != null) {
-            xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE, sheetName);
-        } else {
-            xmlElement.setAttribute(XML_SHEETNUMBER_ATTRIBUTE, String.valueOf(sheetNumber));
-        }
-
-        if (charset != null) {
-            xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-        }
-    }
-
-    @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
 

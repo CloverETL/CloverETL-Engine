@@ -791,34 +791,6 @@ public class RunGraph extends Node{
 		return runG;
 	}
 	
-	   /* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	@Override public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);				
-		xmlElement.setAttribute(XML_GRAPH_NAME_ATTRIBUTE, graphName);
-		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(append));
-		xmlElement.setAttribute(XML_SAME_INSTANCE_ATTRIBUTE, String.valueOf(sameInstance));
-		if (outputFile != null){
-			xmlElement.setAttribute(XML_OUTPUT_FILE_ATTRIBUTE, outputFileName);
-		}
-		if (javaCmdLine.compareTo(DEFAULT_JAVA_CMD_LINE) != 0) {
-			xmlElement.setAttribute(XML_ALTERNATIVE_JVM, javaCmdLine);
-		}
-		if (this.paramsToPass != null) {				
-			xmlElement.setAttribute(XML_PARAMS_TO_PASS, paramsToPass);
-		}	
-		if (cloverRunClass.compareTo(DEFAULT_GRAPH_EXEC_CLASS) != 0) {
-			xmlElement.setAttribute(XML_GRAPH_EXEC_CLASS, cloverRunClass);
-		}
-		if (cloverCmdLineArgs.compareTo(DEFAULT_CLOVER_CMD_LINE) != 0) {
-			xmlElement.setAttribute(XML_CLOVER_CMD_LINE, cloverCmdLineArgs);
-		}
-		if (ignoreGraphFail == DEFAULT_IGNORE_GRAPH_FILE) {
-			xmlElement.setAttribute(XML_IGNORE_GRAPH_FAIL, String.valueOf(ignoreGraphFail));
-		}
-	}
-	
 	/**
 	 * Sets output file 
 	 * 
@@ -830,15 +802,6 @@ public class RunGraph extends Node{
 	
 	protected void setGraphName(String graphName) {
 		this.graphName = graphName;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#reset()
-	 */
-	@Override
-	synchronized public void reset() throws ComponentNotReadyException {
-		super.reset();
 	}
 
 	/**

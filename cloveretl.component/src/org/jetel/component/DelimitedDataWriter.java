@@ -310,50 +310,6 @@ public class DelimitedDataWriter extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(org.w3c.dom.Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		String charSet = formatterProvider.getCharsetName();
-		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, formatterProvider.getCharsetName());
-		}
-		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
-		if (outputFieldNames){
-		    xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
-		}
-		if (recordsPerFile > 0) {
-			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
-		}
-		if (bytesPerFile > 0) {
-			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
-		}
-		if (skip != 0){
-			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
-		}
-		if (numRecords != 0){
-			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
-		}
-		if (partition != null) {
-			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, partition);
-		} else if (lookupTable != null) {
-			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, lookupTable.getId());
-		}
-		if (attrPartitionKey != null) {
-			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
-		}
-		if (attrPartitionOutFields != null) {
-			xmlElement.setAttribute(XML_PARTITION_OUTFIELDS_ATTRIBUTE, attrPartitionOutFields);
-		}
-		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
-	}
-
-	/**
-	 *  Description of the Method
-	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
 	 * @throws AttributeNotFoundException 

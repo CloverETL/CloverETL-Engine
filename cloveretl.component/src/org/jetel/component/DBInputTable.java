@@ -20,9 +20,7 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -58,9 +56,7 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 /**
  *  <h3>DatabaseInputTable Component</h3>
@@ -147,7 +143,6 @@ import org.w3c.dom.Text;
  *	
  * @author      dpavlis
  * @since       September 27, 2002
- * @revision    $Revision$
  * @see         org.jetel.database.AnalyzeDB
  */
 public class DBInputTable extends Node {
@@ -384,63 +379,10 @@ public class DBInputTable extends Node {
 		}
 	}
 	
-
 	@Override
     public synchronized void free() {
     	super.free();    	
     }
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     September 27, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		
-		xmlElement.setAttribute(XML_PRINTSTATEMENTS_ATTRIBUTE, String.valueOf(printStatements));
-		if (this.url != null) {
-			// query specified in a file
-			xmlElement.setAttribute(XML_URL_ATTRIBUTE, this.url);
-		} else {
-			Document doc = xmlElement.getOwnerDocument();
-			Element childElement = doc.createElement("attr");
-			childElement.setAttribute("name", XML_SQLQUERY_ATTRIBUTE);
-			// join given SQL commands
-			Text textElement = doc.createTextNode(sqlQuery);
-			childElement.appendChild(textElement);
-			xmlElement.appendChild(childElement);
-		}
-		
-		if (fetchSize != 0) {
-			xmlElement.setAttribute(XML_FETCHSIZE_ATTRIBUTE, String.valueOf(fetchSize));
-		}
-		
-		if (!autoCommit) {
-			xmlElement.setAttribute(XML_AUTOCOMMIT_ATTRIBUTE, String.valueOf(autoCommit));
-		}		
-		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, this.dbConnectionName);
-		if (policyType != null){
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		}
-		if (incrementalFile != null) {
-			xmlElement.setAttribute(XML_INCREMENTAL_FILE_ATTRIBUTE, incrementalFile);
-		}
-		if (incrementalKeyDef != null){
-			StringBuilder incKey = new StringBuilder();
-			for (Iterator iterator = incrementalKeyDef.entrySet().iterator(); iterator.hasNext();) {
-				Entry<String, String> key = (Entry<String, String>) iterator.next();
-				incKey.append(key.getKey());
-				incKey.append('=');
-				incKey.append(key.getValue());
-				incKey.append(Defaults.Component.KEY_FIELDS_DELIMITER);
-			}
-			xmlElement.setAttribute(XML_INCREMENTAL_KEY_ATTRIBUTE, incKey.toString());
-		}
-	}
 
 	/**
 	 *  Description of the Method

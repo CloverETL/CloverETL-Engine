@@ -629,44 +629,6 @@ public class InformixDataWriter extends BulkLoader {
         return informixDataWriter;
     }
     
-    @Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		
-		xmlElement.setAttribute(XML_DB_LOADER_PATH_ATTRIBUTE, loadUtilityPath);
-
-		if (!StringUtils.isEmpty(command)) {
-			xmlElement.setAttribute(XML_COMMIT_INTERVAL_ATTRIBUTE, command);
-		}
-		if (isDefinedErrorLog) {
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLog);
-		}
-		if (maxErrors != UNUSED_INT) {
-			xmlElement.setAttribute(XML_MAX_ERRORS_ATTRIBUTE, String.valueOf(maxErrors));
-		}
-		if (ignoreRows != UNUSED_INT) {
-			xmlElement.setAttribute(XML_IGNORE_ROWS_ATTRIBUTE, String.valueOf(ignoreRows));
-		}
-		if (commitInterval != UNUSED_INT) {
-			xmlElement.setAttribute(XML_COMMIT_INTERVAL_ATTRIBUTE, String.valueOf(commitInterval));
-		}
-		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
-			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
-		}
-		if (!StringUtils.isEmpty(host)) {
-			xmlElement.setAttribute(XML_HOST_ATTRIBUTE, host);
-		}
-		if (useLoadUtility != DEFAULT_USE_LOAD_UTILITY) {
-			xmlElement.setAttribute(XML_USE_LOAD_UTILITY_ATTRIBUTE, String.valueOf(useLoadUtility));
-		}
-		if (ignoreUniqueKeyViolation != DEFAULT_IGNORE_UNIQUE_KEY_VIOLATION) {
-			xmlElement.setAttribute(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE, String.valueOf(ignoreUniqueKeyViolation));
-		}
-		if (useInsertCursor != DEFAULT_USE_INSERT_CURSOR) {
-			xmlElement.setAttribute(XML_USE_INSERT_CUROSOR_ATTRIBUTE, String.valueOf(useInsertCursor));
-		}
-	}
-
 	/**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {

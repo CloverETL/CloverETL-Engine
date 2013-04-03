@@ -42,7 +42,6 @@ import org.jetel.util.ExceptionUtils;
  *
  * @author      D.Pavlis
  * @since       July 23, 2003
- * @revision    $Revision$
  * @see         OtherClasses
  */
 

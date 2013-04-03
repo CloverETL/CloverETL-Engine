@@ -21,7 +21,6 @@ package org.jetel.component;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -161,7 +160,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       April 4, 2002
- * @revision    $Revision$
  */
 public class Reformat extends Node {
 
@@ -399,55 +397,12 @@ public class Reformat extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		
-		if (transform!=null){
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transform);
-		}
-		
-		if (transformClass != null) {
-			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClass);
-		} 
-		
-		if (transformURL != null) {
-			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-		
-		if (errorActionsString != null){
-			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
-		}
-		
-		if (errorLogURL != null){
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
-		}
-		
-		Enumeration propertyAtts = transformationParameters.propertyNames();
-		while (propertyAtts.hasMoreElements()) {
-			String attName = (String)propertyAtts.nextElement();
-			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
-		}
-				
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
 	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Reformat reformat;
 

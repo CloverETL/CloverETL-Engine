@@ -66,7 +66,6 @@ import org.jetel.util.string.StringUtils;
  *
  * @author      dpavlis
  * @since       October 7, 2002
- * @revision    $Revision$
  * @created     8. ???ervenec 2003
  */
 public abstract class AbstractCopySQLData implements CopySQLData {
@@ -666,7 +665,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyNumeric extends AbstractCopySQLData {
@@ -749,7 +747,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyDecimal extends AbstractCopySQLData {
@@ -831,7 +828,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       2. b???ezen 2004
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyInteger extends AbstractCopySQLData {
@@ -987,7 +983,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyString extends AbstractCopySQLData {
@@ -1014,11 +1009,10 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		@Override
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			String fieldVal = resultSet.getString(fieldSQL);
+			// uses fromString - field should _not_ be a StringDataField
 			if (resultSet.wasNull()) {
 				field.fromString(null);
 			} else {
-				// TODO: Issue 3650; consider using setValue() for string fields here, fromString() takes the nullValue
-				// attribute into account and that might lead to incorrect results when the value equals nullValue
 				field.fromString(fieldVal);
 			}
 		}
@@ -1026,11 +1020,10 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		@Override
 		public void setJetel(CallableStatement statement) throws SQLException {
 			String fieldVal = statement.getString(fieldSQL);
+			// uses fromString - field should _not_ be a StringDataField
 			if (statement.wasNull()) {
 				field.fromString(null);
 			} else {
-				// TODO: Issue 3650; consider using setValue() for string fields here, fromString() takes the nullValue
-				// attribute into account and that might lead to incorrect results when the value equals nullValue
 				field.fromString(fieldVal);
 			}
 		}
@@ -1072,7 +1065,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyDate extends AbstractCopySQLData {
@@ -1159,6 +1151,55 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		}
 
 	}
+	
+	/**
+	 * CL-2748
+	 * 
+	 * This class should be used instead of {@link CopyString}
+	 * when the target field is a {@link StringDataField}.
+	 * Uses {@link StringDataField#setValue(Object)}
+	 * instead of {@link DataField#fromString(CharSequence)}
+	 * so that empty strings are not replaced with <code>null</code>.
+	 *  
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Mar 26, 2013
+	 */
+	public static class CopyStringToString extends CopyString {
+
+		/**
+		 * @param record
+		 * @param fieldSQL
+		 * @param fieldJetel
+		 */
+		public CopyStringToString(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+		}
+
+		@Override
+		public void setJetel(ResultSet resultSet) throws SQLException {
+			String fieldVal = resultSet.getString(fieldSQL);
+			// CL-949, CL-2748: use setValue() instead of fromString()
+			if (resultSet.wasNull()) {
+				field.setValue(null);
+			} else {
+				field.setValue(fieldVal);
+			}
+		}
+
+		@Override
+		public void setJetel(CallableStatement statement) throws SQLException {
+			String fieldVal = statement.getString(fieldSQL);
+			// CL-949, CL-2748: use setValue() instead of fromString()
+			if (statement.wasNull()) {
+				field.setValue(null);
+			} else {
+				field.setValue(fieldVal);
+			}
+		}
+		
+	}
 
 
 	/**
@@ -1166,7 +1207,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyTime extends AbstractCopySQLData {
@@ -1262,7 +1302,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       October 7, 2002
-	 * @revision    $Revision$
 	 * @created     8. ???ervenec 2003
 	 */
 	public static class CopyTimestamp extends AbstractCopySQLData {
@@ -1363,7 +1402,6 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 *
 	 * @author      dpavlis
 	 * @since       November 27, 2003
-	 * @revision    $Revision$
 	 */
 	public static class CopyBoolean extends AbstractCopySQLData {
 

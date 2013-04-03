@@ -30,7 +30,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.DataRecordGenerator;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
-import org.w3c.dom.Element;
 
 /**
  *  <h3>Data Generator Component</h3> <!-- Generates new records.  -->
@@ -186,20 +185,6 @@ public class SimpleDataGenerator extends DataGenerator {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_PATTERN_ATTRIBUTE, pattern);
-		String randomFields = recordGenerator.getRandomFieldsString();
-		if (randomFields != null)
-			xmlElement.setAttribute(XML_RANDOM_FIELDS_ATTRIBUTE, randomFields);
-		
-		String seqFields = recordGenerator.getSequenceFieldsString();
-		if (seqFields != null)
-			xmlElement.setAttribute(XML_SEQUENCE_FIELDS_ATTRIBUTE, seqFields);
-		
-	}
-
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);

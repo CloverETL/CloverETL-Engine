@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -604,50 +603,6 @@ public class DBJoin extends Node {
 
 	public void setErrorActions(String string) {
 		this.errorActionsString = string;		
-	}
-
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, connectionName);
-		xmlElement.setAttribute(XML_SQL_QUERY_ATTRIBUTE, query);
-		if (metadataName != null) {
-			xmlElement.setAttribute(XML_DB_METADATA_ATTRIBUTE, metadataName);
-		}
-		if (transformClassName != null) {
-			xmlElement.setAttribute(XML_TRANSFORM_CLASS_ATTRIBUTE, transformClassName);
-		} 
-
-		if (transformSource!=null){
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
-		}
-		if (transformURL != null) {
-			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-		if (maxCached >0 ) {
-			xmlElement.setAttribute(XML_MAX_CACHED_ATTRIBUTE, String.valueOf(maxCached));
-		}
-		xmlElement.setAttribute(XML_JOIN_KEY_ATTRIBUTE, StringUtils.stringArraytoString(joinKey, ';'));
-
-		xmlElement.setAttribute(XML_LEFTOUTERJOIN_ATTRIBUTE, String.valueOf(leftOuterJoin));
-
-		if (errorActionsString != null){
-			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
-		}
-		
-		if (errorLogURL != null){
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
-		}
-		Enumeration propertyAtts = transformationParameters.propertyNames();
-		while (propertyAtts.hasMoreElements()) {
-			String attName = (String)propertyAtts.nextElement();
-			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
-		}
 	}
 
 	/**

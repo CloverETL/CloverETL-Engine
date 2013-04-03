@@ -55,7 +55,6 @@ import org.jetel.util.string.StringUtils;
  *
  * @author      dpavlis
  * @since       May 2, 2002
- * @revision    $Revision$
  * @created     January 26, 2003
  */
 public class RecordKey {

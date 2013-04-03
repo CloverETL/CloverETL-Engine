@@ -318,50 +318,6 @@ public class FixLenDataReader extends Node {
 		}
     }
     
-    /**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		
-		if (this.isByteMode()) {
-			xmlElement.setAttribute(XML_BYTEMODE_ATTRIBUTE,
-					String.valueOf(this.isByteMode()));
-		}
-		
-		if (this.parser.getCharsetName() != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.parser.getCharsetName());
-		}
-		
-		xmlElement.setAttribute(XML_SKIPLEADINGBLANKS_ATTRIBUTE,
-				String.valueOf(this.parser.isSkipLeadingBlanks()));
-		
-		xmlElement.setAttribute(XML_SKIPTRAILINGBLANKS_ATTRIBUTE,
-				String.valueOf(this.parser.isSkipTrailingBlanks()));
-		
-		xmlElement.setAttribute(XML_ENABLEINCOMPLETE_ATTRIBUTE,
-				String.valueOf(this.parser.isEnableIncomplete()));
-		
-		xmlElement.setAttribute(XML_SKIPEMPTY_ATTRIBUTE,
-				String.valueOf(this.parser.isSkipEmpty()));
-		
-		if (this.skipRows>0){
-		    xmlElement.setAttribute(XML_SKIP_ROWS_ATTRIBUTE, String.valueOf(skipRows));
-		}
-		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		if (parser instanceof FixLenCharDataParser
-				&& ((FixLenCharDataParser) parser).getTrim() != null) {
-			xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, String
-					.valueOf(((FixLenCharDataParser) parser).getTrim()));
-		}
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *

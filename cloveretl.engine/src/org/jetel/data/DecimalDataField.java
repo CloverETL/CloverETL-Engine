@@ -112,7 +112,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 		if (plain || _metadata.isByteBased()) {
         	numericFormatter = NumericFormatterFactory.getPlainFormatterInstance();
         } else {
-        	numericFormatter = NumericFormatterFactory.getDecimalFormatter(_metadata.getFormat(), _metadata.getLocaleStr());
+        	numericFormatter = NumericFormatterFactory.getDecimalFormatter(_metadata.getFormat(), _metadata.getLocaleStr(), precision, scale);
         } 
         //instantiate Decimal interface
         this.precision = precision;

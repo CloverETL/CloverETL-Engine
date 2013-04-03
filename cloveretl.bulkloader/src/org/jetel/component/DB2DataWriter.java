@@ -29,7 +29,6 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1782,83 +1781,6 @@ public class DB2DataWriter extends Node {
         }
         return writer;
     }
-	
-    @Override
-    public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		if (batchURL != null) {
-			xmlElement.setAttribute(XML_BATCHURL_ATTRIBUTE, batchURL);
-		}		
-		if (cloverFields != null && dbFields != null) {
-			StringBuilder map = new StringBuilder(cloverFields[0] + "=" + dbFields[0] + ";");
-			for (int i=1 ; i<cloverFields.length ; i++){
-				map.append(cloverFields[i]);
-				map.append('=');
-				map.append(dbFields[i]);
-				map.append(';');
-			}
-			xmlElement.setAttribute(XML_FIELDMAP_ATTRIBUTE, map.toString());
-		}else if (cloverFields != null){
-			xmlElement.setAttribute(XML_CLOVERFIELDS_ATTRIBUTE, StringUtils
-					.stringArraytoString(cloverFields, ';'));
-		}else if (dbFields != null) {
-			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, StringUtils
-					.stringArraytoString(dbFields, ';'));
-		}	
-		if (columnDelimiter != 0) {
-			xmlElement.setAttribute(XML_COLUMNDELIMITER_ATTRIBUTE, String
-					.valueOf(columnDelimiter));
-		}		
-		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
-		if (fileMetadataName != null) {
-			xmlElement.setAttribute(XML_FILEMETADATA_ATTRIBUTE,
-					fileMetadataName);
-		}		
-		if (dataURL != null) {
-			xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, dataURL);
-		}		
-		if (interpreter != null) {
-			xmlElement.setAttribute(XML_INTERPRETER_ATTRIBUTE, interpreter);
-		}		
-		xmlElement.setAttribute(XML_MODE_ATTRIBUTE, String.valueOf(loadMode));
-		xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, psw);
-		if (properties.containsKey(ROW_COUNT_PARAM)) {
-			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE, properties
-					.getProperty(ROW_COUNT_PARAM));
-		}		
-		if (recordSkip > 0) {
-			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String
-					.valueOf(recordSkip));
-		}		
-		if (rejectedURL != null) {
-			xmlElement.setAttribute(XML_REJECTEDRECORDSURL_ATTRIBUTE,
-					rejectedURL);
-		}		
-		xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
-		xmlElement.setAttribute(XML_USEPIPE_ATTRIBUTE, String.valueOf(usePipe));
-		xmlElement.setAttribute(XML_USERNAME_ATTRIBUTE, user);
-		if (warningNumber > 0) {
-			xmlElement.setAttribute(XML_WARNING_LINES_ATTRIBUTE, String
-					.valueOf(warningNumber));
-		}		
-		if (parameters != null){
-			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
-		}else if (!properties.isEmpty()) {
-			StringBuilder props = new StringBuilder();
-
-			for (Entry<Object, Object> entry : properties.entrySet()) {
-				String key = (String) entry.getKey();
-				String value = (String) entry.getValue();
-
-				props.append(key);
-				props.append('=');
-				props.append(StringUtils.isQuoted(value) ? value : StringUtils.quote(value));
-				props.append(';');
-			}
-
-			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, props.toString());
-		}
-	}
 	
 	@Override
 	public String getType() {

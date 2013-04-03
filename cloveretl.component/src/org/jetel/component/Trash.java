@@ -89,7 +89,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       April 4, 2002
- * @revision    $Revision$
  * @see         org.jetel.graph.TransformationGraph
  * @see         org.jetel.graph.Node
  * @see         org.jetel.graph.Edge
@@ -318,29 +317,6 @@ public class Trash extends Node {
 				writer.close();
 			} catch (Throwable t) {
 				logger.warn("Resource releasing failed for '" + getId() + "'.", t);
-			}
-		}
-	}
-
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-		xmlElement.setAttribute(XML_DEBUGPRINT_ATTRIBUTE, String.valueOf(this.debugPrint));
-		if (debugFilename != null) {
-			xmlElement.setAttribute(XML_DEBUGFILENAME_ATTRIBUTE, this.debugFilename);
-		}
-		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
-		}
-		if (compressLevel > -1) {
-			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE, String.valueOf(compressLevel));
-		}
-		if (mode != null) {
-			if (mode.equals(Mode.PERFORMANCE)) {
-				xmlElement.setAttribute(XML_MODE, PERFORMANCE);
-			} else if (mode.equals(Mode.VALIDATE_RECORDS)) {
-				xmlElement.setAttribute(XML_MODE, VALIDATE_RECORDS);
 			}
 		}
 	}

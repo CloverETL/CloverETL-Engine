@@ -139,7 +139,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       February 28, 2005
- * @revision    $Revision$
  */
 public class Partition extends Node {
 

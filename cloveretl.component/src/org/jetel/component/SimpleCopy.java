@@ -69,7 +69,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       April 4, 2002
- * @revision    $Revision$
  * @see         org.jetel.graph.TransformationGraph
  * @see         org.jetel.graph.Node
  * @see         org.jetel.graph.Edge
@@ -125,25 +124,6 @@ public class SimpleCopy extends Node {
 		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		
-		//DO NOTHING
-	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *
@@ -152,7 +132,7 @@ public class SimpleCopy extends Node {
 	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		return new SimpleCopy(xattribs.getString(XML_ID_ATTRIBUTE));

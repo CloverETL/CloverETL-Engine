@@ -32,7 +32,6 @@ import org.jetel.data.DataRecord;
  *
  * @author      dpavlis
  * @since       October 7, 2002
- * @revision    $Revision: 12291 $
  * @created     8. ???ervenec 2003
  */
 public interface CopySQLData {

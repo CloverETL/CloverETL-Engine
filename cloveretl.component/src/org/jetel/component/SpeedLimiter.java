@@ -146,25 +146,6 @@ public class SpeedLimiter extends Node {
 		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#reset()
-	 */
-    @Override
-	synchronized public void reset() throws ComponentNotReadyException {
-    	super.reset();
-    }
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_DELAY_ATTRIBUTE, Long.toString(delay));
-	}
-
 	/**
 	 * Creates new instance of this Component from XML definition.
 	 * @param graph

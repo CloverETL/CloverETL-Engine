@@ -38,7 +38,6 @@ import org.jetel.util.string.Compare;
  *
  * @author      D.Pavlis
  * @since       March 27, 2002
- * @revision    $Revision$
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */

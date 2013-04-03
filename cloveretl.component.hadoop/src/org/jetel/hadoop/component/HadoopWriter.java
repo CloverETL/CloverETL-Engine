@@ -48,7 +48,6 @@ import org.w3c.dom.Element;
  * @author David Pavlis (info@cloveretl.com) (c) Javlin a.s. (www.javlin.eu)
  * 
  * @since
- * @revision $Revision: $
  */
 
 public class HadoopWriter extends Node {

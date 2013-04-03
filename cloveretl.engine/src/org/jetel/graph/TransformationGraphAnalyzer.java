@@ -41,7 +41,6 @@ import org.jetel.exception.GraphConfigurationException;
  * 
  * @author D.Pavlis
  * @since April 2, 2002
- * @revision $Revision$
  * @see OtherClasses
  */
 
