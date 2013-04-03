@@ -45,7 +45,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * 
  * @author dpavlis
  * @since November 1, 2003
- * @revision $Revision: 5158 $
  * @created November 1, 2003
  * @see org.jetel.component.RecordTransform
  */

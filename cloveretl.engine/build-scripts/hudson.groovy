@@ -94,7 +94,7 @@ if( !runTests ){
 	antBaseD = testEnvironmentD
 	
 	engineJobName = "cloveretl.engine-" + versionSuffix
-	engineBuildNumber = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/lastSuccessfulBuild/api/xml?xpath=/*/number/text%28%29").text
+	engineBuildNumber = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/lastSuccessfulBuild/buildNumber").text
 	println "engineBuildNumber   = " + engineBuildNumber
 
         cloverVersionPropertiesURL = env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties"
@@ -138,6 +138,8 @@ if( !runTests ){
 	if( testName == "after-commit-proxy" ){
 		antTarget = "run-scenarios-with-engine-build"
 		antArgs += "-Drunscenarios.Xmx=-Xmx512m"
+		trustStoreF = new File(baseD, "cloveretl.test.scenarios/truststore/proxyTests.truststore")
+		antArgs += "-Drunscenarios.trustStore=-Djavax.net.ssl.trustStore=${trustStoreF}"
 	}
 	if (testName == "night") { //night tests need more memory
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"

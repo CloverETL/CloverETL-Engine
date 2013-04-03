@@ -104,7 +104,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       June 28, 2004
- * @revision    $Revision$
  * @see         org.jetel.database.dbf.DBFDataParser
  */
 
@@ -299,33 +298,6 @@ public class DBFDataReader extends Node {
         reader.setDictionary(graph.getDictionary());
 		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		
-		String charSet = this.parser.getCharset();
-		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.parser.getCharset());
-		}
-		PolicyType policyType = this.parser.getPolicyType();
-		if (policyType != null) {
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		}
-		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, this.fileURL);
-		if (skipRows != 0){
-			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skipRows));
-		}
-		if (numRecords != 0){
-			xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE,String.valueOf(numRecords));
-		}
-	}
-
 
 	/**
 	 *  Description of the Method

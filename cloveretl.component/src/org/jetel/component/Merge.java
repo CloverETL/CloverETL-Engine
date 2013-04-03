@@ -79,7 +79,6 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis
  * @since       April 22, 2003
- * @revision    $Revision$
  * @created     22. duben 2003
  */
 public class Merge extends Node {

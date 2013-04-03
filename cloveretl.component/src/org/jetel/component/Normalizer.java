@@ -21,7 +21,6 @@ package org.jetel.component;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -437,39 +436,6 @@ public class Normalizer extends Node {
 
 	public void setErrorActions(String string) {
 		this.errorActionsString = string;		
-	}
-
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-		if (xformClass != null) {
-			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, xformClass);
-		} 
-
-		if (xform!=null){
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,xform);
-		}
-		if (xformURL != null) {
-			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, xformURL);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-
-		if (errorActionsString != null){
-			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
-		}
-		
-		if (errorLogURL != null){
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
-		}
-		Enumeration<?> propertyAtts = transformationParameters.propertyNames();
-		while (propertyAtts.hasMoreElements()) {
-			String attName = (String)propertyAtts.nextElement();
-			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
-		}
 	}
 
 	public String getCharset() {

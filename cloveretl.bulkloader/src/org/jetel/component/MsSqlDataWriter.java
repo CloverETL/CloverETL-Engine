@@ -1045,26 +1045,6 @@ public class MsSqlDataWriter extends BulkLoader {
 		return msSqlDataWriter;
 	}
 
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-
-		xmlElement.setAttribute(XML_BCP_UTILITY_PATH_ATTRIBUTE, loadUtilityPath);
-
-		if (!StringUtils.isEmpty(owner)) {
-			xmlElement.setAttribute(XML_OWNER_ATTRIBUTE, owner);
-		}
-		if (!StringUtils.isEmpty(view)) {
-			xmlElement.setAttribute(XML_VIEW_ATTRIBUTE, view);
-		}
-		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
-			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
-		}
-		if (!StringUtils.isEmpty(serverName)) {
-			xmlElement.setAttribute(XML_SERVER_NAME_ATTRIBUTE, serverName);
-		}
-	}
-
 	/** Description of the Method */
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {

@@ -123,7 +123,6 @@ import org.w3c.dom.Element;
  *                                 
  * @author      dpavlis, mzatopek
  * @since       21. b?ezen 2004
- * @revision    $Revision$
  * @created     January 15, 2003
  */
 public class DBConnectionImpl extends AbstractDBConnection {

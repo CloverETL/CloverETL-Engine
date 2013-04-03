@@ -53,7 +53,6 @@ import org.jetel.util.string.StringUtils;
  *
  * @see org.jetel.metadata.DataRecordMetadata
  *
- * @revision $Revision$
  */
 public class DataFieldMetadata implements Serializable {
 

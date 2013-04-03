@@ -68,7 +68,6 @@ import org.w3c.dom.Node;
  *  </ul>
  * @author      dpavlis
  * @since       July 25, 2002
- * @revision    $Revision$
  * @created     26. March 2003
  */
 

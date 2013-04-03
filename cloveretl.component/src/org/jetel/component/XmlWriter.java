@@ -976,20 +976,6 @@ public class XmlWriter extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-	
-		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getId());
-	
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-	}
-	
 	/** 
 	 * Creates an instance according to XML specification.
 	 * @param graph

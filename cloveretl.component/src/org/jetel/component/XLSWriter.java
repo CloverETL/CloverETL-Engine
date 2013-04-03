@@ -431,57 +431,6 @@ public class XLSWriter extends Node {
 		formatterProvider.setInMemory(inMemory);
 	}
 
-    @Override
-	public void toXML(org.w3c.dom.Element xmlElement) {
-        super.toXML(xmlElement);
-
-        xmlElement.setAttribute(XML_FORMATTER_ATTRIBUTE, formatterType.name());
-        xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, this.fileURL);
-        xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(formatterProvider.isAppend()));
-        xmlElement.setAttribute(XML_REMOVESHEETS_ATTRIBUTE, String.valueOf(formatterProvider.isRemoveSheets()));
-        xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE, String.valueOf(formatterProvider.getFirstColumn()));
-        xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatterProvider.getFirstRow() + 1));
-        xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatterProvider.getNamesRow() + 1));
-        xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, formatterProvider.getCharset());
-
-        if (formatterProvider.getSheetName() != null) {
-            xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE, formatterProvider.getSheetName());
-        }
-
-        if (skip != 0) {
-            xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
-        }
-
-        if (numRecords != 0) {
-            xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE, String.valueOf(numRecords));
-        }
-
-        if (recordsPerFile > 0) {
-            xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
-        }
-
-        if (partition != null) {
-            xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, partition);
-        } else if (lookupTable != null) {
-            xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, lookupTable.getId());
-        }
-
-        if (attrPartitionKey != null) {
-            xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
-        }
-
-        if (attrPartitionOutFields != null) {
-            xmlElement.setAttribute(XML_PARTITION_OUTFIELDS_ATTRIBUTE, attrPartitionOutFields);
-        }
-
-        xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
-
-        if (!StringUtils.isEmpty(excludeFields)) {
-            xmlElement.setAttribute(XML_EXCLUDE_FIELDS_ATTRIBUTE, excludeFields);
-        }
-		xmlElement.setAttribute(XML_IN_MEMORY_ATTRIBUTE, String.valueOf(formatterProvider.isInMemory()));
-   }
-
 	@Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);

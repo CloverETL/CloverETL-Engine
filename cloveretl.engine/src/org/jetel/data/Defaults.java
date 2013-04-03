@@ -772,10 +772,17 @@ public final class Defaults {
 
 		public static void init() {
 			VOID_METADATA_NAME = getStringProperties("TLCompiler.VOID_METADATA_NAME", "VoidMetadata");
+			DECIMAL_PRECISION = getIntProperties("CTL.DECIMAL_PRECISION", 32);
 		}
 
 		/** The name of void metadata used by Rollup transforms when no group accumulator is used. */
 		public static String VOID_METADATA_NAME;
+		
+		/**
+		 * Applies for decimal division and double to decimal assignment.
+		 * @see org.jetel.ctl.TransformLangExecutor.DECIMAL_MAX_PRECISION
+		 */
+		public static int DECIMAL_PRECISION; // = 32
 
 	}
 

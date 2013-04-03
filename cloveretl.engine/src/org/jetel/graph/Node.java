@@ -61,7 +61,6 @@ import org.w3c.dom.Element;
  *@created     January 31, 2003
  *@since       April 2, 2002
  *@see         org.jetel.component
- *@revision    $Revision$
  */
 public abstract class Node extends GraphElement implements Runnable, CloverWorkerListener {
 
@@ -948,9 +947,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@deprecated implementation of this method is for now useless and is not required
 	 */
 	public void toXML(Element xmlElement) {
-		// set basic XML attributes of all graph components
-		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getId());
-		xmlElement.setAttribute(XML_TYPE_ATTRIBUTE, getType());
+		//DO NOT IMPLEMENT THIS METHOD
 	}
 
 	/**

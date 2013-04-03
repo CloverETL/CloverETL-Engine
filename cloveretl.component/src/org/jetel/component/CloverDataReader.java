@@ -263,20 +263,6 @@ public class CloverDataReader extends Node {
 		return aDataReader;
 	}
 
-	@Override
-	public void toXML(Element xmlElement) {
-	    super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
-		if (indexFileURL != null){
-			xmlElement.setAttribute(XML_INDEXFILEURL_ATTRIBUTE,indexFileURL);
-		}
-		if (skipRows > 0) {
-			xmlElement.setAttribute(XML_SKIPROWS_ATTRIBUTE,String.valueOf(skipRows));
-		}
-		if (numRecords > 0){
-			xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE,String.valueOf(numRecords));
-		}
-	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */

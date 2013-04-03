@@ -18,8 +18,9 @@
  */
 package org.jetel.hadoop.provider;
 
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
+
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -28,7 +29,6 @@ import org.apache.hadoop.conf.Configuration;
  * 
  * @author Rastislav Mirek &lt;<a href="mailto:rmirek@mail.muni.cz">rmirek@mail.muni.cz</a>&gt</br> &#169; Javlin, a.s
  *         &lt;<a href="http://www.javlin.eu">http://www.javlin.eu</a>&gt
- * @version $Revision$, $Date$
  * @created 9.11.2012
  */
 public class HadoopConfigurationUtils {

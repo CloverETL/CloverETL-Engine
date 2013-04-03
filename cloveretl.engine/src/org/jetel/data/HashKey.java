@@ -26,7 +26,6 @@ package org.jetel.data;
  *
  * @author      DPavlis
  * @since       6. March 2004
- * @revision    $Revision$
  */
 public class HashKey {
 	private RecordKey recKey;

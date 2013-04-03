@@ -24,7 +24,6 @@ import java.nio.charset.Charset;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +168,6 @@ import org.w3c.dom.Element;
  *&lt;/Node&gt;</pre>
  * @author      dpavlis, Jan Hadrava
  * @since       April 4, 2002
- * @revision    $Revision$
  * @created     4. June 2003
  *
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
@@ -697,54 +695,6 @@ public class MergeJoin extends Node {
     public void setTransformationParameters(Properties transformationParameters) {
         this.transformationParameters = transformationParameters;
     }
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	@SuppressWarnings("unchecked")
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		
-		if (transformClassName != null) {
-			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
-		} 
-		
-		if (transformSource!=null){
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
-		}
-		
-		if (transformURL != null) {
-			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, JoinKeyUtils.toString(joiners));		
-		
-		xmlElement.setAttribute(XML_JOINTYPE_ATTRIBUTE,
-				join == Join.FULL_OUTER ? "fullOuter" : join == Join.LEFT_OUTER ? "leftOuter" : "inner");
-
-		xmlElement.setAttribute(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, String.valueOf(slaveDuplicates));
-		if (errorActionsString != null){
-			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
-		}
-		
-		if (errorLogURL != null){
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
-		}
-
-		if (transformationParameters != null) {
-			Enumeration propertyAtts = transformationParameters.propertyNames();
-			while (propertyAtts.hasMoreElements()) {
-				String attName = (String)propertyAtts.nextElement();
-				xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
-			}
-		}		
-	}
 
 	/**
 	 *  Description of the Method
@@ -754,7 +704,7 @@ public class MergeJoin extends Node {
 	 * @throws AttributeNotFoundException 
 	 * @since           May 21, 2002
 	 */
-	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		MergeJoin join;
 

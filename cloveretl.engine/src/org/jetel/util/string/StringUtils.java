@@ -51,7 +51,6 @@ import com.ibm.icu.text.Transliterator;
  * 
  * @author dpavlis
  * @since July 25, 2002
- * @revision $Revision$
  */
 
 public class StringUtils {

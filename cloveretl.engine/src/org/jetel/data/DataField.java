@@ -38,7 +38,6 @@ import org.jetel.util.string.StringUtils;
  *
  * @author      David Pavlis
  * @since       March 26, 2002
- * @revision    $Revision$
  * @see         OtherClasses
  */
 @SuppressWarnings("serial")

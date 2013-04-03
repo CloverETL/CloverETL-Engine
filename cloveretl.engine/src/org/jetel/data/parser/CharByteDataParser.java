@@ -931,7 +931,7 @@ public class CharByteDataParser extends AbstractTextParser {
 					if (ichr == CharByteInputReader.END_OF_INPUT) {
 						if (acceptEofAsDelim) {
 							fieldValue.append(inputReader.getCharSequence(-1));
-							field.fromString(fieldValue);
+							field.fromString(trimOutput(fieldValue));
 							return false; // return value indicates success and end of input
 						} else {
 							throw new BadDataFormatException("Closing quote not followed by a delimiter");
@@ -950,7 +950,7 @@ public class CharByteDataParser extends AbstractTextParser {
 						delimPatterns.reset();
 						delimPatterns.update(chr);
 						fieldValue.append(inputReader.getCharSequence(-2)); // append without quote
-						field.fromString(fieldValue);
+						field.fromString(trimOutput(fieldValue));
 						break;
 					} // end quote followed by non-quote char
 				} // first end quote found
@@ -977,9 +977,8 @@ public class CharByteDataParser extends AbstractTextParser {
 			inputReader.mark(); // just to avoid unnecessary BLOCKED_BY_MARK failures
 			return true; // return value indicates success without encountering end of input
 		}
-		
-		private void produceOutput(DataRecord record) throws OperationNotSupportedException {
-			CharSequence seq = inputReader.getCharSequence(-delimPatterns.getMatchLength());
+
+		private CharSequence trimOutput(CharSequence seq) {
 			if (lTrim || rTrim) {
 				StringBuilder sb = new StringBuilder(seq);
 				if (lTrim) {
@@ -988,10 +987,15 @@ public class CharByteDataParser extends AbstractTextParser {
 				if (rTrim) {
 					StringUtils.trimTrailing(sb);
 				}
-				record.getField(fieldNumber).fromString(sb);
+				return sb;
 			} else {
-				record.getField(fieldNumber).fromString(seq);
+				return seq;
 			}
+		}
+		
+		private void produceOutput(DataRecord record) throws OperationNotSupportedException {
+			CharSequence seq = inputReader.getCharSequence(-delimPatterns.getMatchLength());
+			record.getField(fieldNumber).fromString(trimOutput(seq));
 			if (!acceptEndOfRecord && delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
 				throw new UnexpectedEndOfRecordDataFormatException("Unexpected record delimiter found - missing fields in the record");
 			}

@@ -66,7 +66,6 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 import com.infobright.etl.model.BrighthouseRecord;
@@ -584,33 +583,6 @@ public class InfobrightDataWriter extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
-	 */
-	
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_DATA_FORMAT_ATTRIBUTE, dataFormat.getBhDataFormat());
-		xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
-		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, connectionName != null ? connectionName : dbConnection.getId());
-		xmlElement.setAttribute(XML_CHECK_VALUES_ATTRIBUTE, String.valueOf(checkValues));
-		xmlElement.setAttribute(XML_AGENT_PORT_ATTRIBUTE, String.valueOf(agentPort));
-		if (logFile != null) {
-			xmlElement.setAttribute(XML_LOG_FILE_ATTRIBUTE, logFile);
-			xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(append));
-		}
-		if (pipeNamePrefix != null) {
-			xmlElement.setAttribute(XML_PIPE_NAMEPREFIX_ATTRIBUTE, pipeNamePrefix);
-		}
-		if (timeout > -1){
-			xmlElement.setAttribute(XML_TIMEOUT_ATTRIBUTE, String.valueOf(timeout));
-		}
-		if (cloverFields != null){
-			xmlElement.setAttribute(XML_CLOVER_FIELDS_ATTRIBUTE, StringUtils.stringArraytoString(cloverFields, Defaults.Component.KEY_FIELDS_DELIMITER));
-		}
-	}
-	
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         InfobrightDataWriter loader;

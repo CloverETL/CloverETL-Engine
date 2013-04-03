@@ -42,9 +42,7 @@ import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 /**
  *  <h3>Extended Filter Component</h3>
@@ -226,28 +224,6 @@ public class ExtFilter extends org.jetel.graph.Node {
 		filter = RecordFilterFactory.createFilter(filterExpression, getInMetadata().get(READ_FROM_PORT), getGraph(), getId(), logger);
 	}
 	
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     July 23, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		if (filterExpression != null) {
-		Document doc = xmlElement.getOwnerDocument();
-		Element childElement = doc.createElement("attr");
-		childElement.setAttribute("name", XML_FILTEREXPRESSION_ATTRIBUTE);
-		Text textElement = doc.createTextNode(filterExpression);
-		childElement.appendChild(textElement);
-		xmlElement.appendChild(childElement);
-	}
-		if (filterClass != null) {
-			xmlElement.setAttribute(XML_FILTERCLASS_ATTRIBUTE, filterClass);
-		}
-	}
-
 	/**
 	 *  Description of the Method
 	 *

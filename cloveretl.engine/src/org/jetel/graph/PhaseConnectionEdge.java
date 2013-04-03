@@ -34,7 +34,6 @@ import org.jetel.util.bytes.CloverBuffer;
  *
  * @author      D.Pavlis
  * @since       April 2, 2002
- * @revision    $Revision$
  * @see         org.jetel.graph.InputPort
  * @see         org.jetel.graph.OutputPort
  */

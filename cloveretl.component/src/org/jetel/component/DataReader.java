@@ -109,7 +109,6 @@ import org.w3c.dom.Element;
  *
  * @author      Martin Zatopek, David Pavlis, Javlin Consulting s.r.o. (www.javlinconsulting.cz)
  * @since       April 4, 2002
- * @revision    $Revision: 1.11 $
  * @see         org.jetel.data.parser.DelimitedDataParser
  */
 public class DataReader extends Node {
@@ -441,35 +440,6 @@ public class DataReader extends Node {
 		return new String[] { fileURL };
 	}
 	
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-	    super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
-		// returns either user specified charset, or default value
-		String charSet = this.parser.getConfiguration().getCharset();
-		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
-		}
-		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		if (parser.getConfiguration().getTrim() != null) {
-			xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, String.valueOf(parser.getConfiguration().getTrim()));
-		}		
-		if (parser.getConfiguration().getSkipLeadingBlanks() != null){
-			xmlElement.setAttribute(XML_SKIPLEADINGBLANKS_ATTRIBUTE, String.valueOf(parser.getConfiguration().getSkipLeadingBlanks()));
-		}
-		if (parser.getConfiguration().getSkipTrailingBlanks() != null){
-			xmlElement.setAttribute(XML_SKIPTRAILINGBLANKS_ATTRIBUTE, String.valueOf(parser.getConfiguration().getSkipTrailingBlanks()));
-		}
-		
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *

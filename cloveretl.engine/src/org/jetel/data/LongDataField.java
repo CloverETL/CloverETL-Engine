@@ -47,7 +47,6 @@ import org.jetel.util.string.StringUtils;
  *
  * @author      D.Pavlis
  * @since       March 27, 2002
- * @revision    $Revision$
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */

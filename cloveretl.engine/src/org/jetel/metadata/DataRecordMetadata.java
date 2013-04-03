@@ -65,7 +65,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see org.jetel.data.DataRecord
  * @see org.jetel.data.DataField
  * 
- * @revision $Revision$
  */
 public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata> {
 

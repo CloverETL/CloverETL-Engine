@@ -144,7 +144,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("UDR_FileURL_OneZipOneFileUnspecified.grf") // remove after CL-2174 solved
 							&& !file.getName().startsWith("MapOfRecords_Functions_01_Compiled_") // remove after CL-2175 solved
 							&& !file.getName().startsWith("MapOfRecords_Functions_01_Interpreted_") // remove after CL-2176 solved
-							&& !file.getName().equals("manyRecords.grf") // remove after CL-1825 implemented
+							&& !file.getName().equals("manyRecords.grf") // remove after CL-1292 implemented
 							&& !file.getName().equals("packedDecimal.grf") // remove after CL-1811 solved
 							&& !file.getName().equals("SimpleZipWrite.grf") // used by ArchiveFlushTest.java, doesn't make sense to run it separately
 							&& !file.getName().equals("XMLExtract_TKLK_003_Back.grf") // needs output from XMLWriter_LKTW_003.grf

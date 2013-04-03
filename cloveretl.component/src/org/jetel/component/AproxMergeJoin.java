@@ -24,7 +24,6 @@ import java.nio.charset.Charset;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -1033,81 +1032,6 @@ public class AproxMergeJoin extends Node {
 		return join;
 	}
  
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		
-		if (joinParameters != null) {
-			StringBuffer buf = new StringBuffer(joinParameters[0]);
-			for (int i=1; i< joinParameters.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + joinParameters[i]); 
-			}
-			xmlElement.setAttribute(XML_JOIN_KEY_ATTRIBUTE,buf.toString());
-		}
-		
-		if (slaveOverrideKeys!= null) {
-			StringBuffer buf = new StringBuffer(slaveOverrideKeys[0]);
-			for (int i=1; i< slaveOverrideKeys.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverrideKeys[i]); 
-			}
-			xmlElement.setAttribute(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,buf.toString());
-		}
-		
-		if (matchingKeyString!=null){
-			xmlElement.setAttribute(XML_MATCHING_KEY_ATTRIBUTE,matchingKeyString);
-		}
-		
-		if (slaveMatchingKey!=null){
-			xmlElement.setAttribute(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE,slaveMatchingKey[0]);
-		}
-		
-		if (transformClassName != null) {
-			xmlElement.setAttribute(XML_TRANSFORM_CLASS_ATTRIBUTE,transformClassName);
-		} 
-		
-		if (transformClassNameForSuspicious != null){
-			xmlElement.setAttribute(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE, transformClassNameForSuspicious);
-		}
-		
-		if (transformSource!=null){
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
-		}
-		
-		if (transformSourceForSuspicious != null){
-			xmlElement.setAttribute(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE, transformSourceForSuspicious);
-		}
-		
-		if (transformURL != null) {
-			xmlElement.setAttribute(XML_TRANSFORM_URL_ATTRIBUTE, transformURL);
-		}
-		
-		if (transformURLForsuspicious != null ){
-			xmlElement.setAttribute(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, transformURLForsuspicious);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-		
-		xmlElement.setAttribute(XML_CONFORMITY_ATTRIBUTE,String.valueOf(conformityLimit));
-        
-		if (errorActionsString != null){
-			xmlElement.setAttribute(XML_ERROR_ACTIONS_ATTRIBUTE, errorActionsString);
-		}
-		
-		if (errorLogURL != null){
-			xmlElement.setAttribute(XML_ERROR_LOG_ATTRIBUTE, errorLogURL);
-		}
-		if (transformationParameters != null) {
-			Enumeration propertyAtts = transformationParameters.propertyNames();
-			while (propertyAtts.hasMoreElements()) {
-				String attName = (String)propertyAtts.nextElement();
-				xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
-			}
-		}
-		
-	}
-    
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);

@@ -58,7 +58,6 @@ import org.jetel.util.string.StringUtils;
  *@since      March 27, 2002
  *@see        Parser
  *@see 	      org.jetel.data.Defaults
- * @revision    $Revision$
  */
 public class DelimitedDataParser extends AbstractParser {
 

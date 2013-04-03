@@ -307,28 +307,6 @@ public class XmlXPathReader extends Node {
     	reader.postExecute();
     }
 	
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     May 21, 2002
-	 */
-	@Override
-	public void toXML(Element xmlElement) {
-	    super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
-		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		xmlElement.setAttribute(XML_SKIP_ROWS_ATTRIBUTE, String.valueOf(skipRows));
-		xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE, String.valueOf(numRecords));
-		xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *

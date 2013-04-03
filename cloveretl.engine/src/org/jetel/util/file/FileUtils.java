@@ -103,7 +103,6 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *
  * @author      dpavlis
  * @since       May 24, 2002
- * @revision    $Revision$
  */
 public class FileUtils {
 

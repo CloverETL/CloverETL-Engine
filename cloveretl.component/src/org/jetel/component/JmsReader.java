@@ -19,7 +19,6 @@
 package org.jetel.component;
 
 import java.nio.charset.Charset;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -313,40 +312,6 @@ public class JmsReader extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-	
-		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getId());
-		if (conId != null) {
-			xmlElement.setAttribute(XML_CONNECTION_ATTRIBUTE, conId);
-		}
-		if (selector != null) {
-			xmlElement.setAttribute(XML_SELECTOR_ATTRIBUTE, selector);
-		}
-		if (psorCode != null) {
-			xmlElement.setAttribute(XML_PSORCODE_ATTRIBUTE, psorCode);
-		}
-		if (psorClass != null) {
-			xmlElement.setAttribute(XML_PSORCLASS_ATTRIBUTE, psorClass);
-		}
-		if (psorURL != null) {
-			xmlElement.setAttribute(XML_PSORURL_ATTRIBUTE, psorURL);
-		}
-		
-		if (charset != null){
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
-		}
-		xmlElement.setAttribute(XML_MAXMSGCNT_ATTRIBUTE, Integer.toString(maxMsgCount));
-		xmlElement.setAttribute(XML_TIMEOUT_ATTRIBUTE, Integer.toString(timeout));
-		// set processor attributes
-		for (Enumeration<Object> names = psorProperties.keys(); names.hasMoreElements();) {
-			Object name = names.nextElement();
-			Object value = psorProperties.get(name);
-			xmlElement.setAttribute((String)name, (String)value);
-		}
-	}
-		
 	/** Creates an instance according to XML specification.
 	 * @param graph
 	 * @param xmlElement

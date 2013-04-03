@@ -105,7 +105,6 @@ import org.w3c.dom.Element;
  *  </table>
  *
  * @author      Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
- * @revision    $Revision: 1388 $
  * @see         org.jetel.graph.TransformationGraph
  * @see         org.jetel.graph.Node
  * @see         org.jetel.graph.Edge
@@ -535,56 +534,6 @@ public class OracleDataWriter extends BulkLoader {
             controlWriter.close();
         } catch (IOException ex){
             throw new ComponentNotReadyException(this, "Control file for sqlldr utility can't be created.", ex);
-        }
-    }
-
-    /**
-     *  Description of the Method
-     *
-     * @return    Description of the Returned Value
-     * @since     May 21, 2002
-     */
-    @Override
-	public void toXML(Element xmlElement) {
-        super.toXML(xmlElement);
-      
-        xmlElement.setAttribute(XML_SQLLDR_ATTRIBUTE, loadUtilityPath);
-        xmlElement.setAttribute(XML_TNSNAME_ATTRIBUTE, tnsname);
-		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, append.name());
-		
-        if (!StringUtils.isEmpty(control)) {
-			xmlElement.setAttribute(XML_CONTROL_ATTRIBUTE, control);
-        }
-        if (!StringUtils.isEmpty(logFileName)) {
-			xmlElement.setAttribute(XML_LOG_ATTRIBUTE, logFileName);
-        }
-        if (!StringUtils.isEmpty(badFileName)) {
-			xmlElement.setAttribute(XML_BAD_ATTRIBUTE, badFileName);
-        }
-        if (!StringUtils.isEmpty(discardFileName)) {
-			xmlElement.setAttribute(XML_DISCARD_ATTRIBUTE, discardFileName);
-        }
-        if (dbFields != null) {
-			String keys = dbFields[0];
-			for (int i = 1; i < dbFields.length; i++) {
-				keys += Defaults.Component.KEY_FIELDS_DELIMITER + dbFields[i];
-			}
-			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, keys);
-        }
-        if (isDefinedUseFileForExchange) {
-			xmlElement.setAttribute(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE, String.valueOf(useFileForExchange));
-        }
-        if (maxErrors != UNUSED_INT) {
-			xmlElement.setAttribute(XML_MAX_ERRORS_ATTRIBUTE, String.valueOf(maxErrors));
-        }
-        if (maxDiscards != UNUSED_INT) {
-			xmlElement.setAttribute(XML_MAX_DISCARDS_ATTRIBUTE, String.valueOf(maxDiscards));
-        }
-        if (ignoreRows != UNUSED_INT) {
-			xmlElement.setAttribute(XML_IGNORE_ROWS_ATTRIBUTE, String.valueOf(ignoreRows));
-        }
-        if (commitInterval != UNUSED_INT) {
-			xmlElement.setAttribute(XML_COMMIT_INTERVAL_ATTRIBUTE, String.valueOf(commitInterval));
         }
     }
 

@@ -30,7 +30,6 @@ import java.io.Reader;
  *
  * @author david pavlis <david.pavlis@opensys.eu>
  * @since       Oct 24, 2007
- * @revision    $Revision:  $
  */
 
 public class CharSequenceReader extends Reader {

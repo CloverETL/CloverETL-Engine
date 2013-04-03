@@ -35,7 +35,6 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.string.StringUtils;
-import org.w3c.dom.Element;
 
 /**
  * <h3>Data Generator Component</h3> <!-- Generates new records. -->
@@ -200,20 +199,6 @@ public class ExtDataGenerator extends DataGenerator {
 				writeRecord(outPort, outRecord[outPort]);
 			}
 			SynchronizeUtils.cloverYield();
-		}
-	}
-
-	@Override
-	public void toXML(Element xmlElement) {
-		super.toXML(xmlElement);
-		if (generatorSource != null) {
-			xmlElement.setAttribute(XML_GENERATE_ATTRIBUTE, generatorSource);
-		}
-		if (generatorClassName != null) {
-			xmlElement.setAttribute(XML_GENERATECLASS_ATTRIBUTE, generatorClassName);
-		}
-		if (generatorURL != null) {
-			xmlElement.setAttribute(XML_GENERATEURL_ATTRIBUTE, generatorURL);
 		}
 	}
 

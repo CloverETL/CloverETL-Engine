@@ -45,6 +45,19 @@ public class NumericFormatterFactory {
 			return getPlainFormatterInstance();
 		}
 	}
+	
+	public static NumericFormatter getDecimalFormatter(String formatString, String localeString, int length, int scale) {
+		NumberFormat numberFormat = createNumberFormatter(formatString, localeString);
+		
+		if (numberFormat != null) {
+			if( numberFormat instanceof DecimalFormat){
+				((DecimalFormat) numberFormat).setParseBigDecimal(true);
+			}
+			return new JavaNumericFormatter(formatString, numberFormat);
+		} else {
+			return new JavolutionNumericFormatter(length);
+		}
+	}
 
 	public static NumericFormatter getDecimalFormatter(String formatString, String localeString) {
 		NumberFormat numberFormat = createNumberFormatter(formatString, localeString);

@@ -67,7 +67,6 @@ import org.jetel.util.string.StringUtils;
  *
  * @author      D.Pavlis
  * @since       April 2, 2002
- * @revision    $Revision$
  * @see         org.jetel.graph.runtime.WatchDog
  */
 public final class TransformationGraph extends GraphElement {
