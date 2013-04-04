@@ -91,15 +91,20 @@ public class NumberValidationRule extends AbstractValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
+		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+		
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedFormat = resolve(format.getValue());
+		String resolvedLocale = resolve(locale.getValue());
 		
 		DataField field = record.getField(target.getValue());
 		if(field.isNull()) {
-			logSuccess("Field '" + target.getValue() + "' is null.");
+			logSuccess("Field '" + resolvedTarget + "' is null.");
 			return State.VALID;
 		}
 		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
-			logError("Field '" + target.getValue() + "' is not a string.");
+			logError("Field '" + resolvedTarget + "' is not a string.");
 			return State.INVALID;
 		}
 		
@@ -108,7 +113,7 @@ public class NumberValidationRule extends AbstractValidationRule {
 			tempString = tempString.trim();
 		}
 		
-		Locale realLocale = ValidatorUtils.localeFromString(locale.getValue());
+		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
 		try {
 			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(realLocale);
 			if(format.getValue().equals(CommonFormats.defaultNumber)) {
@@ -116,7 +121,7 @@ public class NumberValidationRule extends AbstractValidationRule {
 				numberFormat.setParseIntegerOnly(true);
 			} else if(!format.getValue().isEmpty()) {
 				//numberFormat.applyLocalizedPattern(format.getValue());
-				numberFormat.applyPattern(format.getValue());
+				numberFormat.applyPattern(resolvedFormat);
 			}
 			ParsePosition pos = new ParsePosition(0);
 //			numberFormat.setMinimumFractionDigits(0);
@@ -124,42 +129,47 @@ public class NumberValidationRule extends AbstractValidationRule {
 //			numberFormat.setMaximumIntegerDigits(0);
 			Number parsedNumber = numberFormat.parse(tempString, pos);
 			if(parsedNumber == null || pos.getIndex() != tempString.length()) {
-				logError("Field '" + target.getValue() + "' with value '" + tempString + "' contains leftovers after parsed value.");
-				raiseError(ea, ERROR_PARSING, "The target field contains leftovers after parsed value.", target.getValue(), tempString);
+				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' contains leftovers after parsed value.");
+				raiseError(ea, ERROR_PARSING, "The target field contains leftovers after parsed value.", resolvedTarget, tempString);
 				return State.INVALID;
 			}
-			logSuccess("Field '" + target.getValue() + "' parsed as '" + parsedNumber + "'");
+			logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedNumber + "'");
 			return State.VALID;
 		} catch (Exception ex) {
-			logError("Field '" + target.getValue() + "' with value '" + tempString + "' could not be parsed.");
-			raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", target.getValue(), tempString);
+			logError("Field '" + resolvedTarget + "' with value '" + tempString + "' could not be parsed.");
+			raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
 			return State.INVALID;
 		}
 	}
 
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
 		boolean state = true;
-		if(target.getValue().isEmpty()) {
+		setPropertyRefResolver(graphWrapper);
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedFormat = resolve(format.getValue());
+		String resolvedLocale = resolve(locale.getValue());
+		
+		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
 		} else {
-			if(inputMetadata.getField(target.getValue()) != null && inputMetadata.getField(target.getValue()).getDataType() != DataFieldType.STRING) {
+			if(inputMetadata.getField(resolvedTarget) != null && inputMetadata.getField(resolvedTarget).getDataType() != DataFieldType.STRING) {
 				accumulator.addError(target, this, "Target field is not string.");
 				state = false;	
 			}
 		}
-		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
 		try {
 			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance();
-			if(!format.getValue().isEmpty()) {
-				numberFormat.applyLocalizedPattern(format.getValue());
+			if(!resolvedFormat.isEmpty()) {
+				numberFormat.applyLocalizedPattern(resolvedFormat);
 			}
 		} catch (Exception ex) {
 			accumulator.addError(format, this, "Format mask is not correct.");

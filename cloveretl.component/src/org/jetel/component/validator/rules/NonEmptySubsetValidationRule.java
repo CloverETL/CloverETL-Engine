@@ -42,6 +42,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -112,11 +113,8 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		logger.trace("Validation rule: " + this.getName() + "\n"
-				+ "Target fields: " + target.getValue() + "\n"
-				+ "Goal: " + goal.getValue() + "\n"
-				+ "Desired count: " + count.getValue() + "\n"
-				+ "Trim input: " + trimInput.getValue());
+		setPropertyRefResolver(graphWrapper);
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		String[] targetField = ValidatorUtils.parseTargets(target.getValue());
 		HashMap<String, String> values = new HashMap<String, String>();
@@ -160,12 +158,14 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
+		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		if(target.getValue().isEmpty()) {
+		String resolvedTarget = resolve(target.getValue());
+		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
 		}
@@ -173,7 +173,7 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 			accumulator.addError(count, this, "Count of fields must be greater than zero.");
 			state = false;
 		}
-		if(!ValidatorUtils.areValidFields(target.getValue(), inputMetadata)) { 
+		if(!ValidatorUtils.areValidFields(resolvedTarget, inputMetadata)) { 
 			accumulator.addError(target, this, "Some of target fields are not present in input metadata.");
 			state = false;
 		}

@@ -143,6 +143,10 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 	}
 	
 	protected String prepareInput(DataRecord record, String name) {
+		String resolvedFormat = resolve(format.getValue());
+		String resolvedLocale = resolve(locale.getValue());
+		String resolvedTimezone = resolve(timezone.getValue());
+		
 		DataFieldMetadata fieldMetadata = safeGetFieldMetadata(record.getMetadata(), name);
 		if(fieldMetadata == null) {
 			throw new IllegalArgumentException("Unknown field.");
@@ -160,27 +164,27 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 		} else if(fieldMetadata.getDataType() == DataFieldType.DATE
 				|| fieldMetadata.getDataType() == DataFieldType.DATETIME) {
 			String formatString;
-			if(format.getValue().isEmpty()) {
+			if(resolvedFormat.isEmpty()) {
 				formatString = Defaults.DEFAULT_DATETIME_FORMAT;
 			} else {
-				formatString = format.getValue();
+				formatString = resolvedFormat;
 			}
-			SimpleDateFormat dateFormat = new SimpleDateFormat(formatString, ValidatorUtils.localeFromString(locale.getValue()));
-			dateFormat.setTimeZone(TimeZone.getTimeZone(timezone.getValue()));
+			SimpleDateFormat dateFormat = new SimpleDateFormat(formatString, ValidatorUtils.localeFromString(resolvedLocale));
+			dateFormat.setTimeZone(TimeZone.getTimeZone(resolvedTimezone));
 			return dateFormat.format(((DateDataField) field).getValue());
 		} else if(fieldMetadata.getDataType() == DataFieldType.DECIMAL 
 				|| fieldMetadata.getDataType() == DataFieldType.NUMBER
 				|| fieldMetadata.getDataType() == DataFieldType.LONG
 				|| fieldMetadata.getDataType() == DataFieldType.INTEGER) {
-			if(format.getValue().isEmpty()) {
+			if(resolvedFormat.isEmpty()) {
 				return field.getValue().toString();
 			}
-			DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance(ValidatorUtils.localeFromString(locale.getValue()));
+			DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance(ValidatorUtils.localeFromString(resolvedLocale));
 			if(format.getValue().equals(CommonFormats.INTEGER)) {
 				decimalFormat.applyPattern("#");
 				decimalFormat.setGroupingUsed(false); // Suppress grouping of thousand by default
 			} else {
-				decimalFormat.applyPattern(format.getValue());
+				decimalFormat.applyPattern(resolvedFormat);
 			}
 			if(fieldMetadata.getDataType() == DataFieldType.DECIMAL) {
 				return decimalFormat.format(((DecimalDataField) field).getBigDecimal());
@@ -203,15 +207,18 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
+		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
+		String resolvedLocale = resolve(locale.getValue());
+		String resolvedTimezone = resolve(timezone.getValue());
 		DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
 		if(fieldMetadata != null && fieldMetadata.getDataType() != DataFieldType.STRING) {
-			if(locale.getValue().isEmpty()) {
+			if(resolvedLocale.isEmpty()) {
 				accumulator.addError(locale, this, "Empty locale.");
 				state &= false;
 			}
-			if(timezone.getValue().isEmpty()) {
+			if(resolvedTimezone.isEmpty()) {
 				accumulator.addError(timezone, this, "Empty timezone.");
 				state &= false;
 			}

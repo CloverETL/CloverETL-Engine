@@ -103,19 +103,22 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
+		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
-		DataField field = record.getField(target.getValue());
+		String resolvedTarget = resolve(target.getValue());
+		
+		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", target.getValue(), field.getValue().toString());
+			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
 		if(field.isNull()) {
-			logSuccess("Field '" + target.getValue() + "' is null.");
+			logSuccess("Field '" + resolvedTarget + "' is null.");
 			return State.VALID;
 		}
 		
@@ -129,62 +132,68 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 	}
 	
 	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedValue = resolve(value.getValue());
+		
 		T record = converter.convert(dataField.getValue());
 		if(record == null) {
-			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion failed.", target.getValue(),(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
+			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion failed.", resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 
 		final OPERATOR_TYPE operator = (OPERATOR_TYPE) this.operator.getValue();
 		
-		T value = converter.convertFromCloverLiteral(this.value.getValue());
+		T value = converter.convertFromCloverLiteral(resolvedValue);
 		if(value == null) {
-			raiseError(ea, ERROR_VALUE_CONVERSION, "Conversion of value failed.", target.getValue(),this.value.getValue());
+			raiseError(ea, ERROR_VALUE_CONVERSION, "Conversion of value failed.", resolvedTarget,this.value.getValue());
 			return State.INVALID;
 		}
 		if(operator == OPERATOR_TYPE.E && comparator.compare(record, value) == 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' = '" + value.toString() + "'.");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' = '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.NE && comparator.compare(record, value) != 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' != '" + value.toString() + "'.");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' != '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.G && comparator.compare(record, value) > 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' > '" + value.toString() + "'.");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' > '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.L && comparator.compare(record, value) < 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' < '" + value.toString() + "'.");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' < '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.LE && comparator.compare(record, value) <= 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' <= '" + value.toString() + "'.");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' <= '" + value.toString() + "'.");
 			return State.VALID;
 		} else if(operator == OPERATOR_TYPE.GE && comparator.compare(record, value) >= 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' >= '" + value.toString() + "'.");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' >= '" + value.toString() + "'.");
 			return State.VALID;
 		} else {
-			raiseError(ea, ERROR_CONDITION_NOT_MET, "Incoming value did not met the condition.", target.getValue(),dataField.getValue().toString());
+			raiseError(ea, ERROR_CONDITION_NOT_MET, "Incoming value did not met the condition.", resolvedTarget, dataField.getValue().toString());
 			return State.INVALID;
 		}
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
+		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		if(target.getValue().isEmpty()) {
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedValue = resolve(value.getValue());
+		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
 		}
-		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
-		if(value.getValue().isEmpty()) {
+		if(resolvedValue.isEmpty()) {
 			accumulator.addError(value, this, "Value to compare with is empty.");
 			state = false;
 		}
-		state &= super.isReady(inputMetadata, accumulator);
+		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
 		return state;
 	}
 	

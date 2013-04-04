@@ -105,16 +105,22 @@ public class DateValidationRule extends AbstractValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
+		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
-		DataField field = record.getField(target.getValue());
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedFormat = resolve(format.getValue());
+		String resolvedLocale = resolve(locale.getValue());
+		String resolvedTimezone = resolve(timezone.getValue());
+		
+		DataField field = record.getField(resolvedTarget);
 		if(field.isNull()) {
-			logSuccess("Field '" + target.getValue() + "' is null.");
+			logSuccess("Field '" + resolvedTarget + "' is null.");
 			return State.VALID;
 		}
 		
 		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
-			logError("Field '" + target.getValue() + "' is not a string.");
+			logError("Field '" + resolvedTarget + "' is not a string.");
 			return State.INVALID;
 		}
 		
@@ -122,91 +128,96 @@ public class DateValidationRule extends AbstractValidationRule {
 		if(trimInput.getValue()) {
 			tempString = tempString.trim();
 		}
-		DataFieldFormatType formatType = DataFieldFormatType.getFormatType(format.getValue());
+		DataFieldFormatType formatType = DataFieldFormatType.getFormatType(resolvedFormat);
 	
-		Locale realLocale = ValidatorUtils.localeFromString(locale.getValue());
+		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
 		if(formatType == DataFieldFormatType.JAVA || formatType == null) {
 			try {
 				SimpleDateFormat dateFormat;
 				if (formatType == null) {
 					dateFormat = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT, realLocale);
 				} else {
-					dateFormat = new SimpleDateFormat(formatType.getFormat(format.getValue()), realLocale);
+					dateFormat = new SimpleDateFormat(formatType.getFormat(resolvedFormat), realLocale);
 				}
-				dateFormat.setTimeZone(TimeZone.getTimeZone(timezone.getValue()));
+				dateFormat.setTimeZone(TimeZone.getTimeZone(resolvedTimezone));
 				
 				Date parsedDate = dateFormat.parse(tempString);
 				if(!dateFormat.format(parsedDate).equals(tempString.trim())) {
-					logError("Field '" + target.getValue() + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
-					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", target.getValue(), tempString);
+					logError("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
+					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", resolvedTarget, tempString);
 					return State.INVALID;
 				}
-				logSuccess("Field '" + target.getValue() + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
+				logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
 				return State.VALID;
 			} catch (Exception ex) {
-				logError("Field '" + target.getValue() + "' with value '" + tempString + "' is not a date with given settings.");
-				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", target.getValue(), tempString);
+				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' is not a date with given settings.");
+				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
 				return State.INVALID;	
 			}
 		} else {
 			try {
-				DateTimeFormatter formatter = DateTimeFormat.forPattern(formatType.getFormat(format.getValue()));
+				DateTimeFormatter formatter = DateTimeFormat.forPattern(formatType.getFormat(resolvedFormat));
 				formatter = formatter.withLocale(realLocale);
-				formatter = formatter.withZone(DateTimeZone.forID(timezone.getValue()));
+				formatter = formatter.withZone(DateTimeZone.forID(resolvedTimezone));
 				DateTime parsedDate = formatter.parseDateTime(tempString);
 				if(!parsedDate.toString(formatter).equals(tempString.trim())) {
-					logError("Field '" + target.getValue() + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
-					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", target.getValue(), tempString);
+					logError("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
+					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", resolvedTarget, tempString);
 					return State.INVALID;
 				}
-				logSuccess("Field '" + target.getValue() + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
+				logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
 				return State.VALID;
 			} catch (Exception ex) {
-				logError("Field '" + target.getValue() + "' with value '" + tempString + "' is not a date with given settings.");
-				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", target.getValue(), tempString);
+				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' is not a date with given settings.");
+				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
 				return State.INVALID;
 			}
 		}
 	}
 
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
+		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		if(target.getValue().isEmpty()) {
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedLocale = resolve(locale.getValue());
+		String resolvedTimezone = resolve(timezone.getValue());
+		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
 		} else {
-			if(inputMetadata.getField(target.getValue()) != null && inputMetadata.getField(target.getValue()).getDataType() != DataFieldType.STRING) {
+			if(inputMetadata.getField(resolvedTarget) != null && inputMetadata.getField(resolvedTarget).getDataType() != DataFieldType.STRING) {
 				accumulator.addError(target, this, "Target field is not string.");
 				state = false;	
 			}
 		}
-		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
-		if(locale.getValue().isEmpty()) {
+		if(resolvedLocale.isEmpty()) {
 			accumulator.addError(locale, this, "Locale is empty.");
 			state = false;
 		}
-		if(timezone.getValue().isEmpty()) {
+		if(resolvedTimezone.isEmpty()) {
 			accumulator.addError(timezone, this, "Timezone is empty.");
 			state = false;
 		}
 		DataFieldFormatType formatType = DataFieldFormatType.getFormatType(format.getValue());
+		String resolvedFormat = resolve(format.getValue());
 		if(formatType == DataFieldFormatType.JAVA || formatType == null) {
 			try {
-				new SimpleDateFormat(formatType.getFormat(format.getValue()));
+				new SimpleDateFormat(formatType.getFormat(resolvedFormat));
 			} catch (Exception ex) {
 				accumulator.addError(format, this, "Format mask is not in java format syntax.");
 				state = false;	
 			}
 		} else if(formatType == DataFieldFormatType.JODA) {
 			try {
-				DateTimeFormat.forPattern(formatType.getFormat(format.getValue()));
+				DateTimeFormat.forPattern(formatType.getFormat(resolvedFormat));
 			} catch (Exception ex) {
 				accumulator.addError(format, this, "Format mask is not in joda format syntax.");
 				state = false;

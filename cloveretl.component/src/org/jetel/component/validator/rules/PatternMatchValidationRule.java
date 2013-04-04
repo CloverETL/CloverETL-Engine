@@ -72,57 +72,63 @@ public class PatternMatchValidationRule extends StringValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
+		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedPattern = resolve(pattern.getValue());
+		
 		String tempString = null;
-		// FIXME: shouldn't be needed, remove?
 		try {
-			tempString = prepareInput(record, target.getValue());
+			tempString = prepareInput(record, resolvedTarget);
 		} catch (IllegalArgumentException ex) {
-			logger.trace("Validation rule: " + getName() + " on '" + tempString + "' is " + State.INVALID + " (unknown field)");
+			// Should not happen when isReady is called before
 			return State.INVALID;
 		}
 		Pattern pm;
 		try {
 			if(ignoreCase.getValue()) {
-				pm = Pattern.compile(pattern.getValue(), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+				pm = Pattern.compile(resolvedPattern, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 			} else {
-				pm = Pattern.compile(pattern.getValue(), Pattern.UNICODE_CASE);
+				pm = Pattern.compile(resolvedPattern, Pattern.UNICODE_CASE);
 			}
 		} catch (PatternSyntaxException e) {
-			logError("Pattern '" + pattern.getValue() + "' is invalid.");
-			raiseError(ea, ERROR_INVALID_PATTERN, "The pattern is invalid.", target.getValue(), tempString);
+			logError("Pattern '" + resolvedPattern + "' is invalid.");
+			raiseError(ea, ERROR_INVALID_PATTERN, "The pattern is invalid.", resolvedTarget, tempString);
 			return State.INVALID;
 		}
 		if(pm.matcher(tempString).matches()) {
-			logSuccess("Field '" + target.getValue() +  "' with value '" + tempString + "' has some match.");
+			logSuccess("Field '" + resolvedTarget +  "' with value '" + tempString + "' has some match.");
 			return State.VALID;
 		} else {
-			logError("Field '" + target.getValue() +  "' with value '" + tempString + "' has  no match.");
-			raiseError(ea, ERROR_NO_MATCH, "No match.", target.getValue(), tempString);
+			logError("Field '" + resolvedTarget +  "' with value '" + tempString + "' has no match.");
+			raiseError(ea, ERROR_NO_MATCH, "No match.", resolvedTarget, tempString);
 			return State.INVALID;
 		}
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
+		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		if(target.getValue().isEmpty()) {
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedPattern = resolve(pattern.getValue());
+		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
 		}
-		if(pattern.getValue().isEmpty()) {
+		if(resolvedPattern.isEmpty()) {
 			accumulator.addError(pattern, this, "Match pattern is empty.");
 			state = false;
 		}
-		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
-		state &= super.isReady(inputMetadata, accumulator);
+		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
 		return state;
 	}
 

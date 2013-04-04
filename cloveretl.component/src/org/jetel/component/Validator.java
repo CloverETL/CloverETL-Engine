@@ -190,7 +190,7 @@ public class Validator extends Node {
 		}
 		
 		ReadynessErrorAcumulator accumulator = new ReadynessErrorAcumulator();
-		if(rootGroup != null && !rootGroup.isReady(inputPort.getMetadata(), accumulator)) {
+		if(rootGroup != null && !rootGroup.isReady(inputPort.getMetadata(), accumulator, new EngineGraphWrapper(getGraph()))) {
 			String tempName = new String();
 			for(Entry<ValidationParamNode, List<String>> errors: accumulator.getErrors().entrySet()) {
 				for(String message : errors.getValue()) {
@@ -231,13 +231,6 @@ public class Validator extends Node {
 		}
 		return status;
 	}
-	
-	@Override
-	public void preExecute() throws ComponentNotReadyException {
-		super.preExecute();
-		
-		
-	}
 
 	@Override
 	protected Result execute() throws Exception {
@@ -276,6 +269,7 @@ public class Validator extends Node {
 			} else {
 				if(invalidPort != null) {
 					if(errorMapping != null) {
+						// FIXME: what to do if no errors found? Empty? Throw away?
 						for(ValidationError error : errorAccumulator) {
 							populateErrorRecord(error);
 							errorMapping.execute();

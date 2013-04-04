@@ -171,6 +171,8 @@ public class ValidationGroup extends ValidationNode {
 			logNotValidated("Group not enabled.");
 			return State.NOT_VALIDATED;
 		}
+		setPropertyRefResolver(graphWrapper);
+		
 		AbstractValidationRule prelimitaryCondition = getPrelimitaryCondition();
 		logParams("Conjunction: " + conjunction + "\n" +
 						"Lazy: " + laziness + "\n" +
@@ -212,13 +214,13 @@ public class ValidationGroup extends ValidationNode {
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
 		boolean state = true;
 		for(int i = 0; i < childs.size(); i++) {
-			state &= childs.get(i).isReady(inputMetadata, accumulator);
+			state &= childs.get(i).isReady(inputMetadata, accumulator, graphWrapper);
 		}
 		return state;
 	}

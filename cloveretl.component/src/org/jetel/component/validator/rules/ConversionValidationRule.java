@@ -227,7 +227,8 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
+		setPropertyRefResolver(graphWrapper);
 		boolean status = true;
 		if(useType.getValue() == METADATA_TYPES.DATE || useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL) {
 			DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
@@ -235,13 +236,15 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 				accumulator.addError(format, this, "Format mask to parse incoming field must be filled.");
 				status &= false;
 			}
-			if(locale.getValue().isEmpty()) {
+			String resolvedLocale = resolve(locale.getValue());
+			if(resolvedLocale.isEmpty()) {
 				accumulator.addError(locale, this, "Locale of incoming field must be filled.");
 				status &= false;
 			}
 		}
 		if(useType.getValue() == METADATA_TYPES.DATE) {
-			if(timezone.getValue().isEmpty()) {
+			String resolvedTimezone = resolve(timezone.getValue());
+			if(resolvedTimezone.isEmpty()) {
 				accumulator.addError(timezone, this, "Timezone of incoming field must be filled.");
 				status &= false;
 			}

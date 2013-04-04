@@ -26,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.property.PropertyRefResolver;
 
 /**
  * Abstract shared part of each validation rule or group.
@@ -40,6 +41,8 @@ public abstract class ValidationNode {
 	private boolean enabled = true;
 	@XmlAttribute(required=false)
 	private String name;
+	
+	private PropertyRefResolver refResolver;
 	
 	/**
 	 * Result states of validation
@@ -68,7 +71,7 @@ public abstract class ValidationNode {
 	 * @param accumulator Error accumulator in which all errors with human readable messages 
 	 * @return true if parameters are valid, false otherwise
 	 */
-	public abstract boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator);
+	public abstract boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper);
 	
 	public void logSuccess(String message) {
 		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.VALID + ": " + message);
@@ -123,4 +126,17 @@ public abstract class ValidationNode {
 	 * @return Description
 	 */
 	public abstract String getCommonDescription();
+	
+	protected void setPropertyRefResolver(GraphWrapper graphWrapper) {
+		if(graphWrapper != null) {
+			this.refResolver = graphWrapper.getRefResolver();	
+		}
+	}
+	protected String resolve(String input) {
+		if(refResolver == null) {
+			System.err.println("AHA");
+			return input;
+		}
+		return refResolver.resolveRef(input);
+	}
 }

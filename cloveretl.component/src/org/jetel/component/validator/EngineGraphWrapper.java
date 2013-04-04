@@ -30,7 +30,7 @@ import org.jetel.util.property.PropertyRefResolver;
  */
 public class EngineGraphWrapper implements GraphWrapper {
 	private TransformationGraph graph;
-	private PropertyRefResolver refResolver = null;
+	private PropertyRefResolver refResolver;
 	
 	public EngineGraphWrapper(TransformationGraph graph) {
 		this.graph = graph;

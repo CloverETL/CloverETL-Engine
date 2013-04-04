@@ -18,7 +18,10 @@
  */
 package org.jetel.component.validator.utils;
 
+import java.text.ParseException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -33,6 +36,26 @@ public class ValidatorUtils {
 			return new String[0];
 		}
 		return target.trim().split(",");
+	}
+	
+	public static Map<String, String> parseStringToMap(String input, String assignChar, String delimeter, boolean trim) throws ParseException {
+		HashMap<String, String> temp = new HashMap<String, String>();
+		String[] rows = input.split(delimeter);
+		String[] row;
+		int line = 0;
+		for(String tempRow : rows) {
+			row = tempRow.split(assignChar);
+			if(row == null || row.length != 2) {
+				throw new ParseException("Wrong mapping on part: " + line,-1);
+			}
+			if(trim) {
+				temp.put(row[0], row[1]);
+			} else {
+				temp.put(row[0].trim(), row[1].trim());
+			}
+			line++;
+		}
+		return temp;
 	}
 	
 	public static boolean isValidField(String fieldName, DataRecordMetadata inputMetadata) {

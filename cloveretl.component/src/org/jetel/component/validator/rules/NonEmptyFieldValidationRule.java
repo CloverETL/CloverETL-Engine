@@ -102,9 +102,12 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
+		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
-		DataField field = record.getField(target.getValue());
+		String resolvedTarget = resolve(target.getValue());
+		
+		DataField field = record.getField(resolvedTarget);
 		String inputString = field.toString();
 		
 		if(field.getMetadata().getDataType() == DataFieldType.STRING) {
@@ -112,40 +115,42 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 				inputString = inputString.trim();
 			}
 			if(goal.getValue() == GOALS.EMPTY && inputString.isEmpty()) {
-				logSuccess("Field '" + target.getValue() + "' is empty.");
+				logSuccess("Field '" + resolvedTarget + "' is empty.");
 				return State.VALID;	
 			}
 			if(goal.getValue() == GOALS.NONEMPTY && !inputString.isEmpty()) {
-				logSuccess("Field '" + target.getValue() + "' with value '" + inputString + "' is nonempty.");
+				logSuccess("Field '" + resolvedTarget + "' with value '" + inputString + "' is nonempty.");
 				return State.VALID;	
 			} 
 		} else if(goal.getValue() == GOALS.EMPTY && field.isNull()) {
-			logSuccess("Field '" + target.getValue() + "' is empty.");
+			logSuccess("Field '" + resolvedTarget + "' is empty.");
 			return State.VALID;
 		} else if(goal.getValue() == GOALS.NONEMPTY && !field.isNull()) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + field.getValue() + "' is nonempty.");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + field.getValue() + "' is nonempty.");
 			return State.VALID;
 		}
 		// Error reporting
 		if(goal.getValue() == GOALS.NONEMPTY) {
-			raiseError(ea, ERROR_FIELD_EMPTY, "The target field is empty, expected to be nonempty.", target.getValue(), inputString);
+			raiseError(ea, ERROR_FIELD_EMPTY, "The target field is empty, expected to be nonempty.", resolvedTarget, inputString);
 		} else {
-			raiseError(ea, ERROR_FIELD_NONEMPTY, "The target field is nonempty, expected to be empty.", target.getValue(), inputString);
+			raiseError(ea, ERROR_FIELD_NONEMPTY, "The target field is nonempty, expected to be empty.", resolvedTarget, inputString);
 		}
 		return State.INVALID;
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
+		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		if(target.getValue().isEmpty()) {
+		String resolvedTarget = resolve(target.getValue());
+		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
 		}
-		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}

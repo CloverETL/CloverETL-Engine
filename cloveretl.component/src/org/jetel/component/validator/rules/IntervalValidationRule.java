@@ -105,9 +105,12 @@ public class IntervalValidationRule extends ConversionValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
+		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
-		DataField field = record.getField(target.getValue());
+		String resolvedTarget = resolve(target.getValue());
+		
+		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
 		
 		try {
@@ -119,7 +122,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		}
 		
 		if(field.isNull()) {
-			logSuccess("Field '" + target.getValue() + "' is null.");
+			logSuccess("Field '" + resolvedTarget + "' is null.");
 			return State.VALID;
 		}
 		
@@ -133,64 +136,72 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	}
 	
 	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedTo = resolve(to.getValue());
+		String resolvedFrom = resolve(from.getValue());
+		
 		T record = converter.convert(dataField.getValue());
 		if(record == null) {
-			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", target.getValue(),(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
+			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 		final BOUNDARIES_TYPE boundaries = (BOUNDARIES_TYPE) this.boundaries.getValue();
-		T from = converter.convertFromCloverLiteral(this.from.getValue());
-		T to = converter.convertFromCloverLiteral(this.to.getValue());
+		T from = converter.convertFromCloverLiteral(resolvedFrom);
+		T to = converter.convertFromCloverLiteral(resolvedTo);
 		if(from == null) {
-			raiseError(ea, ERROR_FROM_CONVERSION, "Conversion of value 'From' failed.", target.getValue(),this.from.getValue());
+			raiseError(ea, ERROR_FROM_CONVERSION, "Conversion of value 'From' failed.", resolvedTarget,this.from.getValue());
 		}
 		if(to == null) {
-			raiseError(ea, ERROR_TO_CONVERSION, "Conversion of value 'To' failed.", target.getValue(),this.to.getValue());
+			raiseError(ea, ERROR_TO_CONVERSION, "Conversion of value 'To' failed.", resolvedTarget,this.to.getValue());
 		}
 		if(from == null || to == null) {
 			return State.INVALID;
 		}
 		if(boundaries == BOUNDARIES_TYPE.CLOSED_CLOSED && comparator.compare(record, from) >= 0 && comparator.compare(record, to) <= 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' is in interval ['" + from.toString() + "', '" + to.toString() + "'].");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ['" + from.toString() + "', '" + to.toString() + "'].");
 			return State.VALID;
 		} else if(boundaries == BOUNDARIES_TYPE.CLOSED_OPEN && comparator.compare(record, from) >= 0 && comparator.compare(record, to) < 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' is in interval ['" + from.toString() + "', '" + to.toString() + "').");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ['" + from.toString() + "', '" + to.toString() + "').");
 			return State.VALID;
 		} else if(boundaries == BOUNDARIES_TYPE.OPEN_CLOSED && comparator.compare(record, from) > 0 && comparator.compare(record, to) <= 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' is in interval ('" + from.toString() + "', '" + to.toString() + "'].");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ('" + from.toString() + "', '" + to.toString() + "'].");
 			return State.VALID;
 		} else if(boundaries == BOUNDARIES_TYPE.OPEN_OPEN && comparator.compare(record, from) > 0 && comparator.compare(record, to) < 0) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' is in interval ('" + from.toString() + "', '" + to.toString() + "').");
+			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ('" + from.toString() + "', '" + to.toString() + "').");
 			return State.VALID;
 		} else {
-			raiseError(ea, ERROR_NOT_IN_INTERVAL, "Incoming value not in given interval.", target.getValue(), record.toString());
+			raiseError(ea, ERROR_NOT_IN_INTERVAL, "Incoming value not in given interval.", resolvedTarget, record.toString());
 			return State.INVALID;
 		}
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
 		boolean state = true;
-		if(target.getValue().isEmpty()) {
+		String resolvedTarget = resolve(target.getValue());
+		String resolvedTo = resolve(to.getValue());
+		String resolvedFrom = resolve(from.getValue());
+		
+		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
 		}
-		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
-		if(from.getValue().isEmpty()) {
+		if(resolvedFrom.isEmpty()) {
 			accumulator.addError(from, this, "Value From is empty.");
 			state = false;
 		}
-		if(to.getValue().isEmpty()) {
+		if(resolvedTo.isEmpty()) {
 			accumulator.addError(to, this, "Value To is empty.");
 			state = false;
 		}
-		state &= super.isReady(inputMetadata, accumulator);
+		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
 		return state;
 	}
 

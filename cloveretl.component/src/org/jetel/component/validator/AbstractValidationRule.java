@@ -38,6 +38,7 @@ import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
 import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
+import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**

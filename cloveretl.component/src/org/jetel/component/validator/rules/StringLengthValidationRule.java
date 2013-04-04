@@ -118,14 +118,16 @@ public class StringLengthValidationRule extends StringValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
+		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
+		String resolvedTarget = resolve(target.getValue());
+		
 		String tempString = null;
-		// FIXME: shouldn't be needed, remove?
 		try {
-			tempString = prepareInput(record, target.getValue());
+			tempString = prepareInput(record, resolvedTarget);
 		} catch (IllegalArgumentException ex) {
-			logError("Field '" + target.getValue() + "' is unknown.");
+			// Should not happen when isReady is called before
 			return State.INVALID;
 		}
 		Integer length = Integer.valueOf(tempString.length());
@@ -143,22 +145,24 @@ public class StringLengthValidationRule extends StringValidationRule {
 			result = State.VALID;
 		}
 		if(result == State.VALID) {
-			logSuccess("Field '" + target.getValue() + "' with value '" + tempString + "' has length " + length);
+			logSuccess("Field '" + resolvedTarget + "' with value '" + tempString + "' has length " + length);
 		} else {
 			logError("Field '" + target.getValue() + "' with value '" + tempString + "' has length " + length);
-			raiseError(ea, ERROR_WRONG_LENGTH, "The target has wrong length.", target.getValue(), tempString);
+			raiseError(ea, ERROR_WRONG_LENGTH, "The target has wrong length.", resolvedTarget, tempString);
 		}
 		
 		return result;
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
+		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		if(target.getValue().isEmpty()) {
+		String resolvedTarget = resolve(target.getValue());
+		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
 		}
@@ -170,11 +174,11 @@ public class StringLengthValidationRule extends StringValidationRule {
 			accumulator.addError(to, this, "Parameter To is unset.");
 			state = false;
 		}
-		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
-		state &= super.isReady(inputMetadata, accumulator);
+		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
 		return state;
 	}
 

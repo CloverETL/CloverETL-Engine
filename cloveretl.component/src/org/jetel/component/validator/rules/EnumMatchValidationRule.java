@@ -107,21 +107,24 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
+		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
-		DataField field = record.getField(target.getValue());
+		String resolvedTarget = resolve(target.getValue());
+		
+		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", target.getValue(), field.getValue().toString());
+			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
 		try {
 			getParsedValues();
 		} catch (NullPointerException ex) {
-			raiseError(ea, ERROR_PARSING_VALUES, "Cannot parse given enum in given type.", target.getValue(), field.getValue().toString());
+			raiseError(ea, ERROR_PARSING_VALUES, "Cannot parse given enum in given type.", resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -152,9 +155,11 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	
 	@SuppressWarnings("unchecked")
 	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+		String resolvedTarget = resolve(target.getValue());
+		
 		T record = tempConverter.convert(dataField.getValue());
 		if(record == null) {
-			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", target.getValue(),(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
+			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", resolvedTarget,(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -174,32 +179,34 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 					stringItem = stringItem.toLowerCase();
 				}
 				if(((StringComparator) comparator).compare(stringRecord, stringItem) == 0) {
-					logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' matched item '" + item.toString() + "' as strings.");
+					logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' matched item '" + item.toString() + "' as strings.");
 					return State.VALID;		
 				}	
 			} else {
 				// Explicit cast to T, implicit assumption that the type right because of right pair of convertor and comparator
 				if(comparator.compare((T) item, record) == 0) {
-					logSuccess("Field '" + target.getValue() + "' with value '" + record.toString() + "' matched item '" + item.toString() + "'.");
+					logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' matched item '" + item.toString() + "'.");
 					return State.VALID;		
 				}
 			}
 		}
-		raiseError(ea, ERROR_NO_MATCH, "No match.", target.getValue(), record.toString());
+		raiseError(ea, ERROR_NO_MATCH, "No match.", resolvedTarget, record.toString());
 		return State.INVALID;
 	}
 	
 	@Override
-	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator) {
+	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			return true;
 		}
+		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		if(target.getValue().isEmpty()) {
+		String resolvedTarget = resolve(target.getValue());
+		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
 		}
-		if(!ValidatorUtils.isValidField(target.getValue(), inputMetadata)) { 
+		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
@@ -217,11 +224,12 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		} else {
 			temp = new TreeSet<String>();
 		}
-		String[] temp2 = StringUtils.split(values.getValue(),",");
+		String resolvedValues = resolve(values.getValue());
+		String[] temp2 = StringUtils.split(resolvedValues,",");
 		stripDoubleQuotesAndTrim(temp2);
 		temp.addAll(Arrays.asList(temp2));
 		// Workaround because split ignores "something,else," <-- last comma
-		if(values.getValue().endsWith(",")) {
+		if(resolvedValues.endsWith(",")) {
 			temp.add(new String());
 		}
 		return temp;

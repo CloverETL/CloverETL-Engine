@@ -65,4 +65,9 @@ public class ReadynessErrorAcumulator {
 		}
 		return output.toString().trim();
 	}
+	
+	public void reset() {
+		errors.clear();
+		parents.clear();
+	}
 }
