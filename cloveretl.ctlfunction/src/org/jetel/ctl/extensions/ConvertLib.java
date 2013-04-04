@@ -49,8 +49,8 @@ import org.json.XML;
 public class ConvertLib extends TLFunctionLibrary {
 
 	public static final int DEFAULT_RADIX = 10;
-	public static StringFormat trueFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_TRUE_STRING);
-	public static StringFormat falseFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_FALSE_STRING);
+	public static final StringFormat trueFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_TRUE_STRING);
+	public static final StringFormat falseFormat = StringFormat.create(Defaults.DEFAULT_REGEXP_FALSE_STRING);
 	
 	@Override
 	public TLFunctionPrototype getExecutable(String functionName) {
