@@ -21,7 +21,6 @@ package org.jetel.interpreter.data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -32,7 +31,6 @@ import org.jetel.metadata.DataRecordMetadata;
 public class TLRecordValue extends TLContainerValue {
 
 	private DataRecord record;
-	private Map<Integer, Character> fieldTypes;
 	
 	public TLRecordValue(DataRecordMetadata metadata){
 		super(TLValueType.RECORD);
@@ -62,10 +60,6 @@ public class TLRecordValue extends TLContainerValue {
 		return record.getNumFields();
 	}
 
-	public char getType(int index){
-		return fieldTypes.get(index);
-	}
-	
 	@Override
 	public TLValue getStoredValue(int index) {
 		return TLValue.convertValue(record.getField(index));
