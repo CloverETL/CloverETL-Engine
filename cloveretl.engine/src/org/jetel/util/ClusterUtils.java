@@ -35,6 +35,8 @@ public class ClusterUtils {
 	public static final String CLUSTER_REPARTITION_TYPE = "CLUSTER_REPARTITION";
 	public static final String CLUSTER_REGATHER_TYPE = "CLUSTER_REGATHER";
 
+	public static final String CLUSTER_SIMPLE_COPY_TYPE = "CLUSTER_SIMPLE_COPY";
+
 	public static final String REMOTE_EDGE_DATA_TRANSMITTER_TYPE = "REMOTE_EDGE_DATA_TRANSMITTER";
 	public static final String REMOTE_EDGE_DATA_RECEIVER_TYPE = "REMOTE_EDGE_DATA_RECEIVER";
 	
@@ -68,7 +70,8 @@ public class ClusterUtils {
 	 */
 	public static boolean isClusterPartition(String componentType) {
 		return componentType.equals(CLUSTER_PARTITION_TYPE)
-				|| componentType.equals(CLUSTER_LOAD_BALANCING_PARTITION_TYPE);
+				|| componentType.equals(CLUSTER_LOAD_BALANCING_PARTITION_TYPE)
+				|| componentType.equals(CLUSTER_SIMPLE_COPY_TYPE);
 	}
 
 	/**
