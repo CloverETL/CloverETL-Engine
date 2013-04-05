@@ -18,6 +18,8 @@
  */
 package org.jetel.ctl;
 
+import java.io.Serializable;
+
 /**
  * An error location within CTL code.
  *
@@ -28,8 +30,10 @@ package org.jetel.ctl;
  *
  * @see ProblemReporter
  */
-public final class ErrorLocation {
+public final class ErrorLocation implements Serializable {
 
+	private static final long serialVersionUID = -8953961643106332583L;
+	
 	/** The line where the location begins. */
 	private final int beginLine;
 	/** The column where the location begins. */
