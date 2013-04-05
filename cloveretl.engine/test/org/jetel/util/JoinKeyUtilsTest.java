@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
@@ -31,6 +30,8 @@ public class JoinKeyUtilsTest extends CloverTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
+		super.setUp();
+		
     	DataFieldMetadata f1 = new DataFieldMetadata("field1",";");
     	DataFieldMetadata f2 = new DataFieldMetadata("field2",";");
     	DataFieldMetadata f3 = new DataFieldMetadata("field3",";");

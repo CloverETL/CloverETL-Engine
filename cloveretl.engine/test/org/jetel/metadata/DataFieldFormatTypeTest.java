@@ -36,12 +36,7 @@ import org.jetel.util.string.StringUtils;
  */
 public class DataFieldFormatTypeTest extends CloverTestCase {
 
-	@Override
-	protected void setUp() { 
-		initEngine();
-	}
-
-	public void testIsExistingPrefix() {
+		public void testIsExistingPrefix() {
 		assertTrue(isExistingPrefix("java"));
 		assertTrue(isExistingPrefix("Java"));
 		assertTrue(isExistingPrefix("JAVA"));

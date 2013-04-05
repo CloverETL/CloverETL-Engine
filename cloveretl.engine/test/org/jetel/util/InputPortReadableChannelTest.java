@@ -37,7 +37,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.test.CloverTestCase;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -54,12 +53,6 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 	private enum SampleDataType {SHORT, EXACT, NULL_FIRST, NULL_SECOND};
 	
 	private InputPortReadableChannel channel;
-	
-	@Override
-	@Before
-	public void setUp() throws Exception {
-		initEngine();
-	}
 	
 	/**
 	 * @throws java.lang.Exception

@@ -38,8 +38,8 @@ public class ByteDataFieldTest extends CloverTestCase {
 	protected ByteDataField byteField;
 
 	@Override
-	protected void setUp() {
-		initEngine();
+	protected void setUp() throws Exception {
+		super.setUp();
 
 		for (int i = 0; i < byteArray.length; i++) {
 			byteObjectArray[i] = Byte.valueOf(byteArray[i]);

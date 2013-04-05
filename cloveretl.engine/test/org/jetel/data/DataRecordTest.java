@@ -39,8 +39,8 @@ public class DataRecordTest extends CloverTestCase {
 	private DataRecord record;
 
 	@Override
-	protected void setUp() {
-		initEngine();
+	protected void setUp() throws Exception {
+		super.setUp();
 
 		// make sure that the optimized serialization of null values is turned on
 		Defaults.Record.USE_FIELDS_NULL_INDICATORS = true;

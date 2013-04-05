@@ -49,7 +49,7 @@ public class XsdMetadataTest extends CloverTestCase  {
 	
     @Override
 	protected void setUp() throws Exception {
-		initEngine();
+    	super.setUp();
 	    
         DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
         metadata = xmlReader.read(new ByteArrayInputStream(xmlMetadata.getBytes()));

@@ -19,7 +19,7 @@ public class ByteArrayTest extends CloverTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
 		
 		sBytes = "Ka\u0161na na vodu";
 		bytes = sBytes.getBytes();

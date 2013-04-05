@@ -40,7 +40,9 @@ public class CompileTest extends CloverTestCase {
 
 	@Override
 	@SuppressWarnings(value = "NP_LOAD_OF_KNOWN_NULL_VALUE")
-	protected void setUp() {
+	protected void setUp() throws Exception {
+		super.setUp();
+		
 		StringBuffer tmp = new StringBuffer();
 		tmp.append("package org.jetel.userclasses;\n");
 		tmp.append("public class test1 {\n");

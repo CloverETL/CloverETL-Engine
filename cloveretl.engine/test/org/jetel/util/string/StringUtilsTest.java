@@ -63,8 +63,8 @@ public class StringUtilsTest extends CloverTestCase {
 	private String resultString5;
 
 	@Override
-	protected void setUp() {
-		initEngine();
+	protected void setUp() throws Exception {
+		super.setUp();
 	    
 		controlString1 = "a\u0007la\n\rr\t\n";
 

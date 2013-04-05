@@ -39,11 +39,6 @@ public class DynamicRecordBuffer1Test extends CloverTestCase {
 
 	private static String bigString;
 
-	@Override
-	protected void setUp() throws Exception {
-		initEngine();
-	}
-	
 	public void testReadWriteRecord() throws IOException, InterruptedException {
 		DynamicRecordBuffer dynamicBuffer = new DynamicRecordBuffer(50000);
 		dynamicBuffer.init();

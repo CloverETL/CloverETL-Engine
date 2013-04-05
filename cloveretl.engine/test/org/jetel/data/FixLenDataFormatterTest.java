@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.jetel.data.formatter.FixLenDataFormatter;
@@ -52,8 +51,8 @@ public class FixLenDataFormatterTest extends CloverTestCase {
 	private DataRecordMetadata metadata = null;
 
 	@Override
-	protected void setUp() throws IOException, ComponentNotReadyException {
-		initEngine();
+	protected void setUp() throws Exception {
+		super.setUp();
 	    
 		FileInputStream in = null;
 		// FileInputStream in2 = null;

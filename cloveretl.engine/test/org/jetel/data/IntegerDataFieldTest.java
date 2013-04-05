@@ -39,8 +39,8 @@ public class IntegerDataFieldTest  extends CloverTestCase {
 	private IntegerDataField anIntegerDataField4 = null;
 
 	@Override
-	protected void setUp() { 
-		initEngine();
+	protected void setUp() throws Exception { 
+		super.setUp();
 		
 		DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'i',(short)3);
 		anIntegerDataField1 = new IntegerDataField(fixedFieldMeta1,5);

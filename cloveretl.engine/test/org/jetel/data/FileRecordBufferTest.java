@@ -35,7 +35,7 @@ public class FileRecordBufferTest extends CloverTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
 		
 		recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 	}
