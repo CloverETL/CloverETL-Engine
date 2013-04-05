@@ -19,11 +19,8 @@
  */
 package org.jetel.util;
 
-import java.net.URL;
-
 import org.jetel.exception.LoadClassException;
 import org.jetel.test.CloverTestCase;
-import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.compile.CompilationException;
 import org.jetel.util.compile.DynamicCompiler;
 import org.jetel.util.compile.DynamicJavaClass;
@@ -44,9 +41,6 @@ public class CompileTest extends CloverTestCase {
 	@Override
 	@SuppressWarnings(value = "NP_LOAD_OF_KNOWN_NULL_VALUE")
 	protected void setUp() {
-		URL[] urls = null;
-		ClassLoaderUtils.getClasspath(null, urls);
-
 		StringBuffer tmp = new StringBuffer();
 		tmp.append("package org.jetel.userclasses;\n");
 		tmp.append("public class test1 {\n");

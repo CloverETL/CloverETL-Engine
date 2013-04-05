@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.Iterator;
 
 import org.jetel.test.CloverTestCase;
+import org.junit.Assert;
 
 public class ByteArrayTest extends CloverTestCase {
 	
@@ -89,7 +90,7 @@ public class ByteArrayTest extends CloverTestCase {
 		assertEquals(byteArrayBytes.getByte(byteArrayBytes.count-1), bytes[byteArrayBytes.count-1]);
 		try {
 			byteArrayBytes.getByte(byteArrayBytes.count);
-			assertNotNull(null);
+			Assert.fail();
 		} catch (ArrayIndexOutOfBoundsException e) {
 		}
 	}
