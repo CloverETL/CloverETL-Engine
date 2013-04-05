@@ -67,7 +67,6 @@ public class NumberIterator implements Iterator<Integer>{
 		if (pattern.equals(ALL_NUMBERS_PATTERN)) {
 			subPattern = pattern;
 		}
-		next = first - 1;
 		next = getNext();
 	}
 	
@@ -81,7 +80,6 @@ public class NumberIterator implements Iterator<Integer>{
 		}
 		intervalIterator = null;
 		index = 0;
-		next = first - 1;
 		next = getNext();
 	}
 	
