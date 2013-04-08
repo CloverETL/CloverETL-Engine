@@ -295,7 +295,7 @@ public class HadoopReader extends Node {
 		reader.setInputPort(getInputPort(INPUT_PORT)); // for port protocol:
 														// ReadableChannelIterator
 														// reads data
-		reader.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
+		reader.setPropertyRefResolver(graph != null ? new PropertyRefResolver(graph.getGraphProperties()) : null);
 		reader.setDictionary(graph.getDictionary());
 		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
