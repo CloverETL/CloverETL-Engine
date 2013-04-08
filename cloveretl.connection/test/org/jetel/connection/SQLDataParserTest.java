@@ -1,7 +1,6 @@
 package org.jetel.connection;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 import org.jetel.connection.jdbc.DBConnectionImpl;
 import org.jetel.connection.jdbc.SQLDataParser;
@@ -9,8 +8,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.test.CloverTestCase;
@@ -26,8 +23,8 @@ public class SQLDataParserTest extends CloverTestCase {
 
 	@Override
 	@SuppressWarnings("deprecation")
-	protected void setUp() throws ComponentNotReadyException, JetelException, FileNotFoundException {
-		initEngine();
+	protected void setUp() throws Exception {
+		super.setUp();
 		
 		DataRecordMetadata metadata = null;
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
