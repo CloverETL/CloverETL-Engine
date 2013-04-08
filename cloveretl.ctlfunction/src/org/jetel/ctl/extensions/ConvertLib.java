@@ -21,6 +21,7 @@ package org.jetel.ctl.extensions;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -1059,7 +1060,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		try {
 			return new String(src, charset);
 		} catch (UnsupportedEncodingException e) {
-			throw new TransformLangExecutorRuntimeException("byte2str - can't convert \"" + src + "\" " +
+			throw new TransformLangExecutorRuntimeException("byte2str - can't convert \"" + Arrays.toString(src) + "\" " +
 					"with charset \"" + charset + ": unknown charset");
 
 		}
