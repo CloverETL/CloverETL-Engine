@@ -91,7 +91,7 @@ public class ConfigurationProblem {
             logger.warn(this.toString());
             break;
         case ERROR:
-            logger.error(this.toString());
+            logger.error(this.toDetailedString());
             break;
         }
     }
@@ -150,7 +150,12 @@ public class ConfigurationProblem {
 	@Override
     public String toString() {
 		ConfigurationException e = new ConfigurationException(message, getCauseException(), getGraphElementID(), getGraphElementName(), getAttributeName());
+		return ExceptionUtils.getMessage(e);
+    }
+
+    public String toDetailedString() {
+		ConfigurationException e = new ConfigurationException(message, getCauseException(), getGraphElementID(), getGraphElementName(), getAttributeName());
 		return ExceptionUtils.stackTraceToString(e);
     }
-	
+
 }

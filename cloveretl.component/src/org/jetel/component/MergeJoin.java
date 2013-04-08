@@ -46,6 +46,8 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
@@ -815,7 +817,7 @@ public class MergeJoin extends Node {
 					joiners[0] = tmp[0];
 				}
 				if (joiners.length < inputCnt) {
-					logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
+					status.add("Join keys aren't specified for all slave inputs - deducing missing keys", Severity.WARNING, this, Priority.NORMAL);
 					OrderedKey[][] replJoiners = new OrderedKey[inputCnt][];
 					for (int i = 0; i < joiners.length; i++) {
 						replJoiners[i] = joiners[i];
