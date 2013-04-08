@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -69,6 +70,8 @@ public class XMLExtractTest extends CloverTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
+		super.setUp();
+		
 		System.out.println("------");
 	}
 
@@ -243,7 +246,7 @@ public class XMLExtractTest extends CloverTestCase {
 		int recordNum = 0;
 		while (edge.readRecord(actualRecord) != null) {
 			assertTrue("Error in test: expected record #"+recordNum+" has more fields than the actual one;\n" +
-					"Expected record:\n" + expectedRecords[recordNum] +
+					"Expected record:\n" + Arrays.toString(expectedRecords[recordNum]) +
 					"Actual record:\n" + actualRecord, expectedRecords[recordNum].length <= actualRecord.getNumFields());
 			// fill expectedRecord from expectedRecords[recordNum]
 			int i = 0;
