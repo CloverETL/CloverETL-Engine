@@ -343,7 +343,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 		SourceIterator iterator = new SourceIterator(getInputPort(INPUT_PORT_INDEX), projectURL, fileURL);
 		iterator.setCharset(charset);
-		iterator.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
+		iterator.setPropertyRefResolver(graph != null ? new PropertyRefResolver(graph.getGraphProperties()) : null);
 		iterator.setDictionary(graph.getDictionary());
 		return iterator;
 	}
