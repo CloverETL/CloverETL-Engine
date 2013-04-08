@@ -61,7 +61,7 @@ public abstract class AbstractParserTestCase extends CloverTestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		initEngine();
+		
 		stream = new CloseableStream();
 		streams = new CloseableStream[] {
 				new CloseableStream(),
