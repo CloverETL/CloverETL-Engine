@@ -33,7 +33,8 @@ public class SimpleLookupTest extends CloverTestCase {
 		
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
+
 		TypedProperties lookupProperties = new TypedProperties();
 		lookupProperties.load(new FileInputStream("test/org/jetel/lookup/MySimpleLookup.cfg"));
 		DataRecordMetadataXMLReaderWriter reader = new DataRecordMetadataXMLReaderWriter();
