@@ -2732,6 +2732,8 @@ public class HttpConnector extends Node {
 			} else if ("ANY".equals(authenticationMethodToUse)) {
 				//one of the possible authentication method will be used
 				authMethod = "ANY";
+			} else {
+				throw new JetelRuntimeException("Unknown auth method '" + authenticationMethodToUse + "', only BASIC, DIGEST and ANY are supported.");
 			}
 			final List<String> authPrefs = new ArrayList<String>();
 			if (authMethod.equals("ANY")) {
