@@ -29,6 +29,10 @@ if( runTests ) {
 	}   
 	scenarios = testName + ".ts"
 }
+
+testDb = testName ? testName : jobGoal
+testDb += "-${versionSuffix}"
+System.setProperty("JENKINS_JOB_NAME", testDb)
  
 def startTime = new Date();
 println "======================= " + startTime
