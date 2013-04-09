@@ -128,6 +128,11 @@ public final class TLUtils {
 			return false;
 		}
 		
+		//container types have to be equal
+		if (field1.getContainerType() != field2.getContainerType()) {
+			return false;
+		}
+		
 		if (field1.getDataType() == DataFieldType.DECIMAL) {
 			
 			if (!StringUtils.equalsWithNulls(field1.getProperty(DataFieldMetadata.LENGTH_ATTR),
