@@ -32,7 +32,7 @@ if( runTests ) {
 
 testDb = testName ? testName : jobGoal
 testDb += "-${versionSuffix}"
-System.setProperty("JENKINS_JOB_NAME", testDb)
+System.setProperty("jenkins.job.name", testDb)
  
 def startTime = new Date();
 println "======================= " + startTime
