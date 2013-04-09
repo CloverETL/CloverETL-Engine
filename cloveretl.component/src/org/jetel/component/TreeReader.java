@@ -192,7 +192,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	private AutoFilling autoFilling = new AutoFilling();
 	private int[] sourcePortRecordCounters; // counters of records written to particular ports per source
-	private volatile Throwable throwableException;
 
 	private boolean errorPortLogging;
 	private DataRecord errorLogRecord;
@@ -681,6 +680,10 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		MappingContext rootContext;
 
 		private String charset;
+		/*
+		 * Pointer to exception thrown in different thread
+		 */
+		volatile Throwable failure;
 
 		public StreamConvertingXPathProcessor(TreeReaderParserProvider parserProvider, XPathPushParser pushParser,
 				MappingContext rootContext, String charset) {
@@ -751,77 +754,80 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 		
 		private void checkThrownException() throws Exception {
-			if (throwableException != null) {
-				if (throwableException instanceof AbortParsingException) {
-					throw (AbortParsingException) throwableException;
-				} else {
-					throw new Exception(throwableException);
+			try {
+				if (failure != null) {
+					if (failure instanceof AbortParsingException) {
+						throw (AbortParsingException) failure;
+					} else {
+						throw new Exception(failure);
+					}
+				}
+			} finally {
+				// clear exception for case this instance would be re-used 
+				failure = null;
+			}
+		}
+
+		private class PipeTransformer extends Thread {
+
+			private XMLReader treeXmlReader;
+			private Transformer transformer;
+			private Writer pipedWriter;
+			private InputSource source;
+
+			public PipeTransformer(XMLReader treeXmlReader) {
+				try {
+					this.transformer = TransformerFactory.newInstance().newTransformer();
+					this.treeXmlReader = treeXmlReader;
+				} catch (TransformerConfigurationException e) {
+					throw new JetelRuntimeException("Failed to instantiate transformer", e);
+				} catch (TransformerFactoryConfigurationError e) {
+					throw new JetelRuntimeException("Failed to instantiate transformer", e);
 				}
 			}
-		}
 
-	}
+			@Override
+			public void run() {
+				javax.xml.transform.Result result = new StreamResult(pipedWriter);
+				try {
+					transformer.transform(new SAXSource(treeXmlReader, source), result);
+					pipedWriter.close();
+				} catch (Throwable t) {
+					StreamConvertingXPathProcessor.this.failure = t;
+				}
+			}
 
-	private class PipeTransformer extends Thread {
-
-		private XMLReader treeXmlReader;
-		private Transformer transformer;
-		private Writer pipedWriter;
-		private InputSource source;
-
-		public PipeTransformer(XMLReader treeXmlReader) {
-			try {
-				this.transformer = TransformerFactory.newInstance().newTransformer();
-				this.treeXmlReader = treeXmlReader;
-			} catch (TransformerConfigurationException e) {
-				throw new JetelRuntimeException("Failed to instantiate transformer", e);
-			} catch (TransformerFactoryConfigurationError e) {
-				throw new JetelRuntimeException("Failed to instantiate transformer", e);
+			public void setInputOutput(Writer pipedWriter, InputSource source) {
+				this.pipedWriter = pipedWriter;
+				this.source = source;
 			}
 		}
+		
+		private class PipeParser extends Thread {
 
-		@Override
-		public void run() {
-			javax.xml.transform.Result result = new StreamResult(pipedWriter);
-			try {
-				transformer.transform(new SAXSource(treeXmlReader, source), result);
-				pipedWriter.close();
-			} catch (Throwable t) {
-				throwableException = t;
+			private XPathPushParser pushParser;
+			private MappingContext rootContext;
+
+			private Reader pipedReader;
+
+			public PipeParser(XPathPushParser pushParser, MappingContext rootContext) {
+				this.pushParser = pushParser;
+				this.rootContext = rootContext;
+			}
+
+			@Override
+			public void run() {
+				try {
+					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)));
+				} catch (Throwable t) {
+					StreamConvertingXPathProcessor.this.failure = t;
+				}
+			}
+
+			private void setInput(Reader pipedReader) {
+				this.pipedReader = pipedReader;
 			}
 		}
-
-		public void setInputOutput(Writer pipedWriter, InputSource source) {
-			this.pipedWriter = pipedWriter;
-			this.source = source;
-		}
-	}
-
-	private class PipeParser extends Thread {
-
-		private XPathPushParser pushParser;
-		private MappingContext rootContext;
-
-		private Reader pipedReader;
-
-		public PipeParser(XPathPushParser pushParser, MappingContext rootContext) {
-			this.pushParser = pushParser;
-			this.rootContext = rootContext;
-		}
-
-		@Override
-		public void run() {
-			try {
-				pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)));
-			} catch (Throwable t) {
-				throwableException = t;
-			}
-		}
-
-		private void setInput(Reader pipedReader) {
-			this.pipedReader = pipedReader;
-		}
-
 	}
 
 	
