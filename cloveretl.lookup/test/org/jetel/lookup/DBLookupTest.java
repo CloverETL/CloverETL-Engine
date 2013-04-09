@@ -1,7 +1,5 @@
 package org.jetel.lookup;
 
-import java.io.FileNotFoundException;
-import java.sql.SQLException;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -30,10 +28,9 @@ public class DBLookupTest extends CloverTestCase {
 	private RecordKey recordKey;
 
 	@Override
-	protected void setUp() throws ComponentNotReadyException, FileNotFoundException, SQLException, JetelException {
-		initEngine();
+	protected void setUp() throws Exception {
+		super.setUp();
 		
-	    
 		DBConnection conn = new DBConnectionImpl("conn", "../cloveretl.connection/test/org/jetel/connection/koule_postgre.cfg");
 		conn.init();
 		sqlConnection = conn.getConnection(conn.getId());

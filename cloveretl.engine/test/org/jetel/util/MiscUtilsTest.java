@@ -30,11 +30,6 @@ import org.jetel.test.CloverTestCase;
  */
 public class MiscUtilsTest extends CloverTestCase {
 	
-	@Override
-	protected void setUp() throws Exception {
-		initEngine();
-	}
-
 	public void testLocale() {
 		Locale csLocale = MiscUtils.createLocale("cs");
 		assertEquals(csLocale, new Locale("cs"));

@@ -20,7 +20,7 @@ public class DecimalDataFieldTest extends CloverTestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
 	    
 		fieldMetadata = new DataFieldMetadata("field1",	DataFieldMetadata.DECIMAL_FIELD,";");  
 	}

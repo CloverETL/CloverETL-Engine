@@ -265,6 +265,8 @@ public class EngineInitializer {
 			logger.warn("Graph configuration is invalid.");
 			throw new ComponentNotReadyException(graph, "Graph configuration is invalid.", status.toException());
 		} else {
+			//print out warnings
+			status.log();
 			logger.info("Graph configuration is valid.");
 		}
 	}

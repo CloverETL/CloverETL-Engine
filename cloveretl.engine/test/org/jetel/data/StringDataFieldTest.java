@@ -37,7 +37,9 @@ public class StringDataFieldTest  extends CloverTestCase {
 	
 
 @Override
-protected void setUp() { 
+protected void setUp() throws Exception { 
+	super.setUp();
+	
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'S',(short)3);
 	fixedFieldMeta1.setDefaultValue("abc");
 	aStringDataField1 = new StringDataField(fixedFieldMeta1,"boo");

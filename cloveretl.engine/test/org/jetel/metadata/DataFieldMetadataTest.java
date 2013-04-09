@@ -33,11 +33,6 @@ import org.jetel.test.CloverTestCase;
  */
 public class DataFieldMetadataTest extends CloverTestCase {
 
-	@Override
-	protected void setUp() { 
-		initEngine();
-	}
-	
 	public void testGetFormatStr() {
 		DataFieldMetadata fieldMetadata = new DataFieldMetadata("field", ";");
 		

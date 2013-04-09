@@ -39,11 +39,6 @@ import org.jetel.test.CloverTestCase;
  */
 public class TransformFactoryTest extends CloverTestCase {
 
-	@Override
-	protected void setUp() throws Exception {
-		initEngine();
-	}
-	
 	private TransformationGraph getGraph() {
 		return new TransformationGraph();
 	}

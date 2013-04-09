@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -58,7 +59,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -71,9 +71,16 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpTrace;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.utils.URIUtils;
@@ -157,7 +164,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"HTTP_CONNECTOR"</td></tr>
  *  <tr><td><b>url</b></td><td>URL for http request. Place holders can be used when input port is connected. Place holder format is *{}</td>
  *  <tr><td><b>urlInputField</b></td><td>URL for http request from metadata field. Place holders can be used.</td>
- *  <tr><td><b>requestMethod</b></td><td>Http request method. GET and POST are implemented. (values: POST/GET)</td>
+ *  <tr><td><b>requestMethod</b></td><td>Http request method. Can be DELETE, GET, HEAD, OPTIONS, PATCH, POST, PUT, TRACE.</td>
  *  <tr><td><b>addInputFieldsAsParametres</b></td><td>Specifies whether parameters are added to the URL. (values: true/false)</td>
  *  <tr><td><b>addInputFieldsAsParametresTo</b></td><td>Specifies whether input fields should be add to the query string or method body. 
  *  Parameters can be added to the method body in case that POST method is used. (values: Query/Body)</td>
@@ -226,25 +233,26 @@ public class HttpConnector extends Node {
     }
     
     /**
-     * Valid authentication methods.
+     * Supported HTTP request methods.
      */
-    private static final Set<String> SUPPORTED_REQUEST_METHODS = new HashSet<String>();
+    private static final Set<String> ENTITY_ENCLOSING_REQUEST_METHODS = new HashSet<String>();
     static {
-    	SUPPORTED_REQUEST_METHODS.add("GET");
-    	SUPPORTED_REQUEST_METHODS.add("POST");
+    	ENTITY_ENCLOSING_REQUEST_METHODS.add(HttpPatch.METHOD_NAME);
+    	ENTITY_ENCLOSING_REQUEST_METHODS.add(HttpPost.METHOD_NAME);
+    	ENTITY_ENCLOSING_REQUEST_METHODS.add(HttpPut.METHOD_NAME);
     }
     
     /**
-     * Value representing the GET method of performing HTTP request.
+     * Supported HTTP request methods.
      */
-	private static final String GET = "GET";
-
-	/**
-     * Value representing the POST method of performing HTTP request.
-     */
-	private static final String POST = "POST";
-
-
+    private static final Set<String> PLAIN_REQUEST_METHODS = new HashSet<String>();
+    static {
+    	PLAIN_REQUEST_METHODS.add(HttpDelete.METHOD_NAME);
+    	PLAIN_REQUEST_METHODS.add(HttpGet.METHOD_NAME);
+    	PLAIN_REQUEST_METHODS.add(HttpHead.METHOD_NAME);
+    	PLAIN_REQUEST_METHODS.add(HttpOptions.METHOD_NAME);
+    	PLAIN_REQUEST_METHODS.add(HttpTrace.METHOD_NAME);
+    }
 	
 	/**
 	 * The name of an XML attribute representing target URL.
@@ -1728,9 +1736,6 @@ public class HttpConnector extends Node {
 	    errorOutputMappingTransformation.init(XML_ERROR_OUTPUT_MAPPING_ATTRIBUTE);
 	}	
 	
-	/**
-	 * 
-	 */
 	private void initExecutionParametersFromComponentAttributes() throws ComponentNotReadyException {
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_URL_NAME, rawUrl);
 //		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_URL_FIELD_NAME, urlInputField);
@@ -2174,7 +2179,7 @@ public class HttpConnector extends Node {
 
 		/** base properties */
 		httpConnector.setUrl(xattribs.getString(XML_URL_ATTRIBUTE, null));
-		httpConnector.setRequestMethod(xattribs.getString(XML_REQUEST_METHOD_ATTRIBUTE, GET));
+		httpConnector.setRequestMethod(xattribs.getString(XML_REQUEST_METHOD_ATTRIBUTE, HttpGet.METHOD_NAME));
 		httpConnector.setInputFileUrl(xattribs.getStringEx(XML_INPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 		httpConnector.setOutputFileUrl(xattribs.getStringEx(XML_OUTPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 		httpConnector.setAppendOutput(xattribs.getBoolean(XML_APPEND_OUTPUT_ATTRIBUTE, DEFAULT_APPEND_OUTPUT));
@@ -2278,7 +2283,7 @@ public class HttpConnector extends Node {
 		}
 		 
 		// Unknown request method
-		if (!SUPPORTED_REQUEST_METHODS.contains(requestMethod)) {
+		if (!PLAIN_REQUEST_METHODS.contains(requestMethod) && !ENTITY_ENCLOSING_REQUEST_METHODS.contains(requestMethod)) {
 			status.add(new ConfigurationProblem("Unsupported request method: " + requestMethod, Severity.ERROR, this, Priority.NORMAL));
 		}
 		
@@ -2317,8 +2322,8 @@ public class HttpConnector extends Node {
 							Severity.WARNING, this, Priority.NORMAL));
 				}
 			} else {
-				if (!StringUtils.isEmpty(multipartEntities) && !requestMethod.equals(POST)) {
-					status.add(new ConfigurationProblem("Multipart entities can only be used with a POST request method.", 
+				if (!StringUtils.isEmpty(multipartEntities) && !ENTITY_ENCLOSING_REQUEST_METHODS.contains(requestMethod)) {
+					status.add(new ConfigurationProblem("Multipart entities cannot be used with a " + requestMethod + " request method.", 
 							Severity.WARNING, this, Priority.NORMAL));
 				}
 			}
@@ -2357,14 +2362,14 @@ public class HttpConnector extends Node {
 				}
 			}
 			
-			//test whether is specified where the input fields should be added (query or body)
+			//test whether it is specified where the input fields should be added (query or body)
 			if (addInputFieldsAsParameters) {
 				if (StringUtils.isEmpty(addInputFieldsAsParametersTo)) {
-					if (requestMethod.equals(POST)) {
+					if (ENTITY_ENCLOSING_REQUEST_METHODS.contains(requestMethod)) {
 						status.add(new ConfigurationProblem("Add input fields as parameters must be specified.", Severity.ERROR, this, Priority.NORMAL));
 					}
-				} else if (addInputFieldsAsParametersTo.equals("BODY") && requestMethod.equals(GET)) {
-					status.add(new ConfigurationProblem("Cannot add fields as parameters to body of HTTP request when GET method is used.", Severity.ERROR, this, Priority.NORMAL));
+				} else if (addInputFieldsAsParametersTo.equals("BODY") && PLAIN_REQUEST_METHODS.contains(requestMethod)) {
+					status.add(new ConfigurationProblem("Cannot add fields as parameters to body of HTTP request when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL));
 				}
 			}
 		}
@@ -2423,18 +2428,18 @@ public class HttpConnector extends Node {
 			status.add(new ConfigurationProblem("Both username and password must be entered or none of them.", Severity.ERROR, this, Priority.NORMAL));
 		}
 		
-		// check restrictions of the GET method
-		if (requestMethod.equals(GET)) {
+		// check restrictions of the GET-like methods
+		if (PLAIN_REQUEST_METHODS.contains(requestMethod)) {
 			// no content allowed in GET request (actually, it is not invalid for GET request to contain content according to standard, but the HTTPClient library does not support it 
 			// as it is not used in practice)
 			if (!StringUtils.isEmpty(requestContent)) {
-				status.add(new ConfigurationProblem("Request content not allowed when GET method is used.", Severity.ERROR, this, Priority.NORMAL, XML_REQUEST_CONTENT_ATTRIBUTE));
+				status.add(new ConfigurationProblem("Request content not allowed when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL, XML_REQUEST_CONTENT_ATTRIBUTE));
 			}
 			if (!StringUtils.isEmpty(inputFieldName)) {
-				status.add(new ConfigurationProblem("Input field not allowed when GET method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_PORT_FIELD_NAME));
+				status.add(new ConfigurationProblem("Input field not allowed when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_PORT_FIELD_NAME));
 			}
 			if (!StringUtils.isEmpty(inputFileUrl)) {
-				status.add(new ConfigurationProblem("Input file URL not allowed when GET method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_FILEURL_ATTRIBUTE));
+				status.add(new ConfigurationProblem("Input file URL not allowed when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL, XML_INPUT_FILEURL_ATTRIBUTE));
 			}
 		}
 		
@@ -2481,20 +2486,19 @@ public class HttpConnector extends Node {
 		}
 	}
 
-	/** Prepares a POST method for given configuration.
+	/** Prepares a POST-like (entity enclosing) method for given configuration.
 	 * 
 	 * @param configuration
-	 * @return a POST method for given configuration.
+	 * @return a POST-like method for given configuration.
 	 * 
 	 * @throws UnsupportedEncodingException
 	 */
-	private HttpPost preparePostMethod(HTTPRequestConfiguration configuration) throws UnsupportedEncodingException {
-		//request method is post
+	private HttpEntityEnclosingRequestBase prepareEntityEnclosingMethod(String method, HTTPRequestConfiguration configuration) throws UnsupportedEncodingException {
 		if( logger.isDebugEnabled() ){
-			logger.debug("Creating POST request to " + configuration.getTarget());
+			logger.debug("Creating " + method + " request to " + configuration.getTarget());
 		}
 		
-		HttpPost postMethod = new HttpPost(configuration.getTarget());
+		HttpEntityEnclosingRequestBase httpMethod = new HttpEntityEnclosingRequest(method, configuration.getTarget());
 		
 		//set multipart request entity if any
 		if (!configuration.getMultipartEntities().isEmpty()) {
@@ -2503,7 +2507,7 @@ public class HttpConnector extends Node {
 				entity.addPart(stringPart.name, stringPart.value);
 			}
 			
-			postMethod.setEntity(entity);
+			httpMethod.setEntity(entity);
 		}
 		
 		
@@ -2513,52 +2517,86 @@ public class HttpConnector extends Node {
 			//FIXME: this replaces the multipart entity set in the previous step
 			//we leave it as-is to make the behavior compatible with older version using httpClient 3.x
 			//which also cleared the previously set multipart entity.
-			postMethod.setEntity(new UrlEncodedFormEntity(Arrays.asList(buildNameValuePairs(configuration.getParameters())), charsetToUse));
+			httpMethod.setEntity(new UrlEncodedFormEntity(Arrays.asList(buildNameValuePairs(configuration.getParameters())), charsetToUse));
 			
 		} else { // if (addInputFieldsAsParametersTo.equals("QUERY")) {
-			String preparedQuery = buildQueryString(configuration.getParameters());
-			
-			if (!StringUtils.isEmpty(preparedQuery)) {
-				addQuery(preparedQuery, postMethod);
-			}
+			addQuery(configuration, httpMethod);
 		}
 		
 		// process content
 		if (!StringUtils.isEmpty(configuration.getContent())) {
 			StringEntity entity = new StringEntity(configuration.getContent(), charsetToUse == null? Defaults.DataParser.DEFAULT_CHARSET_DECODER: charsetToUse);
-			postMethod.setEntity(entity);
+			httpMethod.setEntity(entity);
 		}
 		
-		return postMethod;
+		return httpMethod;
 	}
-	
-	/** Prepares a GET method for given configuration.
+
+	/** Prepares a GET-like method for given configuration.
 	 * 
 	 * @param configuration
-	 * @return a GET method for given configuration.
+	 * @return a GET-like method for given configuration.
 	 * 
 	 * @throws UnsupportedEncodingException
 	 */
-	private HttpGet prepareGetMethod(HTTPRequestConfiguration configuration) throws UnsupportedEncodingException {
-		// request method is post
+	private HttpRequestBase preparePlainMethod(final String method, HTTPRequestConfiguration configuration) throws UnsupportedEncodingException {
 		if( logger.isDebugEnabled() ) {
-			logger.debug("Creating GET request to " + configuration.getTarget());
+			logger.debug("Creating " + method + " request to " + configuration.getTarget());
 		}
 		
-		HttpGet getMethod = new HttpGet(configuration.getTarget());
-
+		HttpRequestBase httpMethod = new HttpPlainRequest(method, configuration.getTarget());
+		
+		addQuery(configuration, httpMethod);
+		
+		return httpMethod;
+	}
+	
+	private void addQuery(HTTPRequestConfiguration configuration, HttpRequestBase httpMethod) throws UnsupportedEncodingException {
 		// process parameters
 		String preparedQuery = buildQueryString(configuration.getParameters());
 		
 		//set query string if any
 		if (!StringUtils.isEmpty(preparedQuery)) {
-			addQuery(preparedQuery, getMethod);
+			addQuery(preparedQuery, httpMethod);
 		}
-
-		
-		return getMethod;
 	}
-
+	
+	/** Serves as generic replacement of all direct non-abstract child classes of Apache HttpRequestBase (like HttpGet) */
+	private static class HttpPlainRequest extends HttpRequestBase {
+		
+		private final String method;
+		
+		private HttpPlainRequest(String method, String uri) {
+			super();
+			this.method = method;
+			setURI(URI.create(uri));
+		}
+		
+		@Override
+		public String getMethod() {
+			return method;
+		}
+		
+	}
+	
+	/** Serves as generic replacement of all child classes of Apache HttpEntityEnclosingRequestBase (like HttpPost) */
+	private static class HttpEntityEnclosingRequest extends HttpEntityEnclosingRequestBase {
+		
+		private final String method;
+		
+		private HttpEntityEnclosingRequest(String method, String uri) {
+			super();
+			this.method = method;
+			setURI(URI.create(uri));
+		}
+		
+		@Override
+		public String getMethod() {
+			return method;
+		}
+		
+	}
+	
 	/** Prepares a HTTP method (based on the given configuration) to be used for a request.
 	 * 
 	 * @param configuration
@@ -2569,12 +2607,16 @@ public class HttpConnector extends Node {
 	private HttpRequestBase prepareMethod(HTTPRequestConfiguration configuration) throws UnsupportedEncodingException, ComponentNotReadyException {
 		HttpRequestBase method = null;
 		
+		if (requestMethodToUse != null) {
+			requestMethodToUse = requestMethodToUse.toUpperCase(Locale.ENGLISH);
+		}
+		
 		// configure the request method
-		if (POST.equals(requestMethodToUse)) {
-			method = preparePostMethod(configuration);
+		if (PLAIN_REQUEST_METHODS.contains(requestMethodToUse)) {
+			method = preparePlainMethod(requestMethodToUse, configuration);
 			
-		} else if (GET.equals(requestMethodToUse)) {
-			method = prepareGetMethod(configuration);
+		} else if (ENTITY_ENCLOSING_REQUEST_METHODS.contains(requestMethodToUse)) {
+			method = prepareEntityEnclosingMethod(requestMethodToUse, configuration);
 			
 		} else {
 			//another request method than get or post
@@ -2732,6 +2774,8 @@ public class HttpConnector extends Node {
 			} else if ("ANY".equals(authenticationMethodToUse)) {
 				//one of the possible authentication method will be used
 				authMethod = "ANY";
+			} else {
+				throw new JetelRuntimeException("Unknown auth method '" + authenticationMethodToUse + "', only BASIC, DIGEST and ANY are supported.");
 			}
 			final List<String> authPrefs = new ArrayList<String>();
 			if (authMethod.equals("ANY")) {

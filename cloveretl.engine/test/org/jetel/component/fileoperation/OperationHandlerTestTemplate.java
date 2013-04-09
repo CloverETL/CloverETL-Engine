@@ -967,7 +967,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		uri = relativeURI("eclipse/eclipse-3.6.1-delta-pack.zi");
 		assertFalse(String.format("%s exists", uri), manager.exists(uri));
 		deleteResult = manager.delete(uri);
-		assertFalse(String.format("Delete non-existing files must not succeed", uri), deleteResult.success());
+		assertFalse(String.format("Delete non-existing files must not succeed (%s)", uri), deleteResult.success());
 		assertEquals(1, deleteResult.totalCount());
 		assertEquals(0, deleteResult.successCount());
 		assertEquals(1, deleteResult.failCount());
@@ -1003,7 +1003,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 		if (manager.isFile(relativeURI("'wildcardsDir/*.tmp'"))) {
 			assertTrue(String.format("%s does not exist", uri), manager.isFile(relativeURI("wildcardsDir/a.tmp")));
 			assertTrue(String.format("Delete %s failed", uri), manager.delete(relativeURI("'wildcardsDir/*.tmp'")).success());
-			assertTrue(String.format("Wrong file deleted", uri), manager.isFile(relativeURI("wildcardsDir/a.tmp")));
+			assertTrue(String.format("Wrong file deleted (%s)", uri), manager.isFile(relativeURI("wildcardsDir/a.tmp")));
 		} else {
 			System.err.println("Could not test deleting 'wildcardsDir/*.tmp'");
 		}

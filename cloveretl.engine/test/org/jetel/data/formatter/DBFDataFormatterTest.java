@@ -31,7 +31,8 @@ public class DBFDataFormatterTest extends CloverTestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
+		
 		oldBufferSize = Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE;
 		metadata = new DataRecordMetadata("meta", DataRecordMetadata.FIXEDLEN_RECORD);
 		metadata.addField(new DataFieldMetadata("Field1", DataFieldMetadata.STRING_FIELD, (short)5));

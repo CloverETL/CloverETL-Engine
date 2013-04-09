@@ -11,7 +11,8 @@ public class NullRecordTest extends CloverTestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
+		
 		metadata = new DataRecordMetadata("meta");
 		metadata.addField(new DataFieldMetadata("int_field", DataFieldMetadata.INTEGER_FIELD,";"));
 		metadata.addField(new DataFieldMetadata("string_field", DataFieldMetadata.STRING_FIELD,";"));

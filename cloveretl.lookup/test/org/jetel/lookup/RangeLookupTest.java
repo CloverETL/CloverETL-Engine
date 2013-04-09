@@ -32,16 +32,6 @@ public class RangeLookupTest extends CloverTestCase {
 	DataRecord record;
 	Random random = new Random();
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see junit.framework.TestCase#setUp()
-	 */
-	@Override
-	protected void setUp() throws Exception {
-		initEngine();	    
-	}
-
 	public void test_getDataRecord() throws IOException, ComponentNotReadyException {
 		lookupMetadata = new DataRecordMetadata("lookupTest", DataRecordMetadata.DELIMITED_RECORD);
 		lookupMetadata.addField(new DataFieldMetadata("name", DataFieldMetadata.STRING_FIELD, ";"));
@@ -743,10 +733,12 @@ public class RangeLookupTest extends CloverTestCase {
 		for (int i = 1; i < previous.getNumFields() - 1; i += 2) {
 			startComparison = previous.getField(i).compareTo(following.getField(i));
 			endComparison = previous.getField(i + 1).compareTo(following.getField(i + 1));
-			if (endComparison == -1)
+			if (endComparison < 0) {
 				return true;
-			if (endComparison == 0 && (startComparison == 0 || startComparison == 1))
+			}
+			if (endComparison == 0 && startComparison >= 0) {
 				return true;
+			}
 		}
 		return false;
 	}

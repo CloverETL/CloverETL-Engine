@@ -99,7 +99,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 				fieldSizes[i] = DBFTypes.cloverSize2dbf(_metadata.getField(i));
 				fieldTypesDBF[i] = DBFTypes.cloverType2dbf(_metadata.getField(i).getDataType());
 				if (_metadata.getField(i).getSize() > DBFAnalyzer.DBF_FIELD_MAX_LENGTH) {
-					throw new ComponentNotReadyException(String.format("Field '%s', size %i exceeds the maximum allowed size/length for DBase field (%i)", _metadata.getField(i).getName(), _metadata.getField(i).getSize(), DBFAnalyzer.DBF_FIELD_MAX_LENGTH));
+					throw new ComponentNotReadyException(String.format("Field '%s', size %d exceeds the maximum allowed size/length for DBase field (%d)", _metadata.getField(i).getName(), _metadata.getField(i).getSize(), DBFAnalyzer.DBF_FIELD_MAX_LENGTH));
 				}
 			}
 		} catch (Exception ex) {
@@ -293,7 +293,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 			final int expectedHeaderSize = (DBFAnalyzer.DBF_HEADER_SIZE_BASIC + (getCountOfNotExcludedFields(metadata) * DBFAnalyzer.DBF_FIELD_DEF_SIZE) + 1);
 			final int expectedRecSize = (getRecordSizeConverted(metadata) + 1);
 			if ((headerSize != expectedHeaderSize) || (recSize != expectedRecSize)) {
-				throw new IOException(String.format("Existing target DBase/DBF file does not correspond to provided CloverETL metadata [rec.size DBF/CloverETL  %i/%i bytes].", recSize, expectedRecSize));
+				throw new IOException(String.format("Existing target DBase/DBF file does not correspond to provided CloverETL metadata [rec.size DBF/CloverETL  %d/%d bytes].", recSize, expectedRecSize));
 			}
 			recordCounter = recCount;
 			writer.position(curPosInFile - 1); // removing EOF flag in file, so following write starts after the current

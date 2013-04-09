@@ -103,8 +103,8 @@ public class AggregateMappingParser {
 	private List<FieldMapping> fieldMapping = new ArrayList<FieldMapping>();
 	private List<ConstantMapping> constantMapping = new ArrayList<ConstantMapping>();
 	
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
-	private static final DateFormat DATETIME_FORMAT = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
+	private final DateFormat DATE_FORMAT = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
+	private final DateFormat DATETIME_FORMAT = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
 	
 	/**
 	 * 
@@ -197,7 +197,7 @@ public class AggregateMappingParser {
 	 * @return value of the constant.
 	 * @throws AggregationException if the constant format is invalid.
 	 */
-	public static Object getConstantValue(String text) throws AggregationException {
+	public Object getConstantValue(String text) throws AggregationException {
 		String value = text.trim();
 
 		if (Pattern.compile("^" + MAPPING_STRING_REGEX + "$").matcher(value).matches()) {
@@ -489,7 +489,7 @@ public class AggregateMappingParser {
 	 * @return date value of the constant.
 	 * @throws AggregationException
 	 */
-	private static Date createDate(String constant) throws AggregationException {
+	private Date createDate(String constant) throws AggregationException {
 		try {
 			return DATE_FORMAT.parse(constant);
 		} catch (ParseException e) {
@@ -521,7 +521,7 @@ public class AggregateMappingParser {
 	 * @return datetime value of the constant.
 	 * @throws AggregationException
 	 */
-	private static Date createDatetime(String constant) throws AggregationException {
+	private Date createDatetime(String constant) throws AggregationException {
 		try {
 			return DATETIME_FORMAT.parse(constant);
 		} catch (ParseException e) {

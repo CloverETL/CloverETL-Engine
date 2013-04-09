@@ -74,8 +74,8 @@ public class InterpreterTest extends CloverTestCase {
 	static byte[] BYTEARRAY_INITVALUE = new byte[] {0x41,0x42,0x43,0x44,0x45,0x46,0x47,0x48};
 	
 	@Override
-	protected void setUp() {
-		initEngine();
+	protected void setUp() throws Exception {
+		super.setUp();
 	    
         graph=new TransformationGraph();
         

@@ -412,7 +412,7 @@ public class XMLExtract extends Node {
 
 		this.readableChannelIterator = new ReadableChannelIterator(getInputPort(INPUT_PORT), projectURL, inputFile);
 		this.readableChannelIterator.setCharset(charset);
-		this.readableChannelIterator.setPropertyRefResolver(new PropertyRefResolver(graph.getGraphProperties()));
+		this.readableChannelIterator.setPropertyRefResolver(graph != null ? new PropertyRefResolver(graph.getGraphProperties()) : null);
 		this.readableChannelIterator.setDictionary(graph.getDictionary());
 	}
 

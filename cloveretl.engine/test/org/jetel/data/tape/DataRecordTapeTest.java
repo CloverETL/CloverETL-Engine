@@ -40,8 +40,8 @@ public class DataRecordTapeTest  extends CloverTestCase {
 	
 
 @Override
-protected void setUp() { 
-	initEngine();
+protected void setUp() throws Exception { 
+	super.setUp();
     
     DataRecordMetadata metadata=new DataRecordMetadata("test_record");
     

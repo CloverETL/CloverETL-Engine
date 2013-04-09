@@ -203,7 +203,7 @@ public class TLNumericValue<T extends Numeric> extends TLValue implements Numeri
 
 	@Override
 	public int compareTo(Numeric value) {
-		return value.compareTo(value);
+		return this.value.compareTo(value);
 	}
 
 	@Override

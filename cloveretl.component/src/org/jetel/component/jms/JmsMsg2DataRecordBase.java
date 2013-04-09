@@ -22,7 +22,6 @@ import java.util.Properties;
 
 import org.jetel.component.AbstractDataTransform;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -33,7 +32,6 @@ import org.jetel.metadata.DataRecordMetadata;
 public abstract class JmsMsg2DataRecordBase extends AbstractDataTransform implements JmsMsg2DataRecord {
 
 	protected String errMsg;
-	protected TransformationGraph graph;
 
 	@Override
 	public void init(DataRecordMetadata metadata, Properties props) throws ComponentNotReadyException {

@@ -611,6 +611,8 @@ public class DynamicLib extends TLFunctionLibrary {
 				String name = stack.popString();
 				DataRecord record = stack.popRecord();
 				field = record.getField(name);
+			} else {
+				throw new IllegalArgumentException("Field can be referenced either by index[integer] or by name[string], data type '" + context.getParams()[1].toString() + "' is not supported.");
 			}
 			stack.push(field.isNull());
 		}

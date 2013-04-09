@@ -37,8 +37,8 @@ public class EdgeTest extends CloverTestCase {
 	}
 	
 	@Override
-	protected void setUp() { 
-		initEngine();
+	protected void setUp() throws Exception { 
+		super.setUp();
 	    
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));

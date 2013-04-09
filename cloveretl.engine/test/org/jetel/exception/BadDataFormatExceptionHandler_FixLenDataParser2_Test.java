@@ -21,7 +21,6 @@ package org.jetel.exception;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -44,8 +43,8 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends Clover
 	private DataRecordMetadata metadata = null;
 	
 	@Override
-	protected void setUp() throws FileNotFoundException { 
-		initEngine();
+	protected void setUp() throws Exception { 
+		super.setUp();
 		
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			

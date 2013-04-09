@@ -45,8 +45,8 @@ private FixLenDataParser aParser3 = null;
 private DataRecord record;
 	
 @Override
-protected void setUp() { 
-	initEngine();
+protected void setUp() throws Exception { 
+	super.setUp();
     
 //	FileInputStream in = null;
 	FileInputStream in2 = null;

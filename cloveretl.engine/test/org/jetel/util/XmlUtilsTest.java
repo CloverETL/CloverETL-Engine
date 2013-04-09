@@ -32,11 +32,6 @@ import org.w3c.dom.Element;
  */
 public class XmlUtilsTest extends CloverTestCase {
 	
-	@Override
-	protected void setUp() throws Exception {
-		initEngine();
-	}
-	
 	private static void checkValid(String name) {
 		assertTrue(name, XmlUtils.isValidElementName(name));
 	}

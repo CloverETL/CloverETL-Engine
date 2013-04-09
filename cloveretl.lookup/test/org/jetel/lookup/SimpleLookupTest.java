@@ -33,7 +33,8 @@ public class SimpleLookupTest extends CloverTestCase {
 		
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
+
 		TypedProperties lookupProperties = new TypedProperties();
 		lookupProperties.load(new FileInputStream("test/org/jetel/lookup/MySimpleLookup.cfg"));
 		DataRecordMetadataXMLReaderWriter reader = new DataRecordMetadataXMLReaderWriter();
@@ -66,14 +67,18 @@ public class SimpleLookupTest extends CloverTestCase {
 
 	public void testLookup() throws Exception {
 		LookingUp l1 = new LookingUp(lookup, inRecord);
-		l1.run();
 		LookingUp l2 = new LookingUp(lookup2, inRecord2);
-		l2.run();
 		LookingUp l3 = new LookingUp(lookup3, inRecord3);
-		l3.run();
+		l1.start();
+		l2.start();
+		l3.start();
 		l1.join();
 		l2.join();
 		l3.join();
+		
+		assertTrue(l1.isFinishedOk());
+		assertTrue(l2.isFinishedOk());
+		assertTrue(l3.isFinishedOk());
 	}
 	
 	private final static int[] id = {11, 12, 17, 18, 19,13,8333};
@@ -83,8 +88,9 @@ public class SimpleLookupTest extends CloverTestCase {
 		private Lookup lookup;
 		private Random r;
 		private DataRecord inRecord;
+		private boolean finishedOk = false;
 		
-		private final static int ITERATION_NUMBER = 1000;
+		private final static int ITERATION_NUMBER = 10000;
 		
 		LookingUp(Lookup lookup, DataRecord inPut){
 			this.lookup = lookup;
@@ -122,6 +128,11 @@ public class SimpleLookupTest extends CloverTestCase {
 				}
 				
 			}
+			finishedOk = true;
+		}
+		
+		public boolean isFinishedOk() {
+			return finishedOk;
 		}
 	}}
 
