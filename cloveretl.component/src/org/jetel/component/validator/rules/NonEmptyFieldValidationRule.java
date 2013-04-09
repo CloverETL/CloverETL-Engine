@@ -131,9 +131,9 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 		}
 		// Error reporting
 		if(goal.getValue() == GOALS.NONEMPTY) {
-			raiseError(ea, ERROR_FIELD_EMPTY, "The target field is empty, expected to be nonempty.", resolvedTarget, inputString);
+			raiseError(ea, ERROR_FIELD_EMPTY, "The target field is empty, expected to be nonempty.", graphWrapper.getNodePath(this), resolvedTarget, inputString);
 		} else {
-			raiseError(ea, ERROR_FIELD_NONEMPTY, "The target field is nonempty, expected to be empty.", resolvedTarget, inputString);
+			raiseError(ea, ERROR_FIELD_NONEMPTY, "The target field is nonempty, expected to be empty.", graphWrapper.getNodePath(this), resolvedTarget, inputString);
 		}
 		return State.INVALID;
 	}

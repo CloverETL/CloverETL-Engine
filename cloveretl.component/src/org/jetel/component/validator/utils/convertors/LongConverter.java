@@ -24,8 +24,6 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.CloverString;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 15.1.2013

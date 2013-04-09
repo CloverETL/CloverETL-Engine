@@ -134,7 +134,7 @@ public abstract class ValidationNode {
 	}
 	protected String resolve(String input) {
 		if(refResolver == null) {
-			System.err.println("AHA");
+			// TODO: throw some exception
 			return input;
 		}
 		return refResolver.resolveRef(input);

@@ -18,6 +18,8 @@
  */
 package org.jetel.component.validator.utils;
 
+import java.util.Map;
+
 import javax.xml.bind.JAXBException;
 
 import org.jetel.component.validator.AbstractValidationRule;
@@ -160,5 +162,36 @@ public class ValidationRulesPersisterTest extends ValidatorTestCase {
 		System.out.println("---------------------------\n");
 		String output2 = ValidationRulesPersister.serialize(group);
 		System.out.println(output2);
+	}
+	
+	public ValidationGroup prepareGroup() {
+		ValidationGroup root = new ValidationGroup();
+		root.setName("Root group");
+		
+		ValidationGroup b1 = new ValidationGroup();
+		b1.setName("Sub group 1");
+		root.addChild(b1);
+		
+		ValidationGroup b2 = new ValidationGroup();
+		b2.setName("Sub group 2");
+		root.addChild(b2);
+		
+		ValidationGroup b3 = new ValidationGroup();
+		b3.setName("Sub group 3");
+		b1.addChild(b3);
+		
+		StringLengthValidationRule br1 = new StringLengthValidationRule();
+		br1.setName("Test rule");
+		b2.addChild(br1);
+		return root;
+	}
+	
+	public void testDummy() {
+		Map<ValidationNode, ValidationGroup> temp = ValidatorUtils.createParentTable(prepareGroup());
+		for(Map.Entry<ValidationNode, ValidationGroup> item: temp.entrySet()) {
+			System.out.println(item.getKey().getName() + " -> " + ((item.getValue() != null) ? item.getValue().getName() : null));
+			//System.out.println(ValidatorUtils.getNodePath(item.getKey(), temp, '/'));
+		}
+		
 	}
 }

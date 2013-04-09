@@ -36,6 +36,7 @@ public class ValidationError {
 	private int code;
 	private String message;
 	private String name;
+	private String path;
 	private List<String> fields;
 	private Map<String,String> values;
 	private Map<String,String> params;
@@ -64,6 +65,13 @@ public class ValidationError {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	/**
+	 * @return the path
+	 */
+	public String getPath() {
+		return path;
 	}
 
 	/**
@@ -134,6 +142,13 @@ public class ValidationError {
 	public void setName(String name) {
 		this.name = name;
 	}
+	
+	/**
+	 * @param path the path to set
+	 */
+	public void setPath(String path) {
+		this.path = path;
+	}
 
 	/**
 	 * @param fields the fields to set
@@ -161,7 +176,8 @@ public class ValidationError {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("Validation error\n");
 		buffer.append("----------------\n");
-		buffer.append("Validation rule: " + name + "\n");
+		buffer.append("Name: " + name + "\n");
+		buffer.append("Path: " + path + "\n");
 		buffer.append("Timestamp: " + timestamp.toString() + "\n");
 		buffer.append("Code: " + code + "\n");
 		buffer.append("Message: " + message + "\n");

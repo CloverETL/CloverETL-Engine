@@ -50,8 +50,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
-import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry.Entry;
-
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 25.3.2013
@@ -175,13 +173,13 @@ public class LookupValidationRule extends AbstractValidationRule {
 		try {
 			init(graphWrapper);
 		} catch (IllegalArgumentException ex) {
-			raiseError(ea, ERROR_INIT, "Error on initializing lookup table, lookup or record.", fields, valuesInString);
+			raiseError(ea, ERROR_INIT, "Error on initializing lookup table, lookup or record.", graphWrapper.getNodePath(this), fields, valuesInString);
 			return State.INVALID;
 		}
 		try {
 			populateTempRecord(values);
 		} catch (Exception ex) {
-			raiseError(ea, ERROR_MAPPING, "Mapping is incorrect.", fields, valuesInString);
+			raiseError(ea, ERROR_MAPPING, "Mapping is incorrect.", graphWrapper.getNodePath(this), fields, valuesInString);
 			return State.INVALID;
 		}
 		tempLookup.seek(tempRecord);
@@ -194,9 +192,9 @@ public class LookupValidationRule extends AbstractValidationRule {
 			return State.VALID;
 		}
 		if(policy.getValue() == POLICY.REJECT_MISSING) {
-			raiseError(ea, ERROR_RECORD_MISSING, "Given field(s) values was not present in the lookup table. Missing are invalid.", fields, valuesInString);
+			raiseError(ea, ERROR_RECORD_MISSING, "Given field(s) values was not present in the lookup table. Missing are invalid.", graphWrapper.getNodePath(this), fields, valuesInString);
 		} else {
-			raiseError(ea, ERROR_RECORD_PRESENT, "Given field(s) values was found in the lookup table. Present are invalid.", fields, valuesInString);
+			raiseError(ea, ERROR_RECORD_PRESENT, "Given field(s) values was found in the lookup table. Present are invalid.", graphWrapper.getNodePath(this), fields, valuesInString);
 		}
 		return State.INVALID;
 	}

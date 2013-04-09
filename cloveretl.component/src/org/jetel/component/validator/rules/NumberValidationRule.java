@@ -54,6 +54,7 @@ public class NumberValidationRule extends AbstractValidationRule {
 	
 	public static final int ERROR_LEFTOVERS = 401;
 	public static final int ERROR_PARSING = 402;
+	public static final int ERROR_STRING = 403;
 	
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
@@ -105,6 +106,7 @@ public class NumberValidationRule extends AbstractValidationRule {
 		}
 		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
 			logError("Field '" + resolvedTarget + "' is not a string.");
+			raiseError(ea, ERROR_STRING, "The target field is not a string.", graphWrapper.getNodePath(this), resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -130,14 +132,14 @@ public class NumberValidationRule extends AbstractValidationRule {
 			Number parsedNumber = numberFormat.parse(tempString, pos);
 			if(parsedNumber == null || pos.getIndex() != tempString.length()) {
 				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' contains leftovers after parsed value.");
-				raiseError(ea, ERROR_PARSING, "The target field contains leftovers after parsed value.", resolvedTarget, tempString);
+				raiseError(ea, ERROR_PARSING, "The target field contains leftovers after parsed value.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
 				return State.INVALID;
 			}
 			logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedNumber + "'");
 			return State.VALID;
 		} catch (Exception ex) {
 			logError("Field '" + resolvedTarget + "' with value '" + tempString + "' could not be parsed.");
-			raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
+			raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
 			return State.INVALID;
 		}
 	}

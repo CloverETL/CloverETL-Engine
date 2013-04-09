@@ -61,6 +61,7 @@ public class DateValidationRule extends AbstractValidationRule {
 	
 	public static final int ERROR_DOUBLE_CHECK = 301;
 	public static final int ERROR_PARSING = 302;
+	public static final int ERROR_STRING = 303;
 	
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
@@ -121,6 +122,7 @@ public class DateValidationRule extends AbstractValidationRule {
 		
 		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
 			logError("Field '" + resolvedTarget + "' is not a string.");
+			raiseError(ea, ERROR_STRING, "The target field is not a string.", graphWrapper.getNodePath(this), resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -144,14 +146,14 @@ public class DateValidationRule extends AbstractValidationRule {
 				Date parsedDate = dateFormat.parse(tempString);
 				if(!dateFormat.format(parsedDate).equals(tempString.trim())) {
 					logError("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
-					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", resolvedTarget, tempString);
+					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
 					return State.INVALID;
 				}
 				logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
 				return State.VALID;
 			} catch (Exception ex) {
 				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' is not a date with given settings.");
-				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
+				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
 				return State.INVALID;	
 			}
 		} else {
@@ -162,14 +164,14 @@ public class DateValidationRule extends AbstractValidationRule {
 				DateTime parsedDate = formatter.parseDateTime(tempString);
 				if(!parsedDate.toString(formatter).equals(tempString.trim())) {
 					logError("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
-					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", resolvedTarget, tempString);
+					raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
 					return State.INVALID;
 				}
 				logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
 				return State.VALID;
 			} catch (Exception ex) {
 				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' is not a date with given settings.");
-				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
+				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
 				return State.INVALID;
 			}
 		}

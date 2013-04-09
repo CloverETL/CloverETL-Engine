@@ -94,7 +94,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 			}
 		} catch (PatternSyntaxException e) {
 			logError("Pattern '" + resolvedPattern + "' is invalid.");
-			raiseError(ea, ERROR_INVALID_PATTERN, "The pattern is invalid.", resolvedTarget, tempString);
+			raiseError(ea, ERROR_INVALID_PATTERN, "The pattern is invalid.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
 			return State.INVALID;
 		}
 		if(pm.matcher(tempString).matches()) {
@@ -102,7 +102,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 			return State.VALID;
 		} else {
 			logError("Field '" + resolvedTarget +  "' with value '" + tempString + "' has no match.");
-			raiseError(ea, ERROR_NO_MATCH, "No match.", resolvedTarget, tempString);
+			raiseError(ea, ERROR_NO_MATCH, "No match.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
 			return State.INVALID;
 		}
 	}

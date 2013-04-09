@@ -19,7 +19,9 @@
 package org.jetel.component.validator;
 
 import java.util.Iterator;
+import java.util.Map;
 
+import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
@@ -31,6 +33,7 @@ import org.jetel.util.property.PropertyRefResolver;
 public class EngineGraphWrapper implements GraphWrapper {
 	private TransformationGraph graph;
 	private PropertyRefResolver refResolver;
+	private Map<ValidationNode, ValidationGroup> parentTable;
 	
 	public EngineGraphWrapper(TransformationGraph graph) {
 		this.graph = graph;
@@ -47,5 +50,13 @@ public class EngineGraphWrapper implements GraphWrapper {
 	
 	public PropertyRefResolver getRefResolver() {
 		return refResolver;
+	}
+	
+	public void initParentTable(ValidationGroup root) {
+		parentTable = ValidatorUtils.createParentTable(root);
+	}
+	
+	public String getNodePath(ValidationNode needle) {
+		return ValidatorUtils.getNodePath(needle, parentTable, ";");
 	}
 }

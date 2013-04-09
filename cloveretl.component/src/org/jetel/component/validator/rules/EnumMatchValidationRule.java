@@ -112,23 +112,25 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		
 		String resolvedTarget = resolve(target.getValue());
 		
+		String nodePath = graphWrapper.getNodePath(this);
+		
 		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", resolvedTarget, field.getValue().toString());
+			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", nodePath, resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
 		try {
 			getParsedValues();
 		} catch (NullPointerException ex) {
-			raiseError(ea, ERROR_PARSING_VALUES, "Cannot parse given enum in given type.", resolvedTarget, field.getValue().toString());
+			raiseError(ea, ERROR_PARSING_VALUES, "Cannot parse given enum in given type.", nodePath, resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
-		State status = checkInType(field, tempComparator, ea);
+		State status = checkInType(field, tempComparator, ea, nodePath);
 		
 		if(status == State.VALID) {
 			return State.VALID;
@@ -154,12 +156,12 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea, String nodePath) {
 		String resolvedTarget = resolve(target.getValue());
 		
 		T record = tempConverter.convert(dataField.getValue());
 		if(record == null) {
-			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", resolvedTarget,(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
+			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", nodePath, resolvedTarget,(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -190,7 +192,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 				}
 			}
 		}
-		raiseError(ea, ERROR_NO_MATCH, "No match.", resolvedTarget, record.toString());
+		raiseError(ea, ERROR_NO_MATCH, "No match.", nodePath, resolvedTarget, record.toString());
 		return State.INVALID;
 	}
 	

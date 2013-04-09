@@ -22,10 +22,14 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Stack;
 
+import org.jetel.component.validator.ValidationGroup;
+import org.jetel.component.validator.ValidationNode;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Common routines used in validator
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 26.2.2013
  */
@@ -91,4 +95,51 @@ public class ValidatorUtils {
 		}
 		return new Locale(temp[0]);
 	}
+	
+	public static Map<ValidationNode, ValidationGroup> createParentTable(ValidationGroup root) {
+		Map<ValidationNode, ValidationGroup> output = new HashMap<ValidationNode, ValidationGroup>();
+		// Special treatment with root node
+		output.put(root, null);
+		// Non-recursive traversing algorithm
+		Stack<ValidationGroup> nodesToProcess = new Stack<ValidationGroup>();
+		nodesToProcess.push(root);
+		ValidationGroup current;
+		while (!nodesToProcess.isEmpty()) {
+			current = nodesToProcess.pop();
+			for(ValidationNode temp : current.getChildren()) {
+				if(temp instanceof ValidationGroup) {
+					nodesToProcess.push((ValidationGroup) temp);
+				}
+				output.put(temp, current);
+			}
+		}
+		return output;
+	}
+	
+	public static String getNodePath(ValidationNode needle, Map<ValidationNode, ValidationGroup> haystack, String delim) {
+		if(needle == null) {
+			return null;
+		}
+		StringBuffer buffer = new StringBuffer();
+		
+		if(needle.getName().isEmpty()) {
+			buffer.insert(0, needle.getCommonName());
+		} else {
+			buffer.insert(0, needle.getName());
+		}
+		
+		ValidationGroup result = haystack.get(needle);
+		while(result != null) {
+			buffer.insert(0, delim);
+			if(result.getName().isEmpty()) {
+				buffer.insert(0, result.getCommonName());
+			} else {
+				buffer.insert(0, result.getName());
+			}
+			result = haystack.get(result);
+			
+		}
+		return buffer.toString();
+	}
+	
 }

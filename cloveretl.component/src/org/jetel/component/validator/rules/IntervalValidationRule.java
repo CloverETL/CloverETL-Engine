@@ -110,6 +110,8 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		
 		String resolvedTarget = resolve(target.getValue());
 		
+		String nodePath = graphWrapper.getNodePath(this);
+		
 		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
 		
@@ -117,7 +119,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
 			logError("Cannot initialize conversion and comparator tools.");
-			raiseError(ea, ERROR_INIT_CONVERSION, "The target has wrong length.", target.getValue(), field.getValue().toString());
+			raiseError(ea, ERROR_INIT_CONVERSION, "The target has wrong length.", nodePath, target.getValue(), field.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -126,7 +128,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 			return State.VALID;
 		}
 		
-		State status = checkInType(field, tempConverter, tempComparator, ea);
+		State status = checkInType(field, tempConverter, tempComparator, ea, nodePath);
 		
 		if(status == State.VALID) {
 			return State.VALID;
@@ -135,24 +137,24 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		}
 	}
 	
-	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea, String nodePath) {
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedTo = resolve(to.getValue());
 		String resolvedFrom = resolve(from.getValue());
 		
 		T record = converter.convert(dataField.getValue());
 		if(record == null) {
-			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
+			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", nodePath, resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 		final BOUNDARIES_TYPE boundaries = (BOUNDARIES_TYPE) this.boundaries.getValue();
 		T from = converter.convertFromCloverLiteral(resolvedFrom);
 		T to = converter.convertFromCloverLiteral(resolvedTo);
 		if(from == null) {
-			raiseError(ea, ERROR_FROM_CONVERSION, "Conversion of value 'From' failed.", resolvedTarget,this.from.getValue());
+			raiseError(ea, ERROR_FROM_CONVERSION, "Conversion of value 'From' failed.", nodePath, resolvedTarget,this.from.getValue());
 		}
 		if(to == null) {
-			raiseError(ea, ERROR_TO_CONVERSION, "Conversion of value 'To' failed.", resolvedTarget,this.to.getValue());
+			raiseError(ea, ERROR_TO_CONVERSION, "Conversion of value 'To' failed.", nodePath, resolvedTarget,this.to.getValue());
 		}
 		if(from == null || to == null) {
 			return State.INVALID;
@@ -170,7 +172,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ('" + from.toString() + "', '" + to.toString() + "').");
 			return State.VALID;
 		} else {
-			raiseError(ea, ERROR_NOT_IN_INTERVAL, "Incoming value not in given interval.", resolvedTarget, record.toString());
+			raiseError(ea, ERROR_NOT_IN_INTERVAL, "Incoming value not in given interval.", nodePath, resolvedTarget, record.toString());
 			return State.INVALID;
 		}
 	}
