@@ -14,7 +14,7 @@ public class DecimalNumericTest extends CloverTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
 	
 		 anInt=DecimalFactory.getDecimal(0);
 		 aLong=DecimalFactory.getDecimal((long)0);

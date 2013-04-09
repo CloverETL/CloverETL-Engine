@@ -32,7 +32,7 @@ public class PropertyRefResolverTest extends CloverTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
 
 		Properties properties = new Properties();
 		properties.put("dbDriver", "org.mysql.test");

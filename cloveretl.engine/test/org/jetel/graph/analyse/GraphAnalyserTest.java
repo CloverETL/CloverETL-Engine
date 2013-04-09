@@ -43,11 +43,6 @@ import org.jetel.test.CloverTestCase;
  */
 public class GraphAnalyserTest  extends CloverTestCase {
 
-	@Override
-	protected void setUp() { 
-		initEngine();
-	}
-
 	public void testAnalyseGraph_01() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());

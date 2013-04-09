@@ -76,7 +76,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	public static final String EMPTY_NAME = "_";
 
 	/** Parent graph of this metadata */
-	private TransformationGraph graph;
+	private transient TransformationGraph graph;
 	/** Id of the data record. */
 	private String id;
 	/** Name of the data record. */

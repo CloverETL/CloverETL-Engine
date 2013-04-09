@@ -36,7 +36,7 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
 	    
 		transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
 		

@@ -389,7 +389,7 @@ public class StructureWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
-        writer.setDictionary(graph.getDictionary());
+        writer.setDictionary(graph != null ? graph.getDictionary() : null);
         writer.setOutputPort(getOutputPort(OUTPUT_PORT)); //for port protocol: target file writes data
         if (attrPartitionKey != null) {
             writer.setLookupTable(lookupTable);

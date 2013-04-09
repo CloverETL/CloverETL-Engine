@@ -68,9 +68,9 @@ public class LdapManager {
 	 * To speed up existance checks, we use a single static constraints object that
 	 * never changes.
 	 */
-	private static SearchControls existanceSearchControl;
+	private static final SearchControls existanceSearchControl;
 	//static to speed up search
-	{
+	static {
 		existanceSearchControl = new SearchControls();
 		existanceSearchControl.setSearchScope(SearchControls.OBJECT_SCOPE);
 		existanceSearchControl.setCountLimit(0);

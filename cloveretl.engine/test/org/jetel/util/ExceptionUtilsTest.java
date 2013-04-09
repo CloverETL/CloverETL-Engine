@@ -36,11 +36,6 @@ import org.jetel.test.CloverTestCase;
  */
 public class ExceptionUtilsTest extends CloverTestCase {
 	
-	@Override
-	protected void setUp() throws Exception {
-		initEngine();
-	}
-
 	public void testExceptionChainToMessage() {
 		assertEquals("", ExceptionUtils.getMessage(null, null));
 		

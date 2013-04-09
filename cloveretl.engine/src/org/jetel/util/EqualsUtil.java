@@ -66,7 +66,7 @@ public final class EqualsUtil {
 	 * 
 	 * Includes type-safe enumerations and collections, but does not include arrays. See class comment.
 	 */
-	static public boolean areEqual(Object aThis, Object aThat) {
+	static public <T> boolean areEqual(T aThis, T aThat) {
 		return aThis == null ? aThat == null : aThis.equals(aThat);
 	}
 	

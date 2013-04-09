@@ -47,7 +47,7 @@ public class SimpleSequenceTest extends CloverTestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
 	    
         sequence = SequenceFactory.createSequence(null, "SIMPLE_SEQUENCE", 
         		new Object[]{"",null,"Test",SEQUENCE_FILE,0,1,17}, 

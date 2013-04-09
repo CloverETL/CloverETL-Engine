@@ -31,6 +31,7 @@ import org.jetel.ctl.TLUtils;
 import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.EqualsUtil;
 
 public abstract class TLType {
 
@@ -550,19 +551,17 @@ public abstract class TLType {
 
 		@Override
 		public boolean equals(Object obj) {
-			if (this == obj)
+			if (this == obj) {
 				return true;
-			if (obj == null)
+			}
+			if (obj == null) {
 				return false;
-			if (!(obj instanceof TLDateField))
+			}
+			if (!(obj instanceof TLLogLevel)) {
 				return false;
-			final TLDateField other = (TLDateField) obj;
-			if (symbol == null) {
-				if (other.symbol != null)
-					return false;
-			} else if (!symbol.equals(other.symbol))
-				return false;
-			return true;
+			}
+			final TLLogLevel other = (TLLogLevel) obj;
+			return EqualsUtil.areEqual(symbol, other.symbol);
 		}
 
 	}

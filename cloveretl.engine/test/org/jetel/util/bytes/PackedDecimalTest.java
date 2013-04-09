@@ -32,11 +32,6 @@ import org.jetel.test.CloverTestCase;
  */
 public class PackedDecimalTest extends CloverTestCase {
 	
-	@Override
-	protected void setUp() { 
-		initEngine();
-	}
-
 	private void checkParse(byte[] bytes, BigInteger expected) {
 		BigInteger value = PackedDecimal.parseBigInteger(bytes);
 		assertEquals(expected, value);

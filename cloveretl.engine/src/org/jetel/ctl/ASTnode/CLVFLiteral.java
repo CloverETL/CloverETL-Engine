@@ -159,7 +159,10 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			break;
 		case DATE_LITERAL:
 			final ParsePosition p1 = new ParsePosition(0);
-			final Date date = DATE_FORMATTER.parse(valueImage, p1);
+			Date date = null;
+			synchronized (DATE_FORMATTER) { // DateFormat is not thread-safe
+				date = DATE_FORMATTER.parse(valueImage, p1);
+			}
 			if (date == null) {
 				throw new ParseException("Date literal '" + valueImage + "' could not be parsed.", 0);
 			}
@@ -180,7 +183,9 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			break;
 		case DATETIME_LITERAL:
 			final ParsePosition p2 = new ParsePosition(0);
-			valueObj = DATE_TIME_FORMATTER.parse(valueImage,p2);
+			synchronized (DATE_TIME_FORMATTER) { // DateFormat is not thread-safe
+				valueObj = DATE_TIME_FORMATTER.parse(valueImage,p2);
+			}
 			if (valueObj == null) {
 				throw new ParseException("Date-time literal '" + valueImage + "' could not be parsed.", 0);
 			}

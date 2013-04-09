@@ -196,7 +196,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
         return false;
     }
 
-    public long getStart() {
+    public synchronized long getStart() {
         return start;
     }
 
@@ -209,7 +209,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
         resetValue();
     }
 
-    public long getStep() {
+    public synchronized long getStep() {
         return step;
     }
 

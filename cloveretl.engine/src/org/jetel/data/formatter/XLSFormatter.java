@@ -94,7 +94,6 @@ public abstract class XLSFormatter extends AbstractFormatter {
 	protected DataRecordMetadata metadata;
 	protected int firstRow = 0;
 	protected int namesRow = -1;
-	protected boolean append;
 	protected boolean removeSheets;
 	protected String sheetName = null;
 	protected int sheetNumber = -1;

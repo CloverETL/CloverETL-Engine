@@ -33,11 +33,6 @@ import org.jetel.test.CloverTestCase;
  */
 public class ContextProviderTest extends CloverTestCase {
 
-	@Override
-	protected void setUp() { 
-		initEngine();
-	}
-	
 	public void testGetGraph() throws InterruptedException, ExecutionException {
 		final TransformationGraph graph1 = new TransformationGraph();
 		final TransformationGraph graph2 = new TransformationGraph();

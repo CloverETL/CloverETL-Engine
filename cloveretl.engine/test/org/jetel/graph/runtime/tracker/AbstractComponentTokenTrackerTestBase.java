@@ -67,7 +67,7 @@ public abstract class AbstractComponentTokenTrackerTestBase extends CloverTestCa
 	@Override
 	@Before
 	protected void setUp() throws Exception {
-		initEngine();
+		super.setUp();
 
 		DataRecordMetadata metadata = new DataRecordMetadata("test");
 		metadata.addField(new DataFieldMetadata("f1", "|"));

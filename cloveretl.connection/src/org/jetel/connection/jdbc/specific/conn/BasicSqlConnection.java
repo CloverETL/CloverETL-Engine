@@ -195,7 +195,9 @@ public class BasicSqlConnection implements SqlConnection {
 		String tmp;
 		while (result.next()) {
 			tmp = result.getString(1);
-			ret.add(tmp);
+			if (tmp != null) {
+				ret.add(tmp);
+			}
 		}
 		result.close();
 		return ret;

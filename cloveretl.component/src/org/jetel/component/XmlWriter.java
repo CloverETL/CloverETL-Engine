@@ -659,7 +659,7 @@ public class XmlWriter extends Node {
         writer.setCharset(charset);
         //writer.setPartitionKeyNames(partitionKey);
         //writer.setPartitionFileTag(partitionFileTagType);
-        writer.setDictionary(graph.getDictionary());
+        writer.setDictionary(graph != null ? graph.getDictionary() : null);
         writer.setMkDir(mkDir);
         writer.setCompressLevel(compressLevel);
 	}

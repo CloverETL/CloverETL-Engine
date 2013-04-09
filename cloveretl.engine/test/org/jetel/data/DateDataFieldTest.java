@@ -41,8 +41,8 @@ public class DateDataFieldTest extends CloverTestCase {
 
 
 @Override
-protected void setUp() { 
-	initEngine();
+protected void setUp() throws Exception { 
+	super.setUp();
 
 	Calendar calendar = new GregorianCalendar(2003,4,10);
 	Date trialTime1 = calendar.getTime(); 

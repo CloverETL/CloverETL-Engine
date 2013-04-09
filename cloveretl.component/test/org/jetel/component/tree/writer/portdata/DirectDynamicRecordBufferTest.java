@@ -22,8 +22,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jetel.component.tree.writer.portdata.DirectDynamicRecordBuffer;
-import org.jetel.component.tree.writer.portdata.IndexKey;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
@@ -41,11 +39,6 @@ public class DirectDynamicRecordBufferTest extends CloverTestCase {
 
 	private static final int NUM_RECORDS = 10;
 	
-	@Override
-	protected void setUp() throws Exception {
-		initEngine();
-	}
-
 	public void testFirstUsage() throws IOException {
 		DirectDynamicRecordBuffer buffer = new DirectDynamicRecordBuffer();
 		buffer.init();
