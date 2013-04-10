@@ -9,6 +9,7 @@ def jobName = env['JOB_NAME']
 assert jobName
 def buildNumber = env['BUILD_NUMBER']
 assert buildNumber
+def testName
 jobNameM = jobName =~ /^(cloveretl\.engine)-((tests-after-commit-windows-java-1.6-Sun|tests-after-commit-proxy-java-1.6-Sun|tests-after-commit-java-1.7-Sun|tests-night-java-1.6-IBM|tests-night-java-1.6-JRockit|tests-night-functional-java-1.6-Sun|tests-after-commit|tests-reset|tests-performance-java-1.6-Sun|detail)-)?(.+)$/
 assert jobNameM.matches() 
 jobBasename = jobNameM[0][1]
@@ -29,10 +30,6 @@ if( runTests ) {
 	}   
 	scenarios = testName + ".ts"
 }
-
-testDb = testName ? testName : jobGoal
-testDb += "-${versionSuffix}"
-System.setProperty("jenkins.job.name", testDb)
  
 def startTime = new Date();
 println "======================= " + startTime
@@ -55,6 +52,10 @@ println "====================================================="
 baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
 testEnvironmentD = new File( baseD, "cloveretl.test.environment" ) 
+
+testDb = testName ? testName : jobGoal
+testDb += "-${versionSuffix}"
+new File(baseD, "cloveretl.test.scenarios/testdb.prm").write("TEST_DB=" + testDb)
 
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 if( !runTests ){
