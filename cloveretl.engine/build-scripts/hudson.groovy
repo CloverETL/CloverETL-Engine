@@ -53,9 +53,9 @@ baseD = new File( new File('').absolutePath )
 engineD = new File( baseD, "cloveretl.engine" ) 
 testEnvironmentD = new File( baseD, "cloveretl.test.environment" ) 
 
-testDb = testName ? testName : jobGoal
-testDb += "-${versionSuffix}"
-new File(baseD, "cloveretl.test.scenarios/testdb.prm").write("TEST_DB=" + testDb)
+jobIdent = testName ? testName : jobGoal
+jobIdent += "-${versionSuffix}"
+new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 if( !runTests ){
