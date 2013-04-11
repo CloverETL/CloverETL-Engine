@@ -26,6 +26,8 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
 
 /**
+ * Wrapper around graph to provide some of its parts.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 24.3.2013
  */

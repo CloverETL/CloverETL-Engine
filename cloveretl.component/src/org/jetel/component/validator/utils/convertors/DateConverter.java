@@ -6,20 +6,13 @@
  */
 package org.jetel.component.validator.utils.convertors;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.data.Defaults;
-import org.jetel.data.primitive.Decimal;
-import org.jetel.data.primitive.DecimalFactory;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.util.string.CloverString;
 import org.jetel.util.string.StringUtils;

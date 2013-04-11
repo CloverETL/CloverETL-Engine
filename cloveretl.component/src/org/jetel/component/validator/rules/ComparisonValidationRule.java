@@ -137,7 +137,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedValue = resolve(value.getValue());
 		
-		T record = converter.convert(dataField.getValue());
+		T record = converter.<T>convert(dataField.getValue());
 		if(record == null) {
 			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion failed.", nodePath, resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			return State.INVALID;
@@ -145,7 +145,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 
 		final OPERATOR_TYPE operator = (OPERATOR_TYPE) this.operator.getValue();
 		
-		T value = converter.convertFromCloverLiteral(resolvedValue);
+		T value = converter.<T>convertFromCloverLiteral(resolvedValue);
 		if(value == null) {
 			raiseError(ea, ERROR_VALUE_CONVERSION, "Conversion of value failed.", nodePath, resolvedTarget,this.value.getValue());
 			return State.INVALID;

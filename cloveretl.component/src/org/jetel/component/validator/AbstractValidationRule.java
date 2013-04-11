@@ -42,6 +42,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Shared functionality of all validation rules.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.11.2012
  */
@@ -62,6 +64,13 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	
 	private Map<String, String> tempParams;
 	
+	/**
+	 * Types of targets:
+	 *  - ONE_FIELD - rule works with only one item
+	 *  - UNORDERED_FIELDS - rule works with multiple field but order does not matter
+	 *  - ORDERED_FIELDS - rule works with multiple field, the order matters
+	 *  @see AbstractValidationRule#getTargetType()
+	 */
 	public static enum TARGET_TYPE {
 		ONE_FIELD, UNORDERED_FIELDS, ORDERED_FIELDS
 	}
@@ -71,6 +80,13 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	
 	private List<ValidationParamNode> params;
 	
+	/**
+	 * Returns lazy initialized param nodes for GUI. Intended to be used in GUI.
+	 * 
+	 * @param inMetadata Metadata of incoming record
+	 * @param graphWrapper Graph wrapper to be able finish initialization and reach some graph parameters
+	 * @return List of all param nodes
+	 */
 	public List<ValidationParamNode> getParamNodes(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		if(params == null) {
 			params = initialize(inMetadata, graphWrapper);
@@ -78,6 +94,14 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		return params;
 	}
 	
+	/**
+	 * Returns lazy initialized param nodes in map mostly for debugging reason. Intended to be used in engine.
+	 * 
+	 * Call before {@link #getProcessedParams()}!
+	 * @param inMetadata Metadata of incoming record
+	 * @param graphWrapper Graph wrapper to be able finish initialization and reach some graph parameters.
+	 * @return Map of all param nodes and its values
+	 */
 	public Map<String, String> getProcessedParams(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		if(tempParams == null) {
 			Map<String, String> temp = new HashMap<String, String>();
@@ -92,25 +116,36 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		return tempParams;
 	}
 	/**
-	 * Return parsed params in map.
-	 * CALL {@link #getProcessedParams(DataRecordMetadata, GraphWrapper)} FIRST
-	 * @return
+	 * Returns lazy initialized param nodes in map mostly for debugging reason. Intended to be used in engine.
+	 * Call after {@link #getProcessedParams(DataRecordMetadata, GraphWrapper)}
+	 * @return Map of all param nodes and its values
 	 */
 	public Map<String, String> getProcessedParams() {
 		return tempParams;
 	}
 	
+	/**
+	 * Initialize param nodes
+	 * @param inMetadata Metadata incoming record
+	 * @param graphWrapper Graph wrapper to be able finish initialization and reach some graph parameters
+	 * @return List of all param nodes
+	 */
 	protected abstract List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper);
 	
 	public StringValidationParamNode getTarget() {
 		return target;
 	}
 	
+	/**
+	 * Returns target type of validation rule
+	 * @return Not null target type
+	 */
 	public abstract TARGET_TYPE getTargetType();
 	
 	
 	/**
 	 * Creates new error and append it into error accumulator if given.
+	 * 
 	 * @param accumulator Error accumulator to which the error is added
 	 * @param code Code of error
 	 * @param message Human readable reason of error
@@ -139,10 +174,12 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		logger.trace(error);
 	}
 	
+	/** @see #raiseError(ValidationErrorAccumulator, int, String, String, List, Map) */
 	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, String path, String[] fields, Map<String, String> values) {
 		raiseError(accumulator, code, message, path, Arrays.asList(fields), values);
 	}
 	
+	/** @see #raiseError(ValidationErrorAccumulator, int, String, String, List, Map) */
 	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, String path, String field, String value) {
 		HashMap<String, String> temp = new HashMap<String, String>();
 		temp.put(field, value);

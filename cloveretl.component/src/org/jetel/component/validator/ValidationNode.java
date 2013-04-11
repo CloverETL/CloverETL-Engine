@@ -30,11 +30,19 @@ import org.jetel.util.property.PropertyRefResolver;
 
 /**
  * Abstract shared part of each validation rule or group.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.11.2012
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class ValidationNode {
+	/**
+	 * Result states of validation
+	 */
+	public enum State {
+		VALID, NOT_VALIDATED, INVALID;
+	}
+	
 	protected final static Log logger = LogFactory.getLog(ValidationNode.class);
 	
 	@XmlAttribute(required=true)
@@ -45,18 +53,28 @@ public abstract class ValidationNode {
 	private PropertyRefResolver refResolver;
 	
 	/**
-	 * Result states of validation
+	 * Class constructor which sets default name of rule.
 	 */
-	public enum State {
-		VALID, NOT_VALIDATED, INVALID;
-	}
-	
 	public ValidationNode() {
 		setName(getCommonName());
 	}
 	
 	/**
 	 * Validates given record against the rule.
+	 * 
+	 * Tutorial for implementing:
+	 *  - Add new class in annotation of class {@link AbstractValidationRule} (without it (de)serialization will fail)
+	 *  - Check if rule is enabled
+	 *  - Set property solver from graph when resolving (CTL code) should be used ({@link #setPropertyRefResolver(GraphWrapper)}
+	 *  - Log rule parameters {@link #logParams(String)}
+	 *  - Resolve string variables {@link #resolve(String)}
+	 *  - Log tracing reports {@link #logSuccess(String)} {@link #logError(String)} {@link #logNotValidated(String)} or generic {@link #logger}
+	 *  - Always return state (never NULL), when returning INVALID always {@link AbstractValidationRule#raiseError} otherwise the rule will behave inconsistently
+	 * 
+	 * Have in mind:
+	 *  - When unexpected happen INVALID should be returned
+	 *  - {@link #isValid(DataRecord, ValidationErrorAccumulator, GraphWrapper)} is not invoked if {@link #isReady(DataRecordMetadata, ReadynessErrorAcumulator, GraphWrapper)} is false
+	 *  
 	 * @param record Record to be validated
 	 * @param ea Error accumulator where all errors are stored, can be null
 	 * @param graphWrapper Object which holds graph instance
@@ -67,30 +85,51 @@ public abstract class ValidationNode {
 	/**
 	 * Return whether the rule parameters are valid and therefore is ready to validate.
 	 * Always not lazy to obtain all errors.
+	 * 
+	 * Have in mind:
+	 *  - Not enabled rules are always ready and return true.
+	 *  - When this method returns true rule should have everything ready for validation (check empty, formats, target fields)
+	 *
 	 * @param inputMetadata Input metadata from graph, used for checking if target fields are present
 	 * @param accumulator Error accumulator in which all errors with human readable messages 
 	 * @return true if parameters are valid, false otherwise
 	 */
 	public abstract boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper);
 	
+	/**
+	 * Log that rule ended with VALID state
+	 * @param message Description of output point from rule
+	 */
 	public void logSuccess(String message) {
 		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.VALID + ": " + message);
 	}
 	
+	/**
+	 * Log that rule ended with NOT_VALIDATED state
+	 * @param message Description of output point from rule
+	 */
 	public void logNotValidated(String message) {
 		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.NOT_VALIDATED + ": " + message);
 	}
 	
+	/**
+	 * Log that rule ended with INVALID state
+	 * @param message Description of output point from rule
+	 */
 	public void logError(String message) {
 		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.INVALID + ": " + message);
 	}
 	
+	/**
+	 * Log all parameters of rule
+	 * @param message Description of output point from rule
+	 */
 	public void logParams(String params) {
 		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parameters:\n" + params);
 	}
 	
 	/**
-	 * @return Returns true when rule is enabled 
+	 * @return Returns true when rule is enabled, false otherwise
 	 */
 	public boolean isEnabled() {
 		return enabled;
@@ -127,15 +166,23 @@ public abstract class ValidationNode {
 	 */
 	public abstract String getCommonDescription();
 	
+	/**
+	 * Sets property resolver for replacing variables in parameters
+	 * @param graphWrapper Graph Wrapper from which the resolver is obtained
+	 */
 	protected void setPropertyRefResolver(GraphWrapper graphWrapper) {
 		if(graphWrapper != null) {
 			this.refResolver = graphWrapper.getRefResolver();	
 		}
 	}
+	/**
+	 * Resolves given string
+	 * @param input String to resolve
+	 * @return Resolved string without variables
+	 */
 	protected String resolve(String input) {
 		if(refResolver == null) {
-			// TODO: throw some exception
-			return input;
+			throw new RuntimeException("Cannot resolve variable, no resolver given. Validation rule is implemented wrong (call setPropertyRefResolver before resolve).");
 		}
 		return refResolver.resolveRef(input);
 	}

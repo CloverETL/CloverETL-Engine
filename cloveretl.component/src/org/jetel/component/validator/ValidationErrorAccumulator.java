@@ -23,6 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
+ * Accumulator class for validation errors.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 20.11.2012
  */

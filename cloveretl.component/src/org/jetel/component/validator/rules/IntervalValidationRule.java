@@ -142,14 +142,14 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		String resolvedTo = resolve(to.getValue());
 		String resolvedFrom = resolve(from.getValue());
 		
-		T record = converter.convert(dataField.getValue());
+		T record = converter.<T>convert(dataField.getValue());
 		if(record == null) {
 			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", nodePath, resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 		final BOUNDARIES_TYPE boundaries = (BOUNDARIES_TYPE) this.boundaries.getValue();
-		T from = converter.convertFromCloverLiteral(resolvedFrom);
-		T to = converter.convertFromCloverLiteral(resolvedTo);
+		T from = converter.<T>convertFromCloverLiteral(resolvedFrom);
+		T to = converter.<T>convertFromCloverLiteral(resolvedTo);
 		if(from == null) {
 			raiseError(ea, ERROR_FROM_CONVERSION, "Conversion of value 'From' failed.", nodePath, resolvedTarget,this.from.getValue());
 		}

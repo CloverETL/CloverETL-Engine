@@ -159,7 +159,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea, String nodePath) {
 		String resolvedTarget = resolve(target.getValue());
 		
-		T record = tempConverter.convert(dataField.getValue());
+		T record = tempConverter.<T>convert(dataField.getValue());
 		if(record == null) {
 			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", nodePath, resolvedTarget,(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
 			return State.INVALID;

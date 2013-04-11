@@ -27,6 +27,8 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
 
 /**
+ * Implementation of {@link GraphWrapper} for graph from engine.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 25.3.2013
  */

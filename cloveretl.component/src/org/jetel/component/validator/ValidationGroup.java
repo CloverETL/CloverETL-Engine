@@ -35,6 +35,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Validation group for rules and other groups.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.11.2012
  */
@@ -68,6 +70,9 @@ public class ValidationGroup extends ValidationNode {
 	@XmlAttribute
 	private boolean laziness = true;
 	
+	/**
+	 * Implementation of conjunction with neutral element
+	 */
 	@XmlType(name = "conjunction")
 	@XmlEnum
 	public enum Conjunction {
@@ -126,6 +131,10 @@ public class ValidationGroup extends ValidationNode {
 		this.prelimitaryCondition.setContent(prelimitaryCondition);
 	}
 	
+	/**
+	 * Returns prelimitary condition
+	 * @return Prelimitary condition
+	 */
 	public AbstractValidationRule getPrelimitaryCondition() {
 		if(prelimitaryCondition == null) {
 			return null;

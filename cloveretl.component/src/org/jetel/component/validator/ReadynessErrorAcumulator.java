@@ -26,6 +26,8 @@ import java.util.Map;
 import org.jetel.component.validator.params.ValidationParamNode;
 
 /**
+ * Accumulator for errors gathered during {@link ValidationNode#isReady(org.jetel.metadata.DataRecordMetadata, ReadynessErrorAcumulator, GraphWrapper)}
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 1.3.2013
  */
