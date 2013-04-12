@@ -46,13 +46,13 @@ import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
-import org.jetel.graph.runtime.CloverFuture;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IThreadManager;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
+import org.jetel.graph.runtime.WatchDogFuture;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.file.FileUtils;
@@ -406,12 +406,12 @@ public class runGraph {
 	}
 	
 	private static void runGraph(TransformationGraph graph) {
-        CloverFuture cloverFuture = null;
+        WatchDogFuture watchDogFuture = null;
 		try {
 			if (!graph.isInitialized()) {
 				EngineInitializer.initGraph(graph);
 			}
-			cloverFuture = executeGraph(graph, graph.getRuntimeContext());			
+			watchDogFuture = executeGraph(graph, graph.getRuntimeContext());			
         } catch (Exception e) {
 			ExceptionUtils.logException(logger, "Error during graph initialization !", e);
             ExceptionUtils.logHighlightedException(logger, "Error during graph initialization !", e);
@@ -420,7 +420,7 @@ public class runGraph {
         
         Result result = Result.N_A;
 		try {
-			result = cloverFuture.get();
+			result = watchDogFuture.get();
 		} catch (InterruptedException e) {
 			ExceptionUtils.logException(logger, "Graph was unexpectedly interrupted !", e);
 			ExceptionUtils.logHighlightedException(logger, "Graph was unexpectedly interrupted !", e);
@@ -447,8 +447,8 @@ public class runGraph {
             System.exit(result.code());
             break;
         default:
-            ExceptionUtils.logHighlightedException(logger, cloverFuture.getWatchDog().getErrorMessage(),
-    				cloverFuture.getWatchDog().getCauseException());
+            ExceptionUtils.logHighlightedException(logger, watchDogFuture.getWatchDog().getErrorMessage(),
+            		watchDogFuture.getWatchDog().getCauseException());
             logger.error("Execution of graph failed !");
             System.exit(result.code());
         }
@@ -456,7 +456,7 @@ public class runGraph {
     }
 
 
-	public static CloverFuture executeGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
+	public static WatchDogFuture executeGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
 		if (!graph.isInitialized()) {
 			EngineInitializer.initGraph(graph);
 		}

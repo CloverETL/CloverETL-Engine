@@ -16,26 +16,35 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.graph.runtime;
-
-import java.util.concurrent.Future;
-
-import org.jetel.graph.Result;
+package org.jetel.util;
 
 /**
- * This future is used in {@link IThreadManager#executeWatchDog(WatchDog)}.
- * The future of a running transformation graph has available associated {@link WatchDog} instance.
+ * Utility class for sub-graph related code.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 19.3.2013
+ * @created 12.4.2013
  */
-public interface CloverFuture extends Future<Result> {
+public class SubGraphUtils {
+
+	/** Type of SubGraphInput component. */
+	public static final String SUB_GRAPH_INPUT_TYPE = "SUB_GRAPH_INPUT";
+	/** Type of SubGraphOutput component. */
+	public static final String SUB_GRAPH_OUTPUT_TYPE = "SUB_GRAPH_OUTPUT";
 
 	/**
-	 * @return {@link WatchDog} associated with transformation graph monitored by this future
+	 * @return true if and only if the given component type is SubGraphInput component.
 	 */
-	public WatchDog getWatchDog();
-	
+	public static boolean isSubGraphInput(String componentType) {
+		return SUB_GRAPH_INPUT_TYPE.equals(componentType);
+	}
+
+	/**
+	 * @return true if and only if the given component type is SubGraphOutput component.
+	 */
+	public static boolean isSubGraphOutput(String componentType) {
+		return SUB_GRAPH_OUTPUT_TYPE.equals(componentType);
+	}
+
 }

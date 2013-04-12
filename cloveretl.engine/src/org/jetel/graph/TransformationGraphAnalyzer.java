@@ -130,12 +130,12 @@ public class TransformationGraphAnalyzer {
 	 *            nodes
 	 * @return list of all precedent nodes for given node
 	 */
-	private static List<Node> findPrecedentNodes(Node node, Collection<Node> reflectedNodes) {
+	public static List<Node> findPrecedentNodes(Node node, Collection<Node> reflectedNodes) {
 		List<Node> result = new ArrayList<Node>();
 
 		for (InputPort inputPort : node.getInPorts()) {
 			final Node writer = inputPort.getWriter();
-			if (reflectedNodes.contains(writer)) {
+			if (reflectedNodes == null || reflectedNodes.contains(writer)) {
 				result.add(writer);
 			}
 		}
@@ -148,14 +148,14 @@ public class TransformationGraphAnalyzer {
 	 * @param reflectedNodes
 	 *            reflected set of nodes, typically nodes in phase; the resulted nodes will be only from this set of
 	 *            nodes
-	 * @return list of all successive nodes for given node
+	 * @return list of all following nodes for given node
 	 */
-	private static List<Node> findSuccessiveNodes(Node node, Collection<Node> reflectedNodes) {
+	public static List<Node> findFollowingNodes(Node node, Collection<Node> reflectedNodes) {
 		List<Node> result = new ArrayList<Node>();
 
 		for (OutputPort outputPort : node.getOutPorts()) {
 			final Node reader = outputPort.getReader();
-			if (reflectedNodes.contains(reader)) {
+			if (reflectedNodes == null || reflectedNodes.contains(reader)) {
 				result.add(reader);
 			}
 		}
@@ -190,7 +190,7 @@ public class TransformationGraphAnalyzer {
 			Node nodeToProcess = nodesToProcess.pop();
 			if (!visited.contains(nodeToProcess)) {
 				visited.add(nodeToProcess);
-				nodesToProcess.addAll(findSuccessiveNodes(nodeToProcess, givenNodes));
+				nodesToProcess.addAll(findFollowingNodes(nodeToProcess, givenNodes));
 				result.add(nodeToProcess);
 			}
 		}

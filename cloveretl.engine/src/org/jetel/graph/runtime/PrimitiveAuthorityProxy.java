@@ -476,5 +476,25 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	public boolean isClusterEnabled() {
 		return false;
 	}
+
+	@Override
+	public OutputStream getSubGraphDataTarget(long subGraphRunId, int inputPortIndex) {
+		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+	}
+
+	@Override
+	public InputStream getSubGraphDataSource(long subGraphRunId, int outputPortIndex) {
+		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+	}
+
+	@Override
+	public InputStream getParentGraphDataSource(int inputPortIndex) {
+		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+	}
+
+	@Override
+	public OutputStream getParentGraphDataTarget(int outputPortIndex) {
+		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+	}
 	
 }

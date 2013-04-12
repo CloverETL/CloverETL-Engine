@@ -41,7 +41,7 @@ public interface IThreadManager {
 	 * @param watchDog
 	 * @return
 	 */
-	public CloverFuture executeWatchDog(WatchDog watchDog);
+	public WatchDogFuture executeWatchDog(WatchDog watchDog);
 	
 	/**
 	 * Runs given runnable class via inner instance of executor service.
@@ -61,17 +61,17 @@ public interface IThreadManager {
 	 * which can be used for waiting to the end of the task.
 	 * @param runnable task specification
 	 * @param result object which will be returned by {@link Future#get()} method
-	 * @return {@link Future} of executed task
+	 * @return {@link FutureOfRunnable} of executed task
 	 */
-	public <T> Future<T> execute(Runnable runnable, T result);
+	public <T extends Runnable> FutureOfRunnable<T> executeRunnable(T runnable);
 
 	/**
-	 * Runs arbitrary runnable code and return a Future object,
+	 * Runs arbitrary callable code and return a Future object,
 	 * which can be used for waiting to the end of the task.
 	 * @param callable task specification
-	 * @return {@link Future} of executed task
+	 * @return {@link FutureOfCallable} of executed task
 	 */
-	public <T> Future<T> execute(Callable<T> callable);
+	public <C extends Callable<R>, R> FutureOfCallable<C, R> executeCallable(C callable);
 	
 	/**
 	 * Returns the approximate number of available free threads.

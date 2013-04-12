@@ -54,6 +54,7 @@ import org.jetel.graph.runtime.tracker.TokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.SubGraphUtils;
 import org.jetel.util.bytes.MemoryTracker;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -1117,6 +1118,26 @@ public final class TransformationGraph extends GraphElement {
 	        //check phases configuration
 	        for(Phase phase : getPhases()) {
 	            phase.checkConfig(status);
+	        }
+	        
+	        //SubGraphInput and SubGraphOutput components can be present only one instance in the graph
+	        boolean hasSubGraphInput = false;
+	        boolean hasSubGraphOutput = false;
+	        for (Node component : getNodes().values()) {
+	        	if (SubGraphUtils.isSubGraphInput(component.getType())) {
+	        		if (hasSubGraphInput) {
+	        			status.add("Multiple SubGraphInput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
+	        		} else {
+	        			hasSubGraphInput = true;
+	        		}
+	        	}
+	        	if (SubGraphUtils.isSubGraphOutput(component.getType())) {
+	        		if (hasSubGraphOutput) {
+	        			status.add("Multiple SubGraphOutput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
+	        		} else {
+	        			hasSubGraphOutput = true;
+	        		}
+	        	}
 	        }
 	        
 	        return status;

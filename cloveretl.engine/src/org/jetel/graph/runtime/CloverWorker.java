@@ -119,6 +119,15 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		return thread;
 	}
 
+	/**
+	 * Executes the given {@link CloverWorker} instance.
+	 * @param cloverWorker
+	 * @return future of the given {@link CloverWorker}
+	 */
+	public static <T extends CloverWorker> FutureOfRunnable<T> startWorker(T cloverWorker) {
+		return cloverWorker.getNode().getGraph().getWatchDog().getThreadManager().executeRunnable(cloverWorker);
+	}
+	
 	public Thread getThread() {
 		return thread;
 	}
