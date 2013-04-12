@@ -46,6 +46,7 @@ import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
+import org.jetel.util.SubGraphUtils;
 import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertiesUtils;
@@ -415,54 +416,40 @@ public abstract class IAuthorityProxy {
 	 */
 	public abstract RemoteEdgeDataTarget getRemoteEdgeDataTarget(String edgeId) throws InterruptedException;
 
-//	/**
-//	 * Called by Cluster Partitioner component on "primary" worker.
-//	 * Returns list of output streams to "slave" workers.
-//	 * 
-//	 * MZa: will be removed
-//	 * 
-//	 * @param componentId
-//	 * @return streams array of size workersCount-1
-//	 * @throws IOException
-//	 */
-//	public abstract OutputStream[] getClusterPartitionerOutputStreams(String componentId) throws IOException;
-//	
-//	/**
-//	 * Called by Cluster Partitioner component on "slave" worker.
-//	 * Returns input stream with data from "primary" worker.  
-//	 * 
-//	 * MZa: will be removed
-//	 * 
-//	 * @param runId
-//	 * @param componentId
-//	 * @return 
-//	 * @throws IOException
-//	 */
-//	public abstract InputStream getClusterPartitionerInputStream(String componentId) throws IOException;
-//	
-//	/**
-//	 * Called by ClusterGather component on "primary" worker.
-//	 * Returns list of input streams with data from "slave" workers.
-//	 * 
-//	 * MZa: will be removed
-//	 *  
-//	 * @param componentId
-//	 * @return streams array of size workersCount-1
-//	 * @throws IOException
-//	 */
-//	public abstract InputStream[] getClusterGatherInputStreams(String componentId) throws IOException;
-//	
-//	/**
-//	 * Called by Cluster Gather component on "slave" worker. 
-//	 * Returns output stream which will be fed by output data.
-//	 * 
-//	 * MZa: will be removed 
-//	 * 
-//	 * @param componentId
-//	 * @return
-//	 * @throws IOException
-//	 */
-//	public abstract OutputStream getClusterGatherOutputStream(String componentId) throws IOException;
+
+	/**
+	 * Returns {@link OutputStream} where the parent graph can sent data records to a sub-graph.
+	 * @see SubGraph component
+	 * @param subGraphRunId runId of addressed sub-graph
+	 * @param inputPortIndex index of virtual remote port
+	 * @return stream where serialised data records can be written
+	 */
+	public abstract OutputStream getSubGraphDataTarget(long subGraphRunId, int inputPortIndex);
+
+	/**
+	 * Returns {@link InputStream} where the parent graph can get data records from a sub-graph.
+	 * @see SubGraph component
+	 * @param subGraphRunId runId of addressed sub-graph
+	 * @param outputPortIndex index of virtual remote port
+	 * @return stream where serialised data records can be read
+	 */
+	public abstract InputStream getSubGraphDataSource(long subGraphRunId, int outputPortIndex);
+
+	/**
+	 * Returns {@link InputStream} where a sub-graph can get data records from parent graph.
+	 * @see SubGraphInput component
+	 * @param inputPortIndex index of virtual remote port
+	 * @return stream where serialised data records can be read
+	 */
+	public abstract InputStream getParentGraphDataSource(int inputPortIndex);
+
+	/**
+	 * Returns {@link OutputStream} where a sub-graph can sent data records to parent graph.
+	 * @see SubGraphOutput component
+	 * @param outputPortIndex index of virtual remote port
+	 * @return stream where serialised data records can be written
+	 */
+	public abstract OutputStream getParentGraphDataTarget(int outputPortIndex);
 
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,

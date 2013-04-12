@@ -19,7 +19,6 @@
 package org.jetel.graph.runtime;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 
 import org.jetel.graph.Result;
@@ -45,12 +44,12 @@ public class SimpleThreadManager implements IThreadManager {
 	 * @see org.jetel.graph.runtime.IThreadManager#executeWatchDog(org.jetel.graph.runtime.WatchDog)
 	 */
 	@Override
-	public CloverFuture executeWatchDog(WatchDog watchDog) {
-		CloverFutureImpl cloverFuture = new CloverFutureImpl(watchDog); 
-		Thread watchdogThread = new Thread(cloverFuture, "WatchDog");
+	public WatchDogFuture executeWatchDog(WatchDog watchDog) {
+		WatchDogFutureImpl watchDogFuture = new WatchDogFutureImpl(watchDog); 
+		Thread watchdogThread = new Thread(watchDogFuture, "WatchDog");
 		watchdogThread.start();
 		
-		return cloverFuture;
+		return watchDogFuture;
 	}
 
 	/* (non-Javadoc)
@@ -81,8 +80,8 @@ public class SimpleThreadManager implements IThreadManager {
 	 * @see org.jetel.graph.runtime.IThreadManager#execute(java.lang.Runnable)
 	 */
 	@Override
-	public <T> Future<T> execute(Runnable runnable, T result) {
-		FutureTask<T> futureTask = new FutureTask<T>(runnable, result); 
+	public <R extends Runnable> FutureOfRunnable<R> executeRunnable(R runnable) {
+		FutureOfRunnableImpl<R> futureTask = new FutureOfRunnableImpl<R>(runnable);
 		Thread thread = new Thread(futureTask, runnable.getClass().getName());
 		thread.setContextClassLoader(runnable.getClass().getClassLoader());
 		thread.setPriority(Thread.MIN_PRIORITY);
@@ -96,8 +95,8 @@ public class SimpleThreadManager implements IThreadManager {
 	 * @see org.jetel.graph.runtime.IThreadManager#execute(java.lang.Runnable)
 	 */
 	@Override
-	public <T> Future<T> execute(Callable<T> callable) {
-		FutureTask<T> futureTask = new FutureTask<T>(callable); 
+	public <C extends Callable<R>, R> FutureOfCallable<C, R> executeCallable(C callable) {
+		FutureOfCallableImpl<C, R> futureTask = new FutureOfCallableImpl<C, R>(callable);
 		Thread thread = new Thread(futureTask, callable.getClass().getName());
 		thread.setContextClassLoader(callable.getClass().getClassLoader());
 		thread.setPriority(Thread.MIN_PRIORITY);
@@ -139,21 +138,44 @@ public class SimpleThreadManager implements IThreadManager {
 		// DO NOTHING
 	}
 
-	/**
-	 * {@link FutureTask} decorated by {@link WatchDog} instance.
-	 */
-	private class CloverFutureImpl extends FutureTask<Result> implements CloverFuture {
-		private WatchDog watchDog;
+	private class FutureOfCallableImpl<C extends Callable<R>, R> extends FutureTask<R> implements FutureOfCallable<C, R> {
+		private C callable;
 		
-		public CloverFutureImpl(WatchDog watchDog) {
-			super(watchDog);
+		public FutureOfCallableImpl(C callable) {
+			super(callable);
 			
-			this.watchDog = watchDog;
+			this.callable = callable;
 		}
-		
+
+		@Override
+		public C getCallable() {
+			return callable;
+		}
+	}
+
+	private class WatchDogFutureImpl extends FutureOfCallableImpl<WatchDog, Result> implements WatchDogFuture {
+		public WatchDogFutureImpl(WatchDog watchDog) {
+			super(watchDog);
+		}
+
 		@Override
 		public WatchDog getWatchDog() {
-			return watchDog;
+			return getCallable();
+		}
+	}
+	
+	private class FutureOfRunnableImpl<R extends Runnable> extends FutureTask<Object> implements FutureOfRunnable<R> {
+		private R runnable;
+		
+		public FutureOfRunnableImpl(R runnable) {
+			super(runnable, new Object());
+			
+			this.runnable = runnable;
+		}
+
+		@Override
+		public R getRunnable() {
+			return runnable;
 		}
 	}
 
