@@ -108,7 +108,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		
 		String resolvedTarget = resolve(target.getValue());
 		
-		String nodePath = graphWrapper.getNodePath(this);
+		List<String> nodePath = graphWrapper.getNodePath(this);
 		
 		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
@@ -133,7 +133,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		}
 	}
 	
-	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea, String nodePath) {
+	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea, List<String> nodePath) {
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedValue = resolve(value.getValue());
 		

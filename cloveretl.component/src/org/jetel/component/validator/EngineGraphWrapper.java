@@ -18,7 +18,9 @@
  */
 package org.jetel.component.validator;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.jetel.component.validator.utils.ValidatorUtils;
@@ -42,8 +44,15 @@ public class EngineGraphWrapper implements GraphWrapper {
 		this.refResolver = new PropertyRefResolver(graph.getGraphProperties());
 	}
 	
-	public Iterator<String> getLookupTables() {
-		return graph.getLookupTables();
+	public List<String> getLookupTables() {
+		Iterator<String> temp = graph.getLookupTables();
+		List<String> output = new ArrayList<String>();
+		String current;
+		while(temp.hasNext()) {
+			current = temp.next();
+			output.add(current);
+		}
+		return output;
 	}
 	
 	public LookupTable getLookupTable(String name) {
@@ -58,7 +67,7 @@ public class EngineGraphWrapper implements GraphWrapper {
 		parentTable = ValidatorUtils.createParentTable(root);
 	}
 	
-	public String getNodePath(ValidationNode needle) {
-		return ValidatorUtils.getNodePath(needle, parentTable, ";");
+	public List<String> getNodePath(ValidationNode needle) {
+		return ValidatorUtils.getNodePath(needle, parentTable);
 	}
 }

@@ -26,10 +26,8 @@ import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
 import org.jetel.component.validator.common.ValidatorTestCase;
-import org.jetel.component.validator.rules.EnumMatchValidationRule;
-import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
-import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
-import org.jetel.component.validator.rules.PatternMatchValidationRule;
+import org.jetel.component.validator.params.LanguageSetting;
+import org.jetel.component.validator.rules.DateValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
 import org.junit.Test;
 
@@ -63,7 +61,7 @@ public class ValidationRulesPersisterTest extends ValidatorTestCase {
 		ValidationGroup root = rootGroup;
 		root.setName("Root group");
 		root.setEnabled(true);
-		AbstractValidationRule br = new NonEmptyFieldValidationRule();
+		AbstractValidationRule br = new DateValidationRule();
 //		br.setName("Neprazdne pole name");
 //		setStringParam(br, "target", "name");
 //		br.setEnabled(true);
@@ -167,23 +165,33 @@ public class ValidationRulesPersisterTest extends ValidatorTestCase {
 	public ValidationGroup prepareGroup() {
 		ValidationGroup root = new ValidationGroup();
 		root.setName("Root group");
+		root.setLaziness(false);
 		
 		ValidationGroup b1 = new ValidationGroup();
 		b1.setName("Sub group 1");
+		b1.setLaziness(false);
 		root.addChild(b1);
 		
 		ValidationGroup b2 = new ValidationGroup();
 		b2.setName("Sub group 2");
+		b2.setLaziness(false);
 		root.addChild(b2);
 		
 		ValidationGroup b3 = new ValidationGroup();
 		b3.setName("Sub group 3");
+		b3.setLaziness(false);
 		b1.addChild(b3);
 		
-		StringLengthValidationRule br1 = new StringLengthValidationRule();
-		br1.setName("Test rule");
-		b2.addChild(br1);
+		//StringLengthValidationRule br1 = new StringLengthValidationRule();
+		//br1.setName("Test rule");
+		//b2.addChild(br1);
 		return root;
+	}
+	
+	public void testDummy2() {
+		ValidationGroup group = prepareGroup();
+		group.setLanguageSetting(new LanguageSetting(true));
+		group.isValid(null, null, null);
 	}
 	
 	public void testDummy() {

@@ -19,13 +19,17 @@
 package org.jetel.component.validator.utils;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Stack;
 
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
+import org.jetel.component.validator.params.LanguageSetting;
+import org.jetel.component.validator.rules.LanguageSettingsValidationRule;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -116,30 +120,40 @@ public class ValidatorUtils {
 		return output;
 	}
 	
-	public static String getNodePath(ValidationNode needle, Map<ValidationNode, ValidationGroup> haystack, String delim) {
+	public static List<String> getNodePath(ValidationNode needle, Map<ValidationNode, ValidationGroup> haystack) {
 		if(needle == null) {
 			return null;
 		}
-		StringBuffer buffer = new StringBuffer();
-		
+		List<String> output = new ArrayList<String>();
 		if(needle.getName().isEmpty()) {
-			buffer.insert(0, needle.getCommonName());
+			output.add(0, needle.getCommonName());
 		} else {
-			buffer.insert(0, needle.getName());
+			output.add(0, needle.getName());
 		}
 		
 		ValidationGroup result = haystack.get(needle);
 		while(result != null) {
-			buffer.insert(0, delim);
 			if(result.getName().isEmpty()) {
-				buffer.insert(0, result.getCommonName());
+				output.add(0, result.getCommonName());
 			} else {
-				buffer.insert(0, result.getName());
+				output.add(0, result.getName());
 			}
 			result = haystack.get(result);
 			
 		}
-		return buffer.toString();
+		return output;
+	}
+	
+	public static LanguageSetting prepareLanguageSetting(ValidationGroup root, ValidationNode node) {
+		Map<ValidationNode, ValidationGroup> parentTable = createParentTable(root);
+		
+		ValidationGroup currentParent = parentTable.get(node);
+		LanguageSetting tempLanguageSetting = null;
+		while(currentParent != null) {
+			tempLanguageSetting = LanguageSetting.hierarchicMerge(tempLanguageSetting, currentParent.getLanguageSetting());
+			currentParent = parentTable.get(currentParent);
+		}
+		return tempLanguageSetting;
 	}
 	
 }

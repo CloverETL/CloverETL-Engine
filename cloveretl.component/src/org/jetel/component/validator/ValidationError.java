@@ -36,7 +36,7 @@ public class ValidationError {
 	private int code;
 	private String message;
 	private String name;
-	private String path;
+	private List<String> path;
 	private List<String> fields;
 	private Map<String,String> values;
 	private Map<String,String> params;
@@ -70,7 +70,7 @@ public class ValidationError {
 	/**
 	 * @return the path
 	 */
-	public String getPath() {
+	public List<String> getPath() {
 		return path;
 	}
 
@@ -146,7 +146,7 @@ public class ValidationError {
 	/**
 	 * @param path the path to set
 	 */
-	public void setPath(String path) {
+	public void setPath(List<String> path) {
 		this.path = path;
 	}
 

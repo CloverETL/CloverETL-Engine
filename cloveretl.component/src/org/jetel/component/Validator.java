@@ -295,7 +295,7 @@ public class Validator extends Node {
 		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_SERIAL_NUMBER, DataFieldType.INTEGER, ""));
 		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_MESSAGE, DataFieldType.STRING, ""));
 		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_NAME, DataFieldType.STRING, ""));
-		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_PATH, DataFieldType.STRING, ""));
+		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_PATH, DataFieldType.STRING, "", DataFieldContainerType.LIST));
 		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_FIELDS, DataFieldType.STRING, "", DataFieldContainerType.LIST));
 		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_VALUES, DataFieldType.STRING, "", DataFieldContainerType.MAP));
 		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_PARAMS, DataFieldType.STRING, "", DataFieldContainerType.MAP));
@@ -324,9 +324,7 @@ public class Validator extends Node {
 		StringDataField name = new StringDataField(errorRecord.getField(ERROR_OUTPUT_NAME).getMetadata(), error.getName());
 		errorRecord.getField(ERROR_OUTPUT_NAME).setValue(name);
 		
-		StringDataField path = new StringDataField(errorRecord.getField(ERROR_OUTPUT_PATH).getMetadata(), error.getPath());
-		errorRecord.getField(ERROR_OUTPUT_PATH).setValue(path);
-		
+		((ListDataField) errorRecord.getField(ERROR_OUTPUT_PATH)).setValue(error.getPath());
 		((ListDataField) errorRecord.getField(ERROR_OUTPUT_FIELDS)).setValue(error.getFields());
 		((MapDataField) errorRecord.getField(ERROR_OUTPUT_VALUES)).setValue(error.getValues());
 		((MapDataField) errorRecord.getField(ERROR_OUTPUT_PARAMS)).setValue(error.getParams());

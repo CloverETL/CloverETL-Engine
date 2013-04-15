@@ -31,6 +31,7 @@ import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
+import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
@@ -51,21 +52,17 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 4.12.2012
  */
-@XmlType(propOrder={"format", "locale", "timezone", "trimInput"})
-public abstract class StringValidationRule extends AbstractValidationRule{
+@XmlType(propOrder={"trimInput"})
+public abstract class StringValidationRule extends LanguageSettingsValidationRule {
 	
-	@XmlElement(name="format", required=false)
-	protected StringEnumValidationParamNode format = new StringEnumValidationParamNode();
-	
-	@XmlElement(name="locale", required=false)
-	// FIXME: fixed from GUI or global?
-	protected StringEnumValidationParamNode locale = new StringEnumValidationParamNode("en.US");
-	
-	@XmlElement(name="timezone", required=false)
-	protected StringEnumValidationParamNode timezone = new StringEnumValidationParamNode("UTC");
+	protected static final int LANGUAGE_SETTING_ACCESSOR_0 = 0;
 	
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
+	
+	public StringValidationRule() {
+		addLanguageSetting(new LanguageSetting());
+	}
 	
 	public DataFieldMetadata safeGetFieldMetadata(DataRecordMetadata inputMetadata, String name) {
 		String[] allFieldNames = inputMetadata.getFieldNamesArray();
@@ -80,52 +77,6 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		final DataRecordMetadata inputMetadata = inMetadata;
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
-		format.setName("Format mask");
-		format.setOptions(CommonFormats.all);
-		format.setTooltip("Format mask to format input field before validation.\n");
-		format.setPlaceholder("Number/date format, for syntax see documentation.");
-		params.add(format);
-		format.setEnabledHandler(new EnabledHandler() {
-			
-			@Override
-			public boolean isEnabled() {
-				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
-				if(fieldMetadata != null && fieldMetadata.getDataType() != DataFieldType.STRING) {
-					return true;
-				}
-				return false;
-			}
-		});
-		locale.setName("Locale");
-		locale.setOptions(CommonFormats.locales);
-		locale.setTooltip("Locale code of record field");
-		params.add(locale);
-		locale.setEnabledHandler(new EnabledHandler() {
-			
-			@Override
-			public boolean isEnabled() {
-				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
-				if(fieldMetadata != null && fieldMetadata.getDataType() != DataFieldType.STRING) {
-					return true;
-				}
-				return false;
-			}
-		});
-		timezone.setName("Timezone");
-		timezone.setOptions(CommonFormats.timezones);
-		timezone.setTooltip("Timezone code of record field");
-		params.add(timezone);
-		timezone.setEnabledHandler(new EnabledHandler() {
-			
-			@Override
-			public boolean isEnabled() {
-				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
-				if(fieldMetadata != null && fieldMetadata.getDataType() == DataFieldType.DATE) {
-					return true;
-				}
-				return false;
-			}
-		});
 		trimInput.setName("Trim input");
 		params.add(trimInput);
 		trimInput.setEnabledHandler(new EnabledHandler() {
@@ -139,18 +90,77 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 				return false;
 			}
 		});
+		
+		LanguageSetting languageSetting = getLanguageSettings(0);
+		languageSetting.initialize();
+		
+		languageSetting.getNumberFormat().setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+				if(fieldMetadata != null && (fieldMetadata.getDataType() == DataFieldType.INTEGER || fieldMetadata.getDataType() == DataFieldType.LONG || fieldMetadata.getDataType() == DataFieldType.NUMBER || fieldMetadata.getDataType() == DataFieldType.DECIMAL)) {
+					return true;
+				}
+				return false;
+			}
+		});
+		
+		languageSetting.getDateFormat().setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+				if(fieldMetadata != null && (fieldMetadata.getDataType() == DataFieldType.DATE)) {
+					return true;
+				}
+				return false;
+			}
+		});
+		
+		languageSetting.getLocale().setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+				if(fieldMetadata != null && fieldMetadata.getDataType() != DataFieldType.STRING) {
+					return true;
+				}
+				return false;
+			}
+		});
+		languageSetting.getTimezone().setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+				if(fieldMetadata != null && fieldMetadata.getDataType() == DataFieldType.DATE) {
+					return true;
+				}
+				return false;
+			}
+		});
+		
 		return params;
 	}
 	
 	protected String prepareInput(DataRecord record, String name) {
-		String resolvedFormat = resolve(format.getValue());
-		String resolvedLocale = resolve(locale.getValue());
-		String resolvedTimezone = resolve(timezone.getValue());
+		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
 		
 		DataFieldMetadata fieldMetadata = safeGetFieldMetadata(record.getMetadata(), name);
 		if(fieldMetadata == null) {
 			throw new IllegalArgumentException("Unknown field.");
 		}
+		
+		String resolvedFormat;
+		if(fieldMetadata.getDataType() == DataFieldType.DATE) {
+			resolvedFormat = resolve(computedLS.getDateFormat().getValue());
+		} else {
+			resolvedFormat = resolve(computedLS.getNumberFormat().getValue());
+		}
+		String resolvedLocale = resolve(computedLS.getLocale().getValue());
+		String resolvedTimezone = resolve(computedLS.getTimezone().getValue());
+		
 		DataField field = record.getField(name);
 		if(field.isNull()) {
 			return "";
@@ -180,7 +190,7 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 				return field.getValue().toString();
 			}
 			DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance(ValidatorUtils.localeFromString(resolvedLocale));
-			if(format.getValue().equals(CommonFormats.INTEGER)) {
+			if(resolvedFormat.equals(CommonFormats.INTEGER)) {
 				decimalFormat.applyPattern("#");
 				decimalFormat.setGroupingUsed(false); // Suppress grouping of thousand by default
 			} else {
@@ -210,18 +220,33 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		String resolvedLocale = resolve(locale.getValue());
-		String resolvedTimezone = resolve(timezone.getValue());
-		DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+		LanguageSetting originalLS = getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0);
+		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(originalLS, parentLanguageSetting);
+		String resolvedTarget = resolve(target.getValue());
+		DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, resolvedTarget);
+		if(fieldMetadata == null) {
+			return false;
+		}
+		String resolvedFormat;
+		if(fieldMetadata.getDataType() == DataFieldType.DATE) {
+			resolvedFormat = resolve(computedLS.getDateFormat().getValue());
+		} else {
+			resolvedFormat = resolve(computedLS.getNumberFormat().getValue());
+		}
+		String resolvedLocale = resolve(computedLS.getLocale().getValue());
+		String resolvedTimezone = resolve(computedLS.getTimezone().getValue());
+		
 		if(fieldMetadata != null && fieldMetadata.getDataType() != DataFieldType.STRING) {
-			if(resolvedLocale.isEmpty()) {
-				accumulator.addError(locale, this, "Empty locale.");
-				state &= false;
+			if(fieldMetadata.getDataType() == DataFieldType.DATE) {
+				state &= isLocaleReady(resolvedLocale, originalLS.getLocale(), accumulator);
+				state &= isDateFormatReady(resolvedFormat, originalLS.getDateFormat(), accumulator);
+				state &= isTimezoneReady(resolvedTimezone, originalLS.getTimezone(), accumulator);	
 			}
-			if(resolvedTimezone.isEmpty()) {
-				accumulator.addError(timezone, this, "Empty timezone.");
-				state &= false;
+			if(fieldMetadata.getDataType() == DataFieldType.INTEGER || fieldMetadata.getDataType() == DataFieldType.LONG || fieldMetadata.getDataType() == DataFieldType.NUMBER || fieldMetadata.getDataType() == DataFieldType.DECIMAL) {
+				state &= isLocaleReady(resolvedLocale, originalLS.getLocale(), accumulator);
+				state &= isNumberFormatReady(resolvedFormat, originalLS.getNumberFormat(), accumulator);
 			}
+			
 		}
 		return state;
 	}
@@ -231,23 +256,5 @@ public abstract class StringValidationRule extends AbstractValidationRule{
 	 */
 	public BooleanValidationParamNode getTrimInput() {
 		return trimInput;
-	}
-	/**
-	 * @return the format
-	 */
-	public StringEnumValidationParamNode getFormat() {
-		return format;
-	}
-	/**
-	 * @return the locale
-	 */
-	public StringEnumValidationParamNode getLocale() {
-		return locale;
-	}
-	/**
-	 * @return the timezone
-	 */
-	public StringEnumValidationParamNode getTimezone() {
-		return timezone;
 	}
 }

@@ -28,18 +28,16 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
-import org.jetel.component.validator.params.StringEnumValidationParamNode;
+import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -49,35 +47,32 @@ import org.jetel.util.string.StringUtils;
  * @created 10.3.2013
  */
 @XmlRootElement(name="number")
-@XmlType(propOrder={"trimInput", "format", "locale"})
-public class NumberValidationRule extends AbstractValidationRule {
+@XmlType(propOrder={"trimInput"})
+public class NumberValidationRule extends LanguageSettingsValidationRule {
 	
 	public static final int ERROR_LEFTOVERS = 401;
 	public static final int ERROR_PARSING = 402;
 	public static final int ERROR_STRING = 403;
 	
+	private static final int LANGUAGE_SETTING_ACCESSOR_0 = 0;
+	
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
 
-	@XmlElement(name="format",required=true)
-	private StringEnumValidationParamNode format = new StringEnumValidationParamNode(CommonFormats.defaultNumber);	
-	
-	@XmlElement(name="locale",required=true)
-	private StringEnumValidationParamNode locale = new StringEnumValidationParamNode(Defaults.DEFAULT_LOCALE);
+	public NumberValidationRule() {
+		addLanguageSetting(new LanguageSetting());
+	}
 	
 	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		trimInput.setName("Trim input");
 		trimInput.setTooltip("Trim input before validation.");
 		params.add(trimInput);
-		format.setName("Format mask");
-		format.setPlaceholder("Number format, for syntax see documentation.");
-		format.setOptions(CommonFormats.numbers);
-		params.add(format);
-		locale.setName("Locale");
-		locale.setOptions(CommonFormats.locales);
-		locale.setTooltip("Locale code of record field");
-		params.add(locale);
+		
+		LanguageSetting languageSetting = getLanguageSettings(0);
+		languageSetting.initialize();
+		languageSetting.getDateFormat().setHidden(true);
+		languageSetting.getTimezone().setHidden(true);
 		return params;
 	}
 
@@ -94,10 +89,14 @@ public class NumberValidationRule extends AbstractValidationRule {
 		}
 		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+		logParentLangaugeSetting();
+		logLanguageSettings();
+		
+		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
 		
 		String resolvedTarget = resolve(target.getValue());
-		String resolvedFormat = resolve(format.getValue());
-		String resolvedLocale = resolve(locale.getValue());
+		String resolvedFormat = resolve(computedLS.getNumberFormat().getValue());
+		String resolvedLocale = resolve(computedLS.getLocale().getValue());
 		
 		DataField field = record.getField(target.getValue());
 		if(field.isNull()) {
@@ -118,10 +117,10 @@ public class NumberValidationRule extends AbstractValidationRule {
 		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
 		try {
 			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(realLocale);
-			if(format.getValue().equals(CommonFormats.defaultNumber)) {
+			if(computedLS.getNumberFormat().getValue().equals(CommonFormats.defaultNumber)) {
 				numberFormat.applyPattern("#");
 				numberFormat.setParseIntegerOnly(true);
-			} else if(!format.getValue().isEmpty()) {
+			} else if(!computedLS.getNumberFormat().getValue().isEmpty()) {
 				//numberFormat.applyLocalizedPattern(format.getValue());
 				numberFormat.applyPattern(resolvedFormat);
 			}
@@ -151,9 +150,12 @@ public class NumberValidationRule extends AbstractValidationRule {
 		}
 		boolean state = true;
 		setPropertyRefResolver(graphWrapper);
+		LanguageSetting originalLS = getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0);
+		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(originalLS, parentLanguageSetting);
+		
 		String resolvedTarget = resolve(target.getValue());
-		String resolvedFormat = resolve(format.getValue());
-		String resolvedLocale = resolve(locale.getValue());
+		String resolvedFormat = resolve(computedLS.getNumberFormat().getValue());
+		String resolvedLocale = resolve(computedLS.getLocale().getValue());
 		
 		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
@@ -168,15 +170,10 @@ public class NumberValidationRule extends AbstractValidationRule {
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
-		try {
-			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance();
-			if(!resolvedFormat.isEmpty()) {
-				numberFormat.applyLocalizedPattern(resolvedFormat);
-			}
-		} catch (Exception ex) {
-			accumulator.addError(format, this, "Format mask is not correct.");
-			state = false;
-		}
+		
+		state &= isLocaleReady(resolvedLocale, originalLS.getLocale(), accumulator);
+		state &= isNumberFormatReady(resolvedFormat, originalLS.getNumberFormat(), accumulator);
+
 		return state;
 	}
 
@@ -188,13 +185,5 @@ public class NumberValidationRule extends AbstractValidationRule {
 	@Override
 	public String getCommonDescription() {
 		return "Checks whether chosen field is a number in provided format.";
-	}
-	
-	public StringEnumValidationParamNode getFormat() {
-		return format;
-	}
-
-	public StringEnumValidationParamNode getLocale() {
-		return locale;
 	}
 }

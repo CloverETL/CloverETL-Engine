@@ -90,9 +90,9 @@ public class NumberValidationRuleTest extends ValidatorTestCase {
 		NumberValidationRule rule = new NumberValidationRule();
 		rule.setEnabled(true);
 		rule.getTarget().setValue("field");
-		rule.getFormat().setValue("#");
+		rule.getLanguageSettings(0).getNumberFormat().setValue("#");
 	
-		rule.getLocale().setValue("en.US");
+		rule.getLanguageSettings(0).getLocale().setValue("en.US");
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "", "en.US"), null, null));
 		
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10", "en.US"), null, null));
@@ -127,15 +127,15 @@ public class NumberValidationRuleTest extends ValidatorTestCase {
 		rule.setEnabled(true);
 		rule.getTarget().setValue("field");
 		
-		rule.getLocale().setValue("en.US");
-		rule.getFormat().setValue("#0.#####E0");	
+		rule.getLanguageSettings(0).getLocale().setValue("en.US");
+		rule.getLanguageSettings(0).getNumberFormat().setValue("#0.#####E0");	
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1.2345E4", "en.US"), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1.2345EA", "en.US"), null, null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "122", "en.US"), null, null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1", "en.US"), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "", "en.US"), null, null));
 		
-		rule.getFormat().setValue("INTEGER");
+		rule.getLanguageSettings(0).getNumberFormat().setValue("INTEGER");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1", "en.US"), null, null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "10", "en.US"), null, null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "-5", "en.US"), null, null));
@@ -145,13 +145,13 @@ public class NumberValidationRuleTest extends ValidatorTestCase {
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "-5.8", "en.US"), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "-25.9870", "en.US"), null, null));
 		
-		rule.getFormat().setValue("###,###.###");
+		rule.getLanguageSettings(0).getNumberFormat().setValue("###,###.###");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1", "en.US"), null, null));
 		// WTF?
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1234567890", "en.US"), null, null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1,234,567.890", "en.US"), null, null));
 		
-		rule.getFormat().setValue("#");
+		rule.getLanguageSettings(0).getNumberFormat().setValue("#");
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "123,456.890", "en.US"), null, null));
 	}
 	
@@ -160,8 +160,8 @@ public class NumberValidationRuleTest extends ValidatorTestCase {
 		rule.setEnabled(true);
 		rule.getTarget().setValue("field");
 		
-		rule.getFormat().setValue("#");
-		rule.getLocale().setValue("cs.CZ");
+		rule.getLanguageSettings(0).getNumberFormat().setValue("#");
+		rule.getLanguageSettings(0).getLocale().setValue("cs.CZ");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1,23454"), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1.23454"), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1.2345EA"), null, null));
@@ -169,7 +169,7 @@ public class NumberValidationRuleTest extends ValidatorTestCase {
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1"), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", ""), null, null));
 		
-		rule.getLocale().setValue("fr");
+		rule.getLanguageSettings(0).getLocale().setValue("fr");
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1,23454"), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1.23454"), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "1.2345EA"), null, null));

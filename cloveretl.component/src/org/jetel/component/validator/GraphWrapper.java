@@ -18,11 +18,9 @@
  */
 package org.jetel.component.validator;
 
-import java.util.Iterator;
+import java.util.List;
 
-import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
 
 /**
@@ -33,7 +31,7 @@ import org.jetel.util.property.PropertyRefResolver;
  */
 public interface GraphWrapper {
 
-	public Iterator<String> getLookupTables();
+	public List<String> getLookupTables();
 	
 	public LookupTable getLookupTable(String name);
 	
@@ -41,5 +39,5 @@ public interface GraphWrapper {
 	
 	public void initParentTable(ValidationGroup root);
 	
-	public String getNodePath(ValidationNode needle);
+	public List<String> getNodePath(ValidationNode needle);
 }

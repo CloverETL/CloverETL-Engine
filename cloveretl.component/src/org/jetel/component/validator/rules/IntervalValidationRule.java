@@ -110,7 +110,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		
 		String resolvedTarget = resolve(target.getValue());
 		
-		String nodePath = graphWrapper.getNodePath(this);
+		List<String> nodePath = graphWrapper.getNodePath(this);
 		
 		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
@@ -137,7 +137,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		}
 	}
 	
-	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea, String nodePath) {
+	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea, List<String> nodePath) {
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedTo = resolve(to.getValue());
 		String resolvedFrom = resolve(from.getValue());
@@ -182,6 +182,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		if(!isEnabled()) {
 			return true;
 		}
+		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedTo = resolve(to.getValue());

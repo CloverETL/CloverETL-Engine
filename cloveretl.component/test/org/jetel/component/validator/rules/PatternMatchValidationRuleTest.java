@@ -152,7 +152,7 @@ public class PatternMatchValidationRuleTest extends ValidatorTestCase {
 		PatternMatchValidationRule rule = new PatternMatchValidationRule();
 		rule.getTarget().setValue("field");
 		rule.getPattern().setValue("^\\d{4}-\\d{2}-\\d{2}$");
-		rule.getFormat().setValue("yyyy-MM-dd");
+		rule.getLanguageSettings(0).getDateFormat().setValue("yyyy-MM-dd");
 		
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addDateField(null, "field", getDate("2013-03-23 10:00:00","UTC")), null, null));
 		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Some value"), null, null));
@@ -202,7 +202,7 @@ public class PatternMatchValidationRuleTest extends ValidatorTestCase {
 		rule.getTarget().setValue("field");
 		rule.getPattern().setValue("^[-]?\\d{1,}\\,?\\d{0,}$");
 		// TODO: fixme (without format english style is used)
-		rule.getLocale().setValue("cs.CZ");
+		rule.getLanguageSettings(0).getLocale().setValue("cs.CZ");
 		
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 0d), null, null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 10.2), null, null));
@@ -217,8 +217,8 @@ public class PatternMatchValidationRuleTest extends ValidatorTestCase {
 		PatternMatchValidationRule rule = new PatternMatchValidationRule();
 		rule.getTarget().setValue("field");
 		rule.getPattern().setValue("^[-]?\\d{1,}\\,?\\d? Kč$");
-		rule.getFormat().setValue("#,# 'Kč'");
-		rule.getLocale().setValue("cs.CZ");
+		rule.getLanguageSettings(0).getNumberFormat().setValue("#,# 'Kč'");
+		rule.getLanguageSettings(0).getLocale().setValue("cs.CZ");
 		
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 0d), null, null));
 		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addNumberField(null, "field", 10.2), null, null));

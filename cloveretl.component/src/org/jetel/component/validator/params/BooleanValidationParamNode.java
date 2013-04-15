@@ -21,6 +21,8 @@ package org.jetel.component.validator.params;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
+ * Parameter of validation rule which can hold boolean and can be (de)serialized.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 28.11.2012
  */

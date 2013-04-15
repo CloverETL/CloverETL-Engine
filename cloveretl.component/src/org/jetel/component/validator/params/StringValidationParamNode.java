@@ -1,5 +1,5 @@
 /*
-y * jETeL/CloverETL - Java based ETL application framework.
+ * jETeL/CloverETL - Java based ETL application framework.
  * Copyright (c) Javlin, a.s. (info@cloveretl.com)
  *  
  * This library is free software; you can redistribute it and/or
@@ -18,10 +18,11 @@ y * jETeL/CloverETL - Java based ETL application framework.
  */
 package org.jetel.component.validator.params;
 
-import javax.swing.text.ChangedCharSetException;
 import javax.xml.bind.annotation.XmlValue;
 
 /**
+ * Parameter of validation rule which can contain string and can be (de)serialized.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 28.11.2012
  */
@@ -37,6 +38,12 @@ final public class StringValidationParamNode extends ValidationParamNode {
 	public String getValue() {
 		return value;
 	}
+	/**
+	 * Sets new value, null is not allowed.
+	 * Triggers change handler.
+	 * 
+	 * @param other Not null new value
+	 */
 	public void setValue(String other) {
 		if(other != null) {
 			value = other;

@@ -112,7 +112,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		
 		String resolvedTarget = resolve(target.getValue());
 		
-		String nodePath = graphWrapper.getNodePath(this);
+		List<String> nodePath = graphWrapper.getNodePath(this);
 		
 		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
@@ -156,7 +156,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea, String nodePath) {
+	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea, List<String> nodePath) {
 		String resolvedTarget = resolve(target.getValue());
 		
 		T record = tempConverter.<T>convert(dataField.getValue());

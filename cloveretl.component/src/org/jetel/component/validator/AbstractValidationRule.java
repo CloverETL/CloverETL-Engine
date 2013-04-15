@@ -38,7 +38,6 @@ import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
 import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
-import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -106,7 +105,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		if(tempParams == null) {
 			Map<String, String> temp = new HashMap<String, String>();
 			// Shared params
-			temp.put("targets", getTarget().getValue());
+			temp.put("Targets", getTarget().getValue());
 			List<ValidationParamNode> paramNodes = getParamNodes(inMetadata, graphWrapper);
 			for(ValidationParamNode paramNode : paramNodes) {
 				temp.put(paramNode.getName(), paramNode.toString());
@@ -152,7 +151,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	 * @param fields List of fields on which the error has happened
 	 * @param values Map of field and values
 	 */
-	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, String path, List<String> fields, Map<String, String> values) {
+	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, List<String> path, List<String> fields, Map<String, String> values) {
 		if(accumulator == null) {
 			return;
 		}
@@ -175,12 +174,12 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	}
 	
 	/** @see #raiseError(ValidationErrorAccumulator, int, String, String, List, Map) */
-	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, String path, String[] fields, Map<String, String> values) {
+	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, List<String> path, String[] fields, Map<String, String> values) {
 		raiseError(accumulator, code, message, path, Arrays.asList(fields), values);
 	}
 	
 	/** @see #raiseError(ValidationErrorAccumulator, int, String, String, List, Map) */
-	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, String path, String field, String value) {
+	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, List<String> path, String field, String value) {
 		HashMap<String, String> temp = new HashMap<String, String>();
 		temp.put(field, value);
 		raiseError(accumulator, code, message, path, Arrays.asList(field), temp);

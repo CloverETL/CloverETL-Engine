@@ -20,8 +20,9 @@ package org.jetel.component.validator.params;
 
 import javax.xml.bind.annotation.XmlValue;
 
-
 /**
+ * Parameter of validation rule which can contain string from selectable enum list or can be provided by user.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 11.03.2013
  */

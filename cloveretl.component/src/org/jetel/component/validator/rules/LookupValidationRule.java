@@ -95,12 +95,7 @@ public class LookupValidationRule extends AbstractValidationRule {
 	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		lookup.setName("Lookup name");
-		HashSet<String> lookups = new HashSet<String>();
-		Iterator<String> temp = graphWrapper.getLookupTables();
-		while(temp.hasNext()) {
-			lookups.add(temp.next());
-		}
-		lookup.setOptions(lookups.toArray(new String[0]));
+		lookup.setOptions(graphWrapper.getLookupTables().toArray(new String[0]));
 		params.add(lookup);
 		keyMapping.setName("Key mapping");
 		keyMapping.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
@@ -217,9 +212,16 @@ public class LookupValidationRule extends AbstractValidationRule {
 			accumulator.addError(target, this, "Some of target fields are not present in input metadata.");
 			state = false;
 		}
+		LookupTable lookupTable = null;
 		if(resolvedLookup.isEmpty()) {
 			accumulator.addError(lookup, this, "No lookup table provided.");
 			state = false;
+		} else {
+			lookupTable = graphWrapper.getLookupTable(resolvedLookup);
+			if(lookupTable == null) {
+				accumulator.addError(lookup, this, "Unknown lookup table.");
+				state = false;
+			}
 		}
 		if(resolvedKeyMapping.isEmpty()) {
 			accumulator.addError(keyMapping, this, "Key mapping is empty.");
@@ -228,9 +230,26 @@ public class LookupValidationRule extends AbstractValidationRule {
 		try {
 			Map<String, String> map = ValidatorUtils.parseStringToMap(resolvedKeyMapping, "=", ",", true);
 			String[] targets = ValidatorUtils.parseTargets(resolvedTarget);
-			if(!Arrays.equals(map.values().toArray(), targets)) {
+			Arrays.sort(targets);
+			Object[] mapped = map.values().toArray();
+			Arrays.sort(mapped);
+			if(!Arrays.equals(mapped, targets)) {
 				accumulator.addError(keyMapping, this, "Key mapping contains field which is not selected in target fields.");
 				state = false;
+			}
+			if(lookupTable != null) {
+				Object[] keys = map.keySet().toArray();
+				Arrays.sort(keys);
+				try {
+					Object[] lookupKeys = lookupTable.getKeyMetadata().getFieldNamesArray();
+					Arrays.sort(lookupKeys);
+					if(!Arrays.equals(keys, lookupKeys)) {
+						accumulator.addError(keyMapping, this, "Key mapping contains field which is not key part of lookup table.");
+						state = false;
+					}
+				} catch(Exception ex) {
+					// Check cannot be done -> skip
+				}
 			}
 			
 		} catch (ParseException ex) {

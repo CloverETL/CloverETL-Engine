@@ -24,6 +24,8 @@ import javax.xml.bind.annotation.XmlAttribute;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.validator.params.LanguageSetting;
+import org.jetel.component.validator.rules.LanguageSettingsValidationRule;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.property.PropertyRefResolver;
@@ -50,6 +52,8 @@ public abstract class ValidationNode {
 	@XmlAttribute(required=false)
 	private String name;
 	
+	protected LanguageSetting parentLanguageSetting;
+	
 	private PropertyRefResolver refResolver;
 	
 	/**
@@ -65,9 +69,12 @@ public abstract class ValidationNode {
 	 * Tutorial for implementing:
 	 *  - Add new class in annotation of class {@link AbstractValidationRule} (without it (de)serialization will fail)
 	 *  - Check if rule is enabled
-	 *  - Set property solver from graph when resolving (CTL code) should be used ({@link #setPropertyRefResolver(GraphWrapper)}
 	 *  - Log rule parameters {@link #logParams(String)}
+	 *    Log parent language settings {@link #logParentLangaugeSetting()}
+	 *    When extending {@link LanguageSettingsValidationRule} log rule language settings {@link LanguageSettingsValidationRule#logLanguageSettings()}
+	 *  - Set property solver from graph when resolving (CTL code) should be used ({@link #setPropertyRefResolver(GraphWrapper)}
 	 *  - Resolve string variables {@link #resolve(String)}
+	 *  - For using inherited locale/timezone/format masks use {@link LanguageSetting#hierarchicMerge(LanguageSetting, LanguageSetting)}
 	 *  - Log tracing reports {@link #logSuccess(String)} {@link #logError(String)} {@link #logNotValidated(String)} or generic {@link #logger}
 	 *  - Always return state (never NULL), when returning INVALID always {@link AbstractValidationRule#raiseError} otherwise the rule will behave inconsistently
 	 * 
@@ -89,6 +96,10 @@ public abstract class ValidationNode {
 	 * Have in mind:
 	 *  - Not enabled rules are always ready and return true.
 	 *  - When this method returns true rule should have everything ready for validation (check empty, formats, target fields)
+	 *  - Set property solver from graph when resolving (CTL code) should be used ({@link #setPropertyRefResolver(GraphWrapper)}
+	 *  - Resolve string variables {@link #resolve(String)}
+	 *  - When using {@link LanguageSettingsValidationRule} always add errors on param node from original language settings not the merged one
+	 *    (Otherwise no warning sign will appear in GUI)
 	 *
 	 * @param inputMetadata Input metadata from graph, used for checking if target fields are present
 	 * @param accumulator Error accumulator in which all errors with human readable messages 
@@ -122,11 +133,20 @@ public abstract class ValidationNode {
 	
 	/**
 	 * Log all parameters of rule
-	 * @param message Description of output point from rule
+	 * @param message Serialized parameters
 	 */
 	public void logParams(String params) {
 		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parameters:\n" + params);
 	}
+	
+	/**
+	 * Log language setting of parent
+	 */
+	public void logParentLangaugeSetting() {
+		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parent language setting:\n" + parentLanguageSetting);
+	}
+	
+	
 	
 	/**
 	 * @return Returns true when rule is enabled, false otherwise
@@ -185,5 +205,12 @@ public abstract class ValidationNode {
 			throw new RuntimeException("Cannot resolve variable, no resolver given. Validation rule is implemented wrong (call setPropertyRefResolver before resolve).");
 		}
 		return refResolver.resolveRef(input);
+	}
+	
+	public void setParentLanguageSetting(LanguageSetting languageSetting) {
+		parentLanguageSetting = languageSetting;
+	}
+	public LanguageSetting getParentLanguageSetting() {
+		return parentLanguageSetting;
 	}
 }

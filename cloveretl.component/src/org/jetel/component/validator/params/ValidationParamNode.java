@@ -23,6 +23,9 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlTransient;
 
 /**
+ * Parameter of validation rule which has name, placeholder, disablity and tooltip for GUI.
+ * Value is supposed to be stored in children. Provide change and disablity handlers.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 28.11.2012
  */
@@ -32,6 +35,7 @@ public abstract class ValidationParamNode {
 	private String name;
 	private String placeholder;
 	private String tooltip;
+	private boolean hidden = false;
 	private EnabledHandler enabledHandler;
 	private ChangeHandler changeHandler;
 	
@@ -54,6 +58,13 @@ public abstract class ValidationParamNode {
 			return enabledHandler.isEnabled();
 		}
 		return true;
+	}
+	
+	public boolean isHidden() {
+		return hidden;
+	}
+	public void setHidden(boolean hidden) {
+		this.hidden = hidden;
 	}
 	
 	public void setEnabledHandler(EnabledHandler handler) {

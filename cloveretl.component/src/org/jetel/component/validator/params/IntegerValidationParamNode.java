@@ -21,6 +21,8 @@ package org.jetel.component.validator.params;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
+ * Parameter of validation rule which can contain integer and can be (de)serialized.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 28.11.2012
  */
@@ -43,6 +45,9 @@ final public class IntegerValidationParamNode extends ValidationParamNode {
 	
 	@Override
 	public String toString() {
+		if(value == null) {
+			return "null"; // Due to usage for logging (no null alowed)
+		}
 		return value.toString();
 	}
 
