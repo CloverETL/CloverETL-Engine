@@ -1310,6 +1310,19 @@ public class FileUtils {
 		StringBuilder path = new StringBuilder();
 		return getLocalArchiveInputPath(contextURL, input, path) ? path.toString() : null;
 	}
+
+	/**
+	 * Returns <code>true</code> if the URL represents a file inside a local archive.
+	 * 
+	 * @param contextURL the context URL
+	 * @param path the path to the file
+	 * @return <code>true</code> if the URL represents a file inside a local archive
+	 * @throws IOException
+	 */
+	public static boolean isLocalArchiveOutputPath(URL contextURL, String path)
+			throws IOException {
+		return getLocalArchiveOutputPath(contextURL, path, false, -1, new StringBuilder());
+	}
 	
 	static de.schlichtherle.io.File getLocalZipArchive(URL contextURL, String localArchivePath) throws IOException {
     	// apply the contextURL
