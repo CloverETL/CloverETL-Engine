@@ -191,7 +191,7 @@ public class MultiFileWriter {
 					if (archiveType != ArchiveType.ZIP) {
 						throw new ComponentNotReadyException("Partitioning to " + archiveType + " archives is not supported");
 					} else {
-						if (FileUtils.isLocalArchiveOutputPath(contextURL, fileURL)) {
+						if (!FileUtils.isLocalArchiveOutputPath(contextURL, fileURL)) {
 							throw new ComponentNotReadyException("Partitioning to remote ZIP archives is not supported");
 						}
 					}
