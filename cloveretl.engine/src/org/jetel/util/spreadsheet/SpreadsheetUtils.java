@@ -57,7 +57,7 @@ public class SpreadsheetUtils {
 	private static final int CHAR_COUNT = Z - A + 1;
 	
 	public static int getColumnIndex(String cellReference) {
-		if (INFINITY_COORDINATE_STRING.equals(cellReference)) {
+		if (INFINITY_COORDINATE_STRING.startsWith(cellReference)) {
 			return INFINITY_COORDINATE;
 		}
 		
