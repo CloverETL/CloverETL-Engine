@@ -86,15 +86,15 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 	 */
 	@Override
 	public int jetelType2sql(DataFieldMetadata field){
-		switch (field.getType()) {
-		case DataFieldMetadata.DATE_FIELD:
+		switch (field.getDataType()) {
+		case DATE:
 			boolean isDate = field.isDateFormat();
 			boolean isTime = field.isTimeFormat();
 			if (isDate && !isTime)
 				return Types.DATE;
 			return Types.TIMESTAMP;
-		case DataFieldMetadata.BYTE_FIELD:
-		case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+		case BYTE:
+		case CBYTE:
 			return Types.VARBINARY;
 		}
 		return super.jetelType2sql(field);
@@ -187,29 +187,24 @@ public class OracleSpecific extends AbstractJdbcSpecific {
 
 	@Override
 	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
-		switch (field.getType()) {
-		case DataFieldMetadata.BOOLEAN_FIELD:
-		case DataFieldMetadata.DECIMAL_FIELD:
-		case DataFieldMetadata.NUMERIC_FIELD:
-		case DataFieldMetadata.LONG_FIELD:
-		case DataFieldMetadata.INTEGER_FIELD:
+		switch (field.getDataType()) {
+		case BOOLEAN:
+		case DECIMAL:
+		case NUMBER:
+		case LONG:
+		case INTEGER:
 			switch (sqlType) {
 			case Types.NUMERIC:
 				return true;
-			default:
-				return false;
 			}
-		case DataFieldMetadata.DATE_FIELD:
+		case DATE:
 			switch (sqlType) {
 			case Types.TIMESTAMP:
 				return true;
-			default:
-				return false;
 			}
 		default:
 			return super.isJetelTypeConvertible2sql(sqlType, field);
 		}
-		
 	}
 
 	@Override

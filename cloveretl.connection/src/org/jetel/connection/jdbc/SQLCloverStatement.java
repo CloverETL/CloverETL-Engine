@@ -311,10 +311,9 @@ public class SQLCloverStatement {
 			return status;
 		}
 		if (record != null) {
-			String validateMap = AbstractCopySQLData.validateJetel2sqlMap(transMap, (PreparedStatement) statement, 
-					record.getMetadata(), connection.getJdbcSpecific());
-			if (validateMap != null) {
-				status.add(new ConfigurationProblem(validateMap, Severity.WARNING, element, Priority.NORMAL));
+			List<String> warningMessages = AbstractCopySQLData.validateJetel2sqlMap(transMap, (PreparedStatement) statement, record.getMetadata(), connection.getJdbcSpecific());
+			for (String message : warningMessages) {
+				status.add(new ConfigurationProblem(message, Severity.WARNING, element, Priority.NORMAL));
 			}
 		}
 		if (outMetadata == null) return status;
