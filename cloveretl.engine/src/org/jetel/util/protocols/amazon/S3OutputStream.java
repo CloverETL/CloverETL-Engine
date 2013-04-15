@@ -103,13 +103,32 @@ public class S3OutputStream extends OutputStream {
 			try {
 				service.putObject(bucket, uploadObject);
 			} catch (S3ServiceException e) {
-				throw new IOException(e);
+				throw s3ExceptionToIOException(e);
 			}
 		} finally {
 			tempFile.delete();
 		}
 	}
 	
+	private IOException s3ExceptionToIOException(S3ServiceException e) {
+		StringBuilder msg = new StringBuilder();
+		msg.append("S3 Service Error.");
+		appendInfoIfNotNull(e.getErrorCode(), msg);
+		appendInfoIfNotNull(e.getErrorMessage(), msg);
+		appendInfoIfNotNull(e.getS3ErrorCode(), msg);
+		appendInfoIfNotNull(e.getS3ErrorMessage(), msg);
+		return new IOException(msg.toString(), e);
+	}
+	
+	private void appendInfoIfNotNull(String info, StringBuilder text) {
+		if (info != null && !info.isEmpty()) {
+			if (text.length() > 0) {
+				text.append(" ");
+			}
+			text.append(info).append(".");
+		}
+	}
+
 	@Override
 	public void write(int b) throws IOException {
 		os.write(b);
