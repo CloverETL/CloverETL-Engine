@@ -101,7 +101,7 @@ public class S3OutputStream extends OutputStream {
 			uploadObject.setKey(file);
 			
 			try {
-				service.putObject(bucket, uploadObject);
+				service.putObject(s3bucket, uploadObject);
 			} catch (S3ServiceException e) {
 				throw s3ExceptionToIOException(e);
 			}
@@ -113,10 +113,13 @@ public class S3OutputStream extends OutputStream {
 	private IOException s3ExceptionToIOException(S3ServiceException e) {
 		StringBuilder msg = new StringBuilder();
 		msg.append("S3 Service Error.");
+		appendInfoIfNotNull("Response code=" + e.getResponseCode(), msg);
+		appendInfoIfNotNull(e.getResponseStatus(), msg);
 		appendInfoIfNotNull(e.getErrorCode(), msg);
 		appendInfoIfNotNull(e.getErrorMessage(), msg);
 		appendInfoIfNotNull(e.getS3ErrorCode(), msg);
 		appendInfoIfNotNull(e.getS3ErrorMessage(), msg);
+		appendInfoIfNotNull(e.toString(), msg);
 		return new IOException(msg.toString(), e);
 	}
 	
