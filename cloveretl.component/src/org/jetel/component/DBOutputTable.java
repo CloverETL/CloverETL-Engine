@@ -1328,11 +1328,10 @@ public class DBOutputTable extends Node {
                             statement.close();
                         }
 					} catch (SQLException e) {
-						ConfigurationProblem problem = new ConfigurationProblem(e
-								.getMessage(), ConfigurationStatus.Severity.WARNING, this,
-								ConfigurationStatus.Priority.NORMAL);
+						ConfigurationProblem problem = new ConfigurationProblem(e,
+								ConfigurationStatus.Severity.WARNING, this,
+								ConfigurationStatus.Priority.NORMAL, null);
 						status.add(problem);
-						logger.debug("CheckConfig warning", e);
 					}                        
 				}
 			}

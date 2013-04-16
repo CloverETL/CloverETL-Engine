@@ -57,6 +57,7 @@ import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -560,8 +561,7 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 			} else if ("42704".equals(ex.getSQLState()) || "42P01".equals(ex.getSQLState())) {
 				messages.add("Table does not exist.");
 			} else {
-				messages.add(ex.getMessage());
-				ex.printStackTrace();
+				messages.add(ExceptionUtils.getMessage(ex));
 			}
 		}
 		return messages;
