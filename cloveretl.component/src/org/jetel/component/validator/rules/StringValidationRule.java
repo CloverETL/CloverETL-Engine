@@ -76,14 +76,14 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 
 	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		final DataRecordMetadata inputMetadata = inMetadata;
+		
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		trimInput.setName("Trim input");
 		params.add(trimInput);
 		trimInput.setEnabledHandler(new EnabledHandler() {
-			
 			@Override
 			public boolean isEnabled() {
-				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
 				if(fieldMetadata != null && fieldMetadata.getDataType() == DataFieldType.STRING) {
 					return true;
 				}
@@ -95,10 +95,9 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		languageSetting.initialize();
 		
 		languageSetting.getNumberFormat().setEnabledHandler(new EnabledHandler() {
-			
 			@Override
 			public boolean isEnabled() {
-				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
 				if(fieldMetadata != null && (fieldMetadata.getDataType() == DataFieldType.INTEGER || fieldMetadata.getDataType() == DataFieldType.LONG || fieldMetadata.getDataType() == DataFieldType.NUMBER || fieldMetadata.getDataType() == DataFieldType.DECIMAL)) {
 					return true;
 				}
@@ -107,10 +106,9 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		});
 		
 		languageSetting.getDateFormat().setEnabledHandler(new EnabledHandler() {
-			
 			@Override
 			public boolean isEnabled() {
-				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
 				if(fieldMetadata != null && (fieldMetadata.getDataType() == DataFieldType.DATE)) {
 					return true;
 				}
@@ -119,10 +117,9 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		});
 		
 		languageSetting.getLocale().setEnabledHandler(new EnabledHandler() {
-			
 			@Override
 			public boolean isEnabled() {
-				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
 				if(fieldMetadata != null && fieldMetadata.getDataType() != DataFieldType.STRING) {
 					return true;
 				}
@@ -130,10 +127,9 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 			}
 		});
 		languageSetting.getTimezone().setEnabledHandler(new EnabledHandler() {
-			
 			@Override
 			public boolean isEnabled() {
-				DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
 				if(fieldMetadata != null && fieldMetadata.getDataType() == DataFieldType.DATE) {
 					return true;
 				}

@@ -109,6 +109,8 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		}
 		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+		logParentLangaugeSetting();
+		logLanguageSettings();
 		
 		String resolvedTarget = resolve(target.getValue());
 		
@@ -216,6 +218,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 			accumulator.addError(values, this, "No values for matching were provided.");
 			state = false;
 		}
+		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
 		return state;
 	}
 

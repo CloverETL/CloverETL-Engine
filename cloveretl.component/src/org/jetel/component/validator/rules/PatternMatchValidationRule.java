@@ -74,6 +74,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 		}
 		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+		logParentLangaugeSetting();
 		
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedPattern = resolve(pattern.getValue());

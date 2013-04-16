@@ -105,6 +105,8 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		}
 		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+		logParentLangaugeSetting();
+		logLanguageSettings();
 		
 		String resolvedTarget = resolve(target.getValue());
 		
@@ -169,7 +171,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' >= '" + value.toString() + "'.");
 			return State.VALID;
 		} else {
-			raiseError(ea, ERROR_CONDITION_NOT_MET, "Incoming value did not met the condition.", nodePath, resolvedTarget, dataField.getValue().toString());
+			raiseError(ea, ERROR_CONDITION_NOT_MET, "Incoming value did not meet the condition.", nodePath, resolvedTarget, dataField.getValue().toString());
 			return State.INVALID;
 		}
 	}

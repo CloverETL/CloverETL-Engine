@@ -107,6 +107,8 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		}
 		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+		logParentLangaugeSetting();
+		logLanguageSettings();
 		
 		String resolvedTarget = resolve(target.getValue());
 		

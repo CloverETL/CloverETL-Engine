@@ -30,7 +30,10 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
+import org.jetel.component.validator.ValidationNode.State;
+import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
+import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode.ChangeHandler;
@@ -55,11 +58,33 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Class providing easy to use conversion utils for validation rule.
+ * Default type to use is choosen from metadata, but it can be overriden by user.
+ * Usage:
+ *  - Extend from this class
+ *  - In method {@link #isValid(org.jetel.data.DataRecord, org.jetel.component.validator.ValidationErrorAccumulator, GraphWrapper)} perform this 
+ * 	<code>
+ * 		DataFieldType fieldType = computeType(field);
+ *		try {
+ *			initConversionUtils(fieldType);
+ *		} catch (IllegalArgumentException ex) {
+ *			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", nodePath, resolvedTarget, field.getValue().toString());
+ *			return State.INVALID;
+ *		}
+ *	</code>
+ * - In method {@link #isReady(DataRecordMetadata, ReadynessErrorAcumulator, GraphWrapper)} do not forget check for language setting by calling this
+ * 	<code>
+ * 		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
+ * 	</code>
+ * - Use via <code>tempComparator</code> and <code>tempConverter</code>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 12.3.2013
  */
-@XmlType(propOrder={"useTypeJAXB", "format", "locale", "timezone" })
-public abstract class ConversionValidationRule extends AbstractValidationRule {
+@XmlType(propOrder={"useTypeJAXB"})
+public abstract class ConversionValidationRule extends LanguageSettingsValidationRule {
+	
+	protected static final int LANGUAGE_SETTING_ACCESSOR_0 = 0;
 
 	public static enum METADATA_TYPES {
 		DEFAULT, STRING, DATE, LONG, NUMBER, DECIMAL;
@@ -91,82 +116,62 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 	@SuppressWarnings("unused")
 	private void setUseTypeJAXB(String input) { this.useType.setFromString(input); }
 	
-	@XmlElement(name="format", required=false)
-	protected StringEnumValidationParamNode format = new StringEnumValidationParamNode();
-	
-	@XmlElement(name="locale", required=false)
-	protected StringEnumValidationParamNode locale = new StringEnumValidationParamNode();
-	
-	@XmlElement(name="timezone", required=false)
-	protected StringEnumValidationParamNode timezone = new StringEnumValidationParamNode(Calendar.getInstance().getTimeZone().getID());
-	
+	public ConversionValidationRule() {
+		addLanguageSetting(new LanguageSetting());
+	}
+		
 	protected Converter tempConverter;
 	protected Comparator<?> tempComparator;
 	
 	@Override
 	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		final DataRecordMetadata inputMetadata = inMetadata;
-		target.setChangeHandler(new ChangeHandler() {
-			
-			@Override
-			public void changed(Object o) {
-				String field = (String) o;
-				String[] allFieldNames = inputMetadata.getFieldNamesArray();
-				for(String temp : allFieldNames) {
-					if(temp.equals(field)) {
-						if(inputMetadata.getField(temp).getLocaleStr() == null) {
-							locale.setValue(Defaults.DEFAULT_LOCALE);
-						} else {
-							locale.setValue(inputMetadata.getField(temp).getLocaleStr());
-						}
-						return;
-					}
-				}
-				
-			}
-		});
 		
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		useType.setName("Compare as");
 		params.add(useType);
 		
-		format.setName("Format mask");
-		format.setOptions(CommonFormats.all);
-		format.setPlaceholder("Number/date format, for syntax see documentation.");
-		params.add(format);
-		format.setEnabledHandler(new EnabledHandler() {
+		LanguageSetting languageSetting = getLanguageSettings(0);
+		languageSetting.initialize();
+		languageSetting.getDateFormat().setEnabledHandler(new EnabledHandler() {
 			
 			@Override
 			public boolean isEnabled() {
-				if(useType.getValue() == METADATA_TYPES.DATE || useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL) {
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
+				if(fieldMetadata != null && (useType.getValue() == METADATA_TYPES.DATE) && fieldMetadata.getDataType() == DataFieldType.STRING) {
 					return true;
 				}
 				return false;
 			}
 		});
-		locale.setName("Locale");
-		locale.setOptions(CommonFormats.locales);
-		locale.setTooltip("Locale code of record field");
-		params.add(locale);
-		locale.setEnabledHandler(new EnabledHandler() {
+		languageSetting.getNumberFormat().setEnabledHandler(new EnabledHandler() {
 			
 			@Override
 			public boolean isEnabled() {
-				if(useType.getValue() == METADATA_TYPES.DATE || useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL) {
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
+				if(fieldMetadata != null && (useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL || useType.getValue() == METADATA_TYPES.LONG) && fieldMetadata.getDataType() == DataFieldType.STRING) {
 					return true;
 				}
 				return false;
 			}
 		});
-		timezone.setName("Timezone");
-		timezone.setOptions(CommonFormats.timezones);
-		timezone.setTooltip("Timezone code of record field");
-		params.add(timezone);
-		timezone.setEnabledHandler(new EnabledHandler() {
+		languageSetting.getLocale().setEnabledHandler(new EnabledHandler() {
 			
 			@Override
 			public boolean isEnabled() {
-				if(useType.getValue() == METADATA_TYPES.DATE) {
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
+				if(fieldMetadata != null && (useType.getValue() != METADATA_TYPES.STRING && useType.getValue() != METADATA_TYPES.DEFAULT) && fieldMetadata.getDataType() == DataFieldType.STRING) {
+					return true;
+				}
+				return false;
+			}
+		});
+		languageSetting.getTimezone().setEnabledHandler(new EnabledHandler() {
+			
+			@Override
+			public boolean isEnabled() {
+				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
+				if(fieldMetadata != null && (useType.getValue() == METADATA_TYPES.DATE) && fieldMetadata.getDataType() == DataFieldType.STRING) {
 					return true;
 				}
 				return false;
@@ -195,6 +200,12 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 				throw new IllegalArgumentException("Cannot determine comparator for validation.");
 			}
 		}
+		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
+		
+		String resolvedDateFormat = resolve(computedLS.getDateFormat().getValue());
+		String resolvedNumberFormat = resolve(computedLS.getNumberFormat().getValue());
+		String resolvedLocale = resolve(computedLS.getLocale().getValue());
+		String resolvedTimezone = resolve(computedLS.getTimezone().getValue());
 		if(tempConverter == null) {
 			if (fieldType == DataFieldType.STRING) {
 				tempConverter = StringConverter.getInstance();
@@ -205,11 +216,11 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 					|| fieldType == DataFieldType.BOOLEAN) {
 				tempConverter = LongConverter.getInstance();
 			} else if (fieldType == DataFieldType.DATE) {
-				tempConverter = DateConverter.newInstance(format.getValue(), ValidatorUtils.localeFromString(locale.getValue()), TimeZone.getTimeZone(timezone.getValue()));
+				tempConverter = DateConverter.newInstance(resolvedDateFormat, ValidatorUtils.localeFromString(resolvedLocale), TimeZone.getTimeZone(resolvedTimezone));
 			} else if (fieldType == DataFieldType.NUMBER) {
-				tempConverter = DoubleConverter.newInstance(format.getValue(), ValidatorUtils.localeFromString(locale.getValue()));
+				tempConverter = DoubleConverter.newInstance(resolvedNumberFormat, ValidatorUtils.localeFromString(resolvedLocale));
 			} else if (fieldType == DataFieldType.DECIMAL) {
-				tempConverter = DecimalConverter.newInstance(format.getValue(), ValidatorUtils.localeFromString(locale.getValue()));
+				tempConverter = DecimalConverter.newInstance(resolvedNumberFormat, ValidatorUtils.localeFromString(resolvedLocale));
 			} else {
 				throw new IllegalArgumentException("Cannot determine converter for validation.");
 			}
@@ -230,24 +241,27 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
 		setPropertyRefResolver(graphWrapper);
 		boolean status = true;
-		if(useType.getValue() == METADATA_TYPES.DATE || useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL) {
-			DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, target.getValue());
-			if(format.getValue().isEmpty() && fieldMetadata != null && fieldMetadata.getDataType() == DataFieldType.STRING) {
-				accumulator.addError(format, this, "Format mask to parse incoming field must be filled.");
-				status &= false;
-			}
-			String resolvedLocale = resolve(locale.getValue());
-			if(resolvedLocale.isEmpty()) {
-				accumulator.addError(locale, this, "Locale of incoming field must be filled.");
-				status &= false;
-			}
+		LanguageSetting originalLS = getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0);
+		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(originalLS, parentLanguageSetting);
+		String resolvedTarget = resolve(target.getValue());
+		DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, resolvedTarget);
+		if(fieldMetadata == null) {
+			return false;
 		}
-		if(useType.getValue() == METADATA_TYPES.DATE) {
-			String resolvedTimezone = resolve(timezone.getValue());
-			if(resolvedTimezone.isEmpty()) {
-				accumulator.addError(timezone, this, "Timezone of incoming field must be filled.");
-				status &= false;
-			}
+		
+		String resolvedNumberFormat = resolve(computedLS.getNumberFormat().getValue());
+		String resolvedDateFormat = resolve(computedLS.getDateFormat().getValue());
+		String resolvedLocale = resolve(computedLS.getLocale().getValue());
+		String resolvedTimezone = resolve(computedLS.getTimezone().getValue());
+		if(fieldMetadata != null && (useType.getValue() == METADATA_TYPES.DATE) && fieldMetadata.getDataType() == DataFieldType.STRING) {
+			status &= isDateFormatReady(resolvedDateFormat, originalLS.getDateFormat(), accumulator);
+			status &= isLocaleReady(resolvedLocale, originalLS.getLocale(), accumulator);
+			status &= isTimezoneReady(resolvedTimezone, originalLS.getTimezone(), accumulator);
+		}
+		if(fieldMetadata != null && (useType.getValue() == METADATA_TYPES.DECIMAL || useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.LONG) && fieldMetadata.getDataType() == DataFieldType.STRING) {
+			status &= isNumberFormatReady(resolvedNumberFormat, originalLS.getNumberFormat(), accumulator);
+			status &= isLocaleReady(resolvedLocale, originalLS.getLocale(), accumulator);
+			status &= isTimezoneReady(resolvedTimezone, originalLS.getTimezone(), accumulator);
 		}
 		return status;
 	}
@@ -268,19 +282,8 @@ public abstract class ConversionValidationRule extends AbstractValidationRule {
 		return fieldType;
 	}
 
-	public StringEnumValidationParamNode getTimezone() {
-		return timezone;
-	}
-	
-	public StringEnumValidationParamNode getFormat() {
-		return format;
-	}
-	
-	public StringEnumValidationParamNode getLocale() {
-		return locale;
-	}
-
 	public EnumValidationParamNode getUseType() {
 		return useType;
 	}
 }
+
