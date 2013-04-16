@@ -1,12 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361367492640" licenseType="Commercial" modified="Tue Mar 19 19:56:28 CET 2013" modifiedBy="mtomcanyi" name="RunJobInHadoopHIVE" revision="1.40" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseType="Commercial" modified="Tue Apr 16 14:52:10 CEST 2013" modifiedBy="Raszyk" name="RunJobInHadoopHIVE" revision="1.42" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/Hive.cfg" id="JDBC0" type="JDBC"/>
-<Property fileURL="hadoop.prm" id="GraphParameter13"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="210" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0: Drop Hive table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="20" y="189">
+<Property fileURL="hadoop.prm" id="GraphParameter0"/>
+<Property fileURL="workspace.prm" id="GraphParameter3"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="259" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0: Drop Hive table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="20" y="189">
 <attr name="text"><![CDATA[
+
+
 
 
 
@@ -28,10 +31,13 @@ Drop table in Hive (if already exists) including any data it already contains.]]
 
 
 
+
+
 Recreates an empty Hive table to be populated with data.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="210" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 2: Load data from HDFS to Hive" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="675" y="298">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="267" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 2: Load data from HDFS to Hive" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="675" y="298">
 <attr name="text"><![CDATA[
+
 
 
 
