@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="0.0.0.devel" id="1197027195231" licenseType="Evaluation Devel" modified="Fri Jun 17 13:35:30 CEST 2011" modifiedBy="avackova" name="graphDBJoin" revision="1.60" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="3.4.0" id="1197027195231" licenseType="Commercial" modified="Tue Apr 16 17:37:52 CEST 2013" modifiedBy="user" name="graphDBJoin" revision="1.65" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/incorrectRecords.fmt" id="Metadata1"/>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
@@ -31,34 +30,45 @@
 <Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
 </Record>
 </Metadata>
+<Metadata id="UDR_ErrorPort">
+<Record fieldDelimiter="|" name="UniversalDataReader_ErrorPort" recordDelimiter="\n" type="delimited">
+<Field name="recordNo" type="long"/>
+<Field name="fieldNo" type="integer"/>
+<Field name="originalData" type="string"/>
+<Field name="errorMessage" type="string"/>
+<Field name="fileURL" type="string"/>
+</Record>
+</Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="Controlled" guiWidth="128" guiX="33" guiY="39" id="DATA_READER0" type="DATA_READER">
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="Controlled" guiX="33" guiY="39" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Reads a fixed-length flat file. One record contains incorrect value which cannot be assigned to the integer specified in metadata. As the Data Policy attribute is set to Controlled, such record is sent to the second output port. In addition to the whole record, number of the incorrect field, number of the incorrect record, and error message are the metadata fields for the error port. Data types are strictly specified along with their order, but names of the fields are arbitrary.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/correctCustomersControlled.txt" guiHeight="101" guiName="Correct Records" guiWidth="145" guiX="240" guiY="39" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="101" guiName="Error Information" guiWidth="155" guiX="240" guiY="147" id="TRASH0" type="TRASH">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/correctCustomersControlled.txt" guiName="Correct Records" guiX="240" guiY="39" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node debugPrint="true" enabled="enabled" guiName="Error Information" guiX="240" guiY="147" id="TRASH0" type="TRASH">
 <attr name="guiDescription"><![CDATA[Data are written to the Console.]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DATA_WRITER0:0"/>
 <Edge debugMode="false" fromNode="DATA_READER0:1" guiBendpoints="219:79|219:167" guiLocks="219|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (logs)" toNode="TRASH0:0"/>
 </Phase>
 <Phase number="1">
-<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="Lenient" guiWidth="128" guiX="33" guiY="263" id="DATA_READER1" type="DATA_READER">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="Lenient" guiX="33" guiY="263" id="DATA_READER1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Reads the same flat file which has been read in phase 0. With Lenient Data Policy, second output port is useless. Incorrect records are set to their default values (if possible), or ignored.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/correctCustomersLenient.txt" guiHeight="101" guiName="Correct and Incorect Records" guiWidth="238" guiX="240" guiY="263" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/correctCustomersLenient.txt" guiName="Correct and Incorect Records" guiX="240" guiY="263" id="DATA_WRITER1" type="DATA_WRITER"/>
 <Edge debugMode="false" fromNode="DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DATA_WRITER1:0"/>
 </Phase>
 <Phase number="2">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="Strict" guiWidth="128" guiX="33" guiY="383" id="DATA_READER2" type="DATA_READER">
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="Strict" guiX="33" guiY="383" id="DATA_READER2" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Reads the same flat file which has been read in previous phases. It tries to read all the input records, including the incorrect ones. As soon as it meets the first incorrect record, graph fails.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/allCustomersStrict.txt" guiHeight="101" guiName="Undefined" guiWidth="128" guiX="240" guiY="383" id="DATA_WRITER2" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/allCustomersStrict.txt" guiName="Undefined" guiX="240" guiY="383" id="DATA_WRITER2" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Can contain some valid records.]]></attr>
 </Node>
+<Node enabled="enabled" guiName="Fail" guiX="240" guiY="497" id="FAIL" type="FAIL"/>
 <Edge debugMode="false" fromNode="DATA_READER2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="false" fromNode="DATA_READER2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="UDR_ErrorPort" outPort="Port 1 (logs)" toNode="FAIL:0"/>
 </Phase>
 </Graph>
