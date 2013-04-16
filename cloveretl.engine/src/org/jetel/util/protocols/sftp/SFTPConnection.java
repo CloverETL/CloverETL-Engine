@@ -208,9 +208,9 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 			openedStreams++;
 			return is;
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException("Failed to open input stream", e);
 		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException("Failed to open input stream", e);
 		}
 	}
 
@@ -232,9 +232,9 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 			openedStreams++;
 			return os;
 		} catch (SftpException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException("Failed to open output stream", e);
 		} catch (JSchException e) {
-			throw new IOException(e.getMessage());
+			throw new IOException("Failed to open output stream", e);
 		}
 	}
 
