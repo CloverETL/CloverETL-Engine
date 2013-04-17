@@ -144,17 +144,6 @@ public class XPathPushParser {
 			 */
 			Object element = it.next();
 			applyContextMappings(mapping, element, newTarget, portIndex);
-
-			/*
-			 * pass record data to consumer if no error occured
-			 */
-			if (outContextStateStack.peek() == OutContextState.OK) {
-				recordReceiver.receive(newTarget, portIndex);
-			} else {
-				// replace error state with OK state
-				outContextStateStack.pop(); 
-				outContextStateStack.push(OutContextState.OK);
-			}
 		}
 		outContextStateStack.pop();
 	}
@@ -167,6 +156,17 @@ public class XPathPushParser {
 		}
 		for (FieldMapping fieldMapping : mapping.getFieldMappingChildren()) {
 			handleFieldMapping(fieldMapping, evaluationContext, targetRecord, portIndex);
+		}
+		/*
+		 * we have processed all fields of this level, so we can
+		 * pass results to the receiver (if no error)
+		 */
+		if (outContextStateStack.peek() == OutContextState.OK) {
+			recordReceiver.receive(targetRecord, portIndex);
+		} else {
+			// clear error flag
+			outContextStateStack.pop(); 
+			outContextStateStack.push(OutContextState.OK);
 		}
 		for (MappingContext constantMapping : mapping.getMappingContextChildren()) {
 			handleContext(constantMapping, evaluationContext, targetRecord);
