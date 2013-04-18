@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,6 +74,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -126,9 +130,9 @@ public class XmlSaxParser {
     protected Node parentComponent;
 	
     protected String mapping;
-	protected String mappingURL = null;
+    protected String mappingURL = null;
     
-	private boolean useNestedNodes = true;
+    private boolean useNestedNodes = true;
 	private boolean trim = true;
 	private boolean validate;
 	private String xmlFeatures;
@@ -218,6 +222,14 @@ public class XmlSaxParser {
 			throw new ComponentNotReadyException(ex);
 		}
 		saxHandler = new SAXHandler(getXmlElementMappingValues());
+		try {
+			// this is required to handle events for CDATA sections, processing instructions and entities
+			parser.setProperty("http://xml.org/sax/properties/lexical-handler", saxHandler);
+		} catch (SAXNotRecognizedException e) {
+			throw new ComponentNotReadyException("Lexical Handler not supported", e);
+		} catch (SAXNotSupportedException e) {
+			throw new ComponentNotReadyException("Lexical Handler not supported", e);
+		}
 	}
 	
 	public void reset() {
@@ -228,7 +240,12 @@ public class XmlSaxParser {
 		try {
 			parser.parse(inputSource, saxHandler);
 		} catch (IOException e) {
-			throw new JetelException("Unexpected exception", e);
+			// reasonable error reporting - get record number on which parsing. This should likely be implemented on Node level!
+			throw new JetelException("Unexpected exception on record #" + parentComponent.getInputPort(0).getInputRecordCounter(), e);
+		} catch (SAXException e) {
+			// reasonable error reporting - get record number on which parsing. This should likely be implemented on Node level!
+			logger.error("Unexpected exception on record #" + parentComponent.getInputPort(0).getInputRecordCounter());
+			throw e;
 		}
 	}
 	
@@ -360,6 +377,9 @@ public class XmlSaxParser {
      */
     protected class SAXHandler extends SAXContentHandler {
         
+    	private String CHARS_CDATA_START = "<!CDATA[";
+    	private String CHARS_CDATA_END = "]]>";
+    	
         // depth of the element, used to determine when we hit the matching
         // close element
         private int m_level = 0;
@@ -378,11 +398,24 @@ public class XmlSaxParser {
         // buffer for node value
         private StringBuilder m_characters = new StringBuilder();
         
+        private List<CharacterBufferMarker> m_elementContentStartIndexStack = new ArrayList<CharacterBufferMarker>();
         // the active mapping
         private XMLElementRuntimeMappingModel m_activeMapping = null;
         
         private Set<String> cloverAttributes;
         
+        /** 
+         * This is needed to know whether to escape entities in output characters or not.
+         * Entities in CDATA should not be escaped while entities in attribute values or characters should be escaped.
+         */
+        private boolean in_cdata = false;
+
+        /**
+         * Status flag to know whether the subtree should be concatenated into m_characters.
+         * It is also used to identify when to generate output.
+         */
+		private boolean m_element_as_text = false;
+
 		/**
 		 * @param cloverAttributes
 		 */
@@ -404,13 +437,12 @@ public class XmlSaxParser {
                 if (m_activeMapping.getDescendantReferences().containsKey(XMLMappingConstants.ELEMENT_VALUE_REFERENCE)) {
                		m_activeMapping.getDescendantReferences().put(XMLMappingConstants.ELEMENT_VALUE_REFERENCE, getCurrentValue());
                 }
-        		processCharacters(null,null, true);
+                if(!m_activeMapping.isCharactersProcessed()) {
+                	processCharacters(null,null, true);
+                	m_activeMapping.setCharactersProcessed(true);
+                }
         	}
         	
-            // Regardless of starting element type, reset the length of the buffer and flag
-            m_characters.setLength(0);
-            m_hasCharacters = false;
-            
             final String universalName = augmentURI(namespaceURI) + localName; 
             XMLElementRuntimeMappingModel mapping = null;
             if (m_activeMapping == null) {
@@ -433,6 +465,7 @@ public class XmlSaxParser {
                 // the DataRecord structure
                 m_activeMapping = mapping;
                 m_activeMapping.setLevel(m_level);
+                m_activeMapping.setCharactersProcessed(false);
                 // clear cached values of xml fields referenced by descendants (there may be values from previously read element of this m_activemapping)
                 for (Entry<String, String> e : m_activeMapping.getDescendantReferences().entrySet()) {
 					e.setValue(null);
@@ -535,6 +568,36 @@ public class XmlSaxParser {
                 }
             }
             
+        	// Extract Element As Text - debug log
+        	if(m_activeMapping != null && m_activeMapping.getLevel() == m_level) {
+        		logger.trace("startElement(" + qualifiedName + ") " + m_activeMapping.getFieldsMap());
+        	}
+        	
+        	// Extract Element As Text - start mapping of the subtree as a text
+         	// may be not in the right place - fix
+        	if(m_activeMapping != null && (m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) || m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT))) {
+        		m_element_as_text = true;
+        		m_hasCharacters = true;
+        	} else if(!m_element_as_text) {
+        		// Regardless of starting element type, reset the length of the buffer and flag
+        		logger.trace("startElement(" + qualifiedName + "): cleaning m_characters; !m_element_as_text");
+        		m_characters.setLength(0);
+        		this.m_elementContentStartIndexStack.clear();
+
+        		m_hasCharacters = false;
+        	}
+        	
+        	// Extract Element As Text - append element name; only when whole element should be extracted (including tags) or when we are already within the element
+        	if(m_element_as_text && (m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) || m_level >= m_activeMapping.getLevel() )) {
+        		logger.trace("startElement(" + qualifiedName + "): storing element name; m_element_as_text");
+    			//Starting new subtree mapping
+    			if(m_element_as_text && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) && m_level == m_activeMapping.getLevel() ) {
+    				this.m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, m_characters.length(), m_level));
+    			}
+    			m_characters.append("<").append(localName);
+    			
+    		}
+
             if (m_activeMapping != null //used only if we right now recognize new mapping element or if we want to use nested unmapped nodes as a source of data
                     && (useNestedNodes || mapping != null)) {
                 // In a matched element (i.e. we are creating a DataRecord)
@@ -581,8 +644,22 @@ public class XmlSaxParser {
                     }
                 }
             }
+
+            // Extract Element As Text - append all attributes and terminate the start tag; only when whole element should be extracted (including tags) or when we are already within the element
+        	if(m_element_as_text && (m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) || m_level >= m_activeMapping.getLevel())) {
+    			for (int i = 0; i < attributes.getLength(); i++) {
+   					m_characters.append(" ").append(attributes.getLocalName(i)).append("=\"").append(escapeXmlEntity(attributes.getValue(i))).append("\"");
+    			}
+    			m_characters.append(">");
+    		}
+			if(m_element_as_text && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) && m_level == m_activeMapping.getLevel()  ) {
+				this.m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.SUBTREE_START, m_characters.length(), m_level));
+			}
+            
+        	
             
         }
+        
         
         /**
          * @see org.xml.sax.ContentHandler#characters(char[], int, int)
@@ -590,11 +667,36 @@ public class XmlSaxParser {
         @Override
 		public void characters(char[] data, int offset, int length) throws SAXException {
             // Save the characters into the buffer, endElement will store it into the field
+        	logger.trace("characters '" + new String(data, offset, length) + "'");
             if (m_activeMapping != null && m_grabCharacters) {
-                m_characters.append(data, offset, length);
+            	if(m_elementContentStartIndexStack.size()>0 && m_elementContentStartIndexStack.get(m_elementContentStartIndexStack.size()-1).type==CharacterBufferMarkerType.CHARACTERS_END &&
+            			m_elementContentStartIndexStack.get(m_elementContentStartIndexStack.size()-1).index==m_characters.length()) {
+            		m_elementContentStartIndexStack.remove(m_elementContentStartIndexStack.size()-1);
+            	}else{
+            		m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CHARACTERS_START, m_characters.length(), m_level));
+            	}
+
+            	if(m_element_as_text && !in_cdata) {
+            		// perform entity escaping only when extracting element as text since the output should still be valid XML.
+            		m_characters.append(escapeXmlEntity(new String(data, offset, length)));
+            	} else {
+            		m_characters.append(data, offset, length);
+            	}
+            	m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CHARACTERS_END, m_characters.length(), m_level));
                 m_hasCharacters = true;
             }
         }
+        
+        private String escapeXmlEntity(String entity) {
+        	return entity
+        	.replace("&", "&amp;")
+        	.replace("\"", "&quot")
+        	.replace("'", "&apos;")
+        	.replace("<", "&lt;")
+        	.replace(">", "&gt;")
+        	;
+        }
+        
         
         /**
          * @see org.xml.sax.ContentHandler#endElement(java.lang.String, java.lang.String, java.lang.String)
@@ -608,7 +710,16 @@ public class XmlSaxParser {
                 if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.getDescendantReferences().containsKey(fullName)) {
                		m_activeMapping.getDescendantReferences().put(fullName, getCurrentValue());
                 }
+                if(m_element_as_text && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) && m_level >= m_activeMapping.getLevel()) {
+                	this.m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.SUBTREE_END, m_characters.length(), m_level));
+                }
                 
+            	// Extract Element As Text - append element's end tag; only when whole element should be extracted (including tags) or when we are already within the element
+            	if(m_element_as_text && (m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) || m_level >= m_activeMapping.getLevel())) {
+            		logger.trace("endElement(" + qualifiedName + "): storing element name; m_element_as_text");
+                	m_characters.append("</").append(localName).append(">");
+            	} 
+
                 // if we are finishing the mapping, check for the mapping on this element through parent
                 if (m_activeMapping != null && m_level == m_activeMapping.getLevel()) {
                 	if (m_activeMapping.hasFieldsFromAncestor()) {
@@ -621,11 +732,31 @@ public class XmlSaxParser {
                 	}
                 }
                	processCharacters(namespaceURI, localName, m_level == m_activeMapping.getLevel());
-                
-                // Regardless of whether this was saved, reset the length of the
-                // buffer and flag
-                m_characters.setLength(0);
-                m_hasCharacters = false;
+
+               	boolean clearMarkers = true;
+               	for (CharacterBufferMarker marker : this.m_elementContentStartIndexStack) {
+					if(marker.level<m_level) {
+						clearMarkers = false;
+					}
+				}
+               	if(clearMarkers) {
+               		this.m_elementContentStartIndexStack.clear();
+               	}
+               	
+            	// Extract Element As Text - clean-up buffers when value is stored to output
+               	if(this.m_elementContentStartIndexStack.size()==0 && m_activeMapping != null && m_activeMapping.getLevel() == m_level && (m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) || m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT))) {
+               		m_element_as_text = false;
+            		m_hasCharacters = false;
+            		m_grabCharacters = true;
+            		m_characters.setLength(0);
+            		logger.trace("endElement(" + qualifiedName + "): cleaning m_characters; end of m_element_as_text");
+            	} else if (!m_element_as_text && this.m_elementContentStartIndexStack.size()==0) {
+            		// Regardless of whether this was saved, reset the length of the
+            		// buffer and flag
+            		logger.trace("endElement(" + qualifiedName + "): cleaning m_characters; !m_element_as_text");
+            		m_characters.setLength(0);
+            		m_hasCharacters = false;
+            	}
             }
             
             if (m_activeMapping != null && m_level == m_activeMapping.getLevel()) {
@@ -661,7 +792,7 @@ public class XmlSaxParser {
 	                    	
 	                    	// resets all child's mappings for skip and numRecords 
                            	m_activeMapping.resetCurrentRecord4ChildMapping();
-
+                           	m_activeMapping.setCharactersProcessed(false);
                         	// reset record
 	                        outRecord.reset();
                         }
@@ -676,101 +807,295 @@ public class XmlSaxParser {
             }
             
             //text value immediately after end tag element should not be stored
-            m_grabCharacters = false;
-            
+            if(!m_element_as_text) {
+            	m_grabCharacters = false;
+            }
             //ended an element so decrease our depth
             m_level--; 
         }
 
+        
+        @Override
+        public void endCDATA() throws SAXException {
+//        	super.endCDATA();
+        	in_cdata = false;
+           	logger.trace("Leaving CDATA");
+        	if(m_element_as_text) {
+            	m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CDATA_END, m_characters.length(), m_level));
+           		m_characters.append(CHARS_CDATA_END);
+                m_hasCharacters = true;
+           	}
+        }
+        
+        @Override
+        public void startCDATA() throws SAXException {
+        	super.startCDATA();
+        	logger.trace("Entering CDATA");
+           	in_cdata = true;
+        	if(m_element_as_text) {
+            	m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CDATA_START, m_characters.length(), m_level));
+           		m_characters.append(CHARS_CDATA_START);
+                m_hasCharacters = true;
+           	}
+        }
+        
+        @Override
+        public void processingInstruction(String target, String data) throws SAXException {
+        	super.processingInstruction(target, data);
+        	logger.trace("Processing instruction " + target);
+           	if(m_element_as_text) {
+           		m_characters.append("<?").append(target).append(" ").append(data).append("?>");
+           	}
+           	m_hasCharacters = true;
+        }
+        
 		/**
 		 * @return
 		 */
 		private String getCurrentValue() {
 			return trim ? m_characters.toString().trim() : m_characters.toString();
 		}
-
+		
+		private String getCurrentValue(int startIndex, int endIndex) {
+			return this.getCurrentValue(startIndex, endIndex, false);
+		}
+		
+		private String getCurrentValue(int startIndex, int endIndex, boolean excludeCDataTag) {
+			if(startIndex<0) {
+				return this.getCurrentValue();
+			}
+			String value = null;
+			
+			int excludeStart = -1;
+			int excludeEnd = -1;
+			int storedEndIndex = endIndex;
+			if(excludeCDataTag) {
+				for(int i=0; i<this.m_elementContentStartIndexStack.size(); i++) {
+					if(this.m_elementContentStartIndexStack.get(i).index>startIndex && this.m_elementContentStartIndexStack.get(i).index<endIndex){
+						if(this.m_elementContentStartIndexStack.get(i).type == CharacterBufferMarkerType.CDATA_START) {
+							excludeStart = this.m_elementContentStartIndexStack.get(i).index;
+							excludeEnd =  excludeStart + CHARS_CDATA_START.length();
+							endIndex = excludeStart;
+						}else if (this.m_elementContentStartIndexStack.get(i).type == CharacterBufferMarkerType.CDATA_END) { 
+							excludeStart = this.m_elementContentStartIndexStack.get(i).index;
+							excludeEnd =  excludeStart + CHARS_CDATA_END.length();
+							endIndex = excludeStart;
+						}
+					}
+				}
+			}
+			
+			if(endIndex<0) {
+				value = m_characters.substring(startIndex);
+			}else{
+				value = m_characters.substring(startIndex, endIndex);
+			}
+			if(excludeStart>0 && excludeEnd>0) {
+				value += getCurrentValue(excludeEnd, storedEndIndex, excludeCDataTag);
+			}
+			
+			return (trim && value!=null)?value.trim():value;
+		}
+		
+		private int firstIndexWithType(Set<CharacterBufferMarkerType> types, int startFrom) {
+			for(int i=startFrom; i<this.m_elementContentStartIndexStack.size(); i++) {
+				if(types.contains(this.m_elementContentStartIndexStack.get(i).type)) {
+					return i;
+				}
+			}
+			return -1;
+			
+		}
+		
+		private int firstIndexWithType(CharacterBufferMarkerType type, int startFrom) {
+			return firstIndexWithType(Collections.singleton(type), startFrom);
+		}
+		
+		private int lastIndexWithType(CharacterBufferMarkerType type) {
+			for(int i=this.m_elementContentStartIndexStack.size()-1; i>=0; i--) {
+				if(this.m_elementContentStartIndexStack.get(i).type==type) {
+					return i;
+				}
+			}
+			return -1;
+		}
+ 
 		/**
 		 * Store the characters processed by the characters() call back only if we have corresponding 
 		 * output field and we are on the right level or we want to use data from nested unmapped nodes
 		 */
 		private void processCharacters(String namespaceURI, String localName, boolean elementValue) {
-        	// Create universal name
+			// Create universal name
 			String universalName = null;
 			if (localName != null) {
 				universalName = augmentURI(namespaceURI) + localName;
 			}
-			
-			String fieldName = null;
-        	//use fields mapping
-            Map<String, String> xml2clover = m_activeMapping.getFieldsMap();
-            if (xml2clover != null) {
-           		if (elementValue && xml2clover.containsKey(XMLMappingConstants.ELEMENT_VALUE_REFERENCE)) {
-            		fieldName = xml2clover.get(XMLMappingConstants.ELEMENT_VALUE_REFERENCE);
-        		} else if (xml2clover.containsKey(universalName)) {
-            		fieldName = xml2clover.get(universalName);
-        		} else if (m_activeMapping.getExplicitCloverFields().contains(localName)) {
-        			// XXX: this is nonsense code ... the names stored here are field names and the code used XML element names
-        			return; // don't do implicit mapping if clover field is used in an explicit mapping
-        		}
 
-           		if (fieldName == null && m_activeMapping.isImplicit()) {
-           			/*
-           			 * As we could not find match using qualified name
-           			 * try mapping the xml element/attribute without the namespace prefix
-           			 */
-           			fieldName = localName;
-           		}
-            }
-            
-			// TODO Labels replace:
-			if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName) 
-			        && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
-			    DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
-			    // If field is nullable and there's no character data set it to null
-			    if (m_hasCharacters) {
-			        try {
-			    	if (field.getValue() != null && cloverAttributes.contains(fieldName)) {
-			    		field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
-			    	} else {
-			    		field.fromString(getCurrentValue());
-			    	}
-			        } catch (BadDataFormatException ex) {
-			            // This is a bit hacky here SOOO let me explain...
-			            if (field.getType() == DataFieldMetadata.DATE_FIELD) {
-			                // XML dateTime format is not supported by the
-			                // DateFormat oject that clover uses...
-			                // so timezones are unparsable
-			                // i.e. XML wants -5:00 but DateFormat wants
-			                // -500
-			                // Attempt to munge and retry... (there has to
-			                // be a better way)
-			                try {
-			                    // Chop off the ":" in the timezone (it HAS
-			                    // to be at the end)
-			                    String dateTime = m_characters.substring(0,
-			                            m_characters.lastIndexOf(":"))
-			                            + m_characters
-			                            .substring(m_characters
-			                            .lastIndexOf(":") + 1);
-			                    DateFormatter formatter = field.getMetadata().createDateFormatter();
-			                    field.setValue(formatter.parseDate(trim ? dateTime.trim() : dateTime));
-			                } catch (Exception ex2) {
-			                    // Oh well we tried, throw the originating
-			                    // exception
-			                    throw ex;
-			                }
-			            } else {
-			                throw ex;
-			            }
-			        }
-			    } else if (field.getType() == DataFieldMetadata.STRING_FIELD 
-			    		// and value wasn't already stored (from characters)
-			    		&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
-			    	field.setValue("");
-			    }
+			String fieldName = null;
+			// use fields mapping
+			Map<String, String> xml2clover = m_activeMapping.getFieldsMap();
+			if (xml2clover != null && xml2clover.keySet().size()>0) {
+				Set<String> keys = xml2clover.keySet();
+				for (String key : keys) {
+					int startIndex = -1;
+					int endIndex = -1;
+					boolean excludeCDataTag = false;
+					if (elementValue && key.equals(XMLMappingConstants.ELEMENT_VALUE_REFERENCE)) {
+						int startIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_START);
+						if (startIndexPosition >= 0) {
+							int endIndexPosition = this.firstIndexWithType(new HashSet<CharacterBufferMarkerType>(Arrays.asList(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, CharacterBufferMarkerType.SUBTREE_WITH_TAG_END, CharacterBufferMarkerType.SUBTREE_END, CharacterBufferMarkerType.SUBTREE_START)), startIndexPosition);
+							endIndexPosition--; // we need one marker before found
+							if (endIndexPosition < 0 && startIndexPosition >= 0) {
+								endIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_END);
+							}
+
+							if (endIndexPosition > 0) {
+								endIndex = this.m_elementContentStartIndexStack.get(endIndexPosition).index;
+								// now remove all characters marker between startIndexPosition and endIndexPosition
+								for (int i = endIndexPosition - 1; i > startIndexPosition; i--) {
+									CharacterBufferMarkerType type = this.m_elementContentStartIndexStack.get(i).type;
+									if (type == CharacterBufferMarkerType.CHARACTERS_END || type == CharacterBufferMarkerType.CHARACTERS_START) {
+										this.m_elementContentStartIndexStack.remove(i);
+									}
+								}
+								this.m_elementContentStartIndexStack.remove(endIndexPosition);
+							}
+							startIndex = this.m_elementContentStartIndexStack.remove(startIndexPosition).index;
+						}
+						excludeCDataTag = true;
+						fieldName = xml2clover.get(XMLMappingConstants.ELEMENT_VALUE_REFERENCE);
+					} else if (m_hasCharacters && key.equals(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) && m_activeMapping.getLevel() == m_level) {
+						fieldName = xml2clover.get(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT);
+						int endIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.SUBTREE_END);
+						if(endIndexPosition>=0) {
+							endIndex = this.m_elementContentStartIndexStack.remove(endIndexPosition).index;
+						}
+						int startIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.SUBTREE_START); 
+						if(startIndexPosition>=0) {
+							startIndex = this.m_elementContentStartIndexStack.remove(startIndexPosition).index;
+						}
+						logger.trace("processCharacters: getting field name for (" + localName + "); " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+					} else if (m_hasCharacters && key.equals(XMLMappingConstants.ELEMENT_AS_TEXT) && m_activeMapping.getLevel() == m_level) {
+						fieldName = xml2clover.get(XMLMappingConstants.ELEMENT_AS_TEXT);
+						int startIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START); 
+						if(startIndexPosition>=0) {
+							startIndex = this.m_elementContentStartIndexStack.remove(startIndexPosition).index;
+						}
+						logger.trace("processCharacters: getting field name for (" + localName + "); " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+					} else if (key.equals(universalName)) {
+						fieldName = xml2clover.get(universalName);
+					} else if (m_activeMapping.getExplicitCloverFields().contains(localName)) {
+						// XXX: this is nonsense code ... the names stored here are field names and the code used XML
+						// element names
+						return; // don't do implicit mapping if clover field is used in an explicit mapping
+					}
+
+					if (fieldName == null && m_activeMapping.isImplicit()) {
+						/*
+						 * As we could not find match using qualified name try mapping the xml element/attribute without
+						 * the namespace prefix
+						 */
+						fieldName = localName;
+					}
+
+				// XXX what if fieldName == null ???
+
+				// TODO Labels replace:
+				if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName) && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
+					DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
+					// If field is nullable and there's no character data set it to null
+					if (m_hasCharacters) {
+						logger.trace("processCharacters: storing (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+						try {
+							if (field.getValue() != null && cloverAttributes.contains(fieldName)) {
+								// XXX WTF?
+								field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
+							} else {
+								logger.trace("processCharacters: storing a new value (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+								field.fromString(getCurrentValue(startIndex, endIndex, excludeCDataTag));
+							}
+						} catch (BadDataFormatException ex) {
+							// This is a bit hacky here SOOO let me explain...
+							if (field.getType() == DataFieldMetadata.DATE_FIELD) {
+								// XML dateTime format is not supported by the
+								// DateFormat oject that clover uses...
+								// so timezones are unparsable
+								// i.e. XML wants -5:00 but DateFormat wants
+								// -500
+								// Attempt to munge and retry... (there has to
+								// be a better way)
+								try {
+									// Chop off the ":" in the timezone (it HAS
+									// to be at the end)
+									String dateTime = m_characters.substring(0, m_characters.lastIndexOf(":")) + m_characters.substring(m_characters.lastIndexOf(":") + 1);
+									DateFormatter formatter = field.getMetadata().createDateFormatter();
+									field.setValue(formatter.parseDate(trim ? dateTime.trim() : dateTime));
+								} catch (Exception ex2) {
+									// Oh well we tried, throw the originating
+									// exception
+									throw ex;
+								}
+							} else {
+								throw ex;
+							}
+						}
+					} else if (field.getType() == DataFieldMetadata.STRING_FIELD
+					// and value wasn't already stored (from characters)
+					&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
+						field.setValue("");
+					}
+				}
+				}
+			}else{
+				fieldName = localName;
+				// TODO Labels replace:
+				if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName) && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
+					DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
+					// If field is nullable and there's no character data set it to null
+					if (m_hasCharacters) {
+						logger.trace("processCharacters: storing (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+						try {
+							if (field.getValue() != null && cloverAttributes.contains(fieldName)) {
+								// XXX WTF?
+								field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
+							} else {
+								logger.trace("processCharacters: storing a new value (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+								field.fromString(getCurrentValue());
+							}
+						} catch (BadDataFormatException ex) {
+							// This is a bit hacky here SOOO let me explain...
+							if (field.getType() == DataFieldMetadata.DATE_FIELD) {
+								// XML dateTime format is not supported by the
+								// DateFormat oject that clover uses...
+								// so timezones are unparsable
+								// i.e. XML wants -5:00 but DateFormat wants
+								// -500
+								// Attempt to munge and retry... (there has to
+								// be a better way)
+								try {
+									// Chop off the ":" in the timezone (it HAS
+									// to be at the end)
+									String dateTime = m_characters.substring(0, m_characters.lastIndexOf(":")) + m_characters.substring(m_characters.lastIndexOf(":") + 1);
+									DateFormatter formatter = field.getMetadata().createDateFormatter();
+									field.setValue(formatter.parseDate(trim ? dateTime.trim() : dateTime));
+								} catch (Exception ex2) {
+									// Oh well we tried, throw the originating
+									// exception
+									throw ex;
+								}
+							} else {
+								throw ex;
+							}
+						}
+					} else if (field.getType() == DataFieldMetadata.STRING_FIELD
+					// and value wasn't already stored (from characters)
+					&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
+						field.setValue("");
+					}
+				}
 			}
 		}
-    }
+	}
 
     /**
      * Augments the namespaceURIs with curly brackets to allow easy creation of qualified names
@@ -912,4 +1237,32 @@ public class XmlSaxParser {
 		return autoFilling;
 	}
 	
+}
+
+enum CharacterBufferMarkerType {
+	CHARACTERS_START,
+	SUBTREE_START,
+	SUBTREE_WITH_TAG_START,
+	CDATA_START,
+	CHARACTERS_END,
+	SUBTREE_END,
+	SUBTREE_WITH_TAG_END,
+	CDATA_END
+}
+
+class CharacterBufferMarker {
+	public CharacterBufferMarkerType type;
+	public int index;
+	public int level;
+	
+	public CharacterBufferMarker(CharacterBufferMarkerType type, int index, int level) {
+		this.type = type;
+		this.index = index;
+		this.level = level; 
+	}
+	
+	@Override
+	public String toString() {
+		return (type!=null?type.name():"[NO TYPE]") + " on index "+this.index;
+	}
 }
