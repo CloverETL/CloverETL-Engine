@@ -26,6 +26,7 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
@@ -36,6 +37,8 @@ import org.jetel.util.string.StringUtils;
 
 public final class MiscUtils {
 
+	private static final Logger logger = Logger.getLogger(MiscUtils.class);
+	
 	private MiscUtils() {
 	}
 
@@ -180,4 +183,21 @@ public final class MiscUtils {
 		}
 	}
 
+	/**
+	 * Wrapper for method {@link System#getenv(String)} method.
+	 * Possible {@link SecurityException} is caught and null is returned.
+	 * Null value is returned even for null variable name.
+	 */
+	public static String getEnvSafe(String envVariableName) {
+		if (envVariableName == null) {
+			return null;
+		}
+		try {
+			return System.getenv(envVariableName);
+		} catch (SecurityException e) {
+			logger.debug("Could not resolve environment variable '" + envVariableName + "' due security manager.", e);
+			return null;
+		}
+	}
+	
 }
