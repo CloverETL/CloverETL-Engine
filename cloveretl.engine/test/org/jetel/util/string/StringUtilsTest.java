@@ -20,6 +20,7 @@
  */
 package org.jetel.util.string;
 
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Properties;
@@ -635,54 +636,49 @@ public class StringUtilsTest extends CloverTestCase {
 		);
 	}
 	
-	public void testTrimCloverBuffer() {
-		assertTrue(StringUtils.trim(new CloverString("")).equals(new CloverString("")));
-		
-		assertTrue(StringUtils.trim(new CloverString("abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString(" abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString("       abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString("	abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString("				abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString("    	  		   abc")).equals(new CloverString("abc")));
-
-		assertTrue(StringUtils.trim(new CloverString("abc ")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString("abc       ")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString("abc	")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString("abc				")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString("abc    	  		   ")).equals(new CloverString("abc")));
-		
-		assertTrue(StringUtils.trim(new CloverString(" 	 	 	    abc    	  		   ")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trim(new CloverString(" 	 	 	    a b c    	  		   ")).equals(new CloverString("a b c")));
-		assertTrue(StringUtils.trim(new CloverString(" 	 	 	    a	bc    	  		   ")).equals(new CloverString("a	bc")));
+	public void trimLeading(String trimmed, String expected) {
+		assertTrue(StringUtils.trimLeading(new CloverString(trimmed)).equals(new CloverString(expected)));
+		assertTrue(StringUtils.trimLeading(new StringBuilder(trimmed)).toString().equals(expected));
+		assertTrue(StringUtils.trimLeading(CharBuffer.wrap(trimmed)).toString().equals(expected));
 	}
 
-	public void testTrimLeadingCloverBuffer() {
-		assertTrue(StringUtils.trimLeading(new CloverString("")).equals(new CloverString("")));
-
-		assertTrue(StringUtils.trimLeading(new CloverString("abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trimLeading(new CloverString(" abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trimLeading(new CloverString("       abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trimLeading(new CloverString("	abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trimLeading(new CloverString("				abc")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trimLeading(new CloverString("    	  		   abc")).equals(new CloverString("abc")));
-	
-		assertTrue(StringUtils.trimLeading(new CloverString(" 	 	 	    abc    	  		   ")).equals(new CloverString("abc    	  		   ")));
-		assertTrue(StringUtils.trimLeading(new CloverString(" 	 	 	    a b c    	  		   ")).equals(new CloverString("a b c    	  		   ")));
-		assertTrue(StringUtils.trimLeading(new CloverString(" 	 	 	    a	bc    	  		   ")).equals(new CloverString("a	bc    	  		   ")));
+	public void trimTrailing(String trimmed, String expected) {
+		assertTrue(StringUtils.trimTrailing(new CloverString(trimmed)).equals(new CloverString(expected)));
+		assertTrue(StringUtils.trimTrailing(new StringBuilder(trimmed)).toString().equals(expected));
+		assertTrue(StringUtils.trimTrailing(CharBuffer.wrap(trimmed)).toString().equals(expected));
 	}
-	
-	public void testTrimTrailingCloverBuffer() {
-		assertTrue(StringUtils.trimTrailing(new CloverString("")).equals(new CloverString("")));
 
-		assertTrue(StringUtils.trimTrailing(new CloverString("abc ")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trimTrailing(new CloverString("abc       ")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trimTrailing(new CloverString("abc	")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trimTrailing(new CloverString("abc				")).equals(new CloverString("abc")));
-		assertTrue(StringUtils.trimTrailing(new CloverString("abc    	  		   ")).equals(new CloverString("abc")));
+	public void testTrimLeading() {
+		trimLeading("", "");
+		trimLeading(" ", "");
+		trimLeading("   ", "");
+
+		trimLeading("abc", "abc");
+		trimLeading(" abc", "abc");
+		trimLeading("       abc", "abc");
+		trimLeading("	abc", "abc");
+		trimLeading("				abc", "abc");
+		trimLeading("    	   		   abc", "abc");
 	
-		assertTrue(StringUtils.trimTrailing(new CloverString(" 	 	 	    abc    	  		   ")).equals(new CloverString(" 	 	 	    abc")));
-		assertTrue(StringUtils.trimTrailing(new CloverString(" 	 	 	    a b c    	  		   ")).equals(new CloverString(" 	 	 	    a b c")));
-		assertTrue(StringUtils.trimTrailing(new CloverString(" 	 	 	    a	bc    	  		   ")).equals(new CloverString(" 	 	 	    a	bc")));
+		trimLeading(" 	 	 	    abc    	  		   ", "abc    	  		   ");
+		trimLeading(" 	 	 	    a b c    	  		   ", "a b c    	  		   ");
+		trimLeading(" 	 	 	    a	bc    	  		   ", "a	bc    	  		   ");
+	}
+
+	public void testTrimTrailing() {
+		trimTrailing("", "");
+		trimTrailing(" ", "");
+		trimTrailing("   ", "");
+
+		trimTrailing("abc ", "abc");
+		trimTrailing("abc       ", "abc");
+		trimTrailing("abc	", "abc");
+		trimTrailing("abc				", "abc");
+		trimTrailing("abc    	  		   ", "abc");
+	
+		trimTrailing(" 	 	 	    abc    	  		   ", " 	 	 	    abc");
+		trimTrailing(" 	 	 	    a b c    	  		   ", " 	 	 	    a b c");
+		trimTrailing(" 	 	 	    a	bc    	  		   ", " 	 	 	    a	bc");
 	}
 
 	public void testEqualsWithNulls() {

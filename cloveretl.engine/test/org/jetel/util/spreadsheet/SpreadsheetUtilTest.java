@@ -39,6 +39,7 @@ public class SpreadsheetUtilTest extends CloverTestCase {
 		assertEquals(26, SpreadsheetUtils.getColumnIndex("AA"));
 		assertEquals(2730, SpreadsheetUtils.getColumnIndex("DAA"));
 		assertEquals(SpreadsheetUtils.INFINITY_COORDINATE, SpreadsheetUtils.getColumnIndex(SpreadsheetUtils.INFINITY_COORDINATE_STRING));
+		assertEquals(SpreadsheetUtils.INFINITY_COORDINATE, SpreadsheetUtils.getColumnIndex(SpreadsheetUtils.INFINITY_COORDINATE_STRING + 999));
 		assertEquals(new Point(SpreadsheetUtils.INFINITY_COORDINATE, 10), SpreadsheetUtils.getCellCoordinates(SpreadsheetUtils.INFINITY_COORDINATE_STRING + "11"));
 		assertEquals(new Point(10, SpreadsheetUtils.INFINITY_COORDINATE), SpreadsheetUtils.getCellCoordinates("K" + SpreadsheetUtils.INFINITY_COORDINATE_STRING));
 	}

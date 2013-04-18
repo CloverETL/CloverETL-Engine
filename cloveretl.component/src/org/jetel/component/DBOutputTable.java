@@ -1328,15 +1328,10 @@ public class DBOutputTable extends Node {
                             statement.close();
                         }
 					} catch (SQLException e) {
-						//issue #5397
-						//following piece of code was commented due confusing warning on DBOutputTable component for MySQL database
-						//we are going to move this message to debug logging level
-						// Probably only can't validate
-						//ConfigurationProblem problem = new ConfigurationProblem(e
-						//		.getMessage(), ConfigurationStatus.Severity.WARNING, this,
-						//		ConfigurationStatus.Priority.NORMAL);
-						//status.add(problem);
-						logger.debug("CheckConfig warning", e);
+						ConfigurationProblem problem = new ConfigurationProblem(e,
+								ConfigurationStatus.Severity.WARNING, this,
+								ConfigurationStatus.Priority.NORMAL, null);
+						status.add(problem);
 					}                        
 				}
 			}

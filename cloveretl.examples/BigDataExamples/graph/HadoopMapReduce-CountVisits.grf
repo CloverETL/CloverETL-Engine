@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="tkramolis" created="Thu Feb 21 10:30:53 CET 2013" guiVersion="3.4.0.M2" id="1361448467277" licenseType="Commercial" modified="Tue Mar 19 19:41:48 CET 2013" modifiedBy="mtomcanyi" name="ProcessLog_HadoopMapReduce" revision="1.59" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="tkramolis" created="Thu Feb 21 10:30:53 CET 2013" guiVersion="0.0.0.devel" id="1361448467277" licenseType="Commercial" modified="Tue Apr 16 14:52:16 CEST 2013" modifiedBy="Raszyk" name="ProcessLog_HadoopMapReduce" revision="1.61" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
@@ -11,8 +12,10 @@
 <Connection config="${CONN_DIR}/Hadoop-CDH-3u5.cfg" id="CDH3" type="HADOOP"/>
 <Property fileURL="hadoop.prm" id="GraphParameter0"/>
 <Property fileURL="workspace.prm" id="GraphParameter3"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="244" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read MapReduce Results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="286" x="198" y="204">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="276" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read MapReduce Results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="286" x="198" y="204">
 <attr name="text"><![CDATA[
+
+
 
 
 

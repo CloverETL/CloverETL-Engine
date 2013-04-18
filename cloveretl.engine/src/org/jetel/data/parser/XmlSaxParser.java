@@ -479,11 +479,15 @@ public class XmlSaxParser {
 	                                m_activeMapping.setGeneratedKeyFields(null);
 	                                m_activeMapping.setParentKeyFields(null);
 	                            } else {
+                                    XMLElementRuntimeMappingModel parentKeyFieldsMapping = m_activeMapping.getParent();
+                                    while (parentKeyFieldsMapping != null && parentKeyFieldsMapping.getOutputRecord() == null) {
+                                    	parentKeyFieldsMapping = parentKeyFieldsMapping.getParent();
+                                    }
 	                                for(int i = 0; i < parentKey.length; i++) {
 	                                    boolean existGeneratedKeyField = (outRecord != null) 
 	                                    			&& (generatedKey.length == 1 ? outRecord.hasField(generatedKey[0]) : outRecord.hasField(generatedKey[i]));
-	                                    boolean existParentKeyField = m_activeMapping.getParent().getOutputRecord() != null 
-	                                    					&& m_activeMapping.getParent().getOutputRecord().hasField(parentKey[i]);
+	                                    boolean existParentKeyField = parentKeyFieldsMapping != null 
+                            						&& parentKeyFieldsMapping.getOutputRecord().hasField(parentKey[i]);
 	                                    if (!existGeneratedKeyField) {
 	                                        logger.warn(parentComponent.getId() + ": XML Extract Mapping's generatedKey field was not found. generatedKey: "
 	                                                + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]) + " of element " + m_activeMapping.getElementName() + ", outPort: " + m_activeMapping.getOutputPortNumber());
@@ -497,7 +501,7 @@ public class XmlSaxParser {
 	                                    	// both outRecord and m_activeMapping.getParrent().getOutRecord are not null
 	                                    	// here, because of if-else if-else chain
 	                                        DataField generatedKeyField = generatedKey.length == 1 ? outRecord.getField(generatedKey[0]) : outRecord.getField(generatedKey[i]);
-	                                        DataField parentKeyField = m_activeMapping.getParent().getOutputRecord().getField(parentKey[i]);
+	                                        DataField parentKeyField = parentKeyFieldsMapping.getOutputRecord().getField(parentKey[i]);
 	                                        if(generatedKey.length != parentKey.length) {
 	                                            if(generatedKeyField.getType() != DataFieldMetadata.STRING_FIELD) {
 	                                            	logger.warn(parentComponent.getId() + ": XML Extract Mapping's generatedKey field has to be String type (keys are concatened to this field).");

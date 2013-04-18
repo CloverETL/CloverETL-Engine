@@ -1300,7 +1300,7 @@ public class StringUtils {
 
 	public static StringBuilder trimTrailing(StringBuilder str) {
 		int pos = str.length() - 1;
-		while (pos > 0 && Character.isWhitespace(str.charAt(pos))) {
+		while (pos >= 0 && Character.isWhitespace(str.charAt(pos))) {
 			pos--;
 		}
 		str.setLength(pos + 1);
@@ -1309,7 +1309,7 @@ public class StringUtils {
 
 	public static CloverString trimTrailing(CloverString str) {
 		int pos = str.length() - 1;
-		while (pos > 0 && Character.isWhitespace(str.charAt(pos))) {
+		while (pos >= 0 && Character.isWhitespace(str.charAt(pos))) {
 			pos--;
 		}
 		str.setLength(pos + 1);

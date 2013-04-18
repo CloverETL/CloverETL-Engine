@@ -148,14 +148,14 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	 */
 	@Override
 	public int jetelType2sql(DataFieldMetadata field){
-		switch (field.getType()) {
-		case DataFieldMetadata.INTEGER_FIELD:
+		switch (field.getDataType()) {
+		case INTEGER:
 			return Types.INTEGER;
-		case DataFieldMetadata.NUMERIC_FIELD:
+		case NUMBER:
 			return Types.FLOAT;
-		case DataFieldMetadata.STRING_FIELD:
+		case STRING:
 			return field.isFixed() ? Types.CHAR : Types.VARCHAR;
-		case DataFieldMetadata.DATE_FIELD:
+		case DATE:
 			boolean isDate = field.isDateFormat();
 			boolean isTime = field.isTimeFormat();
 			if (isDate && isTime || StringUtils.isEmpty(field.getFormatStr())) 
@@ -165,21 +165,21 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			if (isTime)
 				return Types.TIME;
 			return Types.TIMESTAMP;
-        case DataFieldMetadata.LONG_FIELD:
+        case LONG:
             return Types.BIGINT;
-        case DataFieldMetadata.DECIMAL_FIELD:
+        case DECIMAL:
             return Types.DECIMAL;
-        case DataFieldMetadata.BYTE_FIELD:
-        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+        case BYTE:
+        case CBYTE:
         	if (!StringUtils.isEmpty(field.getFormatStr())
 					&& field.getFormatStr().equalsIgnoreCase(DataFieldMetadata.BLOB_FORMAT_STRING)) {
         		return Types.BLOB;
         	}
             return field.isFixed() ? Types.BINARY : Types.VARBINARY;
-        case DataFieldMetadata.BOOLEAN_FIELD:
+        case BOOLEAN:
         	return Types.BOOLEAN;
 		default:
-			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getTypeAsString());
+			throw new IllegalArgumentException("Can't handle Clover's data type :"+field.getDataType().getName());
 		}
 	}
 	
@@ -225,18 +225,18 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			case Types.INTEGER:
 			case Types.SMALLINT:
 			case Types.TINYINT:
-			    return DataFieldMetadata.INTEGER_FIELD;
+				return DataFieldType.INTEGER.getShortName();
 			//-------------------
 			case Types.BIGINT:
-			    return DataFieldMetadata.LONG_FIELD;
+				return DataFieldType.LONG.getShortName();
 			//-------------------
 			case Types.DECIMAL:
 			case Types.NUMERIC:
-				return DataFieldMetadata.DECIMAL_FIELD;
+				return DataFieldType.DECIMAL.getShortName();
 			case Types.DOUBLE:
 			case Types.FLOAT:
 			case Types.REAL:
-				return DataFieldMetadata.NUMERIC_FIELD;
+				return DataFieldType.NUMBER.getShortName();
 			//------------------
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
@@ -245,26 +245,26 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			case Types.NCHAR:
 			case Types.NVARCHAR:
 			case Types.NCLOB:
-				return DataFieldMetadata.STRING_FIELD;
+				return DataFieldType.STRING.getShortName();
 			//------------------
 			case Types.DATE:
 			case Types.TIME:
 			case Types.TIMESTAMP:
-				return DataFieldMetadata.DATE_FIELD;
+				return DataFieldType.DATE.getShortName();
             //-----------------
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
             case Types.BLOB:
 			case Types.OTHER:
-                return DataFieldMetadata.BYTE_FIELD;
+				return DataFieldType.BYTE.getShortName();
 			//-----------------
 			case Types.BOOLEAN:
-				return DataFieldMetadata.BOOLEAN_FIELD;
+				return DataFieldType.BOOLEAN.getShortName();
 			// proximity assignment
 			case Types.BIT:
 			case Types.NULL:
-				return DataFieldMetadata.STRING_FIELD;
+				return DataFieldType.STRING.getShortName();
 			case Types.STRUCT:
 				throw new IllegalArgumentException("Can't handle JDBC type STRUCT");
 			default:
@@ -538,24 +538,31 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	
 	@Override
 	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
-		if (field.getDataType() == DataFieldType.STRING) {
-    		//handle string type
-    		try {
-				//check if given type represents string
-				if (sqlType == Types.CHAR || sqlType == Types.NCHAR || sqlType == Types.VARCHAR ||  
-						sqlType == Types.NVARCHAR || sqlType == Types.CLOB || sqlType == Types.NCLOB) {
-					return true;
-				}
-			} catch (NumberFormatException e) {
-				return false;
+		
+		switch (field.getDataType()) {
+		case NUMBER:
+			switch (sqlType) {
+			case Types.DOUBLE:
+				return true;
 			}
-    	}
-		return sqlType == jetelType2sql(field);
+		case STRING:
+			switch (sqlType) {
+			case Types.CHAR:
+			case Types.NCHAR:
+			case Types.VARCHAR:
+			case Types.NVARCHAR:
+			case Types.CLOB:
+			case Types.NCLOB:
+				return true;
+			}
+		default:
+			return sqlType == jetelType2sql(field);
+		}
 	}
 
 	@Override
 	public boolean isSqlTypeConvertible2jetel(int sqlType, DataFieldMetadata field) {
-		return sqlType2jetel(sqlType) == field.getType();
+		return sqlType2jetel(sqlType) == field.getDataType().getShortName();
 	}
 	
 	@Override

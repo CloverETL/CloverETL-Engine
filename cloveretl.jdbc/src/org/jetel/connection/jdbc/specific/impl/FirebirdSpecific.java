@@ -106,30 +106,37 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	
 	@Override
 	public boolean isJetelTypeConvertible2sql(int sqlType, DataFieldMetadata field) {
-		switch (field.getType()) {
-		case DataFieldMetadata.BOOLEAN_FIELD:
-		case DataFieldMetadata.DECIMAL_FIELD:
-		case DataFieldMetadata.NUMERIC_FIELD:
-		case DataFieldMetadata.LONG_FIELD:
-		case DataFieldMetadata.INTEGER_FIELD:
+		switch (field.getDataType()) {
+		case BOOLEAN:
+			switch (sqlType) {
+			case Types.CHAR:
+			case Types.NUMERIC:
+				return true;
+			}
+		case BYTE:
+		case CBYTE:
+			switch (sqlType) {
+			case Types.VARBINARY:
+			case Types.LONGVARBINARY:
+				return true;
+			}
+		case DECIMAL:
+		case NUMBER:
+		case LONG:
+		case INTEGER:
 			switch (sqlType) {
 			case Types.NUMERIC:
 				return true;
-			default:
-				return false;
 			}
-		case DataFieldMetadata.DATE_FIELD:
-		case DataFieldMetadata.DATETIME_FIELD:
+		case DATE:
+		case DATETIME:
 			switch (sqlType) {
 			case Types.TIMESTAMP:
 				return true;
-			default:
-				return false;
 			}
 		default:
 			return super.isJetelTypeConvertible2sql(sqlType, field);
 		}
-		
 	}
 	
 	@Override

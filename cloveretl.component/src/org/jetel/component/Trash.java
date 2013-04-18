@@ -114,7 +114,6 @@ public class Trash extends Node {
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "TRASH";
-	private final static int READ_FROM_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
 	private boolean debugPrint;
 	private String debugFilename;
@@ -129,6 +128,8 @@ public class Trash extends Node {
 
 	private int compressLevel = -1;
 	private boolean mkDir;
+	
+	private InputPort debugInputPort = null;
 
 	/**
 	 * Constructor for the Trash object
@@ -195,6 +196,7 @@ public class Trash extends Node {
 		}
 		
 		if (debugPrint && inPorts.size() == 1) {
+			debugInputPort = inPorts.values().iterator().next();
 			if (debugFilename != null) {
 				formatter = new TextTableFormatter(charSet);
 				try {
@@ -221,7 +223,7 @@ public class Trash extends Node {
 		
 		if (writer != null) {
 			if (firstRun()) {// a phase-dependent part of initialization
-				writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+				writer.init(debugInputPort.getMetadata());
 				formatter.showCounter("Record", "# ");
 				if (printTrashID)
 					formatter.showTrashID("Trash ID ", getId());
@@ -252,7 +254,7 @@ public class Trash extends Node {
 	}
 	
 	private Result executeWithWriter() throws Exception {
-		InputPort inPort = getInputPort(READ_FROM_PORT);
+		InputPort inPort = debugInputPort;
 		DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 		record.init();
 		

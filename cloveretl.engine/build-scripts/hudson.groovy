@@ -55,7 +55,7 @@ testEnvironmentD = new File( baseD, "cloveretl.test.environment" )
 
 jobIdent = testName ? testName : jobGoal
 jobIdent += "-${versionSuffix}"
-new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
+new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent.replaceAll('-', '_'))
 
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 if( !runTests ){
