@@ -40,10 +40,6 @@ import org.jetel.exception.BadDataFormatException;
  * @created 5.12.2011
  */
 public class XPathPushParser {
-	
-	private static enum OutContextState {
-		OK, ERROR
-	}
 
 	protected DataRecordProvider recordProvider;
 	protected DataRecordReceiver recordReceiver;
@@ -51,7 +47,11 @@ public class XPathPushParser {
 	protected ValueHandler valueHandler;
 	protected XPathSequenceProvider sequenceProvider;
 	
-	protected Stack<OutContextState> outContextStateStack = new Stack<OutContextState>();
+	/**
+	 * Stack of error states for context, TRUE indicates error occurred
+	 * in the context, FALSE otherwise.
+	 */
+	protected Stack<Boolean> contextErrorStack = new Stack<Boolean>();
 
 	/**
 	 * Constructs new XPath push parser.
@@ -94,11 +94,13 @@ public class XPathPushParser {
 		 */
 		if (mapping.getOutputPort() == null) {
 			Object newContext = evaluator.evaluatePath(mapping.getXPath(), getNamespaceBinding(mapping), context, mapping);
+			contextErrorStack.push(Boolean.FALSE);
 			applyContextMappings(mapping, newContext, dataTarget, -1);
+			contextErrorStack.pop();
 			return;
 		}
 		
-		outContextStateStack.push(OutContextState.OK);
+		contextErrorStack.push(Boolean.FALSE);
 
 		/*
 		 * iterate through XPath results
@@ -145,7 +147,7 @@ public class XPathPushParser {
 			Object element = it.next();
 			applyContextMappings(mapping, element, newTarget, portIndex);
 		}
-		outContextStateStack.pop();
+		contextErrorStack.pop();
 	}
 
 	protected void applyContextMappings(MappingContext mapping, Object evaluationContext, DataRecord targetRecord, int portIndex)
@@ -161,12 +163,12 @@ public class XPathPushParser {
 		 * we have processed all fields of this level, so we can
 		 * pass results to the receiver (if no error)
 		 */
-		if (outContextStateStack.peek() == OutContextState.OK) {
+		if (Boolean.FALSE.equals(contextErrorStack.peek())) {
 			recordReceiver.receive(targetRecord, portIndex);
 		} else {
 			// clear error flag
-			outContextStateStack.pop(); 
-			outContextStateStack.push(OutContextState.OK);
+			contextErrorStack.pop(); 
+			contextErrorStack.push(Boolean.FALSE);
 		}
 		for (MappingContext constantMapping : mapping.getMappingContextChildren()) {
 			handleContext(constantMapping, evaluationContext, targetRecord);
@@ -234,8 +236,11 @@ public class XPathPushParser {
 
 	private void handleException(int portIndex, DataRecord newTarget, DataField currentRecordParentKeyField, BadDataFormatException e) throws AbortParsingException {
 		recordReceiver.exceptionOccurred(generateException(e, currentRecordParentKeyField, newTarget, portIndex));
-		outContextStateStack.pop();
-		outContextStateStack.push(OutContextState.ERROR);
+		/*
+		 * set error flag
+		 */
+		contextErrorStack.pop();
+		contextErrorStack.push(Boolean.TRUE);
 	}
 
 	private FieldFillingException generateException(BadDataFormatException ex, DataField field, DataRecord record, int portIndex) {
