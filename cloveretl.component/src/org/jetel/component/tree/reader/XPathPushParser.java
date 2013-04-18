@@ -94,9 +94,7 @@ public class XPathPushParser {
 		 */
 		if (mapping.getOutputPort() == null) {
 			Object newContext = evaluator.evaluatePath(mapping.getXPath(), getNamespaceBinding(mapping), context, mapping);
-			contextErrorStack.push(Boolean.FALSE);
 			applyContextMappings(mapping, newContext, dataTarget, -1);
-			contextErrorStack.pop();
 			return;
 		}
 		
@@ -117,7 +115,7 @@ public class XPathPushParser {
 				parentKeyFields[i] = dataTarget.getField(parentKeys[i]);
 			}
 		}
-		
+		Sequence sequence = mapping.getSequenceField() != null ? getSequence(mapping) : null;
 		int portIndex = mapping.getOutputPort().intValue();
 		while (it.hasNext()) {
 			DataRecord newTarget = recordProvider.getDataRecord(portIndex);
@@ -125,7 +123,7 @@ public class XPathPushParser {
 			 * process sequence (if any)
 			 */
 			if (mapping.getSequenceField() != null) {
-				fillSequenceField(mapping.getSequenceField(), newTarget, getSequence(mapping), portIndex);
+				fillSequenceField(mapping.getSequenceField(), newTarget, sequence, portIndex);
 			}
 			/*
 			 * process keying from child to parent (if any)
@@ -146,6 +144,13 @@ public class XPathPushParser {
 			 */
 			Object element = it.next();
 			applyContextMappings(mapping, element, newTarget, portIndex);
+			if (Boolean.FALSE.equals(contextErrorStack.peek())) {
+				recordReceiver.receive(newTarget, portIndex);
+			} else {
+				// clear error flag
+				contextErrorStack.pop(); 
+				contextErrorStack.push(Boolean.FALSE);
+			}
 		}
 		contextErrorStack.pop();
 	}
@@ -158,17 +163,6 @@ public class XPathPushParser {
 		}
 		for (FieldMapping fieldMapping : mapping.getFieldMappingChildren()) {
 			handleFieldMapping(fieldMapping, evaluationContext, targetRecord, portIndex);
-		}
-		/*
-		 * we have processed all fields of this level, so we can
-		 * pass results to the receiver (if no error)
-		 */
-		if (Boolean.FALSE.equals(contextErrorStack.peek())) {
-			recordReceiver.receive(targetRecord, portIndex);
-		} else {
-			// clear error flag
-			contextErrorStack.pop(); 
-			contextErrorStack.push(Boolean.FALSE);
 		}
 		for (MappingContext constantMapping : mapping.getMappingContextChildren()) {
 			handleContext(constantMapping, evaluationContext, targetRecord);
