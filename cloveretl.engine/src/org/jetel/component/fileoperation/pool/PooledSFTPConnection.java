@@ -27,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.text.MessageFormat;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -189,6 +190,12 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 			
 			throw exception;
 		} catch (Exception e) {
+			if (log.isDebugEnabled()) {
+				ConnectionPool pool = ConnectionPool.getInstance();
+				synchronized (pool) {
+					log.debug(MessageFormat.format("Connection pool status: {0} idle, {1} active", pool.getNumIdle(), pool.getNumActive()));
+				}
+			}
 			throw new IOException(e);
 		}
 	}

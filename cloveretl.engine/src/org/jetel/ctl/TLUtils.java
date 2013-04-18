@@ -114,12 +114,31 @@ public final class TLUtils {
 	 * @return <code>true</code> if metadata fields are considered as equal, <code>false</code> otherwise
 	 */
 	public static boolean equals(DataFieldMetadata field1, DataFieldMetadata field2) {
+		return equals(field1, field2, false);
+	}
+
+	/**
+	 * Compares two given metadata fields.
+	 * Metadata fields are considered as equal if have same name (ignore case) and type.
+	 * @param field1
+	 * @param field2
+	 * @return <code>true</code> if metadata fields are considered as equal, <code>false</code> otherwise
+	 */
+	public static boolean equalsIgnoreCase(DataFieldMetadata field1, DataFieldMetadata field2) {
+		return equals(field1, field2, true);
+	}
+	
+	private static boolean equals(DataFieldMetadata field1, DataFieldMetadata field2, boolean ignoreCase) {
+		
 		if (field1 == null || field2 == null) {
 			return false;
 		}
 		
 		//field names have to be equal
-		if (!field1.getName().equals(field2.getName())) {
+		if (!field1.getName().equalsIgnoreCase(field2.getName()) && ignoreCase) {
+			return false;
+		}
+		if (!field1.getName().equals(field2.getName()) && !ignoreCase) {
 			return false;
 		}
 		

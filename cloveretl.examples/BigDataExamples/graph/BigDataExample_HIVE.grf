@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Dec 04 11:38:53 CET 2012" guiVersion="3.4.0.M1" id="1354619086069" licenseType="Commercial" modified="Thu Dec 13 18:46:08 CET 2012" modifiedBy="Wesley" name="BigDataGraph" revision="1.75" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Tue Dec 04 11:38:53 CET 2012" guiVersion="0.0.0.devel" id="1354619086069" licenseType="Commercial" modified="Tue Apr 16 14:54:55 CEST 2013" modifiedBy="Raszyk" name="BigDataGraph" revision="1.78" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -45,23 +46,23 @@
 <Connection hadoopJar="C:/Big Data/version4/avro-1.7.1.cloudera.2.jar;C:/Big Data/version4/commons-cli-1.2.jar;C:/Big Data/version4/guava-11.0.2.jar;C:/Big Data/version4/hadoop-auth-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-common-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-hdfs-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/protobuf-java-2.4.0a.jar;C:/Big Data/version4/slf4j-api-1.6.1.jar;C:/Big Data/version4/slf4j-log4j12-1.6.1.jar" host="192.168.1.99" id="LOCAL_HADOOP" name="Local Hadoop" type="HADOOP"/>
 <Connection dbDriver="org.apache.hadoop.hive.jdbc.HiveDriver" dbURL="jdbc:hive://192.168.1.99:10000/default" driverLibrary="file:/C:/Big Data/hive/hadoop-core-0.20.205.jar;file:/C:/Big Data/hive/hive-exec-0.8.1.jar;file:/C:/Big Data/hive/hive-jdbc-0.8.1.jar;file:/C:/Big Data/hive/hive-metastore-0.8.1.jar;file:/C:/Big Data/hive/hive-service-0.8.1.jar;file:/C:/Big Data/hive/libfb303-0.7.0.jar;file:/C:/Big Data/hive/slf4j-api-1.6.1.jar;file:/C:/Big Data/hive/slf4j-log4j12-1.6.1.jar" id="LOCAL_HIVE" jdbcSpecific="HIVE" name="Local Hive" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="310" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="270" x="672" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="310" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="270" x="672" y="103">
 <attr name="text"><![CDATA[The bundled data file is only a sample.
 
 For performance testing you can download the full version (+500MB) here: 
 
 https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="310" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="211" x="20" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="310" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="211" x="20" y="103">
 <attr name="text"><![CDATA[To use HDFS for large file storage.
 
 For data files stored in HDFS, there is also an option to convert it into a structured database format in HIVE, given that the file is in a convertable data format]]></attr>
 </Note>
-<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data Example: HDFS Storage and HIVE Table" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="922" x="20" y="20">
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data Example: HDFS Storage and HIVE Table" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="922" x="20" y="20">
 <attr name="text"><![CDATA[
 Store a CSV file into HDFS and then convert it into a HIVE table using CloverETL]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="310" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="C. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="211" x="230" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="310" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="C. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="211" x="230" y="103">
 <attr name="text"><![CDATA[Using a publicly available data log, we read in the data for process
 
 Extract only a selected fields
@@ -75,7 +76,7 @@ We prepare the table in which these fields will be converted to in HIVE in 3 ste
 
 Verify by extracting data from table]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="286" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="192" x="20" y="455">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="286" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="192" x="20" y="455">
 <attr name="text"><![CDATA[
 
 
@@ -86,12 +87,14 @@ Verify by extracting data from table]]></attr>
 
 
 
- the packaged public data file is a sample. please download the full version (+500MB) here:
+
+- the packaged public data file is a sample. please download the full version (+500MB) here:
  
 https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="360" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="IMPORTANT NOTE" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="20" y="873">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="360" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="IMPORTANT NOTE" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="20" y="873">
 <attr name="text"><![CDATA[
+
 
 
 
@@ -113,8 +116,9 @@ https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]
 
 - for HIVE connection, please configure an ODBC connection and please be sure to download the correct jar files]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="410" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="IMPORTANT NOTE" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="273" x="670" y="455">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="410" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="IMPORTANT NOTE" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="273" x="670" y="455">
 <attr name="text"><![CDATA[
+
 
 
 
@@ -139,7 +143,7 @@ https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]
 
 - please download the correct jar files for your Hadoop build]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="310" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Important" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="440" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="310" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Important" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="440" y="103">
 <attr name="text"><![CDATA[Be sure to configure and set the correct drivers (*.JAR) for your HDFS connection in Outline view prior to running this example!!
 
 Please also note that each Hadoop build requires a different set of jar support files - refer to Hadoop documentation to see which files you need.
@@ -155,7 +159,7 @@ Cloudera 4.1.2 distribution]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="67" guiName="Extract Fields" guiWidth="128" guiX="360" guiY="495" id="EXTRACT_FIELDS" type="REFORMAT">
+<Node enabled="enabled" guiName="Extract Fields" guiX="360" guiY="495" id="EXTRACT_FIELDS" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -189,31 +193,31 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node dataPolicy="lenient" enabled="enabled" fileURL="zip:(${DATAIN_DIR}/White_House_Visitor_Records_Requests.zip)#White_House_Visitor_Records_Requests.csv" guiHeight="93" guiName="Read Log" guiWidth="128" guiX="52" guiY="495" id="READ_LOG" skipRows="1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="hdfs://LOCAL_HADOOP/tmp/bigdata_examples/visitors_log.csv" guiHeight="93" guiName="Write to HDFS Storage" guiWidth="158" guiX="727" guiY="495" id="WRITE_TO_HDFS_STORAGE" type="DATA_WRITER"/>
+<Node dataPolicy="lenient" enabled="enabled" fileURL="zip:(${DATAIN_DIR}/White_House_Visitor_Records_Requests.zip)#White_House_Visitor_Records_Requests.csv" guiName="Read Log" guiX="52" guiY="495" id="READ_LOG" skipRows="1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="hdfs://LOCAL_HADOOP/tmp/bigdata_examples/visitors_log.csv" guiName="Write to HDFS Storage" guiX="727" guiY="495" id="WRITE_TO_HDFS_STORAGE" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="EXTRACT_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_TO_HDFS_STORAGE:0"/>
 <Edge debugMode="true" fromNode="READ_LOG:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXTRACT_FIELDS:0"/>
 </Phase>
 <Phase number="1">
-<Node dbConnection="LOCAL_HIVE" enabled="enabled" guiHeight="67" guiName="Drop Table VisitorsLogTable [HIVE]" guiWidth="223" guiX="39" guiY="914" id="DROP_TABLE_VISITORS_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
+<Node dbConnection="LOCAL_HIVE" enabled="enabled" guiName="Drop Table VisitorsLogTable [HIVE]" guiX="39" guiY="914" id="DROP_TABLE_VISITORS_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[DROP TABLE IF EXISTS VisitorsLogTable]]></attr>
 </Node>
 </Phase>
 <Phase number="2">
-<Node dbConnection="LOCAL_HIVE" enabled="enabled" guiHeight="67" guiName="Create Table VisitorsLogTable [HIVE]" guiWidth="232" guiX="360" guiY="914" id="CREATE_TABLE_VISITORS_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
+<Node dbConnection="LOCAL_HIVE" enabled="enabled" guiName="Create Table VisitorsLogTable [HIVE]" guiX="360" guiY="914" id="CREATE_TABLE_VISITORS_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[CREATE TABLE IF NOT EXISTS VisitorsLogTable (NAME_LAST STRING, NAME_FIRST STRING, NAME_MID STRING, APPT_START_DATE STRING, MEETING_LOC STRING, MEETING_ROOM STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE]]></attr>
 </Node>
 </Phase>
 <Phase number="3">
-<Node dbConnection="LOCAL_HIVE" enabled="enabled" guiHeight="67" guiName="Convert HDFS File to VisitorsLogTable [HIVE]" guiWidth="278" guiX="668" guiY="914" id="CONVERT_HDFS_FILE_TO_VISITORS_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
+<Node dbConnection="LOCAL_HIVE" enabled="enabled" guiName="Convert HDFS File to VisitorsLogTable [HIVE]" guiX="668" guiY="914" id="CONVERT_HDFS_FILE_TO_VISITORS_LOG_TABLE_HIVE" inTransaction="one" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[LOAD DATA INPATH '/tmp/bigdata_examples/visitors_log.csv' OVERWRITE INTO TABLE VisitorsLogTable;]]></attr>
 </Node>
 </Phase>
 <Phase number="4">
-<Node enabled="enabled" guiHeight="67" guiName="Complete" guiWidth="128" guiX="711" guiY="1270" id="COMPLETE" type="SUCCESS"/>
-<Node dbConnection="LOCAL_HIVE" enabled="enabled" guiHeight="67" guiName="Read Data from VisitorsLogTable [HIVE]" guiWidth="250" guiX="20" guiY="1270" id="READ_DATA_FROM_VISITORS_LOG_TABLE_HIVE" type="DB_INPUT_TABLE">
+<Node enabled="enabled" guiName="Complete" guiX="711" guiY="1270" id="COMPLETE" type="SUCCESS"/>
+<Node dbConnection="LOCAL_HIVE" enabled="enabled" guiName="Read Data from VisitorsLogTable [HIVE]" guiX="20" guiY="1270" id="READ_DATA_FROM_VISITORS_LOG_TABLE_HIVE" type="DB_INPUT_TABLE">
 <attr name="sqlQuery"><![CDATA[select * from visitorslogtable]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="READ_DATA_FROM_VISITORS_LOG_TABLE_HIVE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="COMPLETE:0"/>

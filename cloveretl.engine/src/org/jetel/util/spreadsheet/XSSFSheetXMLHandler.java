@@ -47,6 +47,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * Notable differences:
  *  - ignores formula "f" tags. Cell with formula is treated as any other cell with value;
  *  - in {@link SheetContentsHandler#cell(String, int, String, int)}, cell value type and cell style index is available.
+ *  - handles missing "r" attribute in cell element "c" and row element "row".
  *  
  * @author tkramolis
  * 
@@ -95,11 +96,10 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 	private StringBuffer formula = new StringBuffer();
 	private StringBuffer headerFooter = new StringBuffer();
 	
-	private int formulaType; // Cell.CELL_TYPE* of cashed formula value
+	private int formulaType; // Cell.CELL_TYPE* of cached formula value
 	
-//	private int numberOfMissingRows;
-//	private boolean missingRowStart = true;
-
+	private int lastRowNum = -1;
+	
 	/**
 	 * Accepts objects needed while parsing.
 	 * 
@@ -114,21 +114,6 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 		this.nextDataType = XSSFDataType.NUMBER;
 	}
 	
-//	public boolean processMissingRows() {
-//		if (numberOfMissingRows > 0) {
-//			if (missingRowStart) {
-//				numberOfMissingRows--;
-//				output.startRow(lastRow - numberOfMissingRows);
-//			} else {
-//				output.endRow();
-//			}
-//			missingRowStart = !missingRowStart;
-//			return true;
-//		}
-//		
-//		return false;
-//	}
-
 	private boolean isTextTag(String name) {
 		if ("v".equals(name)) {
 			// Easy, normal v text tag
@@ -196,20 +181,25 @@ public class XSSFSheetXMLHandler extends DefaultHandler {
 			// Clear contents cache
 			headerFooter.setLength(0);
 		} else if ("row".equals(name)) {
-			int rowNum = Integer.parseInt(attributes.getValue("r")) - 1;
-//			numberOfMissingRows = rowNum - lastRow;
-//			while (processMissingRows()) {
-//				// do nothing - keep processing the rows
-//			}
-//			lastRow = rowNum;
-//			output.startRow(rowNum);
-//			missingRowStart = !missingRowStart;
-//			output.startRow(rowNum - numberOfMissingRows);
+			String r = attributes.getValue("r");
+			int rowNum = r != null ? Integer.parseInt(r) - 1 : lastRowNum + 1;
+			lastRowNum = rowNum;
+			cellRef = null;
 			output.startRow(rowNum);
 		} else if ("c".equals(name)) { // c => cell
 			// Set up defaults.
 			this.nextDataType = XSSFDataType.NUMBER;
-			cellRef = attributes.getValue("r");
+			String r = attributes.getValue("r"); // cell reference (coordinates, e.g. "A1")
+			if (r == null) { // fix of CLO-466 - cell element with no reference attribute "r" 
+				if (cellRef == null) {
+					// no previous cell in current row yet - assume this cell is in first column of current row
+					r = "A" + lastRowNum;
+				} else {
+					// assume this cell is right neighbor of last cell in current row
+					r = SpreadsheetUtils.getColumnReference(SpreadsheetUtils.getColumnIndex(cellRef) + 1) + lastRowNum;
+				}
+			}
+			cellRef = r;
 			String cellType = attributes.getValue("t");
 			String cellStyleStr = attributes.getValue("s");
 			

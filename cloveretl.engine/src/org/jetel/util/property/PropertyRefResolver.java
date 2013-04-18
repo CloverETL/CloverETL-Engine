@@ -35,6 +35,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.CTLExpressionEvaluator;
 import org.jetel.interpreter.ParseException;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -365,7 +366,7 @@ public class PropertyRefResolver {
 			String resolvedReference = properties.getProperty(reference);
 			
 			if (resolvedReference == null) {
-				resolvedReference = System.getenv(reference);
+				resolvedReference = MiscUtils.getEnvSafe(reference);
 			}
 			
 			// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility

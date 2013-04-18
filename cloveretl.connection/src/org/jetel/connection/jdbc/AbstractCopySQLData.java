@@ -30,6 +30,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
@@ -56,6 +57,7 @@ import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -529,18 +531,40 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 	 * @return error message if map is invalid, null in other case
 	 * @throws SQLException
 	 */
-	public static String validateJetel2sqlMap(CopySQLData[] transMap, PreparedStatement statement, 
+	public static List<String> validateJetel2sqlMap(CopySQLData[] transMap, PreparedStatement statement, 
 		DataRecordMetadata inMetadata, JdbcSpecific jdbcSpecific) throws SQLException{
-		ParameterMetaData pMeta = statement.getParameterMetaData();
-		if (transMap.length != pMeta.getParameterCount()) {
-			return "Invalid sql query. Wrong number of parameteres - actually: " + transMap.length + ", required: " + pMeta.getParameterCount();
-		}
-		for (int i = 0; i < transMap.length; i++) {
-			if (inMetadata.getFieldType(transMap[i].getFieldJetel()) != jdbcSpecific.sqlType2jetel(pMeta.getParameterType(i + 1))) {
-				return "Invalid sql query. Incompatible Clover & JDBC field types - field " + inMetadata.getField(transMap[i].getFieldJetel()).getName() + ". Clover type: " + SQLUtil.jetelType2Str(inMetadata.getFieldType(transMap[i].getFieldJetel())) + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1));
+		List<String> messages = new ArrayList<String>();
+		
+		try {
+			ParameterMetaData pMeta = statement.getParameterMetaData();
+			if (transMap.length == pMeta.getParameterCount()) {
+				for (int i = 0; i < transMap.length; i++) {
+					if (!jdbcSpecific.isJetelTypeConvertible2sql(pMeta.getParameterType(i + 1), inMetadata.getField(transMap[i].getFieldJetel()))) {
+						if (pMeta.getParameterType(i + 1) != Types.NULL) {
+							messages.add("Invalid SQL query. Incompatible Clover & JDBC field types - field " + inMetadata.getField(transMap[i].getFieldJetel()).getName() + ". Clover type: " + SQLUtil.jetelType2Str(inMetadata.getFieldType(transMap[i].getFieldJetel())) + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1)));
+							messages.add("Invalid SQL query. Incompatible types - field " + inMetadata.getField(transMap[i].getFieldJetel()).getName() + ", clover type: " + inMetadata.getDataFieldType(transMap[i].getFieldJetel()).getName() + ", sql type: " + SQLUtil.sqlType2str(pMeta.getParameterType(i + 1)));
+						} else {
+							// MSSQL returns NULL parameter types
+							messages.add("Compatibility of field types could not have been validated (not supported by the driver).");
+							break; // do not check the others
+						}
+					}
+				}
+			} else {
+				messages.add("Invalid SQL query. Wrong number of parameteres - actually: " + transMap.length + ", required: " + pMeta.getParameterCount());
+			}
+		} catch (SQLException ex) {
+			// S1C00 MySQL, 99999 Oracle
+			if ("S1C00".equals(ex.getSQLState()) || "99999".equals(ex.getSQLState())) {
+				messages.add("Compatibility of field types could not have been validated (not supported by the driver).");
+				// 42704 , 42P01 postgre
+			} else if ("42704".equals(ex.getSQLState()) || "42P01".equals(ex.getSQLState())) {
+				messages.add("Table does not exist.");
+			} else {
+				messages.add(ExceptionUtils.getMessage(ex));
 			}
 		}
-		return null;
+		return messages;
 	}
 
 	/**

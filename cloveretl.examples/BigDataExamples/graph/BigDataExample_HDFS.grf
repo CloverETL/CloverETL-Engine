@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Mon Dec 10 11:05:44 CET 2012" guiVersion="0.0.0.devel" id="1355134051184" licenseType="Commercial" modified="Thu Dec 13 17:22:25 CET 2012" modifiedBy="Pavel" name="BigDataGraph_HDFS" revision="1.27" showComponentDetails="true">
+<Graph author="Wesley" created="Mon Dec 10 11:05:44 CET 2012" guiVersion="0.0.0.devel" id="1355134051184" licenseType="Commercial" modified="Tue Apr 16 14:54:49 CEST 2013" modifiedBy="Raszyk" name="BigDataGraph_HDFS" revision="1.29" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="metaKeyValueFields" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -47,14 +47,14 @@
 </Metadata>
 <Connection hadoopJar="C:/Big Data/version4/avro-1.7.1.cloudera.2.jar;C:/Big Data/version4/commons-cli-1.2.jar;C:/Big Data/version4/guava-11.0.2.jar;C:/Big Data/version4/hadoop-auth-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-common-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-hdfs-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/protobuf-java-2.4.0a.jar;C:/Big Data/version4/slf4j-api-1.6.1.jar;C:/Big Data/version4/slf4j-log4j12-1.6.1.jar" host="192.168.1.99" id="LOCAL_HADOOP" name="Local Hadoop" type="HADOOP"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="336" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="716" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="336" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="716" y="103">
 <attr name="text"><![CDATA[The bundled data file is only a sample.
 
 For performance testing you can download the full version (+500MB) here: 
 
 https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="336" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="233" x="20" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="336" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="233" x="20" y="103">
 <attr name="text"><![CDATA[To read and write key/value pairs in Hadoop HDFS using CloverETL
 
 Such pairing can be further processed in a MapReduce job
@@ -67,11 +67,11 @@ Alternatively in this graph, the same aggregation process is replicated using Cl
 
 ]]></attr>
 </Note>
-<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data Example: HDFS Format for MapReduce Jobs" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="20" y="20">
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data Example: HDFS Format for MapReduce Jobs" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="20" y="20">
 <attr name="text"><![CDATA[
 Demonstrates how CloverETL reads and writes key/value pairs in Hadoop HDFS]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="336" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Important" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="484" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="336" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Important" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="484" y="103">
 <attr name="text"><![CDATA[Be sure to configure and set the correct drivers (*.JAR) for your HDFS connection in Outline view prior to running this example!!
 
 Please also note that each Hadoop build requires a different set of jar support files - refer to Hadoop documentation to see which files you need.
@@ -82,7 +82,7 @@ Outline/Connections/HadoopLocal
 This example is tested with
 Cloudera 4.1.2 distribution]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="336" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="B. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="252" y="103">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="336" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="B. Solution" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="252" y="103">
 <attr name="text"><![CDATA[Using a publicly available data log, we read in the data for process
 
 Extract only the Key and Value fields. In this case, Last Name and visit details (date + location in one field)
@@ -99,7 +99,7 @@ Sort counts to list most to least
 
 Write Last Name and counts to a CSV file]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="286" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="192" x="20" y="466">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="286" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="192" x="20" y="466">
 <attr name="text"><![CDATA[
 
 
@@ -110,12 +110,14 @@ Write Last Name and counts to a CSV file]]></attr>
 
 
 
- the packaged public data file is a sample. please download the full version (+500MB) here:
+
+- the packaged public data file is a sample. please download the full version (+500MB) here:
  
 https://explore.data.gov/dataset/White-House-Visitor-Records-Requests/644b-gaut]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="410" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="IMPORTANT NOTE" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="267" x="682" y="466">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="410" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="IMPORTANT NOTE" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="267" x="682" y="466">
 <attr name="text"><![CDATA[
+
 
 
 
@@ -143,7 +145,7 @@ The jar files used in this HDFS connection are:
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="67" guiName="Extract Fields" guiWidth="128" guiX="383" guiY="503" id="EXTRACT_FIELDS" type="REFORMAT">
+<Node enabled="enabled" guiName="Extract Fields" guiX="383" guiY="503" id="EXTRACT_FIELDS" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -173,17 +175,17 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node dataPolicy="lenient" enabled="enabled" fileURL="zip:(${DATAIN_DIR}/White_House_Visitor_Records_Requests.zip)#White_House_Visitor_Records_Requests.csv" guiHeight="93" guiName="Read Log" guiWidth="128" guiX="52" guiY="503" id="READ_LOG" skipRows="1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="hdfs://LOCAL_HADOOP/tmp/bigdata_examples/file_for_mapreduce.log" guiHeight="93" guiName="Write to HDFS" guiWidth="128" guiX="752" guiY="503" id="WRITE_TO_HDFS" keyField="KEY_Last_Name" type="HADOOP_WRITER" valueField="VALUE_Visit_Details"/>
+<Node dataPolicy="lenient" enabled="enabled" fileURL="zip:(${DATAIN_DIR}/White_House_Visitor_Records_Requests.zip)#White_House_Visitor_Records_Requests.csv" guiName="Read Log" guiX="52" guiY="503" id="READ_LOG" skipRows="1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="hdfs://LOCAL_HADOOP/tmp/bigdata_examples/file_for_mapreduce.log" guiName="Write to HDFS" guiX="752" guiY="503" id="WRITE_TO_HDFS" keyField="KEY_Last_Name" type="HADOOP_WRITER" valueField="VALUE_Visit_Details"/>
 <Edge debugMode="true" fromNode="EXTRACT_FIELDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="WRITE_TO_HDFS:0"/>
 <Edge debugMode="true" fromNode="READ_LOG:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXTRACT_FIELDS:0"/>
 </Phase>
 <Phase number="1">
-<Node aggregateKey="KEY_Last_Name" enabled="enabled" guiHeight="67" guiName="Aggregate Field" guiWidth="128" guiX="440" guiY="935" id="AGGREGATE_FIELD" mapping="$NAMELAST:=$KEY_Last_Name;$intCount:=count();" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="hdfs://LOCAL_HADOOP/tmp/bigdata_examples/file_for_mapreduce.log" guiHeight="93" guiName="Read File from HDFS" guiWidth="145" guiX="20" guiY="935" id="READ_FILE_FROM_HDFS" keyField="KEY_Last_Name" type="HADOOP_READER" valueField="VALUE_Visit_Details"/>
-<Node enabled="enabled" guiHeight="93" guiName="Sort by Count" guiWidth="128" guiX="625" guiY="935" id="SORT_BY_COUNT" sortKey="intCount(d);NAMELAST(a)" type="FAST_SORT"/>
-<Node enabled="enabled" guiHeight="80" guiName="Sort Field" guiWidth="128" guiX="235" guiY="935" id="SORT_FIELD" sortKey="KEY_Last_Name(a)" type="FAST_SORT"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/lastname_count.csv" guiHeight="93" guiName="Write Count to File" guiWidth="135" guiX="814" guiY="935" id="WRITE_COUNT_TO_FILE" type="DATA_WRITER"/>
+<Node aggregateKey="KEY_Last_Name" enabled="enabled" guiName="Aggregate Field" guiX="440" guiY="935" id="AGGREGATE_FIELD" mapping="$NAMELAST:=$KEY_Last_Name;$intCount:=count();" type="AGGREGATE"/>
+<Node enabled="enabled" fileURL="hdfs://LOCAL_HADOOP/tmp/bigdata_examples/file_for_mapreduce.log" guiName="Read File from HDFS" guiX="20" guiY="935" id="READ_FILE_FROM_HDFS" keyField="KEY_Last_Name" type="HADOOP_READER" valueField="VALUE_Visit_Details"/>
+<Node enabled="enabled" guiName="Sort by Count" guiX="625" guiY="935" id="SORT_BY_COUNT" sortKey="intCount(d);NAMELAST(a)" type="FAST_SORT"/>
+<Node enabled="enabled" guiName="Sort Field" guiX="235" guiY="935" id="SORT_FIELD" sortKey="KEY_Last_Name(a)" type="FAST_SORT"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/lastname_count.csv" guiName="Write Count to File" guiX="814" guiY="935" id="WRITE_COUNT_TO_FILE" type="DATA_WRITER"/>
 <Edge debugMode="true" fromNode="AGGREGATE_FIELD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SORT_BY_COUNT:0"/>
 <Edge debugMode="true" fromNode="READ_FILE_FROM_HDFS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SORT_FIELD:0"/>
 <Edge debugMode="true" fromNode="SORT_BY_COUNT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="WRITE_COUNT_TO_FILE:0"/>

@@ -48,4 +48,13 @@ public class MiscUtilsTest extends CloverTestCase {
 		assertEquals(MiscUtils.localeToString(enUSLocale), "en.US");
 	}
 	
+	public void testGetEnvSafe() {
+		assertTrue(MiscUtils.getEnvSafe(null) == null);
+		assertTrue(MiscUtils.getEnvSafe("") == null);
+		assertTrue(MiscUtils.getEnvSafe("___XXX___") == null);
+		if (!System.getenv().isEmpty()) {
+			assertEquals(MiscUtils.getEnvSafe(System.getenv().keySet().iterator().next()), System.getenv(System.getenv().keySet().iterator().next()));
+		}
+	}
+
 }

@@ -34,6 +34,7 @@ import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.provider.FormatterProvider;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.enums.ArchiveType;
 import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.OutputPort;
@@ -181,6 +182,21 @@ public class MultiFileWriter {
     	// prepare type of targets: lookup/keyValue
 		try {
 			if (partitionKey != null) {
+				// CL-2564
+				StringBuilder innerSource = new StringBuilder();
+				StringBuilder anchor = new StringBuilder();
+				URL url = FileUtils.getFileURL(contextURL, fileURL);
+				ArchiveType archiveType = FileUtils.getArchiveType(url.toString(), innerSource, anchor);
+				if (archiveType != null) {
+					if (archiveType != ArchiveType.ZIP) {
+						throw new ComponentNotReadyException("Partitioning to " + archiveType + " archives is not supported");
+					} else {
+						if (!FileUtils.isLocalArchiveOutputPath(contextURL, fileURL)) {
+							throw new ComponentNotReadyException("Partitioning to remote ZIP archives is not supported: " + url);
+						}
+					}
+				}
+				
 				multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
 				
 			// prepare type of targets: single

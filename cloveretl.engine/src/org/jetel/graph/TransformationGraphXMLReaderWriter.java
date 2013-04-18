@@ -845,6 +845,10 @@ public class TransformationGraphXMLReaderWriter {
 			        	// get basic parameters
 			        	String type = attributes.getString(DICTIONARY_ENTRY_TYPE);
 			        	String name = attributes.getString(DICTIONARY_ENTRY_NAME);
+			        	//check entry name
+			        	if (StringUtils.isEmpty(name)) {
+			        		throw new ComponentNotReadyException("Empty dictionary entry name!");
+			        	}
 			        	
 			        	// get properties
 			        	final Properties entryProperties = attributes.attributes2Properties(null);
@@ -874,6 +878,9 @@ public class TransformationGraphXMLReaderWriter {
 								dictionary.setValue(name, type, null);
 							}
 						} else {
+							if (dictionary.getEntry(name) != null) {
+								throw new ComponentNotReadyException("Duplicate dictionary entry name: " + name);
+							}
 							dictionary.setValue(name, type, null);
 						}
 			        	
