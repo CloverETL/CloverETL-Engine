@@ -20,6 +20,7 @@ import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
+import org.jetel.util.MiscUtils;
 
 public abstract class CloverTestCase extends TestCase {
 
@@ -43,7 +44,7 @@ public abstract class CloverTestCase extends TestCase {
 	protected void initEngine(String defaultPropertiesFile) {
 		final String pluginsDir;
 
-		final String pluginsProperty = System.getenv(PLUGINS_KEY);
+		final String pluginsProperty = MiscUtils.getEnvSafe(PLUGINS_KEY);
 		if (pluginsProperty != null) {
 			pluginsDir = pluginsProperty;
 		} else {
