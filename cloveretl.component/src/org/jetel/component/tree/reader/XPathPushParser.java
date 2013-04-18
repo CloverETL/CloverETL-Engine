@@ -255,6 +255,7 @@ public class XPathPushParser {
 				}
 				bindings.putAll(binding);
 			}
+			mappingElement = mappingElement.getParent();
 		}
 		return bindings == null ? Collections.<String, String>emptyMap() : bindings;
 	}
