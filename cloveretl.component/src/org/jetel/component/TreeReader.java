@@ -299,6 +299,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 			DataRecord record = DataRecordFactory.newRecord(port.getMetadata());
 			record.init();
+			record.reset();
 			outputRecords[i] = record;
 		}
 	}
