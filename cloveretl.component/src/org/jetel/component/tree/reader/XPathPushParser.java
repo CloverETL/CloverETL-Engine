@@ -18,6 +18,7 @@
  */
 package org.jetel.component.tree.reader;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -47,10 +48,6 @@ public class XPathPushParser {
 	protected ValueHandler valueHandler;
 	protected XPathSequenceProvider sequenceProvider;
 	
-	/**
-	 * Stack of error states for context, TRUE indicates error occurred
-	 * in the context, FALSE otherwise.
-	 */
 	protected Stack<Boolean> contextErrorStack = new Stack<Boolean>();
 
 	/**
@@ -115,8 +112,9 @@ public class XPathPushParser {
 				parentKeyFields[i] = dataTarget.getField(parentKeys[i]);
 			}
 		}
-		Sequence sequence = mapping.getSequenceField() != null ? getSequence(mapping) : null;
+		
 		int portIndex = mapping.getOutputPort().intValue();
+		Sequence sequence = mapping.getSequenceField() == null ? null : getSequence(mapping);
 		while (it.hasNext()) {
 			DataRecord newTarget = recordProvider.getDataRecord(portIndex);
 			/*
@@ -144,10 +142,14 @@ public class XPathPushParser {
 			 */
 			Object element = it.next();
 			applyContextMappings(mapping, element, newTarget, portIndex);
-			if (Boolean.FALSE.equals(contextErrorStack.peek())) {
+
+			/*
+			 * pass record data to consumer if no error occured
+			 */
+			if (contextErrorStack.peek() == Boolean.FALSE) {
 				recordReceiver.receive(newTarget, portIndex);
 			} else {
-				// clear error flag
+				// replace error state with OK state
 				contextErrorStack.pop(); 
 				contextErrorStack.push(Boolean.FALSE);
 			}
@@ -230,9 +232,6 @@ public class XPathPushParser {
 
 	private void handleException(int portIndex, DataRecord newTarget, DataField currentRecordParentKeyField, BadDataFormatException e) throws AbortParsingException {
 		recordReceiver.exceptionOccurred(generateException(e, currentRecordParentKeyField, newTarget, portIndex));
-		/*
-		 * set error flag
-		 */
 		contextErrorStack.pop();
 		contextErrorStack.push(Boolean.TRUE);
 	}
@@ -245,17 +244,18 @@ public class XPathPushParser {
 		return newEx;
 	}
 	
-	private static Map<String, String> getNamespaceBinding(MappingElement mappingElement) {
-		Map<String, String> nsBinging = new HashMap<String, String>();
-		getNamespaceBinding(mappingElement, nsBinging);
-		return nsBinging;
-	}
-
-	private static void getNamespaceBinding(MappingElement mappingElement, Map<String, String> nsBinging) {
-		if (mappingElement.getParent() != null) {
-			getNamespaceBinding(mappingElement.getParent(), nsBinging);
+	private Map<String, String> getNamespaceBinding(MappingElement mappingElement) {
+		
+		Map<String, String> bindings = null;
+		while (mappingElement != null) {
+			Map<String, String> binding = mappingElement.getNamespaceBinding();
+			if (!binding.isEmpty()) {
+				if (bindings == null) {
+					bindings = new HashMap<String, String>();
+				}
+				bindings.putAll(binding);
+			}
 		}
-		nsBinging.putAll(mappingElement.getNamespaceBinding());
+		return bindings == null ? Collections.<String, String>emptyMap() : bindings;
 	}
-	
 }
