@@ -18,6 +18,7 @@
  */
 package org.jetel.component.tree.reader;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -47,10 +48,6 @@ public class XPathPushParser {
 	protected ValueHandler valueHandler;
 	protected XPathSequenceProvider sequenceProvider;
 	
-	/**
-	 * Stack of error states for context, TRUE indicates error occurred
-	 * in the context, FALSE otherwise.
-	 */
 	protected Stack<Boolean> contextErrorStack = new Stack<Boolean>();
 
 	/**
@@ -94,9 +91,7 @@ public class XPathPushParser {
 		 */
 		if (mapping.getOutputPort() == null) {
 			Object newContext = evaluator.evaluatePath(mapping.getXPath(), getNamespaceBinding(mapping), context, mapping);
-			contextErrorStack.push(Boolean.FALSE);
 			applyContextMappings(mapping, newContext, dataTarget, -1);
-			contextErrorStack.pop();
 			return;
 		}
 		
@@ -119,13 +114,14 @@ public class XPathPushParser {
 		}
 		
 		int portIndex = mapping.getOutputPort().intValue();
+		Sequence sequence = mapping.getSequenceField() == null ? null : getSequence(mapping);
 		while (it.hasNext()) {
 			DataRecord newTarget = recordProvider.getDataRecord(portIndex);
 			/*
 			 * process sequence (if any)
 			 */
 			if (mapping.getSequenceField() != null) {
-				fillSequenceField(mapping.getSequenceField(), newTarget, getSequence(mapping), portIndex);
+				fillSequenceField(mapping.getSequenceField(), newTarget, sequence, portIndex);
 			}
 			/*
 			 * process keying from child to parent (if any)
@@ -146,6 +142,17 @@ public class XPathPushParser {
 			 */
 			Object element = it.next();
 			applyContextMappings(mapping, element, newTarget, portIndex);
+
+			/*
+			 * pass record data to consumer if no error occured
+			 */
+			if (contextErrorStack.peek() == Boolean.FALSE) {
+				recordReceiver.receive(newTarget, portIndex);
+			} else {
+				// replace error state with OK state
+				contextErrorStack.pop(); 
+				contextErrorStack.push(Boolean.FALSE);
+			}
 		}
 		contextErrorStack.pop();
 	}
@@ -158,17 +165,6 @@ public class XPathPushParser {
 		}
 		for (FieldMapping fieldMapping : mapping.getFieldMappingChildren()) {
 			handleFieldMapping(fieldMapping, evaluationContext, targetRecord, portIndex);
-		}
-		/*
-		 * we have processed all fields of this level, so we can
-		 * pass results to the receiver (if no error)
-		 */
-		if (Boolean.FALSE.equals(contextErrorStack.peek())) {
-			recordReceiver.receive(targetRecord, portIndex);
-		} else {
-			// clear error flag
-			contextErrorStack.pop(); 
-			contextErrorStack.push(Boolean.FALSE);
 		}
 		for (MappingContext constantMapping : mapping.getMappingContextChildren()) {
 			handleContext(constantMapping, evaluationContext, targetRecord);
@@ -236,9 +232,6 @@ public class XPathPushParser {
 
 	private void handleException(int portIndex, DataRecord newTarget, DataField currentRecordParentKeyField, BadDataFormatException e) throws AbortParsingException {
 		recordReceiver.exceptionOccurred(generateException(e, currentRecordParentKeyField, newTarget, portIndex));
-		/*
-		 * set error flag
-		 */
 		contextErrorStack.pop();
 		contextErrorStack.push(Boolean.TRUE);
 	}
@@ -251,17 +244,19 @@ public class XPathPushParser {
 		return newEx;
 	}
 	
-	private static Map<String, String> getNamespaceBinding(MappingElement mappingElement) {
-		Map<String, String> nsBinging = new HashMap<String, String>();
-		getNamespaceBinding(mappingElement, nsBinging);
-		return nsBinging;
-	}
-
-	private static void getNamespaceBinding(MappingElement mappingElement, Map<String, String> nsBinging) {
-		if (mappingElement.getParent() != null) {
-			getNamespaceBinding(mappingElement.getParent(), nsBinging);
+	private Map<String, String> getNamespaceBinding(MappingElement mappingElement) {
+		
+		Map<String, String> bindings = null;
+		while (mappingElement != null) {
+			Map<String, String> binding = mappingElement.getNamespaceBinding();
+			if (!binding.isEmpty()) {
+				if (bindings == null) {
+					bindings = new HashMap<String, String>();
+				}
+				bindings.putAll(binding);
+			}
+			mappingElement = mappingElement.getParent();
 		}
-		nsBinging.putAll(mappingElement.getNamespaceBinding());
+		return bindings == null ? Collections.<String, String>emptyMap() : bindings;
 	}
-	
 }
