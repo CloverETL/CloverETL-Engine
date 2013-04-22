@@ -130,5 +130,10 @@ public class ConcurrentOutputPort implements OutputPortDirect {
 	public Edge getEdge() {
 		return outputPort.getEdge();
 	}
+
+	@Override
+	public long getWriterWaitingTime() {
+		return outputPort.getWriterWaitingTime();
+	}
 	
 }

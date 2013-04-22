@@ -33,4 +33,10 @@ public interface OutputPortTracking extends PortTracking {
 
 	public static final PortType TYPE = PortType.OUTPUT;
 
+	/**
+	 * Available only in graph verbose mode.
+	 * @return aggregated time how long the writer thread waits for data
+	 */
+	long getWriterWaitingTime();
+
 }

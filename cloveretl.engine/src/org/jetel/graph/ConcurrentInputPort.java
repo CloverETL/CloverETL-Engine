@@ -129,4 +129,9 @@ public class ConcurrentInputPort implements InputPortDirect {
 		return inputPort.readRecordDirect(record);
 	}
 
+	@Override
+	public long getReaderWaitingTime() {
+		return inputPort.getReaderWaitingTime();
+	}
+
 }

@@ -227,6 +227,24 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	}
 
 	/**
+	 * Available only in graph verbose mode.
+	 * @return aggregated time how long the reader thread waits for data
+	 */
+	@Override
+	public long getReaderWaitingTime() {
+		return edge.getReaderWaitingTime();
+	}
+	
+	/**
+	 * Available only in graph verbose mode.
+	 * @return aggregated time how long the writer thread waits for data
+	 */
+	@Override
+	public long getWriterWaitingTime() {
+		return edge.getWriterWaitingTime();
+	}
+	
+	/**
 	 *  Gets the Reader attribute of the Edge object
 	 *
 	 * @return    The Reader value

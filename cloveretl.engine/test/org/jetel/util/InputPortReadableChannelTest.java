@@ -352,6 +352,11 @@ public class InputPortReadableChannelTest extends CloverTestCase {
 		public Edge getEdge() {
 			return null;
 		}
+
+		@Override
+		public long getReaderWaitingTime() {
+			return 0;
+		}
 	}
 	
 }

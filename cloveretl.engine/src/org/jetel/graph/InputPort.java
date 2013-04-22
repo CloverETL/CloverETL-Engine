@@ -150,6 +150,12 @@ public interface InputPort {
 	public int getUsedMemory();
 	
 	/**
+	 * Available only in graph verbose mode.
+	 * @return aggregated time how long the reader thread waits for data
+	 */
+	public long getReaderWaitingTime();
+	
+	/**
 	 * @return associated edge with this input port
 	 */
 	public Edge getEdge();
