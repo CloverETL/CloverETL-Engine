@@ -18,32 +18,30 @@
  */
 package org.jetel.component.validator;
 
-import java.util.List;
-import java.util.Map;
-
-import org.jetel.data.lookup.LookupTable;
-import org.jetel.graph.TransformationGraph;
-import org.jetel.util.property.PropertyRefResolver;
-
 /**
- * Wrapper around graph to provide some of its parts.
- * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 24.3.2013
+ * @created 18.4.2013
  */
-public interface GraphWrapper {
-
-	public List<String> getLookupTables();
+public class CustomRule {
 	
-	public LookupTable getLookupTable(String name);
+	private String name;
+	private String code;
 	
-	public PropertyRefResolver getRefResolver();
+	public CustomRule(String name, String code) {
+		this.name = name;
+		this.code = code;
+	}
 	
-	public void init(ValidationGroup group);
-	
-	public List<String> getNodePath(ValidationNode needle);
-	
-	public Map<Integer, CustomRule> getCustomRules();
-	
-	public TransformationGraph getTransformationGraph();
+	public String getCode() {
+		return code;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setCode(String code) {
+		this.code = code;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
 }

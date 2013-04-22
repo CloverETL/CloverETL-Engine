@@ -38,6 +38,7 @@ public class EngineGraphWrapper implements GraphWrapper {
 	private TransformationGraph graph;
 	private PropertyRefResolver refResolver;
 	private Map<ValidationNode, ValidationGroup> parentTable;
+	private Map<Integer, CustomRule> customRules;
 	
 	public EngineGraphWrapper(TransformationGraph graph) {
 		this.graph = graph;
@@ -63,11 +64,33 @@ public class EngineGraphWrapper implements GraphWrapper {
 		return refResolver;
 	}
 	
-	public void initParentTable(ValidationGroup root) {
-		parentTable = ValidatorUtils.createParentTable(root);
+	public void init(ValidationGroup root) {
+		initParentTable(root);
+		initCustomRules(root);
 	}
 	
 	public List<String> getNodePath(ValidationNode needle) {
 		return ValidatorUtils.getNodePath(needle, parentTable);
 	}
+	
+	@Override
+	public Map<Integer, CustomRule> getCustomRules() {
+		return customRules;
+	}
+	
+	
+	private void initParentTable(ValidationGroup root) {
+		parentTable = ValidatorUtils.createParentTable(root);
+	}
+	
+	private void initCustomRules(ValidationGroup root) {
+		customRules = root.getCustomRules();
+	}
+
+	@Override
+	public TransformationGraph getTransformationGraph() {
+		return graph;
+	}
+	
+	
 }

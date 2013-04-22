@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.rules.ComparisonValidationRule;
+import org.jetel.component.validator.rules.CustomValidationRule;
 import org.jetel.component.validator.rules.DateValidationRule;
 import org.jetel.component.validator.rules.EnumMatchValidationRule;
 import org.jetel.component.validator.rules.IntervalValidationRule;
@@ -57,7 +58,8 @@ import org.jetel.metadata.DataRecordMetadata;
 		ComparisonValidationRule.class,
 		DateValidationRule.class,
 		NumberValidationRule.class,
-		LookupValidationRule.class
+		LookupValidationRule.class,
+		CustomValidationRule.class
 	})
 public abstract class AbstractValidationRule extends ValidationNode {
 	
@@ -124,7 +126,9 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	}
 	
 	/**
-	 * Initialize param nodes
+	 * Initialize param nodes.
+	 * Have in mind:
+	 *  - Always return not null
 	 * @param inMetadata Metadata incoming record
 	 * @param graphWrapper Graph wrapper to be able finish initialization and reach some graph parameters
 	 * @return List of all param nodes

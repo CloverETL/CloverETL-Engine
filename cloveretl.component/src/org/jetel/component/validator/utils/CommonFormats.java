@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import org.jetel.util.crypto.CombinedDecryptor;
-
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 12.3.2013
@@ -77,38 +75,6 @@ public class CommonFormats {
 		"joda:EEE, MMM d, yy",
 	};
 	public static final String defaultDate = dates[0];
-
-	public static final String[] all = {
-		INTEGER,
-		"#",
-		"#.#",
-		"#.###",
-		"000",
-		"000.#",
-		"#.### %",
-		"### \u00A4",
-		"### a string",
-		"-###",
-		"yyyy-MM-dd HH:mm:ss",
-		"yyyy-MM-dd",
-		"HH:mm:ss",
-		"dd.MM.yy",
-		"dd/MM/yy",
-		"dd.MM.yyyy",
-		"MM.dd.yyyy",
-		"yyyy-MM-dd hh:mm:ss 'text'",
-		"yyyy.MM.dd HH:mm:ss.SSS z",
-		"EEE, MMM d, yy",
-		"joda:yyyy-MM-dd HH:mm:ss",
-		"joda:yyyy-MM-dd",
-		"joda:HH:mm:ss",
-		"joda:dd.MM.yy",
-		"joda:dd/MM/yy",
-		"joda:dd.MM.yyyy",
-		"joda:MM.dd.yyyy",
-		"joda:yyyy-MM-dd hh:mm:ss 'text'",
-		"joda:EEE, MMM d, yy"
-	};
 	
 	/** 
 	 * @see (LocaleAttributeType)

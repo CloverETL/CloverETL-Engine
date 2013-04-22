@@ -191,7 +191,9 @@ public class Validator extends Node {
 		}
 		
 		ReadynessErrorAcumulator accumulator = new ReadynessErrorAcumulator();
-		if(rootGroup != null && !rootGroup.isReady(inputPort.getMetadata(), accumulator, new EngineGraphWrapper(getGraph()))) {
+		GraphWrapper graphWrapper = new EngineGraphWrapper(getGraph());
+		graphWrapper.init(rootGroup);
+		if(rootGroup != null && !rootGroup.isReady(inputPort.getMetadata(), accumulator, graphWrapper)) {
 			String tempName = new String();
 			for(Entry<ValidationParamNode, List<String>> errors: accumulator.getErrors().entrySet()) {
 				for(String message : errors.getValue()) {
@@ -249,7 +251,7 @@ public class Validator extends Node {
 	
 		// Prepare provider for accessing graph
 		GraphWrapper graphWrapper = new EngineGraphWrapper(getGraph());
-		graphWrapper.initParentTable(root);
+		graphWrapper.init(root);
 		ValidationErrorAccumulator errorAccumulator = new ValidationErrorAccumulator();
 		
 		// Iterate over data

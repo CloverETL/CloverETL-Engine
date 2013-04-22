@@ -21,6 +21,7 @@ package org.jetel.component.validator.utils;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -29,6 +30,7 @@ import java.util.Stack;
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
 import org.jetel.component.validator.params.LanguageSetting;
+import org.jetel.component.validator.rules.CustomValidationRule;
 import org.jetel.component.validator.rules.LanguageSettingsValidationRule;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -154,6 +156,34 @@ public class ValidatorUtils {
 			currentParent = parentTable.get(currentParent);
 		}
 		return tempLanguageSetting;
+	}
+	
+	public static void removeCustomRuleRecursive(int id, ValidationGroup root) {
+		Stack<ValidationGroup> nodesToProcess = new Stack<ValidationGroup>();
+		nodesToProcess.push(root);
+		ValidationGroup current;
+		while (!nodesToProcess.isEmpty()) {
+			current = nodesToProcess.pop();
+			Iterator<ValidationNode> iterator = current.getChildren().iterator();
+			ValidationNode temp;
+			while(iterator.hasNext()) {
+				temp = iterator.next();
+				if(temp instanceof ValidationGroup) {
+					nodesToProcess.push((ValidationGroup) temp);
+				}
+				if(temp instanceof CustomValidationRule) {
+					Integer ref = ((CustomValidationRule) temp).getRef().getValue();
+					if(ref == null || ref.equals(Integer.valueOf(id))) {
+						iterator.remove();
+					}
+				}
+			}
+		}
+	}
+	
+	public static String[] getCTLTypes() {
+		// FIXME: is this also enumerated somewhere else?
+		return new String[]{"boolean", "byte", "cbyte", "date", "decimal", "integer", "long", "number", "string"};
 	}
 	
 }

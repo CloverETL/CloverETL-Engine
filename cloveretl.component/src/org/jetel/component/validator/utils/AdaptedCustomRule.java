@@ -16,34 +16,42 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.validator;
+package org.jetel.component.validator.utils;
 
-import java.util.List;
-import java.util.Map;
-
-import org.jetel.data.lookup.LookupTable;
-import org.jetel.graph.TransformationGraph;
-import org.jetel.util.property.PropertyRefResolver;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlValue;
 
 /**
- * Wrapper around graph to provide some of its parts.
- * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
- * @created 24.3.2013
+ * @created 18.4.2013
  */
-public interface GraphWrapper {
-
-	public List<String> getLookupTables();
+public class AdaptedCustomRule {
+	@XmlAttribute(name="id")
+	private int id;
 	
-	public LookupTable getLookupTable(String name);
+	@XmlAttribute(name="name")
+	private String name;
 	
-	public PropertyRefResolver getRefResolver();
+	@XmlValue
+	private String code;
 	
-	public void init(ValidationGroup group);
+	private AdaptedCustomRule() {} // For JAXB
 	
-	public List<String> getNodePath(ValidationNode needle);
+	public AdaptedCustomRule(int id, String name, String code) {
+		this.id = id;
+		this.name = name;
+		this.code = code;
+	}
 	
-	public Map<Integer, CustomRule> getCustomRules();
+	public String getCode() {
+		return code;
+	}
 	
-	public TransformationGraph getTransformationGraph();
+	public String getName() {
+		return name;
+	}
+	
+	public int getId() {
+		return id;
+	}
 }

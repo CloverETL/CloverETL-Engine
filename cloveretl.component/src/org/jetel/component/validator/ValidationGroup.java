@@ -19,7 +19,9 @@
 package org.jetel.component.validator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -27,11 +29,15 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementRef;
 import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlEnum;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.jetel.component.validator.params.LanguageSetting;
+import org.jetel.component.validator.utils.CustomRulesMapAdapter;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -102,6 +108,45 @@ public class ValidationGroup extends ValidationNode {
 			return State.INVALID;
 		}
 	}
+	
+	/**
+	 * Wrapper to hold all custom rules, supposed to be used only on root group.
+	 */
+	@XmlElement(name="customRules")
+	@XmlJavaTypeAdapter(CustomRulesMapAdapter.class)
+	private Map<Integer, CustomRule> customRules;
+	
+	@XmlAttribute(name="nextCustomRuleId")
+	private Integer nextCustomRuleId = 0; 
+	
+	public void addCustomRule(CustomRule customRule) {
+		if(customRules == null) {
+			customRules = new HashMap<Integer, CustomRule>();
+		}
+		customRules.put(nextCustomRuleId++, customRule);
+	}
+	
+	public CustomRule getCustomRule(int id) {
+		if(customRules == null) {
+			return null;
+		}
+		return customRules.get(Integer.valueOf(id));
+	}
+	
+	public Map<Integer, CustomRule> getCustomRules() {
+		return customRules;
+	}
+	
+	public void removeCustomRule(int id) {
+		if(customRules == null) {
+			return;
+		}
+		customRules.remove(Integer.valueOf(id));
+		if(customRules.isEmpty()) {
+			customRules = null;
+		}
+	}
+	
 
 	/**
 	 * Sets conjunction

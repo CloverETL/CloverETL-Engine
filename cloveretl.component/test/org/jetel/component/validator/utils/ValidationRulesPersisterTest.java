@@ -23,6 +23,7 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 
 import org.jetel.component.validator.AbstractValidationRule;
+import org.jetel.component.validator.CustomRule;
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
 import org.jetel.component.validator.common.ValidatorTestCase;
@@ -116,8 +117,14 @@ public class ValidationRulesPersisterTest extends ValidatorTestCase {
 	}
 	
 	@Test
-	public void testTest() {
+	public void testCustomRules() {
+		ValidationGroup group = prepareGroup();
+		group.addCustomRule(new CustomRule("Ahoj", "COOOODe"));
+		group.addCustomRule(new CustomRule("Ahoj32", "ddCOOOODe"));
 		
+		System.out.println(ValidationRulesPersister.serialize(group));
+		group = ValidationRulesPersister.deserialize(ValidationRulesPersister.serialize(group));
+		System.out.println(ValidationRulesPersister.serialize(group));
 	}
 	
 	@Test
@@ -200,6 +207,5 @@ public class ValidationRulesPersisterTest extends ValidatorTestCase {
 			System.out.println(item.getKey().getName() + " -> " + ((item.getValue() != null) ? item.getValue().getName() : null));
 			//System.out.println(ValidatorUtils.getNodePath(item.getKey(), temp, '/'));
 		}
-		
 	}
 }
