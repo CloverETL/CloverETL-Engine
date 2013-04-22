@@ -49,7 +49,13 @@ public class DirectEdge extends EdgeBase {
     private boolean readerWait;
     private volatile boolean writerWait;
 	private int readBufferLimit;
-
+    /** Is the graph running in verbose mode? Cache of GraphRuntimeContext.isVerboseMode() variable. */
+	private boolean verbose;
+	/** How long has been reader blocked on the edge (in nanoseconds). */
+	private long readerWaitingTime;
+	/** How long has been writer blocked on the edge (in nanoseconds). */
+	private long writerWaitingTime;
+	
 	private final static int EOF=Integer.MAX_VALUE;
 
 	/**
@@ -95,6 +101,16 @@ public class DirectEdge extends EdgeBase {
     	return writeBuffer.capacity() + readBuffer.capacity() + tmpDataRecord.capacity();
     }
     
+    @Override
+    public long getReaderWaitingTime() {
+    	return readerWaitingTime / 1000000;
+    }
+    
+    @Override
+    public long getWriterWaitingTime() {
+    	return writerWaitingTime / 1000000;
+    }
+    
 	/**
 	 *  Description of the Method
 	 *
@@ -117,6 +133,15 @@ public class DirectEdge extends EdgeBase {
 	    writerWait=false;
 	}
 
+	@Override
+	public void preExecute() {
+		super.preExecute();
+		
+		verbose = proxy.getGraph().getRuntimeContext().isVerboseMode();
+		readerWaitingTime = 0;
+		writerWaitingTime = 0;
+	}
+	
 	@Override
 	public void reset() {
 		readBuffer.clear();
@@ -211,8 +236,17 @@ public class DirectEdge extends EdgeBase {
             notify();
         } else {
             readerWait = true;
-            while(readerWait) {
-                wait();
+            if (verbose) {
+            	//readerWaitingTime is advanced only in verbose mode
+                long startTime = System.nanoTime();
+                while(readerWait) {
+                    wait();
+                }
+                readerWaitingTime += System.nanoTime() - startTime;
+            } else {
+	            while(readerWait) {
+	                wait();
+	            }
             }
         }
 	    return true;
@@ -302,9 +336,18 @@ public class DirectEdge extends EdgeBase {
             notify();
         } else {
             writerWait = true;
-            while(writerWait) {
-    	        wait();
-    	    }
+            if (verbose) {
+            	//writerWaitingTime is advanced only in verbose mode
+                long startTime = System.nanoTime();
+                while(writerWait) {
+        	        wait();
+        	    }
+                writerWaitingTime += System.nanoTime() - startTime;
+            } else {
+	            while(writerWait) {
+	    	        wait();
+	    	    }
+            }
         }
 	}
 	

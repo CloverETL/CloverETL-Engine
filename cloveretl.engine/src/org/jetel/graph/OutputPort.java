@@ -148,6 +148,12 @@ public interface OutputPort {
 	public int getUsedMemory();
 
 	/**
+	 * Available only in graph verbose mode.
+	 * @return aggregated time how long the writer thread waits for data
+	 */
+	public long getWriterWaitingTime();
+
+	/**
 	 * @return associated edge with this output port
 	 */
 	public Edge getEdge();

@@ -113,6 +113,8 @@ public class BufferedEdge extends EdgeBase {
 		outputRecordCounter = 0;
 		inputRecordCounter = 0;
 		byteCounter = 0;
+		recordBuffer.setVerbose(proxy.getGraph().getRuntimeContext().isVerboseMode());
+		recordBuffer.preExecute();
 	}
 	
 	@Override
@@ -190,4 +192,14 @@ public class BufferedEdge extends EdgeBase {
 		}
 	}
 
+    @Override
+    public long getReaderWaitingTime() {
+    	return recordBuffer.getReaderWaitingTime();
+    }
+    
+    @Override
+    public long getWriterWaitingTime() {
+    	return recordBuffer.getWriterWaitingTime();
+    }
+    
 }

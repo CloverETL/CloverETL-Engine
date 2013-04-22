@@ -42,6 +42,13 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     protected long byteCounter;
     protected AtomicInteger bufferedRecords;
 
+    /** Is the graph running in verbose mode? Cache of GraphRuntimeContext.isVerboseMode() variable. */
+	private boolean verbose;
+	/** How long has been reader blocked on the edge (in nanoseconds). */
+	private long readerWaitingTime;
+	/** How long has been writer blocked on the edge (in nanoseconds). */
+	private long writerWaitingTime;
+
     // Attributes
     
     /**
@@ -104,6 +111,15 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         recordsBuffer.open();
     }
 
+    @Override
+    public void preExecute() {
+    	super.preExecute();
+    	
+		verbose = proxy.getGraph().getRuntimeContext().isVerboseMode();
+		readerWaitingTime = 0;
+		writerWaitingTime = 0;
+    }
+    
     @Override
     public void reset() {
         recordsBuffer.reset();
@@ -249,6 +265,16 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         return recordsBuffer.hasData();
     }
 
+    @Override
+    public long getReaderWaitingTime() {
+    	return readerWaitingTime / 1000000;
+    }
+
+    @Override
+    public long getWriterWaitingTime() {
+    	return writerWaitingTime / 1000000;
+    }
+    
     /**
      *  Class implementing semafor/internal buffer for handling
      * Producer,Consumer scenario of two threads.
@@ -256,7 +282,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
      * @author     dpavlis
      * @since    June 5, 2002
      */
-    static class EdgeRecordBufferPool {
+    private class EdgeRecordBufferPool {
 
     	private static final int INITIAL_BUFFER_CAPACITY = 100;
 
@@ -352,7 +378,14 @@ public class DirectEdgeFastPropagate extends EdgeBase {
             int tmpWrite=(writePointer+1)%size;
             while(tmpWrite==readPointer){
                 // the next slot is still occupied by read thread
-                wait();
+            	if (verbose) {
+                	//writerWaitingTime is advanced only in verbose mode
+            		long startTime = System.nanoTime();
+            		wait();
+            		writerWaitingTime += System.nanoTime() - startTime;
+            	} else {
+            		wait();
+            	}
                 if (!isOpen) {
                     return null;
                 }
@@ -377,7 +410,14 @@ public class DirectEdgeFastPropagate extends EdgeBase {
             }
             while (readPointer==writePointer) {
                 // wait till something shows up
-                wait();
+            	if (verbose) {
+                	//readerWaitingTime is advanced only in verbose mode
+            		long startTime = System.nanoTime();
+            		wait();
+            		readerWaitingTime += System.nanoTime() - startTime;
+            	} else {
+            		wait();
+            	}
                 if ((!isOpen) && (readPointer==writePointer)){
                 	eofWasRead = true;
                     return null;

@@ -38,6 +38,8 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Outp
 	
 	private final transient OutputPort outputPort;
 	
+	protected long writerWaitingTime;
+
 	public OutputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, OutputPort outputPort) {
 		super(parentNodeDetail, outputPort.getOutputPortNumber());
 		this.outputPort = outputPort;
@@ -50,10 +52,25 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Outp
 		
 	}
 
+	public void copyFrom(OutputPortTrackingDetail portDetail) {
+		super.copyFrom(portDetail);
+
+		this.writerWaitingTime = portDetail.writerWaitingTime;
+	}
+
 	OutputPort getOutputPort() {
 		return outputPort;
 	}
 
+	@Override
+	public long getWriterWaitingTime() {
+		return writerWaitingTime;
+	}
+
+	public void setWriterWaitingTime(long writerWaitingTime) {
+		this.writerWaitingTime = writerWaitingTime;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.runtime.jmx.PortTrackingDetail#getType()
 	 */
@@ -72,6 +89,9 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Outp
 
 		//gather memory usage
 		setUsedMemory(outputPort.getUsedMemory());
+
+		//aggregated time how long the writer thread waits for data
+		setWriterWaitingTime(outputPort.getWriterWaitingTime());
 		
 		//define remote runId for remote edges
 		Node dataConsumer = outputPort.getReader();

@@ -38,6 +38,8 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Input
 	
 	private final transient InputPort inputPort;
 	
+	protected long readerWaitingTime;
+
 	public InputPortTrackingDetail(NodeTrackingDetail parentNodeDetail, InputPort inputPort) {
 		super(parentNodeDetail, inputPort.getInputPortNumber());
 		this.inputPort = inputPort;
@@ -49,8 +51,23 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Input
 		inputPort = null;
 	}
 
+	public void copyFrom(InputPortTrackingDetail portDetail) {
+		super.copyFrom(portDetail);
+
+		this.readerWaitingTime = portDetail.readerWaitingTime;
+	}
+	
 	InputPort getInputPort() {
 		return inputPort;
+	}
+
+	@Override
+	public long getReaderWaitingTime() {
+		return readerWaitingTime;
+	}
+	
+	public void setReaderWaitingTime(long readerWaitingTime) {
+		this.readerWaitingTime = readerWaitingTime;
 	}
 
 	/* (non-Javadoc)
@@ -71,6 +88,9 @@ public class InputPortTrackingDetail extends PortTrackingDetail implements Input
 		
 		//gather memory usage
 		setUsedMemory(inputPort.getUsedMemory());
+		
+		//aggregated time how long the reader thread waits for data
+		setReaderWaitingTime(inputPort.getReaderWaitingTime());
 		
 		//define remote runId for remote edges
 		Node dataProducent = inputPort.getWriter();

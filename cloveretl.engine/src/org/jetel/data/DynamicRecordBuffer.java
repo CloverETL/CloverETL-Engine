@@ -73,6 +73,15 @@ public class DynamicRecordBuffer {
     
     private final static int EOF = Integer.MAX_VALUE; // EOF indicates that no more records will be written to buffer
 
+    /** Variables readerWaitingTime and writerWaitingTime are calculated only in verbose mode. */
+	private boolean verbose;
+	
+	/** How long has been reader thread blocked on this buffer (in nanoseconds)? */ 
+	private long readerWaitingTime;
+
+	/** How long has been writer thread blocked on this buffer (in nanoseconds)? */ 
+	private long writerWaitingTime;
+
 	/**
 	 * Constructor of the DynamicRecordBuffer with tmp file
      * created under java.io.tmpdir dir.
@@ -159,6 +168,11 @@ public class DynamicRecordBuffer {
 		isClosed = true;
 	}	
 
+	public void preExecute() {
+        readerWaitingTime = 0;
+        writerWaitingTime = 0;
+	}
+	
 	/**
 	 *  Clears the buffer. Temp file (if it was created) remains
 	 * unchanged size-wise
@@ -184,7 +198,6 @@ public class DynamicRecordBuffer {
         bufferedRecords.set(0);
         readDataBuffer.flip();
 	}
-
 
 	/**
 	 *  Stores one data record into buffer.
@@ -278,7 +291,16 @@ public class DynamicRecordBuffer {
 		} else {
 			DiskSlot diskSlot = getDiskSlotForWrite(writeDataBuffer.capacity());
 			writeDataBuffer.flip();
-			diskSlot.write(writeDataBuffer);
+			if (verbose) {
+				//in case verbose mode is on, time of data writing is added to writer waiting time
+				//this is the best approximation how the writerWaitingTime can be calculated
+				long startTime = System.nanoTime();
+				diskSlot.write(writeDataBuffer);
+				long endTime = System.nanoTime();
+				writerWaitingTime += endTime - startTime;
+			} else {
+				diskSlot.write(writeDataBuffer);
+			}
 			writeDataBuffer.clear();
 		}
 	}
@@ -399,9 +421,19 @@ public class DynamicRecordBuffer {
         	// we may read it from writeBuffer
             // set flag that we are waiting for writer..
             awaitingData = true;
-            while (awaitingData) {
-                notify();
-                wait();
+            if (verbose) {
+            	//waiting time is measured in verbose mode
+            	long startTime = System.nanoTime();
+	            while (awaitingData) {
+	                notify();
+	                wait();
+	            }
+            	readerWaitingTime += System.nanoTime() - startTime;
+            } else {
+	            while (awaitingData) {
+	                notify();
+	                wait();
+	            }
             }
         }
     }
@@ -470,6 +502,36 @@ public class DynamicRecordBuffer {
     	return readDataBuffer.capacity() + writeDataBuffer.capacity() + tmpDataRecord.capacity();
     }
     
+	/**
+	 * Is readerWaitingTime and writerWaitingTime measured?
+	 */
+	public boolean isVerbose() {
+		return verbose;
+	}
+
+	/**
+	 * Turn on/off measuring of readerWaitingTime and writerWaitingTime
+	 */
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
+	}
+
+	/**
+	 * Available only in verbose mode.
+	 * @return aggregated time how long the reader thread waits for data
+	 */
+	public long getReaderWaitingTime() {
+		return readerWaitingTime / 1000000;
+	}
+
+	/**
+	 * Available only in verbose mode.
+	 * @return aggregated time how long the writer thread waits for data
+	 */
+	public long getWriterWaitingTime() {
+		return writerWaitingTime / 1000000;
+	}
+
     private static class TempFile {
     	
     	private File tempFile;

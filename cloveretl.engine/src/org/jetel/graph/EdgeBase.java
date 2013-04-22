@@ -133,6 +133,22 @@ public abstract class EdgeBase {
     public abstract int getUsedMemory();
     
 	/**
+	 * Available only in graph verbose mode.
+	 * @return aggregated time how long the reader thread waits for data
+	 */
+    public long getReaderWaitingTime() {
+    	return 0;
+    }
+    
+	/**
+	 * Available only in graph verbose mode.
+	 * @return aggregated time how long the writer thread waits for data
+	 */
+    public long getWriterWaitingTime() {
+    	return 0;
+    }
+    
+	/**
 	 *  Description of the Method
 	 *
 	 *@param  record                    Description of Parameter
