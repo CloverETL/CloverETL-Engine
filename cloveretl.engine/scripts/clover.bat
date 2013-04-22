@@ -14,26 +14,26 @@ REM split command-line arguments to two sets - clover and jvm arguments
 REM and define DERIVED_CLOVER_HOME variable
 call "%~dp0"\commonlib.bat %*
 
-set _JAVACMD=%JAVACMD%
-set TOOLS_JAR=%JAVA_HOME%\lib\tools.jar
+set "_JAVACMD=%JAVACMD%"
+set "TOOLS_JAR=%JAVA_HOME%\lib\tools.jar"
 
 if "%JAVA_HOME%" == "" goto noJavaHome
 if not exist "%JAVA_HOME%\bin\java.exe" goto noJavaHome
-if "%_JAVACMD%" == "" set _JAVACMD=%JAVA_HOME%\bin\java.exe
+if "%_JAVACMD%" == "" set "_JAVACMD=%JAVA_HOME%\bin\java.exe"
 goto createClasspath
 
 :noJavaHome
-if "%_JAVACMD%" == "" set _JAVACMD=java.exe
+if "%_JAVACMD%" == "" set "_JAVACMD=java.exe"
 set TOOLS_JAR=
 
 :createClasspath
-set TRANSFORM_PATH=%~dp0
+set "TRANSFORM_PATH=%~dp0"
 
 FOR /f "tokens=*" %%G IN ('dir /b "%DERIVED_CLOVER_HOME%/lib"') DO (call :collectClasspath %%G)
 GOTO runClover
 
 :collectClasspath
- set ENGINE_CLASSPATH=%ENGINE_CLASSPATH%;%DERIVED_CLOVER_HOME%/lib/%1
+set "ENGINE_CLASSPATH=%ENGINE_CLASSPATH%;%DERIVED_CLOVER_HOME%/lib/%1"
 GOTO :eof
 
 

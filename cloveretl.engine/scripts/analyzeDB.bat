@@ -9,9 +9,9 @@ REM analyzeDB.bat -config interbase.cfg -o employee.fmt -q "select * from EMPLOY
 
 REM prepare DERIVED_CLOVER_HOME environmental variable
 REM %~dp0 is expanded pathname of the current script under NT
-set DEFAULT_CLOVER_HOME=%~dp0..
+set "DEFAULT_CLOVER_HOME=%~dp0.."
 
-if "%CLOVER_HOME%"=="" (set DERIVED_CLOVER_HOME=%DEFAULT_CLOVER_HOME%) else (set DERIVED_CLOVER_HOME=%CLOVER_HOME%)
+if "%CLOVER_HOME%"=="" (set "DERIVED_CLOVER_HOME=%DEFAULT_CLOVER_HOME%") else (set "DERIVED_CLOVER_HOME=%CLOVER_HOME%")
 set DEFAULT_CLOVER_HOME=
 
 REM find CLOVER_HOME if it does not exist due to either an invalid value passed
@@ -20,19 +20,19 @@ if exist "%DERIVED_CLOVER_HOME%\lib\cloveretl.engine.jar" goto checkJava
 
 REM check for clover in Program Files
 if not exist "%ProgramFiles%\cloverETL" goto checkSystemDrive
-set DERIVED_CLOVER_HOME=%ProgramFiles%\cloverETL
+set "DERIVED_CLOVER_HOME=%ProgramFiles%\cloverETL"
 goto checkJava
 
 :checkSystemDrive
 REM check for clover in root directory of system drive
 if not exist %SystemDrive%\cloverETL\lib\cloveretl.engine.jar goto checkCDrive
-set DERIVED_CLOVER_HOME=%SystemDrive%\cloverETL
+set "DERIVED_CLOVER_HOME=%SystemDrive%\cloverETL"
 goto checkJava
 
 :checkCDrive
 REM check for clover in C:\cloverETL for Win9X users
 if not exist C:\cloverETL\lib\cloveretl.engine.jar goto noCloverHome
-set DERIVED_CLOVER_HOME=C:\cloverETL
+set "DERIVED_CLOVER_HOME=C:\cloverETL"
 goto checkJava
 
 :noCloverHome
@@ -40,26 +40,26 @@ echo CLOVER_HOME is set incorrectly or clover could not be located. Please set C
 goto end
 
 :checkJava
-set JAVA_CMD=%JAVACMD%
+set "JAVA_CMD=%JAVACMD%"
 if "%JAVA_HOME%" == "" goto noJavaHome
 if not exist "%JAVA_HOME%\bin\java.exe" goto noJavaHome
-if "%JAVA_CMD%" == "" set JAVA_CMD=%JAVA_HOME%\bin\java.exe
+if "%JAVA_CMD%" == "" set "JAVA_CMD=%JAVA_HOME%\bin\java.exe"
 goto parseArgs
 
 :noJavaHome
-if "%JAVA_CMD%" == "" set JAVA_CMD=java.exe
+if "%JAVA_CMD%" == "" set "JAVA_CMD=java.exe"
 
 REM Prepare the command line arguments. This loop allows for an unlimited number
 REM of arguments (up to the command line limit, anyway).
 
 :parseArgs
 if ""%1""=="""" goto createClasspath
-set CMD_LINE_ARGS=%1
+set "CMD_LINE_ARGS=%1"
 shift
 
 :cmdLineArgs
 if ""%1""=="""" goto createClasspath
-set CMD_LINE_ARGS=%CMD_LINE_ARGS% %1
+set "CMD_LINE_ARGS=%CMD_LINE_ARGS% %1"
 shift
 goto cmdLineArgs
 
@@ -68,12 +68,12 @@ FOR /f "tokens=*" %%G IN ('dir /b "%DERIVED_CLOVER_HOME%/lib"') DO (call :collec
 GOTO analyzeDB
 
 :collectClasspath
- set ENGINE_CLASSPATH=%ENGINE_CLASSPATH%;%DERIVED_CLOVER_HOME%/lib/%1
+ set "ENGINE_CLASSPATH=%ENGINE_CLASSPATH%;%DERIVED_CLOVER_HOME%/lib/%1"
 GOTO :eof
 
 :analyzeDB
-set CLOVER_CONNECTION_JAR=%DERIVED_CLOVER_HOME%\plugins\org.jetel.connection\cloveretl.connection.jar
-set CLOVER_PLUGINS_DIR=%DERIVED_CLOVER_HOME%\plugins
+set "CLOVER_CONNECTION_JAR=%DERIVED_CLOVER_HOME%\plugins\org.jetel.connection\cloveretl.connection.jar"
+set "CLOVER_PLUGINS_DIR=%DERIVED_CLOVER_HOME%\plugins"
 
 echo "%JAVA_CMD%" -classpath "%ENGINE_CLASSPATH%;%CLOVER_CONNECTION_JAR%" org.jetel.connection.jdbc.AnalyzeDB %CMD_LINE_ARGS% -plugins %CLOVER_PLUGINS_DIR%
 "%JAVA_CMD%" -classpath "%ENGINE_CLASSPATH%;%CLOVER_CONNECTION_JAR%" org.jetel.connection.jdbc.AnalyzeDB %CMD_LINE_ARGS% -plugins %CLOVER_PLUGINS_DIR%
