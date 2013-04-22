@@ -86,11 +86,16 @@ public class ReadableChannelPortIterator {
 	public void init() throws ComponentNotReadyException {
 		if (inputPort == null) return;
 		
-		if (portFileURL == null || portFileURL.length > 1) {
+		if (portFileURL == null || portFileURL.length == 0) {
+			throw new ComponentNotReadyException(UtilMessages.
+					getString("ReadableChannelPortIterator_no_reference_to_port_found")); //$NON-NLS-1$
+		}
+		if (portFileURL.length > 1) {
 			throw new ComponentNotReadyException(UtilMessages.
 					getString("ReadableChannelPortIterator_multiple_fields_not_allowed")); //$NON-NLS-1$
 		}
-		
+
+
 		// set default charset
 		if (charset == null) charset = DEFAULT_CHARSET;
 
