@@ -404,7 +404,7 @@ public class PluginDescriptor {
                 //i have got plugin instance
                 return (PluginActivator) plugin;
             } catch (ClassNotFoundException e) {
-                logger.error("Plugin " + getId() + " activation message: Plugin class does not found - " + getPluginClassName());
+                logger.error("Plugin " + getId() + " activation message: Plugin class does not found - " + getPluginClassName(), e);
             } catch (Exception e) {
                 logger.error("Plugin " + getId() + " activation message: Cannot create plugin instance - " + getPluginClassName() + " - class is abstract, interface or its nullary constructor is not accessible.", e);
             }
