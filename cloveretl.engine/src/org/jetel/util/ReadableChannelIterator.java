@@ -249,9 +249,9 @@ public class ReadableChannelIterator {
 			}
 			currentFileName = unificateFileName(contextURL, currentFileName);
 			
-			Object preferredDataSoutce = getPreferredDataSource(contextURL, currentFileName, preferredDataSourceType);
-			if (preferredDataSoutce != null) {
-				return preferredDataSoutce;
+			Object preferredDataSource = getPreferredDataSource(contextURL, currentFileName, preferredDataSourceType);
+			if (preferredDataSource != null) {
+				return preferredDataSource;
 			}
 			
 			return createReadableByteChannel(currentFileName);
