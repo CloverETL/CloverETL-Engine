@@ -18,11 +18,8 @@
  */
 package org.jetel.util.property;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -54,7 +51,7 @@ public class PropertiesUtils {
 		// TODO the following Properties.load() does not work for a remote stream,
 		// we get a Stream already closed error
 		// data.load(is);
-
+		/* "Stream already closed" error is fixed, see CLO-541
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		char[] charBuf = new char[256];
 		StringBuilder sb = new StringBuilder();
@@ -65,6 +62,8 @@ public class PropertiesUtils {
 		}
 
 		props.load(new ByteArrayInputStream(sb.toString().getBytes()));
+		*/
+		props.load(is);
 	}
 
 	/**

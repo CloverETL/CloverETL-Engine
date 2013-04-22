@@ -194,6 +194,12 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 	 */
 	private boolean implicit = true;
 	
+	
+	/**
+	 * Flag indicating whether the element text content has already been processed
+	 */
+	private boolean charactersProcessed = false;
+	
 	/** Class representing an anector field mapping.
 	 * 
 	 * @author Unkown, Tomas Laurincik (info@cloveretl.com)
@@ -782,4 +788,14 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 	public void setImplicit(boolean implicit) {
 		this.implicit = implicit;
 	}
+
+	public boolean isCharactersProcessed() {
+		return charactersProcessed;
+	}
+
+	public void setCharactersProcessed(boolean charactersProcessed) {
+		this.charactersProcessed = charactersProcessed;
+	}
+	
+	
 }

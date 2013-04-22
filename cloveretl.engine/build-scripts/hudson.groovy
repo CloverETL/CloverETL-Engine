@@ -34,7 +34,7 @@ if( runTests ) {
 def startTime = new Date();
 println "======================= " + startTime
 println "====================================================="
-println "======= Running CloverETL Server tests =============="
+println "======= Running CloverETL Engine tests =============="
 println "jobBasename   = " + jobBasename 
 println "jobGoal   = " + jobGoal
 if( runTests ){ 

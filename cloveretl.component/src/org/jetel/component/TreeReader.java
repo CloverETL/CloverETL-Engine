@@ -297,6 +297,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 			DataRecord record = DataRecordFactory.newRecord(port.getMetadata());
 			record.init();
+			record.reset();
 			outputRecords[i] = record;
 		}
 	}
@@ -510,7 +511,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				// generated key pointing at autofilled field
 				autoFilling.setAutoFillingFields(record);
 				outputPorts[port].writeRecord(record);
-
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -600,9 +600,12 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	public DataRecord getDataRecord(int port) throws AbortParsingException {
 		if (runIt) {
 			recordReadWithException[port] = false;
-			DataRecord record = outputRecords[port];
-			record.reset();
-			return record;
+			/*
+			 * answer copy of record instead of re-usage because
+			 * parser could ask for new record without previous record
+			 * having been written
+			 */
+			return outputRecords[port].duplicate();
 		} else {
 			throw new AbortParsingException();
 		}

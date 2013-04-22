@@ -52,6 +52,11 @@ public class MappingContext extends MappingElement {
 		visitor.visitEnd(this);
 	}
 	
+	@Override
+	public MappingContext getParent() {
+		return (MappingContext)super.getParent();
+	}
+	
 	public void addChild(MappingContext contextChild) {
 		if (!mappingContextChildren.contains(contextChild)) {
 			contextChild.setParent(this);
