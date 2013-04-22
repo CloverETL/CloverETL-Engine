@@ -41,6 +41,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.string.StringUtils;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -187,12 +188,12 @@ public class MultiFileWriter {
 				StringBuilder anchor = new StringBuilder();
 				URL url = FileUtils.getFileURL(contextURL, fileURL);
 				ArchiveType archiveType = FileUtils.getArchiveType(url.toString(), innerSource, anchor);
-				if (archiveType != null) {
+				if ((archiveType != null) && !StringUtils.isEmpty(anchor) && (anchor.indexOf("#") >= 0)) {
 					if (archiveType != ArchiveType.ZIP) {
-						throw new ComponentNotReadyException("Partitioning to " + archiveType + " archives is not supported");
+						throw new ComponentNotReadyException("Partitioning within " + archiveType + " archives is not supported");
 					} else {
 						if (!FileUtils.isLocalArchiveOutputPath(contextURL, fileURL)) {
-							throw new ComponentNotReadyException("Partitioning to remote ZIP archives is not supported: " + url);
+							throw new ComponentNotReadyException("Partitioning within remote ZIP archives is not supported: " + url);
 						}
 					}
 				}
