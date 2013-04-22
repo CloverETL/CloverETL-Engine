@@ -35,6 +35,8 @@ public class XMLMappingConstants {
 	public static final String PARENT_MAPPING_REFERENCE_SEPARATOR = "/";
 	public static final String PARENT_MAPPING_REFERENCE_PREFIX_WITHSEPARATOR = PARENT_MAPPING_REFERENCE_PREFIX + PARENT_MAPPING_REFERENCE_SEPARATOR;
 	public static final String ELEMENT_VALUE_REFERENCE = "{}.";
+	public static final String ELEMENT_AS_TEXT = "{}+";
+	public static final String ELEMENT_CONTENTS_AS_TEXT = "{}-";
 	
 	
 	private XMLMappingConstants() {
