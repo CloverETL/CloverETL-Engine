@@ -57,6 +57,7 @@ import org.jetel.ctl.data.TLTypePrimitive.TLTypeString;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -111,7 +112,7 @@ public class CustomValidationRule extends AbstractValidationRule {
 		
 		Map<Integer, CustomRule> customRules = graphWrapper.getCustomRules();
 		CustomRule selectedRule = customRules.get(ref.getValue());
-		List<Function> functions = CTLCustomRuleUtils.findFunctions(graphWrapper.getTransformationGraph(), new DataRecordMetadata[]{Validator.createErrorOutputMetadata()}, new DataRecordMetadata[]{Validator.createCustomRuleOutputMetadata()}, selectedRule.getCode());
+		List<Function> functions = CTLCustomRuleUtils.findFunctions(graphWrapper.getTransformationGraph(), new DataRecordMetadata[]{record.getMetadata()}, new DataRecordMetadata[]{Validator.createCustomRuleOutputMetadata()}, selectedRule.getCode());
 		String codeToExecute = getCustomValidationRuleTransformation(selectedRule.getCode(), functions.get(0), parsedTargets);
 		
 		initMapping(codeToExecute, record.getMetadata(), graphWrapper);
@@ -183,7 +184,13 @@ public class CustomValidationRule extends AbstractValidationRule {
 			accumulator.addError(target, this, "Invalid custom rule. Delete this validation rule.");
 			return false; // Stop check here
 		}
-		List<Function> functions = CTLCustomRuleUtils.findFunctions(graphWrapper.getTransformationGraph(), new DataRecordMetadata[]{Validator.createErrorOutputMetadata()}, new DataRecordMetadata[]{Validator.createCustomRuleOutputMetadata()}, selectedRule.getCode());
+		List<Function> functions;
+		try { 
+			functions = CTLCustomRuleUtils.findFunctions(graphWrapper.getTransformationGraph(), new DataRecordMetadata[]{inputMetadata}, new DataRecordMetadata[]{Validator.createCustomRuleOutputMetadata()}, selectedRule.getCode());
+		} catch (JetelRuntimeException ex) {
+			accumulator.addError(target, this, "Parsing of validation rule failed with message: " + ex.getMessage());
+			return false; // Stop check here 
+		}
 		if(functions.size() == 0) {
 			accumulator.addError(target, this, "No function found in custom validation rule.");
 			return false; // Stop check here

@@ -97,7 +97,12 @@ public class DateConverter implements Converter {
     		try {
     			return format.parse(o);
     		} catch (ParseException ex) {
-                return null;
+    			format = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
+    			try {
+    				return format.parse(o);
+    			} catch (ParseException ex2) {
+    				return null;
+    			}
     		}
     	}
     	return null;

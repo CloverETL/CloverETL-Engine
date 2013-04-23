@@ -31,7 +31,8 @@ import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.rules.CustomValidationRule;
-import org.jetel.component.validator.rules.LanguageSettingsValidationRule;
+import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -181,9 +182,22 @@ public class ValidatorUtils {
 		}
 	}
 	
+	/**
+	 * Returns array of all CTL2 primitive types.
+	 * @see {@link TLTypePrimitive}
+	 * @return all primitive types
+	 */
 	public static String[] getCTLTypes() {
-		// FIXME: is this also enumerated somewhere else?
-		return new String[]{"boolean", "byte", "cbyte", "date", "decimal", "integer", "long", "number", "string"};
+		return new String[]{
+				TLTypePrimitive.INTEGER.name(),
+				TLTypePrimitive.LONG.name(),
+				TLTypePrimitive.STRING.name(),
+				TLTypePrimitive.BOOLEAN.name(),
+				TLTypePrimitive.DATETIME.name(),
+				TLTypePrimitive.DOUBLE.name(),
+				TLTypePrimitive.DECIMAL.name(),
+				TLType.BYTEARRAY.name()
+			};
 	}
 	
 }

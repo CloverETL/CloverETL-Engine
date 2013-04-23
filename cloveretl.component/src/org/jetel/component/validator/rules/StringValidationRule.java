@@ -18,9 +18,11 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -44,11 +46,15 @@ import org.jetel.data.DateDataField;
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.Defaults;
 import org.jetel.data.StringDataField;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Shared based for validation rules which perform validation on strings (such as Pattern Match).
+ * Provides method for preparing field value into string with respect to language setting and possible trimming.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 4.12.2012
  */
@@ -62,16 +68,6 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 	
 	public StringValidationRule() {
 		addLanguageSetting(new LanguageSetting());
-	}
-	
-	public DataFieldMetadata safeGetFieldMetadata(DataRecordMetadata inputMetadata, String name) {
-		String[] allFieldNames = inputMetadata.getFieldNamesArray();
-		for(String temp : allFieldNames) {
-			if(temp.equals(name)) {
-				return inputMetadata.getField(name);
-			}
-		}
-		return null;
 	}
 
 	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -140,10 +136,17 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		return params;
 	}
 	
+	/**
+	 * Takes care about getting string from field of given name.
+	 * Method take care about converting non-string fields with respect to language setting. 
+	 * @param record Whole record
+	 * @param name Name of obtained field
+	 * @return Not null output string.
+	 */
 	protected String prepareInput(DataRecord record, String name) {
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
 		
-		DataFieldMetadata fieldMetadata = safeGetFieldMetadata(record.getMetadata(), name);
+		DataFieldMetadata fieldMetadata = record.getMetadata().getField(name);
 		if(fieldMetadata == null) {
 			throw new IllegalArgumentException("Unknown field.");
 		}
@@ -161,14 +164,15 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		if(field.isNull()) {
 			return "";
 		}
-		if(fieldMetadata.getDataType() == DataFieldType.BOOLEAN) {
-			if(((BooleanDataField) field).getValue()) {
+		Object value = field.getValue();
+		if(value instanceof Boolean) {
+			if((Boolean) value) {
 				return "True";
 			} else {
 				return "False";
 			}
-		} else if(fieldMetadata.getDataType() == DataFieldType.DATE
-				|| fieldMetadata.getDataType() == DataFieldType.DATETIME) {
+			
+		} else if (value instanceof Date) {
 			String formatString;
 			if(resolvedFormat.isEmpty()) {
 				formatString = Defaults.DEFAULT_DATETIME_FORMAT;
@@ -178,37 +182,43 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 			SimpleDateFormat dateFormat = new SimpleDateFormat(formatString, ValidatorUtils.localeFromString(resolvedLocale));
 			dateFormat.setTimeZone(TimeZone.getTimeZone(resolvedTimezone));
 			return dateFormat.format(((DateDataField) field).getValue());
-		} else if(fieldMetadata.getDataType() == DataFieldType.DECIMAL 
-				|| fieldMetadata.getDataType() == DataFieldType.NUMBER
-				|| fieldMetadata.getDataType() == DataFieldType.LONG
-				|| fieldMetadata.getDataType() == DataFieldType.INTEGER) {
+		} else if (value instanceof Integer || value instanceof Integer || value instanceof Decimal || value instanceof Double) {
 			if(resolvedFormat.isEmpty()) {
 				return field.getValue().toString();
 			}
-			DecimalFormat decimalFormat = (DecimalFormat) DecimalFormat.getInstance(ValidatorUtils.localeFromString(resolvedLocale));
+			DecimalFormat decimalFormat;
 			if(resolvedFormat.equals(CommonFormats.INTEGER)) {
+				decimalFormat = (DecimalFormat) DecimalFormat.getIntegerInstance(ValidatorUtils.localeFromString(resolvedLocale));
 				decimalFormat.applyPattern("#");
 				decimalFormat.setGroupingUsed(false); // Suppress grouping of thousand by default
+			} else if(resolvedFormat.equals(CommonFormats.NUMBER)) {
+				decimalFormat = (DecimalFormat) DecimalFormat.getInstance(ValidatorUtils.localeFromString(resolvedLocale));
+				decimalFormat.setGroupingUsed(false); // Suppress grouping of thousand by default
 			} else {
+				decimalFormat = (DecimalFormat) DecimalFormat.getInstance(ValidatorUtils.localeFromString(resolvedLocale));
 				decimalFormat.applyPattern(resolvedFormat);
 			}
-			if(fieldMetadata.getDataType() == DataFieldType.DECIMAL) {
+			if(value instanceof Decimal) {
 				return decimalFormat.format(((DecimalDataField) field).getBigDecimal());
 			} else {
 				return decimalFormat.format(field.getValue());
 			}
-		} else if(fieldMetadata.getDataType() == DataFieldType.BYTE
-				|| fieldMetadata.getDataType() == DataFieldType.CBYTE) {
-			// TODO: ???
-			return field.getValue().toString();
-		} else if(fieldMetadata.getDataType() == DataFieldType.STRING) {
-			String temp = ((StringDataField) field).getValue().toString();
+		} else if (value instanceof byte[]) {
+			try {
+				return new String((byte[]) value, "UTF-8");
+			} catch (UnsupportedEncodingException ex) {
+				// Should not really happen
+				logger.error("Conversion byte[] to String failed due to unsupported encoding");
+				return "";
+			}
+		} else if (value instanceof String) {
+			String temp = (String) value;
 			if(trimInput.getValue()) {
 				temp = temp.trim();
 			}
 			return temp;
 		} else {
-			return field.getValue().toString();
+			return value.toString();
 		}
 	}
 	
@@ -219,7 +229,7 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		LanguageSetting originalLS = getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0);
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(originalLS, parentLanguageSetting);
 		String resolvedTarget = resolve(target.getValue());
-		DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, resolvedTarget);
+		DataFieldMetadata fieldMetadata = inputMetadata.getField(resolvedTarget);
 		if(fieldMetadata == null) {
 			return false;
 		}

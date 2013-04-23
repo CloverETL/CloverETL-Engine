@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.CloverString;
 
@@ -68,21 +69,32 @@ public class DoubleConverter implements Converter {
 		if (o instanceof Date) {
 			return Long.valueOf(((Date) o).getTime()).doubleValue();
 		}
-		if (o instanceof CloverString) {
-			try {
-				DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance(locale);
-				format.applyPattern(this.format);
-				return format.parse(((CloverString) o).toString()).doubleValue(); 
-			} catch (Exception e) {
-				return null;
+		if (o instanceof CloverString || o instanceof String) {
+			String input;
+			if(o instanceof CloverString) {
+				input = ((CloverString) o).toString();
+			} else {
+				input = (String) o;
 			}
-		}
-		if (o instanceof String) {
 			try {
-				DecimalFormat format = (DecimalFormat) DecimalFormat.getInstance(locale);
-				format.applyPattern(this.format);
-				return format.parse((String) o).doubleValue(); 
-			} catch (ParseException e) {
+				DecimalFormat format;
+				if(this.format.equals(CommonFormats.INTEGER)) {
+					return Long.valueOf(input).doubleValue();
+					//format = (DecimalFormat) DecimalFormat.getInstance(locale);
+					//format.applyPattern("#");
+					//format.setParseIntegerOnly(true);
+				} if(this.format.equals(CommonFormats.NUMBER)) {
+					format = (DecimalFormat) DecimalFormat.getInstance(locale);
+				} else {
+					format = (DecimalFormat) DecimalFormat.getInstance(locale);
+					format.applyPattern(this.format);
+				}
+				System.err.println(format);
+				System.err.println(format.parse(input));
+				return format.parse(input).doubleValue(); 
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.err.println("HER");
 				return null;
 			}
 		}
@@ -90,9 +102,8 @@ public class DoubleConverter implements Converter {
 			return Double.parseDouble("" +((byte[]) o).length);
 		}
 		if(o instanceof Date) {
-			
+			return (double) ((Date) o).getTime();
 		}
-		// TODO: add cbyte, byte, date, list, map
 		return null;
 	}
 	

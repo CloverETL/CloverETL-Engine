@@ -170,8 +170,16 @@ public class StringLengthValidationRule extends StringValidationRule {
 			accumulator.addError(from, this, "Parameter From is unset.");
 			state = false;
 		}
+		if(from.getValue() != null && from.getValue() < 0) {
+			accumulator.addError(from, this, "Parameter From is lower than 0.");
+			state = false;
+		}
 		if((type.getValue() == TYPES.MAXIMAL || type.getValue() == TYPES.INTERVAL) && to.getValue() == null) {
 			accumulator.addError(to, this, "Parameter To is unset.");
+			state = false;
+		}
+		if(to.getValue() != null && to.getValue() < 0) {
+			accumulator.addError(to, this, "Parameter To is lower than 0.");
 			state = false;
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 

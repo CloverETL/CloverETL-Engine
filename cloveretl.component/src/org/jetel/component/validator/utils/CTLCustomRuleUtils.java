@@ -73,9 +73,9 @@ public class CTLCustomRuleUtils {
     		StringBuilder messagesStringBuilder = new StringBuilder();
     		for (ErrorMessage msg : msgs) {
     			messagesStringBuilder.append(msg.getErrorMessage());
-    			messagesStringBuilder.append("\n");
+    			messagesStringBuilder.append("; ");
     		}
-    		throw new JetelRuntimeException("Failed to functions parameters:\n" + messagesStringBuilder.toString());
+    		throw new JetelRuntimeException(messagesStringBuilder.toString());
     	}
 
     	

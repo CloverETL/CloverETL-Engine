@@ -32,12 +32,14 @@ import java.util.TimeZone;
 public class CommonFormats {
 	
 	public static final String INTEGER = "INTEGER";
+	public static final String NUMBER = "NUMBER";
 	
 	/**
 	 * @see (NumericFormatAttributeType)
 	 */
 	public static final String[] numbers = {
 		INTEGER,
+		NUMBER,
 		"#",
 		"#.#",
 		"#.###",

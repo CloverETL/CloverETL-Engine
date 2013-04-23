@@ -149,7 +149,7 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 			@Override
 			public boolean isEnabled() {
 				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
-				if(fieldMetadata != null && (useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL || useType.getValue() == METADATA_TYPES.LONG) && fieldMetadata.getDataType() == DataFieldType.STRING) {
+				if(fieldMetadata != null && (useType.getValue() == METADATA_TYPES.NUMBER || useType.getValue() == METADATA_TYPES.DECIMAL) && fieldMetadata.getDataType() == DataFieldType.STRING) {
 					return true;
 				}
 				return false;
@@ -160,7 +160,7 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 			@Override
 			public boolean isEnabled() {
 				DataFieldMetadata fieldMetadata = inputMetadata.getField(target.getValue());
-				if(fieldMetadata != null && (useType.getValue() != METADATA_TYPES.STRING && useType.getValue() != METADATA_TYPES.DEFAULT) && fieldMetadata.getDataType() == DataFieldType.STRING) {
+				if(fieldMetadata != null && (useType.getValue() != METADATA_TYPES.STRING && useType.getValue() != METADATA_TYPES.DEFAULT && useType.getValue() != METADATA_TYPES.LONG) && fieldMetadata.getDataType() == DataFieldType.STRING) {
 					return true;
 				}
 				return false;
@@ -226,16 +226,6 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 			}
 		}
 	}
-	// TODO: refactor out
-	public DataFieldMetadata safeGetFieldMetadata(DataRecordMetadata inputMetadata, String name) {
-		String[] allFieldNames = inputMetadata.getFieldNamesArray();
-		for(String temp : allFieldNames) {
-			if(temp.equals(name)) {
-				return inputMetadata.getField(name);
-			}
-		}
-		return null;
-	}
 	
 	@Override
 	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
@@ -244,7 +234,7 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 		LanguageSetting originalLS = getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0);
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(originalLS, parentLanguageSetting);
 		String resolvedTarget = resolve(target.getValue());
-		DataFieldMetadata fieldMetadata = safeGetFieldMetadata(inputMetadata, resolvedTarget);
+		DataFieldMetadata fieldMetadata = inputMetadata.getField(resolvedTarget);
 		if(fieldMetadata == null) {
 			return false;
 		}

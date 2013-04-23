@@ -23,6 +23,7 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.NumericFormat;
@@ -70,21 +71,28 @@ public class DecimalConverter implements Converter {
 			Number number = (Number)o;
 			return DecimalFactory.getDecimal(number.longValue());
 		}
-		if (o instanceof CloverString) {
-			try {
-				NumericFormat nf = new NumericFormat(locale);
-				nf.applyPattern(format);
-				return DecimalFactory.getDecimal(((CloverString)o).toString(), nf);
-			} catch (NumberFormatException e) {
-				return null;
+		if (o instanceof CloverString || o instanceof String) {
+			String input;
+			if(o instanceof CloverString) {
+				input = ((CloverString) o).toString();
+			} else {
+				input = (String) o;
 			}
-		}
-		if (o instanceof String) {
 			try {
-				NumericFormat nf = new NumericFormat(locale);
-				nf.applyPattern(format);
-				return DecimalFactory.getDecimal((String)o, nf);
-			} catch (Exception e) {
+				NumericFormat nf;
+				if(this.format.equals(CommonFormats.INTEGER)) {
+					return DecimalFactory.getDecimal(Long.valueOf(input));
+					//nf = new NumericFormat(locale);
+					//nf.applyPattern("#");
+					//nf.setParseIntegerOnly(true);
+				} else if(this.format.equals(CommonFormats.NUMBER)) {
+						nf = new NumericFormat(locale);
+				} else {  
+					nf = new NumericFormat(locale);
+					nf.applyPattern(format);
+				}
+				return DecimalFactory.getDecimal(input, nf);
+			} catch (NumberFormatException e) {
 				return null;
 			}
 		}
