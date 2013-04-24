@@ -9,7 +9,7 @@
 	 <FlatFile outputFile="data-out/city_overview.txt" supposedFile="supposed-out/city_overview.HttpConnector.txt"/>
 	 <!-- next two are disabled until the service works again (currently returns IOException) -->
 	 <!--FlatFile outputFile="data-tmp/CzechRepublic.xml" supposedFile="supposed-out/CzechRepublic.HttpConnector.xml"/-->
-	 <!--FlatFile outputFile="data-tmp/Poland.xml" supposedFile="supposed-out/Poland.HttpConnector.xml"/>
+	 <!--FlatFile outputFile="data-tmp/Poland.xml" supposedFile="supposed-out/Poland.HttpConnector.xml"/-->
 </FunctionalTest>
  
 <FunctionalTest ident="AggregateSorted" graphFile="graph/graphAggregateSorted.grf">
