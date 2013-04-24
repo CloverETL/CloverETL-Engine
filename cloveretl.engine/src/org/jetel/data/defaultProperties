@@ -161,5 +161,5 @@ PortReadingWriting.DATA_LENGTH = 2048
 # usage of direct memory in case OutOfMemory exception occurs. 
 # USE_DIRECT_MEMORY = true;
 
-# Applies for decimal division and double to decimal assignment.
+# Applies to decimal division and double to decimal assignment.
 # CTL.DECIMAL_PRECISION = 32
