@@ -281,7 +281,7 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 		}
 		Relation recurringInfo = element.getRelation();
 		if (element.getParent().getParent() == null && recurringInfo != null && !oneRecordPerFile) {
-			addProblem(element, MappingProperty.UNKNOWN, new MappingError("With port binded to root element, result might contain multiple root elements. Such XML is not well-formed. To avoid that, set 'Records per file' or 'Max number of records' component attribute to '1'.", Severity.WARNING));
+			addProblem(element, MappingProperty.UNKNOWN, new MappingError("Port binding to a root element may produce invalid XML file. Set 'Records per file' or 'Max number of records' component attributes to '1'.", Severity.WARNING));
 		}
 		if (element.getWildcardAttribute() == null) {
 			String writeNull = element.getProperty(MappingProperty.WRITE_NULL_ATTRIBUTE);

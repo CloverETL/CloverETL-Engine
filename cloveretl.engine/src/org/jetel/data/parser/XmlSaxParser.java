@@ -59,6 +59,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
@@ -235,13 +236,22 @@ public class XmlSaxParser {
 		} catch (IOException e) {
 			// reasonable error reporting - get record number on which parsing. This should likely be implemented on
 			// Node level!
-			throw new JetelException("Unexpected exception on record #" + parentComponent.getInputPort(0).getInputRecordCounter(), e);
+			throw new JetelException(getParseErrorMessage(), e);
 		} catch (SAXException e) {
 			// reasonable error reporting - get record number on which parsing. This should likely be implemented on
 			// Node level!
-			logger.error("Unexpected exception on record #" + parentComponent.getInputPort(0).getInputRecordCounter());
+			logger.error(getParseErrorMessage());
 			throw e;
 		}
+	}
+
+	private String getParseErrorMessage() {
+		String message = "Unexpected XML parsing exception";
+		InputPort inputPort = parentComponent.getInputPort(0);
+		if (inputPort != null) {
+			message += " on record #" + inputPort.getInputRecordCounter();
+		}
+		return message;
 	}
 
 	protected OutputPort getOutputPort(int outPortIndex) {
