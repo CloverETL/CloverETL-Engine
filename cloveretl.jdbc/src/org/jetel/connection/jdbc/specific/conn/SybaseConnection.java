@@ -110,6 +110,6 @@ public class SybaseConnection extends BasicSqlConnection {
 	public ResultSetMetaData getColumns(String schema, String owner, String table) throws SQLException {
 		Statement s = connection.createStatement();
 		s.execute("USE " + schema);		
-		return s.executeQuery("EXECUTE sp_columns \"" + table + "\", null, null, \"%\"").getMetaData();
+		return super.getColumns(schema, owner, table);
 	}
 }
