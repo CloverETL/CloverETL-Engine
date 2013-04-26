@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Mon Mar 12 09:03:19 CET 2007" description="In this example, the DBInputTable component connects to database and unloads all records from employee table. It then stores the records in employees.list.out file. " guiVersion="3.4.0.P" id="1204559079189" licenseType="Commercial" modified="Fri Apr 26 10:59:00 CEST 2013" modifiedBy="user" name="Testing DB Unload" revision="1.199" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Mon Mar 12 09:03:19 CET 2007" description="In this example, the DBInputTable component connects to database and unloads all records from employee table. It then stores the records in employees.list.out file. " guiVersion="3.4.0.P" id="1204559079189" licenseType="Commercial" modified="Fri Apr 26 13:19:30 CEST 2013" modifiedBy="user" name="Testing DB Unload" revision="1.200" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="employee" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -22,7 +22,6 @@
 </Record>
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
-<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="220" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="181" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Incremental reading example" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="420" x="13" y="178">
 <attr name="text"><![CDATA[
@@ -43,7 +42,7 @@ During next reading, only the records satisfying to the query and limited by the
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="Employees" guiX="13" guiY="70" id="INPUT" incrementalFile="${PROJECT}/dbInc.txt" incrementalKey="key2=&quot;MIN(employee_id)!0&quot;;key1=&quot;MIN(hire_date)!1994-01-01 00:00:00&quot;" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection0" enabled="enabled" guiName="Employees" guiX="13" guiY="70" id="INPUT" incrementalFile="${PROJECT}/dbInc.txt" incrementalKey="key2=&quot;MIN(employee_id)!0&quot;;key1=&quot;MIN(hire_date)!1994-01-01 00:00:00&quot;" type="DB_INPUT_TABLE">
 <attr name="sqlQuery"><![CDATA[select *
 from employee where hire_date > #key1 and employee_id > #key2]]></attr>
 </Node>
