@@ -1,6 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates how to prpagate data to database." guiVersion="3.3.0.M3" id="1204541150550" licenseType="Commercial" modified="Tue Jul 31 15:16:56 CEST 2012" modifiedBy="Tom" name="Testing DB Load" revision="1.327" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates how to prpagate data to database." guiVersion="3.4.0" id="1204541150550" licenseType="Commercial" modified="Fri Apr 19 16:59:20 CEST 2013" modifiedBy="user" name="Testing DB Load" revision="1.351" showComponentDetails="true">
 <Global>
+<Metadata id="Metadata0">
+<Record fieldDelimiter=";" name="CUSTOMERS" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="ID" nullable="true" shift="0" size="10" type="integer"/>
+<Field eofAsDelimiter="false" name="LNAME" nullable="true" shift="0" size="80" type="string"/>
+<Field eofAsDelimiter="false" name="FNAME" nullable="true" shift="0" size="80" type="string"/>
+</Record>
+</Metadata>
 <Metadata id="rejected" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="," name="EMPLOYEE_REJECTED" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field auto_filling="ErrCode" name="Error_code" type="integer"/>
@@ -16,6 +22,12 @@
 <Field name="JOB_COUNTRY" nullable="true" shift="0" type="string"/>
 <Field name="SALARY" nullable="true" shift="0" type="number"/>
 <Field delimiter=";" name="FULL_NAME" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="errorInfo" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field auto_filling="ErrCode" name="errCode" type="integer"/>
+<Field auto_filling="ErrText" name="errMess" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -42,21 +54,88 @@
 </Record>
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection2" type="JDBC"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="20" y="10">
+<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
+<Property fileURL="jobIdent.prm" id="GraphParameter0"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="20" y="10">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="97" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example has been modified" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="260" x="568" y="3">
+<attr name="text"><![CDATA[This test has been modified to use derby db running on koule. The modification should allow to run the test from multiple branches simultaneously.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/rejected.txt" guiHeight="93" guiName="Rejected Employees" guiWidth="142" guiX="619" guiY="109" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="93" guiName="List of Employees" guiWidth="128" guiX="23" guiY="109" id="INPUT" type="DATA_READER">
+<Node dbConnection="JDBC0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="DBExecute" guiX="19" guiY="-249" id="DBEXECUTE" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Create MYEMPLOYEE]]></attr>
+<attr name="sqlQuery"><![CDATA[drop table  MYEMPLOYEE_${JOB_IDENT};
+create table MYEMPLOYEE_${JOB_IDENT} (
+	ID INTEGER,
+	EMP_NO DOUBLE,
+	FIRST_NAME VARCHAR(80),
+	LAST_NAME VARCHAR(80),
+	PHONE_EXT VARCHAR(4),
+	HIRE_DATE DATE,
+	DEPT_NO VARCHAR(80) NOT NULL,
+	JOB_CODE VARCHAR(80),
+	JOB_GRADE DOUBLE,
+	JOB_COUNTRY VARCHAR(80),
+	SALARY DOUBLE,
+	FULL_NAME VARCHAR(80)
+)]]></attr>
+</Node>
+<Node dbConnection="JDBC0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="DBExecute" guiX="353" guiY="-242" id="DBEXECUTE1" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Create MYUSER]]></attr>
+<attr name="sqlQuery"><![CDATA[drop table  MYUSER_${JOB_IDENT};
+create table MYUSER_${JOB_IDENT} (
+	NUMBER DECIMAL(5,0),
+	FIRST_NAME VARCHAR(80),
+	LAST_NAME VARCHAR(80)
+)]]></attr>
+</Node>
+<Node dbConnection="JDBC0" enabled="disabled" errorActions="MIN_INT=CONTINUE;" guiName="DBExecute" guiX="19" guiY="-125" id="DBEXECUTE2" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Create CUSTOMERS]]></attr>
+<attr name="sqlQuery"><![CDATA[drop table  CUSTOMERS;
+create table CUSTOMERS (
+	ID INTEGER,
+	LNAME VARCHAR(80),
+	FNAME VARCHAR(80)
+)]]></attr>
+</Node>
+<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="765" guiY="-242" id="DBEXECUTE6" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Copy CUSTOMERS]]></attr>
+<attr name="sqlQuery"><![CDATA[create table CUSTOMERS_${JOB_IDENT} as select * from CUSTOMERS with no data;
+insert into CUSTOMERS_${JOB_IDENT} select * from CUSTOMERS;]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Trash" guiX="198" guiY="-236" id="TRASH" type="TRASH"/>
+<Node enabled="enabled" guiName="Trash" guiX="603" guiY="-242" id="TRASH1" type="TRASH"/>
+<Node enabled="disabled" guiName="Trash" guiX="198" guiY="-112" id="TRASH2" type="TRASH"/>
+<Edge fromNode="DBEXECUTE:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (error output)" toNode="TRASH:0"/>
+<Edge fromNode="DBEXECUTE1:1" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (error output)" toNode="TRASH1:0"/>
+<Edge fromNode="DBEXECUTE2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (error output)" toNode="TRASH2:0"/>
+</Phase>
+<Phase number="1">
+<Node dbConnection="JDBC0" dbTable="CUSTOMERS" enabled="disabled" guiName="DBOutputTable" guiX="603" guiY="-125" id="DBOUTPUT_TABLE" type="DB_OUTPUT_TABLE">
+<attr name="guiDescription"><![CDATA[Populate CUSTOMERS]]></attr>
+</Node>
+<Node enabled="disabled" fileURL="${DATAIN_DIR}/customers.dat" guiName="UniversalDataReader" guiX="353" guiY="-125" id="UNIVERSAL_DATA_READER" type="DATA_READER"/>
+<Edge fromNode="UNIVERSAL_DATA_READER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DBOUTPUT_TABLE:0"/>
+</Phase>
+<Phase number="2">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/rejected.txt" guiName="Rejected Employees" guiX="805" guiY="109" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiName="List of Employees" guiX="23" guiY="109" id="INPUT" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Data to be loaded to datbase.]]></attr>
 </Node>
-<Node commit="10" dbConnection="Connection2" enabled="enabled" errorAction="ROLLBACK" guiHeight="93" guiName="DB Table Filling" guiWidth="128" guiX="198" guiY="109" id="OUTPUT" maxErrors="10" sqlQuery="INSERT INTO myemployee (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)&#10;VALUES ($EMP_NO, $FIRST_NAME, $LAST_NAME, $PHONE_EXT, $HIRE_DATE, $DEPT_NO, $JOB_CODE, $JOB_GRADE, $JOB_COUNTRY, $SALARY, $FULL_NAME)&#10;RETURNING $id:=AUTO_GENERATED,$fullname:=$FULL_NAME;&#10;insert into myuser values($EMP_NO, $LAST_NAME, $FIRST_NAME);&#10;update customers set LNAME = $LAST_NAME where ID=$EMP_NO returning $updated:=update_count, $firstname:=$FIRST_NAME;" type="DB_OUTPUT_TABLE">
+<Node commit="10" dbConnection="JDBC0" enabled="enabled" errorAction="ROLLBACK" guiName="DB Table Filling" guiX="198" guiY="109" id="OUTPUT" maxErrors="10" type="DB_OUTPUT_TABLE">
 <attr name="guiDescription"><![CDATA[An SQL query specifies the table, db fields, and clover fields (prefixed by a dollar sign). In other words, the way how the input records should be loaded. The query also defines two autogenerated columns. ]]></attr>
+<attr name="sqlQuery"><![CDATA[INSERT INTO myemployee_${JOB_IDENT} (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
+VALUES ($EMP_NO, $FIRST_NAME, $LAST_NAME, $PHONE_EXT, $HIRE_DATE, $DEPT_NO, $JOB_CODE, $JOB_GRADE, $JOB_COUNTRY, $SALARY, $FULL_NAME)
+RETURNING $id:=AUTO_GENERATED,$fullname:=$FULL_NAME;
+insert into myuser_${JOB_IDENT} values($EMP_NO, $LAST_NAME, $FIRST_NAME);
+update customers_${JOB_IDENT} set LNAME = $LAST_NAME where ID=$EMP_NO returning $updated:=update_count, $firstname:=$FIRST_NAME;]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="67" guiName="Error Message Processed" guiWidth="168" guiX="359" guiY="109" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiName="Error Message Processed" guiX="359" guiY="109" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -83,10 +162,66 @@ function transform() {
 // function finished() {}
 ]]></attr>
 </Node>
-<Node debugPrint="true" enabled="enabled" guiHeight="67" guiName="Accepted and Autogenerated" guiWidth="194" guiX="359" guiY="193" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiName="Remove JOB_IDENT" guiX="603" guiY="109" id="REMOVE_JOB_IDENT" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.Error_code = $in.0.Error_code;
+	$out.0.Error_message = replace($in.0.Error_message, "_${JOB_IDENT}", "");
+	$out.0.EMP_NO = $in.0.EMP_NO;
+	$out.0.FIRST_NAME = $in.0.FIRST_NAME;
+	$out.0.LAST_NAME = $in.0.LAST_NAME;
+	$out.0.PHONE_EXT = $in.0.PHONE_EXT;
+	$out.0.HIRE_DATE = $in.0.HIRE_DATE;
+	$out.0.DEPT_NO = $in.0.DEPT_NO;
+	$out.0.JOB_CODE = $in.0.JOB_CODE;
+	$out.0.JOB_GRADE = $in.0.JOB_GRADE;
+	$out.0.JOB_COUNTRY = $in.0.JOB_COUNTRY;
+	$out.0.SALARY = $in.0.SALARY;
+	$out.0.FULL_NAME = $in.0.FULL_NAME;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node debugPrint="true" enabled="enabled" guiName="Accepted and Autogenerated" guiX="359" guiY="193" id="TRASH0" type="TRASH"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" toNode="OUTPUT:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="rejected" outPort="Port 0 (rejected)" toNode="REFORMAT0:0"/>
 <Edge debugLastRecords="true" debugMode="false" fromNode="OUTPUT:1" guiBendpoints="348:149|348:213" guiLocks="348|null|null" guiRouter="Manual" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (autogenerated)" toNode="TRASH0:0"/>
-<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="rejected" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
+<Edge debugLastRecords="true" debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="rejected" outPort="Port 0 (out)" toNode="REMOVE_JOB_IDENT:0"/>
+<Edge fromNode="REMOVE_JOB_IDENT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="rejected" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
+</Phase>
+<Phase number="3">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="31" guiY="322" id="DBEXECUTE3" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Drop myemployee]]></attr>
+<attr name="sqlQuery"><![CDATA[drop table MYEMPLOYEE_${JOB_IDENT}]]></attr>
+</Node>
+<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="204" guiY="322" id="DBEXECUTE4" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Drop myuser]]></attr>
+<attr name="sqlQuery"><![CDATA[drop table MYUSER_${JOB_IDENT}]]></attr>
+</Node>
+<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="385" guiY="322" id="DBEXECUTE5" type="DB_EXECUTE">
+<attr name="guiDescription"><![CDATA[Drop customers]]></attr>
+<attr name="sqlQuery"><![CDATA[drop table CUSTOMERS_${JOB_IDENT}]]></attr>
+</Node>
 </Phase>
 </Graph>

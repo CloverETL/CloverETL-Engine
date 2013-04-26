@@ -1,10 +1,26 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates how to run hand-written SQL/DML against DB. Parameters (question-marks) are&#10;substituted by input fields (in order they are listed in cloverFields). Also target parameter types&#10;are devised from input field types - this may cause some problems when trying to map incompatible data types.&#10;" guiVersion="0.0.0.devel" id="1204558160826" licenseType="Evaluation Devel" modified="Mon May 02 13:02:45 CEST 2011" modifiedBy="avackova" name="TestingDB2" revision="1.31" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates how to run hand-written SQL/DML against DB. Parameters (question-marks) are&#10;substituted by input fields (in order they are listed in cloverFields). Also target parameter types&#10;are devised from input field types - this may cause some problems when trying to map incompatible data types.&#10;" guiVersion="3.4.0.P" id="1204558160826" licenseType="Commercial" modified="Fri Apr 26 10:58:40 CEST 2013" modifiedBy="user" name="TestingDB2" revision="1.44" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employeeDB.fmt" id="Metadata0"/>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record name="EMPLOYEE" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field delimiter="," format="#" name="EMP_NO" nullable="true" shift="0" type="integer"/>
+<Field delimiter="," name="FIRST_NAME" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="LAST_NAME" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="PHONE_EXT" nullable="true" shift="0" type="string"/>
+<Field delimiter="," format="yyyy-MM-dd" name="HIRE_DATE" nullable="true" shift="0" type="date"/>
+<Field delimiter="," name="DEPT_NO" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="JOB_CODE" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="JOB_GRADE" nullable="true" shift="0" type="number"/>
+<Field delimiter="," name="JOB_COUNTRY" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="SALARY" nullable="true" shift="0" type="number"/>
+<Field name="FULL_NAME" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection2" type="JDBC"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="277" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBOutputTable Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="24" y="168">
+<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Property fileURL="jobIdent.prm" id="GraphParameter0"/>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="294" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBOutputTable Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="24" y="168">
 <attr name="text"><![CDATA[
 Records are read by UniversalDataReader and received by DBOutputTable. 
 
@@ -21,18 +37,59 @@ Question marks correspond to the clover fields specified in the Clover fields at
 These fields are mapped to these question marks in the same order in which they appear in the Clover fields attribute and each of them is mapped to the db field which is on the same position in the query.
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="24" y="-35">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="24" y="-35">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="97" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example has been modified" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="260" x="535" y="-42">
+<attr name="text"><![CDATA[This test has been modified to use derby db running on koule. The modification should allow to run the test from multiple branches simultaneously.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiHeight="98" guiName="List of Employees" guiWidth="157" guiX="24" guiY="60" id="INPUT" type="DATA_READER">
+<Node dbConnection="JDBC0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="DB Table Creation" guiX="23" guiY="-123" id="DB_EXECUTE0" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[drop table EMPLOYEE_TMP_${JOB_IDENT};
+create table EMPLOYEE_TMP_${JOB_IDENT} (
+	EMP_NO INTEGER,
+	FIRST_NAME VARCHAR(80),
+	LAST_NAME VARCHAR(80),
+	PHONE_EXT VARCHAR(80),
+	HIRE_DATE DATE,
+	DEPT_NO VARCHAR(80),
+	JOB_CODE VARCHAR(80),
+	JOB_GRADE NUMERIC,
+	JOB_COUNTRY VARCHAR(80),
+	SALARY NUMERIC,
+	FULL_NAME VARCHAR(80)
+)
+]]></attr>
+</Node>
+</Phase>
+<Phase number="2">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiName="List of Employees" guiX="24" guiY="60" id="INPUT" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Data to be loaded to datbase.]]></attr>
 </Node>
-<Node cloverFields="FIRST_NAME;LAST_NAME;HIRE_DATE" dbConnection="Connection2" enabled="enabled" guiHeight="98" guiName="Table Filling" guiWidth="128" guiX="321" guiY="60" id="OUTPUT" maxErrors="10" sqlQuery="insert into employee_tmp (FIRST_NAME,LAST_NAME,HIRE_DATE,EMP_NO) values (?,?,?,123)" type="DB_OUTPUT_TABLE">
+<Node cloverFields="FIRST_NAME;LAST_NAME;HIRE_DATE" dbConnection="JDBC0" enabled="enabled" guiName="Table Filling" guiX="321" guiY="60" id="OUTPUT" maxErrors="10" type="DB_OUTPUT_TABLE">
 <attr name="guiDescription"><![CDATA[SQL query (with db fields, question marks, and a constant) && Clover fields are specified.]]></attr>
+<attr name="sqlQuery"><![CDATA[insert into employee_tmp_${JOB_IDENT} (FIRST_NAME,LAST_NAME,HIRE_DATE,EMP_NO) values (?,?,?,123)]]></attr>
 </Node>
 <Edge fromNode="INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="OUTPUT:0"/>
+</Phase>
+<Phase number="3">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="DBInputTable" guiX="34" guiY="493" id="DBINPUT_TABLE" type="DB_INPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[select * from TEST.EMPLOYEE_TMP_${JOB_IDENT}]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/employee.DBLoad6.xml" guiName="XMLWriter" guiX="304" guiY="494" id="XMLWRITER" type="EXT_XML_WRITER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<dataset xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
+  <clover:element clover:name="employee_names_dates" emp_no="$0.EMP_NO" first_name="$0.FIRST_NAME" last_name="$0.LAST_NAME" phone_ext="$0.PHONE_EXT" hire_date="$0.HIRE_DATE" dept_no="$0.DEPT_NO" job_code="$0.JOB_CODE" job_grade="$0.JOB_GRADE" job_country="$0.JOB_COUNTRY" salary="$0.SALARY" full_name="$0.FULL_NAME" clover:inPort="0" clover:writeNullAttribute="emp_no;first_name;last_name;phone_ext;hire_date;dept_no;job_code;job_grade;job_country;salary;full_name"/>
+</dataset>]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DBINPUT_TABLE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XMLWRITER:0"/>
+</Phase>
+<Phase number="4">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="35" guiY="605" id="DBEXECUTE" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[drop table employee_tmp_${JOB_IDENT}]]></attr>
+</Node>
 </Phase>
 </Graph>

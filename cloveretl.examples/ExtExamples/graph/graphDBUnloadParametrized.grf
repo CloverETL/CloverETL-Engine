@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Thu Dec 21 08:55:10 CET 2006" description="This graph illustrates how to read not all records from database. This example is similar to graphDBJoin.grf, but found records from database are not sent to transformation function, but directly to output port." guiVersion="0.0.0.devel" id="1204559496098" licenseType="Evaluation Devel" modified="Mon May 02 13:19:54 CEST 2011" modifiedBy="avackova" name="graphDBUnloadParametrized" revision="1.56" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Thu Dec 21 08:55:10 CET 2006" description="This graph illustrates how to read not all records from database. This example is similar to graphDBJoin.grf, but found records from database are not sent to transformation function, but directly to output port." guiVersion="3.4.0.P" id="1204559496098" licenseType="Commercial" modified="Fri Apr 26 11:21:23 CEST 2013" modifiedBy="user" name="graphDBUnloadParametrized" revision="1.57" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
+<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="176" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1012" x="13" y="66">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="176" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1012" x="13" y="66">
 <attr name="text"><![CDATA[
 In this phase, records from the orders.dat file are read. After that, these records are received by DBJoin. The orders are used to select the employees who have executed an order. 
 
@@ -16,31 +16,35 @@ DB metadata are not specified as no metadata is select as the value of the attri
 The selected employees are sorted on EmployeeID, duplicate values are removed and they are written to a sheet on an XLS output file. This sheet is named Employees with Orders.
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="96" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 1" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="764" x="22" y="374">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="96" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 1" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="764" x="22" y="374">
 <attr name="text"><![CDATA[
 In this phase, records from the "employee" database table are read. After that, these records are sorted on EmployeeID and written to another sheet of the same XLS output file that was used in phase 0. The sheet is named Employees. It contains all employees from the table.
 
 
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="14" y="-146">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="83" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="14" y="-146">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="97" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example has been modified" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="260" x="601" y="-153">
+<attr name="text"><![CDATA[This test has been modified to use derby db running on koule. The modification should allow to run the test from multiple branches simultaneously.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="81" guiName="Orders" guiWidth="128" guiX="13" guiY="-52" id="DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="13" guiY="-52" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read order's data.]]></attr>
 </Node>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="98" guiName="DBJoin" guiWidth="128" guiX="169" guiY="-52" id="DBJOIN0" joinKey="EmployeeID" metadata="Metadata1" sqlQuery="select * from employee where employee_id = ?" type="DBJOIN">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="DBJoin" guiX="169" guiY="-52" id="DBJOIN0" joinKey="EmployeeID" maxCashed="1000" metadata="Metadata1" type="DBJOIN">
 <attr name="guiDescription"><![CDATA[Only the employees from database whose employee_id equals to the value of the same field in Orders are unloaded from database and sent to the output without a transformation.]]></attr>
-<attr name="maxCashed"><![CDATA[1000]]></attr>
+<attr name="sqlQuery"><![CDATA[select * from employee where employee_id = ?]]></attr>
 </Node>
-<Node dedupKey="employee_id" enabled="enabled" guiHeight="98" guiName="Dedup on employee_id" guiWidth="194" guiX="557" guiY="-52" id="DEDUP0" keep="first" type="DEDUP">
+<Node dedupKey="employee_id" enabled="enabled" guiName="Dedup on employee_id" guiX="557" guiY="-52" id="DEDUP0" keep="first" type="DEDUP">
 <attr name="guiDescription"><![CDATA[Takes one record only of each EmployeeID.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="81" guiName="ExtSort on employee_id" guiWidth="202" guiX="325" guiY="-52" id="EXT_SORT0" sortKey="employee_id(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.xls" guiHeight="81" guiName="XLS (Employees with Orders)" guiWidth="238" guiX="785" guiY="-52" id="XLS_WRITER0" namesRow="1" sheetName="Employees with orders" type="XLS_WRITER">
+<Node enabled="enabled" guiName="ExtSort on employee_id" guiX="325" guiY="-52" id="EXT_SORT0" sortKey="employee_id(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.xls" guiName="XLS (Employees with Orders)" guiX="785" guiY="-52" id="XLS_WRITER0" namesRow="1" sheetName="Employees with orders" type="XLS_WRITER">
 <attr name="guiDescription"><![CDATA[Employees with Orders]]></attr>
 </Node>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="DBJOIN0:0"/>
@@ -49,11 +53,12 @@ In this phase, records from the "employee" database table are read. After that, 
 <Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
 </Phase>
 <Phase number="1">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="98" guiName="Employees" guiWidth="128" guiX="14" guiY="267" id="DB_INPUT_TABLE0" sqlQuery="select * from employee" type="DB_INPUT_TABLE">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="Employees" guiX="14" guiY="267" id="DB_INPUT_TABLE0" type="DB_INPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Records from the "employee" database table]]></attr>
+<attr name="sqlQuery"><![CDATA[select * from employee]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="81" guiName="ExtSort" guiWidth="128" guiX="326" guiY="267" id="EXT_SORT1" sortKey="employee_id(a)" type="EXT_SORT"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.xls" guiHeight="81" guiName="XLS (Employees)" guiWidth="149" guiX="638" guiY="267" id="XLS_WRITER1" namesRow="1" sheetName="Employees" type="XLS_WRITER">
+<Node enabled="enabled" guiName="ExtSort" guiX="326" guiY="267" id="EXT_SORT1" sortKey="employee_id(a)" type="EXT_SORT"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.xls" guiName="XLS (Employees)" guiX="638" guiY="267" id="XLS_WRITER1" namesRow="1" sheetName="Employees" type="XLS_WRITER">
 <attr name="guiDescription"><![CDATA[Employees]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>

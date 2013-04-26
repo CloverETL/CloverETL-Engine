@@ -1,21 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="0.0.0.devel" id="1204547843697" licenseType="Evaluation Devel" modified="Fri Jun 17 13:28:29 CEST 2011" modifiedBy="avackova" name="LookupJoin graph" revision="1.47" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="3.4.0.P" id="1204547843697" licenseType="Commercial" modified="Fri Apr 26 11:26:53 CEST 2013" modifiedBy="user" name="LookupJoin graph" revision="1.48" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
+<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<LookupTable dbConnection="Connection0" id="LookupTable0" maxCached="0" metadata="Metadata1" name="name" type="dbLookup">
+<LookupTable dbConnection="JDBC0" id="LookupTable0" maxCached="0" metadata="Metadata1" name="name" type="dbLookup">
 <attr name="sqlQuery"><![CDATA[select * from employee where employee_id=?]]></attr>
 </LookupTable>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="101" guiName="Orders" guiWidth="128" guiX="24" guiY="16" id="INPUT1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="24" guiY="16" id="INPUT1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Reads a flat file with Orders data.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Join with Employees (Inner)" guiWidth="230" guiX="213" guiY="16" id="JOIN" joinKey="EmployeeID" lookupTable="LookupTable0" type="LOOKUP_JOIN">
+<Node enabled="enabled" guiName="Join with Employees (Inner)" guiX="213" guiY="16" id="JOIN" joinKey="EmployeeID" lookupTable="LookupTable0" type="LOOKUP_JOIN">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
@@ -43,10 +43,10 @@ public class ReformatTestInline extends DataRecordTransform{
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Orders are joined with Employees that are got from DB lookup table.]]></attr>
 </Node>
-<Node debugPrint="true" enabled="enabled" guiHeight="101" guiName="Non-matched Orders" guiWidth="179" guiX="516" guiY="137" id="TRASH0" type="TRASH">
+<Node debugPrint="true" enabled="enabled" guiName="Non-matched Orders" guiX="516" guiY="137" id="TRASH0" type="TRASH">
 <attr name="guiDescription"><![CDATA[Orders without an employee who executed them]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data.out" guiHeight="101" guiName="Orders-Employees" guiWidth="162" guiX="516" guiY="16" id="WRITER" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data.out" guiName="Orders-Employees" guiX="516" guiY="16" id="WRITER" type="DATA_WRITER"/>
 <Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="JOIN:0"/>
 <Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (joined records)" toNode="WRITER:0"/>
 <Edge debugMode="false" fromNode="JOIN:1" guiBendpoints="460:56|460:157" guiLocks="460|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (skipped records)" toNode="TRASH0:0"/>

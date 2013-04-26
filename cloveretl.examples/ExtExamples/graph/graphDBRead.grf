@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph reads personal data from three sources and finds records with the same values on corresponding fields (lname – last_name, fname – first_name). Matching pairs are transformed into one output record and saved in intersection_customer_employee.txt file." guiVersion="0.0.0.devel" id="1199878555903" licenseType="Evaluation Devel" modified="Fri Jun 10 11:13:18 CEST 2011" modifiedBy="avackova" name="DBTest" revision="1.101" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph reads personal data from three sources and finds records with the same values on corresponding fields (lname – last_name, fname – first_name). Matching pairs are transformed into one output record and saved in intersection_customer_employee.txt file." guiVersion="3.4.0.P" id="1199878555903" licenseType="Commercial" modified="Fri Apr 26 11:20:42 CEST 2013" modifiedBy="user" name="DBTest" revision="1.103" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record name="customer" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="212" type="fixed">
@@ -59,8 +58,9 @@
 </Record>
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection2" type="JDBC"/>
+<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="269" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Database and DataIntersection" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="862" x="23" y="345">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="269" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Database and DataIntersection" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="862" x="23" y="345">
 <attr name="text"><![CDATA[
 - Records with information about customers are read from two sources - a flat file and a database table. Records from these two sources are merged into one flow using the SimpleGather component. It gathers input records as fast as possible and sends them to the single output port. 
 
@@ -73,13 +73,17 @@
 - Records from the second input port (employee) without any record from the first input (customer) are sent to the third output port.
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="223" y="23">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="223" y="23">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="97" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example has been modified" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="260" x="919" y="16">
+<attr name="text"><![CDATA[This test has been modified to use derby db running on koule. The modification should allow to run the test from multiple branches simultaneously.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="101" guiName="Data Intersection" guiWidth="156" guiX="564" guiY="144" id="DATA_INTERSECTION0" joinKey="$lname=$last_name;$fname=$first_name" type="DATA_INTERSECTION">
+<Node enabled="enabled" guiName="Data Intersection" guiX="564" guiY="144" id="DATA_INTERSECTION0" joinKey="$lname=$last_name;$fname=$first_name" type="DATA_INTERSECTION">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -100,25 +104,28 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Find the same people in customer and employee streams.]]></attr>
 </Node>
-<Node dbConnection="Connection2" enabled="enabled" guiHeight="101" guiName="customer from DB" guiWidth="160" guiX="24" guiY="134" id="DB_INPUT_TABLE0" sqlQuery="select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned&#10;from customer" type="DB_INPUT_TABLE">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="customer from DB" guiX="24" guiY="134" id="DB_INPUT_TABLE0" type="DB_INPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Records with information about customers are read from a database.]]></attr>
+<attr name="sqlQuery"><![CDATA[select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned
+from customer]]></attr>
 </Node>
-<Node dbConnection="Connection2" enabled="enabled" guiHeight="101" guiName="employees" guiWidth="128" guiX="24" guiY="240" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE">
+<Node dbConnection="JDBC0" enabled="enabled" guiName="employees" guiX="24" guiY="240" id="DB_INPUT_TABLE1" type="DB_INPUT_TABLE">
 <attr name="guiDescription"><![CDATA[ Records with information about employees are read from a database. ]]></attr>
+<attr name="sqlQuery"><![CDATA[select * from employee]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/intersection_customer_employee.txt" guiHeight="101" guiName="Customers &amp;&amp; Employees" guiWidth="213" guiX="756" guiY="144" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="85" guiName="ExtSort on names" guiWidth="157" guiX="381" guiY="144" id="EXT_SORT0" sortKey="lname(a);fname(a)" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="101" guiName="ExtSort on names" guiWidth="157" guiX="396" guiY="240" id="EXT_SORT1" sortKey="last_name(a);first_name(a)" type="EXT_SORT"/>
-<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="101" guiName="customer from file" guiWidth="163" guiX="24" guiY="24" id="FIXLEN_DATA_READER0" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/intersection_customer_employee.txt" guiName="Customers &amp;&amp; Employees" guiX="756" guiY="144" id="DELIMITED_DATA_WRITER0" type="DATA_WRITER"/>
+<Node enabled="enabled" guiName="ExtSort on names" guiX="381" guiY="144" id="EXT_SORT0" sortKey="lname(a);fname(a)" type="EXT_SORT"/>
+<Node enabled="enabled" guiName="ExtSort on names" guiX="396" guiY="240" id="EXT_SORT1" sortKey="last_name(a);first_name(a)" type="EXT_SORT"/>
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="customer from file" guiX="24" guiY="24" id="FIXLEN_DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Records with information about customers are read from a flat file.]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Simple Gather" guiWidth="132" guiX="216" guiY="144" id="SIMPLE_GATHER0" type="SIMPLE_GATHER">
+<Node enabled="enabled" guiName="Simple Gather" guiX="216" guiY="144" id="SIMPLE_GATHER0" type="SIMPLE_GATHER">
 <attr name="guiDescription"><![CDATA[Merge customer data.]]></attr>
 </Node>
-<Node debugFilename="${DATAOUT_DIR}/customer.out " debugPrint="true" enabled="enabled" guiHeight="85" guiName="Trash" guiWidth="128" guiX="756" guiY="50" id="TRASH0" type="TRASH">
+<Node debugFilename="${DATAOUT_DIR}/customer.out " debugPrint="true" enabled="enabled" guiName="Trash" guiX="756" guiY="31" id="TRASH0" type="TRASH">
 <attr name="guiDescription"><![CDATA[Only customer]]></attr>
 </Node>
-<Node debugFilename="${DATAOUT_DIR}/employee.out " debugPrint="true" enabled="enabled" guiHeight="85" guiName="Trash" guiWidth="128" guiX="756" guiY="259" id="TRASH1" type="TRASH">
+<Node debugFilename="${DATAOUT_DIR}/employee.out " debugPrint="true" enabled="enabled" guiName="Trash" guiX="756" guiY="259" id="TRASH1" type="TRASH">
 <attr name="guiDescription"><![CDATA[Only employee]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="TRASH0:0"/>
