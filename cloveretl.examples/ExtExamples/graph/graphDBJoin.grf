@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="3.4.0.P" id="1197027195231" licenseType="Commercial" modified="Fri Apr 26 10:58:30 CEST 2013" modifiedBy="user" name="graphDBJoin" revision="1.93" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="3.4.0.P" id="1197027195231" licenseType="Commercial" modified="Fri Apr 26 13:56:50 CEST 2013" modifiedBy="user" name="graphDBJoin" revision="1.94" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/errorInfo.fmt" id="Metadata3"/>
 <Metadata id="Metadata0">
@@ -63,7 +63,6 @@
 </Record>
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
-<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="87" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Join with Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="182" x="36" y="-46">
 <attr name="text"><![CDATA[
@@ -78,40 +77,6 @@ Employees are unloaded from a db table. Join is based on last name. ]]></attr>
 </Note>
 <Dictionary/>
 </Global>
-<Phase number="0">
-<Node dbConnection="JDBC0" enabled="disabled" guiName="DBExecute" guiX="36" guiY="-175" id="DBEXECUTE" printStatements="true" type="DB_EXECUTE">
-<attr name="guiDescription"><![CDATA[Create table EMPLOYEE]]></attr>
-<attr name="sqlQuery"><![CDATA[CREATE TABLE EMPLOYEE (
-	EMPLOYEE_ID INT,
-	FULL_NAME VARCHAR(80),
-	FIRST_NAME VARCHAR(80),
-	LAST_NAME VARCHAR(80),
-	POSITION_ID INT,
-	POSITION_TITLE VARCHAR(80),
-	STORE_ID INT,
-	DEPARTMENT_ID INT,
-	BIRTH_DATE TIMESTAMP,
-	HIRE_DATE TIMESTAMP,
-	END_DATE TIMESTAMP,
-	SALARY DECIMAL(5,0),
-	SUPERVISOR_ID INT,
-	EDUCATION_LEVEL VARCHAR(80),
-	MARITAL_STATUS VARCHAR(80),
-	GENDER VARCHAR(80),
-	MANAGEMENT_ROLE VARCHAR(80)
-)]]></attr>
-</Node>
-</Phase>
-<Phase number="1">
-<Node dbConnection="Connection0" enabled="disabled" guiName="DBInputTable" guiX="249" guiY="-173" id="DBINPUT_TABLE" type="DB_INPUT_TABLE">
-<attr name="guiDescription"><![CDATA[Read contents of EMPLOYEE from local derby]]></attr>
-<attr name="sqlQuery"><![CDATA[select * from APP.EMPLOYEE]]></attr>
-</Node>
-<Node dbConnection="JDBC0" dbTable="EMPLOYEE" enabled="disabled" guiName="DBOutputTable" guiX="482" guiY="-173" id="DBOUTPUT_TABLE" type="DB_OUTPUT_TABLE">
-<attr name="guiDescription"><![CDATA[Write contents of EMPLOYEES to derby on koule]]></attr>
-</Node>
-<Edge fromNode="DBINPUT_TABLE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DBOUTPUT_TABLE:0"/>
-</Phase>
 <Phase number="2">
 <Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="Customers" guiX="36" guiY="48" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[File containing data about customers is read. ]]></attr>
@@ -119,7 +84,7 @@ Employees are unloaded from a db table. Join is based on last name. ]]></attr>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined.txt" guiName="Customers-Employees" guiX="456" guiY="48" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Joined data.]]></attr>
 </Node>
-<Node dbConnection="JDBC0" enabled="enabled" guiName="DBJoin (Inner join)" guiX="240" guiY="48" id="DBJOIN0" joinKey="lname" transformClass="TransformForDBjoin" type="DBJOIN">
+<Node dbConnection="Connection0" enabled="enabled" guiName="DBJoin (Inner join)" guiX="240" guiY="48" id="DBJOIN0" joinKey="lname" transformClass="TransformForDBjoin" type="DBJOIN">
 <attr name="guiDescription"><![CDATA[Joins customer data with the data from the employees table in database. Transformation class is defined in the Transform class attribute of DBJoin. Metadata for the database table are not specified and the DB metadata attribute is set to no metadata. ]]></attr>
 <attr name="sqlQuery"><![CDATA[select * from employee where last_name=?]]></attr>
 </Node>

@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="3.4.0.P" id="1204558846009" licenseType="Commercial" modified="Fri Apr 26 11:01:33 CEST 2013" modifiedBy="user" name="Testing Hash Joiner" revision="1.79" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="3.4.0.P" id="1204558846009" licenseType="Commercial" modified="Fri Apr 26 13:51:34 CEST 2013" modifiedBy="user" name="Testing Hash Joiner" revision="1.80" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata2"/>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
-<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<LookupTable dbConnection="JDBC0" id="LookupTable0" maxCached="0" metadata="Metadata1" name="name" type="dbLookup">
+<LookupTable dbConnection="Connection0" id="LookupTable0" maxCached="0" metadata="Metadata1" name="name" type="dbLookup">
 <attr name="sqlQuery"><![CDATA[select * from employee where employee_id=?]]></attr>
 </LookupTable>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="301" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of DB Lookup Table in Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="548" x="25" y="134">

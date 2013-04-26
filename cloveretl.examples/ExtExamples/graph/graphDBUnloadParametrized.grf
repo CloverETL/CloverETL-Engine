@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Thu Dec 21 08:55:10 CET 2006" description="This graph illustrates how to read not all records from database. This example is similar to graphDBJoin.grf, but found records from database are not sent to transformation function, but directly to output port." guiVersion="3.4.0.P" id="1204559496098" licenseType="Commercial" modified="Fri Apr 26 11:21:23 CEST 2013" modifiedBy="user" name="graphDBUnloadParametrized" revision="1.57" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Thu Dec 21 08:55:10 CET 2006" description="This graph illustrates how to read not all records from database. This example is similar to graphDBJoin.grf, but found records from database are not sent to transformation function, but directly to output port." guiVersion="3.4.0.P" id="1204559496098" licenseType="Commercial" modified="Fri Apr 26 13:52:48 CEST 2013" modifiedBy="user" name="graphDBUnloadParametrized" revision="1.58" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
-<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="176" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="1012" x="13" y="66">
 <attr name="text"><![CDATA[
@@ -36,7 +35,7 @@ In this phase, records from the "employee" database table are read. After that, 
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="13" guiY="-52" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read order's data.]]></attr>
 </Node>
-<Node dbConnection="JDBC0" enabled="enabled" guiName="DBJoin" guiX="169" guiY="-52" id="DBJOIN0" joinKey="EmployeeID" maxCashed="1000" metadata="Metadata1" type="DBJOIN">
+<Node dbConnection="Connection0" enabled="enabled" guiName="DBJoin" guiX="169" guiY="-52" id="DBJOIN0" joinKey="EmployeeID" maxCashed="1000" metadata="Metadata1" type="DBJOIN">
 <attr name="guiDescription"><![CDATA[Only the employees from database whose employee_id equals to the value of the same field in Orders are unloaded from database and sent to the output without a transformation.]]></attr>
 <attr name="sqlQuery"><![CDATA[select * from employee where employee_id = ?]]></attr>
 </Node>
@@ -53,7 +52,7 @@ In this phase, records from the "employee" database table are read. After that, 
 <Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
 </Phase>
 <Phase number="1">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="Employees" guiX="14" guiY="267" id="DB_INPUT_TABLE0" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection0" enabled="enabled" guiName="Employees" guiX="14" guiY="267" id="DB_INPUT_TABLE0" type="DB_INPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Records from the "employee" database table]]></attr>
 <attr name="sqlQuery"><![CDATA[select * from employee]]></attr>
 </Node>

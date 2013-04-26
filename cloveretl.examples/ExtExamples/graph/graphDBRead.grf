@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph reads personal data from three sources and finds records with the same values on corresponding fields (lname – last_name, fname – first_name). Matching pairs are transformed into one output record and saved in intersection_customer_employee.txt file." guiVersion="3.4.0.P" id="1199878555903" licenseType="Commercial" modified="Fri Apr 26 11:20:42 CEST 2013" modifiedBy="user" name="DBTest" revision="1.103" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Tue Oct 24 13:04:40 CEST 2006" description="This graph reads personal data from three sources and finds records with the same values on corresponding fields (lname – last_name, fname – first_name). Matching pairs are transformed into one output record and saved in intersection_customer_employee.txt file." guiVersion="3.4.0.P" id="1199878555903" licenseType="Commercial" modified="Fri Apr 26 13:52:07 CEST 2013" modifiedBy="user" name="DBTest" revision="1.104" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record name="customer" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="212" type="fixed">
@@ -58,7 +58,6 @@
 </Record>
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection2" type="JDBC"/>
-<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="269" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Database and DataIntersection" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="862" x="23" y="345">
 <attr name="text"><![CDATA[
@@ -104,12 +103,12 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Find the same people in customer and employee streams.]]></attr>
 </Node>
-<Node dbConnection="JDBC0" enabled="enabled" guiName="customer from DB" guiX="24" guiY="134" id="DB_INPUT_TABLE0" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection2" enabled="enabled" guiName="customer from DB" guiX="24" guiY="134" id="DB_INPUT_TABLE0" type="DB_INPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Records with information about customers are read from a database.]]></attr>
 <attr name="sqlQuery"><![CDATA[select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned
 from customer]]></attr>
 </Node>
-<Node dbConnection="JDBC0" enabled="enabled" guiName="employees" guiX="24" guiY="240" id="DB_INPUT_TABLE1" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection2" enabled="enabled" guiName="employees" guiX="24" guiY="240" id="DB_INPUT_TABLE1" type="DB_INPUT_TABLE">
 <attr name="guiDescription"><![CDATA[ Records with information about employees are read from a database. ]]></attr>
 <attr name="sqlQuery"><![CDATA[select * from employee]]></attr>
 </Node>

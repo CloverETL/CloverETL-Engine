@@ -1,12 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="3.4.0.P" id="1204547843697" licenseType="Commercial" modified="Fri Apr 26 11:26:53 CEST 2013" modifiedBy="user" name="LookupJoin graph" revision="1.48" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" guiVersion="3.4.0.P" id="1204547843697" licenseType="Commercial" modified="Fri Apr 26 13:55:46 CEST 2013" modifiedBy="user" name="LookupJoin graph" revision="1.49" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata2"/>
 <Metadata fileURL="${META_DIR}/delimited/orders.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
-<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<LookupTable dbConnection="JDBC0" id="LookupTable0" maxCached="0" metadata="Metadata1" name="name" type="dbLookup">
+<LookupTable dbConnection="Connection0" id="LookupTable0" maxCached="0" metadata="Metadata1" name="name" type="dbLookup">
 <attr name="sqlQuery"><![CDATA[select * from employee where employee_id=?]]></attr>
 </LookupTable>
 <Dictionary/>

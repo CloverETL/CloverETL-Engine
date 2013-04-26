@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Wed Nov 14 08:50:54 CET 2007" description="This graph shows how to unload data from database with direct mapping usage. &#10;Mapping between clover and database fields is set directly in sql query." guiVersion="3.4.0.P" id="1204559175469" licenseType="Commercial" modified="Fri Apr 26 10:59:06 CEST 2013" modifiedBy="user" name="graphDBUnload2grf" revision="1.40" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Wed Nov 14 08:50:54 CET 2007" description="This graph shows how to unload data from database with direct mapping usage. &#10;Mapping between clover and database fields is set directly in sql query." guiVersion="3.4.0.P" id="1204559175469" licenseType="Commercial" modified="Fri Apr 26 13:48:31 CEST 2013" modifiedBy="user" name="graphDBUnload2grf" revision="1.41" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employeesPart.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
-<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="217" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBInputTable Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="417" x="25" y="182">
 <attr name="text"><![CDATA[
@@ -24,7 +23,7 @@ Metadata of the edge can be extracted from a table and can include only part of 
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="Employees" guiX="24" guiY="76" id="INPUT" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection0" enabled="enabled" guiName="Employees" guiX="24" guiY="76" id="INPUT" type="DB_INPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Read data from database.]]></attr>
 <attr name="sqlQuery"><![CDATA[select $EmployeeID:=employee_id, $LastName:=last_name, $FirstName:=first_name, $Title:=position_title, $BirthDate:=birth_date, $HireDate:=hire_date from employee]]></attr>
 </Node>

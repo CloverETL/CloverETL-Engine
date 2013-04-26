@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Wed Jan 24 09:02:52 CET 2007" description="This graph illustrates usage of dbFields and cloverFields parameters of&#10;DB_OUTPUT_TABLE component.&#10;Parameter dbFields allows to specify that only certain fields of target DB table&#10;will be populated.&#10;Parameter cloverFields allows to specify which input/Clover fields are used&#10;for populating target fields.&#10;The final mapping is determined by the order in which Clover fields and DB fields appear&#10;in the parameters.&#10;Note: in this example, input field LAST_NAME is mapped onto FIRST_NAME in DB and&#10;input field FIRST_NAME onto LAST_NAME in DB.&#10;Note2: parameter batchMode allows for grouping of inserts into DB thus increasing throughput. It works&#10;only with DBs/JDBC drivers which support this feature (e.g. Oracle).&#10;" guiVersion="3.4.0.P" id="1204557480788" licenseType="Commercial" modified="Fri Apr 26 10:26:55 CEST 2013" modifiedBy="user" name="TestingDBOutputTable" revision="1.71" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Wed Jan 24 09:02:52 CET 2007" description="This graph illustrates usage of dbFields and cloverFields parameters of&#10;DB_OUTPUT_TABLE component.&#10;Parameter dbFields allows to specify that only certain fields of target DB table&#10;will be populated.&#10;Parameter cloverFields allows to specify which input/Clover fields are used&#10;for populating target fields.&#10;The final mapping is determined by the order in which Clover fields and DB fields appear&#10;in the parameters.&#10;Note: in this example, input field LAST_NAME is mapped onto FIRST_NAME in DB and&#10;input field FIRST_NAME onto LAST_NAME in DB.&#10;Note2: parameter batchMode allows for grouping of inserts into DB thus increasing throughput. It works&#10;only with DBs/JDBC drivers which support this feature (e.g. Oracle).&#10;" guiVersion="3.4.0.P" id="1204557480788" licenseType="Commercial" modified="Fri Apr 26 13:46:58 CEST 2013" modifiedBy="user" name="TestingDBOutputTable" revision="1.73" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employeeDB.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -17,7 +17,6 @@
 </Record>
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection2" type="JDBC"/>
-<Connection dbConfig="E:/workspaces/eclipse-3.7.1_340/cloveretl.examples/ExtExamples/conn/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="jobIdent.prm" id="GraphParameter0"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="217" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBOutputTable Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="474" x="24" y="228">
@@ -40,7 +39,7 @@ The Field mapping defines what Clover fields should be mapped to what db fields.
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="JDBC0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="DB Table Creation" guiX="24" guiY="24" id="DB_EXECUTE0" type="DB_EXECUTE">
+<Node dbConnection="Connection2" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="DB Table Creation" guiX="24" guiY="24" id="DB_EXECUTE0" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[drop table EMPLOYEE_TMP_${JOB_IDENT};
 create table EMPLOYEE_TMP_${JOB_IDENT} (
 	EMP_NO INTEGER,
@@ -62,13 +61,13 @@ create table EMPLOYEE_TMP_${JOB_IDENT} (
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiName="List of Employees" guiX="24" guiY="119" id="INPUT" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Data to be loaded to datbase.]]></attr>
 </Node>
-<Node batchMode="false" commit="300" dbConnection="JDBC0" dbTable="employee_tmp_${JOB_IDENT}" enabled="enabled" fieldMap="$FIRST_NAME:=first_name;$LAST_NAME:=last_name;" guiName="Table Filling" guiX="371" guiY="119" id="OUTPUT" type="DB_OUTPUT_TABLE">
+<Node batchMode="false" commit="300" dbConnection="Connection2" dbTable="employee_tmp_${JOB_IDENT}" enabled="enabled" fieldMap="$FIRST_NAME:=first_name;$LAST_NAME:=last_name;" guiName="Table Filling" guiX="371" guiY="119" id="OUTPUT" type="DB_OUTPUT_TABLE">
 <attr name="guiDescription"><![CDATA[DB table and Field mapping are specified]]></attr>
 </Node>
 <Edge debugLastRecords="true" debugMode="false" fromNode="INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="OUTPUT:0"/>
 </Phase>
 <Phase number="3">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="DBInputTable" guiX="24" guiY="483" id="DBINPUT_TABLE" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection2" enabled="enabled" guiName="DBInputTable" guiX="24" guiY="483" id="DBINPUT_TABLE" type="DB_INPUT_TABLE">
 <attr name="sqlQuery"><![CDATA[select * from TEST.EMPLOYEE_TMP_${JOB_IDENT}]]></attr>
 </Node>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/employee.DBLoad5.xml" guiName="XMLWriter" guiX="294" guiY="484" id="XMLWRITER" type="EXT_XML_WRITER">
@@ -80,7 +79,7 @@ create table EMPLOYEE_TMP_${JOB_IDENT} (
 <Edge debugMode="true" fromNode="DBINPUT_TABLE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="XMLWRITER:0"/>
 </Phase>
 <Phase number="4">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="25" guiY="595" id="DBEXECUTE" type="DB_EXECUTE">
+<Node dbConnection="Connection2" enabled="enabled" guiName="DBExecute" guiX="25" guiY="595" id="DBEXECUTE" type="DB_EXECUTE">
 <attr name="sqlQuery"><![CDATA[drop table employee_tmp_${JOB_IDENT}]]></attr>
 </Node>
 </Phase>

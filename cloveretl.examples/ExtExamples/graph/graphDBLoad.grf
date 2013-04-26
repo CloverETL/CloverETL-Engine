@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates how to prpagate data to database." guiVersion="3.4.0" id="1204541150550" licenseType="Commercial" modified="Fri Apr 19 16:59:20 CEST 2013" modifiedBy="user" name="Testing DB Load" revision="1.351" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates how to prpagate data to database." guiVersion="3.4.0.P" id="1204541150550" licenseType="Commercial" modified="Fri Apr 26 13:50:45 CEST 2013" modifiedBy="user" name="Testing DB Load" revision="1.352" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record fieldDelimiter=";" name="CUSTOMERS" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -54,7 +54,6 @@
 </Record>
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection2" type="JDBC"/>
-<Connection dbConfig="${CONN_DIR}/derby_koule.cfg" id="JDBC0" type="JDBC"/>
 <Property fileURL="jobIdent.prm" id="GraphParameter0"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
 <Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="20" y="10">
@@ -67,7 +66,7 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="JDBC0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="DBExecute" guiX="19" guiY="-249" id="DBEXECUTE" type="DB_EXECUTE">
+<Node dbConnection="Connection2" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="DBExecute" guiX="19" guiY="-249" id="DBEXECUTE" type="DB_EXECUTE">
 <attr name="guiDescription"><![CDATA[Create MYEMPLOYEE]]></attr>
 <attr name="sqlQuery"><![CDATA[drop table  MYEMPLOYEE_${JOB_IDENT};
 create table MYEMPLOYEE_${JOB_IDENT} (
@@ -85,7 +84,7 @@ create table MYEMPLOYEE_${JOB_IDENT} (
 	FULL_NAME VARCHAR(80)
 )]]></attr>
 </Node>
-<Node dbConnection="JDBC0" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="DBExecute" guiX="353" guiY="-242" id="DBEXECUTE1" type="DB_EXECUTE">
+<Node dbConnection="Connection2" enabled="enabled" errorActions="MIN_INT=CONTINUE;" guiName="DBExecute" guiX="353" guiY="-242" id="DBEXECUTE1" type="DB_EXECUTE">
 <attr name="guiDescription"><![CDATA[Create MYUSER]]></attr>
 <attr name="sqlQuery"><![CDATA[drop table  MYUSER_${JOB_IDENT};
 create table MYUSER_${JOB_IDENT} (
@@ -94,7 +93,7 @@ create table MYUSER_${JOB_IDENT} (
 	LAST_NAME VARCHAR(80)
 )]]></attr>
 </Node>
-<Node dbConnection="JDBC0" enabled="disabled" errorActions="MIN_INT=CONTINUE;" guiName="DBExecute" guiX="19" guiY="-125" id="DBEXECUTE2" type="DB_EXECUTE">
+<Node dbConnection="Connection2" enabled="disabled" errorActions="MIN_INT=CONTINUE;" guiName="DBExecute" guiX="19" guiY="-125" id="DBEXECUTE2" type="DB_EXECUTE">
 <attr name="guiDescription"><![CDATA[Create CUSTOMERS]]></attr>
 <attr name="sqlQuery"><![CDATA[drop table  CUSTOMERS;
 create table CUSTOMERS (
@@ -103,7 +102,7 @@ create table CUSTOMERS (
 	FNAME VARCHAR(80)
 )]]></attr>
 </Node>
-<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="765" guiY="-242" id="DBEXECUTE6" type="DB_EXECUTE">
+<Node dbConnection="Connection2" enabled="enabled" guiName="DBExecute" guiX="765" guiY="-242" id="DBEXECUTE6" type="DB_EXECUTE">
 <attr name="guiDescription"><![CDATA[Copy CUSTOMERS]]></attr>
 <attr name="sqlQuery"><![CDATA[create table CUSTOMERS_${JOB_IDENT} as select * from CUSTOMERS with no data;
 insert into CUSTOMERS_${JOB_IDENT} select * from CUSTOMERS;]]></attr>
@@ -116,7 +115,7 @@ insert into CUSTOMERS_${JOB_IDENT} select * from CUSTOMERS;]]></attr>
 <Edge fromNode="DBEXECUTE2:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (error output)" toNode="TRASH2:0"/>
 </Phase>
 <Phase number="1">
-<Node dbConnection="JDBC0" dbTable="CUSTOMERS" enabled="disabled" guiName="DBOutputTable" guiX="603" guiY="-125" id="DBOUTPUT_TABLE" type="DB_OUTPUT_TABLE">
+<Node dbConnection="Connection2" dbTable="CUSTOMERS" enabled="disabled" guiName="DBOutputTable" guiX="603" guiY="-125" id="DBOUTPUT_TABLE" type="DB_OUTPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Populate CUSTOMERS]]></attr>
 </Node>
 <Node enabled="disabled" fileURL="${DATAIN_DIR}/customers.dat" guiName="UniversalDataReader" guiX="353" guiY="-125" id="UNIVERSAL_DATA_READER" type="DATA_READER"/>
@@ -127,7 +126,7 @@ insert into CUSTOMERS_${JOB_IDENT} select * from CUSTOMERS;]]></attr>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/employees.list.dat" guiName="List of Employees" guiX="23" guiY="109" id="INPUT" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Data to be loaded to datbase.]]></attr>
 </Node>
-<Node commit="10" dbConnection="JDBC0" enabled="enabled" errorAction="ROLLBACK" guiName="DB Table Filling" guiX="198" guiY="109" id="OUTPUT" maxErrors="10" type="DB_OUTPUT_TABLE">
+<Node commit="10" dbConnection="Connection2" enabled="enabled" errorAction="ROLLBACK" guiName="DB Table Filling" guiX="198" guiY="109" id="OUTPUT" maxErrors="10" type="DB_OUTPUT_TABLE">
 <attr name="guiDescription"><![CDATA[An SQL query specifies the table, db fields, and clover fields (prefixed by a dollar sign). In other words, the way how the input records should be loaded. The query also defines two autogenerated columns. ]]></attr>
 <attr name="sqlQuery"><![CDATA[INSERT INTO myemployee_${JOB_IDENT} (EMP_NO, FIRST_NAME, LAST_NAME, PHONE_EXT, HIRE_DATE, DEPT_NO, JOB_CODE, JOB_GRADE, JOB_COUNTRY, SALARY, FULL_NAME)
 VALUES ($EMP_NO, $FIRST_NAME, $LAST_NAME, $PHONE_EXT, $HIRE_DATE, $DEPT_NO, $JOB_CODE, $JOB_GRADE, $JOB_COUNTRY, $SALARY, $FULL_NAME)
@@ -211,15 +210,15 @@ function integer transform() {
 <Edge fromNode="REMOVE_JOB_IDENT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="rejected" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
 </Phase>
 <Phase number="3">
-<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="31" guiY="322" id="DBEXECUTE3" type="DB_EXECUTE">
+<Node dbConnection="Connection2" enabled="enabled" guiName="DBExecute" guiX="31" guiY="322" id="DBEXECUTE3" type="DB_EXECUTE">
 <attr name="guiDescription"><![CDATA[Drop myemployee]]></attr>
 <attr name="sqlQuery"><![CDATA[drop table MYEMPLOYEE_${JOB_IDENT}]]></attr>
 </Node>
-<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="204" guiY="322" id="DBEXECUTE4" type="DB_EXECUTE">
+<Node dbConnection="Connection2" enabled="enabled" guiName="DBExecute" guiX="204" guiY="322" id="DBEXECUTE4" type="DB_EXECUTE">
 <attr name="guiDescription"><![CDATA[Drop myuser]]></attr>
 <attr name="sqlQuery"><![CDATA[drop table MYUSER_${JOB_IDENT}]]></attr>
 </Node>
-<Node dbConnection="JDBC0" enabled="enabled" guiName="DBExecute" guiX="385" guiY="322" id="DBEXECUTE5" type="DB_EXECUTE">
+<Node dbConnection="Connection2" enabled="enabled" guiName="DBExecute" guiX="385" guiY="322" id="DBEXECUTE5" type="DB_EXECUTE">
 <attr name="guiDescription"><![CDATA[Drop customers]]></attr>
 <attr name="sqlQuery"><![CDATA[drop table CUSTOMERS_${JOB_IDENT}]]></attr>
 </Node>
