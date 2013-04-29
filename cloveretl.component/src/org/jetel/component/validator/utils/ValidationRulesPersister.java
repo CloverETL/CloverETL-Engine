@@ -18,12 +18,9 @@
  */
 package org.jetel.component.validator.utils;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -48,21 +45,11 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import com.sun.xml.internal.bind.marshaller.CharacterEscapeHandler;
-
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 17.12.2012
  */
 public class ValidationRulesPersister {
-	
-	private static class CDATAEscaperHandler implements CharacterEscapeHandler {
-		@Override
-		public void escape(char[] ch, int start, int length, boolean isAttVal, Writer writer)
-				throws IOException {
-			writer.write(ch, start, length);						
-		}
-	}
 
 	public static String serialize(ValidationGroup group) {
 		try {
