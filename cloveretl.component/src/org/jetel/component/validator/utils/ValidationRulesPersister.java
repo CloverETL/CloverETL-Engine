@@ -18,9 +18,12 @@
  */
 package org.jetel.component.validator.utils;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -30,7 +33,11 @@ import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
@@ -41,21 +48,44 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.sun.xml.internal.bind.marshaller.CharacterEscapeHandler;
+
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 17.12.2012
  */
 public class ValidationRulesPersister {
+	
+	private static class CDATAEscaperHandler implements CharacterEscapeHandler {
+		@Override
+		public void escape(char[] ch, int start, int length, boolean isAttVal, Writer writer)
+				throws IOException {
+			writer.write(ch, start, length);						
+		}
+	}
 
 	public static String serialize(ValidationGroup group) {
 		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(ValidationGroup.class);
 			Marshaller marshaller = jaxbContext.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			
+			// Workaround to wrap element item (code of custom rule) into CDATA section
+			DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
+			Document document = docBuilderFactory.newDocumentBuilder().newDocument();
+			
+			marshaller.marshal(group, document);
+			
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "item");
 			StringWriter sw = new StringWriter();
-			marshaller.marshal(group, sw);
-			return sw.toString();
-		} catch(JAXBException ex) {
+			transformer.transform(new DOMSource(document), new StreamResult(sw));
+			return sw.getBuffer().toString();
+		} catch(Exception ex) {
+			ex.printStackTrace();
 			throw new ValidationRulesPersisterException("Could not serialize.", ex);
 		}
 	}

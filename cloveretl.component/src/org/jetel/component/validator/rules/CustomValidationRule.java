@@ -157,18 +157,13 @@ public class CustomValidationRule extends AbstractValidationRule {
 		}
 		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		String resolvedTarget = resolve(target.getValue());
-		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
-			state = false;
-		}
 		boolean fieldsAreValid = true;
-		if(!ValidatorUtils.areValidFields(resolvedTarget, inputMetadata)) { 
+		String resolvedTarget = resolve(target.getValue());
+		if(!resolvedTarget.isEmpty() && !ValidatorUtils.areValidFields(resolvedTarget, inputMetadata)) {
 			accumulator.addError(target, this, "Some of target fields are not present in input metadata.");
 			state = false;
 			fieldsAreValid = false;
 		}
-		
 		Integer customRuleId = ref.getValue();
 		if(customRuleId == null) {
 			accumulator.addError(target, this, "Invalid custom rule ID.");

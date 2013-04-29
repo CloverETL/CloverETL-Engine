@@ -60,6 +60,7 @@ public class ValidationRulesPersisterTest extends ValidatorTestCase {
 		
 		ValidationGroup rootGroup = new ValidationGroup();
 		ValidationGroup root = rootGroup;
+		root.addCustomRule(new CustomRule("AHoj", "code"));
 		root.setName("Root group");
 		root.setEnabled(true);
 		AbstractValidationRule br = new DateValidationRule();

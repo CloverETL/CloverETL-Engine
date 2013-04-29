@@ -121,17 +121,13 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 				numberFormat.applyPattern("#");
 				numberFormat.setParseIntegerOnly(true);
 			} else if(!computedLS.getNumberFormat().getValue().isEmpty()) {
-				//numberFormat.applyLocalizedPattern(format.getValue());
 				numberFormat.applyPattern(resolvedFormat);
 			}
 			ParsePosition pos = new ParsePosition(0);
-//			numberFormat.setMinimumFractionDigits(0);
-//			numberFormat.setMaximumFractionDigits(0);
-//			numberFormat.setMaximumIntegerDigits(0);
 			Number parsedNumber = numberFormat.parse(tempString, pos);
 			if(parsedNumber == null || pos.getIndex() != tempString.length()) {
 				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' contains leftovers after parsed value.");
-				raiseError(ea, ERROR_PARSING, "The target field contains leftovers after parsed value.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
+				raiseError(ea, ERROR_PARSING, "The target filed could not be parsed.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
 				return State.INVALID;
 			}
 			logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedNumber + "'");

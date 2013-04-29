@@ -206,7 +206,7 @@ public class Validator extends Node {
 			}
 		}
 		
-		if(!getInputPort(INPUT_PORT).getMetadata().equals(getOutputPort(INVALID_OUTPUT_PORT)) && (errorMappingCode == null || errorMappingCode.isEmpty())) {
+		if(getOutputPort(INVALID_OUTPUT_PORT) != null && !getInputPort(INPUT_PORT).getMetadata().equals(getOutputPort(INVALID_OUTPUT_PORT).getMetadata()) && (errorMappingCode == null || errorMappingCode.isEmpty())) {
 			ConfigurationProblem problem = new ConfigurationProblem("Metadata on error output port differs from input metadata but no error mapping was provided.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
 			status.add(problem);
 			return status;
@@ -273,7 +273,7 @@ public class Validator extends Node {
 			} else {
 				if(invalidPort != null) {
 					if(errorMapping != null) {
-						// FIXME: what to do if no errors found? Empty? Throw away?
+						// No errors means that somebody did implement validation rule wrong
 						for(ValidationError error : errorAccumulator) {
 							populateErrorRecord(error);
 							errorMapping.execute();
