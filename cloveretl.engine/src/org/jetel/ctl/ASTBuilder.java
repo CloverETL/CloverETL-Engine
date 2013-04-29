@@ -593,7 +593,11 @@ public class ASTBuilder extends NavigatingVisitor {
 		TLTypePrimitive.BYTEARRAY,
 	};
 	
-	private static TLType getTypeByContentType(String contentType) {
+	/**
+	 * @return CTL data type based on given content type used in dictionary
+	 * @note this method could moved to a proper places
+	 */
+	public static TLType getTypeByContentType(String contentType) {
 		if (StringUtils.isEmpty(contentType)) {
 			return null;
 		}
