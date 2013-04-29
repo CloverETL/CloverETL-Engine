@@ -79,13 +79,12 @@ public class ValidationRulesPersister {
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
 			transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "item");
 			StringWriter sw = new StringWriter();
 			transformer.transform(new DOMSource(document), new StreamResult(sw));
 			return sw.getBuffer().toString();
 		} catch(Exception ex) {
-			ex.printStackTrace();
 			throw new ValidationRulesPersisterException("Could not serialize.", ex);
 		}
 	}
