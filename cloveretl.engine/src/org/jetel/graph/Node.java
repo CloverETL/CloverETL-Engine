@@ -551,7 +551,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		abort(null);
 	}
 	
-	public synchronized void abort(Throwable cause ) {
+	public synchronized void abort(Throwable cause) {
 		int attempts = 30;
 		runIt = false;
 		
@@ -566,9 +566,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		}
 		if (cause != null) {
             runResult=Result.ERROR;
-            resultException = cause;
+            resultException = createNodeException(cause);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), cause));
+                    new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
             sendMessage(msg);
             sendFinishMessage();
 		} else if (!runResult.isStop()) {

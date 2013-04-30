@@ -181,7 +181,7 @@ public class JdbcDriverImpl implements JdbcDriver {
         try {
             driver = (Driver) Class.forName(dbDriver, true, getClassLoader()).newInstance();
         } catch (ClassNotFoundException ex1) {
-            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. Can not find class.", ex1);
+            throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'. Cannot find class.", ex1);
         } catch (Exception ex1) {
             throw new ComponentNotReadyException("Cannot create JDBC driver '" + getName() + "'.", ex1);
         }

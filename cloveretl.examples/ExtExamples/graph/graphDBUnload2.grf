@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Wed Nov 14 08:50:54 CET 2007" description="This graph shows how to unload data from database with direct mapping usage. &#10;Mapping between clover and database fields is set directly in sql query." guiVersion="0.0.0.devel" id="1204559175469" licenseType="Evaluation Devel" modified="Mon May 02 13:14:38 CEST 2011" modifiedBy="avackova" name="graphDBUnload2grf" revision="1.37" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Wed Nov 14 08:50:54 CET 2007" description="This graph shows how to unload data from database with direct mapping usage. &#10;Mapping between clover and database fields is set directly in sql query." guiVersion="3.4.0.P" id="1204559175469" licenseType="Commercial" modified="Fri Apr 26 13:48:31 CEST 2013" modifiedBy="user" name="graphDBUnload2grf" revision="1.41" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employeesPart.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="217" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBInputTable Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="417" x="25" y="182">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="217" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of the DBInputTable Component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="417" x="25" y="182">
 <attr name="text"><![CDATA[
 DBInputTable reads data records using the specified query. 
 
@@ -14,16 +13,21 @@ Metadata of the edge can be extracted from a table and can include only part of 
 
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="21" y="-29">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="21" y="-29">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="97" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example has been modified" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="260" x="492" y="-29">
+<attr name="text"><![CDATA[This test has been modified to use derby db running on koule. The modification should allow to run the test from multiple branches simultaneously.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="98" guiName="Employees" guiWidth="128" guiX="24" guiY="76" id="INPUT" sqlQuery="select $EmployeeID:=employee_id, $LastName:=last_name, $FirstName:=first_name, $Title:=position_title, $BirthDate:=birth_date, $HireDate:=hire_date from employee" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection0" enabled="enabled" guiName="Employees" guiX="24" guiY="76" id="INPUT" type="DB_INPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Read data from database.]]></attr>
+<attr name="sqlQuery"><![CDATA[select $EmployeeID:=employee_id, $LastName:=last_name, $FirstName:=first_name, $Title:=position_title, $BirthDate:=birth_date, $HireDate:=hire_date from employee]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.txt" guiHeight="98" guiName="Employees" guiWidth="128" guiX="313" guiY="76" id="OUTPUT" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/employees.txt" guiName="Employees" guiX="313" guiY="76" id="OUTPUT" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Store data in a flat file.]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="OUTPUT:0"/>

@@ -6,7 +6,7 @@ PROJECT=.
 
 #Tue Apr 13 09:07:08 CEST 2010
 CONN_DIR=${PROJECT}/conn
-connection=derby.cfg
+connection=derby_koule.cfg
 SEQ_DIR=${PROJECT}/seq
 DATAOUT_DIR=${PROJECT}/data-out
 GRAPH_DIR=${PROJECT}/graph

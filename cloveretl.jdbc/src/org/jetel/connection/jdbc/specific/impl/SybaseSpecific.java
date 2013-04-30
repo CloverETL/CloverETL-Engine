@@ -106,4 +106,14 @@ public class SybaseSpecific extends AbstractJdbcSpecific {
 		}
 	}
 	
+	@Override
+	public String compileSelectQuery4Table(String schema, String owner, String table) {
+		return "select * from " + quoteIdentifier(table);
+    }
+
+	@Override
+	public boolean isSchemaRequired() {
+		return true;
+	}
+	
 }

@@ -20,7 +20,7 @@ package org.jetel.util.file;
 
 import java.net.MalformedURLException;
 
-import junit.framework.TestCase;
+import org.jetel.test.CloverTestCase;
 
 /**
  * @author Martin Janik, Javlin a.s. &lt;martin.janik@javlin.eu&gt;
@@ -28,7 +28,7 @@ import junit.framework.TestCase;
  * @version 3.1.0
  * @since 3.1.0
  */
-public class SandboxUrlUtilsTest extends TestCase {
+public class SandboxUrlUtilsTest extends CloverTestCase {
 
 	private static final String SANDBOX_URL = SandboxUrlUtils.SANDBOX_PROTOCOL_URL_PREFIX + "default";
 	private static final String SANDBOX_GRAPH_FILE = "graph/someGraph.grf";
@@ -55,6 +55,18 @@ public class SandboxUrlUtilsTest extends TestCase {
 		assertEquals("default", SandboxUrlUtils.getSandboxName(SANDBOX_GRAPH_URL));
 	}
 
+	public void testGetSandboxPath_url() throws MalformedURLException {
+		assertEquals("", SandboxUrlUtils.getSandboxPath(FileUtils.getFileURL("sandbox://default")));
+		assertEquals("/", SandboxUrlUtils.getSandboxPath(FileUtils.getFileURL("sandbox://default/")));
+		assertEquals("/graph/someGraph.grf", SandboxUrlUtils.getSandboxPath(FileUtils.getFileURL("sandbox://default/graph/someGraph.grf")));
+		try {
+			SandboxUrlUtils.getSandboxPath(FileUtils.getFileURL("/graph/someGraph.grf"));
+			assertTrue(false);
+		} catch (IllegalArgumentException e) {
+			//CORECT
+		}
+	}
+	
 	/**
 	 * Test method for {@link org.jetel.util.file.SandboxUrlUtils#getRelativeUrl(java.lang.String)}.
 	 */

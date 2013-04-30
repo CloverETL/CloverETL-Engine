@@ -53,25 +53,27 @@
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBLoad5" graphFile="graph/graphDBLoad5.grf" absoluteProjectPath="true">
-      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names" outputTableConnection="derby" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>
-<!--	      <DBTableToTable
+	<!-- <DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names" outputTableConnection="derby" supposedXMLFile="supposed-out/employee.DBLoad5.xml"/>
+	      <DBTableToTable
 	      	 outputTable="employee_tmp" 
 	      	 outputTableConnection="postgre_foodmart"
 	      	 supposedTable="employee_names"
 	      	 supposedTableConnection="postgre_foodmart"
-	      /> -->
-      	<DeleteTable connection="derby" name="employee_tmp"/>
+	      /> 
+      	<DeleteTable connection="derby" name="employee_tmp"/> -->
+      	<FlatFile outputFile="data-out/employee.DBLoad5.xml" supposedFile="supposed-out/employee.DBLoad5.xml"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBLoad6" graphFile="graph/graphDBLoad6.grf" absoluteProjectPath="true">
-      	<DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names_dates" outputTableConnection="derby" supposedXMLFile="supposed-out/employee.DBLoad6.xml"/>
-<!--	      <DBTableToTable
+	<!-- <DBTableToXMLFile outputTable="employee_tmp" supposedTable="employee_names_dates" outputTableConnection="derby" supposedXMLFile="supposed-out/employee.DBLoad6.xml"/>
+	      <DBTableToTable
 	      	 outputTable="employee_tmp" 
 	      	 outputTableConnection="postgre_foodmart"
 	      	 supposedTable="employee_names_dates"
 	      	 supposedTableConnection="postgre_foodmart"
-	      />--> 
-      	<DeleteTable connection="derby" name="employee_tmp"/>
+	      />
+      	<DeleteTable connection="derby" name="employee_tmp"/> -->
+      	<FlatFile outputFile="data-out/employee.DBLoad6.xml" supposedFile="supposed-out/employee.DBLoad6.xml"/>
 	</FunctionalTest>
 
 	<FunctionalTest ident="DBLookup" graphFile="graph/graphDBLookup.grf" absoluteProjectPath="true">

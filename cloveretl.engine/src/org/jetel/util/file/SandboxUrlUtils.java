@@ -109,6 +109,20 @@ public final class SandboxUrlUtils {
 	}
 
 	/**
+	 * Extracts a path from a given sandbox URL.
+	 * 
+	 * @param url sandbox url
+	 * @return path extracted from the given sandbox URL
+	 */
+	public static String getSandboxPath(URL url) {
+		if (!isSandboxUrl(url)) {
+			throw new IllegalArgumentException("sandboxUrl");
+		}
+		
+		return url.getPath();
+	}
+
+	/**
 	 * Extracts a relative URL from a given sandbox URL.
 	 *
 	 * @param sandboxUrl a sandbox URL
