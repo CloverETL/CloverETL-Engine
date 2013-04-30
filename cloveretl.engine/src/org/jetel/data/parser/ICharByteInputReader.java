@@ -66,9 +66,16 @@ public interface ICharByteInputReader {
 	/**
 	 * Skips specified number of bytes. Preserves the mark.
 	 * @param num Positive value for skip, negative value for revert. zero doesn't do anything
+	 * @return Number of bytes skipped
+	 */
+	public int skipBytes(int num);
+
+	/**
+	 * Skips specified number of characters. Preserves the mark.
+	 * @param num Positive value for skip, negative value for revert. zero doesn't do anything
 	 * @return Number of characters skipped
 	 */
-	public int skip(int num);
+	public int skipChars(int num);
 
 	/**
 	 * Nome omen. 
