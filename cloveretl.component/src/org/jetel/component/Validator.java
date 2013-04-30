@@ -111,7 +111,7 @@ public class Validator extends Node {
 	private CTLMapping errorMapping;
 	private DataRecord inputRecord;
 	private DataRecord errorRecord;
-	private DataRecord outputRecord;
+	private boolean recordMultiplication = false;
 	
 	/**
 	 * Minimalistic constructor to ensure component name init
@@ -206,19 +206,20 @@ public class Validator extends Node {
 			}
 		}
 		
-		if(getOutputPort(INVALID_OUTPUT_PORT) != null && !getInputPort(INPUT_PORT).getMetadata().equals(getOutputPort(INVALID_OUTPUT_PORT).getMetadata()) && (errorMappingCode == null || errorMappingCode.isEmpty())) {
-			ConfigurationProblem problem = new ConfigurationProblem("Metadata on error output port differs from input metadata but no error mapping was provided.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
-			status.add(problem);
-			return status;
-		}
-		
-		if(errorMappingCode != null && !errorMappingCode.isEmpty() && getOutputPort(INVALID_OUTPUT_PORT) != null) {
+		if(getOutputPort(INVALID_OUTPUT_PORT) != null) {
 			errorMapping = new CTLMapping("Error output", this);
-			errorMapping.setTransformation(errorMappingCode);
+			if(errorMappingCode != null && !errorMappingCode.isEmpty()) { 
+				errorMapping.setTransformation(errorMappingCode);
+			}
 			inputRecord = errorMapping.addInputMetadata(MAPPING_INPUT_RECORD, getInputPort(INPUT_PORT).getMetadata());
 			errorRecord = errorMapping.addInputMetadata(MAPPING_INPUT_ERROR, createErrorOutputMetadata());
 			errorMapping.addOutputMetadata("DUMMY", null);	// Dummy metadata to reach to error port 
 			errorMapping.addOutputMetadata(MAPPING_OUTPUT_RECORD, getOutputPort(INVALID_OUTPUT_PORT).getMetadata());
+			if(errorMappingCode != null && !errorMappingCode.isEmpty()) { 
+				errorMapping.setTransformation(errorMappingCode);
+			} else {
+				errorMapping.addAutoMapping(MAPPING_INPUT_RECORD, MAPPING_OUTPUT_RECORD);
+			}
 			
 			try {
 				errorMapping.init(XML_ERROR_MAPPING);
@@ -228,6 +229,18 @@ public class Validator extends Node {
 				return status;
 			}
 			errorMapping.preExecute();
+			List<DataFieldMetadata> usedInputFields = errorMapping.findUsedInputFields(getGraph());
+			for(DataFieldMetadata inField : usedInputFields) {
+				for(DataFieldMetadata errInField : errorRecord.getMetadata()) {
+					if(recordMultiplication) {
+						break;
+					}
+					if(inField == errInField) {
+						recordMultiplication = true;
+						break;
+					}
+				}
+			}
 		} else {
 			inputRecord = DataRecordFactory.newRecord(getInputPort(INPUT_PORT).getMetadata());
 			inputRecord.init();
@@ -271,8 +284,10 @@ public class Validator extends Node {
 				MiscUtils.sendRecordToPort(validPort, inputRecord);
 				logger.trace("Record number " + processedRecords + " is VALID.");
 			} else {
+				logger.trace("Record number " + processedRecords + " is INVALID.");
+				logger.trace("Record multiplication on error output: " + recordMultiplication);
 				if(invalidPort != null) {
-					if(errorMapping != null) {
+					if(recordMultiplication) {
 						// No errors means that somebody did implement validation rule wrong
 						for(ValidationError error : errorAccumulator) {
 							populateErrorRecord(error);
@@ -280,10 +295,10 @@ public class Validator extends Node {
 							MiscUtils.sendRecordToPort(invalidPort, errorMapping.getOutputRecord(MAPPING_OUTPUT_RECORD));
 						}
 					} else {
-						MiscUtils.sendRecordToPort(invalidPort, inputRecord);	
+						errorMapping.execute();
+						MiscUtils.sendRecordToPort(invalidPort, errorMapping.getOutputRecord(MAPPING_OUTPUT_RECORD));	
 					}
 				}
-				logger.trace("Record number " + processedRecords + " is INVALID.");
 			}
 			logger.trace("Validation of record number " + processedRecords + " has finished.");
 		}
