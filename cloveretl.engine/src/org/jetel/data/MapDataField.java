@@ -26,7 +26,6 @@ import java.nio.charset.CharsetEncoder;
 import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -286,7 +285,7 @@ public class MapDataField extends DataField {
 			return null;
 		}
 		
-		Map<String, Object> result = new HashMap<String, Object>();
+		Map<String, Object> result = new LinkedHashMap<String, Object>();
 		for (Entry<String, DataField> fieldEntry : fields.entrySet()) {
 			result.put(fieldEntry.getKey(), fieldEntry.getValue().getValueDuplicate());
 		}

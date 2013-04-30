@@ -262,30 +262,37 @@ public abstract class TreeWriter extends Node {
 			}
 
 		} else {
-			MappingTagger tagger = new MappingTagger(connectedPorts, sortedInput ? sortHintsString : null, recordsCount == 1);
-
-			tagger.setMapping(mapping);
-			boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0;
-			tagger.setResolvePartition(partition);
-			tagger.tag();
-
-			Set<Integer> usedPorts = tagger.getUsedPorts();
-			if (usedPorts.size() < inPorts.size()) {
-				StringBuilder sb = new StringBuilder();
-				int counter = 0;
-				for (Integer portIndex : inPorts.keySet()) {
-					if (!usedPorts.contains(portIndex)) {
-						sb.append(portIndex);
-						sb.append(", ");
-						counter++;
+			MappingTagger tagger = null;
+			try {
+				tagger = new MappingTagger(connectedPorts, sortedInput ? sortHintsString : null, recordsCount == 1);
+			} catch (MappingTagger.SortHintException e) {
+				status.add(e, Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_SORTKEYS_ATTRIBUTE);
+			}
+			
+			if (tagger != null) {
+				tagger.setMapping(mapping);
+				boolean partition = attrPartitionKey != null || recordsPerFile > 0 || recordsCount > 0;
+				tagger.setResolvePartition(partition);
+				tagger.tag();
+	
+				Set<Integer> usedPorts = tagger.getUsedPorts();
+				if (usedPorts.size() < inPorts.size()) {
+					StringBuilder sb = new StringBuilder();
+					int counter = 0;
+					for (Integer portIndex : inPorts.keySet()) {
+						if (!usedPorts.contains(portIndex)) {
+							sb.append(portIndex);
+							sb.append(", ");
+							counter++;
+						}
 					}
-				}
-				if (usedPorts.size() == 0) {
-					status.add(new ConfigurationProblem("None of the connected input ports is used in mapping.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
-				} else if (counter == 1) {
-					status.add(new ConfigurationProblem("Input port " + sb.substring(0, sb.length() - 2) + " is connected, but isn't used in mapping.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
-				} else if (counter > 1) {
-					status.add(new ConfigurationProblem("Input ports " + sb.substring(0, sb.length() - 2) + " are connected, but aren't used in mapping.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+					if (usedPorts.size() == 0) {
+						status.add(new ConfigurationProblem("None of the connected input ports is used in mapping.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+					} else if (counter == 1) {
+						status.add(new ConfigurationProblem("Input port " + sb.substring(0, sb.length() - 2) + " is connected, but isn't used in mapping.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+					} else if (counter > 1) {
+						status.add(new ConfigurationProblem("Input ports " + sb.substring(0, sb.length() - 2) + " are connected, but aren't used in mapping.", ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL));
+					}
 				}
 			}
 		}

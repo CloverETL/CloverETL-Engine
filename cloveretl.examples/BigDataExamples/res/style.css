@@ -1,0 +1,199 @@
+#logo {
+	display: block;
+	margin: 0 0 40px 0;
+}
+
+body {
+	background: #eee;
+	margin: 0;
+}
+
+a,
+a:visited {
+	color: #009edf;
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+
+
+body, td, th {
+	font-family: sans-serif;
+	font-size: 11pt;
+	line-height: 150%;
+}
+
+h1 {
+	margin: 0 0 0.5em 0;
+	font-weight: normal;
+	font-size: 27pt;
+	color: #69861c;
+}
+
+h1.sub {
+	font-size: 15pt;
+	color: #8dbb12;
+	margin-bottom: 1.2em;
+}
+
+h2 {
+	padding: 1.1em 0 .3em 0;
+	margin: 0;
+}
+
+h3.expandtopic {
+	background: url(gfx/i-collapsed.png) no-repeat 5px 50% #e9f1f3;
+	padding: 7px 0 7px 30px;
+	line-height: 22px;
+	font-size: 13pt;
+	cursor: pointer;
+	color: #009edf;
+}
+	
+h3.expandtopic:hover {
+	background-color: #e0effb;
+}
+
+h3.expandtopic small {
+	font-weight: normal;
+}
+
+h3.expandtopic.expanded {
+	background-image: url(gfx/i-expanded.png);
+}
+
+h5 {
+	font-size: 13pt;
+	text-transform: uppercase;
+	margin: 0;
+	color: black;
+	background: #deeeb3;
+	text-align: center;
+	padding: 0.5em;
+}
+
+#page {
+	max-width: 800px;
+	margin: auto;
+	padding: 40px 60px 200px 60px;
+	background: white;
+	box-shadow: 0 0 7px #ccc;
+}
+
+b {
+	color: #eb9321;
+}
+
+p {
+	margin: 0 0 1em 0;
+}
+
+.hide {
+	display: none;
+}
+
+.exampledesc {
+	margin: 1.5em 0 1em 0;
+	color: black;
+	background: #f0fde8;
+	padding: 40px;
+	text-align: left;
+	border-radius: 10px;
+}
+
+.exampledesc h6 {
+	font-size: 12pt;
+	margin: 0;
+	padding: 0px;
+	text-transform: uppercase;
+	color: #82c15d;
+	
+}
+
+hr {
+	border: 0;
+	background: #ccc;
+	height: 1px;
+	width: 100%;
+}
+
+
+.exampledesc h2 {
+}
+
+.exampledesc code {
+	border-left: 10px solid #dcefd1;
+}
+
+.prereq {
+	color: #87a33d;
+}
+
+.guide {
+	margin-left: 5em;
+}
+
+.guide h2 {
+	padding: 0.3em 0 0.3em 0;
+	font-size: 15pt;
+	color: #888;
+}
+
+.guide h3 {
+	font-size: 13pt;
+	padding-top: 10px
+	padding-bottom: 5px;
+	margin: 0 0 5px 0;
+}
+
+.pad {
+	padding: 0 20px 0 20px;
+}
+
+code {
+	display: block;
+	padding-left: 10px;
+}
+
+ol.explain {
+	font-size: 90%;
+}
+
+.ondemo {
+	background: #fefccd;
+	margin: 1.5em 0 1em 0;
+	color: black;
+	padding: 40px;
+	text-align: left;
+	border-radius: 10px;
+	border-left: 20px solid #f2efae;
+	border-right: 20px solid #f2efae;
+}
+
+.ondemo h6 {
+	font-size: 12pt;
+	margin: 0;
+	padding: 0px;
+	text-transform: uppercase;
+	color: #bdb950;
+
+}
+
+
+
+.tocenter {
+	text-align: center;
+}
+
+.image {
+	
+}
+
+.demourl {
+	margin: 1em 0 1em 0;
+	border: 1px solid #d7d49a; 
+	border-radius: 10px; 
+	padding: 20px;
+	text-align: center;
+}

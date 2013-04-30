@@ -1,11 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Mar 03 10:11:40 CET 2008" description="This graph illustrates usage of dynamic metadata generation based on SQL query. It&#10;allows unloading of database data without prior assembly of DB table metadata.&#10;Dynamic metadata can be for example used for easy migration of data between two different databases when&#10;one universal graph with parameters specifying which table should be unload/migrated can be used.&#10;&#10;This graph requires db_table parameter to be defined. When running this graph, use command like this one:&#10;java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph graphDBUnloadUniversal.grf -P:db_table=Employee&#10;&#10;&#10;Note: where clause 1=0 in SQL query in dynamic metadata definition is there only for speeding up&#10;query processing - no real data is needed, only metadata describing the result - thus we specify&#10;condition which ensures that no data should really be returned - it is up to database wheter it&#10;will optimize the execution plan based on this.&#10;" guiVersion="0.0.0.devel" id="1204539729181" licenseType="Evaluation Devel" modified="Mon May 02 13:21:47 CEST 2011" modifiedBy="avackova" name="Testing DB Unload" revision="1.41" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Mon Mar 03 10:11:40 CET 2008" description="This graph illustrates usage of dynamic metadata generation based on SQL query. It&#10;allows unloading of database data without prior assembly of DB table metadata.&#10;Dynamic metadata can be for example used for easy migration of data between two different databases when&#10;one universal graph with parameters specifying which table should be unload/migrated can be used.&#10;&#10;This graph requires db_table parameter to be defined. When running this graph, use command like this one:&#10;java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph graphDBUnloadUniversal.grf -P:db_table=Employee&#10;&#10;&#10;Note: where clause 1=0 in SQL query in dynamic metadata definition is there only for speeding up&#10;query processing - no real data is needed, only metadata describing the result - thus we specify&#10;condition which ensures that no data should really be returned - it is up to database wheter it&#10;will optimize the execution plan based on this.&#10;" guiVersion="3.4.0.P" id="1204539729181" licenseType="Commercial" modified="Fri Apr 26 13:55:24 CEST 2013" modifiedBy="user" name="Testing DB Unload" revision="1.46" showComponentDetails="true">
 <Global>
 <Metadata connection="Connection0" id="InMetadata" sqlQuery="select * from ${db_table} where 1=0"/>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
 <Property id="GraphParameter0" name="db_table" value="employee"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="392" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="DBInputTable, Parameters, and Dynamic Metadata" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="425" x="444" y="-33">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="392" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="DBInputTable, Parameters, and Dynamic Metadata" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="425" x="444" y="-33">
 <attr name="text"><![CDATA[
 This graph demonstrates how parameters can be used by multiple components and shows the use of dynamic metadata as well.
 
@@ -22,16 +21,21 @@ Following are the dynamic metadata:
 
 They use the connection and use the query specified in them. Based on the query, they can get the metadata information. Note that the "where 1 = 0" statement ensures that the graph will not try to read the data in the table.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="2" y="-34">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="2" y="-34">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="97" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example has been modified" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="260" x="72" y="194">
+<attr name="text"><![CDATA[This test has been modified to use derby db running on koule. The modification should allow to run the test from multiple branches simultaneously.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="98" guiName="${db_table}" guiWidth="128" guiX="2" guiY="57" id="INPUT" sqlQuery="select * from ${db_table}" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection0" enabled="enabled" guiName="${db_table}" guiX="2" guiY="57" id="INPUT" type="DB_INPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Read data from database]]></attr>
+<attr name="sqlQuery"><![CDATA[select * from ${db_table}]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/${db_table}.output" guiHeight="81" guiName="${db_table}.output" guiWidth="165" guiX="262" guiY="57" id="OUTPUT" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/${db_table}.output" guiName="${db_table}.output" guiX="262" guiY="57" id="OUTPUT" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Save data in a flat file.]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="INEDGE" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="OUTPUT:0"/>
