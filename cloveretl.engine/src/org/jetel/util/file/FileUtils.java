@@ -91,10 +91,10 @@ import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
 import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.stream.TarInputStream;
 import org.jetel.util.string.StringUtils;
 
 import com.ice.tar.TarEntry;
-import com.ice.tar.TarInputStream;
 import com.jcraft.jsch.ChannelSftp;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
