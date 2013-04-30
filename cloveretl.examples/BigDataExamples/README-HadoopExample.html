@@ -1,0 +1,294 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>CloverETL + Apache - Examples README</title>
+
+<link rel="stylesheet" type="text/css" href="res/style.css"/>
+
+<script type="text/javascript" src="res/jquery-1.9.1.min.js"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+	
+	$("h3.expandtopic").click(function() {
+		
+		if ($(this).hasClass("expanded")) {
+			$(this).removeClass("expanded");
+		} else {
+			$(this).addClass("expanded");
+		}
+		
+		
+		$('#' + $(this).attr('rel')).animate({ 'height' : 'toggle'});
+		
+	})
+	
+	
+});
+
+</script>
+
+</head>
+<body>
+
+<div id="page">
+
+<div class="pad">
+
+<img src="res/gfx/cloveretl-logo.png" id="logo"/>
+
+<h1>Big Data with CloverETL + Apache Hadoop</h1>
+<h1 class="sub">An example for HDFS, Hive and MapReduce integration in CloverETL</h1>
+
+<p>Starting with CloverETL 3.4M2 we provide integration with technologies from the Apache Hadoop stack: HDFS, Hive and MapReduce.  All these technologies are still under active development with major changes to API, class structure, and library names happening frequently between releases.</p> 
+<p>CloverETL integration with Hadoop is not bound to any particular Hadoop distribution and should work with various versions of Hadoop technologies. CloverETL supports both MapReduce 1.0 (available in CDH3 and CDH4) as well as MapReduce 2.0 with YARN (available only in CDH4).</p> 
+
+</div>
+
+<div class="exampledesc">
+
+<h6>Example Scenario</h6>
+
+<h2>Computing "unique visitors per month" from large Apache web logs</h2>
+<p>For the purpose of demontrating CloverETL with Hadoop support, we will use a quite common scenario where huge web logs (up to hundreds of GBs per day)
+need to be reduced to compute simple metrics, in this case a report the sum of unique visits (IP addresses) per month and sort by busiest months first.
+</p> 
+
+<p>We basically demonstrate a <strong>big data solution</strong> to this SQL term:</p>
+<code>select monthOfYear, count(distinct ipAddress)<br/>
+from weblog<br/>
+group by monthOfYear</code>
+
+<h2>Three different solutions</h2>
+<p>We present the example with three different approaches to the same problem: </p>
+<p>
+<strong>A &ndash; Hadoop Hive query</strong> &ndash; Store data to HDFS, create a Hive table and run a query</i><br/>
+<strong>B &ndash; Hadoop MapReduce</strong> &ndash;  Store data to HDFS and run a MapReduce job</br/>
+<strong>C &ndash; Pure CloverETL</strong>  &ndash; only CloverETL components, no Hadoop 
+</p> 
+
+</div>
+
+<div class="pad">
+
+
+<h2>Getting Started &ndash; Prerequisites</h2>
+
+<p>In order to run these examples <b>you need access to a working Cloudera Hadoop installation</b>. We provide predefined connections and settings for two
+Cloudera distributions (see instructions below). If you use another distribution or setup, unfortunately, you are on your own &ndash; use the instructions 
+below as guidelines.</p>
+ 
+<p>The examples are presented in the form of jobflows, which bind all necessary steps of the process into one executable piece which <b>requires CloverETL Server</b> to run.</p>
+<p>Please keep in mind, that the Server needs to have <b>network access to the Hadoop installation</b>.</p>
+
+
+
+</div>
+
+<div class="ondemo">
+<h6>Recommended</h6>
+
+<h2>Running the example on the CloverETL Server Public Demo</h2>
+
+<p>In order to minimize your effort when exploring the examples we have prepared a live Hadoop instance that works together with our 
+<a href="http://www.cloveretl.com/getstarted">CloverETL Server demo</a>. Thus, all you need is to connect to the hosted example and see it in action for yourself &ndash;
+all three solutions are deployed.</p>
+
+<div class="tocenter image">
+<img src="res/gfx/get-started-integration.png"/>
+</div>
+
+<div class="demourl">
+<strong style="font-size: 130%">Server Demo URL: <a target="_blank" href="http://server-demo-ec2.cloveretl.com/clover">http://server-demo-ec2.cloveretl.com/clover</a></strong><br/>
+<p style="margin: 10px 0 0 0">
+Username: <strong>clover</strong><br/>
+Password: <strong>clover</strong><br/>
+</p>
+</div>
+
+<p class="tocenter" style="margin: 0">Connect to the <strong>BigDataExamples</strong> sandbox and start in <strong>&ldquo;jobflows&rdquo;</strong> folder</p>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="pad">
+
+<h2>Running the example in a local Server installation</h2>
+
+<h3 class="expandtopic" rel="solution-hive">Solution A: CloverETL with Hadoop Hive query</h3>
+
+<div id="solution-hive" class="hide">
+	<div class="guide">
+
+	<h2>How it works?</h2>
+	<ol class="explain">
+	<li>Read the Apache log using CloverETL (UniversalDataReader component)</li>
+	<li>Extract the required fields (month, year and IP address) into a file stored in HDFS</li>
+	<li>Create a Hive table based on that HDFS file</li>
+	<li>Run a Hive query on the table</li>
+	<li>Get the result back to CloverETL and generate an Excel report.</li>
+	</ol>
+
+	<h2>Resources</h2>
+	<ul>
+	<li>The main jobflow <em>jobflow/UniqueVisits-HadoopHive.jbf</em> uses the following ETL graphs:
+	<ul>
+	<li><em>graph/CheckParameters-Hive.grf</em> to check that Hive and HDFS parameters are set</li>
+	<li><em>graph/PrepareInputData.grf</em> to parse input data and upload on HDFS</li>
+	<li><em>graph/HadoopHive-LoadData.grf</em> to bulk-load data from HDFS to Hive</li>
+	<li><em>graph/HadoopHive-CountVisits.grf</em> to calculate the metric using Hive SQL to temp file</li>
+	<li><em>graph/GenerateReport.grf</em> to produce the Excel report from temp file</li>
+	</ul>
+	</li></ul>
+
+	<h2>Which distribution are you using?</h2>
+	<p>This <a href="https://blogs.apache.org/bigtop/entry/all_you_wanted_to_know">article</a> can help you decide which one to choose.</p>
+	<h3 class="expandtopic" rel="hive-guide-cdh3" title="Click here for configuration guide for CDH 3">Cloudera Hadoop Distribution 3<br/>
+	<small>(hadoop-0.20, mapreduce-1.0)</small></h3>
+	<div id="hive-guide-cdh3" class="hide">
+
+	<ul>
+	<li>Copy HDFS and MapReduce libraries from your Hadoop distribution to the project.<br/>See <em><strong>BigDataExamples/lib/hadoop/cdh3u5/README.txt</strong></em> for details.</li>
+	<li>Copy Hive libraries to the project.<br/>See <em><strong>BigDataExamples/lib/hive/cdh3u5/README.txt</strong></em> for details.</li>
+	<li>Set parameters <strong>HADOOP_HIVE_URL</strong>, <strong>HADOOP_JOBTRACKER_HOST</strong> and <strong>HADOOP_NAMENODE_HOST</strong> in the main jobflow <em>jobflow/UniqueVisits-HadoopHive.jbf</em>.<br/>
+	See Outline&rarr;Parameters&rarr;hadoop.prm</li>
+	<li>Run the main jobflow</li>
+	</ul>
+	
+
+	</div>
+	
+	<h3 class="expandtopic" rel="hive-guide-cdh4" title="Click here for configuration guide for CDH 4">Cloudera Hadoop Distribution 4<br/>
+	<small>(hadoop-0.23, mapreduce-1.0 or 2.0 with YARN)</small></h3>
+	<div id="hive-guide-cdh4" class="hide">
+	<ul>
+	<li>Copy HDFS and MapReduce libraries from your Hadoop distribution to the project.<br/>See <em><strong>BigDataExamples/lib/hadoop/cdh412/README.txt</strong></em> for details.</li>
+	<li>Copy Hive libraries to the project.<br/>See <em><strong>BigDataExamples/lib/hive/cdh3u5/README.txt</strong></em> for details.
+	<br/>(Hive libraries work for both CDH3 and CDH4)</li>
+	<li>Set parameters HADOOP_HIVE_URL, HADOOP_JOBTRACKER_HOST and HADOOP_NAMENODE_HOST in the main jobflow (<em>jobflow/UniqueVisits-HadoopHive.jbf</em>).</li>
+	<li>You will need to replace the predefined CDH3 connection &ndash; see Outline&rarr;Connections&rarr;${CONN_DIR}/Hadoop-CDH-3u5.cfg (id:CDH3) &ndash;
+	with the one for CDH4. Follow these steps:
+		<ul>
+			<li>Open all graphs and jobflows listed in Resources (see above)</li>
+			<li>Delete the CDH3 connection from each (Outline&rarr;Connections)</li>
+			<li>For all, link the CDH4 connection (right-click Outline&rarr;Connections, then Connections&rarr;Link Hadoop connection); then, navigate to ${CONN_DIR}/Hadoop-CDH-4.1.2.cfg</li>
+		</ul>
+		</li>
+	<li>Run the main jobflow</li>
+	</ul>
+	</div>
+	
+	</div><!-- guide -->
+</div><!-- hive -->
+
+
+
+
+
+
+
+
+<h3 class="expandtopic" rel="solution-mapreduce">Solution B: CloverETL with Hadoop MapReduce script</h3>
+
+<div id="solution-mapreduce" class="hide guide">
+
+	<h2>How it works?</h2>
+	<ol class="explain">
+	<li>Read the Apache log using CloverETL (UniversalDataReader component)</li>
+	<li>Extract the required fields (month, year and IP address) into a file stored in HDFS</li>
+	<li>Run a MapReduce job that counts unique visitors and stores results back to HDFS</li>
+	<li>Get the result back to CloverETL and generate an Excel report.</li>
+	</ol>
+
+	<h2>Resources</h2>
+	<ul>
+	<li>The main jobflow <em>jobflow/UniqueVisits-HadoopMapReduce.jbf</em> uses the following ETL graphs:
+	<ul>
+	<li><em>graph/CheckParameters-MapReduce.grf</em> to check that HDFS parameters are set</li>
+	<li><em>graph/PrepareInputData.grf</em> to parse input data and upload on HDFS</li>
+	<li>Submits a MapReduce job from lib/hadoop/mapreduce-job-definition/UniqueVisits.jar to calculate the metric into a HDFS file.</li>
+	<li><em>graph/HadoopMapReduce-CountVisits.grf</em> to read the results from HDFS</li>
+	<li><em>graph/GenerateReport.grf</em> to produce the Excel report from temp file</li>
+	</ul>
+	</li></ul>
+
+	<h2>Additional Notes</h2>
+	
+	<h3>Old and new MapReduce APIs</h3>
+	<p>Within the MapReduce 1.0 framework CloverETL support submission of jobs developed with both the old org.apache.hadoop.mapred.* as well as the new org.apache.hadoop.mapreduce.* map-reduce API.</p>
+	
+	<h2>Which distribution are you using?</h2>
+	<p>This <a href="https://blogs.apache.org/bigtop/entry/all_you_wanted_to_know">article</a> can help you decide which one to choose.</p>
+	<h3 class="expandtopic" rel="mapred-guide-cdh3" title="Click here for configuration guide for CDH 3">Cloudera Hadoop Distribution 3<br/>
+	<small>(hadoop-0.20, mapreduce-1.0)</small></h3>
+	<div id="mapred-guide-cdh3" class="hide">
+
+	<ul>
+	<li>Copy HDFS and MapReduce libraries from your Hadoop distribution to the project.<br/>See <em><strong>BigDataExamples/lib/hadoop/cdh3u5/README.txt</strong></em> for details.</li>
+	<li>Set parameters <strong>HADOOP_JOBTRACKER_HOST</strong> and <strong>HADOOP_NAMENODE_HOST</strong> in the main jobflow <em>UniqueVisits-HadoopMapReduce.jbf</em>.<br/>
+	See Outline&rarr;Parameters&rarr;hadoop.prm</li>
+	<li>Run the main jobflow</li>
+	</ul>
+	
+
+	</div>
+	
+	<h3 class="expandtopic" rel="mapred-guide-cdh4" title="Click here for configuration guide for CDH 4">Cloudera Hadoop Distribution 4<br/>
+	<small>(hadoop-0.23, mapreduce-1.0 or 2.0 with YARN)</small></h3>
+	<div id="mapred-guide-cdh4" class="hide">
+	<ul>
+	<li>Copy HDFS and MapReduce libraries from your Hadoop distribution to the project.<br/>See <em><strong>BigDataExamples/lib/hadoop/cdh412/README.txt</strong></em> for details.</li>
+	<li>Set parameters HADOOP_JOBTRACKER_HOST and HADOOP_NAMENODE_HOST in the main jobflow (<em>jobflow/UniqueVisits-HadoopMapReduce.jbf</em>).</li>
+	<li>You will need to replace the predefined CDH3 connection &ndash; see Outline&rarr;Connections&rarr;${CONN_DIR}/Hadoop-CDH-3u5.cfg (id:CDH3) &ndash;
+	with the one for CDH4. Follow these steps:
+		<ul>
+			<li>Open all graphs and jobflows listed in Resources (see above)</li>
+			<li>Delete the CDH3 connection from each (Outline&rarr;Connections)</li>
+			<li>For all, link the CDH4 connection (right-click Outline&rarr;Connections, then Connections&rarr;Link Hadoop connection); then, navigate to ${CONN_DIR}/Hadoop-CDH-4.1.2.cfg</li>
+		</ul>
+		</li>
+	<li>Run the main jobflow</li>
+	</ul>
+	</div>
+
+
+</div><!-- mapreduce -->
+
+
+
+
+
+
+
+
+<h3 class="expandtopic" rel="solution-cloveretl">Solution C: Pure CloverETL solution; no Hadoop</h3>
+
+<div id="solution-cloveretl" class="hide">
+<div class="guide">
+	<p>This option does not require any additional setup</p>
+	
+	<h4>Instructions</h4>
+	<ol class="steps">
+	<li>Run <i>jobflows/UniqueVisits-CloverETL.jbf</i></li>
+	</ol>
+
+</div>
+</div><!-- pure CloverETL -->
+
+</div>
+
+</body>
+</html>

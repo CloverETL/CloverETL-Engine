@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="3.1.0" id="1204558846009" licenseCode="javlinconsulting" licenseType="Commercial PRO" modified="Tue May 31 14:43:04 CEST 2011" modifiedBy="cloveruser" name="Testing Hash Joiner" revision="1.77" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="yanas" created="Fri Jan 12 08:41:50 CET 2007" description="This graph illustrates how to join data using reformat component." guiVersion="3.4.0.P" id="1204558846009" licenseType="Commercial" modified="Fri Apr 26 13:51:34 CEST 2013" modifiedBy="user" name="Testing Hash Joiner" revision="1.80" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/employee.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/delimited/joinedOrders.fmt" id="Metadata0"/>
@@ -9,7 +8,7 @@
 <LookupTable dbConnection="Connection0" id="LookupTable0" maxCached="0" metadata="Metadata1" name="name" type="dbLookup">
 <attr name="sqlQuery"><![CDATA[select * from employee where employee_id=?]]></attr>
 </LookupTable>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="301" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of DB Lookup Table in Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="548" x="25" y="134">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="301" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Use of DB Lookup Table in Reformat" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="548" x="25" y="134">
 <attr name="text"><![CDATA[
 UniversalDataReader reads a flat file with Orders data. It is received by Reformat. In it, these records are joined with Employees that are get from DB lookup table. 
 
@@ -23,16 +22,20 @@ Remember that mapping must be defined for all output ports in Reformat!
 
 graphLookupJoin.grf is an equivalent of this graph. There are multiple ways to the same results.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="548" x="24" y="-73">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="548" x="24" y="-73">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="97" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example has been modified" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="260" x="578" y="13">
+<attr name="text"><![CDATA[This test has been modified to use derby db running on koule. The modification should allow to run the test from multiple branches simultaneously.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiHeight="97" guiName="Orders" guiWidth="128" guiX="24" guiY="26" id="INPUT1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/orders.dat" guiName="Orders" guiX="24" guiY="26" id="INPUT1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read a flat file with Orders data.]]></attr>
 </Node>
-<Node enabled="enabled" errorActions="-2=CONTINUE;" errorLog="${DATAOUT_DIR}/log.err" guiHeight="97" guiName="Reformat (Join)" guiWidth="128" guiX="219" guiY="26" id="JOIN" type="REFORMAT">
+<Node enabled="enabled" errorActions="-2=CONTINUE;" errorLog="${DATAOUT_DIR}/log.err" guiName="Reformat (Join)" guiX="219" guiY="26" id="JOIN" type="REFORMAT">
 <attr name="transform"><![CDATA[
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
@@ -87,7 +90,7 @@ public class ReformatTestInline extends DataRecordTransform{
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Orders are joined with Employees from DB lookup table within transformation.]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data.out" guiHeight="97" guiName="Orders-Employees" guiWidth="132" guiX="408" guiY="26" id="WRITER" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined_data.out" guiName="Orders-Employees" guiX="408" guiY="26" id="WRITER" type="DATA_WRITER"/>
 <Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="INEDGE1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (output)" router="Manhattan" toNode="JOIN:0"/>
 <Edge debugMode="false" fromNode="JOIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="OUTEDGE" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" router="Manhattan" toNode="WRITER:0"/>
 </Phase>

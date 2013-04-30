@@ -19,7 +19,6 @@
 package org.jetel.component.tree.writer.util;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,7 +78,11 @@ public class MappingTagger extends AbstractVisitor {
 
 	public MappingTagger(Map<Integer, DataRecordMetadata> inPorts, String sortHintsString, boolean singleTopLevelRecord) {
 		this.inPorts = inPorts;
-		this.sortHints = resolveSortHints(sortHintsString, inPorts.keySet());
+		try {
+			this.sortHints = resolveSortHints(sortHintsString, inPorts);
+		} catch (Exception e) {
+			throw new SortHintException("Sort order hint error: " + e.getMessage(), e);
+		}
 		this.singleTopLevelRecord = singleTopLevelRecord;
 	}
 
@@ -363,16 +366,19 @@ public class MappingTagger extends AbstractVisitor {
 		this.resolvePartition = resolvePartition;
 	}
 
-	private Map<Integer, SortHint> resolveSortHints(String sortHintsString, Collection<Integer> inPorts) {
+	private Map<Integer, SortHint> resolveSortHints(String sortHintsString, Map<Integer, DataRecordMetadata> inPorts) {
 		Map<Integer, SortHint> toReturn = new HashMap<Integer, SortHint>();
 		if (sortHintsString == null) {
 			return toReturn;
 		}
 		String[] recordHints = sortHintsString.split("#");
-		Iterator<Integer> portIterator = inPorts.iterator();
+		Iterator<Entry<Integer, DataRecordMetadata>> portIterator = inPorts.entrySet().iterator();
 		Pattern pat = Pattern.compile("^(.*)\\((.*)\\)$");
 		for (int j = 0; j < Math.min(recordHints.length, inPorts.size()); j++) {
-			Integer inPortNumber = portIterator.next();
+			Entry<Integer, DataRecordMetadata> inPortsEntry = portIterator.next();
+			Integer inPortNumber = inPortsEntry.getKey();
+			DataRecordMetadata inPortMetadata = inPortsEntry.getValue();
+			
 			if (!recordHints[j].isEmpty()) {
 				String[] sortKeys = recordHints[j].split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 
@@ -385,6 +391,9 @@ public class MappingTagger extends AbstractVisitor {
 						if (matcher.groupCount() > 1) {
 							ascending[i] = (sortKeys[i].substring(matcher.start(2), matcher.end(2))).matches("^[Aa].*");
 						}
+						if (inPortMetadata.getFieldPosition(keyPart) < 0) {
+							throw new IllegalArgumentException("Key field \"" + keyPart + "\" does not exist in metadata \"" + inPortMetadata.getName() + "\" of input edge on port " + inPortNumber);
+						}
 						sortKeys[i] = keyPart;
 					}
 				}
@@ -393,6 +402,19 @@ public class MappingTagger extends AbstractVisitor {
 			}
 		}
 		return toReturn;
+	}
+
+	/**
+	 * Indicates parsing error of input records sort order hint ("Sort keys" attribute of XMLWriter).
+	 * Introduced in the fix of CLO-621.
+	 */
+	public static class SortHintException extends RuntimeException {
+
+		private static final long serialVersionUID = 1L;
+
+		private SortHintException(String message, Throwable cause) {
+			super(message, cause);
+		}
 	}
 
 	public static class Tag {

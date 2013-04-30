@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="0.0.0.devel" id="1197027195231" licenseType="Evaluation Devel" modified="Mon May 02 11:47:03 CEST 2011" modifiedBy="avackova" name="graphDBJoin" revision="1.85" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="cloveruser" created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows usage of DBJoin component: data are read from flat file and joined with the records from database due to conforming key field (lname in records read from file, last_name in records read from database)." guiVersion="3.4.0.P" id="1197027195231" licenseType="Commercial" modified="Fri Apr 26 13:56:50 CEST 2013" modifiedBy="user" name="graphDBJoin" revision="1.94" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/delimited/errorInfo.fmt" id="Metadata3"/>
 <Metadata id="Metadata0">
@@ -31,6 +30,27 @@
 <Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
 </Record>
 </Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter=";" name="EMPLOYEE" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="EMPLOYEE_ID" nullable="true" shift="0" size="10" type="integer"/>
+<Field eofAsDelimiter="false" name="FULL_NAME" nullable="true" shift="0" size="80" type="string"/>
+<Field eofAsDelimiter="false" name="FIRST_NAME" nullable="true" shift="0" size="80" type="string"/>
+<Field eofAsDelimiter="false" name="LAST_NAME" nullable="true" shift="0" size="80" type="string"/>
+<Field eofAsDelimiter="false" name="POSITION_ID" nullable="true" shift="0" size="10" type="integer"/>
+<Field eofAsDelimiter="false" name="POSITION_TITLE" nullable="true" shift="0" size="80" type="string"/>
+<Field eofAsDelimiter="false" name="STORE_ID" nullable="true" shift="0" size="10" type="integer"/>
+<Field eofAsDelimiter="false" name="DEPARTMENT_ID" nullable="true" shift="0" size="10" type="integer"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd HH:mm:ss" name="BIRTH_DATE" nullable="true" shift="0" size="29" type="date"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd HH:mm:ss" name="HIRE_DATE" nullable="true" shift="0" size="29" type="date"/>
+<Field eofAsDelimiter="false" format="yyyy-MM-dd HH:mm:ss" name="END_DATE" nullable="true" shift="0" size="29" type="date"/>
+<Field eofAsDelimiter="false" length="5" name="SALARY" nullable="true" scale="0" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="SUPERVISOR_ID" nullable="true" shift="0" size="10" type="integer"/>
+<Field eofAsDelimiter="false" name="EDUCATION_LEVEL" nullable="true" shift="0" size="80" type="string"/>
+<Field eofAsDelimiter="false" name="MARITAL_STATUS" nullable="true" shift="0" size="80" type="string"/>
+<Field eofAsDelimiter="false" name="GENDER" nullable="true" shift="0" size="80" type="string"/>
+<Field eofAsDelimiter="false" name="MANAGEMENT_ROLE" nullable="true" shift="0" size="80" type="string"/>
+</Record>
+</Metadata>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="joined" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field locale="en.US" name="customer_id" nullable="true" shift="0" type="integer"/>
@@ -44,26 +64,31 @@
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/${connection}" id="Connection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="87" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Join with Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="182" x="36" y="-46">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="87" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Join with Employees" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="182" x="36" y="-46">
 <attr name="text"><![CDATA[
 Employees are unloaded from a db table. Join is based on last name. ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="235" y="-44">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="83" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="423" x="235" y="-44">
 <attr name="text"><![CDATA[This example uses Derby database located in ${DATAIN_DIR} directory. To run this graph successfully PROJECT parameter needs to be set to absolute path to ExtExamples project.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="97" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Example has been modified" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="260" x="720" y="-51">
+<attr name="text"><![CDATA[This test has been modified to use derby db running on koule. The modification should allow to run the test from multiple branches simultaneously.
+]]></attr>
 </Note>
 <Dictionary/>
 </Global>
-<Phase number="0">
-<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiHeight="98" guiName="Customers" guiWidth="128" guiX="36" guiY="48" id="DATA_READER0" type="DATA_READER">
+<Phase number="2">
+<Node dataPolicy="controlled" enabled="enabled" fileURL="${DATAIN_DIR}/fixlen/customers0.dat" guiName="Customers" guiX="36" guiY="48" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[File containing data about customers is read. ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined.txt" guiHeight="81" guiName="Customers-Employees" guiWidth="190" guiX="456" guiY="48" id="DATA_WRITER0" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/joined.txt" guiName="Customers-Employees" guiX="456" guiY="48" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Joined data.]]></attr>
 </Node>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="98" guiName="DBJoin (Inner join)" guiWidth="163" guiX="240" guiY="48" id="DBJOIN0" joinKey="lname" sqlQuery="select * from employee where last_name=?" transformClass="TransformForDBjoin" type="DBJOIN">
+<Node dbConnection="Connection0" enabled="enabled" guiName="DBJoin (Inner join)" guiX="240" guiY="48" id="DBJOIN0" joinKey="lname" transformClass="TransformForDBjoin" type="DBJOIN">
 <attr name="guiDescription"><![CDATA[Joins customer data with the data from the employees table in database. Transformation class is defined in the Transform class attribute of DBJoin. Metadata for the database table are not specified and the DB metadata attribute is set to no metadata. ]]></attr>
+<attr name="sqlQuery"><![CDATA[select * from employee where last_name=?]]></attr>
 </Node>
-<Node debugFilename="${DATAOUT_DIR}/rejected.txt" debugPrint="true" enabled="enabled" guiHeight="64" guiName="Non-matched customers" guiWidth="204" guiX="456" guiY="156" id="TRASH1" type="TRASH"/>
+<Node debugFilename="${DATAOUT_DIR}/rejected.txt" debugPrint="true" enabled="enabled" guiName="Non-matched customers" guiX="456" guiY="156" id="TRASH1" type="TRASH"/>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="DBJOIN0:0"/>
 <Edge debugMode="false" fromNode="DBJOIN0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (joined records)" router="Manhattan" toNode="DATA_WRITER0:0"/>
 <Edge debugMode="false" fromNode="DBJOIN0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (skipped records)" router="Manhattan" toNode="TRASH1:0"/>

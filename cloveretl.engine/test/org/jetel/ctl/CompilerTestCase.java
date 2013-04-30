@@ -112,6 +112,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	/**
 	 * Method to execute tested CTL code in a way specific to testing scenario.
 	 * 
+	 * Assumes that
+	 * {@link #graph}, {@link #inputRecords} and {@link #outputRecords}
+	 * have already been set.
+	 * 
 	 * @param compiler
 	 */
 	public abstract void executeCode(ITLCompiler compiler);
@@ -562,11 +566,36 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		return ret;
 	}
-
+	
+	/**
+	 * Executes the code using the default graph and records.
+	 */
 	protected void doCompile(String expStr, String testIdentifier) {
-		graph = createDefaultGraph();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3), graph.getDataRecordMetadata(INPUT_4) };
-		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4), graph.getDataRecordMetadata(OUTPUT_5), graph.getDataRecordMetadata(OUTPUT_6), graph.getDataRecordMetadata(OUTPUT_7) };
+		TransformationGraph graph = createDefaultGraph(); 
+		
+		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
+		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
+		
+		doCompile(expStr, testIdentifier, graph, inRecords, outRecords);
+	}
+
+	/**
+	 * This method should be used to execute a test with a custom graph and custom input and output records.
+	 * 
+	 * To execute a test with the default graph, 
+	 * use {@link #doCompile(String)} 
+	 * or {@link #doCompile(String, String)} instead.
+	 * 
+	 * @param expStr
+	 * @param testIdentifier
+	 * @param graph
+	 * @param inRecords
+	 * @param outRecords
+	 */
+	protected void doCompile(String expStr, String testIdentifier, TransformationGraph graph, DataRecord[] inRecords, DataRecord[] outRecords) {
+		this.graph = graph;
+		this.inputRecords = inRecords;
+		this.outputRecords = outRecords;
 
 		// prepend the compilation mode prefix
 		if (compileToJava) {
@@ -574,6 +603,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 
 		print_code(expStr);
+		
+		DataRecordMetadata[] inMetadata = new DataRecordMetadata[inRecords.length];
+		for (int i = 0; i < inRecords.length; i++) {
+			inMetadata[i] = inRecords[i].getMetadata();
+		}
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[outRecords.length];
+		for (int i = 0; i < outRecords.length; i++) {
+			outMetadata[i] = outRecords[i].getMetadata();
+		}
 
 		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
 		// *** NOTE: please don't remove this commented code. It is used for debugging
@@ -674,7 +712,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 * @param Test
 	 *            identifier defining CTL file to load code from
 	 */
-	protected void doCompile(String testIdentifier) {
+	protected String loadSourceCode(String testIdentifier) {
 		URL importLoc = CompilerTestCase.class.getResource(testIdentifier + ".ctl");
 		if (importLoc == null) {
 			throw new RuntimeException("Test case '" + testIdentifier + ".ctl" + "' not found");
@@ -691,8 +729,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (IOException e) {
 			throw new RuntimeException("I/O error occured when reading source file", e);
 		}
+		
+		return sourceCode.toString();
+	}
 
-		doCompile(sourceCode.toString(), testIdentifier);
+	/**
+	 * Method loads and compiles tested CTL code from a file with the name <code>testIdentifier.ctl</code> The CTL code files should
+	 * be stored in the same directory as this class.
+	 * 
+	 * The default graph and records are used for the execution.
+	 * 
+	 * @param Test
+	 *            identifier defining CTL file to load code from
+	 */
+	protected void doCompile(String testIdentifier) {
+		String sourceCode = loadSourceCode(testIdentifier);
+		doCompile(sourceCode, testIdentifier);
 	}
 
 	protected void printMessages(List<ErrorMessage> diagnosticMessages) {

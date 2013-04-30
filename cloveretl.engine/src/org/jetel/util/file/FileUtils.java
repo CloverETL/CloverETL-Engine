@@ -1234,14 +1234,22 @@ public class FileUtils {
 	@java.lang.SuppressWarnings("unchecked")
 	private static String getFirstFileInZipArchive(URL context, String filePath) throws NullPointerException, FileNotFoundException, ZipException, IOException {
 		File file = getJavaFile(context, filePath); // CLS-537
-		de.schlichtherle.util.zip.ZipFile zipFile = new de.schlichtherle.util.zip.ZipFile(file);
-		Enumeration<de.schlichtherle.util.zip.ZipEntry> zipEnmr;
-		de.schlichtherle.util.zip.ZipEntry entry;
+		de.schlichtherle.util.zip.ZipFile zipFile = null;
 		
-		for (zipEnmr = zipFile.entries(); zipEnmr.hasMoreElements() ;) {
-			entry = zipEnmr.nextElement();
-			if (!entry.isDirectory()) {
-				return entry.getName();
+		try {
+			zipFile = new de.schlichtherle.util.zip.ZipFile(file);
+			Enumeration<de.schlichtherle.util.zip.ZipEntry> zipEnmr;
+			de.schlichtherle.util.zip.ZipEntry entry;
+			
+			for (zipEnmr = zipFile.entries(); zipEnmr.hasMoreElements() ;) {
+				entry = zipEnmr.nextElement();
+				if (!entry.isDirectory()) {
+					return entry.getName();
+				}
+			}
+		} finally {
+			if (zipFile != null) {
+				zipFile.close();
 			}
 		}
 		
@@ -2187,7 +2195,7 @@ public class FileUtils {
     /**
      * Quietly closes the passed IO object.
      * Does nothing if the argument is <code>null</code>.
-     * Ignores any exceptions throw when closing the object.
+     * Ignores any exceptions thrown when closing the object.
      * 
      * @param closeable an IO object to be closed
      */

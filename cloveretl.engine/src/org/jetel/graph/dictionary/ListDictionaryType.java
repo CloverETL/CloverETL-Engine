@@ -20,8 +20,13 @@ package org.jetel.graph.dictionary;
 
 import java.util.List;
 
+import org.jetel.ctl.ASTBuilder;
 import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypePrimitive;
+import org.jetel.ctl.data.UnknownTypeException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldContainerType;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * List dictionary type. 
@@ -68,6 +73,27 @@ public class ListDictionaryType extends DictionaryType {
 	@Override
 	public TLType getTLType() {
 		return listType;
+	}
+	
+	@Override
+	public DataFieldType getFieldType(String contentType) {
+		//contentType parameter should contains name of clover data type,
+		//which is derived from CTL data types
+		TLType tlType = ASTBuilder.getTypeByContentType(contentType);
+		if (tlType != null) {
+			try {
+				return TLTypePrimitive.toCloverType(tlType);
+			} catch (UnknownTypeException e) {
+				//tlType cannot be converted to clover type
+				//return null
+			}
+		}
+		return null;
+	}
+	
+	@Override
+	public DataFieldContainerType getFieldContainerType() {
+		return DataFieldContainerType.LIST;
 	}
 	
 }

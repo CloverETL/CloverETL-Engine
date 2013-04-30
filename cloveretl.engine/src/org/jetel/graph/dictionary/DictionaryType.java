@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.jetel.ctl.data.TLType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldType;
 
 /**
@@ -88,6 +89,20 @@ public abstract class DictionaryType implements IDictionaryType {
 	@Override
 	public DataFieldType getFieldType() {
 		return null;
+	}
+	
+	@Override
+	public DataFieldType getFieldType(String contentType) {
+		//content type is ignored for most of data types
+		//only lists and maps are affected by content type
+		return getFieldType();
+	}
+	
+	@Override
+	public DataFieldContainerType getFieldContainerType() {
+		//SINGLE is returned for regular data types
+		//lists and maps has custom implementations
+		return getFieldType() != null ? DataFieldContainerType.SINGLE : null;
 	}
 	
 	@Override

@@ -267,22 +267,27 @@ public class ExceptionUtils {
 	 * @param message printed message
 	 */
 	public static void logHighlightedMessage(Logger logger, String message) {
-		final String LEFT_BORDER = "|| ";
-		final String RIGHT_BORDER = " ||";
-		final char TOP_BORDER = '=';
-		final String TOP_BORDER_LABEL = " Error message ";
-		final int TOP_BORDER_LABEL_LOCATION = 3;
-		final char BOTTOM_BORDER = '=';
+		final String LEFT_BORDER = "  ";
+		final String RIGHT_BORDER = "";
+		final char TOP_BORDER = '-';
+		final String TOP_BORDER_LABEL = " Error details ";
+		final char BOTTOM_BORDER = '-';
+		int TOP_BORDER_LABEL_LOCATION = 3;
 		
 		if (!StringUtils.isEmpty(message)) {
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder("\n");
+			//split message to separate lines
 			String[] messageLines = message.split("\n");
-			int maxLength = 0;
+			//find the longest message line
+			int maxLength = 80;
 			for (String messageLine : messageLines) {
 				if (messageLine.length() > maxLength) {
 					maxLength = messageLine.length();
 				}
 			}
+			TOP_BORDER_LABEL_LOCATION = (maxLength / 2) - (TOP_BORDER_LABEL.length() / 2);
+			
+			//create header line of error message
 			for (int i = 0; i < maxLength + LEFT_BORDER.length() + RIGHT_BORDER.length(); i++) {
 				if (i >= TOP_BORDER_LABEL_LOCATION && i < TOP_BORDER_LABEL.length() + TOP_BORDER_LABEL_LOCATION) {
 					sb.append(TOP_BORDER_LABEL.charAt(i - TOP_BORDER_LABEL_LOCATION));
@@ -290,20 +295,24 @@ public class ExceptionUtils {
 					sb.append(TOP_BORDER);
 				}
 			}
-			logger.error(sb.toString()); sb.setLength(0);
+			sb.append('\n');
+			//append error message lines
 			for (String messageLine : messageLines) {
 				sb.append(LEFT_BORDER);
 				sb.append(messageLine);
-				for (int i = messageLine.length(); i < maxLength; i++) {
-					sb.append(' ');
+				if (RIGHT_BORDER.length() > 0) {
+					for (int i = messageLine.length(); i < maxLength; i++) {
+						sb.append(' ');
+					}
+					sb.append(RIGHT_BORDER);
 				}
-				sb.append(RIGHT_BORDER);
-				logger.error(sb.toString()); sb.setLength(0);
+				sb.append('\n');
 			}
+			//append footer line of error message
 			for (int i = 0; i < maxLength + LEFT_BORDER.length() + RIGHT_BORDER.length(); i++) {
 				sb.append(BOTTOM_BORDER);
 			}
-			logger.error(sb.toString()); sb.setLength(0);
+			logger.error(sb.toString());
 		}
 	}
 

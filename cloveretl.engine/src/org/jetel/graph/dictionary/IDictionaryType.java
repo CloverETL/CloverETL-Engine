@@ -23,6 +23,7 @@ import java.util.Properties;
 import org.jetel.ctl.data.TLType;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldType;
 
 /**
@@ -97,5 +98,19 @@ public interface IDictionaryType {
 	 * @return corresponding metadata field type, i.e. DataFieldType.STRING, ... or <code>null</code> if does not exist
 	 */
 	public DataFieldType getFieldType();
+	
+	/**
+	 * @return corresponding metadata field type, i.e. DataFieldType.STRING, ... or <code>null</code> if does not exist
+	 * 
+	 * NOTE: contentType is used only for List and Map dictionary types,
+	 * where field type is actually encoded in contentType
+	 */
+	public DataFieldType getFieldType(String contentType);
+
+	/**
+	 * @return container type SINGLE, LIST or MAP of this dictionary type; null is returned
+	 * for non clover data types (for example channels)
+	 */
+	public DataFieldContainerType getFieldContainerType();
 	
 }
