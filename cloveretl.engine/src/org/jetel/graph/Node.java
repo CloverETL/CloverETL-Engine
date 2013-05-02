@@ -556,9 +556,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		runIt = false;
 		
 		while (!runResult.isStop() && attempts-- > 0){
-			if (logger.isTraceEnabled())
-				logger.trace("try to interrupt thread "+getNodeThread());
+			if (logger.isDebugEnabled()) {
+				logger.debug("trying to interrupt thread " + getNodeThread());
+			}
+			//interrupt main node thread
 			getNodeThread().interrupt();
+			//interrupt all child threads if any
+			for (Thread childThread : getChildThreads()) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("trying to interrupt child thread " + childThread);
+				}
+				childThread.interrupt();
+			}
+			//wait some time for graph result
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) {
