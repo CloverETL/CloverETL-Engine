@@ -373,23 +373,26 @@ public class XLSXDataFormatter extends XLSFormatter {
 	@Override
 	public void close() {
 		if (workbook != null) {
-			if (metadata.getParsingType() == DataRecordParsingType.DELIMITED && sheetData != null) {
-				for (SheetData aSheetData : sheetData.values()) {
-					for (int i = 0; i < includedFieldIndices.length; i++) {
-						aSheetData.sheet.autoSizeColumn(firstColumn + i);
+			try {
+				if (metadata.getParsingType() == DataRecordParsingType.DELIMITED && sheetData != null) {
+					for (SheetData aSheetData : sheetData.values()) {
+						for (int i = 0; i < includedFieldIndices.length; i++) {
+							aSheetData.sheet.autoSizeColumn(firstColumn + i);
+						}
 					}
 				}
-			}
 
-			try {
-				if (outputStream != null) {
-					workbook.write(outputStream);
+				try {
+					if (outputStream != null) {
+						workbook.write(outputStream);
+					}
+				} catch (IOException exception) {
+					logger.error("Error closing the output stream!", exception);
 				}
-			} catch (IOException exception) {
-				logger.error("Error closing the output stream!", exception);
 			}
-
-			reset();
+			finally {
+				reset();
+			}
 		}
 	}
 
