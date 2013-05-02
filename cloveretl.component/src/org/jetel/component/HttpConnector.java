@@ -1932,7 +1932,7 @@ public class HttpConnector extends Node {
 	 * 
 	 */
 	private void logError(Exception e) {
-		tokenTracker.logMessage(inputRecord, Level.ERROR, e.toString(), null);
+		tokenTracker.logMessage(inputRecord, Level.ERROR, e.toString(), e);
 	}
 	
 	/** Logs progress.
