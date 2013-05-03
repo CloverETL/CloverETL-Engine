@@ -144,7 +144,13 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 		if (token != null && token.getTokenId() >= 0) { 
 			result.append(String.format("Token [%s] : ", token.getLabel()));
 		}
-		result.append(String.format("%s.%s", message, (!StringUtils.isEmpty(exception) ? ("\n" + exception) : "")));
+		if (!StringUtils.isEmpty(message)) {
+			result.append(message);
+		}
+		if (!StringUtils.isEmpty(exception)) {
+			result.append("\n");
+			result.append(exception);
+		}
 		getLogger().log(level, result.toString());
 	}
 	
