@@ -2,6 +2,28 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-3-4-0
+---------
+
+* documented that Cloudera 3 works only on Sun Java
+* HTTPConnector should support PUT and DELETE methods
+* HTTPConnector - content should allow byte/cbyte data types
+* CTL2 wrapper for returning capturing groups from regex
+* improved visualization of error messages
+- FIXES:
+	- XMLWriter with underscore in key fails on server
+	- CharInputReader.skip skips bytes instead of characters
+	- UniversalDataReader - wildcard redading fails on server
+	- XMLExtract - extract element contents as text fails on databuffersize
+	- XmlExtract: parent field is not copied correctly
+	- Wildcard mapping does not check container type
+	- Improve Aggregate checkconfig
+	- MysqlDataWriter on MacOS
+	- UniversalDataReader: "Trim strings: not working when "quote strings" enabled
+	- XLSDataWriter: NPE when finishing writing into .xls file
+- BACKWARDS INCOMPATIBILITY:
+	- DBInputTable does not support empty strings - empty strings are considered as null value
+
 REL 3-4-0-M2
 ------------
 

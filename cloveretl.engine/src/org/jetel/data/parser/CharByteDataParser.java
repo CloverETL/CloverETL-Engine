@@ -716,7 +716,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			int ibt;
-			inputReader.skip(shift);
+			inputReader.skipBytes(shift);
 			inputReader.mark();
 
 			for (int i = 0; i < dataLength; i++) {
@@ -801,7 +801,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			int ichr;
 
-			inputReader.skip(shift);
+			inputReader.skipChars(shift);
 			inputReader.mark();
 			// DP-465 - DataParser always trims tailing whitespace for fixed-length string fields (search
 			// for "removes tailing blanks" comment). CharByteDataParser should behave the same way.
@@ -904,7 +904,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			int ichr;
 			char chr;
 
-			inputReader.skip(shift);
+			inputReader.skipChars(shift);
 			inputReader.mark();
 
 			StringBuilder fieldValue = new StringBuilder();
@@ -1011,7 +1011,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			int ichr;
 			char chr;
 
-			inputReader.skip(shift);
+			inputReader.skipChars(shift);
 			inputReader.mark();
 
 			ichr = inputReader.readChar();
@@ -1209,7 +1209,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			int ibt;
 			char bt;
 
-			inputReader.skip(shift);
+			inputReader.skipBytes(shift);
 			inputReader.mark();
 
 			ibt = inputReader.readByte();
@@ -1427,7 +1427,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		@Override
 		public boolean consumeInput(DataRecord record) throws OperationNotSupportedException, IOException {
 			delimPatterns.reset();
-			inputReader.skip(shift);
+			inputReader.skipBytes(shift);
 			inputReader.mark();
 			int ibt;
 			char bt;

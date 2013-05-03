@@ -31,6 +31,7 @@ import java.nio.charset.CodingErrorAction;
 import javax.naming.OperationNotSupportedException;
 
 import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -66,7 +67,16 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		throw new OperationNotSupportedException("Input reader doesn't support readByte() operation. Choose another implementation");
 	}
 
-	
+	@Override
+	public int skipBytes(int num) {
+		throw new UnsupportedOperationException("Input reader doesn't support skipBytes() operation. Choose another implementation");
+	}
+
+	@Override
+	public int skipChars(int num) {
+		throw new UnsupportedOperationException("Input reader doesn't support skipChars() operation. Choose another implementation");
+	}
+
 	@Override
 	public void mark() throws OperationNotSupportedException {
 		throw new OperationNotSupportedException("Input reader doesn't support mark() operation. Choose another implementation");
@@ -258,7 +268,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
-		public int skip(int numBytes) {
+		public int skipBytes(int numBytes) {
 			if (numBytes == 0) {
 				return 0;
 			}
@@ -451,7 +461,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
-		public int skip(int numChars) {
+		public int skipChars(int numChars) {
 			if (numChars == 0) {
 				return 0;
 			}
@@ -459,11 +469,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				int idx;
 				for (idx = 0; idx < numChars; idx++) {
 					try {
-						readByte();
+						readChar();
 					} catch (IOException e) {
 						break;
 					} catch (OperationNotSupportedException e) {
-						assert false : "Unexpected execution flow";						
+						throw new JetelRuntimeException("Unexpected execution flow", e);						
 					}
 				}
 				return idx;
@@ -682,7 +692,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
-		public int skip(int numBytes) {
+		public int skipBytes(int numBytes) {
 			assert charBuffer.position() == byteBuffer.position() : "Unexpected condition occured during code execution";
 			if (numBytes == 0) {
 				return 0;
@@ -695,7 +705,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					} catch (IOException e) {
 						break;
 					} catch (OperationNotSupportedException e) {
-						assert false : "Unexpected execution flow";						
+						throw new JetelRuntimeException("Unexpected execution flow", e);						
 					}
 				}
 				assert charBuffer.position() == byteBuffer.position() : "Unexpected condition occured during code execution";
@@ -712,6 +722,11 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			return numBytes;
 		}
 
+		@Override
+		public int skipChars(int num) {
+			return skipBytes(num);
+		}
+		
 		@Override
 		public boolean isEndOfInput() {
 			return endOfInput;
@@ -987,8 +1002,8 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
-		public int skip(int numBytes) {
-			assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
+		public int skipBytes(int numBytes) {
+			//assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
 			if (numBytes == 0) {
 				return 0;
 			}
@@ -1000,7 +1015,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					} catch (IOException e) {
 						break;
 					} catch (OperationNotSupportedException e) {
-						assert false : "Unexpected execution flow";						
+						throw new JetelRuntimeException("Unexpected execution flow", e);						
 					}
 				}
 				return idx;
@@ -1012,6 +1027,34 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			}
 			byteBuffer.position(pos + numBytes);
 			return numBytes;
+		}
+
+		@Override
+		public int skipChars(int numChars) {
+			//assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
+			if (numChars == 0) {
+				return 0;
+			}
+			if (numChars > 0) {
+				int idx;
+				for (idx = 0; idx < numChars; idx++) {
+					try {
+						readChar();
+					} catch (IOException e) {
+						break;
+					} catch (OperationNotSupportedException e) {
+						throw new JetelRuntimeException("Unexpected execution flow", e);						
+					}
+				}
+				return idx;
+			}
+			int pos = charBuffer.position();
+			if (-numChars > pos) {
+				charBuffer.position(0);
+				return -pos;
+			}
+			charBuffer.position(pos + numChars);
+			return numChars;
 		}
 
 		@Override
@@ -1032,7 +1075,7 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 				throw new InvalidMarkException();
 			}
 			assert !charBuffer.hasRemaining() : "Unexpected internal state occured during code execution";
-			;
+			
 			byteBuffer.position(currentByteMark);
 			
 			endOfInput = false; // reset the flag to allow reading after END_OF_INPUT 
@@ -1194,9 +1237,19 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 		}
 
 		@Override
-		public int skip(int numBytes) {
+		public int skipBytes(int numBytes) {
 			inputReader.setMark(outerMark);
-			int retval = inputReader.skip(numBytes);
+			int retval = inputReader.skipBytes(numBytes);
+			int markDiff = outerMark - inputReader.getMark();
+			outerMark -= markDiff;
+			innerMark -= markDiff;
+			return retval;
+		}
+
+		@Override
+		public int skipChars(int numChars) {
+			inputReader.setMark(outerMark);
+			int retval = inputReader.skipChars(numChars);
 			int markDiff = outerMark - inputReader.getMark();
 			outerMark -= markDiff;
 			innerMark -= markDiff;
