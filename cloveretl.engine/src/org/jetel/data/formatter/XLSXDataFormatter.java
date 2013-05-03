@@ -374,14 +374,18 @@ public class XLSXDataFormatter extends XLSFormatter {
 	public void close() {
 		if (workbook != null) {
 			try {
+				// CLO-717 - xlsx close can fail
 				if (metadata.getParsingType() == DataRecordParsingType.DELIMITED && sheetData != null) {
 					for (SheetData aSheetData : sheetData.values()) {
 						for (int i = 0; i < includedFieldIndices.length; i++) {
+							// https://issues.apache.org/bugzilla/show_bug.cgi?id=49940
+							// XmlValueDisconnectedException can be thrown here
 							aSheetData.sheet.autoSizeColumn(firstColumn + i);
 						}
 					}
 				}
-
+			}
+			finally {
 				try {
 					if (outputStream != null) {
 						workbook.write(outputStream);
@@ -389,8 +393,6 @@ public class XLSXDataFormatter extends XLSFormatter {
 				} catch (IOException exception) {
 					logger.error("Error closing the output stream!", exception);
 				}
-			}
-			finally {
 				reset();
 			}
 		}
