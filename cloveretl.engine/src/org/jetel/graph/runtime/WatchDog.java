@@ -471,7 +471,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					causeException = ((ErrorMsgBody) message.getBody()).getSourceException();
 					causeGraphElement = message.getSender();
 					if (causeException == null) {
-						causeException = new JetelRuntimeException(String.format("Graph element %s failed with unknown caused.", causeGraphElement));
+						causeException = new JetelRuntimeException(String.format("Graph element %s failed with unknown cause.", causeGraphElement));
 					}
 					ExceptionUtils.logException(logger, null, causeException);
 					return Result.ERROR;
