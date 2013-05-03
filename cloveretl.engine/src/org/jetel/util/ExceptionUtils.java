@@ -201,8 +201,13 @@ public class ExceptionUtils {
 	 * @param t
 	 */
 	public static void logException(Logger logger, String message, Throwable t) {
-		logger.error(ExceptionUtils.getMessage(message, t));
-        logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
+		String completeMessage = ExceptionUtils.getMessage(message, t);
+		if (!StringUtils.isEmpty(completeMessage)) {
+			logger.error(completeMessage);
+		}
+		if (t != null) {
+			logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
+		}
 	}
 	
 	/**
