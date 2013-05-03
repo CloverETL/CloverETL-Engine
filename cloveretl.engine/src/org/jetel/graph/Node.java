@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -151,7 +152,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		inPorts = new TreeMap<Integer, InputPort>();
         phase = null;
         runResult=Result.N_A; // result is not known yet
-        childThreads = new ArrayList<Thread>();
+        childThreads = Collections.synchronizedList(new ArrayList<Thread>());
         allocation = EngineComponentAllocation.createBasedOnNeighbours();
 	}
 
@@ -1262,7 +1263,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @return list of all child threads - threads running under this component
      */
     public List<Thread> getChildThreads() {
-    	return childThreads;
+    	return new ArrayList<Thread>(childThreads); //duplicate is returned to ensure thread safety
     }
 
 
