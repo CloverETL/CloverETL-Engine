@@ -42,6 +42,7 @@ import javax.management.ObjectName;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
@@ -469,6 +470,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				case ERROR:
 					causeException = ((ErrorMsgBody) message.getBody()).getSourceException();
 					causeGraphElement = message.getSender();
+					if (causeException == null) {
+						causeException = new JetelRuntimeException(String.format("Graph element %s failed with unknown caused.", causeGraphElement));
+					}
 					ExceptionUtils.logException(logger, null, causeException);
 					return Result.ERROR;
 				case MESSAGE:
