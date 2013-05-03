@@ -214,7 +214,7 @@ public final class DBLookup implements Lookup {
 				recordCache.clear();
 			}
 			if (records.isEmpty()) {
-				if (lookupTable.storeNulls) {
+				if (isCached() && lookupTable.storeNulls) {
 					recordCache.put(key, NullRecord.NULL_RECORD);
 				}
 				return Collections.emptyList();

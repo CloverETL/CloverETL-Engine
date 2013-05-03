@@ -27,6 +27,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -130,7 +131,9 @@ public final class DictionaryValuesContainer implements Serializable {
 		DictionaryValuesContainer result = new DictionaryValuesContainer();
 
 		if (dictionaryContainer != null) {
-			result.values.putAll(dictionaryContainer.values);
+			synchronized (dictionaryContainer.values) {
+				result.values.putAll(dictionaryContainer.values);
+			}
 		}
 		
 		return result;
@@ -147,7 +150,9 @@ public final class DictionaryValuesContainer implements Serializable {
 		if (key == null) {
 			throw new IllegalArgumentException("Dictionary key cannot be null.");
 		}
-		values.put(key, value);
+		synchronized (values) {
+			values.put(key, value);
+		}
 	}
 
 	public void setValue(String key, InputStream is) {
@@ -190,15 +195,21 @@ public final class DictionaryValuesContainer implements Serializable {
 	}*/
 
 	public boolean isEmpty() {
-		return values.isEmpty(); 
+		synchronized (values) {
+			return values.isEmpty(); 
+		}
 	}
 	
 	public void clear() {
-		values.clear();
+		synchronized (values) {
+			values.clear();
+		}
 	}
 	
 	public Set<String> getKeys() {
-		return values.keySet(); 
+		synchronized (values) {
+			return new HashSet<String>(values.keySet());
+		}
 	}
 
 	/**
@@ -207,7 +218,10 @@ public final class DictionaryValuesContainer implements Serializable {
 	 * @return
 	 */
 	public Object getValue(String key) {
-		Serializable s = values.get(key);
+		Serializable s = null;
+		synchronized (values) {
+			s = values.get(key);
+		}
 		if (s instanceof InputStreamSerializableHandler) {
 			return ((InputStreamSerializableHandler)s).getChannel();
 		} else if (s instanceof OutputStreamSerializableHandler) {
@@ -223,7 +237,9 @@ public final class DictionaryValuesContainer implements Serializable {
 	 */
 	public TreeMap<String, Serializable> getContent() {
 		TreeMap<String, Serializable> tm = new TreeMap<String, Serializable>();
-		tm.putAll(values);
+		synchronized (values) {
+			tm.putAll(values);
+		}
 		return tm;
 	}
 	
@@ -233,14 +249,18 @@ public final class DictionaryValuesContainer implements Serializable {
 	 */
 	public DictionaryValuesContainer duplicate() {
 		DictionaryValuesContainer result = new DictionaryValuesContainer();
-		result.values.putAll(values);
+		synchronized (values) {
+			result.values.putAll(values);
+		}
 		return result;
 	}
 	
 	public Properties toProperties() {
 		Properties result = new Properties();
-		for (Entry<String, Serializable> entry : values.entrySet()) {
-			result.setProperty(entry.getKey(), StringUtils.specCharToString(String.valueOf(entry.getValue())));
+		synchronized (values) {
+			for (Entry<String, Serializable> entry : values.entrySet()) {
+				result.setProperty(entry.getKey(), StringUtils.specCharToString(String.valueOf(entry.getValue())));
+			}
 		}
 		return result;
 	}
@@ -249,13 +269,15 @@ public final class DictionaryValuesContainer implements Serializable {
 	public String toString() {
 		StringBuilder result = new StringBuilder("{ ");
 		boolean first = true;
-		for (Entry<String, Serializable> entry : values.entrySet()) {
-			if (!first) {
-				result.append(", ");
-			} else {
-				first = false;
+		synchronized (values) {
+			for (Entry<String, Serializable> entry : values.entrySet()) {
+				if (!first) {
+					result.append(", ");
+				} else {
+					first = false;
+				}
+				result.append(entry.getKey()).append("=").append(String.valueOf(entry.getValue()));
 			}
-			result.append(entry.getKey()).append("=").append(String.valueOf(entry.getValue()));
 		}
 		result.append(" }");
 		return result.toString();

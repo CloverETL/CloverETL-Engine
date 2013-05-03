@@ -73,7 +73,12 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		ContextProvider.registerNode(node);
 		try {
 			MDC.put("runId", node.getGraph().getRuntimeContext().getRunId());
-			Thread.currentThread().setName(node.getId() + ":" + name);
+			//set a meaningful name of current thread
+			thread = Thread.currentThread();
+			Thread parentThread = node.getNodeThread();
+			thread.setName((parentThread != null ? parentThread.getName() : node.getId()) + ": " + name);
+			//register worker as a child thread of the parent component
+			node.registerChildThread(thread);
 			synchronized (this) {
 				isRunning = true;
 				notifyAll();
@@ -115,7 +120,6 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		thread.setDaemon(false);
 		thread.setUncaughtExceptionHandler(this);
 		thread.start();
-		node.registerChildThread(thread); //register worker as a child thread of this component
 		return thread;
 	}
 

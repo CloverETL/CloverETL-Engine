@@ -373,23 +373,28 @@ public class XLSXDataFormatter extends XLSFormatter {
 	@Override
 	public void close() {
 		if (workbook != null) {
-			if (metadata.getParsingType() == DataRecordParsingType.DELIMITED && sheetData != null) {
-				for (SheetData aSheetData : sheetData.values()) {
-					for (int i = 0; i < includedFieldIndices.length; i++) {
-						aSheetData.sheet.autoSizeColumn(firstColumn + i);
+			try {
+				// CLO-717 - xlsx close can fail
+				if (metadata.getParsingType() == DataRecordParsingType.DELIMITED && sheetData != null) {
+					for (SheetData aSheetData : sheetData.values()) {
+						for (int i = 0; i < includedFieldIndices.length; i++) {
+							// https://issues.apache.org/bugzilla/show_bug.cgi?id=49940
+							// XmlValueDisconnectedException can be thrown here
+							aSheetData.sheet.autoSizeColumn(firstColumn + i);
+						}
 					}
 				}
 			}
-
-			try {
-				if (outputStream != null) {
-					workbook.write(outputStream);
+			finally {
+				try {
+					if (outputStream != null) {
+						workbook.write(outputStream);
+					}
+				} catch (IOException exception) {
+					logger.error("Error closing the output stream!", exception);
 				}
-			} catch (IOException exception) {
-				logger.error("Error closing the output stream!", exception);
+				reset();
 			}
-
-			reset();
 		}
 	}
 
