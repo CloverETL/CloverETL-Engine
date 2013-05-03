@@ -586,17 +586,13 @@ public class XmlSaxParser {
 				}
 			}
 
-			// Extract Element As Text - debug log
-			if (m_activeMapping != null && m_activeMapping.getLevel() == m_level) {
-				logger.trace("startElement(" + qualifiedName + ") " + m_activeMapping.getFieldsMap());
-			}
 
 			boolean grabElement = false;
 			
 			// Extract Element As Text - append element name; only when whole element should be extracted (including
 			// tags) or when we are already within the element
 			if ((m_element_as_text && (m_activeMapping==null || m_level >= m_activeMapping.getLevel())) || (m_activeMapping!=null &&  m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) && m_level == m_activeMapping.getLevel())) {
-				logger.trace("startElement(" + qualifiedName + "): storing element name; m_element_as_text");
+				//logger.trace("startElement(" + qualifiedName + "): storing element name; m_element_as_text");
 				// Starting new subtree mapping
 				if (m_activeMapping!=null  && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) && m_level == m_activeMapping.getLevel()) {
 					this.m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, m_characters.length(), m_level));
@@ -612,7 +608,7 @@ public class XmlSaxParser {
 				m_hasCharacters = true;
 			} else if (!m_element_as_text) {
 				// Regardless of starting element type, reset the length of the buffer and flag
-				logger.trace("startElement(" + qualifiedName + "): cleaning m_characters; !m_element_as_text");
+			//	logger.trace("startElement(" + qualifiedName + "): cleaning m_characters; !m_element_as_text");
 				m_characters.setLength(0);
 				this.m_elementContentStartIndexStack.clear();
 
@@ -687,7 +683,7 @@ public class XmlSaxParser {
 		@Override
 		public void characters(char[] data, int offset, int length) throws SAXException {
 			// Save the characters into the buffer, endElement will store it into the field
-			logger.trace("characters '" + new String(data, offset, length) + "'");
+			//logger.trace("characters '" + new String(data, offset, length) + "'");
 			if (m_activeMapping != null && m_grabCharacters) {
 				if (m_elementContentStartIndexStack.size() > 0 && m_elementContentStartIndexStack.get(m_elementContentStartIndexStack.size() - 1).type == CharacterBufferMarkerType.CHARACTERS_END && m_elementContentStartIndexStack.get(m_elementContentStartIndexStack.size() - 1).index == m_characters.length()) {
 					m_elementContentStartIndexStack.remove(m_elementContentStartIndexStack.size() - 1);
@@ -723,14 +719,14 @@ public class XmlSaxParser {
 				if (m_level - 1 <= m_activeMapping.getLevel() && m_activeMapping.getDescendantReferences().containsKey(fullName)) {
 					m_activeMapping.getDescendantReferences().put(fullName, getCurrentValue());
 				}
-				if (m_element_as_text && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) && m_level >= m_activeMapping.getLevel()) {
+				if (m_element_as_text && m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT) && m_level == m_activeMapping.getLevel()) {
 					this.m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.SUBTREE_END, m_characters.length(), m_level));
 				}
 
 				// Extract Element As Text - append element's end tag; only when whole element should be extracted
 				// (including tags) or when we are already within the element
 				if (m_element_as_text && (m_activeMapping.getFieldsMap().containsKey(XMLMappingConstants.ELEMENT_AS_TEXT) || m_level >= m_activeMapping.getLevel())) {
-					logger.trace("endElement(" + qualifiedName + "): storing element name; m_element_as_text");
+					//logger.trace("endElement(" + qualifiedName + "): storing element name; m_element_as_text");
 					m_characters.append("</").append(localName).append(">");
 				}
 
@@ -762,11 +758,11 @@ public class XmlSaxParser {
 					m_hasCharacters = false;
 					m_grabCharacters = true;
 					m_characters.setLength(0);
-					logger.trace("endElement(" + qualifiedName + "): cleaning m_characters; end of m_element_as_text");
+					//logger.trace("endElement(" + qualifiedName + "): cleaning m_characters; end of m_element_as_text");
 				} else if (!m_element_as_text && this.m_elementContentStartIndexStack.size() == 0) {
 					// Regardless of whether this was saved, reset the length of the
 					// buffer and flag
-					logger.trace("endElement(" + qualifiedName + "): cleaning m_characters; !m_element_as_text");
+					//logger.trace("endElement(" + qualifiedName + "): cleaning m_characters; !m_element_as_text");
 					m_characters.setLength(0);
 					m_hasCharacters = false;
 				}
@@ -832,7 +828,7 @@ public class XmlSaxParser {
 		public void endCDATA() throws SAXException {
 			// super.endCDATA();
 			in_cdata = false;
-			logger.trace("Leaving CDATA");
+			//logger.trace("Leaving CDATA");
 			if (m_element_as_text) {
 				m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CDATA_END, m_characters.length(), m_level));
 				m_characters.append(CHARS_CDATA_END);
@@ -843,7 +839,7 @@ public class XmlSaxParser {
 		@Override
 		public void startCDATA() throws SAXException {
 			super.startCDATA();
-			logger.trace("Entering CDATA");
+			//logger.trace("Entering CDATA");
 			in_cdata = true;
 			if (m_element_as_text) {
 				m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CDATA_START, m_characters.length(), m_level));
@@ -855,7 +851,7 @@ public class XmlSaxParser {
 		@Override
 		public void processingInstruction(String target, String data) throws SAXException {
 			super.processingInstruction(target, data);
-			logger.trace("Processing instruction " + target);
+			//logger.trace("Processing instruction " + target);
 			if (m_element_as_text) {
 				m_characters.append("<?").append(target).append(" ").append(data).append("?>");
 			}
@@ -962,15 +958,31 @@ public class XmlSaxParser {
 			// Create universal name
 			String universalName = null;
 			if (localName != null) {
-				universalName = augmentURI(namespaceURI) + localName;
+				universalName = augmentURIAndLocalName(namespaceURI, localName);
 			}
 
 			String fieldName = null;
 			// use fields mapping 
 			Map<String, String> xml2clover = m_activeMapping.getFieldsMap();
-			if (xml2clover != null && xml2clover.keySet().size() > 0) {
-				List<String> keys = reorderKeys(xml2clover.keySet());
-				for (String key : keys) {
+			
+			
+			if (xml2clover != null /*&& xml2clover.keySet().size() > 0*/) {
+				Set<String> keys = xml2clover.keySet();
+				
+				for (int counter=0; counter<4; counter++) { //three times check special values (text content, ...). Fourth time - element mapped by name.
+					String key = XMLMappingConstants.ELEMENT_VALUE_REFERENCE; //first cycle iteration 
+					if(counter==1) {
+						key = XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT;  //second cycle iteration
+					} else if(counter==2) {
+						key = XMLMappingConstants.ELEMENT_AS_TEXT;  //third cycle iteration
+					} else if(counter==3) {
+						key = universalName;  //fourth cycle iteration
+					}
+					
+					if((counter<3 && !keys.contains(key)) || key==null) {
+						continue;
+					}
+					
 					int startIndex = -1;
 					int endIndex = -1;
 					boolean excludeCDataTag = false;
@@ -1020,7 +1032,7 @@ public class XmlSaxParser {
 								this.m_elementContentStartIndexStack.remove(i);
 							}
 						}
-						logger.trace("processCharacters: getting field name for (" + localName + "); " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+//						logger.trace("processCharacters: getting field name for (" + localName + "); " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
 					} else if (m_hasCharacters && key.equals(XMLMappingConstants.ELEMENT_AS_TEXT) && m_activeMapping.getLevel() == m_level) {
 						fieldName = xml2clover.get(XMLMappingConstants.ELEMENT_AS_TEXT);
 						int startIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START);
@@ -1031,9 +1043,42 @@ public class XmlSaxParser {
 							}
 						}
 						
-						logger.trace("processCharacters: getting field name for (" + localName + "); " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
-					} else if (key.equals(universalName)) {
+//						logger.trace("processCharacters: getting field name for (" + localName + "); " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+					} else 
+					if (key.equals(universalName)) {
 						fieldName = xml2clover.get(universalName);
+						
+						if(m_element_as_text) {
+							int startIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_START);
+							if (startIndexPosition >= 0) {
+								int endIndexPosition = this.firstIndexWithType(new HashSet<CharacterBufferMarkerType>(Arrays.asList(CharacterBufferMarkerType.SUBTREE_WITH_TAG_START, CharacterBufferMarkerType.SUBTREE_WITH_TAG_END, CharacterBufferMarkerType.SUBTREE_END, CharacterBufferMarkerType.SUBTREE_START)), startIndexPosition);
+								endIndexPosition--; // we need one marker before found
+								if (endIndexPosition < 0 && startIndexPosition >= 0) {
+									endIndexPosition = this.lastIndexWithType(CharacterBufferMarkerType.CHARACTERS_END);
+								}
+
+								if (endIndexPosition > 0) {
+									endIndex = this.m_elementContentStartIndexStack.get(endIndexPosition).index;
+									// now remove all characters marker between startIndexPosition and endIndexPosition
+									for (int i = endIndexPosition - 1; i > startIndexPosition; i--) {
+										CharacterBufferMarkerType type = this.m_elementContentStartIndexStack.get(i).type;
+										if (type == CharacterBufferMarkerType.CHARACTERS_END || type == CharacterBufferMarkerType.CHARACTERS_START) {
+											this.m_elementContentStartIndexStack.remove(i);
+										}
+									}
+									this.m_elementContentStartIndexStack.get(endIndexPosition);
+								}
+								startIndex = this.m_elementContentStartIndexStack.get(startIndexPosition).index;
+								if(startIndexPosition>=0 && endIndexPosition>startIndexPosition) {
+									for(int i=endIndexPosition; i>=startIndexPosition; i--) {
+										this.m_elementContentStartIndexStack.remove(i);
+									}
+								}
+								
+								
+							}							
+						}
+						
 					} else if (m_activeMapping.getExplicitCloverFields().contains(localName) || keys.contains(localName) || keys.contains(universalName)) {
 						//if local name is mentioned in explicit mapping, we will not let code do implicit mapping for this field
 						continue;
@@ -1050,17 +1095,21 @@ public class XmlSaxParser {
 					// XXX what if fieldName == null ???
 
 					// TODO Labels replace:
-					if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName) && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
-						DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
+					if (m_activeMapping.getOutputRecord() != null && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
+						int position =  m_activeMapping.getOutputRecord().getMetadata().getFieldPosition(fieldName);
+						if(position>=0) {
+							DataField field = m_activeMapping.getOutputRecord().getField(position);
+						
 						// If field is nullable and there's no character data set it to null
 						if (m_hasCharacters) {
-							logger.trace("processCharacters: storing (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+							
+							//logger.trace("processCharacters: storing (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
 							try {
 								if (field.getValue() != null && cloverAttributes.contains(fieldName)) {
 									// XXX WTF?
 									field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
 								} else {
-									logger.trace("processCharacters: storing a new value (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+									//logger.trace("processCharacters: storing a new value (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
 									field.fromString(getCurrentValue(startIndex, endIndex, excludeCDataTag));
 								}
 							} catch (BadDataFormatException ex) {
@@ -1093,6 +1142,7 @@ public class XmlSaxParser {
 						&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
 							field.setValue("");
 						}
+						}
 					}
 				}
 			} else {
@@ -1102,13 +1152,13 @@ public class XmlSaxParser {
 					DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
 					// If field is nullable and there's no character data set it to null
 					if (m_hasCharacters) {
-						logger.trace("processCharacters: storing (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+						//logger.trace("processCharacters: storing (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
 						try {
 							if (field.getValue() != null && cloverAttributes.contains(fieldName)) {
 								// XXX WTF?
 								field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
 							} else {
-								logger.trace("processCharacters: storing a new value (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
+								//logger.trace("processCharacters: storing a new value (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
 								field.fromString(getCurrentValue());
 							}
 						} catch (BadDataFormatException ex) {
@@ -1157,6 +1207,14 @@ public class XmlSaxParser {
 		}
 	}
 
+	private String augmentURIAndLocalName(String uri, String localName) {
+		if (uri == null) {
+			return null;
+		}
+
+		return "{" + uri + "}" + localName;
+	}
+	
 	private String augmentURI(String uri) {
 		if (uri == null) {
 			return null;

@@ -168,6 +168,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         }
 
 		super.init();
+
+		if (metadataId != null) {
+			dbMetadata = getGraph().getDataRecordMetadata(metadataId, true);
+		}
 		
 		if (connection == null) {
 			connection = (DBConnection) getGraph().getConnection(connectionId);
@@ -176,10 +180,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			}
 			connection.init();
 		}
-		if (metadataId != null) {
-			dbMetadata = getGraph().getDataRecordMetadata(metadataId, true);
-		}
-		
     }
     
 	@Override

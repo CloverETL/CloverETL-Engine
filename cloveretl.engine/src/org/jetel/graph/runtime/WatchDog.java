@@ -310,10 +310,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
            	sendFinalJmxNotification();
            	
-            if(finishJMX) {
-            	finishJMX();
-            }
-            
             logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
        	} catch (Throwable t) {
        		causeException = t;
@@ -321,6 +317,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
        		watchDogStatus = Result.ERROR;
        		ExceptionUtils.logException(logger, "Error watchdog execution", t);
 		} finally {
+
+			if (finishJMX) {
+            	finishJMX();
+            }
+            
 			//we have to unregister current watchdog's thread from context provider
 			ContextProvider.unregister();
 
