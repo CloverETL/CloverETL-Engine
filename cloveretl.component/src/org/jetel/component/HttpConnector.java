@@ -1949,6 +1949,9 @@ public class HttpConnector extends Node {
 			logSuccess();
 
 		} catch (Exception e) {
+			// FIXME: UnknownHostException("bla.bla") can be thrown here, where there's no message like "unknown host"
+			// we need to somehow tell the user that this is an "Unknown host" situation
+			// elsewhere in this class we call e.toString() to work around that
 			result.setException(e);
 		} 
 
@@ -3175,7 +3178,10 @@ public class HttpConnector extends Node {
 	private void populateErrorField(DataRecord record, int errorFieldIndex) {
 		Exception ex = result.getException();
 		if (ex != null) {
-			record.getField(errorFieldIndex).setValue(ExceptionUtils.getMessage(ex));
+			// FIXME: UnknownHostException("bla.bla") can be thrown here, where there's no message like "unknown host"
+			// we need to somehow tell the user that this is an "Unknown host" situation
+			// that's why we call ex.toString() instead of ExceptionUtils
+			record.getField(errorFieldIndex).setValue(ex.toString());
 		}
 	}
 	
