@@ -29,7 +29,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
 
 /**
- * Implementation of {@link GraphWrapper} for graph from engine.
+ * Implementation of {@link GraphWrapper} for {@link TransformationGraph} (graph from engine).
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 25.3.2013
@@ -40,6 +40,10 @@ public class EngineGraphWrapper implements GraphWrapper {
 	private Map<ValidationNode, ValidationGroup> parentTable;
 	private Map<Integer, CustomRule> customRules;
 	
+	/**
+	 * Create new graph wrapper from engine graph
+	 * @param graph Transformation Graph
+	 */
 	public EngineGraphWrapper(TransformationGraph graph) {
 		this.graph = graph;
 		this.refResolver = new PropertyRefResolver(graph.getGraphProperties());
@@ -77,7 +81,6 @@ public class EngineGraphWrapper implements GraphWrapper {
 	public Map<Integer, CustomRule> getCustomRules() {
 		return customRules;
 	}
-	
 	
 	private void initParentTable(ValidationGroup root) {
 		parentTable = ValidatorUtils.createParentTable(root);

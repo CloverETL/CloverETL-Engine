@@ -60,24 +60,44 @@ public abstract class ValidationParamNode {
 		return true;
 	}
 	
+	/**
+	 * @return Returns true when param node is hidden, false otherwise
+	 */
 	public boolean isHidden() {
 		return hidden;
 	}
+	
+	/**
+	 * Sets this param nodes as hidden (will not show in GUI)
+	 * @param hidden True if node should be hidden.
+	 */
 	public void setHidden(boolean hidden) {
 		this.hidden = hidden;
 	}
 	
+	/**
+	 * Sets handler which determines if the param node is enabled
+	 * @param handler Handler to set
+	 */
 	public void setEnabledHandler(EnabledHandler handler) {
 		enabledHandler = handler;
 	}
 	
+	/**
+	 * Sets handler to be executed when this param node value is changed
+	 * @param handler Handler to set
+	 */
 	public void setChangeHandler(ChangeHandler handler) {
 		changeHandler = handler;
 	}
+	
+	/**
+	 * @return Returns change handler
+	 */
 	public ChangeHandler getChangeHandler() {
 		return changeHandler;
 	}
-	
+
 	public static interface EnabledHandler {
 		public boolean isEnabled();
 	}
@@ -85,18 +105,32 @@ public abstract class ValidationParamNode {
 		public void changed(Object o);
 	}
 	
+	/**
+	 * Sets placeholder text to be shown in GUI when param node has no value
+	 * @param placeholder Placeholder to show
+	 */
 	public void setPlaceholder(String placeholder) {
 		this.placeholder = placeholder;
 	}
+	/**
+	 * @return Returns placeholder
+	 */
 	public String getPlaceholder() {
 		return placeholder;
 	}
 	
+	/**
+	 * Sets tooltip text to be shown in GUI
+	 * @param tooltip
+	 */
 	public void setTooltip(String tooltip) {
 		this.tooltip = tooltip;
 	}
+	
+	/** 
+	 * @return Gets tooltips text
+	 */
 	public String getTooltip() {
 		return tooltip;
 	}
-	
 }

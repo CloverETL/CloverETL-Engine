@@ -30,11 +30,18 @@ import org.jetel.component.validator.params.ValidationParamNode;
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 1.3.2013
+ * @see ValidationNode#isReady(org.jetel.metadata.DataRecordMetadata, ReadynessErrorAcumulator, GraphWrapper)
  */
 public class ReadynessErrorAcumulator {
 	private Map<ValidationParamNode, List<String>> errors = new HashMap<ValidationParamNode, List<String>>();
 	private Map<ValidationParamNode, ValidationNode> parents = new HashMap<ValidationParamNode, ValidationNode>();
 	
+	/**
+	 * Adds error
+	 * @param node Validation param node which contains error
+	 * @param parent Parent validation node of param node
+	 * @param message Message to be shown to the user
+	 */
 	public void addError(ValidationParamNode node, ValidationNode parent, String message) {
 		if(!hasErrors(node)) {
 			errors.put(node, new ArrayList<String>());
@@ -44,19 +51,46 @@ public class ReadynessErrorAcumulator {
 		}
 		errors.get(node).add(message);
 	}
+	
+	/**
+	 * Checks wheter this accumulator has any error for given validation param node
+	 * @param node Validation node for which the check is done
+	 * @return True if there are any errors, false otherwise
+	 */
 	public boolean hasErrors(ValidationParamNode node) {
 		return errors.containsKey(node);
 	}
+	
+	/**
+	 * Returns all errors for given validation param node
+	 * @param node Validation param node for which errors are wanted
+	 * @return List of all errors for some validation param node
+	 */
 	public List<String> getErrors(ValidationParamNode node) {
 		return errors.get(node);
 	}
+	
+	/**
+	 * List of all errors associated with their param nodes
+	 * @return Map of params nodes and theirs errors
+	 */
 	public Map<ValidationParamNode, List<String>> getErrors() {
 		return errors;
 	}
+	
+	/**
+	 * Return parent validation node of given param node
+	 * @param node Param node to find its parent
+	 * @return Parent validation node
+	 */
 	public ValidationNode getParentRule(ValidationParamNode node) {
 		return parents.get(node);
 	}
 	
+	/**
+	 * Return all errors in strings delimited by newline
+	 * @return All errors
+	 */
 	public String getAllErrorsInString() {
 		StringBuilder output = new StringBuilder();
 		for(List<String> temp : errors.values()) {
@@ -68,6 +102,9 @@ public class ReadynessErrorAcumulator {
 		return output.toString().trim();
 	}
 	
+	/**
+	 * Clean all errors
+	 */
 	public void reset() {
 		errors.clear();
 		parents.clear();

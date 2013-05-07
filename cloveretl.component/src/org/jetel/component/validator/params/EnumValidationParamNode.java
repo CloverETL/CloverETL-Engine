@@ -20,6 +20,7 @@ package org.jetel.component.validator.params;
 
 /**
  * Parameter of validation rule which can value from given enum value and can be (de)serialized.
+ * Value is forced to be from enum, to support user input use {@link StringEnumValidationParamNode} 
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 10.11.2012

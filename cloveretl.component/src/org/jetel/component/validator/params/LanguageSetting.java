@@ -23,14 +23,20 @@ import java.util.Calendar;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.jetel.component.validator.ValidationGroup;
+import org.jetel.component.validator.ValidationNode;
+import org.jetel.component.validator.rules.LanguageSettingsValidationRule;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.data.Defaults;
 
 /**
- * Small wrapper object which contains language setting (formatting mask, locale, timezone) used by validation rules.
+ * Small wrapper object which contains language setting (formatting masks, locale, timezone) used by validation rules.
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 11.4.2013
+ * @see LanguageSettingsValidationRule
+ * @see ValidationGroup
+ * @see ValidationNode
  */
 @XmlRootElement(name="languageSetting")
 public class LanguageSetting {

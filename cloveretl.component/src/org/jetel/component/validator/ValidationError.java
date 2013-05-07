@@ -22,15 +22,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.util.StringUtil;
+import org.jetel.component.Validator;
 import org.jetel.util.string.StringUtils;
-import org.joda.time.DateTime;
 
 /**
  * Carries information about error from validation rule to reporting.
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 20.11.2012
+ * @see ValidationErrorAccumulator
+ * @see ValidationNode#isValid(org.jetel.data.DataRecord, ValidationErrorAccumulator, GraphWrapper)
+ * @see Validator#createErrorOutputMetadata()
  */
 public class ValidationError {
 	private int code;
@@ -47,40 +49,43 @@ public class ValidationError {
 	}
 
 	/**
-	 * @return the code
+	 * @return Code of error
 	 */
 	public int getCode() {
 		return code;
 	}
 
 	/**
-	 * @return the message
+	 * @return Message of error
 	 */
 	public String getMessage() {
 		return message;
 	}
 
 	/**
-	 * @return the name
+	 * @return Name of rule
 	 */
 	public String getName() {
 		return name;
 	}
 	
 	/**
-	 * @return the path
+	 * @return Path to the validation node which failed
 	 */
 	public List<String> getPath() {
 		return path;
 	}
 
 	/**
-	 * @return the fields
+	 * @return Fields on which the validation was performed
 	 */
 	public List<String> getFields() {
 		return fields;
 	}
 	
+	/**
+	 * @return Fields on which the validation was performed in string
+	 */
 	public String getFieldsInString() {
 		if(fields == null) {
 			return null;
@@ -89,12 +94,15 @@ public class ValidationError {
 	}
 
 	/**
-	 * @return the values
+	 * @return Values on which the validation was performed
 	 */
 	public Map<String, String> getValues() {
 		return values;
 	}
 	
+	/**
+	 * @return Values on which the validation was performed in string
+	 */
 	public String getValuesInString() {
 		if(values == null) {
 			return null;
@@ -103,11 +111,14 @@ public class ValidationError {
 	}
 
 	/**
-	 * @return the params
+	 * @return All params on validation node on which the validation was performed
 	 */
 	public Map<String, String> getParams() {
 		return params;
 	}
+	/**
+	 * @return All params on validation node on which the validation was performed in string
+	 */
 	public String getParamsInString() {
 		if(params == null) {
 			return null;
@@ -116,7 +127,7 @@ public class ValidationError {
 	}
 
 	/**
-	 * @return the timestamp
+	 * @return Timestamp when validation error happened
 	 */
 	public Date getTimestamp() {
 		return timestamp;

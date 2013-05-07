@@ -31,10 +31,15 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.property.PropertyRefResolver;
 
 /**
- * Abstract shared part of each validation rule or group.
+ * Abstract class with shared functionality of validation rules or group.
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.11.2012
+ * @see GraphWrapper
+ * @see LanguageSetting
+ * @see LanguageSetting#hierarchicMerge(LanguageSetting, LanguageSetting)
+ * @see AbstractValidationRule#raiseError(ValidationErrorAccumulator, int, String, java.util.List, java.util.List, java.util.Map)
+ * @see ValidationError
  */
 @XmlAccessorType(XmlAccessType.NONE)
 public abstract class ValidationNode {
@@ -67,20 +72,24 @@ public abstract class ValidationNode {
 	 * Validates given record against the rule.
 	 * 
 	 * Tutorial for implementing:
-	 *  - Add new class in annotation of class {@link AbstractValidationRule} (without it (de)serialization will fail)
-	 *  - Check if rule is enabled
-	 *  - Log rule parameters {@link #logParams(String)}
-	 *    Log parent language settings {@link #logParentLangaugeSetting()}
-	 *    When extending {@link LanguageSettingsValidationRule} log rule language settings {@link LanguageSettingsValidationRule#logLanguageSettings()}
-	 *  - Set property solver from graph when resolving (CTL code) should be used ({@link #setPropertyRefResolver(GraphWrapper)}
-	 *  - Resolve string variables {@link #resolve(String)}
-	 *  - For using inherited locale/timezone/format masks use {@link LanguageSetting#hierarchicMerge(LanguageSetting, LanguageSetting)}
-	 *  - Log tracing reports {@link #logSuccess(String)} {@link #logError(String)} {@link #logNotValidated(String)} or generic {@link #logger}
-	 *  - Always return state (never NULL), when returning INVALID always {@link AbstractValidationRule#raiseError} otherwise the rule will behave inconsistently
-	 * 
+	 * <ul>
+	 *   <li>Add new class in annotation of class {@link AbstractValidationRule} (without it, (de)serialization will fail)</li>
+	 *   <li>Check if rule is enabled</li>
+	 *   <li>Log rule parameters {@link #logParams(String)}<br />
+	 *    Log parent language settings {@link #logParentLangaugeSetting()}<br />
+	 *    When extending {@link LanguageSettingsValidationRule} log rule language settings {@link LanguageSettingsValidationRule#logLanguageSettings()}</li>
+	 *   <li>Set property solver from graph when resolving (CTL code) should be used ({@link #setPropertyRefResolver(GraphWrapper)}</li>
+	 *   <li>Resolve string variables {@link #resolve(String)}</li>
+	 *   <li>For using inherited locale/timezone/format masks use {@link LanguageSetting#hierarchicMerge(LanguageSetting, LanguageSetting)}</li>
+	 *   <li>Log tracing reports {@link #logSuccess(String)} {@link #logError(String)} {@link #logNotValidated(String)} or generic {@link #logger}</li>
+	 *   <li>Always return state (never NULL), when returning INVALID always {@link AbstractValidationRule#raiseError} otherwise the rule will behave inconsistently</li>
+	 * </ul> 
+	 *
 	 * Have in mind:
-	 *  - When unexpected happen INVALID should be returned
-	 *  - {@link #isValid(DataRecord, ValidationErrorAccumulator, GraphWrapper)} is not invoked if {@link #isReady(DataRecordMetadata, ReadynessErrorAcumulator, GraphWrapper)} is false
+	 * <ul>
+	 *   <li>When unexpected happen INVALID should be returned</li>
+	 *   <li>{@link #isValid(DataRecord, ValidationErrorAccumulator, GraphWrapper)} is not invoked if {@link #isReady(DataRecordMetadata, ReadynessErrorAcumulator, GraphWrapper)} is false</li>
+	 * </ul>
 	 *  
 	 * @param record Record to be validated
 	 * @param ea Error accumulator where all errors are stored, can be null
@@ -94,13 +103,14 @@ public abstract class ValidationNode {
 	 * Always not lazy to obtain all errors.
 	 * 
 	 * Have in mind:
-	 *  - Not enabled rules are always ready and return true.
-	 *  - When this method returns true rule should have everything ready for validation (check empty, formats, target fields)
-	 *  - Set property solver from graph when resolving (CTL code) should be used ({@link #setPropertyRefResolver(GraphWrapper)}
-	 *  - Resolve string variables {@link #resolve(String)}
-	 *  - When using {@link LanguageSettingsValidationRule} always add errors on param node from original language settings not the merged one
-	 *    (Otherwise no warning sign will appear in GUI)
-	 *
+	 * <ul>
+	 *   <li>Not enabled rules are always ready and return true.</li>
+	 *   <li>When this method returns true rule should have everything ready for validation (check empty, formats, target fields)</li>
+	 *   <li>Set property solver from graph when resolving (CTL code) should be used ({@link #setPropertyRefResolver(GraphWrapper)}</li>
+	 *   <li>Resolve string variables {@link #resolve(String)}</li>
+	 *   <li>When using {@link LanguageSettingsValidationRule} always add errors on param node from original language settings not the merged one<br />
+	 *    (Otherwise no warning sign will appear in GUI)</li>
+	 * </ul>
 	 * @param inputMetadata Input metadata from graph, used for checking if target fields are present
 	 * @param accumulator Error accumulator in which all errors with human readable messages 
 	 * @return true if parameters are valid, false otherwise

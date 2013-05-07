@@ -18,9 +18,14 @@
  */
 package org.jetel.component.validator;
 
+import org.jetel.component.validator.rules.CustomValidationRule;
+
 /**
+ * Wrapper for custom validation rule which holds name and its code
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 18.4.2013
+ * @see CustomValidationRule
  */
 public class CustomRule {
 	

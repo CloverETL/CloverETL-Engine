@@ -31,6 +31,7 @@ import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.rules.CustomValidationRule;
 import org.jetel.component.validator.utils.ValidationRulesPersister;
 import org.jetel.component.validator.utils.ValidationRulesPersisterException;
 import org.jetel.data.DataRecord;
@@ -41,7 +42,6 @@ import org.jetel.data.IntegerDataField;
 import org.jetel.data.ListDataField;
 import org.jetel.data.MapDataField;
 import org.jetel.data.StringDataField;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
@@ -63,11 +63,24 @@ import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**
- * Component for validation incoming records against user defined set of rules.
- * Records are taken one by one, there is no inner state of this component.
- *
+ * <p>Component for validation incoming records against user defined set of rules.
+ * Records are taken one by one, there is no inner state in this component.</p>
+ * 
+ * <p>Validator takes configuration from graph configuration and deserialize
+ * validation tree against all incoming records are validated.</p>
+ * 
+ * <p>Component uses error output mapping provided by user or automapping. On
+ * normal output there are copies of original record. On error output there can be
+ * user defined metadata. If these metadata contains fields from reporting metadata
+ * then the record is multiplicated with each error raised during validation.
+ * Otherwise the record is send to error output only once!</p>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 23.10.2012
+ * @see ValidationGroup
+ * @see ValidationError
+ * @see ValidationErrorAcummulator
+ * @see ValidationRulesPersister
  */
 public class Validator extends Node {
 	
@@ -114,7 +127,7 @@ public class Validator extends Node {
 	private boolean recordMultiplication = false;
 	
 	/**
-	 * Minimalistic constructor to ensure component name init
+	 * Minimalistic constructor to ensure component name to init
 	 * @param id
 	 */
 	public Validator(String id) {
@@ -126,6 +139,13 @@ public class Validator extends Node {
 		return COMPONENT_TYPE;
 	}
 	
+	/**
+	 * Create new instance of Validator from given configuration
+	 * @param graph Transformation graph to attach to Validator
+	 * @param xmlElement Parsed XML configuration
+	 * @return New instance of Validator
+	 * @throws XMLConfigurationException when some XML configuration is corrupted (some mandatory element missing)
+	 */
 	public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
 		Validator validator;
 	
@@ -147,13 +167,27 @@ public class Validator extends Node {
 			throw new XMLConfigurationException(COMPONENT_TYPE + ": Invalid XML configuration.", ex);
 		}
 	}
+	
+	/**
+	 * Sets string with serialized validation rules
+	 * @param Value validation rules to set
+	 */
 	private void setRules(String value) {
 		rules = value;
 	}
 	
+	/**
+	 * Sets URL of file with serialized validation rules
+	 * @param value URL of file
+	 */
 	private void setExternalRulesURL(String value) {
 		externalRulesURL = value;
 	}
+	
+	/**
+	 * Sets code of error mapping
+	 * @param value Error mapping
+	 */
 	private void setErrorMappingCode(String value) {
 		errorMappingCode = value;
 	}
@@ -162,6 +196,7 @@ public class Validator extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 		
+		// Force input port to be connected and provided with metadata
 		InputPort inputPort = getInputPort(INPUT_PORT);
 		if(inputPort == null || inputPort.getMetadata() == null) {
 			ConfigurationProblem problem = new ConfigurationProblem("No input metadata.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
@@ -169,8 +204,8 @@ public class Validator extends Node {
 			return status;
 		}
 		
+		// URL for external validation rules have higher priority
 		String tempRules;
-		
 		if(externalRulesURL != null) {
 			tempRules = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), externalRulesURL,null);
 		} else {
@@ -195,6 +230,7 @@ public class Validator extends Node {
 		graphWrapper.init(rootGroup);
 		if(rootGroup != null && !rootGroup.isReady(inputPort.getMetadata(), accumulator, graphWrapper)) {
 			String tempName = new String();
+			// Put all error messages together in nice way
 			for(Entry<ValidationParamNode, List<String>> errors: accumulator.getErrors().entrySet()) {
 				for(String message : errors.getValue()) {
 					if(accumulator.getParentRule(errors.getKey()) != null) {
@@ -208,9 +244,6 @@ public class Validator extends Node {
 		
 		if(getOutputPort(INVALID_OUTPUT_PORT) != null) {
 			errorMapping = new CTLMapping("Error output", this);
-			if(errorMappingCode != null && !errorMappingCode.isEmpty()) { 
-				errorMapping.setTransformation(errorMappingCode);
-			}
 			inputRecord = errorMapping.addInputMetadata(MAPPING_INPUT_RECORD, getInputPort(INPUT_PORT).getMetadata());
 			errorRecord = errorMapping.addInputMetadata(MAPPING_INPUT_ERROR, createErrorOutputMetadata());
 			errorMapping.addOutputMetadata("DUMMY", null);	// Dummy metadata to reach to error port 
@@ -219,6 +252,7 @@ public class Validator extends Node {
 				errorMapping.setTransformation(errorMappingCode);
 			} else {
 				errorMapping.addAutoMapping(MAPPING_INPUT_RECORD, MAPPING_OUTPUT_RECORD);
+				errorMapping.addAutoMapping(MAPPING_INPUT_ERROR, MAPPING_OUTPUT_RECORD);
 			}
 			
 			try {
@@ -229,6 +263,7 @@ public class Validator extends Node {
 				return status;
 			}
 			errorMapping.preExecute();
+			// Enable record multiplication only if user demanded mapping at least one of reporting field
 			List<DataFieldMetadata> usedInputFields = errorMapping.findUsedInputFields(getGraph());
 			for(DataFieldMetadata inField : usedInputFields) {
 				for(DataFieldMetadata errInField : errorRecord.getMetadata()) {
@@ -252,7 +287,6 @@ public class Validator extends Node {
 	protected Result execute() throws Exception {
 		logger.trace("Executing Validator component");
 		
-		// Prepare validation tree
 		ValidationGroup root = rootGroup;
 		
 		// Prepare ports and structures for records
@@ -288,7 +322,7 @@ public class Validator extends Node {
 				logger.trace("Record multiplication on error output: " + recordMultiplication);
 				if(invalidPort != null) {
 					if(recordMultiplication) {
-						// No errors means that somebody did implement validation rule wrong
+						// If there are no errors somebody did implement validation rule wrong!
 						for(ValidationError error : errorAccumulator) {
 							populateErrorRecord(error);
 							errorMapping.execute();
@@ -306,6 +340,11 @@ public class Validator extends Node {
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
+	/**
+	 * Prepare fake metadata for error report
+	 * @see ValidationError
+	 * @return Metadata which can hold validation error
+	 */
 	public static DataRecordMetadata createErrorOutputMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(ERROR_OUTPUT_METADATA_NAME);
 		metadata.addField(new DataFieldMetadata(ERROR_OUTPUT_CODE, DataFieldType.INTEGER, ""));
@@ -322,6 +361,10 @@ public class Validator extends Node {
 		return metadata;
 	}
 	
+	/**
+	 * Converts given validation error into fake data record
+	 * @param error Validation Error
+	 */
 	private void populateErrorRecord(ValidationError error) {
 		errorRecord.reset();
 		errorRecord.init();
@@ -350,6 +393,11 @@ public class Validator extends Node {
 		errorRecord.getField(ERROR_OUTPUT_CREATED).setValue(created);
 	}
 	
+	/**
+	 * Prepare fake metadata for output record used for custom rules
+	 * @see CustomValidationRule
+	 * @return
+	 */
 	public static DataRecordMetadata createCustomRuleOutputMetadata() {
 		DataRecordMetadata metadata = new DataRecordMetadata(ERROR_OUTPUT_METADATA_NAME);
 		metadata.addField(new DataFieldMetadata(CUSTOM_RULE_RESULT, DataFieldType.BOOLEAN, ""));

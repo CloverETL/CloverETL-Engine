@@ -82,9 +82,6 @@ public class DecimalConverter implements Converter {
 				NumericFormat nf;
 				if(this.format.equals(CommonFormats.INTEGER)) {
 					return DecimalFactory.getDecimal(Long.valueOf(input));
-					//nf = new NumericFormat(locale);
-					//nf.applyPattern("#");
-					//nf.setParseIntegerOnly(true);
 				} else if(this.format.equals(CommonFormats.NUMBER)) {
 						nf = new NumericFormat(locale);
 				} else {  

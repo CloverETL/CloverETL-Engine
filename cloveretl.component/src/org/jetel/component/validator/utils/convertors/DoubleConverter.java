@@ -80,17 +80,12 @@ public class DoubleConverter implements Converter {
 				DecimalFormat format;
 				if(this.format.equals(CommonFormats.INTEGER)) {
 					return Long.valueOf(input).doubleValue();
-					//format = (DecimalFormat) DecimalFormat.getInstance(locale);
-					//format.applyPattern("#");
-					//format.setParseIntegerOnly(true);
 				} if(this.format.equals(CommonFormats.NUMBER)) {
 					format = (DecimalFormat) DecimalFormat.getInstance(locale);
 				} else {
 					format = (DecimalFormat) DecimalFormat.getInstance(locale);
 					format.applyPattern(this.format);
 				}
-				System.err.println(format);
-				System.err.println(format.parse(input));
 				return format.parse(input).doubleValue(); 
 			} catch (Exception e) {
 				e.printStackTrace();

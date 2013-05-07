@@ -42,7 +42,10 @@ import org.jetel.component.validator.rules.StringLengthValidationRule;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Shared functionality of all validation rules.
+ * Class with shared functionality for all validation rules.
+ * It provide parameter where target field(s) are stored (divided by comma)
+ * ALWAYS ADD REFERENCE TO A NEW VALIDATION RULES TO THIS ANNOTATION!
+ * (Otherwise serialization and deserialization will not work.)
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.11.2012
@@ -67,7 +70,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	
 	/**
 	 * Types of targets:
-	 *  - ONE_FIELD - rule works with only one item
+	 *  - ONE_FIELD - rule works with only one field
 	 *  - UNORDERED_FIELDS - rule works with multiple field but order does not matter
 	 *  - ORDERED_FIELDS - rule works with multiple field, the order matters
 	 *  @see AbstractValidationRule#getTargetType()
@@ -98,7 +101,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	/**
 	 * Returns lazy initialized param nodes in map mostly for debugging reason. Intended to be used in engine.
 	 * 
-	 * Call before {@link #getProcessedParams()}!
+	 * Call this before {@link #getProcessedParams()}!
 	 * @param inMetadata Metadata of incoming record
 	 * @param graphWrapper Graph wrapper to be able finish initialization and reach some graph parameters.
 	 * @return Map of all param nodes and its values
@@ -118,6 +121,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	}
 	/**
 	 * Returns lazy initialized param nodes in map mostly for debugging reason. Intended to be used in engine.
+	 * 
 	 * Call after {@link #getProcessedParams(DataRecordMetadata, GraphWrapper)}
 	 * @return Map of all param nodes and its values
 	 */
@@ -128,7 +132,9 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	/**
 	 * Initialize param nodes.
 	 * Have in mind:
-	 *  - Always return not null
+	 * <ul>
+	 *   <li>Always return not null</li>
+	 * </ul>
 	 * @param inMetadata Metadata incoming record
 	 * @param graphWrapper Graph wrapper to be able finish initialization and reach some graph parameters
 	 * @return List of all param nodes

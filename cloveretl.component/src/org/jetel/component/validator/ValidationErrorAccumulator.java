@@ -27,6 +27,8 @@ import java.util.List;
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 20.11.2012
+ * @see ValidationError
+ * @see ValidationNode#isValid(org.jetel.data.DataRecord, ValidationErrorAccumulator, GraphWrapper)
  */
 public class ValidationErrorAccumulator implements Iterable<ValidationError> {
 	private List<ValidationError> errors = new ArrayList<ValidationError>();
