@@ -19,17 +19,28 @@
 package org.jetel.hadoop.provider.filesystem;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.jetel.hadoop.service.filesystem.HadoopDataInput;
+import org.jetel.util.bytes.SeekableByteChannel;
 
-public class HadoopDataInputStream implements HadoopDataInput {
+public class HadoopDataInputStream implements HadoopDataInput, SeekableByteChannel {
 
-	private FSDataInputStream stream;
+	private final static int INTERNAL_IO_BUFFER_SIZE=512;
 	
-	public HadoopDataInputStream(FSDataInputStream stream){
+	private FSDataInputStream stream;
+	private boolean isOpen;
+	private long size;
+	private byte[] IObuffer;
+	
+	public HadoopDataInputStream(FSDataInputStream stream,long lenght){
 		this.stream = stream;
+		this.isOpen=true;
+		this.size=lenght;
 	}
 	
 	
@@ -111,7 +122,12 @@ public class HadoopDataInputStream implements HadoopDataInput {
 
 	@Override
 	public final DataInputStream getDataInputStream() {
-		return stream;
+		try{
+			IObuffer=new byte[INTERNAL_IO_BUFFER_SIZE];
+			return new HadoopInputStream(stream);
+		}catch(IOException ex){
+			return null;
+		}
 	}
 
 	@Override
@@ -133,6 +149,109 @@ public class HadoopDataInputStream implements HadoopDataInput {
 	@Override
 	public final void close() throws IOException {
 		stream.close();
+		isOpen=false;
 	}
 
+
+	@Override
+	public int read(ByteBuffer dst) throws IOException {
+		if (dst.hasArray()){
+			return stream.read(dst.array());
+		}else{
+			int len;
+			int remaining;
+			while((remaining=dst.remaining())>0){
+				len=stream.read(IObuffer, 0, Math.min(remaining,INTERNAL_IO_BUFFER_SIZE));
+				if (len>=0){
+					dst.put(IObuffer, 0, len);
+				}else{
+					return dst.position()>0 ? dst.position() : -1;
+				}
+			}
+			return dst.position();
+		}
+	}
+
+
+	@Override
+	public boolean isOpen() {
+		return isOpen;
+	}
+
+
+	@Override
+	public int write(ByteBuffer src) throws IOException {
+		throw new UnsupportedOperationException();
+	}
+
+
+	@Override
+	public long position() throws IOException {
+		return getPos();
+	}
+
+
+	@Override
+	public SeekableByteChannel position(long newPosition) throws IOException {
+		stream.seek(newPosition);
+		return this;
+	}
+
+
+	@Override
+	public long size() throws IOException {
+		return size;
+	}
+
+
+	@Override
+	public SeekableByteChannel truncate(long size) throws IOException {
+		//do nothing
+		return this;
+	}
+
+	private class HadoopInputStream extends FSDataInputStream implements SeekableByteChannel{
+		
+		public HadoopInputStream(InputStream in) throws IOException {
+			super(in);
+		}
+
+		@Override
+		public int read(ByteBuffer dst) throws IOException {
+			return HadoopDataInputStream.this.read(dst);
+		}
+
+		@Override
+		public boolean isOpen() {
+			return HadoopDataInputStream.this.isOpen;
+		}
+
+		@Override
+		public int write(ByteBuffer src) throws IOException {
+			return HadoopDataInputStream.this.write(src);
+		}
+
+		@Override
+		public long position() throws IOException {
+			return HadoopDataInputStream.this.position();
+		}
+
+		@Override
+		public SeekableByteChannel position(long newPosition)
+				throws IOException {
+			return HadoopDataInputStream.this.position(newPosition);
+		}
+
+		@Override
+		public long size() throws IOException {
+			return HadoopDataInputStream.this.size;
+		}
+
+		@Override
+		public SeekableByteChannel truncate(long size) throws IOException {
+			return HadoopDataInputStream.this.truncate(size);
+		}
+		
+	}
+	
 }

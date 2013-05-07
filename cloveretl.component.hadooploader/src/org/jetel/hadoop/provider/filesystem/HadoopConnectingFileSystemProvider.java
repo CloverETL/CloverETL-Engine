@@ -136,13 +136,17 @@ public class HadoopConnectingFileSystemProvider implements HadoopConnectingFileS
 	@Override
 	public HadoopDataInput open(URI file) throws IOException {
 		checkConnected();
-		return new HadoopDataInputStream(dfs.open(new Path(file)));
+		Path path=new Path(file);
+		long length=dfs.getFileStatus(path).getLen();
+		return new HadoopDataInputStream(dfs.open(path),length);
 	}
 
 	@Override
 	public HadoopDataInput open(URI file, int bufferSize) throws IOException {
 		checkConnected();
-		return new HadoopDataInputStream(dfs.open(new Path(file), bufferSize));
+		Path path=new Path(file);
+		long length=dfs.getFileStatus(path).getLen();
+		return new HadoopDataInputStream(dfs.open(path, bufferSize),length);
 	}
 
 	@Override
