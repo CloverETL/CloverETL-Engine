@@ -33,17 +33,31 @@ import java.util.List;
 public class ValidationErrorAccumulator implements Iterable<ValidationError> {
 	private List<ValidationError> errors = new ArrayList<ValidationError>();
 	
+	/**
+	 * Add validation error 
+	 * @param temp Validation error to be added
+	 */
 	public void addError(ValidationError temp) {
 		errors.add(temp);
 	}
+	
+	/**
+	 * Return iterator for all errors
+	 */
 	public Iterator<ValidationError> iterator() {
 		return errors.iterator();
 	}
 	
+	/**
+	 * Removes all errors from this accumulator
+	 */
 	public void reset() {
 		errors.clear();
 	}
 	
+	/**
+	 * @return True if there are no errors, false otherwise
+	 */
 	public boolean isEmpty() {
 		return errors.isEmpty();
 	}

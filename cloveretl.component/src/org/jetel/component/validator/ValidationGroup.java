@@ -96,6 +96,14 @@ public class ValidationGroup extends ValidationNode {
 	public enum Conjunction {
 		AND, OR;
 		
+		/**
+		 * Computes AND operation on three state logic
+		 * @param left Left operand
+		 * @param right Right operand
+		 * @return INVALID when at least one operand is INVALID,
+		 *         VALID when at least one operands is VALID (and noone is INVALID), 
+		 *         NOT_VALIDATED otherwise
+		 */
 		public static State and(State left, State right) {
 			if(left == State.INVALID || right == State.INVALID) {
 				return State.INVALID;
@@ -106,6 +114,14 @@ public class ValidationGroup extends ValidationNode {
 			return State.NOT_VALIDATED;
 		}
 		
+		/**
+		 * Computes OR operation on three state logic
+		 * @param left Left operand
+		 * @param right Right operand
+		 * @return VALID when at least one operand is VALID,
+		 *         NOT_VALIDATED when all operands are NOT_VALIDATED,
+		 *         INVALID otherwise
+		 */
 		public static State or(State left, State right) {
 			if(left == State.VALID || right == State.VALID) {
 				return State.VALID;
@@ -186,7 +202,7 @@ public class ValidationGroup extends ValidationNode {
 	}
 	
 	/**
-	 * @return Returns condition
+	 * @return Returns current conjunction
 	 */
 	public Conjunction getConjunction() {
 		return conjunction;
@@ -208,7 +224,6 @@ public class ValidationGroup extends ValidationNode {
 	}
 	
 	/**
-	 * Returns prelimitary condition
 	 * @return Prelimitary condition
 	 */
 	public AbstractValidationRule getPrelimitaryCondition() {
@@ -227,8 +242,7 @@ public class ValidationGroup extends ValidationNode {
 	}
 	
 	/**
-	 * True if group should be evaluated lazy, false otherwise
-	 * @return
+	 * @return True if group should be evaluated lazy, false otherwise 
 	 */
 	public boolean getLaziness() {
 		return laziness;
@@ -243,7 +257,6 @@ public class ValidationGroup extends ValidationNode {
 	}
 	
 	/**
-	 * Returns all children of group
 	 * @return All children
 	 */
 	public List<ValidationNode> getChildren() {
@@ -290,11 +303,11 @@ public class ValidationGroup extends ValidationNode {
 			}
 		}
 		if(currentState == State.INVALID) {
-			logError("");
+			logError(""); // No extra message, validation rule should already provide it
 			return State.INVALID;
 		}
 		if(currentState == State.VALID) {
-			logSuccess("");
+			logSuccess(""); // No extra message, validation rule should already provide it
 			return State.VALID;
 		}
 		logNotValidated("Group has no children.");
@@ -333,7 +346,6 @@ public class ValidationGroup extends ValidationNode {
 	}
 	
 	/**
-	 * Returns current language settings
 	 * @return Current language settings
 	 */
 	public LanguageSetting getLanguageSetting() {

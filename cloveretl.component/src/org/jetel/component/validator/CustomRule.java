@@ -32,20 +32,37 @@ public class CustomRule {
 	private String name;
 	private String code;
 	
+	/**
+	 * Create custom rule with given name and code
+	 * @param name Name of rule
+	 * @param code Code of rule
+	 */
 	public CustomRule(String name, String code) {
 		this.name = name;
 		this.code = code;
 	}
 	
+	/**
+	 * @return Code of rule
+	 */
 	public String getCode() {
 		return code;
 	}
+	/**
+	 * @return Name of rule
+	 */
 	public String getName() {
 		return name;
 	}
+	/**
+	 * @param code New code to be set
+	 */
 	public void setCode(String code) {
 		this.code = code;
 	}
+	/**
+	 * @param name New name to be set
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}

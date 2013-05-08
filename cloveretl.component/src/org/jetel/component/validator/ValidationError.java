@@ -134,49 +134,49 @@ public class ValidationError {
 	}
 
 	/**
-	 * @param code the code to set
+	 * @param code Code of error to set
 	 */
 	public void setCode(int code) {
 		this.code = code;
 	}
 
 	/**
-	 * @param message the message to set
+	 * @param message Message to set
 	 */
 	public void setMessage(String message) {
 		this.message = message;
 	}
 
 	/**
-	 * @param name the name to set
+	 * @param name Name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 	
 	/**
-	 * @param path the path to set
+	 * @param path Path to validation node to set
 	 */
 	public void setPath(List<String> path) {
 		this.path = path;
 	}
 
 	/**
-	 * @param fields the fields to set
+	 * @param fields Used fields to set
 	 */
 	public void setFields(List<String> fields) {
 		this.fields = fields;
 	}
 
 	/**
-	 * @param values the values to set
+	 * @param values Used values to set
 	 */
 	public void setValues(Map<String, String> values) {
 		this.values = values;
 	}
 
 	/**
-	 * @param params the params to set
+	 * @param params Params of validation rule to set
 	 */
 	public void setParams(Map<String, String> params) {
 		this.params = params;

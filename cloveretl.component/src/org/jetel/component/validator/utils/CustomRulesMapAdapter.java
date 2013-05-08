@@ -25,10 +25,15 @@ import java.util.Map.Entry;
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 
 import org.jetel.component.validator.CustomRule;
+import org.jetel.component.validator.ValidationGroup;
 
 /**
+ * Adapter for mapping map of custom validation rules into XML.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 18.4.2013
+ * @see AdaptedCustomRule
+ * @see ValidationGroup
  */
 public class CustomRulesMapAdapter extends XmlAdapter<AdaptedCustomRule[], Map<Integer, CustomRule>> {
 

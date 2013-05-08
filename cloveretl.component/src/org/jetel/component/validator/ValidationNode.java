@@ -178,7 +178,7 @@ public abstract class ValidationNode {
 		return name;
 	}
 	/**
-	 * Sets name of rule
+	 * Sets name of rule shown in GUI and error reporting
 	 * @param name New name
 	 */
 	public void setName(String name) {
@@ -191,8 +191,8 @@ public abstract class ValidationNode {
 	 */
 	public abstract String getCommonName();
 	/**
-	 * Returns common description of rule type
-	 * @return Description
+	 * Returns common description of rule type shown in list of all rules
+	 * @return Common description of rule type
 	 */
 	public abstract String getCommonDescription();
 	
@@ -217,9 +217,17 @@ public abstract class ValidationNode {
 		return refResolver.resolveRef(input);
 	}
 	
+	/**
+	 * Injects parents language setting
+	 * @param languageSetting Parent language setting
+	 */
 	public void setParentLanguageSetting(LanguageSetting languageSetting) {
 		parentLanguageSetting = languageSetting;
 	}
+	/**
+	 * Returns parent language setting
+	 * @return Parent language setting
+	 */
 	public LanguageSetting getParentLanguageSetting() {
 		return parentLanguageSetting;
 	}

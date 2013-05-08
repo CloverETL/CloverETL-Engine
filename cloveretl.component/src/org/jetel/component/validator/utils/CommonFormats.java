@@ -25,13 +25,24 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import org.jetel.component.validator.params.LanguageSetting;
+
 /**
+ * Helper class with predefined number and dates formats, timezone and locales.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 12.3.2013
+ * @see LanguageSetting
  */
 public class CommonFormats {
 	
+	/**
+	 * Special value for INTEGERS as it needs special treating
+	 */
 	public static final String INTEGER = "INTEGER";
+	/**
+	 * Special value for NUMBERS as it needs special treating
+	 */
 	public static final String NUMBER = "NUMBER";
 	
 	/**
@@ -101,6 +112,9 @@ public class CommonFormats {
 		locales = (String[]) result.toArray(new String[result.size()]); 
 	}
 	
+	/**
+	 * List of all available timezones
+	 */
 	public static final String[] timezones = TimeZone.getAvailableIDs();
 		
 }

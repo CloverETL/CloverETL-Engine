@@ -66,8 +66,6 @@ import org.jetel.metadata.DataRecordMetadata;
 	})
 public abstract class AbstractValidationRule extends ValidationNode {
 	
-	private Map<String, String> tempParams;
-	
 	/**
 	 * Types of targets:
 	 *  - ONE_FIELD - rule works with only one field
@@ -79,10 +77,11 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		ONE_FIELD, UNORDERED_FIELDS, ORDERED_FIELDS
 	}
 	
+	private Map<String, String> tempParams;
+	private List<ValidationParamNode> params;
+	
 	@XmlElement(name="target",required=true)
 	protected StringValidationParamNode target = new StringValidationParamNode();
-	
-	private List<ValidationParamNode> params;
 	
 	/**
 	 * Returns lazy initialized param nodes for GUI. Intended to be used in GUI.

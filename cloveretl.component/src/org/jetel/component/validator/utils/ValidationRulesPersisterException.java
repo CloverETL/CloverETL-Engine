@@ -19,8 +19,11 @@
 package org.jetel.component.validator.utils;
 
 /**
+ * Simple exception to carry error during serialization/deserialization
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 17.12.2012
+ * @see ValidationRulesPersister
  */
 public class ValidationRulesPersisterException extends IllegalArgumentException {
 

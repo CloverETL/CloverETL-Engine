@@ -21,6 +21,7 @@ package org.jetel.component.validator.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetel.component.validator.rules.CustomValidationRule;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.NavigatingVisitor;
 import org.jetel.ctl.TLCompiler;
@@ -31,8 +32,11 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Helper class for parsing CTL code for function definitions.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 18.4.2013
+ * @see CustomValidationRule#isReady()
  */
 public class CTLCustomRuleUtils {
     private static class CtlFunctionsFinder extends NavigatingVisitor {
@@ -65,6 +69,14 @@ public class CTLCustomRuleUtils {
     	}
     }
 
+    /**
+     * Returns list of all function defined in given CTL code.
+     * @param graph Transformation graph to which context should be the CTL code evaluated
+     * @param inMeta List of input metadatas
+     * @param outMeta List of output metadatas
+     * @param code CTL2 code to parse
+     * @return List of all functions
+     */
     public static List<Function> findFunctions(TransformationGraph graph, DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String code) {
     	TLCompiler compiler = new TLCompiler(graph,inMeta,outMeta);
@@ -83,6 +95,9 @@ public class CTLCustomRuleUtils {
     	return ctlFunctionsFinder.visit();
     }
     
+    /**
+     * Wrapper for function definition
+     */
     public static class Function {
     	private String name;
     	private TLType[] parametersType;

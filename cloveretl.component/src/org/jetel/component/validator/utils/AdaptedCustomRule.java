@@ -21,9 +21,16 @@ package org.jetel.component.validator.utils;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlValue;
 
+import org.jetel.component.validator.CustomRule;
+import org.jetel.component.validator.ValidationGroup;
+
 /**
+ * Wrapper class for serializing map of custom rules to/from XML.
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 18.4.2013
+ * @see ValidationGroup
+ * @see CustomRulesMapAdapter
+ * @see CustomRule
  */
 public class AdaptedCustomRule {
 	@XmlAttribute(name="id")

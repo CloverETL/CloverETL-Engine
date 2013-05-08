@@ -40,17 +40,28 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import org.jetel.component.Validator;
 import org.jetel.component.validator.ValidationGroup;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
+ * Class to take care about serialization/validation/deserialization of validation tree.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 17.12.2012
+ * @see ValidationGroup
+ * @see Validator
  */
 public class ValidationRulesPersister {
 
+	/**
+	 * Serialize given validation group (and its childrens) into XML
+	 * @param group Validation group to serialize
+	 * @return Serialized text
+	 * @throws ValidationRulesPersisterException when serialization failed (new rule added wrong, wrong JAXB annotation).
+	 */
 	public static String serialize(ValidationGroup group) {
 		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(ValidationGroup.class);
@@ -76,6 +87,12 @@ public class ValidationRulesPersister {
 		}
 	}
 	
+	/**
+	 * Validates given string against validation tree hierarchy (generated from currently known ValidationGroup)
+	 * 
+	 * @param input Input XML to validate
+	 * @throws ValidationRulesPersisterException when code is invalid
+	 */
 	public static void validate(String input) throws ValidationRulesPersisterException {
 		try {
 			SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -91,6 +108,13 @@ public class ValidationRulesPersister {
 		}
 	}
 	
+	/**
+	 * Deserialize given input into validation tree hierarchy.
+	 * 
+	 * @param input Input XML to deserialize
+	 * @return Deserialized validation group
+	 * @throws ValidationRulesPersisterException when given input is not valid
+	 */
 	public static ValidationGroup deserialize(String input) throws ValidationRulesPersisterException {
 		//validate(input);
 		try {
@@ -104,6 +128,11 @@ public class ValidationRulesPersister {
 		}
 	}
 	
+	/**
+	 * Generate schema from currently known validation tree hierarchy.
+	 * @return XML Schema in string
+	 * @throws ValidationRulesPersisterException when JAXB annotation are messed up
+	 */
 	public static String generateSchema() {
 		try {
 			JAXBContext jaxbContext = JAXBContext.newInstance(ValidationGroup.class);
@@ -123,6 +152,11 @@ public class ValidationRulesPersister {
 		}
 	}
 	
+	/**
+	 * Generate schema from currently known validation tree hierarchy
+	 * @return XML Schema
+	 * @throws ValidationRulesPersisterException when JAXB annotation are messed up
+	 */
 	private static Schema getSchema() throws ValidationRulesPersisterException {
 		try {
 			return SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new StreamSource(new StringReader(generateSchema())));
