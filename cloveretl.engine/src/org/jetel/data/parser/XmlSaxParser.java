@@ -676,7 +676,7 @@ public class XmlSaxParser {
 			}
 
 		}
-
+		
 		/**
 		 * @see org.xml.sax.ContentHandler#characters(char[], int, int)
 		 */
@@ -685,10 +685,12 @@ public class XmlSaxParser {
 			// Save the characters into the buffer, endElement will store it into the field
 			//logger.trace("characters '" + new String(data, offset, length) + "'");
 			if (m_activeMapping != null && m_grabCharacters) {
-				if (m_elementContentStartIndexStack.size() > 0 && m_elementContentStartIndexStack.get(m_elementContentStartIndexStack.size() - 1).type == CharacterBufferMarkerType.CHARACTERS_END && m_elementContentStartIndexStack.get(m_elementContentStartIndexStack.size() - 1).index == m_characters.length()) {
-					m_elementContentStartIndexStack.remove(m_elementContentStartIndexStack.size() - 1);
-				} else {
-					m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CHARACTERS_START, m_characters.length(), m_level));
+				if(m_element_as_text) {
+					if (m_elementContentStartIndexStack.size() > 0 && m_elementContentStartIndexStack.get(m_elementContentStartIndexStack.size() - 1).type == CharacterBufferMarkerType.CHARACTERS_END && m_elementContentStartIndexStack.get(m_elementContentStartIndexStack.size() - 1).index == m_characters.length()) {
+						m_elementContentStartIndexStack.remove(m_elementContentStartIndexStack.size() - 1);
+					} else {
+						m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CHARACTERS_START, m_characters.length(), m_level));
+					}
 				}
 
 				if (m_element_as_text && !in_cdata) {
@@ -698,7 +700,9 @@ public class XmlSaxParser {
 				} else {
 					m_characters.append(data, offset, length);
 				}
-				m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CHARACTERS_END, m_characters.length(), m_level));
+				if(m_element_as_text) {
+					m_elementContentStartIndexStack.add(new CharacterBufferMarker(CharacterBufferMarkerType.CHARACTERS_END, m_characters.length(), m_level));
+				}
 				m_hasCharacters = true;
 			}
 		}
@@ -742,14 +746,16 @@ public class XmlSaxParser {
 				}
 				processCharacters(namespaceURI, localName, m_level == m_activeMapping.getLevel());
 
-				boolean clearMarkers = true;
-				for (CharacterBufferMarker marker : this.m_elementContentStartIndexStack) {
-					if (marker.level < m_level) {
-						clearMarkers = false;
+				if (m_element_as_text) {
+					boolean clearMarkers = true;
+					for (CharacterBufferMarker marker : this.m_elementContentStartIndexStack) {
+						if (marker.level < m_level) {
+							clearMarkers = false;
+						}
 					}
-				}
-				if (clearMarkers) {
-					this.m_elementContentStartIndexStack.clear();
+					if (clearMarkers) {
+						this.m_elementContentStartIndexStack.clear();
+					}
 				}
 
 				// Extract Element As Text - clean-up buffers when value is stored to output
@@ -865,9 +871,6 @@ public class XmlSaxParser {
 			return trim ? m_characters.toString().trim() : m_characters.toString();
 		}
 
-		private String getCurrentValue(int startIndex, int endIndex) {
-			return this.getCurrentValue(startIndex, endIndex, false);
-		}
 
 		private String getCurrentValue(int startIndex, int endIndex, boolean excludeCDataTag) {
 			if (startIndex < 0) {
@@ -916,9 +919,6 @@ public class XmlSaxParser {
 
 		}
 
-		private int firstIndexWithType(CharacterBufferMarkerType type, int startFrom) {
-			return firstIndexWithType(Collections.singleton(type), startFrom);
-		}
 
 		private int lastIndexWithType(CharacterBufferMarkerType type) {
 			for (int i = this.m_elementContentStartIndexStack.size() - 1; i >= 0; i--) {
@@ -929,27 +929,6 @@ public class XmlSaxParser {
 			return -1;
 		}
 
-		private List<String> reorderKeys(Set<String> keys) {
-			ArrayList<String> sorted = new ArrayList<String>();
-			
-			if(keys.contains(XMLMappingConstants.ELEMENT_VALUE_REFERENCE)) {
-				sorted.add(XMLMappingConstants.ELEMENT_VALUE_REFERENCE);
-			}
-			if(keys.contains(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT)) {
-				sorted.add(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT);
-			}
-			if(keys.contains(XMLMappingConstants.ELEMENT_AS_TEXT)) {
-				sorted.add(XMLMappingConstants.ELEMENT_AS_TEXT);
-			}
-			
-			for (String key : keys) {
-				if(key!=null && !(key.equals(XMLMappingConstants.ELEMENT_VALUE_REFERENCE)) && !(key.equals(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT)) && !(key.equals(XMLMappingConstants.ELEMENT_AS_TEXT))) {
-					sorted.add(key);
-				}
-			}
-			return sorted;
-		}
-		
 		/**
 		 * Store the characters processed by the characters() call back only if we have corresponding output field and
 		 * we are on the right level or we want to use data from nested unmapped nodes
@@ -969,17 +948,14 @@ public class XmlSaxParser {
 			if (xml2clover != null /*&& xml2clover.keySet().size() > 0*/) {
 				Set<String> keys = xml2clover.keySet();
 				
-				for (int counter=0; counter<4; counter++) { //three times check special values (text content, ...). Fourth time - element mapped by name.
-					String key = XMLMappingConstants.ELEMENT_VALUE_REFERENCE; //first cycle iteration 
-					if(counter==1) {
-						key = XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT;  //second cycle iteration
-					} else if(counter==2) {
-						key = XMLMappingConstants.ELEMENT_AS_TEXT;  //third cycle iteration
-					} else if(counter==3) {
-						key = universalName;  //fourth cycle iteration
+				for (int counter=0; counter<m_activeMapping.getSubtreeKeys().length+1; counter++) { //three times check special values (text content, ...). Fourth time - element mapped by name.
+				
+					String key = universalName; 
+					if(counter<m_activeMapping.getSubtreeKeys().length) {
+						key = m_activeMapping.getSubtreeKeys()[counter];
 					}
 					
-					if((counter<3 && !keys.contains(key)) || key==null) {
+					if(key==null) {
 						continue;
 					}
 					
