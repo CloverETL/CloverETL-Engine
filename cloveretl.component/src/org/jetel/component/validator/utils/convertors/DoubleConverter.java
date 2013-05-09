@@ -25,13 +25,17 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.CloverString;
 
 /**
+ * Implementation of convertor for converting something into double.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 25.1.2013
+ * @see NumberValidationRule
  */
 public class DoubleConverter implements Converter {
 	
@@ -43,6 +47,11 @@ public class DoubleConverter implements Converter {
 		this.locale = locale;
 	}
 	
+	/**
+	 * Create instance of double converter
+	 * @param format Formatting mask used for parsing the number from input
+	 * @param locale Locale to be used for parsing
+	 */	
 	public static DoubleConverter newInstance(String format, Locale locale) {
 		return new DoubleConverter(format, locale);
 	}
@@ -94,6 +103,7 @@ public class DoubleConverter implements Converter {
 			}
 		}
 		if(o instanceof byte[]) {
+			// On byte arrays take its size into account rather than content
 			return Double.parseDouble("" +((byte[]) o).length);
 		}
 		if(o instanceof Date) {
@@ -103,7 +113,7 @@ public class DoubleConverter implements Converter {
 	}
 	
 	/**
-	 * {@link ComponentXMLAttributes#getDouble(String)}
+	 * Inspired by {@link ComponentXMLAttributes#getDouble(String)}
 	 */
 	@Override
 	public Double convertFromCloverLiteral(String o) {

@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import org.jetel.component.validator.rules.DateValidationRule;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.util.string.CloverString;
@@ -34,8 +35,12 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 /**
+ * Implementation of converter for converting something into date.
+ * Supports JODA and JAVA formatting syntax.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 15.1.2013
+ * @see DateValidationRule
  */
 public class DateConverter implements Converter {
 	private String format;
@@ -48,6 +53,12 @@ public class DateConverter implements Converter {
 		this.timezone = timezone;
 	}
 	
+	/**
+	 * Create instance of date converter
+	 * @param format Formatting mask used for parsing the date from input
+	 * @param locale Locale to be used for parsing
+	 * @param timezone Timezone to be used for parsing
+	 */	
 	public static DateConverter newInstance(String format, Locale locale, TimeZone timezone) {
 		return new DateConverter(format, locale, timezone);
 	}
@@ -88,7 +99,7 @@ public class DateConverter implements Converter {
 	}
 	
 	/**
-	 * {@link CreateFiles#fromXML}
+	 * Inspired by {@link CreateFiles#fromXML}
 	 */
 	@Override
 	public Date convertFromCloverLiteral(String o) {

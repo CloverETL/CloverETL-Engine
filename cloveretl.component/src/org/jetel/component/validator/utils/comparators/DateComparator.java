@@ -24,6 +24,8 @@ import java.util.Date;
 import org.jetel.data.primitive.Decimal;
 
 /**
+ * Comparator for dates. Uses singleton pattern.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 12.3.2013
  */
@@ -32,6 +34,10 @@ public class DateComparator implements Comparator<Date>{
 	private static DateComparator instance;
 	private DateComparator() {}
 	
+	/**
+	 * Return instance of comparator
+	 * @return Instance of date comparator
+	 */
 	public static DateComparator getInstance() {
 		if(instance == null) {
 			instance = new DateComparator();

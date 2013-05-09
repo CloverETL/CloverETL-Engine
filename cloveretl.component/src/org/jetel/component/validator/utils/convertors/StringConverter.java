@@ -19,6 +19,8 @@
 package org.jetel.component.validator.utils.convertors;
 
 /**
+ * Implementation of converter for converting something into string.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 15.1.2013
  */
@@ -27,6 +29,10 @@ public class StringConverter implements Converter {
 	private static StringConverter instance;
 	private StringConverter() {}
 	
+	/**
+	 * Returns instance of converter
+	 * @return Instance of string converter
+	 */
 	public static StringConverter getInstance() {
 		if(instance == null) {
 			instance = new StringConverter();
@@ -39,6 +45,7 @@ public class StringConverter implements Converter {
 		if(o == null) {
 			return null;
 		} else if(o instanceof byte[]) {
+			// On byte arrays take its size into account rather than content
 			return "" + ((byte[]) o).length;
 		}
 		

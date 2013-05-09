@@ -20,19 +20,27 @@ package org.jetel.component.validator.utils.convertors;
 
 import java.util.Date;
 
+import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.CloverString;
 
 /**
+ * Implementation of converter for converting something to long.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 15.1.2013
+ * @see NumberValidationRule
  */
 public class LongConverter implements Converter {
 	
 	private static LongConverter instance;
 	private LongConverter() {}
 	
+	/**
+	 * Returns instance of converter
+	 * @return Instance of long converter
+	 */
 	public static LongConverter getInstance() {
 		if(instance == null) {
 			instance = new LongConverter();
@@ -83,7 +91,7 @@ public class LongConverter implements Converter {
 	}
 	
 	/**
-	 * {@link ComponentXMLAttributes.getLong(String)}
+	 * Inspired by {@link ComponentXMLAttributes.getLong(String)}
 	 */
 	@Override
 	public Long convertFromCloverLiteral(String o) {

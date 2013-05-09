@@ -21,6 +21,8 @@ package org.jetel.component.validator.utils.comparators;
 import java.util.Comparator;
 
 /**
+ * Comparator for doubles. Uses singleton patterns
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 25.1.2013
  */
@@ -29,6 +31,10 @@ public class DoubleComparator implements Comparator<Double>{
 	private static DoubleComparator instance;
 	private DoubleComparator() {}
 	
+	/**
+	 * Returns instance of comparator
+	 * @return instance of double comparator
+	 */
 	public static DoubleComparator getInstance() {
 		if(instance == null) {
 			instance = new DoubleComparator();

@@ -21,6 +21,8 @@ package org.jetel.component.validator.utils.comparators;
 import java.util.Comparator;
 
 /**
+ * Comparator for longs. Uses singleton pattern.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 15.1.2013
  */
@@ -29,6 +31,10 @@ public class LongComparator implements Comparator<Long>{
 	private static LongComparator instance;
 	private LongComparator() {}
 	
+	/**
+	 * Return instance of comparator
+	 * @return Instance of long comparator
+	 */
 	public static LongComparator getInstance() {
 		if(instance == null) {
 			instance = new LongComparator();

@@ -18,16 +18,21 @@
  */
 package org.jetel.component.validator.utils.convertors;
 
+import org.jetel.component.validator.rules.ConversionValidationRule;
+
 
 /**
+ * Converter interface for converting values for validator.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 15.1.2013
+ * @see ConversionValidationRule
  */
 public interface Converter {
 
 	/**
 	 * Converts given object to specific type. The target type is determined by the implementing class.
-	 * If converting fails null is returned, otherwise value is returend
+	 * If converting fails null is returned, otherwise value is returned.
 	 * @param o Object to convert
 	 * @return Parsed value (or null)
 	 */

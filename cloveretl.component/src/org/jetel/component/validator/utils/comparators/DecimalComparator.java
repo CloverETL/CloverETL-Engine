@@ -23,6 +23,8 @@ import java.util.Comparator;
 import org.jetel.data.primitive.Decimal;
 
 /**
+ * Comparator for decimals. Uses singleton pattern.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 15.1.2013
  */
@@ -31,6 +33,10 @@ public class DecimalComparator implements Comparator<Decimal>{
 	private static DecimalComparator instance;
 	private DecimalComparator() {}
 	
+	/**
+	 * Return instance of comparator
+	 * @return Instance of decimal comparator
+	 */
 	public static DecimalComparator getInstance() {
 		if(instance == null) {
 			instance = new DecimalComparator();

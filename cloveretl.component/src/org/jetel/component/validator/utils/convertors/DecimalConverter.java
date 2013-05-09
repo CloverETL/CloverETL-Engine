@@ -23,6 +23,7 @@ import java.math.BigInteger;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
@@ -30,8 +31,11 @@ import org.jetel.data.primitive.NumericFormat;
 import org.jetel.util.string.CloverString;
 
 /**
+ * Implementation of converter for converting something into decimal.
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 15.1.2013
+ * @see NumberValidationRule
  */
 public class DecimalConverter implements Converter {
 	private String format;
@@ -42,6 +46,11 @@ public class DecimalConverter implements Converter {
 		this.locale = locale;
 	}
 	
+	/**
+	 * Create instance of decimal converter
+	 * @param format Formatting mask used for parsing the number from input
+	 * @param locale Locale to be used for parsing
+	 */	
 	public static DecimalConverter newInstance(String format, Locale locale) {
 		return new DecimalConverter(format, locale);
 	}
@@ -94,6 +103,7 @@ public class DecimalConverter implements Converter {
 			}
 		}
 		if (o instanceof byte[]) {
+			// On byte arrays take its size into account rather than content
 			return DecimalFactory.getDecimal(((byte[]) o).length);
 		}
 		if (o instanceof Date) {

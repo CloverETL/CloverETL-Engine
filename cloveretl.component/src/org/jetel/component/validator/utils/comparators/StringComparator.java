@@ -21,6 +21,7 @@ package org.jetel.component.validator.utils.comparators;
 import java.util.Comparator;
 
 /**
+ * Compare given strings. Thic class uses singleton pattern.
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 15.1.2013
  */
@@ -29,12 +30,17 @@ public class StringComparator implements Comparator<String>{
 	private static StringComparator instance;
 	private StringComparator() {}
 	
+	/**
+	 * Return instance of comparator
+	 * @return Instance of string comparator
+	 */
 	public static StringComparator getInstance() {
 		if(instance == null) {
 			instance = new StringComparator();
 		}
 		return instance;
 	}
+	
 	@Override
 	public int compare(String o1, String o2) {
 		return o1.compareTo(o2);
