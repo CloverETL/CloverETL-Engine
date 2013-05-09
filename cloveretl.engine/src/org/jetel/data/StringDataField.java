@@ -95,7 +95,11 @@ public class StringDataField extends DataField implements CharSequence{
 
 	private StringDataField(DataFieldMetadata _metadata, CharSequence _value){
 	    super(_metadata);
-	    this.value = new CloverString(_value);
+	    //CloverString is created with precise size to ensure not to waste memory for duplicated field
+	    //otherwise padding with 16 chars is applied
+	    //duplicated field is optimised for memory usage - heavily used by sorters
+	    this.value = new CloverString(_value.length()); 
+	    this.value.append(_value);
 	}
 
 	@Override
