@@ -170,6 +170,8 @@ public class ExceptionUtils {
 		//in case the exception was created with "new Throwable(Throwable cause)" constructor
 		//generic message of this exception is useless, since all necessary information are in cause
 		//and this is attempt to detect it and skip it in the message stack
+		// FIXME: UnknownHostException("bla.bla") will be reduced to "bla.bla" with the "unknown host" info missing
+		// sometimes we cannot affect this at all, as in the case of http-client library, see HttpConnector
 		Throwable cause = t.getCause();
 		if (message != null && cause != null
 				&&
@@ -201,8 +203,13 @@ public class ExceptionUtils {
 	 * @param t
 	 */
 	public static void logException(Logger logger, String message, Throwable t) {
-		logger.error(ExceptionUtils.getMessage(message, t));
-        logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
+		String completeMessage = ExceptionUtils.getMessage(message, t);
+		if (!StringUtils.isEmpty(completeMessage)) {
+			logger.error(completeMessage);
+		}
+		if (t != null) {
+			logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
+		}
 	}
 	
 	/**
