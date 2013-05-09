@@ -1897,11 +1897,9 @@ public class HttpConnector extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
-		boolean success = true;
 		if (hasInputPort) {
-			while (inputPort.readRecord(inputRecord) != null && runIt && success) {
-				success &= executeForRecord();
-				
+			while (inputPort.readRecord(inputRecord) != null && runIt) {
+				executeForRecord();
 				SynchronizeUtils.cloverYield();
 			}
 		} else {
@@ -1913,12 +1911,12 @@ public class HttpConnector extends Node {
 			}
 			
 			// no input port connected - only one request will be sent
-			success &= executeForRecord();
+			executeForRecord();
 		}
 
 		broadcastEOF();
 
-        return (runIt ? (success ? Result.FINISHED_OK : Result.ERROR) : Result.ABORTED);		
+        return (runIt ? Result.FINISHED_OK : Result.ABORTED);
 	}
 
 	/** Logs success.
@@ -1928,13 +1926,6 @@ public class HttpConnector extends Node {
 		tokenTracker.logMessage(inputRecord, Level.INFO, "Executed sucessfully.", null);
 	}
 
-	/** Logs error.
-	 * 
-	 */
-	private void logError(Exception e) {
-		tokenTracker.logMessage(inputRecord, Level.ERROR, e.toString(), e);
-	}
-	
 	/** Logs progress.
 	 * 
 	 */
@@ -1947,7 +1938,7 @@ public class HttpConnector extends Node {
 	 * @return
 	 * @throws Exception
 	 */
-	protected boolean executeForRecord() throws Exception {
+	protected void executeForRecord() throws Exception {
 		initForRecord();
 		
 		try {
@@ -1958,17 +1949,23 @@ public class HttpConnector extends Node {
 			logSuccess();
 
 		} catch (Exception e) {
+			// FIXME: UnknownHostException("bla.bla") can be thrown here, where there's no message like "unknown host"
+			// we need to somehow tell the user that this is an "Unknown host" situation
+			// elsewhere in this class we call e.toString() to work around that
 			result.setException(e);
 		} 
 
-		boolean success = mapOutput();
-		
-		if (!success) {
-			logError(result.getException());
-			logger.debug("Execution unsuccessful:", result.getException());
+		if (!mapOutput()) {
+			// no error mapping, fail here
+			throw result.getException();
 		}
-		
-		return success;
+		else {
+			if (result.getException() != null) {
+				// log exception only briefly as INFO as it got sent to error port by now
+				String msg = "Request error: " + ExceptionUtils.getMessage(result.getException());
+				tokenTracker.logMessage(inputRecord, Level.INFO, msg, null);
+			}
+		}
 	}	
 	
 	/** Prepares the state of the component for processing of a next record.
@@ -2051,7 +2048,7 @@ public class HttpConnector extends Node {
 	 * @return success
 	 * @throws Exception
 	 */
-	private boolean mapOutput() throws Exception {
+	private boolean mapOutput() {
 		if (result.getException() == null) {
 			
 			mapStandardOutput();
@@ -2084,7 +2081,7 @@ public class HttpConnector extends Node {
 	 * 
 	 * @throws Exception
 	 */
-	private void mapStandardOutput() throws Exception {
+	private void mapStandardOutput() {
 		if (hasStandardOutputPort) {
 			populateInputParamsRecord();
 			populateResultRecordError();
@@ -2108,7 +2105,13 @@ public class HttpConnector extends Node {
 				mapLegacyOutput();
 			}
 			
-			standardOutputPort.writeRecord(standardOutputRecord);
+			try {
+				standardOutputPort.writeRecord(standardOutputRecord);
+			} catch (InterruptedException e) {
+				throw new JetelRuntimeException(e);
+			} catch (IOException e) {
+				throw new JetelRuntimeException(e);
+			}
 		}
 	}
 
@@ -2116,7 +2119,7 @@ public class HttpConnector extends Node {
 	 * 
 	 * @throws Exception
 	 */
-	private void mapOverridingOutput() throws Exception {
+	private void mapOverridingOutput() {
 		// User defined the output field explicitly - set the value there, if the value was
 		// not set by a mapping
 		if (outputFieldName != null && outField != null && outField.isNull()) {
@@ -2129,7 +2132,7 @@ public class HttpConnector extends Node {
 	 * 
 	 * @throws Exception
 	 */
-	private void mapLegacyOutput() throws Exception {
+	private void mapLegacyOutput() {
 		// output field connected - set the value there.
 		// NOTE: no output mapping is defined.
 		if (outField != null) {
@@ -2148,7 +2151,7 @@ public class HttpConnector extends Node {
 	 * 
 	 * @throws Exception
 	 */
-	private void mapErrorOutput() throws Exception {
+	private void mapErrorOutput() {
 		if (hasErrorOutputPort) {
 			populateErrorRecord();
 			populateInputParamsRecord();
@@ -2158,7 +2161,13 @@ public class HttpConnector extends Node {
 				//output transformation is not specified - default star mapping is performed
 				mapByName(errorOutputMappingInRecords, errorOutputRecord);
 			}
-			errorOutputPort.writeRecord(errorOutputRecord);
+			try {
+				errorOutputPort.writeRecord(errorOutputRecord);
+			} catch (IOException e) {
+				throw new JetelRuntimeException(e);
+			} catch (InterruptedException e) {
+				throw new JetelRuntimeException(e);
+			}
 		} else if (hasStandardOutputPort) {
 			mapStandardOutput();
 		}
@@ -3169,6 +3178,9 @@ public class HttpConnector extends Node {
 	private void populateErrorField(DataRecord record, int errorFieldIndex) {
 		Exception ex = result.getException();
 		if (ex != null) {
+			// FIXME: UnknownHostException("bla.bla") can be thrown here, where there's no message like "unknown host"
+			// we need to somehow tell the user that this is an "Unknown host" situation
+			// that's why we call ex.toString() instead of ExceptionUtils
 			record.getField(errorFieldIndex).setValue(ex.toString());
 		}
 	}

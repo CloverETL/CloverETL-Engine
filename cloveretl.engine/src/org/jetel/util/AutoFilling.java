@@ -267,6 +267,7 @@ public class AutoFilling {
 		sourceCounter=0;
 		l3Counter=0;
 		autoFillingMap.clear();
+		readerTimestamp = null;
 	}
 
 	/**
