@@ -110,6 +110,11 @@ public class PluginDescriptor {
     private ClassLoader classLoader;
 
     /**
+     * Lazy initialisation of {@link #classLoader} variable is monitored by this object.
+     */
+    private Object classLoaderMonitor = new Object();
+    
+    /**
      * This class loader is optional and is used as a parent for {@link PluginClassLoader}.
      * This feature is used for example by clover designer in engine initialization.
      * @see GuiPlugin
@@ -131,7 +136,7 @@ public class PluginDescriptor {
     /**
      * Is true if plugin is already active. 
      */
-    private boolean isActive = false;
+    private volatile boolean isActive = false;
     
     /**
      * @param manifest
@@ -254,17 +259,19 @@ public class PluginDescriptor {
     } 
 
     public ClassLoader getClassLoader() {
-        if(!isActive()) {
+        if (!isActive()) {
             activatePlugin();
-//            logger.warn("PluginDescription.getClassLoader(): Plugin " + getId() + " is not already active.");
-//            return null;
         }
         if (classLoader == null) {
-        	ClassLoader realParentCL = parentClassLader != null ? parentClassLader : PluginDescriptor.class.getClassLoader();
-        	if (Plugins.isSimpleClassLoading()) {
-        		classLoader = realParentCL;
-        	} else {
-        		classLoader = new PluginClassLoader(realParentCL, this, greedyClassLoader, excludedPackages);
+        	synchronized (classLoaderMonitor) {
+        		if (classLoader == null) {
+		        	ClassLoader realParentCL = parentClassLader != null ? parentClassLader : PluginDescriptor.class.getClassLoader();
+		        	if (Plugins.isSimpleClassLoading()) {
+		        		classLoader = realParentCL;
+		        	} else {
+		        		classLoader = new PluginClassLoader(realParentCL, this, greedyClassLoader, excludedPackages);
+		        	}
+        		}
         	}
         }
         return classLoader;
@@ -342,21 +349,23 @@ public class PluginDescriptor {
     /**
      * Activate this plugin. Method registers this plugin description in Plugins class as active plugin.
      */
-    public void activatePlugin() {
-        Plugins.activatePlugin(getId());
+    public synchronized void activatePlugin() {
+    	if (!isActive()) {
+    		Plugins.activatePlugin(getId());
+    	}
     }
     
     /**
      * Deactivate this plugin. Method registers this plugin description in Plugins class as deactive plugin.
      */
-    public void deactivatePlugin() {
+    public synchronized void deactivatePlugin() {
         Plugins.deactivatePlugin(getId());
     }
     
     /**
      * This method is called only from Plugins.activatePlugin() method.
      */
-    protected void activate() {
+    protected synchronized void activate() {
         isActive = true;
         
         //first, we activate all prerequisites plugins
@@ -378,7 +387,7 @@ public class PluginDescriptor {
     /**
      * This method is called only from Plugins.deactivatePlugin() method.
      */
-    protected void deactivate() {
+    protected synchronized void deactivate() {
         isActive = false;
         if(pluginActivator != null) {
             pluginActivator.deactivate();
