@@ -395,7 +395,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 *         configuration of {@code HadoopConnection}. Never returns <code>null</code>.
 	 * @throws IOException 
 	 */
-	public HadoopFileSystemService getFileSystemService() throws IOException {
+	public synchronized HadoopFileSystemService getFileSystemService() throws IOException {
 		checkInitialized();
 		connectFileSystemService();
 		return fileSystemService;
@@ -414,7 +414,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 * @return Adequate file system service as specified by user in configuration of {@code HadoopConnection}.
 	 *  ONever returns <code>null</code>.
 	 */
-	public HadoopFileSystemService getFileSystemServiceUnconnected() {
+	public synchronized HadoopFileSystemService getFileSystemServiceUnconnected() {
 		checkInitialized();
 		return fileSystemService;
 	}
@@ -431,7 +431,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 *         {@code HadoopConnection} does not support map/reduce.
 	 * @see {@link #isMapReduceSupported()}
 	 */
-	public HadoopMapReduceService getMapReduceService() throws IOException {
+	public synchronized HadoopMapReduceService getMapReduceService() throws IOException {
 		checkInitialized();
 		if (!isMapReduceSupported()) {
 			throw new IllegalStateException(
@@ -460,7 +460,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 * @see HadoopConnection#getMapReduceInfoService(String, URL, String)
 	 * @see #getMapReduceService()
 	 */
-	public HadoopMapReduceInfoService getMapReduceInfoService() {
+	public synchronized HadoopMapReduceInfoService getMapReduceInfoService() {
 		checkInitialized();
 		return mapReduceInfoService;
 	}
@@ -469,7 +469,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 * Returns parameters which the file system service used when it established its connection.
 	 * @return file system service connection parameters
 	 */
-	public HadoopFileSystemConnectionData getFileSystemConnectionData() {
+	public synchronized HadoopFileSystemConnectionData getFileSystemConnectionData() {
 		checkInitialized();
 		return fsConnectionData;
 	}
@@ -481,7 +481,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 * @return <code>true</code> if and only if the user has supplied map/reduce jobtracker host address
 	 *         for this connection.
 	 */
-	public boolean isMapReduceSupported() {
+	public synchronized boolean isMapReduceSupported() {
 		if (isInitialized()) {
 			return mapReduceService != null;
 		} else {
@@ -506,7 +506,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 *         is invalid.
 	 * @see #init()
 	 */
-	public String validateConnection() throws IOException {
+	public synchronized String validateConnection() throws IOException {
 		checkInitialized();
 		
 		connectFileSystemService();
