@@ -77,7 +77,7 @@ public class Plugins {
         init((String) null);
     }
     
-    public static void init(String directory) {
+    public static synchronized void init(String directory) {
     	if (directory == null) {
     		init((PluginRepositoryLocation[]) null);
     		return;
@@ -90,7 +90,7 @@ public class Plugins {
         init(repositoryLocations.toArray(new PluginRepositoryLocation[repositoryLocations.size()]));
 	}
 	
-	public static void init(PluginRepositoryLocation[] repositoryLocations) {
+	public static synchronized void init(PluginRepositoryLocation[] repositoryLocations) {
 
         if (repositoryLocations == null) {
         	repositoryLocations = new PluginRepositoryLocation[] { new PluginRepositoryLocation(new File(Defaults.DEFAULT_PLUGINS_DIRECTORY)) };
@@ -139,7 +139,7 @@ public class Plugins {
         Plugins.init(pls);
     }
 
-    public static void init(PluginLocation[] pluginLocations) {
+    public static synchronized void init(PluginLocation[] pluginLocations) {
         //remove all previous settings
         pluginDescriptors = new HashMap<String, PluginDescriptor>();
         activePlugins = new HashMap<String, PluginDescriptor>();
@@ -248,7 +248,7 @@ public class Plugins {
      * Activate all not yet activated plugins. All already deactivated plugins are skipped.
      * @param lazyClassLoading whether the class references are actively loaded by the plugin system 
      */
-    public static void activateAllPlugins() {
+    public static synchronized void activateAllPlugins() {
     	for(String pluginId : pluginDescriptors.keySet()) {
     		if(!activePlugins.containsKey(pluginId) && !deactivePlugins.containsKey(pluginId)) {
     			activatePlugin(pluginId);
@@ -256,7 +256,7 @@ public class Plugins {
     	}
     }
     
-    public static void activatePlugin(String pluginID) {
+    public static synchronized void activatePlugin(String pluginID) {
         //some validation tests
         if(!pluginDescriptors.containsKey(pluginID)) {
             logger.error("Attempt activate unknown plugin: " + pluginID);
@@ -276,7 +276,7 @@ public class Plugins {
         pluginDescriptor.activate();
     }
 
-    public static void deactivatePlugin(String pluginID) {
+    public static synchronized void deactivatePlugin(String pluginID) {
         //some validation tests
         if(!pluginDescriptors.containsKey(pluginID)) {
             logger.error("Attempt deactivate unknown plugin: " + pluginID);
