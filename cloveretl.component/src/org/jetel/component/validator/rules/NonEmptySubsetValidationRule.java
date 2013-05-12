@@ -45,8 +45,18 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule for checking whether given fields at least given count is null or not null. However when
+ * string is on input the rule checks whether this string or this trimmed string is empty/nonempty</p>
+ * 
+ * Available settings:
+ * <ul>
+ * 	<li>Goal: Empty/NonEmpty. With selected 'Empty' this rule is valid when incomming value is null.</li>
+ *  <li>Count: Number. How many of given fields must be empty/non empty for this rule to be valid</li>
+ *  <li>Trim input: True/False. Available only when incomming field is string.</li>
+ * </ul>
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 4.12.2012
+ * @see NonEmptyFieldValidationRule
  */
 @XmlRootElement(name="nonEmptySubset")
 @XmlType(propOrder={"goalJAXB", "count", "trimInput"})
@@ -125,6 +135,7 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 			field = record.getField(targetField[i]);
 			inputString = field.toString();
 			values.put(targetField[i], inputString);
+			// Special treatment for strings as they can be filled with whitespaces
 			if(field.getMetadata().getDataType() == DataFieldType.STRING) {
 				if(trimInput.getValue()) {
 					inputString = inputString.trim();
@@ -181,27 +192,20 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 	}
 
 	/**
-	 * @return the target
-	 */
-	public StringValidationParamNode getTarget() {
-		return target;
-	}
-
-	/**
-	 * @return the goal
+	 * @return Param node with currently selected goal
 	 */
 	public EnumValidationParamNode getGoal() {
 		return goal;
 	}
 
 	/**
-	 * @return the count
+	 * @return Param node with wanted count
 	 */
 	public IntegerValidationParamNode getCount() {
 		return count;
 	}
 	/**
-	 * @return the trimInput
+	 * @return Param node with current settings of trimming
 	 */
 	public BooleanValidationParamNode getTrimInput() {
 		return trimInput;

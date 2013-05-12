@@ -43,8 +43,18 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule for checking whether given field is null or not null. However when string is on input the rule
+ * checks whether this string or this trimmed string is empty/nonempty</p>
+ * 
+ * Available settings:
+ * <ul>
+ * 	<li>Goal: Empty/NonEmpty. With selected 'Empty' this rule is valid when incomming value is null.</li>
+ *  <li>Trim input: True/False. Available only when incomming field is string.</li>
+ * </ul>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.11.2012
+ * @see NonEmptySubsetValidationRule
  */
 @XmlRootElement(name="nonEmptyField")
 @XmlType(propOrder={"goalJAXB", "trimInput"})
@@ -110,6 +120,7 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 		DataField field = record.getField(resolvedTarget);
 		String inputString = field.toString();
 		
+		// Special treatment for strings as they can be filled with whitespaces
 		if(field.getMetadata().getDataType() == DataFieldType.STRING) {
 			if(trimInput.getValue()) {
 				inputString = inputString.trim();
@@ -158,21 +169,14 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 	}
 
 	/**
-	 * @return the target
-	 */
-	public StringValidationParamNode getTarget() {
-		return target;
-	}
-
-	/**
-	 * @return the goal
+	 * @return Param node with currently selected goal
 	 */
 	public EnumValidationParamNode getGoal() {
 		return goal;
 	}
 	
 	/**
-	 * @return the trimInput
+	 * @return Param node with current settings of trimming
 	 */
 	public BooleanValidationParamNode getTrimInput() {
 		return trimInput;

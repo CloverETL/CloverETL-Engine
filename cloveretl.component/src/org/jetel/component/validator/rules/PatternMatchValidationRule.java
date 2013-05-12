@@ -39,6 +39,16 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule for checking whether given fields fulfils given regular expression</p>
+ * 
+ * Available settings:
+ * <ul>
+ * 	<li>Pattern: Java regexp.</li>
+ *  <li>IgnoreCase: True/False.</li>
+ * </ul>
+ * 
+ * <p>For other settings etc. see @link {@link StringValidationRule}</p>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 4.12.2012
  */
@@ -134,15 +144,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	}
 
 	/**
-	 * @return the target
-	 */
-	public StringValidationParamNode getTarget() {
-		return target;
-	}
-
-
-	/**
-	 * @return the ignoreCase
+	 * @return Param node with current settings of case sensitivity
 	 */
 	public BooleanValidationParamNode getIgnoreCase() {
 		return ignoreCase;
@@ -150,7 +152,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 
 
 	/**
-	 * @return the pattern
+	 * @return Param node with regexp
 	 */
 	public StringValidationParamNode getPattern() {
 		return pattern;
