@@ -21,6 +21,7 @@ package org.jetel.data;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -87,6 +88,16 @@ public void test_1_StringDataField() {
 		assertNotNull(aStringDataField1);
 		assertNotNull(aStringDataField3);
 		assertFalse(aStringDataField3.isNull());
+	}
+
+	public void test_3_StringDataField() {
+		DataFieldMetadata fieldMeta = new DataFieldMetadata("Field", DataFieldType.STRING, ";");
+		StringDataField field = new StringDataField(fieldMeta, "Boo3");
+
+		StringDataField newField = (StringDataField) field.duplicate();
+		
+		assertEquals(32, field.getValue().capacity()); //StringDataField.INITIAL_STRING_BUFFER_CAPACITY == 32
+		assertEquals(4, newField.getValue().capacity());
 	}
 
 	/**
