@@ -223,11 +223,7 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 			if (graph != null) {
 				IConnection conn = graph.getConnection(connectionName);
 				if (conn == null || !(conn instanceof HadoopConnection)) {
-					if (uri.getHost() != null) {
-						logger.debug("Hadoop connection with ID \"" + connectionName + "\" not found; assuming it's a host name. Processed URI: " + uri);
-					} else {
-						throw new ComponentNotReadyException("Invalid HDFS URI: " + uri + ". Reason: '" + connectionName + "' is neither ID of existing Hadoop connection nor valid host name");
-					}
+					throw new ComponentNotReadyException("Invalid HDFS URI: " + uri + ". Reason: '" + connectionName + "' is not an ID of existing Hadoop connection");
 				}
 				if (conn != null && conn instanceof HadoopConnection) {
 					conn.init(); // try to init - in case it was not already initialized

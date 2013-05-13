@@ -19,6 +19,7 @@
 package org.jetel.data.xml.mapping.runtime;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -200,6 +201,8 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 	 */
 	private boolean charactersProcessed = false;
 	
+	
+	private String[] subtreeKeys = null;
 	/** Class representing an anector field mapping.
 	 * 
 	 * @author Unkown, Tomas Laurincik (info@cloveretl.com)
@@ -687,6 +690,21 @@ public class XMLElementRuntimeMappingModel extends XMLRuntimeMappingModel {
 
 	public Map<String, String> getFieldsMap() {
 		return fieldsMap;
+	}
+	
+	public String[] getSubtreeKeys() {
+		if(this.subtreeKeys==null) {
+			List<String> tmpList = new ArrayList<String>(4);
+			if(this.fieldsMap!=null) {
+				if(this.fieldsMap.containsKey(XMLMappingConstants.ELEMENT_VALUE_REFERENCE)) {tmpList.add(XMLMappingConstants.ELEMENT_VALUE_REFERENCE);}
+				if(this.fieldsMap.containsKey(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT)) {tmpList.add(XMLMappingConstants.ELEMENT_CONTENTS_AS_TEXT);}
+				if(this.fieldsMap.containsKey(XMLMappingConstants.ELEMENT_AS_TEXT)) {tmpList.add(XMLMappingConstants.ELEMENT_AS_TEXT);}
+				subtreeKeys = tmpList.toArray(new String[]{});
+			}else{
+				subtreeKeys = new String[] {};
+			}
+		}
+		return subtreeKeys;
 	}
 
 	public void setFieldsMap(Map<String, String> fieldsMap) {
