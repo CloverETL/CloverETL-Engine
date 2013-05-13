@@ -19,6 +19,7 @@
 package org.jetel.graph.analyse;
 
 import org.jetel.enums.EdgeTypeEnum;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
@@ -37,6 +38,11 @@ import org.jetel.graph.TransformationGraph;
 public class GraphAnalyser {
 
 	public static void analyseGraph(TransformationGraph graph) {
+		//detect empty graphs
+		if (graph.getNodes().isEmpty()) {
+			throw new JetelRuntimeException("Job without components cannot be executed.");
+		}
+
 		//first of all find the phase edges
 		analysePhaseEdges(graph);
 

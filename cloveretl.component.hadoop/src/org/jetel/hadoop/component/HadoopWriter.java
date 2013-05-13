@@ -157,13 +157,16 @@ public class HadoopWriter extends Node {
 	public synchronized void free() {
 		super.free();
 		try {
-			if (writer != null) {
-				writer.close();
-				writer = null;
-			}
-			if (connection != null) {
-				connection.free();
-				connection = null;
+			try {
+				if (writer != null) {
+					writer.close();
+					writer = null;
+				}
+			} finally {
+				if (connection != null) {
+					connection.free();
+					connection = null;
+				}
 			}
 		} catch (Throwable t) {
 			logger.warn("Resource releasing failed for '" + getId() + "'.", t);
