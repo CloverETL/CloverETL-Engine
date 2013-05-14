@@ -284,11 +284,7 @@ public final class DictionaryValuesContainer implements Serializable {
 	}
 	
 	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-		try{  
-	        out.defaultWriteObject();  
-	    } catch(NotSerializableException nse){ 
-	    	log.error("Can't serialize dictionary content. Serialized data is incomplete! ", nse);
-	    }  
+        out.defaultWriteObject();
 	}
 	
 	private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
