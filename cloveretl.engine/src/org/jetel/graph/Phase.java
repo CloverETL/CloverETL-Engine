@@ -34,6 +34,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.util.ExceptionUtils;
 
 
@@ -154,7 +155,7 @@ public class Phase extends GraphElement implements Comparable {
 		for (Node node : nodes.values()) {
 			ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
 
-			ContextProvider.registerNode(node);
+			Context c = ContextProvider.registerNode(node);
 			try {
 				Thread.currentThread().setContextClassLoader(node.getClass().getClassLoader());
 				node.init();
@@ -168,8 +169,8 @@ public class Phase extends GraphElement implements Comparable {
 				result = Result.ERROR;
 				throw new ComponentNotReadyException(node, "FATAL: Component " + node + " initilization failed.", new JetelRuntimeException(ex));
 			} finally {
+				ContextProvider.unregister(c);
 				Thread.currentThread().setContextClassLoader(formerClassLoader);
-				ContextProvider.unregister();
 			}
 		}
         
@@ -244,8 +245,8 @@ public class Phase extends GraphElement implements Comparable {
 		// iterate through all nodes and finalize them
 		logger.debug("Components post-execution");
 		for (Node node : nodes.values()) {
+			Context c = ContextProvider.registerNode(node);
 			try {
-				ContextProvider.registerNode(node);
 				node.postExecute();
 				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (Exception ex) {
@@ -253,7 +254,7 @@ public class Phase extends GraphElement implements Comparable {
 				result = Result.ERROR;
 				exceptions.add(new ComponentNotReadyException(node, "Component " + node + " post-execution failed.", ex));
 			} finally {
-				ContextProvider.unregister();
+				ContextProvider.unregister(c);
 			}
 		}
 		
@@ -453,13 +454,13 @@ public class Phase extends GraphElement implements Comparable {
         
         //free all nodes in this phase
         for(Node node : nodes.values()) {
+			Context c = ContextProvider.registerNode(node);
         	try {
-    			ContextProvider.registerNode(node);
         		node.free();
         	} catch (Exception e) {
         		logger.error("Node " + node.getId() + " releasing failed.", e);
         	} finally {
-        		ContextProvider.unregister();
+        		ContextProvider.unregister(c);
         	}
         }
         

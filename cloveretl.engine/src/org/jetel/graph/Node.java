@@ -40,6 +40,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.CloverWorkerListener;
@@ -462,7 +463,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	public void run() {
         runResult = Result.RUNNING; // set running result, so we know run() method was started
         
-		ContextProvider.registerNode(this);
+		Context c = ContextProvider.registerNode(this);
         try {
     		//store the current thread like a node executor
             setNodeThread(Thread.currentThread());
@@ -523,9 +524,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
                     new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
             sendMessage(msg);
         } finally {
+			ContextProvider.unregister(c);
         	sendFinishMessage();
         	setNodeThread(null);
-			ContextProvider.unregister();
         }
     }
     

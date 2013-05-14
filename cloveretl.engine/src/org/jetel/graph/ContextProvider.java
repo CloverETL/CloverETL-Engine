@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.log4j.Logger;
 import org.jetel.graph.runtime.CloverWorker;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -37,19 +38,23 @@ import org.jetel.graph.runtime.IAuthorityProxy;
  * So registering new context ({@link #registerGraph(TransformationGraph)}
  * or {@link #registerNode(Node)}) is just adding new context to the thread corresponding stack.
  * The last registered context is actual and provided be {@link #getGraph()} and {@link #getNode()} methods.
- * Calling method {@link #unregister()} just remove the top context from the stack and the former context
+ * Calling method {@link #unregister(Context)} just remove the top context from the stack and the former context
  * is taken into account.
  * <p>
  * Example of usage:
  * <pre>
  * Node component = ...
+ * Context c = ContextProvider.registerNode(component);
  * try {
- *   ContextProvider.registerNode(component);
  *   doSomeWork(component);
  * } finally {
- *   ContextProvider.unregister();
+ *   ContextProvider.unregister(c);
  * }
  * </pre>
+ * <p>
+ * Both registering methods returns {@link Context} for further unregistering purpose. This Context is
+ * important for validation of usage correctness and for possible fail-over. To avoid inconsistency in context
+ * stack, the presented template above should be used.
  * <p>
  * The {@link ContextProvider} can work only when all threads working with graph elements are registered.
  * <p>
@@ -63,6 +68,8 @@ import org.jetel.graph.runtime.IAuthorityProxy;
  * @created 24.9.2009
  */
 public class ContextProvider {
+
+	private final static Logger logger = Logger.getLogger(ContextProvider.class);
 
 	private static final Map<Thread, Stack<Context>> contextCache = new HashMap<Thread, Stack<Context>>(); 
 	
@@ -134,19 +141,32 @@ public class ContextProvider {
 	
 	/**
 	 * Add new component based context to thread corresponding stack of contexts.
+	 * @return Context instance, which should be passed for de-registration in {@link #unregister(Context)} method
 	 */
-	public static synchronized void registerNode(Node node) {
-		registerContext(new Context(node, node.getGraph()));
+	public static synchronized Context registerNode(Node node) {
+		if (node == null || node.getGraph() == null) {
+			return null;
+		}
+		Context newContext = new Context(node, node.getGraph());
+		registerContext(newContext);
+		return newContext;
 	}
 
 	/**
 	 * Add new graph based context to thread corresponding stack of contexts.
+	 * @return Context instance, which should be passed for de-registration in {@link #unregister(Context)} method
 	 */
-	public static synchronized void registerGraph(TransformationGraph graph) {
-		registerContext(new Context(null, graph));
+	public static synchronized Context registerGraph(TransformationGraph graph) {
+		if (graph == null) {
+			return null;
+		}
+		Context newContext = new Context(null, graph);
+		registerContext(newContext);
+		return newContext;
 	}
 
 	private static void registerContext(Context context) {
+		assert (context != null);
 		Stack<Context> threadCache = contextCache.get(Thread.currentThread());
 		if (threadCache == null) {
 			threadCache = new Stack<Context>();
@@ -156,15 +176,41 @@ public class ContextProvider {
 	}
 	
 	/**
-	 * Unregister last registered context associated with current thread.
+	 * Unregister last registered context associated with current thread - the last context
+	 * has to be passed to validate right usage of ContextProvider.
 	 */
-	public static synchronized void unregister() {
-		Stack<Context> threadCache = contextCache.get(Thread.currentThread());
-		if (!threadCache.isEmpty()) {
-			threadCache.pop();
+	public static synchronized void unregister(Context requestedContext) {
+		if (requestedContext == null) {
+			//DO NOTHING
+			return;
 		}
-		if (threadCache.isEmpty()) {
+		Stack<Context> threadCache = contextCache.get(Thread.currentThread());
+		if (threadCache == null) {
+			logger.error("Illegal state in ContextProvider. No cached contexts for current thread " + Thread.currentThread().getName() + ". Requested context: " + requestedContext);
+			return;
+		}
+		if (!threadCache.isEmpty()) {
+			Context deregisteredContext = threadCache.pop();
+			if (deregisteredContext != requestedContext) {
+				if (threadCache.contains(requestedContext)) {
+					logger.error("Illegal state in ContextProvider. Context, which should be unregistered, is not on top of stack. Recovery is perfomed, context " + deregisteredContext + " is removed from stack.");
+					while (deregisteredContext != requestedContext) {
+						deregisteredContext = threadCache.pop();
+						logger.error("Illegal state in ContextProvider. Context, which should be unregistered, is not on top of stack. Recovery is perfomed, context " + deregisteredContext + " is removed from stack.");
+					}
+					logger.error("Illegal state in ContextProvider. Context, which should be unregistered, is not on top of stack. Recovery finished. Requested context is " + requestedContext);
+				} else {
+					threadCache.push(deregisteredContext);
+					logger.error("Illegal state in ContextProvider. Last context in stack was " + deregisteredContext + " but requested context is " + requestedContext);
+					return;
+				}
+			}
+			if (threadCache.isEmpty()) {
+				contextCache.remove(Thread.currentThread());
+			}
+		} else {
 			contextCache.remove(Thread.currentThread());
+			logger.error("Illegal state in ContextProvider. Empty context cache.");
 		}
 	}
 
@@ -177,18 +223,8 @@ public class ContextProvider {
 	
 	/**
 	 * This class represents all context information managed by {@link ContextProvider}.
-	 * Can be used in following pattern:<br>
-	 * <pre>
-	 * ContextProvider.Context formerContext = ContextProvider.getContext();
-	 * try {
-	 *   ContextProvider.regitesterNode(node);
-	 *   ...
-	 * } finally {
-	 *   ContextProvider.setContext(formerContext);
-	 * }
-	 * </pre>
 	 */
-	private static class Context {
+	public static class Context {
 		private Node node;
 		private TransformationGraph graph;
 		Context(Node node, TransformationGraph graph) {
@@ -200,6 +236,15 @@ public class ContextProvider {
 		}
 		public TransformationGraph getGraph() {
 			return graph;
+		}
+		
+		@Override
+		public String toString() {
+			if (node != null) {
+				return "context(component:" + node.toString() + ", graph:" + graph.toString() + ")";
+			} else {
+				return "context(graph:" + graph.toString() + ")";
+			}
 		}
 	}
 	

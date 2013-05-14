@@ -23,6 +23,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.test.CloverTestCase;
 
 /**
@@ -40,7 +41,7 @@ public class ContextProviderTest extends CloverTestCase {
 		
 		assertNull(ContextProvider.getGraph());
 		
-		ContextProvider.registerGraph(graph1);
+		Context c1 = ContextProvider.registerGraph(graph1);
 		assertEquals(graph1, ContextProvider.getGraph());
 		
 		Future<?> future = Executors.newSingleThreadExecutor().submit(new Runnable() {
@@ -51,10 +52,10 @@ public class ContextProviderTest extends CloverTestCase {
 				ContextProvider.registerGraph(graph2);
 				assertEquals(graph2, ContextProvider.getGraph());
 
-				ContextProvider.registerGraph(graph1);
+				Context c1 = ContextProvider.registerGraph(graph1);
 				assertEquals(graph1, ContextProvider.getGraph());
 				
-				ContextProvider.unregister();
+				ContextProvider.unregister(c1);
 				assertEquals(graph2, ContextProvider.getGraph());
 
 				ContextProvider.registerGraph(graph3);
@@ -65,25 +66,34 @@ public class ContextProviderTest extends CloverTestCase {
 			}
 		});
 		
-		ContextProvider.registerGraph(graph2);
+		Context c2 = ContextProvider.registerGraph(graph2);
 		assertEquals(graph2, ContextProvider.getGraph());
 
-		ContextProvider.unregister();
+		Context cNull = ContextProvider.registerGraph(null);
+		assertNull(cNull);
+
+		cNull = ContextProvider.registerNode(null);
+		assertNull(cNull);
+
+		ContextProvider.unregister(cNull);
+		assertEquals(graph2, ContextProvider.getGraph());
+
+		ContextProvider.unregister(c2);
 		assertEquals(graph1, ContextProvider.getGraph());
 
-		ContextProvider.registerGraph(graph3);
+		Context c3_1 = ContextProvider.registerGraph(graph3);
 		assertEquals(graph3, ContextProvider.getGraph());
 
-		ContextProvider.registerGraph(graph3);
+		Context c3_2 = ContextProvider.registerGraph(graph3);
 		assertEquals(graph3, ContextProvider.getGraph());
 
-		ContextProvider.unregister();
+		ContextProvider.unregister(c3_2);
 		assertEquals(graph3, ContextProvider.getGraph());
 
-		ContextProvider.unregister();
+		ContextProvider.unregister(c3_1);
 		assertEquals(graph1, ContextProvider.getGraph());
 
-		ContextProvider.unregister();
+		ContextProvider.unregister(c1);
 		assertNull(ContextProvider.getGraph());
 
 		future.get();
@@ -110,7 +120,7 @@ public class ContextProviderTest extends CloverTestCase {
 
 		assertNull(ContextProvider.getNode());
 		
-		ContextProvider.registerNode(node1);
+		Context c1 = ContextProvider.registerNode(node1);
 		assertEquals(node1, ContextProvider.getNode());
 		assertEquals(graph1, ContextProvider.getGraph());
 		
@@ -123,11 +133,11 @@ public class ContextProviderTest extends CloverTestCase {
 				assertEquals(node2, ContextProvider.getNode());
 				assertEquals(graph2, ContextProvider.getGraph());
 
-				ContextProvider.registerNode(node1);
+				Context c1 = ContextProvider.registerNode(node1);
 				assertEquals(node1, ContextProvider.getNode());
 				assertEquals(graph1, ContextProvider.getGraph());
 				
-				ContextProvider.unregister();
+				ContextProvider.unregister(c1);
 				assertEquals(node2, ContextProvider.getNode());
 				assertEquals(graph2, ContextProvider.getGraph());
 
@@ -141,31 +151,31 @@ public class ContextProviderTest extends CloverTestCase {
 			}
 		});
 		
-		ContextProvider.registerNode(node2);
+		Context c2 = ContextProvider.registerNode(node2);
 		assertEquals(node2, ContextProvider.getNode());
 		assertEquals(graph2, ContextProvider.getGraph());
 
-		ContextProvider.unregister();
+		ContextProvider.unregister(c2);
 		assertEquals(node1, ContextProvider.getNode());
 		assertEquals(graph1, ContextProvider.getGraph());
 
-		ContextProvider.registerNode(node3);
+		Context c3_1 = ContextProvider.registerNode(node3);
 		assertEquals(node3, ContextProvider.getNode());
 		assertEquals(graph3, ContextProvider.getGraph());
 
-		ContextProvider.registerNode(node3);
+		Context c3_2 = ContextProvider.registerNode(node3);
 		assertEquals(node3, ContextProvider.getNode());
 		assertEquals(graph3, ContextProvider.getGraph());
 
-		ContextProvider.unregister();
+		ContextProvider.unregister(c3_2);
 		assertEquals(node3, ContextProvider.getNode());
 		assertEquals(graph3, ContextProvider.getGraph());
 
-		ContextProvider.unregister();
+		ContextProvider.unregister(c3_1);
 		assertEquals(node1, ContextProvider.getNode());
 		assertEquals(graph1, ContextProvider.getGraph());
 
-		ContextProvider.unregister();
+		ContextProvider.unregister(c1);
 		assertNull(ContextProvider.getNode());
 		assertNull(ContextProvider.getGraph());
 

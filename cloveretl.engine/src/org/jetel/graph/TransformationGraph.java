@@ -44,6 +44,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.analyse.GraphAnalyser;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
@@ -394,7 +395,7 @@ public final class TransformationGraph extends GraphElement {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
-		ContextProvider.registerGraph(this);
+		Context c = ContextProvider.registerGraph(this);
 		try {
 	        if(isInitialized()) return;
 			super.init();
@@ -468,7 +469,7 @@ public final class TransformationGraph extends GraphElement {
 			}
 		} finally {
 			//unregister current thread from ContextProvider
-			ContextProvider.unregister();
+			ContextProvider.unregister(c);
 		}
 	}
 
@@ -959,7 +960,7 @@ public final class TransformationGraph extends GraphElement {
     @Override
 	public void free() {
 		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
-		ContextProvider.registerGraph(this);
+		Context c = ContextProvider.registerGraph(this);
 		try {
 	        freeResources();
 	    	
@@ -969,7 +970,7 @@ public final class TransformationGraph extends GraphElement {
 	    	setWatchDog(null);
 		} finally {
 			//unregister current thread from ContextProvider
-			ContextProvider.unregister();
+			ContextProvider.unregister(c);
 		}
     }
     
@@ -1068,7 +1069,7 @@ public final class TransformationGraph extends GraphElement {
 		super.checkConfig(status);
 
 		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
-		ContextProvider.registerGraph(this);
+		Context c = ContextProvider.registerGraph(this);
 		try {
 	    	if(status == null) {
 	            status = new ConfigurationStatus();
@@ -1143,7 +1144,7 @@ public final class TransformationGraph extends GraphElement {
 	        return status;
 		} finally {
 			//unregister current thread from ContextProvider
-			ContextProvider.unregister();
+			ContextProvider.unregister(c);
 		}
     }
     
