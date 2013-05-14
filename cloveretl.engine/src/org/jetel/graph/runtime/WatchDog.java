@@ -44,6 +44,7 @@ import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
@@ -171,16 +172,16 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		CURRENT_PHASE_LOCK.lock();
 		
 		String originalThreadName = null;
+
+		//we have to register current watchdog's thread to context provider - from now all 
+		//ContextProvider.getGraph() invocations return proper transformation graph
+		Context c = ContextProvider.registerGraph(graph);
 		try {
 			
 			//thread context classloader is preset to a reasonable classloader
 			//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
 			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 
-			//we have to register current watchdog's thread to context provider - from now all 
-			//ContextProvider.getGraph() invocations return proper transformation graph
-			ContextProvider.registerGraph(graph);
-			
     		MDC.put("runId", runtimeContext.getRunId());
     		
     		Thread t = Thread.currentThread();
@@ -318,14 +319,13 @@ public class WatchDog implements Callable<Result>, CloverPost {
        		watchDogStatus = Result.ERROR;
        		ExceptionUtils.logException(logger, "Error watchdog execution", t);
 		} finally {
+			//we have to unregister current watchdog's thread from context provider
+			ContextProvider.unregister(c);
 
 			if (finishJMX) {
             	finishJMX();
             }
             
-			//we have to unregister current watchdog's thread from context provider
-			ContextProvider.unregister();
-
 			CURRENT_PHASE_LOCK.unlock();
 			
 			if (originalThreadName != null)

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 import org.apache.log4j.MDC;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.Node;
 
 /**
@@ -70,7 +71,7 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 	
 	@Override
 	public void run() {
-		ContextProvider.registerNode(node);
+		Context c = ContextProvider.registerNode(node);
 		try {
 			MDC.put("runId", node.getGraph().getRuntimeContext().getRunId());
 			//set a meaningful name of current thread
@@ -92,7 +93,7 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 			exception = e;
 			throw e;
 		} finally {
-			ContextProvider.unregister();
+			ContextProvider.unregister(c);
 			MDC.remove("runId");
 			Thread.currentThread().setName("<unnamed>");
 		}

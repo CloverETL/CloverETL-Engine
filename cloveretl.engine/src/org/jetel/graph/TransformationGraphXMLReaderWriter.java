@@ -50,6 +50,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -325,6 +326,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * @since         May 21, 2002
 	 */
 	public TransformationGraph read(Document document) throws XMLConfigurationException,GraphConfigurationException {
+		Context c = null;
 		try {
 			Map<String, Object> metadata = new HashMap<String, Object>(ALLOCATE_MAP_SIZE);
 			graph = null;
@@ -336,7 +338,7 @@ public class TransformationGraphXMLReaderWriter {
 			graph = new TransformationGraph(id);
 
 			//it is necessary for correct edge factorisation in EdgeFactory (maybe will be useful even somewhere else)
-			ContextProvider.registerGraph(graph);
+			c = ContextProvider.registerGraph(graph);
 			
 			graph.setInitialRuntimeContext(runtimeContext);
 			graph.loadGraphProperties(runtimeContext.getAdditionalProperties());
@@ -402,7 +404,7 @@ public class TransformationGraphXMLReaderWriter {
 
 	        return graph;
 		} finally {
-			ContextProvider.unregister();
+			ContextProvider.unregister(c);
 		}
 	}
 

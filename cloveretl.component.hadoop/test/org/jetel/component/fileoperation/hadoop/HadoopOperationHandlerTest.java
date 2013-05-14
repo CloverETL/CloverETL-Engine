@@ -39,6 +39,7 @@ import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
 import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -60,6 +61,8 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 	protected HadoopOperationHandler handler = null;
 	
 	private TransformationGraph graph = null;
+	
+	private Context c = null;
 	
 	@Override
 	protected IOperationHandler createOperationHandler() {
@@ -113,6 +116,8 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 
 	@Override
 	protected void setUp() throws Exception {
+		c = null;
+		
 		initEngine();
 		
 		GraphRuntimeContext context = new GraphRuntimeContext();
@@ -125,11 +130,11 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 			graph = TransformationGraphXMLReaderWriter.loadGraph(is, context);
 			graph.init();
 		} finally {
-			FileUtils.closeQuietly(is);
 			if (graph != null) {
 				// register the graph in ContextProvider, so that Hadoop connections can be obtained
-				ContextProvider.registerGraph(graph);
+				c = ContextProvider.registerGraph(graph);
 			}
+			FileUtils.closeQuietly(is);
 		}
 		
 		super.setUp();
@@ -148,7 +153,7 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 		super.tearDown();
 		handler = null;
 		if (graph != null) {
-			ContextProvider.unregister();
+			ContextProvider.unregister(c);
 			graph = null;
 		}
 	}
