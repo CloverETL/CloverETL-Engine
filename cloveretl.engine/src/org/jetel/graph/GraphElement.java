@@ -104,7 +104,7 @@ public abstract class GraphElement implements IGraphElement {
         this.name = name;
         this.checked = false;
         this.initialized = false;
-        this.logger = Logger.getLogger(this.getClass().getName() + "." + getId());
+        this.logger = Logger.getLogger(this.getClass().getName());
     }
     
     /* (non-Javadoc)
