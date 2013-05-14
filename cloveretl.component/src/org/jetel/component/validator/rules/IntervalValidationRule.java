@@ -211,14 +211,6 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	}
 
 	/**
-	 * @return the target
-	 */
-	public StringValidationParamNode getTarget() {
-		return target;
-	}
-
-
-	/**
 	 * @return the boundaries
 	 */
 	public EnumValidationParamNode getBoundaries() {

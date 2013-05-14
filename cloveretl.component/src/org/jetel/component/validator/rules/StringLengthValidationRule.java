@@ -191,12 +191,6 @@ public class StringLengthValidationRule extends StringValidationRule {
 	}
 
 	/**
-	 * @return the target
-	 */
-	public StringValidationParamNode getTarget() {
-		return target;
-	}
-	/**
 	 * @return the type
 	 */
 	public EnumValidationParamNode getType() {

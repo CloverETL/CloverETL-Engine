@@ -249,13 +249,6 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	}
 	
 	/**
-	 * @return the target
-	 */
-	public StringValidationParamNode getTarget() {
-		return target;
-	}
-
-	/**
 	 * @return the values
 	 */
 	public StringValidationParamNode getValues() {
