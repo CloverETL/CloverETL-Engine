@@ -35,8 +35,33 @@ import org.jetel.metadata.DataFieldFormatType;
 import org.joda.time.format.DateTimeFormat;
 
 /**
+ * <p>Abstract class providing capability to store multiple {@link LanguageSetting} from child class.</p>
+ * 
+ * <p>Most usages will be through {@link ConversionValidationRule} and {@link StringValidationRule}.</p>
+ * 
+ * For using directly:
+ * <ul> 
+ *  <li><code>addLanguageSetting(new LanguageSetting());</code> somewhere in constructor</li>
+ *  <li>in {@link #initialize()} initialize and hide unused items of language settings, for example:<br />
+ *  <code>
+ *  	LanguageSetting languageSetting = getLanguageSettings(0);
+ *		languageSetting.initialize();
+ *		languageSetting.getNumberFormat().setHidden(true); 
+ *	</code>
+ *	</li>
+ *  <li>Log it <code>logLanguageSettings();</code></li>
+ *  <li>Take inherited language settings into account, for example:<br />
+ *  <code>LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);</code>
+ *  </li>
+ *  <li>Use values from <code>computedLS</code></li>
+ * </ul>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 12.3.2013
+ * @see DateValidationRule
+ * @see NumberValidationRule
+ * @see ConversionValidationRule
+ * @see StringValidationRule
  */
 @XmlType(propOrder={"languageSettings"})
 public abstract class LanguageSettingsValidationRule extends AbstractValidationRule {
@@ -45,14 +70,27 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 	@XmlElementRef
 	private List<LanguageSetting> languageSettings = new ArrayList<LanguageSetting>();
 
+	/**
+	 * Returns all stored language settings
+	 * @return All language settings
+	 */
 	public List<LanguageSetting> getLanguageSettings() {
 		return languageSettings;
 	}
 	
+	/**
+	 * Store new language setting
+	 * @param value New language setting
+	 */
 	public void addLanguageSetting(LanguageSetting value) {
 		languageSettings.add(value);
 	}
 	
+	/**
+	 * Returns language setting with given id
+	 * @param index
+	 * @return language setting
+	 */
 	public LanguageSetting getLanguageSettings(int index) {
 		try {
 			return languageSettings.get(index);
@@ -71,6 +109,13 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 		}
 	}
 	
+	/**
+	 * Checks whether given date formatting mask is correct.
+	 * @param resolvedInput Input where all params are resolved
+	 * @param originalParamNode Param node with formatting mask (to raise error when needed)
+	 * @param accumulator Accumulator of errors
+	 * @return True if correct, false otherwise
+	 */
 	protected boolean isDateFormatReady(String resolvedInput, StringEnumValidationParamNode originalParamNode, ReadynessErrorAcumulator accumulator) {
 		DataFieldFormatType formatType = DataFieldFormatType.getFormatType(resolvedInput);
 		if(formatType == DataFieldFormatType.JAVA || formatType == null) {
@@ -94,6 +139,13 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 		return true;
 	}
 	
+	/**
+	 * Checks whether given locale is correct.
+	 * @param resolvedInput Input where all params are resolved
+	 * @param originalParamNode Param node with locale (to raise error when needed)
+	 * @param accumulator Accumulator of errors
+	 * @return True if correct, false otherwise.
+	 */
 	protected boolean isLocaleReady(String resolvedInput, StringEnumValidationParamNode originalParamNode, ReadynessErrorAcumulator accumulator) {
 		if(resolvedInput.isEmpty()) {
 			accumulator.addError(originalParamNode, this, "Locale is empty.");
@@ -102,6 +154,13 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 		return true;
 	}
 	
+	/**
+	 * Checks whether given timezone is correct.
+	 * @param resolvedInput Input where all params are resolved
+	 * @param originalParamNode Param node with timezone (to raise error when needed)
+	 * @param accumulator Accumulator of errors
+	 * @return True if correct, false otherwise
+	 */
 	protected boolean isTimezoneReady(String resolvedInput, StringEnumValidationParamNode originalParamNode, ReadynessErrorAcumulator accumulator) {
 		if(resolvedInput.isEmpty()) {
 			accumulator.addError(originalParamNode, this, "Timezone is empty.");
@@ -110,6 +169,13 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 		return true;
 	}
 	
+	/**
+	 * Checks whether given number formatting mask is correct.
+	 * @param resolvedInput Input where all params are resolved.
+	 * @param originalParamNode Param node with formatting mask (to raise error when needed).
+	 * @param accumulator Accumulator of errors
+	 * @return True if correct, false otherwise
+	 */
 	protected boolean isNumberFormatReady(String resolvedInput, StringEnumValidationParamNode originalParamNode, ReadynessErrorAcumulator accumulator) {
 		try {
 			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance();

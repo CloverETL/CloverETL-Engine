@@ -34,6 +34,7 @@ import org.jetel.component.validator.CustomRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -68,15 +69,28 @@ import org.jetel.util.CTLMapping;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule for executing CTL2 custom rule carried in {@link CustomRule} saved in the root of
+ * validation tree (@see {@link ValidationGroup}.</p>
+ * 
+ * <p>User rules are CTL2 function with arguments. This arguments comes from target fields.</p>
+ * 
+ * <p>Checks whether the code is compilable and arguments types are OK.</p>
+ * 
+ * <p>Param node ref contains ID of {@link CustomRule} as it is stored in root {@link ValidationGroup}.
+ * Not accesible by user.</p>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 18.4.2013
+ * @see CustomRule
+ * @see CTLMapping
+ * @see Validator#createCustomRuleOutputMetadata()
  */
 @XmlRootElement(name="custom")
 @XmlType(propOrder={"ref"})
 public class CustomValidationRule extends AbstractValidationRule {
 	
-	public static final int ERROR = 1101;
-	public static final int ERROR_EXECUTION = 1102;
+	public static final int ERROR = 1101;			/** Custom rule returned false thus the record is invalid */
+	public static final int ERROR_EXECUTION = 1102;	/** Error executing rule (invalid code, some runtime problems...) */
 	
 	@XmlElement(name="ref",required=true)
 	private IntegerValidationParamNode ref = new IntegerValidationParamNode();
@@ -87,7 +101,6 @@ public class CustomValidationRule extends AbstractValidationRule {
 
 	@Override
 	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		// TODO Auto-generated method stub
 		return new ArrayList<ValidationParamNode>();
 	}
 
@@ -214,6 +227,7 @@ public class CustomValidationRule extends AbstractValidationRule {
 	/**
 	 * Prepares transformation code for compilation/execution.
 	 * Prepends function transform() which call function from custom validation rule provided by user.
+	 * 
 	 * @param oldCode Function code provided from validation code
 	 * @param function Function declaration (name and params)
 	 * @param parsedTargets Target fields in order in which they will be passed to the function.
@@ -238,6 +252,14 @@ public class CustomValidationRule extends AbstractValidationRule {
 		return newCode.replace("//#CTL2", buffer.toString());
 	}
 	
+	/**
+	 * Tries to compile given CTL2 source code and return all errors into given accumulator.
+	 * @param sourceCode CTL2 source code to compile
+	 * @param accumulator Accumulator to store all errors in
+	 * @param inputMetadata Input metadata
+	 * @param graphWrapper GraphWrapper (to access graph)
+	 * @return
+	 */
 	private boolean tryToCompile(String sourceCode, ReadynessErrorAcumulator accumulator, DataRecordMetadata inputMetadata, GraphWrapper graphWrapper) {
 		ITLCompiler compiler = TLCompilerFactory.createCompiler(graphWrapper.getTransformationGraph(), new DataRecordMetadata[]{inputMetadata}, new DataRecordMetadata[]{Validator.createCustomRuleOutputMetadata()}, "UTF-8");
 		List<ErrorMessage> msgs = compiler.compile(sourceCode, CTLRecordTransform.class, "DUMMY");

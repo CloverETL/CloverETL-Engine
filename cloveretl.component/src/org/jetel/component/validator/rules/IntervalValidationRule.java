@@ -41,6 +41,17 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule for checking that incoming value is in interval provided by user.</p>
+ * 
+ * Available settings:
+ * <ul>
+ * 	<li>Boundaries. Type of boundaries @see {@link BOUNDARIES_TYPE}</li>
+ *  <li>Left boundary.</li>
+ *  <li>Right boundary.</li>
+ * </ul>
+ * 
+ * <p>Uses language settings inherited from @link {@link ConversionValidationRule}.</p>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 8.1.2013
  */
@@ -48,12 +59,15 @@ import org.jetel.util.string.StringUtils;
 @XmlType(propOrder={"boundariesJAXB", "from", "to"})
 public class IntervalValidationRule extends ConversionValidationRule {
 	
-	public static final int ERROR_INIT_CONVERSION = 801;
-	public static final int ERROR_FIELD_CONVERSION = 802;
-	public static final int ERROR_FROM_CONVERSION = 803;
-	public static final int ERROR_TO_CONVERSION = 804;
-	public static final int ERROR_NOT_IN_INTERVAL = 805;
+	public static final int ERROR_INIT_CONVERSION = 801;	/** Initialization of converter and comparator failed */
+	public static final int ERROR_FIELD_CONVERSION = 802;	/** Converting of incoming field failed */
+	public static final int ERROR_FROM_CONVERSION = 803;	/** Converting of left boundary from user failed */
+	public static final int ERROR_TO_CONVERSION = 804;		/** Converting of right boundary from user failed */
+	public static final int ERROR_NOT_IN_INTERVAL = 805;	/** Incoming value was not in interval */
 	
+	/**
+	 * Types of interval boundaries
+	 */
 	public static enum BOUNDARIES_TYPE {
 		OPEN_CLOSED, CLOSED_OPEN, OPEN_OPEN, CLOSED_CLOSED;
 		@Override
@@ -125,6 +139,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 			return State.INVALID;
 		}
 		
+		// Null values are valid by definition
 		if(field.isNull()) {
 			logSuccess("Field '" + resolvedTarget + "' is null.");
 			return State.VALID;
@@ -211,7 +226,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	}
 
 	/**
-	 * @return the boundaries
+	 * @return Param node with boundaries
 	 */
 	public EnumValidationParamNode getBoundaries() {
 		return boundaries;
@@ -219,7 +234,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 
 
 	/**
-	 * @return the from
+	 * @return Param node with left boundary of interval
 	 */
 	public StringValidationParamNode getFrom() {
 		return from;
@@ -227,18 +242,10 @@ public class IntervalValidationRule extends ConversionValidationRule {
 
 
 	/**
-	 * @return the to
+	 * @return Param node with right boundary of interval
 	 */
 	public StringValidationParamNode getTo() {
 		return to;
-	}
-
-
-	/**
-	 * @return the useType
-	 */
-	public EnumValidationParamNode getUseType() {
-		return useType;
 	}
 	
 	@Override

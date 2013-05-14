@@ -51,8 +51,17 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule to check whether given field(s) is present or not present in selected lookup table.</p>
+ * 
+ * Available parameters:
+ * <ul>
+ * 	<li>Lookup table. ID of lookup table from graph.</li>
+ *  <li>Key mapping. Mapping key to fields, comma separated. For example: part_of_lookup_key=field</li
+ *  <li>Policy. @see {@link POLICY}</li>
+ * </ul>
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 25.3.2013
+ * @see GraphWrapper
  */
 @XmlRootElement(name="lookup")
 @XmlType(propOrder={"lookup", "keyMapping", "policyJAXB"})
@@ -62,6 +71,9 @@ public class LookupValidationRule extends AbstractValidationRule {
 	public static final int ERROR_RECORD_PRESENT = 1003;
 	public static final int ERROR_RECORD_MISSING= 1004;
 	
+	/**
+	 * Ways of treating the lookup result
+	 */
 	public static enum POLICY {
 		REJECT_MISSING, REJECT_PRESENT;
 		@Override
@@ -110,6 +122,11 @@ public class LookupValidationRule extends AbstractValidationRule {
 		return TARGET_TYPE.UNORDERED_FIELDS;
 	}
 	
+	/**
+	 * Lazy and one graph run persistent initialization of lookup table nad lookup.
+	 * @param graphWrapper Graph wrapper
+	 * @throws IllegalArgumentException when initialization fails (due to lookup problems)
+	 */
 	private void init(GraphWrapper graphWrapper) throws IllegalArgumentException {
 		if(tempLookupTable == null) {
 			tempLookupTable = graphWrapper.getLookupTable(resolve(lookup.getValue()));
@@ -134,6 +151,11 @@ public class LookupValidationRule extends AbstractValidationRule {
 			tempRecord.init();
 		}
 	}
+	/**
+	 * Populate record with mapped lookup key with values from incoming value.
+	 * @param values Map of fields and its values of incoming record
+	 * @throws ParseException when provided key mapping is invalid
+	 */
 	private void populateTempRecord(Map<String, DataField> values) throws ParseException {
 		tempRecord.reset();
 		tempRecord.init();

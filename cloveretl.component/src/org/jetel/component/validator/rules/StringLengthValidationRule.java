@@ -39,15 +39,28 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule for checking string length of incoming field. Every non-string input is converted to string.</p>
+ * 
+ * Available parameters:
+ * <ul>
+ * 	<li>Type. Type of condition {@link TYPES}</li>
+ *  <li>Left boundary.</li>
+ *  <li>Right boundary.</li>
+ * </ul>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 4.12.2012
+ * @see StringValidationRule
  */
 @XmlRootElement(name="stringLength")
 @XmlType(propOrder={"typeJAXB", "from", "to"})
 public class StringLengthValidationRule extends StringValidationRule {
 	
-	public static final int ERROR_WRONG_LENGTH = 501;
+	public static final int ERROR_WRONG_LENGTH = 501;	/** Length was not shorter/longer */
 	
+	/**
+	 * Types of condition
+	 */
 	public static enum TYPES {
 		EXACT, MINIMAL, MAXIMAL, INTERVAL;
 		@Override
@@ -191,19 +204,19 @@ public class StringLengthValidationRule extends StringValidationRule {
 	}
 
 	/**
-	 * @return the type
+	 * @return Param node with type of condition
 	 */
 	public EnumValidationParamNode getType() {
 		return type;
 	}
 	/**
-	 * @return the from
+	 * @return Param node with left boundary
 	 */
 	public IntegerValidationParamNode getFrom() {
 		return from;
 	}
 	/**
-	 * @return the to
+	 * @return Param node with right boundary
 	 */
 	public IntegerValidationParamNode getTo() {
 		return to;

@@ -41,6 +41,17 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule for comparing incoming value with reference value provided by user.
+ * User also chooses operator.</p>
+ * 
+ * Available settings:
+ * <ul>
+ * 	<li>Operator. Binary operator used for comparasion.</li>
+ *  <li>Value. Reference value provided by user to compare with. Right operand.</li>
+ * </ul>
+ * 
+ * <p>Uses language settings inherited from @link {@link ConversionValidationRule}.</p>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 8.1.2013
  */
@@ -48,11 +59,14 @@ import org.jetel.util.string.StringUtils;
 @XmlType(propOrder={"operatorJAXB", "value" })
 public class ComparisonValidationRule extends ConversionValidationRule {
 	
-	public static final int ERROR_INIT_CONVERSION = 901;
-	public static final int ERROR_FIELD_CONVERSION = 902;
-	public static final int ERROR_VALUE_CONVERSION = 903;
-	public static final int ERROR_CONDITION_NOT_MET = 904;
+	public static final int ERROR_INIT_CONVERSION = 901;	/** Could not initialize converter and/or comparator */
+	public static final int ERROR_FIELD_CONVERSION = 902;	/** Could not convert incoming value */
+	public static final int ERROR_VALUE_CONVERSION = 903;	/** Could not convert value provided by user */
+	public static final int ERROR_CONDITION_NOT_MET = 904;	/** Comparison was false */
 	
+	/**
+	 * All available operators
+	 */
 	public static enum OPERATOR_TYPE {
 		LE, GE, E, NE, L, G;
 		@Override
@@ -121,6 +135,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 			return State.INVALID;
 		}
 		
+		// Null values are valid from definition
 		if(field.isNull()) {
 			logSuccess("Field '" + resolvedTarget + "' is null.");
 			return State.VALID;
@@ -201,9 +216,15 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		return state;
 	}
 	
+	/**
+	 * @return Param node with operator
+	 */
 	public EnumValidationParamNode getOperator() {
 		return operator;
 	}
+	/**
+	 * @return Param node with reference value
+	 */
 	public StringValidationParamNode getValue() {
 		return value;
 	}

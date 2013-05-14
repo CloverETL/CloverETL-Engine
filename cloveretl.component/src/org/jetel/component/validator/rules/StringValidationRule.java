@@ -52,8 +52,19 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Shared based for validation rules which perform validation on strings (such as Pattern Match).
- * Provides method for preparing field value into string with respect to language setting and possible trimming.
+ * <p>Shared based for validation rules which perform validation on strings (such as {@link PatternMatchValidationRule}).
+ * Provides method for preparing field value into string with respect to language setting and possible trimming.</p>
+ * 
+ * Available settings:
+ * <ul>
+ * 	<li>Trim input. If the input should be trimmed.</li>
+ * </ul>
+ * 
+ * How to use:
+ * <ul>
+ * 	<li>Inherit from this class.</li>
+ *  <li>Use via {@link #prepareInput()}</li>
+ * </ul>
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 4.12.2012
@@ -162,7 +173,7 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		
 		DataField field = record.getField(name);
 		if(field.isNull()) {
-			return "";
+			return "";	// string is wanted!
 		}
 		Object value = field.getValue();
 		if(value instanceof Boolean) {
@@ -258,7 +269,7 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 	}
 
 	/**
-	 * @return the trimInput
+	 * @return Param node with trim settings
 	 */
 	public BooleanValidationParamNode getTrimInput() {
 		return trimInput;

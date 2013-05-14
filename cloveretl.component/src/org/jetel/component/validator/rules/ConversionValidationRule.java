@@ -58,34 +58,49 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Class providing easy to use conversion utils for validation rule.
- * Default type to use is choosen from metadata, but it can be overriden by user.
+ * <p>Class providing easy to use conversion utils for validation rules.</p>
+ * 
+ * <p>Default type to be used is chosen from incoming metadata, but it can be overridden by user selection.</p>
+ * 
+ * Available settings:
+ * <ul>
+ *  <li>Type to be used. According to this parameter the converter and comparator are initialized.</li>
+ * </ul>
+ * 
  * Usage:
- *  - Extend from this class
- *  - In method {@link #isValid(org.jetel.data.DataRecord, org.jetel.component.validator.ValidationErrorAccumulator, GraphWrapper)} perform this 
- * 	<code>
+ * <ul>
+ *  <li>Extend from this class</li>
+ *  <li>In method {@link #isValid()} perform this<br /> 
+ * 	 <code>
  * 		DataFieldType fieldType = computeType(field);
  *		try {
  *			initConversionUtils(fieldType);
  *		} catch (IllegalArgumentException ex) {
- *			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", nodePath, resolvedTarget, field.getValue().toString());
+ *			raiseError(...);
  *			return State.INVALID;
- *		}
- *	</code>
- * - In method {@link #isReady(DataRecordMetadata, ReadynessErrorAcumulator, GraphWrapper)} do not forget check for language setting by calling this
+ *	 	}
+ *	 </code>
+ *  </li>
+ *  <li>In method {@link #isReady()} do not forget check correctness of language setting by calling this
  * 	<code>
  * 		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
  * 	</code>
- * - Use via <code>tempComparator</code> and <code>tempConverter</code>
+ *  <li>Use via <code>tempComparator</code> and <code>tempConverter</code></li>
+ *  <li>For proper initialization of param nodes in GUI perform <code>super.initialize(...);</code> in child class.</li>
+ * </ul>
  * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 12.3.2013
+ * @see LanguageSettingsValidationRule
  */
 @XmlType(propOrder={"useTypeJAXB"})
 public abstract class ConversionValidationRule extends LanguageSettingsValidationRule {
 	
 	protected static final int LANGUAGE_SETTING_ACCESSOR_0 = 0;
 
+	/**
+	 * Available types (each have associated converter and comparator)
+	 */
 	public static enum METADATA_TYPES {
 		DEFAULT, STRING, DATE, LONG, NUMBER, DECIMAL;
 		@Override

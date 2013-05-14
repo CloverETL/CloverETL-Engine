@@ -43,16 +43,26 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule for checking that incoming string field is number according to specific format.</p>
+ * 
+ * Available settings:
+ * <ul>
+ * 	<li>Trim input. If input should be trimmed before parsing.</p>
+ * </ul>
+ * 
+ * <p>Formatting mask and locale is inherited from {@link LanguageSettingsValidationRule}.</p>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 10.3.2013
+ * @see LanguageSettingsValidationRule
  */
 @XmlRootElement(name="number")
 @XmlType(propOrder={"trimInput"})
 public class NumberValidationRule extends LanguageSettingsValidationRule {
 	
-	public static final int ERROR_LEFTOVERS = 401;
-	public static final int ERROR_PARSING = 402;
-	public static final int ERROR_STRING = 403;
+	public static final int ERROR_LEFTOVERS = 401;	/** Input after parsing was not empty. */
+	public static final int ERROR_PARSING = 402;	/** Parsing failed. */
+	public static final int ERROR_STRING = 403;		/** Input field was not string. */
 	
 	private static final int LANGUAGE_SETTING_ACCESSOR_0 = 0;
 	
@@ -99,6 +109,7 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 		String resolvedLocale = resolve(computedLS.getLocale().getValue());
 		
 		DataField field = record.getField(target.getValue());
+		// Null values are valid by definition
 		if(field.isNull()) {
 			logSuccess("Field '" + resolvedTarget + "' is null.");
 			return State.VALID;
@@ -117,9 +128,12 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
 		try {
 			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(realLocale);
-			if(computedLS.getNumberFormat().getValue().equals(CommonFormats.defaultNumber)) {
+			// Special handling with two named formatting masks
+			if(computedLS.getNumberFormat().getValue().equals(CommonFormats.INTEGER)) {
 				numberFormat.applyPattern("#");
 				numberFormat.setParseIntegerOnly(true);
+			} else if(computedLS.getNumberFormat().getValue().equals(CommonFormats.NUMBER)) {
+					numberFormat.applyPattern("#");
 			} else if(!computedLS.getNumberFormat().getValue().isEmpty()) {
 				numberFormat.applyPattern(resolvedFormat);
 			}

@@ -46,17 +46,28 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
 /**
+ * <p>Rule for checking whether incoming value is contained in enumeration provided by user.</p>
+ * 
+ * Available settings:
+ * <ul>
+ *  <li>Enumeration. All values in Clover format, delimited by commas.</li>
+ *  <li>IgnoreCase: True/False.</li>
+ *  <li>Trim input. If the input should be trimmed before processing.</li>
+ * </ul>
+ *  
+ * <p>Uses language settings inherited from @link {@link ConversionValidationRule}.</p>
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 4.12.2012
+ * @see ConversionValidationRule
  */
 @XmlRootElement(name="enumMatch")
 @XmlType(propOrder={"values" , "ignoreCase", "trimInput"})
 public class EnumMatchValidationRule extends ConversionValidationRule {
 	
-	public static final int ERROR_INIT_CONVERSION = 701;
-	public static final int ERROR_PARSING_VALUES = 702;
-	public static final int ERROR_FIELD_CONVERSION = 703;
-	public static final int ERROR_NO_MATCH = 704;
+	public static final int ERROR_INIT_CONVERSION = 701;	/** Converter and/or comparator could not been initialized */
+	public static final int ERROR_PARSING_VALUES = 702;		/** Enumeration provided by user could not been parsed */
+	public static final int ERROR_FIELD_CONVERSION = 703;	/** Conversion of incoming value failed */
+	public static final int ERROR_NO_MATCH = 704;			/** Incoming value was not present in enumeration */
 
 	@XmlElement(name="values",required=true)
 	private StringValidationParamNode values = new StringValidationParamNode();
@@ -239,6 +250,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		}
 		return temp;
 	}
+	
 	private void stripDoubleQuotesAndTrim(String[] input) {
 		for(int i = 0; i < input.length; i++) {
 			input[i] = input[i].trim();
@@ -247,21 +259,24 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 			}
 		}
 	}
-	
+
 	/**
-	 * @return the values
+	 * @return Param nodes with enumeration
 	 */
 	public StringValidationParamNode getValues() {
 		return values;
 	}
 
 	/**
-	 * @return the ignoreCase
+	 * @return Param node with ignore case settings
 	 */
 	public BooleanValidationParamNode getIgnoreCase() {
 		return ignoreCase;
 	}
 	
+	/**
+	 * @return Param node with trim input settings
+	 */
 	public BooleanValidationParamNode getTrimInput() {
 		return trimInput;
 	}

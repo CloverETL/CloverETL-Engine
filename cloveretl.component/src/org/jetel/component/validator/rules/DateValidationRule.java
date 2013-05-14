@@ -49,16 +49,26 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 /**
+ * <p>Rule for checking that incoming string field is date according to specific format.</p>
+ * 
+ * Available settings:
+ * <ul>
+ * 	<li>Trim input. If input should be trimmed before parsing.</p>
+ * </ul>
+ * 
+ * <p>Formatting mask, timezone, locale is inherited from {@link LanguageSettingsValidationRule}.</p>
+ * 
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 10.3.2013
+ * @see LanguageSettingsValidationRule
  */
 @XmlRootElement(name="date")
 @XmlType(propOrder={"trimInput"})
 public class DateValidationRule extends LanguageSettingsValidationRule {
 	
-	public static final int ERROR_DOUBLE_CHECK = 301;
-	public static final int ERROR_PARSING = 302;
-	public static final int ERROR_STRING = 303;
+	public static final int ERROR_DOUBLE_CHECK = 301;	/** Input after parsing was not empty */
+	public static final int ERROR_PARSING = 302;		/** Parsing unsuccessful */
+	public static final int ERROR_STRING = 303;			/** Input was not string */
 	
 	private static final int LANGUAGE_SETTING_ACCESSOR_0 = 0;
 	
@@ -77,7 +87,7 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 		
 		LanguageSetting languageSetting = getLanguageSettings(0);
 		languageSetting.initialize();
-		languageSetting.getNumberFormat().setHidden(true);
+		languageSetting.getNumberFormat().setHidden(true); // No need for number format
 		return params;
 	}
 
@@ -105,6 +115,7 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 		String resolvedTimezone = resolve(computedLS.getTimezone().getValue());
 		
 		DataField field = record.getField(resolvedTarget);
+		// Null values are valid by definition
 		if(field.isNull()) {
 			logSuccess("Field '" + resolvedTarget + "' is null.");
 			return State.VALID;
