@@ -46,7 +46,6 @@ import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
-import org.jetel.util.SubGraphUtils;
 import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertiesUtils;
@@ -424,7 +423,7 @@ public abstract class IAuthorityProxy {
 	 * @param inputPortIndex index of virtual remote port
 	 * @return stream where serialised data records can be written
 	 */
-	public abstract OutputStream getSubGraphDataTarget(long subGraphRunId, int inputPortIndex);
+	public abstract OutputStream getSubGraphDataTarget(long subGraphRunId, int inputPortIndex) throws InterruptedException;
 
 	/**
 	 * Returns {@link InputStream} where the parent graph can get data records from a sub-graph.
@@ -433,7 +432,7 @@ public abstract class IAuthorityProxy {
 	 * @param outputPortIndex index of virtual remote port
 	 * @return stream where serialised data records can be read
 	 */
-	public abstract InputStream getSubGraphDataSource(long subGraphRunId, int outputPortIndex);
+	public abstract InputStream getSubGraphDataSource(long subGraphRunId, int outputPortIndex) throws InterruptedException;
 
 	/**
 	 * Returns {@link InputStream} where a sub-graph can get data records from parent graph.
@@ -441,7 +440,7 @@ public abstract class IAuthorityProxy {
 	 * @param inputPortIndex index of virtual remote port
 	 * @return stream where serialised data records can be read
 	 */
-	public abstract InputStream getParentGraphDataSource(int inputPortIndex);
+	public abstract InputStream getParentGraphDataSource(int inputPortIndex) throws InterruptedException;
 
 	/**
 	 * Returns {@link OutputStream} where a sub-graph can sent data records to parent graph.
@@ -449,7 +448,7 @@ public abstract class IAuthorityProxy {
 	 * @param outputPortIndex index of virtual remote port
 	 * @return stream where serialised data records can be written
 	 */
-	public abstract OutputStream getParentGraphDataTarget(int outputPortIndex);
+	public abstract OutputStream getParentGraphDataTarget(int outputPortIndex) throws InterruptedException;
 
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,
