@@ -269,11 +269,11 @@ public class UtilLib extends TLFunctionLibrary {
     class HashCodeFunction implements TLFunctionPrototype {
 
     	private class ParamCache extends TLCache{
-    		ParamTypeEnum type;
-    		ParamCache(ParamTypeEnum type){
+    		TLTypeEnum type;
+    		ParamCache(TLTypeEnum type){
     			this.type=type;
     		}
-    		ParamTypeEnum getType(){
+    		TLTypeEnum getType(){
     			return type;
     		}
     	}
@@ -281,7 +281,7 @@ public class UtilLib extends TLFunctionLibrary {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
-			context.setCache(new ParamCache(ParamTypeEnum.convertParamType(context.getParams()[0])));
+			context.setCache(new ParamCache(TLTypeEnum.convertParamType(context.getParams()[0])));
 		}
     	
 		@Override
