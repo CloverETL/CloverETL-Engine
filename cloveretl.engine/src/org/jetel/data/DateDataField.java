@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
@@ -411,7 +412,7 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	@Override
 	public int hashCode(){
 		if (isNull) return 0;
-		return value.hashCode();
+		return HashCodeUtil.getHash(value);
 	}
 	
 	/**

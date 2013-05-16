@@ -35,6 +35,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.BinaryFormat;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.NumericFormatter;
 import org.jetel.util.formatter.NumericFormatterFactory;
@@ -624,8 +625,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	
 	@Override
 	public int hashCode(){
-		long v=Double.doubleToLongBits(value);
-		return (int)(v^(v>>32));
+		return HashCodeUtil.getHash(value);
 	}
 
 	/**

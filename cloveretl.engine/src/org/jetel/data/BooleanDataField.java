@@ -22,6 +22,7 @@ import java.nio.BufferOverflowException;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
 import org.jetel.util.formatter.BooleanFormatterFactory;
@@ -302,8 +303,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 	@Override
 	public int hashCode(){
 		if (isNull) return 123;
-		Boolean v = Boolean.valueOf(value);
-		return v.hashCode();
+		return HashCodeUtil.getHash(value);
 	}
 	
 	/**

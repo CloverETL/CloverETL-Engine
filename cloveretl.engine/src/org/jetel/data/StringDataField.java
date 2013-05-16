@@ -24,6 +24,7 @@ import java.text.RuleBasedCollator;
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.CloverString;
@@ -438,11 +439,7 @@ public class StringDataField extends DataField implements CharSequence{
     
 	@Override
 	public int hashCode(){
-		int hash=5381;
-		for (int i=0;i<value.length();i++){
-			hash = ((hash << 5) + hash) + value.charAt(i); 
-		}
-		return (hash & 0x7FFFFFFF);
+		return HashCodeUtil.getHash(value);
 	}
 	
 	/**

@@ -35,6 +35,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.BinaryFormat;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.bytes.PackedDecimal;
@@ -608,7 +609,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 
 	@Override
 	public int hashCode(){
-        return value.hashCode();
+        return HashCodeUtil.getHash(value);
 	}
 
 	/**
