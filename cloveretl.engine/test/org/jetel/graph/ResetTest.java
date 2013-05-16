@@ -178,9 +178,6 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
 							&& !file.getName().equals("DBLookupTable_negativeResponse_noCache.grf") // remove after CLO-715 solved
 							&& !file.getName().equals("BeanWriterReader_employees.grf") // remove after CL-2474 solved
-							&& !file.getName().equals("XMLWriter-CL-2404-CNO_OTF_ITSS.grf") // temporarily turned off - runs too long
-							&& !file.getName().startsWith("A0*") // temporarily turned off - runs too long
-							&& !file.getName().startsWith("A1*") // temporarily turned off - runs too long
 							&& !file.getName().equals("EmptyGraph.grf"); // ok, is to fail
 					
 				}
