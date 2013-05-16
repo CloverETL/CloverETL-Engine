@@ -32,11 +32,11 @@ import org.jetel.ctl.data.TLType;
  *
  * @created May 16, 2013
  */
-public enum ParamTypeEnum {
+public enum TLTypeEnum {
 	
 	STRING, INT, LONG, DOUBLE, DECIMAL, DATE, BYTEARRAY, BOOLEAN, MAP, LIST, RECORD, UNKNOWN;
 	
-	public static ParamTypeEnum convertParamType(TLType type) {
+	public static TLTypeEnum convertParamType(TLType type) {
 		if (type.isString()) {
 			return STRING;
 		} else if (type.isInteger()) {
