@@ -28,6 +28,7 @@ import java.util.Arrays;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.Compare;
@@ -496,7 +497,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 
 	@Override
 	public int hashCode(){
-		 return Arrays.hashCode(this.value);
+		 return HashCodeUtil.getHash(value);
 	}
 	
 	/**

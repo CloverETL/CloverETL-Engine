@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.BitArray;
 
@@ -707,11 +708,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 */
 	@Override
 	public int hashCode(){
-	    int hash=17;
-	    for (int i=0;i<fields.length;i++){
-	        hash=37*hash+fields[i].hashCode();
-	    }
-	    return hash;
+	    return HashCodeUtil.getHash(fields);
 	}
     
     /**

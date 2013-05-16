@@ -37,6 +37,7 @@ import org.jetel.ctl.TLUtils;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
@@ -458,6 +459,12 @@ public class MapDataField extends DataField {
 		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be compared to each other. Map fields are not supported.");
 	}
 
+	@Override
+	public int hashCode(){
+		return HashCodeUtil.getHash(this.fields);
+	}
+	
+	
 	/**
 	 * 
 	 * @author Kokon (info@cloveretl.com)

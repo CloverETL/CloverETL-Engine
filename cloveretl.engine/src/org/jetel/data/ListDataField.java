@@ -35,6 +35,7 @@ import org.jetel.ctl.TLUtils;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.IdentityArrayList;
@@ -540,6 +541,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	@Override
 	public Iterator<DataField> iterator() {
 		return new Itr();
+	}
+	
+	@Override
+	public int hashCode(){
+		return HashCodeUtil.getHash(this.fields);
 	}
 
 	private class Itr implements Iterator<DataField> {
