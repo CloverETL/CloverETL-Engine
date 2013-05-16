@@ -18,12 +18,17 @@
  */
 package org.jetel.ctl.extensions;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.jetel.ctl.Stack;
+import org.jetel.ctl.data.TLType;
+import org.jetel.data.DataRecord;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -38,7 +43,8 @@ public class UtilLib extends TLFunctionLibrary {
            	"getParamValue".equals(functionName) ? new GetParamValueFunction() :
         	"getParamValues".equals(functionName) ? new GetParamValuesFunction() :
         	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
-    		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : null; 
+    		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
+    		"hashCode".equals(functionName)	? new HashCodeFunction() :	null; 
     		
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -200,4 +206,127 @@ public class UtilLib extends TLFunctionLibrary {
     		stack.push(getEnvironmentVariables(context));
     	}
     }
+    
+    // HASH CODE
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final int hashCode(TLFunctionCallContext context, int i) {
+ 		return HashCodeUtil.getHash(i);
+ 	}
+ 	
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final int hashCode(TLFunctionCallContext context, long i) {
+ 		return HashCodeUtil.getHash(i);
+ 	}
+ 	
+ 	
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final int hashCode(TLFunctionCallContext context, double i) {
+ 		return HashCodeUtil.getHash(i);
+ 	}
+ 	
+    
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+   	public static final int hashCode(TLFunctionCallContext context, boolean i) {
+   		return HashCodeUtil.getHash(i);
+   	}
+ 	
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final int hashCode(TLFunctionCallContext context, BigDecimal i) {
+ 		return HashCodeUtil.getHash(i);
+ 	}
+ 	
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final int hashCode(TLFunctionCallContext context, String i) {
+    	return HashCodeUtil.getHash(i);
+ 	}
+    
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final int hashCode(TLFunctionCallContext context, java.util.Date i) {
+ 		return HashCodeUtil.getHash(i);
+ 	}
+    
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final <E> int hashCode(TLFunctionCallContext context, List<E> list) {
+ 		return HashCodeUtil.getHash(list);
+ 	}
+ 	
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final <K,V> int hashCode(TLFunctionCallContext context, Map<K,V> map) {
+ 		return HashCodeUtil.getHash(map);
+ 	}
+ 	
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final int hashCode(TLFunctionCallContext context, byte[] i) {
+ 		return HashCodeUtil.getHash(i);
+ 	}
+ 	
+    @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
+ 	public static final int hashCode(TLFunctionCallContext context, DataRecord rec) {
+ 		return rec.hashCode();
+ 	}
+    
+      
+    class HashCodeFunction implements TLFunctionPrototype {
+
+    	private class ParamCache extends TLCache{
+    		ParamTypeEnum type;
+    		ParamCache(ParamTypeEnum type){
+    			this.type=type;
+    		}
+    		ParamTypeEnum getType(){
+    			return type;
+    		}
+    	}
+    	
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+			context.setCache(new ParamCache(ParamTypeEnum.convertParamType(context.getParams()[0])));
+		}
+    	
+		@Override
+		// TODO: implementation not consistent with compiled version of function
+		// due to missing switchable property/attrib of TLType..
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			switch (((ParamCache) context.getCache()).getType()) {
+			case STRING:
+				stack.push(HashCodeUtil.getHash(stack.popString()));
+				break;
+			case INT:
+				stack.push(HashCodeUtil.getHash(stack.popInt().intValue()));
+				break;
+			case LONG:
+				stack.push(HashCodeUtil.getHash(stack.popLong().longValue()));
+				break;
+			case DECIMAL:
+				stack.push(HashCodeUtil.getHash(stack.popDecimal()));
+				break;
+			case DOUBLE:
+				stack.push(HashCodeUtil.getHash(stack.popDouble().doubleValue()));
+				break;
+			case BYTEARRAY:
+				stack.push(HashCodeUtil.getHash(stack.popByteArray()));
+				break;
+			case DATE:
+				stack.push(HashCodeUtil.getHash(stack.popDate()));
+				break;
+			case BOOLEAN:
+				stack.push(HashCodeUtil.getHash(stack.popBoolean().booleanValue()));
+				break;
+			case MAP:
+				stack.push(HashCodeUtil.getHash(stack.popMap()));
+				break;
+			case LIST:
+				stack.push(HashCodeUtil.getHash(stack.popList()));
+				break;
+			case RECORD:
+				stack.push(stack.pop().hashCode());
+				break;
+			default:
+				stack.push(stack.pop().hashCode());
+			}
+		}
+
+    }
+    
 }
