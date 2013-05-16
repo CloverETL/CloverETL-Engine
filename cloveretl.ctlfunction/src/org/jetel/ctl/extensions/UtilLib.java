@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
+import org.jetel.ctl.data.TLTypeEnum;
 import org.jetel.data.DataRecord;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.primitive.TypedProperties;
