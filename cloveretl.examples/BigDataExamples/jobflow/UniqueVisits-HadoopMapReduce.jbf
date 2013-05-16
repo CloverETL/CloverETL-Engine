@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360543511" licenseType="Commercial" modified="Tue Mar 19 19:57:26 CET 2013" modifiedBy="mtomcanyi" name="ProcessLog_CloverETL" nature="jobflow" revision="1.98" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360543511" licenseType="Commercial" modified="Wed May 15 13:46:07 CEST 2013" modifiedBy="tkramolis" name="ProcessLog_CloverETL" nature="jobflow" revision="1.99" showComponentDetails="true">
 <Global>
 <Metadata id="ExecuteGraph_RunStatus2">
 <Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
@@ -15,8 +16,8 @@
 </Record>
 </Metadata>
 <Connection config="${CONN_DIR}/Hadoop-CDH-3u5.cfg" id="CDH3" type="HADOOP"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Property fileURL="hadoop.prm" id="GraphParameter13"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="290" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="MapReduce" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="721" y="122">
 <attr name="text"><![CDATA[
 MapReduce job JAR:
@@ -27,9 +28,9 @@ src/]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="290" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Configuration" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="489" y="122">
 <attr name="text"><![CDATA[
-Before running the job you need to setup the Hadoop HDFS and Hive connections in underlying jobs.
+Before running the job you need to setup the Hadoop HDFS+MapReduce connection in underlying jobs.
 
-The necessary Hive and Hadoop libraries are located in "lib" directory of this project
+The necessary Hadoop libraries are located in "lib" directory of this project
 
 Hadoop HDFS+MapRed:
 - CDH-3u5: lib/hadoop/cdh3u5/*.jar 
