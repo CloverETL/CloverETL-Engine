@@ -163,11 +163,11 @@ public class Phase extends GraphElement implements Comparable {
 			} catch (Exception ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node, "Component " + node + " initilization failed.", ex);
+				throw new ComponentNotReadyException(node, "Component " + node + " initialization failed.", ex);
 			} catch (Throwable ex) {
 				node.setResultCode(Result.ERROR);
 				result = Result.ERROR;
-				throw new ComponentNotReadyException(node, "FATAL: Component " + node + " initilization failed.", new JetelRuntimeException(ex));
+				throw new ComponentNotReadyException(node, "FATAL: Component " + node + " initialization failed.", new JetelRuntimeException(ex));
 			} finally {
 				ContextProvider.unregister(c);
 				Thread.currentThread().setContextClassLoader(formerClassLoader);
