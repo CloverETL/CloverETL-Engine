@@ -30,8 +30,6 @@ public class AhoCorasick {
 	boolean failureFunctionDone = false;
 	NodeTrie rootTrie;
 	NodeTrie currentNode;
-	int minPattern;
-    int maxPattern;
     
 	/**
 	 * Constructor of Aho-Corasick algorithm.
@@ -92,20 +90,6 @@ public class AhoCorasick {
 				qa.patterns.addAll(qa.fail.patterns);
 			}
 		}
-        
-        //create patternsFinal (bit array) from patterns set - for fast isPattern() method
-        currentNodes = new ArrayList<NodeTrie>();
-        currentNodes.add(rootTrie);
-        do {
-            for(NodeTrie nt : currentNodes) {
-                qa = nt;
-                qa.patternsFinal = new boolean[maxPattern - minPattern + 1];
-                for(MyInt myInt : qa.patterns) {
-                    qa.patternsFinal[myInt.value - minPattern] = true;
-                }
-            }
-        } while(!(currentNodes = getNextLevelNode(currentNodes)).isEmpty());
-        
 	}
 	
 	/**
@@ -126,11 +110,8 @@ public class AhoCorasick {
 				}
 				iterator = iterator.children[s.charAt(i)]; 
 			}
-			iterator.patterns.add(new MyInt(idx));
+			iterator.patterns.add(idx);
 		}
-		
-        if(idx < minPattern) minPattern = idx;
-        if(idx > maxPattern) maxPattern = idx;
 	}
 
 	/**
@@ -152,11 +133,9 @@ public class AhoCorasick {
 				}
 				iterator = iterator.children[b]; 
 			}
-			iterator.patterns.add(new MyInt(idx));
+			iterator.patterns.add(idx);
 		}
 		
-        if(idx < minPattern) minPattern = idx;
-        if(idx > maxPattern) maxPattern = idx;
 	}
 
 	/**
@@ -181,7 +160,7 @@ public class AhoCorasick {
 	}
 	
 	public boolean isPattern(int idx) {
-		return currentNode.patternsFinal[idx - minPattern];
+		return currentNode.patterns.contains(idx);
 	}
 	
 	public boolean canUpdateWithoutFail() {
@@ -236,8 +215,7 @@ public class AhoCorasick {
 		NodeTrie parent;
 		char transition;
 		NodeTrie[] children;
-		Set<MyInt> patterns;
-        boolean[] patternsFinal;
+		Set<Integer> patterns;
 		NodeTrie fail;
 		List<NodeTrie> childrenList; //lazily initialised from children array
 		
@@ -248,7 +226,7 @@ public class AhoCorasick {
 		 */
 		public NodeTrie(NodeTrie parent, char transition) {
 			children = new NodeTrie[Character.MAX_VALUE + 1];
-			patterns = new HashSet<MyInt>();
+			patterns = new HashSet<Integer>();
 			this.parent = parent;
 			this.transition = transition;
 			if(this.parent == null) {
@@ -303,42 +281,6 @@ public class AhoCorasick {
 			return result.toString();
 		}
 		
-	}
-	
-	/**
-	 * My implementation of integer class.
-	 */
-	private static class MyInt {
-		int value;
-		
-		/**
-		 * Constructor.
-		 */
-		private MyInt() {
-		}
-		
-		/**
-		 * Constructor.
-		 * @param value integer value to store
-		 */
-		private MyInt(int value) {
-			this.value = value;
-		}
-
-		@Override
-		public int hashCode() {
-	    	return value;
-	    }
-
-		@Override
-		public boolean equals(Object obj) {
-			if (!(obj instanceof MyInt)) {
-				return false;
-			}
-			final MyInt other = (MyInt) obj;
-
-			return other.value == value;
-		}
 	}
 	
 	/**
