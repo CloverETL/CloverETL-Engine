@@ -70,7 +70,7 @@
 	<property name="dir.pmdreport" value="${dir.build}/pmdreport" />
 	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="dir.licenses" value="${basedir}/licenses" />
-	<property name="tests.license.version" value="3.5"/>
+	<property name="test.license.version" value="3.5"/>
 
 	<!--load external properties-->
 	<property file="build-local.properties"/>
