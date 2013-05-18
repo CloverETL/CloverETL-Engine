@@ -18,10 +18,8 @@
  */
 package org.jetel.component.validator.rules;
 
-import org.jetel.component.validator.AbstractValidationRule;
-import org.jetel.component.validator.ValidationNode.State;
-import org.jetel.component.validator.common.TestDataRecordFactory;
 import org.jetel.component.validator.common.ValidatorTestCase;
+import org.jetel.data.DataRecord;
 import org.junit.Test;
 
 /**
@@ -39,40 +37,92 @@ public class StringLengthValidationRuleTest extends ValidatorTestCase {
 		testDisability(StringLengthValidationRule.class);
 	}
 	@Test
+	public void testCommon() {
+		testCommon(StringLengthValidationRule.class);
+	}
+	@Test
 	public void testReadyness() {
-		// TODO
+		StringLengthValidationRule temp;
+		DataRecord record = RF.addStringField(null, "field", "");
+		
+		assertReadyness(true, newRule("==", false, "field", 5, 0), record.getMetadata());
+		assertReadyness(true, newRule("==", false, "field", 0, 0), record.getMetadata());
+		assertReadyness(false, newRule("==", false, "field2", 5, 0), record.getMetadata());
+		assertReadyness(false, newRule("==", false, "", 5, 0), record.getMetadata());
+		assertReadyness(false, newRule("==", false, "", -5, 0), record.getMetadata());
+		temp = newRule("==", false, "", 5, 0);
+		temp.getFrom().setValue(null);
+		assertReadyness(false, temp, record.getMetadata());
+		
+		assertReadyness(true, newRule("<=", false, "field", 5, 0), record.getMetadata());
+		assertReadyness(true, newRule("<=", false, "field", 0, 0), record.getMetadata());
+		assertReadyness(false, newRule("<=", false, "field2", 5, 0), record.getMetadata());
+		assertReadyness(false, newRule("<=", false, "", 5, 0), record.getMetadata());
+		assertReadyness(false, newRule("<=", false, "field", -5, 0), record.getMetadata());
+		temp = newRule("<=", false, "", 5, 0);
+		temp.getFrom().setValue(null);
+		assertReadyness(false, temp, record.getMetadata());
+		
+		assertReadyness(true, newRule(">=", false, "field", 0, 5), record.getMetadata());
+		assertReadyness(true, newRule(">=", false, "field", 0, 0), record.getMetadata());
+		assertReadyness(false, newRule(">=", false, "field2", 0, 5), record.getMetadata());
+		assertReadyness(false, newRule(">=", false, "", 0, 5), record.getMetadata());
+		assertReadyness(false, newRule(">=", false, "field", 0, -5), record.getMetadata());
+		temp = newRule(">=", false, "", 0, 5);
+		temp.getTo().setValue(null);
+		assertReadyness(false, temp, record.getMetadata());
+		
+		assertReadyness(true, newRule("<>", false, "field", 0, 5), record.getMetadata());
+		assertReadyness(true, newRule("<>", false, "field", 0, 0), record.getMetadata());
+		assertReadyness(false, newRule("<>", false, "field2", 0, 5), record.getMetadata());
+		assertReadyness(false, newRule("<>", false, "", 0, 5), record.getMetadata());
+		assertReadyness(false, newRule("<>", false, "field", 0, -5), record.getMetadata());
+		temp = newRule("<>", false, "", 0, 5);
+		temp.getTo().setValue(null);
+		temp.getFrom().setValue(null);
+		assertReadyness(false, temp, record.getMetadata());
 	}
 	@Test
 	public void testNormal() {
-		assertEquals(State.INVALID, createRule("==", "field", 5, 0).isValid(TestDataRecordFactory.addStringField(null, "field", "1234"), null, null));
-		assertEquals(State.VALID, createRule("==", "field", 5, 0).isValid(TestDataRecordFactory.addStringField(null, "field", "12345"), null, null));
-		assertEquals(State.INVALID, createRule("==", "field", 5, 0).isValid(TestDataRecordFactory.addStringField(null, "field", "123456"), null, null));
+		assertInvalid(newRule("==", false, "field", 5, 0), RF.addStringField(null, "field", "1234"));
+		assertValid(newRule("==", false, "field", 5, 0), RF.addStringField(null, "field", "12345"));
+		assertInvalid(newRule("==", false, "field", 5, 0), RF.addStringField(null, "field", "123456"));
 		
-		assertEquals(State.INVALID, createRule(">=", "field", 6, 0).isValid(TestDataRecordFactory.addStringField(null, "field", "abcd"), null, null));
-		assertEquals(State.VALID, createRule(">=", "field", 6, 0).isValid(TestDataRecordFactory.addStringField(null, "field", "abcdef"), null, null));
-		assertEquals(State.VALID, createRule(">=", "field", 6, 0).isValid(TestDataRecordFactory.addStringField(null, "field", "abcdefgh"), null, null));
+		assertInvalid(newRule(">=", false, "field", 6, 0), RF.addStringField(null, "field", "abcd"));
+		assertValid(newRule(">=", false, "field", 6, 0), RF.addStringField(null, "field", "abcdef"));
+		assertValid(newRule(">=", false, "field", 6, 0), RF.addStringField(null, "field", "abcdefgh"));
 		
-		assertEquals(State.VALID, createRule("<=", "field", 0, 6).isValid(TestDataRecordFactory.addStringField(null, "field", "abcd"), null, null));
-		assertEquals(State.VALID, createRule("<=", "field", 0, 6).isValid(TestDataRecordFactory.addStringField(null, "field", "abcdef"), null, null));
-		assertEquals(State.INVALID, createRule("<=", "field", 0, 6).isValid(TestDataRecordFactory.addStringField(null, "field", "abcdefgh"), null, null));
+		assertValid(newRule("<=", false, "field", 0, 6), RF.addStringField(null, "field", "abcd"));
+		assertValid(newRule("<=", false, "field", 0, 6), RF.addStringField(null, "field", "abcdef"));
+		assertInvalid(newRule("<=", false, "field", 0, 6), RF.addStringField(null, "field", "abcdefgh"));
 		
-		assertEquals(State.INVALID, createRule("<>", "field", 3, 6).isValid(TestDataRecordFactory.addStringField(null, "field", "ab"), null, null));
-		assertEquals(State.VALID, createRule("<>", "field", 3, 6).isValid(TestDataRecordFactory.addStringField(null, "field", "abc"), null, null));
-		assertEquals(State.VALID, createRule("<>", "field", 3, 6).isValid(TestDataRecordFactory.addStringField(null, "field", "abcd"), null, null));
-		assertEquals(State.VALID, createRule("<>", "field", 3, 6).isValid(TestDataRecordFactory.addStringField(null, "field", "abcde"), null, null));
-		assertEquals(State.VALID, createRule("<>", "field", 3, 6).isValid(TestDataRecordFactory.addStringField(null, "field", "abcdef"), null, null));
-		assertEquals(State.INVALID, createRule("<>", "field", 3, 6).isValid(TestDataRecordFactory.addStringField(null, "field", "abcdefgh"), null, null));
+		assertInvalid(newRule("<>", false, "field", 3, 6), RF.addStringField(null, "field", "ab"));
+		assertValid(newRule("<>", false, "field", 3, 6), RF.addStringField(null, "field", "abc"));
+		assertValid(newRule("<>", false, "field", 3, 6), RF.addStringField(null, "field", "abcd"));
+		assertValid(newRule("<>", false, "field", 3, 6), RF.addStringField(null, "field", "abcde"));
+		assertValid(newRule("<>", false, "field", 3, 6), RF.addStringField(null, "field", "abcdef"));
+		assertInvalid(newRule("<>", false, "field", 3, 6), RF.addStringField(null, "field", "abcdefgh"));
 	}
 	@Test
 	public void testTrimming() {
-		assertEquals(State.INVALID, createTrimmingRule("==", "field", 5, 0).isValid(TestDataRecordFactory.addStringField(null, "field", " 1234 "), null, null));
-		assertEquals(State.VALID, createTrimmingRule("==", "field", 5, 0).isValid(TestDataRecordFactory.addStringField(null, "field", "12345		"), null, null));
-		assertEquals(State.INVALID, createTrimmingRule("==", "field", 5, 0).isValid(TestDataRecordFactory.addStringField(null, "field", "\n123456\n"), null, null));
+		assertInvalid(newRule("==", true, "field", 5, 0), RF.addStringField(null, "field", " 1234 "));
+		assertValid(newRule("==", true, "field", 5, 0), RF.addStringField(null, "field", "12345		"));
+		assertInvalid(newRule("==", true, "field", 5, 0), RF.addStringField(null, "field", "\n123456\n"));
+	}
+	@Test
+	public void testNonStrings() {
+		assertValid(newRule("==", true, "field", 5, 0), RF.addLongField(null, "field", 10000l));
+		assertInvalid(newRule("==", true, "field", 5, 0), RF.addLongField(null, "field", 100001l));
+		
+		assertValid(newRule("==", true, "field", 5, 0), RF.addNumberField(null, "field", 112.5));
+		assertInvalid(newRule("==", true, "field", 5, 0), RF.addNumberField(null, "field", 112.52));
+		
+		assertValid(newRule("==", true, "field", 4, 0), RF.addBooleanField(null, "field", true));
+		assertInvalid(newRule("==", true, "field", 4, 0), RF.addBooleanField(null, "field", false));
 	}
 	
-	private StringLengthValidationRule createRule(String type, String target, int left, int right) {
-		StringLengthValidationRule rule = new StringLengthValidationRule();
-		rule.setEnabled(true);
+	private StringLengthValidationRule newRule(String type, boolean trimming, String target, int left, int right) {
+		StringLengthValidationRule rule = createRule(StringLengthValidationRule.class);
 		if(type.equals("==")) {
 			rule.getType().setValue(StringLengthValidationRule.TYPES.EXACT);
 		} else if(type.equals(">=")) {
@@ -87,12 +137,7 @@ public class StringLengthValidationRuleTest extends ValidatorTestCase {
 		rule.getFrom().setValue(left);
 		rule.getTo().setValue(right);
 		rule.getTarget().setValue(target);
-		return rule;
-	}
-	
-	private StringLengthValidationRule createTrimmingRule(String type, String target, int left, int right) {
-		StringLengthValidationRule rule = createRule(type, target, left, right);
-		rule.getTrimInput().setValue(true);
+		rule.getTrimInput().setValue(trimming);
 		return rule;
 	}
 }

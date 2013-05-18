@@ -200,7 +200,7 @@ public abstract class ValidationNode {
 	 * Sets property resolver for replacing variables in parameters
 	 * @param graphWrapper Graph Wrapper from which the resolver is obtained
 	 */
-	protected void setPropertyRefResolver(GraphWrapper graphWrapper) {
+	public void setPropertyRefResolver(GraphWrapper graphWrapper) {
 		if(graphWrapper != null) {
 			this.refResolver = graphWrapper.getRefResolver();	
 		}

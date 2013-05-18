@@ -18,8 +18,6 @@
  */
 package org.jetel.component.validator.rules;
 
-import org.jetel.component.validator.AbstractValidationRule;
-import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.common.TestDataRecordFactory;
 import org.jetel.component.validator.common.ValidatorTestCase;
 import org.jetel.data.DataRecord;
@@ -39,74 +37,101 @@ public class NonEmptySubsetValidationRuleTest extends ValidatorTestCase {
 		testDisability(NonEmptySubsetValidationRule.class);
 	}
 	@Test
+	public void testCommon() {
+		testCommon(NonEmptySubsetValidationRule.class);
+	}
+	@Test
 	public void testReadyness() {
-		// TODO:
+		DataRecord record = RF.addStringField(null, "field", "");
+		record = RF.addStringField(record, "field2", "");
+		record = RF.addStringField(record, "field3", "value");
+		record = RF.addStringField(record, "field4", "value");
+		NonEmptySubsetValidationRule rule;
+		
+		rule = newRule("field", true, -5, true);
+		assertReadyness(false, rule, record.getMetadata());
+		
+		rule = newRule("field", true, 0, true);
+		assertReadyness(false, rule, record.getMetadata());
+		
+		rule = newRule("field", true, 1, true);
+		rule.getCount().setValue(null);
+		assertReadyness(false, rule, record.getMetadata());
+		
+		rule = newRule("field,field2", true, 1, true);
+		assertReadyness(true, rule, record.getMetadata());
+		
+		rule = newRule("field,field5", true, 1, true);
+		assertReadyness(false, rule, record.getMetadata());
+		
+		rule = newRule("", true, 1, true);
+		assertReadyness(false, rule, record.getMetadata());
+		
 	}
 	@Test
 	public void testEmptiness() {
-		DataRecord record = TestDataRecordFactory.addStringField(null, "field", "");
-		record = TestDataRecordFactory.addStringField(record, "field2", "");
-		record = TestDataRecordFactory.addStringField(record, "field3", "value");
-		record = TestDataRecordFactory.addStringField(record, "field4", "value");
-				
-		assertEquals(State.VALID, createRule("field", true, 0, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field", true, 1, false).isValid(record,null, null));
-		assertEquals(State.INVALID, createRule("field", true, 2, false).isValid(record,null, null));
+		DataRecord record = RF.addStringField(null, "field", "");
+		record = RF.addStringField(record, "field2", "");
+		record = RF.addStringField(record, "field3", "value");
+		record = RF.addStringField(record, "field4", "value");
 		
-		assertEquals(State.VALID, createRule("field,field2,field3,field4", true, 0, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field,field2,field3,field4", true, 1, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field,field2,field3,field4", true, 2, false).isValid(record,null, null));
-		assertEquals(State.INVALID, createRule("field,field2,field3,field4", true, 3, false).isValid(record,null, null));
+		assertValid(newRule("field", true, 0, false), record);
+		assertValid(newRule("field", true, 1, false), record);
+		assertInvalid(newRule("field", true, 2, false), record);
 		
-		assertEquals(State.VALID, createRule("field3,field4", true, 0, false).isValid(record,null, null));
-		assertEquals(State.INVALID, createRule("field3,field4", true, 1, false).isValid(record,null, null));
-		assertEquals(State.INVALID, createRule("field3,field4", true, 2, false).isValid(record,null, null));
+		assertValid(newRule("field,field2,field3,field4", true, 0, false), record);
+		assertValid(newRule("field,field2,field3,field4", true, 1, false), record);
+		assertValid(newRule("field,field2,field3,field4", true, 2, false), record);
+		assertInvalid(newRule("field,field2,field3,field4", true, 3, false), record);
+		
+		assertValid(newRule("field3,field4", true, 0, false), record);
+		assertInvalid(newRule("field3,field4", true, 1, false), record);
+		assertInvalid(newRule("field3,field4", true, 2, false), record);
 	}
 	@Test
 	public void testNonEmptiness() {
-		DataRecord record = TestDataRecordFactory.addStringField(null, "field", "value");
-		record = TestDataRecordFactory.addStringField(record, "field2", "value");
-		record = TestDataRecordFactory.addStringField(record, "field3", "value");
-		record = TestDataRecordFactory.addStringField(record, "field4", "value");
+		DataRecord record = RF.addStringField(null, "field", "value");
+		record = RF.addStringField(record, "field2", "value");
+		record = RF.addStringField(record, "field3", "value");
+		record = RF.addStringField(record, "field4", "value");
 				
-		assertEquals(State.VALID, createRule("field", false, 0, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field", false, 1, false).isValid(record,null, null));
-		assertEquals(State.INVALID, createRule("field", false, 2, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field,field2,field3", false, 0, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field,field2,field3", false, 1, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field,field2,field3", false, 2, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field,field2,field3", false, 3, false).isValid(record,null, null));
-		assertEquals(State.INVALID, createRule("field,field2,field3", false, 4, false).isValid(record,null, null));
+		assertValid(newRule("field", false, 0, false), record);
+		assertValid(newRule("field", false, 1, false), record);
+		assertInvalid(newRule("field", false, 2, false), record);
+		assertValid(newRule("field,field2,field3", false, 0, false), record);
+		assertValid(newRule("field,field2,field3", false, 1, false), record);
+		assertValid(newRule("field,field2,field3", false, 2, false), record);
+		assertValid(newRule("field,field2,field3", false, 3, false), record);
+		assertInvalid(newRule("field,field2,field3", false, 4, false), record);
 		
-		record = TestDataRecordFactory.addStringField(null, "field", "value");
-		record = TestDataRecordFactory.addStringField(record, "field2", "");
-		record = TestDataRecordFactory.addStringField(record, "field3", "");
-		record = TestDataRecordFactory.addStringField(record, "field4", "value");
-		assertEquals(State.VALID, createRule("field,field2,field3,field4", false, 0, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field,field2,field3,field4", false, 1, false).isValid(record,null, null));
-		assertEquals(State.INVALID, createRule("field,field2,field3,field4", false, 3, false).isValid(record,null, null));
+		record = RF.addStringField(null, "field", "value");
+		record = RF.addStringField(record, "field2", "");
+		record = RF.addStringField(record, "field3", "");
+		record = RF.addStringField(record, "field4", "value");
+		assertValid(newRule("field,field2,field3,field4", false, 0, false), record);
+		assertValid(newRule("field,field2,field3,field4", false, 1, false), record);
+		assertInvalid(newRule("field,field2,field3,field4", false, 3, false), record);
 	}
 	@Test
 	public void testTrimming() {
-		DataRecord record = TestDataRecordFactory.addStringField(null, "field", "\n\n\n\r\tvalue");
-		record = TestDataRecordFactory.addStringField(record, "field2", "    	value");
-		record = TestDataRecordFactory.addStringField(record, "field3", " value   ");
-		record = TestDataRecordFactory.addStringField(record, "field4", " value   ");
-		record = TestDataRecordFactory.addStringField(record, "field5", " \n\t\r\n   ");
-		assertEquals(State.VALID, createRule("field,field2,field3,field4", false, 4, true).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field5", false, 1, false).isValid(record,null, null));
+		DataRecord record = RF.addStringField(null, "field", "\n\n\n\r\tvalue");
+		record = RF.addStringField(record, "field2", "    	value");
+		record = RF.addStringField(record, "field3", " value   ");
+		record = RF.addStringField(record, "field4", " value   ");
+		record = RF.addStringField(record, "field5", " \n\t\r\n   ");
+		assertValid(newRule("field,field2,field3,field4", false, 4, true), record);
+		assertValid(newRule("field5", false, 1, false), record);
 		
-		record = TestDataRecordFactory.addStringField(null, "field", "\n\n\n\r\t");
-		record = TestDataRecordFactory.addStringField(record, "field2", "    	");
-		record = TestDataRecordFactory.addStringField(record, "field3", "       ");
-		record = TestDataRecordFactory.addStringField(record, "field4", " \n\n   ");
-		assertEquals(State.INVALID, createRule("field,field2,field3,field4", true, 4, false).isValid(record,null, null));
-		assertEquals(State.VALID, createRule("field,field2,field3,field4", true, 4, true).isValid(record,null, null));
+		record = RF.addStringField(null, "field", "\n\n\n\r\t");
+		record = RF.addStringField(record, "field2", "    	");
+		record = RF.addStringField(record, "field3", "       ");
+		record = RF.addStringField(record, "field4", " \n\n   ");
+		assertInvalid(newRule("field,field2,field3,field4", true, 4, false), record);
+		assertValid(newRule("field,field2,field3,field4", true, 4, true), record);
 	}
 	
-	private NonEmptySubsetValidationRule createRule(String target, boolean checkForEmptiness, int count, boolean trim) {
-		NonEmptySubsetValidationRule rule = new NonEmptySubsetValidationRule();
-		rule.setEnabled(true);
+	private NonEmptySubsetValidationRule newRule(String target, boolean checkForEmptiness, int count, boolean trim) {
+		NonEmptySubsetValidationRule rule = createRule(NonEmptySubsetValidationRule.class);
 		rule.getTarget().setValue(target);
 		rule.getGoal().setValue((checkForEmptiness) ? NonEmptySubsetValidationRule.GOALS.EMPTY : NonEmptySubsetValidationRule.GOALS.NONEMPTY);
 		rule.getCount().setValue(count);

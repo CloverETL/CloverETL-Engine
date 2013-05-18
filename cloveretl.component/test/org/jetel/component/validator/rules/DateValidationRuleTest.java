@@ -18,9 +18,6 @@
  */
 package org.jetel.component.validator.rules;
 
-import org.jetel.component.validator.AbstractValidationRule;
-import org.jetel.component.validator.ValidationNode.State;
-import org.jetel.component.validator.common.TestDataRecordFactory;
 import org.jetel.component.validator.common.ValidatorTestCase;
 import org.junit.Test;
 
@@ -40,88 +37,106 @@ public class DateValidationRuleTest extends ValidatorTestCase {
 		testDisability(DateValidationRule.class);
 	}
 	@Test
+	public void testCommon() {
+		testCommon(DateValidationRule.class);
+	}
+	@Test
 	public void testReadyness() {
 		// TODO
 	}
 	@Test
 	public void testNullInput() {
-		DateValidationRule rule = new DateValidationRule();
+		DateValidationRule rule = createRule(DateValidationRule.class);
 		rule.getTarget().setValue("field");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", null), null, null));
+		assertValid(rule, RF.addStringField(null, "field", null));
+		assertValid(rule, RF.addIntegerField(null, "field", null));
+		assertValid(rule, RF.addDecimalField(null, "field", null));
+		assertValid(rule, RF.addNumberField(null, "field", null));
+		assertValid(rule, RF.addBooleanField(null, "field", null));
 	}
 	@Test
 	public void testJavaSyntax() {
-		DateValidationRule rule = new DateValidationRule();
+		DateValidationRule rule = createRule(DateValidationRule.class);
 		rule.getTarget().setValue("field");
 		
 		// Default pattern (DateTime)
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08"), null, null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08 10:20:30"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-6-8 10:20:30"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-13-08 10:20:30"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-2-29 10:20:30"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-asdf"), null, null));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-06-08"));
+		assertValid(rule, RF.addStringField(null, "field", "2012-06-08 10:20:30"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-6-8 10:20:30"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-13-08 10:20:30"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2011-2-29 10:20:30"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-asdf"));
 		
 		// Own pattern
 		rule.getLanguageSettings(0).getDateFormat().setValue("yyyy-MM-dd");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-08"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-600-08"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-06-cc"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-0a-32"), null, null));
+		assertValid(rule, RF.addStringField(null, "field", "2012-06-08"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-600-08"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-06-cc"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-0a-32"));
 		
 		rule.getLanguageSettings(0).getDateFormat().setValue("MM");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "01"), null, null));
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "13"), null, null));
+		assertValid(rule, RF.addStringField(null, "field", "01"));
+		assertValid(rule, RF.addStringField(null, "field", "12"));
+		assertInvalid(rule, RF.addStringField(null, "field", "13"));
 		
 		rule.getLanguageSettings(0).getDateFormat().setValue("yyMMddHHmmssZ");
 		rule.getLanguageSettings(0).getTimezone().setValue("America/Los_Angeles");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "010704120856-0700"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "010704120856"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "010704120856abc"), null, null));
+		assertValid(rule, RF.addStringField(null, "field", "010704120856-0700"));
+		assertInvalid(rule, RF.addStringField(null, "field", "010704120856"));
+		assertInvalid(rule, RF.addStringField(null, "field", "010704120856abc"));
 		
 		rule.getLanguageSettings(0).getLocale().setValue("en.US");
 		rule.getLanguageSettings(0).getDateFormat().setValue("h:mm a");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12:08 PM"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12a:08 PM"), null, null));
+		assertValid(rule, RF.addStringField(null, "field", "12:08 PM"));
+		assertInvalid(rule, RF.addStringField(null, "field", "12a:08 PM"));
 		
 		rule.getLanguageSettings(0).getDateFormat().setValue("EEE, MMM d, ''yy");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "Wed, Jul 4, '01"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "SSS, Jul 4, '01"), null, null));
+		assertValid(rule, RF.addStringField(null, "field", "Wed, Jul 4, '01"));
+		assertInvalid(rule, RF.addStringField(null, "field", "SSS, Jul 4, '01"));
 		
 		rule.getLanguageSettings(0).getDateFormat().setValue("yyyy.MM.dd G 'at' HH:mm:ss z");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2001.07.04 AD at 12:08:56 PDT"), null, null));
+		assertValid(rule, RF.addStringField(null, "field", "2001.07.04 AD at 12:08:56 PDT"));
 		
 		// Will parse completely wrong
 		//rule.getFormat().setValue("hh 'o''clock' a, zzzz");
-		//assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "12 o'clock PM, Pacific Daylight Time"), null));
+		//assertValid(rule, RF.addStringField(null, "field", "12 o'clock PM, Pacific Daylight Time"), null));
 	}
 	
 	@Test
 	public void testJodaSyntax() {
-		DateValidationRule rule = new DateValidationRule();
+		DateValidationRule rule = createRule(DateValidationRule.class);
 		rule.getTarget().setValue("field");
 		
 		rule.getLanguageSettings(0).getDateFormat().setValue("joda:yyyy-MM-dd");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-02-02"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-02-29"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012a-02-02"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-2-2"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2012-2-2a"), null, null));
+		assertValid(rule, RF.addStringField(null, "field", "2012-02-02"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2011-02-29"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012a-02-02"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-2-2"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-2-2a"));
 	}
 	
 	public void testLocale() {
-		DateValidationRule rule = new DateValidationRule();
+		DateValidationRule rule = createRule(DateValidationRule.class);
 		rule.getTarget().setValue("field");
 		
 		rule.getLanguageSettings(0).getLocale().setValue("hi.IN");
-		assertEquals(State.VALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "२०११-०३-०३ १६:५३:०९"), null, null));
-		assertEquals(State.INVALID, rule.isValid(TestDataRecordFactory.addStringField(null, "field", "2011-01-01 10:30:40"), null, null));
+		assertValid(rule, RF.addStringField(null, "field", "२०११-०३-०३ १६:५३:०९"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2011-01-01 10:30:40"));
 	}
 	
 	@Test
 	public void testNonStringInput() {
-		// TODO
+		DateValidationRule rule = createRule(DateValidationRule.class);
+		rule.getTarget().setValue("field");
+		
+		assertInvalid(rule, RF.addLongField(null, "field", 1000000l));
+		assertInvalid(rule, RF.addLongField(null, "field", 0l));
+		assertInvalid(rule, RF.addNumberField(null, "field", 1123.54));
+		assertInvalid(rule, RF.addNumberField(null, "field", 0d));
+		assertInvalid(rule, RF.addDecimalField(null, "field", getDecimal("12366.45")));
+		assertInvalid(rule, RF.addDecimalField(null, "field", getDecimal("0")));
+		assertInvalid(rule, RF.addBooleanField(null, "field", true));
+		assertInvalid(rule, RF.addBooleanField(null, "field", false));
 	}
 	
 }

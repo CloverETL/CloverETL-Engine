@@ -29,27 +29,24 @@ import java.util.TimeZone;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.LanguageSetting;
-import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
-import org.jetel.data.BooleanDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DateDataField;
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.Defaults;
-import org.jetel.data.StringDataField;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.CloverString;
 
 /**
  * <p>Shared based for validation rules which perform validation on strings (such as {@link PatternMatchValidationRule}).
@@ -222,8 +219,8 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 				logger.error("Conversion byte[] to String failed due to unsupported encoding");
 				return "";
 			}
-		} else if (value instanceof String) {
-			String temp = (String) value;
+		} else if (value instanceof String || value instanceof CloverString) {
+			String temp = value.toString();
 			if(trimInput.getValue()) {
 				temp = temp.trim();
 			}

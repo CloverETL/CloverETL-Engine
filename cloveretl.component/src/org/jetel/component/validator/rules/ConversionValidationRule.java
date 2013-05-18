@@ -19,7 +19,6 @@
 package org.jetel.component.validator.rules;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.List;
 import java.util.TimeZone;
@@ -27,18 +26,12 @@ import java.util.TimeZone;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
-import org.jetel.component.validator.ValidationNode.State;
-import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.LanguageSetting;
-import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
-import org.jetel.component.validator.params.ValidationParamNode.ChangeHandler;
 import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
-import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.component.validator.utils.comparators.DateComparator;
 import org.jetel.component.validator.utils.comparators.DecimalComparator;
@@ -52,7 +45,6 @@ import org.jetel.component.validator.utils.convertors.DoubleConverter;
 import org.jetel.component.validator.utils.convertors.LongConverter;
 import org.jetel.component.validator.utils.convertors.StringConverter;
 import org.jetel.data.DataField;
-import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
