@@ -18,18 +18,15 @@
  */
 package org.jetel.component.validator.rules;
 
-import org.jetel.component.validator.ValidationNode.State;
-import org.jetel.component.validator.common.TestDataRecordFactory;
-import org.jetel.component.validator.common.ValidatorTestCase;
-import org.jetel.data.primitive.Decimal;
-import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.component.validator.common.ConversionTestCase;
+import org.jetel.data.DataRecord;
 import org.junit.Test;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 9.1.2013
  */
-public class ComparisonValidationRuleTest extends ValidatorTestCase {
+public class ComparisonValidationRuleTest extends ConversionTestCase {
 	
 	@Test
 	public void testNameability() {
@@ -40,276 +37,278 @@ public class ComparisonValidationRuleTest extends ValidatorTestCase {
 		testDisability(ComparisonValidationRule.class);
 	}
 	@Test
-	public void testReadyness() {
-		// TBD: tests
+	public void testCommon() {
+		testCommon(ComparisonValidationRule.class);
 	}
-//	
-//	@Test
-//	public void testStringInStringComparison() {
-//		assertEquals(State.VALID, createComparison("number", "==", "b").isValid(TestDataRecordFactory.addStringField(null, "number","b"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "b").isValid(TestDataRecordFactory.addStringField(null, "number","c"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "b").isValid(TestDataRecordFactory.addStringField(null, "number","a"), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", "!=", "b").isValid(TestDataRecordFactory.addStringField(null, "number","b"), null, null));
-//		assertEquals(State.VALID, createComparison("number", "!=", "b").isValid(TestDataRecordFactory.addStringField(null, "number","c"), null, null));
-//		assertEquals(State.VALID, createComparison("number", "!=", "b").isValid(TestDataRecordFactory.addStringField(null, "number","a"), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", ">=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","beta"), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","bfta"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","bet"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","alfa"), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", ">", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","beta"), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","bfta"), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","gama"), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","betaa"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","bet"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","alfa"), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", "<", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","beta"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","bfta"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","gama"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","betaa"), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","bet"), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","alfa"), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "<=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","beta"), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","bdta"), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","bet"), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","alfa"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","betaa"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","bfta"), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<=", "beta").isValid(TestDataRecordFactory.addStringField(null, "number","gama"), null, null));
-//	}
-//	public void testLongInLongComparison() {
-//		assertEquals(State.VALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addLongField(null, "number",10l), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addLongField(null, "number",11l), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addLongField(null, "number",12l), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addLongField(null, "number",9l), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addLongField(null, "number",10l), null, null));
-//		assertEquals(State.VALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addLongField(null, "number",11l), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addLongField(null, "number",9l), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addLongField(null, "number",10l), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addLongField(null, "number",11l), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addLongField(null, "number",9l), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addLongField(null, "number",10l), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addLongField(null, "number",11l), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addLongField(null, "number",9l), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addLongField(null, "number",10l), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addLongField(null, "number",11l), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addLongField(null, "number",9l), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addLongField(null, "number",10l), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addLongField(null, "number",11l), null, null));	
-//	}
-//	public void testIntegerInIntegerComparison() {
-//		assertEquals(State.VALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",10), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",11), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",12), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",9), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",10), null, null));
-//		assertEquals(State.VALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",11), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",9), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",10), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",11), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",9), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",10), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",11), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",9), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",10), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",11), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",9), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",10), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addIntegerField(null, "number",11), null, null));	
-//	}
-//	public void testNumberInNumberComparison() {
-//		assertEquals(State.VALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10.0d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10.0").isValid(TestDataRecordFactory.addNumberField(null, "number",10d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10.00").isValid(TestDataRecordFactory.addNumberField(null, "number",10d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10.0").isValid(TestDataRecordFactory.addNumberField(null, "number",10.0d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10.0").isValid(TestDataRecordFactory.addNumberField(null, "number",10.00d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10.00").isValid(TestDataRecordFactory.addNumberField(null, "number",10.0d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10.00").isValid(TestDataRecordFactory.addNumberField(null, "number",10.00d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10.9d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",11d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",11.1d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",12d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10.34").isValid(TestDataRecordFactory.addNumberField(null, "number",10.34d), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",9d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10.0d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10.0").isValid(TestDataRecordFactory.addNumberField(null, "number",10.d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10.0").isValid(TestDataRecordFactory.addNumberField(null, "number",10.0d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10.1d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",11d), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",9d), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",11d), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",9d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",11d), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",9d), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10d), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",11d), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",9d), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",10d), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addNumberField(null, "number",11d), null, null));
-//	}
-//	public void testDecimalInDecimalComparison() {
-//		assertEquals(State.VALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "==", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("11.23")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "==", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("4.23")), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "!=", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "!=", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("11.23")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "!=", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("4.23")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "!=", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.1")), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<=", "9.23").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<=", "9.23").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("9.2222")), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", "<", "9.23").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.VALID, createComparison("number", "<", "9.23").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("9.2222")), null, null));
-//		
-//		assertEquals(State.VALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">=", "9.23").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">=", "9.23").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("9.2222")), null, null));
-//		
-//		assertEquals(State.INVALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">", "10").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10.0")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">", "10.0").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.VALID, createComparison("number", ">", "9.23").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("10")), null, null));
-//		assertEquals(State.INVALID, createComparison("number", ">", "9.23").isValid(TestDataRecordFactory.addDecimalField(null, "number",getDecimal("9.2222")), null, null));
-//	}
-//	
-//	public void testUserDataType() {
-//		// As strings
-//		assertEquals(State.INVALID, inType("s",createComparison("field", "==", "50")).isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("50.0")), null, null));
-//		
-//		// As longs
-//		assertEquals(State.INVALID, inType("l",createComparison("field", "==", "50")).isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("50")), null, null));
-//		assertEquals(State.VALID, inType("l",createComparison("field", "==", "50")).isValid(TestDataRecordFactory.addStringField(null, "field", "50"), null, null));
-//		assertEquals(State.INVALID, inType("l",createComparison("field", "==", "50.55")).isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("50.55")), null, null));
-//		
-//		// As decimals
-//		assertEquals(State.VALID, inType("d",createComparison("field", "==", "50.55")).isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("50.55")), null, null));
-//		assertEquals(State.VALID, inType("d",createComparison("field", "==", "50.55")).isValid(TestDataRecordFactory.addNumberField(null, "field", 50.55d), null, null));	
-//	}
-//	
-//	public void testDates() {
-//		assertEquals(State.VALID, inType("da", createComparison("field", "==", "2012-02-02 00:00:00", "yyyy-MM-dd")).isValid(TestDataRecordFactory.addStringField(null, "field","2012-02-02"), null, null));
-//		assertEquals(State.INVALID, inType("da", createComparison("field", "==", "2012-02-02 00:00:00", "yyyy-MM-dd")).isValid(TestDataRecordFactory.addStringField(null, "field","2012-2-2"), null, null));
-//		assertEquals(State.INVALID, inType("da", createComparison("field", "==", "2012-02-02 00:00:00", "yyyy-MM-dd")).isValid(TestDataRecordFactory.addStringField(null, "field","2012-3-2"), null, null));
-//		assertEquals(State.INVALID, inType("da", createComparison("field", "==", "2012-02-02 00:00:00", "yyyy-MM-dd")).isValid(TestDataRecordFactory.addStringField(null, "field","2012-02-2asdf"), null, null));
-//		assertEquals(State.INVALID, inType("da", createComparison("field", "==", "2012-02-02 00:00:00", "yyyy-MM-dd")).isValid(TestDataRecordFactory.addStringField(null, "field","2012-02-02asdf"), null, null));
-//		
-//		assertEquals(State.VALID, inType("da", createComparison("field", "<=", "2012-02-03 01:00:00", "yyyy-MM-dd")).isValid(TestDataRecordFactory.addStringField(null, "field","2012-02-03"), null, null));
-//		assertEquals(State.VALID, inType("da", createComparison("field", "<=", "2012-02-04 00:00:00", "yyyy-MM-dd")).isValid(TestDataRecordFactory.addStringField(null, "field","2012-02-03"), null, null));
-//		assertEquals(State.INVALID, inType("da", createComparison("field", "<=", "2012-02-02 23:59:59", "yyyy-MM-dd")).isValid(TestDataRecordFactory.addStringField(null, "field","2012-02-03"), null, null));
-//	}
-//	
-//	public void testLocale() {
-//		assertEquals(State.VALID, inType("d",createComparison("field", "==", "50.55")).isValid(TestDataRecordFactory.addStringField(null, "field", "50,55"), null, null));
-//		assertEquals(State.INVALID, inType("d",createComparison("field", "==", "50")).isValid(TestDataRecordFactory.addStringField(null, "field", "50,55"), null, null));
-//		assertEquals(State.VALID, inType("d",createComparison("field", "==", "50.55")).isValid(TestDataRecordFactory.addNumberField(null, "field", 50.55d), null, null));
-//
-//		ComparisonValidationRule temp = inType("d",createComparison("field", "==", "50.55"));
-//		temp.getLocale().setValue("en.US");
-//		temp.getFormat().setValue("#");
-//		assertEquals(State.INVALID, temp.isValid(TestDataRecordFactory.addStringField(null, "field", "50,55"), null, null));
-//		
-//		temp = inType("d",createComparison("field", "==", "50.55"));
-//		temp.getLocale().setValue("cs.CZ");
-//		temp.getFormat().setValue("#");
-//		assertEquals(State.VALID, temp.isValid(TestDataRecordFactory.addStringField(null, "field", "50,55"), null, null));
-//		
-//		temp = inType("d",createComparison("field", "==", "50.55"));
-//		temp.getLocale().setValue("en.US");
-//		temp.getFormat().setValue("#");
-//		assertEquals(State.INVALID, temp.isValid(TestDataRecordFactory.addStringField(null, "field", "50,55"), null, null));
-//		
-//		temp = inType("d",createComparison("field", "==", "50.55"));
-//		temp.getLocale().setValue("cs.CZ");
-//		temp.getFormat().setValue("#");
-//		assertEquals(State.VALID, temp.isValid(TestDataRecordFactory.addStringField(null, "field", "50,55"), null, null));
-//	}
-//	
-//	/* Some helpers */
-//	private ComparisonValidationRule createComparison(String target, String operator, String value) {
-//		ComparisonValidationRule.OPERATOR_TYPE op = null;
-//		if(operator.equals("==")) {
-//			op = ComparisonValidationRule.OPERATOR_TYPE.E;
-//		} else if(operator.equals("!=")) {
-//			op = ComparisonValidationRule.OPERATOR_TYPE.NE;
-//		} else if(operator.equals("<=")) {
-//			op = ComparisonValidationRule.OPERATOR_TYPE.LE;
-//		} else if(operator.equals(">=")) {
-//			op = ComparisonValidationRule.OPERATOR_TYPE.GE;
-//		} else if(operator.equals("<")) {
-//			op = ComparisonValidationRule.OPERATOR_TYPE.L;
-//		} else if(operator.equals(">")) {
-//			op = ComparisonValidationRule.OPERATOR_TYPE.G;
-//		}
-//		ComparisonValidationRule rule = new ComparisonValidationRule();
-//		rule.setEnabled(true);
-//		rule.getTarget().setValue(target);
-//		rule.getOperator().setValue(op);
-//		rule.getValue().setValue(value);
-//		return rule;
-//	}
-//	private ComparisonValidationRule createComparison(String target, String operator, String value, String format) {
-//		ComparisonValidationRule rule = createComparison(target, operator, value);
-//		rule.getFormat().setValue(format);
-//		return rule;
-//	}
-//	private ComparisonValidationRule inType(String type, ComparisonValidationRule rule) {
-//		ConversionValidationRule.METADATA_TYPES t = null;
-//		if(type.equals("s")) {
-//			t = ConversionValidationRule.METADATA_TYPES.STRING;
-//		} else if(type.equals("da")) {
-//			t = ConversionValidationRule.METADATA_TYPES.DATE;
-//		} else if(type.equals("l")) {
-//			t = ConversionValidationRule.METADATA_TYPES.LONG;
-//		} else if(type.equals("n")) {
-//			t = ConversionValidationRule.METADATA_TYPES.NUMBER;
-//		} else if(type.equals("d")) {
-//			t = ConversionValidationRule.METADATA_TYPES.DECIMAL;
-//		}
-//		rule.getUseType().setValue(t);
-//		return rule;
-//	}
+	@Test
+	public void testReadyness() {
+		DataRecord record = RF.addStringField(null, "field", "");
+		assertReadyness(false, newRule("", "==", "50"), record.getMetadata());	// Empty target
+		assertReadyness(false, newRule("field2", "==", "50"), record.getMetadata());	// Non-existent target
+		assertReadyness(true, newRule("field", "==", "50"), record.getMetadata());
+		
+		assertReadyness(false, newRule("field", "==", ""), record.getMetadata());	// Empty value
+		
+		assertReadyness(false, inType("da", df("wrong", newRule("field", "==", "50"))), record.getMetadata());
+		assertReadyness(true, inType("da", df("yyyy-MM-dd", newRule("field", "==", "50"))), record.getMetadata());
+		assertReadyness(true, inType("da", df("joda:yyyy-MM-dd", newRule("field", "==", "50"))), record.getMetadata());
+		assertReadyness(true, inType("da", df("java:yyyy-MM-dd", newRule("field", "==", "50"))), record.getMetadata());
+		
+		ConversionValidationRule temp;
+		temp = inType("da", newRule("field", "==", "50"));
+		temp.getParentLanguageSetting().getDateFormat().setValue("");
+		assertReadyness(false, temp, record.getMetadata());
+		
+		temp = inType("da", newRule("field", "==", "50"));
+		temp.getParentLanguageSetting().getLocale().setValue("");
+		assertReadyness(false, temp, record.getMetadata());
+		
+		temp = inType("da", newRule("field", "==", "50"));
+		temp.getParentLanguageSetting().getTimezone().setValue("");
+		assertReadyness(false, temp, record.getMetadata());
+		
+		temp = inType("d", newRule("field", "==", "50"));
+		temp.getParentLanguageSetting().getLocale().setValue("");
+		assertReadyness(false, temp, record.getMetadata());
+	}
+	
+	@Test
+	public void testStringInStringComparison() {
+		assertValid(newRule("number", "==", "b"), RF.addStringField(null, "number","b"));
+		assertInvalid(newRule("number", "==", "b"), RF.addStringField(null, "number","c"));
+		assertInvalid(newRule("number", "==", "b"), RF.addStringField(null, "number","a"));
+		
+		assertInvalid(newRule("number", "!=", "b"), RF.addStringField(null, "number","b"));
+		assertValid(newRule("number", "!=", "b"), RF.addStringField(null, "number","c"));
+		assertValid(newRule("number", "!=", "b"), RF.addStringField(null, "number","a"));
+		
+		assertValid(newRule("number", ">=", "beta"), RF.addStringField(null, "number","beta"));
+		assertValid(newRule("number", ">=", "beta"), RF.addStringField(null, "number","bfta"));
+		assertInvalid(newRule("number", ">=", "beta"), RF.addStringField(null, "number","bet"));
+		assertInvalid(newRule("number", ">=", "beta"), RF.addStringField(null, "number","alfa"));
+		
+		assertInvalid(newRule("number", ">", "beta"), RF.addStringField(null, "number","beta"));
+		assertValid(newRule("number", ">", "beta"), RF.addStringField(null, "number","bfta"));
+		assertValid(newRule("number", ">", "beta"), RF.addStringField(null, "number","gama"));
+		assertValid(newRule("number", ">", "beta"), RF.addStringField(null, "number","betaa"));
+		assertInvalid(newRule("number", ">", "beta"), RF.addStringField(null, "number","bet"));
+		assertInvalid(newRule("number", ">", "beta"), RF.addStringField(null, "number","alfa"));
+		
+		assertInvalid(newRule("number", "<", "beta"), RF.addStringField(null, "number","beta"));
+		assertInvalid(newRule("number", "<", "beta"), RF.addStringField(null, "number","bfta"));
+		assertInvalid(newRule("number", "<", "beta"), RF.addStringField(null, "number","gama"));
+		assertInvalid(newRule("number", "<", "beta"), RF.addStringField(null, "number","betaa"));
+		assertValid(newRule("number", "<", "beta"), RF.addStringField(null, "number","bet"));
+		assertValid(newRule("number", "<", "beta"), RF.addStringField(null, "number","alfa"));
+		
+		assertValid(newRule("number", "<=", "beta"), RF.addStringField(null, "number","beta"));
+		assertValid(newRule("number", "<=", "beta"), RF.addStringField(null, "number","bdta"));
+		assertValid(newRule("number", "<=", "beta"), RF.addStringField(null, "number","bet"));
+		assertValid(newRule("number", "<=", "beta"), RF.addStringField(null, "number","alfa"));
+		assertInvalid(newRule("number", "<=", "beta"), RF.addStringField(null, "number","betaa"));
+		assertInvalid(newRule("number", "<=", "beta"), RF.addStringField(null, "number","bfta"));
+		assertInvalid(newRule("number", "<=", "beta"), RF.addStringField(null, "number","gama"));
+	}
+	public void testLongInLongComparison() {
+		assertValid(newRule("number", "==", "10"), RF.addLongField(null, "number",10l));
+		assertInvalid(newRule("number", "==", "10"), RF.addLongField(null, "number",11l));
+		assertInvalid(newRule("number", "==", "10"), RF.addLongField(null, "number",12l));
+		
+		assertValid(newRule("number", "!=", "10"), RF.addLongField(null, "number",9l));
+		assertInvalid(newRule("number", "!=", "10"), RF.addLongField(null, "number",10l));
+		assertValid(newRule("number", "!=", "10"), RF.addLongField(null, "number",11l));
+		
+		assertValid(newRule("number", "<=", "10"), RF.addLongField(null, "number",9l));
+		assertValid(newRule("number", "<=", "10"), RF.addLongField(null, "number",10l));
+		assertInvalid(newRule("number", "<=", "10"), RF.addLongField(null, "number",11l));
+		
+		assertValid(newRule("number", "<", "10"), RF.addLongField(null, "number",9l));
+		assertInvalid(newRule("number", "<", "10"), RF.addLongField(null, "number",10l));
+		assertInvalid(newRule("number", "<", "10"), RF.addLongField(null, "number",11l));
+		
+		assertInvalid(newRule("number", ">=", "10"), RF.addLongField(null, "number",9l));
+		assertValid(newRule("number", ">=", "10"), RF.addLongField(null, "number",10l));
+		assertValid(newRule("number", ">=", "10"), RF.addLongField(null, "number",11l));
+		
+		assertInvalid(newRule("number", ">", "10"), RF.addLongField(null, "number",9l));
+		assertInvalid(newRule("number", ">", "10"), RF.addLongField(null, "number",10l));
+		assertValid(newRule("number", ">", "10"), RF.addLongField(null, "number",11l));	
+	}
+	public void testIntegerInIntegerComparison() {
+		assertValid(newRule("number", "==", "10"), RF.addIntegerField(null, "number",10));
+		assertInvalid(newRule("number", "==", "10"), RF.addIntegerField(null, "number",11));
+		assertInvalid(newRule("number", "==", "10"), RF.addIntegerField(null, "number",12));
+		
+		assertValid(newRule("number", "!=", "10"), RF.addIntegerField(null, "number",9));
+		assertInvalid(newRule("number", "!=", "10"), RF.addIntegerField(null, "number",10));
+		assertValid(newRule("number", "!=", "10"), RF.addIntegerField(null, "number",11));
+		
+		assertValid(newRule("number", "<=", "10"), RF.addIntegerField(null, "number",9));
+		assertValid(newRule("number", "<=", "10"), RF.addIntegerField(null, "number",10));
+		assertInvalid(newRule("number", "<=", "10"), RF.addIntegerField(null, "number",11));
+		
+		assertValid(newRule("number", "<", "10"), RF.addIntegerField(null, "number",9));
+		assertInvalid(newRule("number", "<", "10"), RF.addIntegerField(null, "number",10));
+		assertInvalid(newRule("number", "<", "10"), RF.addIntegerField(null, "number",11));
+		
+		assertInvalid(newRule("number", ">=", "10"), RF.addIntegerField(null, "number",9));
+		assertValid(newRule("number", ">=", "10"), RF.addIntegerField(null, "number",10));
+		assertValid(newRule("number", ">=", "10"), RF.addIntegerField(null, "number",11));
+		
+		assertInvalid(newRule("number", ">", "10"), RF.addIntegerField(null, "number",9));
+		assertInvalid(newRule("number", ">", "10"), RF.addIntegerField(null, "number",10));
+		assertValid(newRule("number", ">", "10"), RF.addIntegerField(null, "number",11));	
+	}
+	public void testNumberInNumberComparison() {
+		assertValid(newRule("number", "==", "10"), RF.addNumberField(null, "number",10d));
+		assertValid(newRule("number", "==", "10"), RF.addNumberField(null, "number",10.0d));
+		assertValid(newRule("number", "==", "10.0"), RF.addNumberField(null, "number",10d));
+		assertValid(newRule("number", "==", "10.00"), RF.addNumberField(null, "number",10d));
+		assertValid(newRule("number", "==", "10.0"), RF.addNumberField(null, "number",10.0d));
+		assertValid(newRule("number", "==", "10.0"), RF.addNumberField(null, "number",10.00d));
+		assertValid(newRule("number", "==", "10.00"), RF.addNumberField(null, "number",10.0d));
+		assertValid(newRule("number", "==", "10.00"), RF.addNumberField(null, "number",10.00d));
+		assertInvalid(newRule("number", "==", "10"), RF.addNumberField(null, "number",10.9d));
+		assertInvalid(newRule("number", "==", "10"), RF.addNumberField(null, "number",11d));
+		assertInvalid(newRule("number", "==", "10"), RF.addNumberField(null, "number",11.1d));
+		assertInvalid(newRule("number", "==", "10"), RF.addNumberField(null, "number",12d));
+		assertValid(newRule("number", "==", "10.34"), RF.addNumberField(null, "number",10.34d));
+		
+		assertValid(newRule("number", "!=", "10"), RF.addNumberField(null, "number",9d));
+		assertInvalid(newRule("number", "!=", "10"), RF.addNumberField(null, "number",10d));
+		assertInvalid(newRule("number", "!=", "10"), RF.addNumberField(null, "number",10.0d));
+		assertInvalid(newRule("number", "!=", "10.0"), RF.addNumberField(null, "number",10.d));
+		assertInvalid(newRule("number", "!=", "10.0"), RF.addNumberField(null, "number",10.0d));
+		assertValid(newRule("number", "!=", "10"), RF.addNumberField(null, "number",10.1d));
+		assertValid(newRule("number", "!=", "10"), RF.addNumberField(null, "number",11d));
+		
+		assertValid(newRule("number", "<=", "10"), RF.addNumberField(null, "number",9d));
+		assertValid(newRule("number", "<=", "10"), RF.addNumberField(null, "number",10d));
+		assertInvalid(newRule("number", "<=", "10"), RF.addNumberField(null, "number",11d));
+		
+		assertValid(newRule("number", "<", "10"), RF.addNumberField(null, "number",9d));
+		assertInvalid(newRule("number", "<", "10"), RF.addNumberField(null, "number",10d));
+		assertInvalid(newRule("number", "<", "10"), RF.addNumberField(null, "number",11d));
+		
+		assertInvalid(newRule("number", ">=", "10"), RF.addNumberField(null, "number",9d));
+		assertValid(newRule("number", ">=", "10"), RF.addNumberField(null, "number",10d));
+		assertValid(newRule("number", ">=", "10"), RF.addNumberField(null, "number",11d));
+		
+		assertInvalid(newRule("number", ">", "10"), RF.addNumberField(null, "number",9d));
+		assertInvalid(newRule("number", ">", "10"), RF.addNumberField(null, "number",10d));
+		assertValid(newRule("number", ">", "10"), RF.addNumberField(null, "number",11d));
+	}
+	public void testDecimalInDecimalComparison() {
+		assertValid(newRule("number", "==", "10"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertValid(newRule("number", "==", "10"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertValid(newRule("number", "==", "10.0"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertValid(newRule("number", "==", "10.0"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertInvalid(newRule("number", "==", "10.0"), RF.addDecimalField(null, "number",getDecimal("11.23")));
+		assertInvalid(newRule("number", "==", "10.0"), RF.addDecimalField(null, "number",getDecimal("4.23")));
+		
+		assertInvalid(newRule("number", "!=", "10"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertInvalid(newRule("number", "!=", "10"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertInvalid(newRule("number", "!=", "10.0"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertInvalid(newRule("number", "!=", "10.0"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertValid(newRule("number", "!=", "10.0"), RF.addDecimalField(null, "number",getDecimal("11.23")));
+		assertValid(newRule("number", "!=", "10.0"), RF.addDecimalField(null, "number",getDecimal("4.23")));
+		assertValid(newRule("number", "!=", "10.0"), RF.addDecimalField(null, "number",getDecimal("10.1")));
+		
+		assertValid(newRule("number", "<=", "10"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertValid(newRule("number", "<=", "10"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertValid(newRule("number", "<=", "10.0"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertValid(newRule("number", "<=", "10.0"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertInvalid(newRule("number", "<=", "9.23"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertValid(newRule("number", "<=", "9.23"), RF.addDecimalField(null, "number",getDecimal("9.2222")));
+		
+		assertInvalid(newRule("number", "<", "10"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertInvalid(newRule("number", "<", "10"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertInvalid(newRule("number", "<", "10.0"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertInvalid(newRule("number", "<", "10.0"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertInvalid(newRule("number", "<", "9.23"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertValid(newRule("number", "<", "9.23"), RF.addDecimalField(null, "number",getDecimal("9.2222")));
+		
+		assertValid(newRule("number", ">=", "10"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertValid(newRule("number", ">=", "10"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertValid(newRule("number", ">=", "10.0"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertValid(newRule("number", ">=", "10.0"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertValid(newRule("number", ">=", "9.23"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertInvalid(newRule("number", ">=", "9.23"), RF.addDecimalField(null, "number",getDecimal("9.2222")));
+		
+		assertInvalid(newRule("number", ">", "10"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertInvalid(newRule("number", ">", "10"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertInvalid(newRule("number", ">", "10.0"), RF.addDecimalField(null, "number",getDecimal("10.0")));
+		assertInvalid(newRule("number", ">", "10.0"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertValid(newRule("number", ">", "9.23"), RF.addDecimalField(null, "number",getDecimal("10")));
+		assertInvalid(newRule("number", ">", "9.23"), RF.addDecimalField(null, "number",getDecimal("9.2222")));
+	}
+	
+	public void testUserDataType() {
+		// As strings
+		assertInvalid(inType("s",newRule("field", "==", "50")), RF.addDecimalField(null, "field", getDecimal("50.0")));
+		
+		// As longs
+		assertInvalid(inType("l",newRule("field", "==", "50")), RF.addDecimalField(null, "field", getDecimal("50")));
+		assertValid(inType("l",newRule("field", "==", "50")), RF.addStringField(null, "field", "50"));
+		assertInvalid(inType("l",newRule("field", "==", "50.55")), RF.addDecimalField(null, "field", getDecimal("50.55")));
+		
+		// As decimals
+		assertValid(inType("d",newRule("field", "==", "50.55")), RF.addDecimalField(null, "field", getDecimal("50.55")));
+		assertValid(inType("d",newRule("field", "==", "50.55")), RF.addNumberField(null, "field", 50.55d));	
+	}
+	
+	public void testDates() {
+		assertValid(inType("da", df("yyyy-MM-dd", newRule("field", "==", "2012-02-02 00:00:00"))), RF.addStringField(null, "field","2012-02-02"));
+		assertValid(inType("da", df("yyyy-MM-dd", newRule("field", "==", "2012-02-02"))), RF.addStringField(null, "field","2012-02-02"));
+		assertValid(inType("da", lo("cs.CZ", df("yyyy-MM-dd", newRule("field", "==", "2012-02-02 00:00:00")))), RF.addStringField(null, "field","2012-02-02"));
+		
+		assertValid(inType("da", df("yyyy-MM-dd hh:mm:ss", newRule("field", "==", "2012-02-02 10:20:30"))), RF.addStringField(null, "field","2012-02-02 10:20:30"));
+		
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "==", "2012-02-02 00:00:00"))), RF.addStringField(null, "field","2012-2-2"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "==", "2012-02-02 00:00:00"))), RF.addStringField(null, "field","2012-3-2"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "==", "2012-02-02 00:00:00"))), RF.addStringField(null, "field","2012-02-2asdf"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "==", "2012-02-02 00:00:00"))), RF.addStringField(null, "field","2012-02-02asdf"));
+		
+		assertValid(inType("da", df("yyyy-MM-dd", newRule("field", "<=", "2012-02-03 01:00:00"))), RF.addStringField(null, "field","2012-02-03"));
+		assertValid(inType("da", df("yyyy-MM-dd", newRule("field", "<=", "2012-02-04 00:00:00"))), RF.addStringField(null, "field","2012-02-03"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "<=", "2012-02-02 23:59:59"))), RF.addStringField(null, "field","2012-02-03"));
+	}
+	
+	public void testLocale() {
+		assertValid(lo("cs.CZ", inType("d",newRule("field", "==", "50.55"))), RF.addStringField(null, "field", "50,55"));
+		assertInvalid(lo("cs.CZ", inType("d",newRule("field", "==", "50"))), RF.addStringField(null, "field", "50,55"));
+		assertValid(inType("d",newRule("field", "==", "50.55")), RF.addNumberField(null, "field", 50.55d));
+
+		assertInvalid(inType("d",lo("en.GB", nf("#", newRule("field", "==", "50.55")))), RF.addStringField(null, "field", "50,55"));
+		
+		assertValid(inType("d",lo("cs.CZ", nf("#", newRule("field", "==", "50.55")))), RF.addStringField(null, "field", "50,55"));
+		
+		assertInvalid(inType("d",lo("en.GB", nf("#", newRule("field", "==", "50.55")))), RF.addStringField(null, "field", "50,55"));
+		
+		assertValid(inType("d",lo("cs.CZ", nf("#", newRule("field", "==", "50.55")))), RF.addStringField(null, "field", "50,55"));
+	}
+	
+	private ComparisonValidationRule newRule(String target, String operator, String value) {
+		ComparisonValidationRule.OPERATOR_TYPE op = null;
+		if(operator.equals("==")) {
+			op = ComparisonValidationRule.OPERATOR_TYPE.E;
+		} else if(operator.equals("!=")) {
+			op = ComparisonValidationRule.OPERATOR_TYPE.NE;
+		} else if(operator.equals("<=")) {
+			op = ComparisonValidationRule.OPERATOR_TYPE.LE;
+		} else if(operator.equals(">=")) {
+			op = ComparisonValidationRule.OPERATOR_TYPE.GE;
+		} else if(operator.equals("<")) {
+			op = ComparisonValidationRule.OPERATOR_TYPE.L;
+		} else if(operator.equals(">")) {
+			op = ComparisonValidationRule.OPERATOR_TYPE.G;
+		}
+		ComparisonValidationRule rule = createRule(ComparisonValidationRule.class);
+		rule.setEnabled(true);
+		rule.getTarget().setValue(target);
+		rule.getOperator().setValue(op);
+		rule.getValue().setValue(value);
+		return rule;
+	}
 
 }

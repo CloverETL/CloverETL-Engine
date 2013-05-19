@@ -104,11 +104,13 @@ public class DateConverter implements Converter {
 	@Override
 	public Date convertFromCloverLiteral(String o) {
 		SimpleDateFormat format = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
+		format.setTimeZone(TimeZone.getTimeZone("UTC"));
     	if (!StringUtils.isEmpty(o)) {
     		try {
     			return format.parse(o);
     		} catch (ParseException ex) {
     			format = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
+    			format.setTimeZone(TimeZone.getTimeZone("UTC"));
     			try {
     				return format.parse(o);
     			} catch (ParseException ex2) {

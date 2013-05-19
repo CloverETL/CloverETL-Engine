@@ -19,6 +19,7 @@
 package org.jetel.component.validator.rules;
 
 import org.jetel.component.validator.common.ValidatorTestCase;
+import org.jetel.data.DataRecord;
 import org.junit.Test;
 
 /**
@@ -42,17 +43,41 @@ public class DateValidationRuleTest extends ValidatorTestCase {
 	}
 	@Test
 	public void testReadyness() {
-		// TODO
+		DataRecord record = RF.addStringField(null, "field", null);
+		DataRecord record2 = RF.addLongField(null, "field", null);
+		DateValidationRule rule = createRule(DateValidationRule.class);
+		
+		assertReadyness(false, rule, record.getMetadata());
+		
+		rule.getTarget().setValue("field");
+		assertReadyness(true, rule, record.getMetadata());
+		assertReadyness(false, rule, record2.getMetadata());
+		
+		rule.getTarget().setValue("field2");
+		assertReadyness(false, rule, record.getMetadata());
+		
+		rule.getTarget().setValue("field");
+		rule.getLanguageSettings(0).getDateFormat().setValue("Some wrong string");
+		assertReadyness(false, rule, record.getMetadata());
+		
+		rule.setParentLanguageSetting(defaultLanguageSetting());
+		rule.getParentLanguageSetting().getDateFormat().setValue("");
+		assertReadyness(false, rule, record.getMetadata());
+		
+		rule.setParentLanguageSetting(defaultLanguageSetting());
+		rule.getParentLanguageSetting().getLocale().setValue("");
+		assertReadyness(false, rule, record.getMetadata());
+		
+		rule.setParentLanguageSetting(defaultLanguageSetting());
+		rule.getParentLanguageSetting().getTimezone().setValue("");
+		assertReadyness(false, rule, record.getMetadata());
+		
 	}
 	@Test
 	public void testNullInput() {
 		DateValidationRule rule = createRule(DateValidationRule.class);
 		rule.getTarget().setValue("field");
 		assertValid(rule, RF.addStringField(null, "field", null));
-		assertValid(rule, RF.addIntegerField(null, "field", null));
-		assertValid(rule, RF.addDecimalField(null, "field", null));
-		assertValid(rule, RF.addNumberField(null, "field", null));
-		assertValid(rule, RF.addBooleanField(null, "field", null));
 	}
 	@Test
 	public void testJavaSyntax() {

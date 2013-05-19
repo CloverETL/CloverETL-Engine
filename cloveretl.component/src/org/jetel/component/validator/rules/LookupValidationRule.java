@@ -278,6 +278,27 @@ public class LookupValidationRule extends AbstractValidationRule {
 		}
 		return state;
 	}
+	
+	/**
+	 * @return Param node with lookup name
+	 */
+	public StringEnumValidationParamNode getLookup() {
+		return lookup;
+	}
+	
+	/**
+	 * @return Param node with key mapping
+	 */
+	public StringValidationParamNode getKeyMapping() {
+		return keyMapping;
+	}
+	
+	/**
+	 * @return Param node with current policy
+	 */
+	public EnumValidationParamNode getPolicy() {
+		return policy;
+	}
 
 	@Override
 	public String getCommonName() {

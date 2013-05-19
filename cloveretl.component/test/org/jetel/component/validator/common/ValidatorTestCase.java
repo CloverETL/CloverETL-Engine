@@ -282,11 +282,13 @@ public class ValidatorTestCase extends CloverTestCase {
 	/**
 	 * Mock graph wrapper providing: dummy PropertyRefResolver, lookup table acess, node paths...
 	 */
-	protected static class DummyGraphWrapper implements GraphWrapper {
+	protected class DummyGraphWrapper implements GraphWrapper {
 		
 		private Map<String, LookupTable> lookupTables = new HashMap<String, LookupTable>();
 		
 		private Map<Integer, CustomRule> customRules = new HashMap<Integer, CustomRule>();
+		
+		public DummyGraphWrapper(){}
 		
 		public void addLookupTable(LookupTable toAdd) {
 			lookupTables.put(toAdd.getId(), toAdd);
@@ -330,7 +332,7 @@ public class ValidatorTestCase extends CloverTestCase {
 
 		@Override
 		public TransformationGraph getTransformationGraph() {
-			return null;
+			return new TransformationGraph("dummy");
 		}
 	}
 }

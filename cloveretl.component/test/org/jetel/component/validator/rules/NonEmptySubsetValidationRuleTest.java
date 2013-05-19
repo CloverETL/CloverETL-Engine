@@ -18,7 +18,6 @@
  */
 package org.jetel.component.validator.rules;
 
-import org.jetel.component.validator.common.TestDataRecordFactory;
 import org.jetel.component.validator.common.ValidatorTestCase;
 import org.jetel.data.DataRecord;
 import org.junit.Test;

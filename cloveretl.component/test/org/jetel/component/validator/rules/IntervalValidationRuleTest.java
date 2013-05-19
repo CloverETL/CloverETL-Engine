@@ -18,18 +18,15 @@
  */
 package org.jetel.component.validator.rules;
 
-import org.jetel.component.validator.ValidationNode.State;
-import org.jetel.component.validator.common.TestDataRecordFactory;
-import org.jetel.component.validator.common.ValidatorTestCase;
-import org.jetel.data.primitive.Decimal;
-import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.component.validator.common.ConversionTestCase;
+import org.jetel.data.DataRecord;
 import org.junit.Test;
 
 /**
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 9.1.2013
  */
-public class IntervalValidationRuleTest extends ValidatorTestCase {
+public class IntervalValidationRuleTest extends ConversionTestCase {
 	
 	@Test
 	public void testNameability() {
@@ -39,244 +36,300 @@ public class IntervalValidationRuleTest extends ValidatorTestCase {
 	public void testDisability() {
 		testDisability(IntervalValidationRule.class);
 	}
-//	@Test
-//	public void testAttributes() {
-//		testStringAttribute(RangeCheckValidationRule.class, TARGET, "");
-//		testEnumAttribute(RangeCheckValidationRule.class, TYPE, RangeCheckValidationRule.TYPES.values(), RangeCheckValidationRule.TYPES.COMPARISON);
-//		
-//		testEnumAttribute(RangeCheckValidationRule.class, OPERATOR, RangeCheckValidationRule.OPERATOR_TYPE.values(), RangeCheckValidationRule.OPERATOR_TYPE.E);
-//		testStringAttribute(RangeCheckValidationRule.class, VALUE, "");
-//		
-//		testEnumAttribute(RangeCheckValidationRule.class, BOUNDARIES, RangeCheckValidationRule.BOUNDARIES_TYPE.values(), RangeCheckValidationRule.BOUNDARIES_TYPE.CLOSED_CLOSED);
-//		testStringAttribute(RangeCheckValidationRule.class, FROM, "");
-//		testStringAttribute(RangeCheckValidationRule.class, TO, "");
-//		
-//		testEnumAttribute(RangeCheckValidationRule.class, USE_TYPE, RangeCheckValidationRule.METADATA_TYPES.values(), RangeCheckValidationRule.METADATA_TYPES.DEFAULT);		
-//	}
-//	@Test
-//	public void testReadynessComparison() {
-//		RangeCheckValidationRule rule = new RangeCheckValidationRule();
-//		assertFalse(rule.isReady());
-//		
-//		// TBD: tests
-//	}
-//	@Test
-//	public void testReadynessInterval() {
-//		RangeCheckValidationRule rule = new RangeCheckValidationRule();
-//		assertFalse(rule.isReady());
-//		
-//		// TBD: tests
-//	}
-//	
-//	@Test
-//	public void testStringInStringInterval() {
-//		assertEquals(State.INVALID, createInterval("field", "[]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "ce"), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "cep"), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "noha"), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "opera"), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "operaa"), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "[)", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "ce"), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "cep"), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "noha"), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "opera"), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "operaa"), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "(]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "ce"), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "cep"), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "noha"), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "opera"), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "operaa"), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "()", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "ce"), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "cep"), null, null));
-//		assertEquals(State.VALID, createInterval("field", "()", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "noha"), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "opera"), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "cep", "opera").isValid(TestDataRecordFactory.addStringField(null, "field", "operaa"), null, null));
-//	}
-//	@Test
-//	public void testLongInLongInterval() {
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 4l), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 5l), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 7l), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 8l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 9l), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 4l), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 5l), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 7l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 8l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 9l), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 4l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 5l), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 7l), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 8l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 9l), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 4l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 5l), null, null));
-//		assertEquals(State.VALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 7l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 8l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 9l), null, null));
-//	}
-//	@Test
-//	public void testIntegerInIntegerInterval() {
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 4), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 5), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 7), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 8), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 9), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 4), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 5), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 7), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 8), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 9), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 4), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 5), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 7), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 8), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 9), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 4), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 5), null, null));
-//		assertEquals(State.VALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 7), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 8), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5", "8").isValid(TestDataRecordFactory.addIntegerField(null, "field", 9), null, null));
-//	}
-//	@Test
-//	public void testNumberInNumberInterval() {
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 5d), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 5.66d), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 6.76d), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 7.85d), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 7.9d), null, null));
-//
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 5d), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 5.66d), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 6.76d), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 7.85d), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 7.9d), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 5d), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 5.66d), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 6.76d), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 7.85d), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 7.9d), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 5d), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 5.66d), null, null));
-//		assertEquals(State.VALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 6.76d), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 7.85d), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 7.9d), null, null));
-//	}
-//	@Test
-//	public void testDecimalInDecimalInterval() {
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("5")), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("5.66")), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("6.76")), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("7.85")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("7.9")), null, null));
-//
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("5")), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("5.66")), null, null));
-//		assertEquals(State.VALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("6.76")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("7.85")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[)", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("7.9")), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("5")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("5.66")), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("6.76")), null, null));
-//		assertEquals(State.VALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("7.85")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "(]", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("7.9")), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("5")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("5.66")), null, null));
-//		assertEquals(State.VALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("6.76")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("7.85")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "()", "5.66", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("7.9")), null, null));
-//	}
-//	
-//	@Test
-//	public void testInvalidInputs() {
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66A", "7.85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("6.76")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66A", "7,85").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("6.76")), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66a", "7.85").isValid(TestDataRecordFactory.addNumberField(null, "field", 6.76d), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66", "7.dd85").isValid(TestDataRecordFactory.addNumberField(null, "field", 6.76d), null, null));
-//		
-//		assertEquals(State.INVALID, createInterval("field", "[]", "a5", "8").isValid(TestDataRecordFactory.addLongField(null, "field", 7l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5", "8,0").isValid(TestDataRecordFactory.addLongField(null, "field", 7l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5", "8.0").isValid(TestDataRecordFactory.addLongField(null, "field", 7l), null, null));
-//	}
-//	@Test
-//	public void testNonConvertible() {
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addIntegerField(null, "field", 7), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "5.66", "7.85").isValid(TestDataRecordFactory.addLongField(null, "field", 7l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "a", "s").isValid(TestDataRecordFactory.addLongField(null, "field", 7l), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "a", "s").isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("7")), null, null));
-//		assertEquals(State.INVALID, createInterval("field", "[]", "a", "s").isValid(TestDataRecordFactory.addNumberField(null, "field", 7d), null, null));
-//	}
-//	
-//	public void testUserDataType() {
-//		// As strings
-//		assertEquals(State.VALID, inType("s",createInterval("field", "[]", "5.66", "7.85")).isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("5.66")), null, null));
-//		assertEquals(State.INVALID, inType("s",createInterval("field", "[]", "5.66", "100.85")).isValid(TestDataRecordFactory.addDecimalField(null, "field", getDecimal("10.66")), null, null));		
-//	}
-//	
-//	public void testDates() {
-//		assertEquals(State.VALID, inType("da",createInterval("field", "[]", "2012-01-06 00:00:00", "2012-01-28 00:00:00","yyyy-MM-dd", true)).isValid(TestDataRecordFactory.addStringField(null, "field", "2012-01-17"), null, null));
-//		assertEquals(State.VALID, inType("da",createInterval("field", "[]", "2012-01-06 00:00:00", "2012-01-28 00:00:00","yyyy-MM-dd", true)).isValid(TestDataRecordFactory.addStringField(null, "field", "2012-01-28"), null, null));
-//		assertEquals(State.VALID, inType("da",createInterval("field", "[]", "2012-01-06 00:00:00", "2012-01-28 00:00:00","yyyy-MM-dd", true)).isValid(TestDataRecordFactory.addStringField(null, "field", "2012-01-06"), null, null));
-//		assertEquals(State.INVALID, inType("da",createInterval("field", "[]", "2012-01-06 00:00:00", "2012-01-28 00:00:00","yyyy-MM-dd", true)).isValid(TestDataRecordFactory.addStringField(null, "field", "2012-0100-06"), null, null));
-//		assertEquals(State.INVALID, inType("da",createInterval("field", "[]", "2012-01-06 00:00:00", "2012-01-28 00:00:00","yyyy-MM-dd", true)).isValid(TestDataRecordFactory.addStringField(null, "field", "2012-01a-17"), null, null));
-//		assertEquals(State.INVALID, inType("da",createInterval("field", "[]", "2012-01-06 00:00:00", "2012-01-28 00:00:00","yyyy-MM-dd", true)).isValid(TestDataRecordFactory.addStringField(null, "field", "2012-01-05"), null, null));
-//		assertEquals(State.INVALID, inType("da",createInterval("field", "[]", "2012-01-06 00:00:00", "2012-01-28 00:00:00","yyyy-MM-dd", true)).isValid(TestDataRecordFactory.addStringField(null, "field", "2012-01-17d"), null, null));
-//		assertEquals(State.INVALID, inType("da",createInterval("field", "[]", "2012-01-06 00:00:00", "2012-01-28 00:00:00","yyyy-MM-dd", true)).isValid(TestDataRecordFactory.addStringField(null, "field", "2012-01-28dd"), null, null));
-//		assertEquals(State.INVALID, inType("da",createInterval("field", "[]", "2012-01-06 00:00:00", "2012-01-28 00:00:00","yyyy-MM-dd", true)).isValid(TestDataRecordFactory.addStringField(null, "field", "2012-01-06asd"), null, null));
-//	}
-//	
-//	private IntervalValidationRule createInterval(String target, String interval, String from, String to) {
-//		IntervalValidationRule.BOUNDARIES_TYPE b = null;
-//		if(interval.equals("[]")) {
-//			b = IntervalValidationRule.BOUNDARIES_TYPE.CLOSED_CLOSED;
-//		} else if(interval.equals("[)")) {
-//			b = IntervalValidationRule.BOUNDARIES_TYPE.CLOSED_OPEN;
-//		} else if(interval.equals("(]")) {
-//			b = IntervalValidationRule.BOUNDARIES_TYPE.OPEN_CLOSED;
-//		} else if(interval.equals("()")) {
-//			b = IntervalValidationRule.BOUNDARIES_TYPE.OPEN_OPEN;
-//		}
-//		IntervalValidationRule rule = new IntervalValidationRule();
-//		rule.setEnabled(true);
-//		rule.getTarget().setValue(target);
-//		rule.getBoundaries().setValue(b);
-//		rule.getFrom().setValue(from);
-//		rule.getTo().setValue(to);
-//		return rule;
-//	}
-//	private IntervalValidationRule createInterval(String target, String operator, String from, String to, String format, boolean strict) {
-//		IntervalValidationRule rule = createInterval(target, operator, from, to);
-//		rule.getFormat().setValue(format);
-//		return rule;
-//	}
-//	
-//	private IntervalValidationRule inType(String type, IntervalValidationRule rule) {
-//		IntervalValidationRule.METADATA_TYPES t = null;
-//		if(type.equals("s")) {
-//			t = ConversionValidationRule.METADATA_TYPES.STRING;
-//		} else if(type.equals("l")) {
-//			t = ConversionValidationRule.METADATA_TYPES.LONG;
-//		} else if(type.equals("da")) {
-//			t = ConversionValidationRule.METADATA_TYPES.DATE;
-//		} else if(type.equals("n")) {
-//			t = ConversionValidationRule.METADATA_TYPES.NUMBER;
-//		} else if(type.equals("d")) {
-//			t = ConversionValidationRule.METADATA_TYPES.DECIMAL;
-//		}
-//		rule.getUseType().setValue(t);
-//		return rule;
-//	}
+	@Test
+	public void testCommon() {
+		testCommon(IntervalValidationRule.class);
+	}
+	
+	@Test
+	public void testReadyness() {
+		DataRecord record = RF.addStringField(null, "field", "");
+		assertReadyness(false, newRule("", "==", "50", "60"), record.getMetadata());	// Empty target
+		assertReadyness(false, newRule("field2", "==", "50", "60"), record.getMetadata());	// Non-existent target
+		assertReadyness(true, newRule("field", "==", "50", "60"), record.getMetadata());
+		
+		assertReadyness(false, newRule("field", "==", "", "60"), record.getMetadata());	// Empty from
+		assertReadyness(false, newRule("field", "==", "50", ""), record.getMetadata());	// Empty to
+		assertReadyness(false, newRule("field", "==", "", ""), record.getMetadata());	// Empty from and to
+		
+		assertReadyness(false, inType("da", df("wrong", newRule("field", "==", "50", "60"))), record.getMetadata());
+		assertReadyness(true, inType("da", df("yyyy-MM-dd", newRule("field", "==", "50", "60"))), record.getMetadata());
+		assertReadyness(true, inType("da", df("joda:yyyy-MM-dd", newRule("field", "==", "50", "60"))), record.getMetadata());
+		assertReadyness(true, inType("da", df("java:yyyy-MM-dd", newRule("field", "==", "50", "60"))), record.getMetadata());
+		
+		ConversionValidationRule temp;
+		temp = inType("da", newRule("field", "==", "50", "60"));
+		temp.getParentLanguageSetting().getDateFormat().setValue("");
+		assertReadyness(false, temp, record.getMetadata());
+		
+		temp = inType("da", newRule("field", "==", "50", "60"));
+		temp.getParentLanguageSetting().getLocale().setValue("");
+		assertReadyness(false, temp, record.getMetadata());
+		
+		temp = inType("da", newRule("field", "==", "50", "60"));
+		temp.getParentLanguageSetting().getTimezone().setValue("");
+		assertReadyness(false, temp, record.getMetadata());
+		
+		temp = inType("d", newRule("field", "==", "50", "60"));
+		temp.getParentLanguageSetting().getLocale().setValue("");
+		assertReadyness(false, temp, record.getMetadata());
+	}
+
+	@Test
+	public void testStringInStringInterval() {
+		assertInvalid(newRule("field", "[]", "cep", "opera"), RF.addStringField(null, "field", "ce"));
+		assertValid(newRule("field", "[]", "cep", "opera"), RF.addStringField(null, "field", "cep"));
+		assertValid(newRule("field", "[]", "cep", "opera"), RF.addStringField(null, "field", "noha"));
+		assertValid(newRule("field", "[]", "cep", "opera"), RF.addStringField(null, "field", "opera"));
+		assertInvalid(newRule("field", "[]", "cep", "opera"), RF.addStringField(null, "field", "operaa"));
+		
+		assertInvalid(newRule("field", "[)", "cep", "opera"), RF.addStringField(null, "field", "ce"));
+		assertValid(newRule("field", "[)", "cep", "opera"), RF.addStringField(null, "field", "cep"));
+		assertValid(newRule("field", "[)", "cep", "opera"), RF.addStringField(null, "field", "noha"));
+		assertInvalid(newRule("field", "[)", "cep", "opera"), RF.addStringField(null, "field", "opera"));
+		assertInvalid(newRule("field", "[)", "cep", "opera"), RF.addStringField(null, "field", "operaa"));
+		
+		assertInvalid(newRule("field", "(]", "cep", "opera"), RF.addStringField(null, "field", "ce"));
+		assertInvalid(newRule("field", "(]", "cep", "opera"), RF.addStringField(null, "field", "cep"));
+		assertValid(newRule("field", "(]", "cep", "opera"), RF.addStringField(null, "field", "noha"));
+		assertValid(newRule("field", "(]", "cep", "opera"), RF.addStringField(null, "field", "opera"));
+		assertInvalid(newRule("field", "(]", "cep", "opera"), RF.addStringField(null, "field", "operaa"));
+		
+		assertInvalid(newRule("field", "()", "cep", "opera"), RF.addStringField(null, "field", "ce"));
+		assertInvalid(newRule("field", "()", "cep", "opera"), RF.addStringField(null, "field", "cep"));
+		assertValid(newRule("field", "()", "cep", "opera"), RF.addStringField(null, "field", "noha"));
+		assertInvalid(newRule("field", "()", "cep", "opera"), RF.addStringField(null, "field", "opera"));
+		assertInvalid(newRule("field", "()", "cep", "opera"), RF.addStringField(null, "field", "operaa"));
+	}
+	@Test
+	public void testLongInLongInterval() {
+		assertInvalid(newRule("field", "[]", "5", "8"), RF.addLongField(null, "field", 4l));
+		assertValid(newRule("field", "[]", "5", "8"), RF.addLongField(null, "field", 5l));
+		assertValid(newRule("field", "[]", "5", "8"), RF.addLongField(null, "field", 7l));
+		assertValid(newRule("field", "[]", "5", "8"), RF.addLongField(null, "field", 8l));
+		assertInvalid(newRule("field", "[]", "5", "8"), RF.addLongField(null, "field", 9l));
+		
+		assertInvalid(newRule("field", "[)", "5", "8"), RF.addLongField(null, "field", 4l));
+		assertValid(newRule("field", "[)", "5", "8"), RF.addLongField(null, "field", 5l));
+		assertValid(newRule("field", "[)", "5", "8"), RF.addLongField(null, "field", 7l));
+		assertInvalid(newRule("field", "[)", "5", "8"), RF.addLongField(null, "field", 8l));
+		assertInvalid(newRule("field", "[)", "5", "8"), RF.addLongField(null, "field", 9l));
+		
+		assertInvalid(newRule("field", "(]", "5", "8"), RF.addLongField(null, "field", 4l));
+		assertInvalid(newRule("field", "(]", "5", "8"), RF.addLongField(null, "field", 5l));
+		assertValid(newRule("field", "(]", "5", "8"), RF.addLongField(null, "field", 7l));
+		assertValid(newRule("field", "(]", "5", "8"), RF.addLongField(null, "field", 8l));
+		assertInvalid(newRule("field", "(]", "5", "8"), RF.addLongField(null, "field", 9l));
+		
+		assertInvalid(newRule("field", "()", "5", "8"), RF.addLongField(null, "field", 4l));
+		assertInvalid(newRule("field", "()", "5", "8"), RF.addLongField(null, "field", 5l));
+		assertValid(newRule("field", "()", "5", "8"), RF.addLongField(null, "field", 7l));
+		assertInvalid(newRule("field", "()", "5", "8"), RF.addLongField(null, "field", 8l));
+		assertInvalid(newRule("field", "()", "5", "8"), RF.addLongField(null, "field", 9l));
+	}
+	@Test
+	public void testIntegerInIntegerInterval() {
+		assertInvalid(newRule("field", "[]", "5", "8"), RF.addIntegerField(null, "field", 4));
+		assertValid(newRule("field", "[]", "5", "8"), RF.addIntegerField(null, "field", 5));
+		assertValid(newRule("field", "[]", "5", "8"), RF.addIntegerField(null, "field", 7));
+		assertValid(newRule("field", "[]", "5", "8"), RF.addIntegerField(null, "field", 8));
+		assertInvalid(newRule("field", "[]", "5", "8"), RF.addIntegerField(null, "field", 9));
+		
+		assertInvalid(newRule("field", "[)", "5", "8"), RF.addIntegerField(null, "field", 4));
+		assertValid(newRule("field", "[)", "5", "8"), RF.addIntegerField(null, "field", 5));
+		assertValid(newRule("field", "[)", "5", "8"), RF.addIntegerField(null, "field", 7));
+		assertInvalid(newRule("field", "[)", "5", "8"), RF.addIntegerField(null, "field", 8));
+		assertInvalid(newRule("field", "[)", "5", "8"), RF.addIntegerField(null, "field", 9));
+		
+		assertInvalid(newRule("field", "(]", "5", "8"), RF.addIntegerField(null, "field", 4));
+		assertInvalid(newRule("field", "(]", "5", "8"), RF.addIntegerField(null, "field", 5));
+		assertValid(newRule("field", "(]", "5", "8"), RF.addIntegerField(null, "field", 7));
+		assertValid(newRule("field", "(]", "5", "8"), RF.addIntegerField(null, "field", 8));
+		assertInvalid(newRule("field", "(]", "5", "8"), RF.addIntegerField(null, "field", 9));
+		
+		assertInvalid(newRule("field", "()", "5", "8"), RF.addIntegerField(null, "field", 4));
+		assertInvalid(newRule("field", "()", "5", "8"), RF.addIntegerField(null, "field", 5));
+		assertValid(newRule("field", "()", "5", "8"), RF.addIntegerField(null, "field", 7));
+		assertInvalid(newRule("field", "()", "5", "8"), RF.addIntegerField(null, "field", 8));
+		assertInvalid(newRule("field", "()", "5", "8"), RF.addIntegerField(null, "field", 9));
+	}
+	@Test
+	public void testNumberInNumberInterval() {
+		assertInvalid(newRule("field", "[]", "5.66", "7.85"), RF.addNumberField(null, "field", 5d));
+		assertValid(newRule("field", "[]", "5.66", "7.85"), RF.addNumberField(null, "field", 5.66d));
+		assertValid(newRule("field", "[]", "5.66", "7.85"), RF.addNumberField(null, "field", 6.76d));
+		assertValid(newRule("field", "[]", "5.66", "7.85"), RF.addNumberField(null, "field", 7.85d));
+		assertInvalid(newRule("field", "[]", "5.66", "7.85"), RF.addNumberField(null, "field", 7.9d));
+
+		assertInvalid(newRule("field", "[)", "5.66", "7.85"), RF.addNumberField(null, "field", 5d));
+		assertValid(newRule("field", "[)", "5.66", "7.85"), RF.addNumberField(null, "field", 5.66d));
+		assertValid(newRule("field", "[)", "5.66", "7.85"), RF.addNumberField(null, "field", 6.76d));
+		assertInvalid(newRule("field", "[)", "5.66", "7.85"), RF.addNumberField(null, "field", 7.85d));
+		assertInvalid(newRule("field", "[)", "5.66", "7.85"), RF.addNumberField(null, "field", 7.9d));
+		
+		assertInvalid(newRule("field", "(]", "5.66", "7.85"), RF.addNumberField(null, "field", 5d));
+		assertInvalid(newRule("field", "(]", "5.66", "7.85"), RF.addNumberField(null, "field", 5.66d));
+		assertValid(newRule("field", "(]", "5.66", "7.85"), RF.addNumberField(null, "field", 6.76d));
+		assertValid(newRule("field", "(]", "5.66", "7.85"), RF.addNumberField(null, "field", 7.85d));
+		assertInvalid(newRule("field", "(]", "5.66", "7.85"), RF.addNumberField(null, "field", 7.9d));
+		
+		assertInvalid(newRule("field", "()", "5.66", "7.85"), RF.addNumberField(null, "field", 5d));
+		assertInvalid(newRule("field", "()", "5.66", "7.85"), RF.addNumberField(null, "field", 5.66d));
+		assertValid(newRule("field", "()", "5.66", "7.85"), RF.addNumberField(null, "field", 6.76d));
+		assertInvalid(newRule("field", "()", "5.66", "7.85"), RF.addNumberField(null, "field", 7.85d));
+		assertInvalid(newRule("field", "()", "5.66", "7.85"), RF.addNumberField(null, "field", 7.9d));
+	}
+	@Test
+	public void testDecimalInDecimalInterval() {
+		assertInvalid(newRule("field", "[]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("5")));
+		assertValid(newRule("field", "[]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("5.66")));
+		assertValid(newRule("field", "[]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
+		assertValid(newRule("field", "[]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("7.85")));
+		assertInvalid(newRule("field", "[]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("7.9")));
+
+		assertInvalid(newRule("field", "[)", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("5")));
+		assertValid(newRule("field", "[)", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("5.66")));
+		assertValid(newRule("field", "[)", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
+		assertInvalid(newRule("field", "[)", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("7.85")));
+		assertInvalid(newRule("field", "[)", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("7.9")));
+		
+		assertInvalid(newRule("field", "(]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("5")));
+		assertInvalid(newRule("field", "(]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("5.66")));
+		assertValid(newRule("field", "(]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
+		assertValid(newRule("field", "(]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("7.85")));
+		assertInvalid(newRule("field", "(]", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("7.9")));
+		
+		assertInvalid(newRule("field", "()", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("5")));
+		assertInvalid(newRule("field", "()", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("5.66")));
+		assertValid(newRule("field", "()", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
+		assertInvalid(newRule("field", "()", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("7.85")));
+		assertInvalid(newRule("field", "()", "5.66", "7.85"), RF.addDecimalField(null, "field", getDecimal("7.9")));
+	}
+	
+	@Test
+	public void testInvalidInputs() {
+		assertInvalid(newRule("field", "[]", "5.66A", "7.85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
+		assertInvalid(newRule("field", "[]", "5.66A", "7,85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
+		
+		assertInvalid(newRule("field", "[]", "5.66a", "7.85"), RF.addNumberField(null, "field", 6.76d));
+		assertInvalid(newRule("field", "[]", "5.66", "7.dd85"), RF.addNumberField(null, "field", 6.76d));
+		
+		assertInvalid(newRule("field", "[]", "a5", "8"), RF.addLongField(null, "field", 7l));
+		assertInvalid(newRule("field", "[]", "5", "8,0"), RF.addLongField(null, "field", 7l));
+		assertInvalid(newRule("field", "[]", "5", "8.0"), RF.addLongField(null, "field", 7l));
+	}
+	@Test
+	public void testNonConvertible() {
+		assertInvalid(newRule("field", "[]", "5.66", "7.85"), RF.addIntegerField(null, "field", 7));
+		assertInvalid(newRule("field", "[]", "5.66", "7.85"), RF.addLongField(null, "field", 7l));
+		assertInvalid(newRule("field", "[]", "a", "s"), RF.addLongField(null, "field", 7l));
+		assertInvalid(newRule("field", "[]", "a", "s"), RF.addDecimalField(null, "field", getDecimal("7")));
+		assertInvalid(newRule("field", "[]", "a", "s"), RF.addNumberField(null, "field", 7d));
+	}
+	
+	public void testUserSelectedType() {
+		// As strings
+		assertValid(inType("s",newRule("field", "[]", "5.66", "7.85")), RF.addDecimalField(null, "field", getDecimal("5.66")));
+		assertInvalid(inType("s",newRule("field", "[]", "5.66", "100.85")), RF.addDecimalField(null, "field", getDecimal("10.66")));
+		
+		// As longs
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 9));
+		assertValid(inType("l",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 10));
+		assertValid(inType("l",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 12));
+		assertValid(inType("l",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 13));
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 14));
+		
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "9"));
+		assertValid(inType("l",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "10"));
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "10.0"));
+		assertValid(inType("l",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "12"));
+		assertValid(inType("l",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "13"));
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "14"));
+		
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("9")));	// Decimals are not supposed to be converted to long
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("10")));
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("10.0")));
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("12")));
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("13")));
+		assertInvalid(inType("l",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("14")));
+		
+		// As decimals
+		assertInvalid(inType("d",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 9));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 10));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 12));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 13));
+		assertInvalid(inType("d",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 14));
+		
+		assertInvalid(inType("d",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "9"));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "10"));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "10.0"));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "12"));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "13"));
+		assertInvalid(inType("d",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "14"));
+		
+		assertInvalid(inType("d",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("9")));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("10")));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("10.0")));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("12")));
+		assertValid(inType("d",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("13")));
+		assertInvalid(inType("d",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("14")));
+		
+		// As numbers
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 9));
+		assertValid(inType("n",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 10));
+		assertValid(inType("n",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 12));
+		assertValid(inType("n",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 13));
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addIntegerField(null, "field", 14));
+		
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "9"));
+		assertValid(inType("n",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "10"));
+		assertValid(inType("n",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "10.0"));
+		assertValid(inType("n",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "12"));
+		assertValid(inType("n",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "13"));
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addStringField(null, "field", "14"));
+		
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("9"))); // Decimals are not supposed to be compared as numbers
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("10")));
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("10.0")));
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("12")));
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("13")));
+		assertInvalid(inType("n",newRule("field", "[]", "10", "13")), RF.addDecimalField(null, "field", getDecimal("14")));
+		
+	}
+	
+	public void testDates() {
+		assertValid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06", "2012-01-28"))), RF.addStringField(null, "field", "2012-01-17"));
+		assertValid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06", "2012-01-28"))), RF.addStringField(null, "field", "2012-01-28"));
+		assertValid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06", "2012-01-28"))), RF.addStringField(null, "field", "2012-01-06"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06", "2012-01-28"))), RF.addStringField(null, "field", "2012-0100-06"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06", "2012-01-28"))), RF.addStringField(null, "field", "2012-01a-17"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06", "2012-01-28"))), RF.addStringField(null, "field", "2012-01-05"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06", "2012-01-28"))), RF.addStringField(null, "field", "2012-01-17d"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06", "2012-01-28"))), RF.addStringField(null, "field", "2012-01-28dd"));
+		assertInvalid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06", "2012-01-28"))), RF.addStringField(null, "field", "2012-01-06asd"));
+		
+		assertInvalid(inType("da", df("yyyy-MM-dd HH:mm:ss", newRule("field", "[]", "2012-01-06 10:10:10", "2012-01-17 20:10:10"))), RF.addStringField(null, "field", "2012-01-05 10:20:30"));
+		assertInvalid(inType("da", df("yyyy-MM-dd HH:mm:ss", newRule("field", "[]", "2012-01-06 10:10:10", "2012-01-17 20:10:10"))), RF.addStringField(null, "field", "2012-01-17 21:20:30"));
+		assertValid(inType("da", df("yyyy-MM-dd HH:mm:ss", newRule("field", "[]", "2012-01-06 10:10:10", "2012-01-17 20:10:10"))), RF.addStringField(null, "field", "2012-01-07 10:20:30"));
+		assertValid(inType("da", df("yyyy-MM-dd", newRule("field", "[]", "2012-01-06 10:10:10", "2012-01-17 20:10:10"))), RF.addStringField(null, "field", "2012-01-17"));
+	}
+	
+	private IntervalValidationRule newRule(String target, String interval, String from, String to) {
+		IntervalValidationRule.BOUNDARIES_TYPE b = null;
+		if(interval.equals("[]")) {
+			b = IntervalValidationRule.BOUNDARIES_TYPE.CLOSED_CLOSED;
+		} else if(interval.equals("[)")) {
+			b = IntervalValidationRule.BOUNDARIES_TYPE.CLOSED_OPEN;
+		} else if(interval.equals("(]")) {
+			b = IntervalValidationRule.BOUNDARIES_TYPE.OPEN_CLOSED;
+		} else if(interval.equals("()")) {
+			b = IntervalValidationRule.BOUNDARIES_TYPE.OPEN_OPEN;
+		}
+		IntervalValidationRule rule = createRule(IntervalValidationRule.class);
+		rule.getTarget().setValue(target);
+		rule.getBoundaries().setValue(b);
+		rule.getFrom().setValue(from);
+		rule.getTo().setValue(to);
+		return rule;
+	}
 }
