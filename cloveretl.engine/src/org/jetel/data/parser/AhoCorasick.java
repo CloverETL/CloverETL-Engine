@@ -30,6 +30,8 @@ public class AhoCorasick {
 	boolean failureFunctionDone = false;
 	NodeTrie rootTrie;
 	NodeTrie currentNode;
+	int minPattern;
+    int maxPattern;
     
 	/**
 	 * Constructor of Aho-Corasick algorithm.
@@ -90,6 +92,20 @@ public class AhoCorasick {
 				qa.patterns.addAll(qa.fail.patterns);
 			}
 		}
+        
+        //create patternsFinal (bit array) from patterns set - for fast isPattern() method
+        currentNodes = new ArrayList<NodeTrie>();
+        currentNodes.add(rootTrie);
+        do {
+            for(NodeTrie nt : currentNodes) {
+                qa = nt;
+                qa.patternsFinal = new boolean[maxPattern - minPattern + 1];
+                for(int i : qa.patterns) {
+                    qa.patternsFinal[i - minPattern] = true;
+                }
+            }
+        } while(!(currentNodes = getNextLevelNode(currentNodes)).isEmpty());
+        
 	}
 	
 	/**
@@ -112,6 +128,9 @@ public class AhoCorasick {
 			}
 			iterator.patterns.add(idx);
 		}
+		
+        if(idx < minPattern) minPattern = idx;
+        if(idx > maxPattern) maxPattern = idx;
 	}
 
 	/**
@@ -136,6 +155,8 @@ public class AhoCorasick {
 			iterator.patterns.add(idx);
 		}
 		
+        if(idx < minPattern) minPattern = idx;
+        if(idx > maxPattern) maxPattern = idx;
 	}
 
 	/**
@@ -160,7 +181,7 @@ public class AhoCorasick {
 	}
 	
 	public boolean isPattern(int idx) {
-		return currentNode.patterns.contains(idx);
+		return currentNode.patternsFinal[idx - minPattern];
 	}
 	
 	public boolean canUpdateWithoutFail() {
@@ -216,6 +237,7 @@ public class AhoCorasick {
 		char transition;
 		NodeTrie[] children;
 		Set<Integer> patterns;
+        boolean[] patternsFinal;
 		NodeTrie fail;
 		List<NodeTrie> childrenList; //lazily initialised from children array
 		
