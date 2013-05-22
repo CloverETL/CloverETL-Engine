@@ -7,7 +7,6 @@
 <FunctionalTest ident="HttpConnector" graphFile="graph/graphHTTPConnector.grf">	 
      <Property name="-P:DEFAULT_INTERNAL_IO_BUFFER_SIZE" value="89152" />
 	 <FlatFile outputFile="data-out/city_overview.txt" supposedFile="supposed-out/city_overview.HttpConnector.txt"/>
-	 <!-- next two are disabled until the service works again (currently returns IOException) -->
 	 <FlatFile outputFile="data-tmp/CzechRepublic.xml" supposedFile="supposed-out/CzechRepublic.HttpConnector.xml"/>
 	 <FlatFile outputFile="data-tmp/Poland.xml" supposedFile="supposed-out/Poland.HttpConnector.xml"/>
 </FunctionalTest>
