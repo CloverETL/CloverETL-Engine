@@ -204,7 +204,9 @@ public abstract class CloverBuffer {
     protected final void finalize() throws Throwable {
     	super.finalize();
     	try {
-    		memoryDeallocated(capacity(), isDirect());
+    		if (!isDerived()) {
+    			memoryDeallocated(capacity(), isDirect());
+    		}
     	} catch (Throwable t) {
     		logger.warn("Finalization of CluverBuffer failed.", t);
     	}
