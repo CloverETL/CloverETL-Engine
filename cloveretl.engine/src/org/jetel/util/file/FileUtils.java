@@ -1923,6 +1923,20 @@ public class FileUtils {
 	}
 	
 	/**
+	 * Deletes last directory delimiter.
+	 * stolen from com.cloveretl.gui.utils.FileUtils
+	 * @param address
+	 * @return
+	 */
+	public static final String removeFinalSlashIfNecessary(String address) {
+		int end = address.length()-1;
+		if (address.charAt(end) == '/') {
+			return address.substring(0, end);
+		}
+		return address;
+	}
+	
+	/**
 	 * Parses address and returns true if the address contains a server.
 	 * 
 	 * @param input
