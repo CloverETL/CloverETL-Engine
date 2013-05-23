@@ -19,6 +19,7 @@
 package org.jetel.enums;
 
 import org.jetel.graph.BufferedEdge;
+import org.jetel.graph.BufferedFastPropagateEdge;
 import org.jetel.graph.DirectEdge;
 import org.jetel.graph.DirectEdgeFastPropagate;
 import org.jetel.graph.Edge;
@@ -33,6 +34,8 @@ public enum EdgeTypeEnum {
 	DIRECT_FAST_PROPAGATE("directFastPropagate", DirectEdgeFastPropagate.class),
 	/**  Proxy represents Buffered Edge */
 	BUFFERED("buffered", BufferedEdge.class),
+	/**  Proxy represents Buffered fast propagate edge */
+	BUFFERED_FAST_PROPAGATE("bufferedFastPropagate", BufferedFastPropagateEdge.class),
 	/** Proxy represents Edge connecting two different phases */
 	PHASE_CONNECTION("phaseConnection", PhaseConnectionEdge.class);
 	
