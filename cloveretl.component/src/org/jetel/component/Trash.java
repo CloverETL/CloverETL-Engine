@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,6 +42,8 @@ import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.CloverWorker;
+import org.jetel.graph.runtime.FutureOfRunnable;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ReaderWriterComponentTokenTracker;
 import org.jetel.util.MultiFileWriter;
@@ -269,29 +273,15 @@ public class Trash extends Node {
 	}
 
 	private Result executeWithoutWriter() throws Exception {
-		InputReader[] readers = new InputReader[inPorts.size()];
-		int i = 0;
+		List<FutureOfRunnable<InputReader>> readers = new ArrayList<FutureOfRunnable<InputReader>>();
+		
 		for (InputPort inPort : inPorts.values()) {
 			InputReader reader = new InputReader((InputPortDirect) inPort);
-			reader.start();
-			readers[i++] = reader;
+			readers.add(CloverWorker.startWorker(reader));
 		}
 		
-		boolean killIt = false;
-		for (InputReader inputReader : readers) {
-			while (inputReader.getState() != Thread.State.TERMINATED) {
-				if (killIt) {
-					inputReader.interrupt();
-					break;
-				}
-				killIt = !runIt;
-				try {
-					inputReader.join(1000);
-				} catch (InterruptedException e) {
-					logger.debug(getId() + " thread interrupted, it will interrupt child threads", e);
-					killIt = true;
-				}
-			}
+		for (FutureOfRunnable<InputReader> inputReader : readers) {
+			inputReader.get();
 		}
 
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -444,34 +434,26 @@ public class Trash extends Node {
 	}
 	
 
-	private class InputReader extends Thread {
+	private class InputReader extends CloverWorker {
 		private InputPortDirect inPort;
 
 		public InputReader(InputPortDirect inPort) {
-			super(Thread.currentThread().getName() + ".InputThread#" + inPort.getInputPortNumber());
+			super(Trash.this, "InputThread#" + inPort.getInputPortNumber());
 			this.inPort = inPort;
 		}
 
 		@Override
-		public void run() {
+		public void work() throws InterruptedException, IOException {
 			DataRecord record = DataRecordFactory.newRecord(inPort.getMetadata());
 			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 			if (mode.equals(Mode.VALIDATE_RECORDS)) {
 				record.init();
 			}
 
-			try {
-				while (inPort.readRecordDirect(recordBuffer) && runIt) {
-					if (mode.equals(Mode.VALIDATE_RECORDS)) {
-						record.deserialize(recordBuffer);
-					}
+			while (inPort.readRecordDirect(recordBuffer) && runIt) {
+				if (mode.equals(Mode.VALIDATE_RECORDS)) {
+					record.deserialize(recordBuffer);
 				}
-			} catch (InterruptedException e) {
-				logger.debug(getId() + ": thread forcibly aborted", e);
-				return;
-			} catch (IOException e) {
-				logger.error(getId() + ": thread failed", e);
-				return;
 			}
 		}
 	}
