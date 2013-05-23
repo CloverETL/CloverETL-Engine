@@ -77,7 +77,7 @@ public class MemoryTracker {
 			if (usedMemoryByNode != null) {
 				usedMemoryPerNode.put(node, Integer.valueOf(usedMemoryByNode.intValue() - memorySize));
 			} else {
-				logger.warn("Unexpected issue in memory tracker. Deallocation performed without foregoing allocation.");
+				logger.warn("Unexpected issue in memory tracker. Deallocation performed without foregoing allocation in component " + node);
 				return;
 			}
 		}
