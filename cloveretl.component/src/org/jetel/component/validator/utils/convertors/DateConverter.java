@@ -104,12 +104,15 @@ public class DateConverter implements Converter {
 	@Override
 	public Date convertFromCloverLiteral(String o) {
 		SimpleDateFormat format = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
+		// FIXME: default itmezone would be in computer timezone, unwanted, not very user
+		// friendly for comparing with incoming fields with different timezone.
 		format.setTimeZone(TimeZone.getTimeZone("UTC"));
     	if (!StringUtils.isEmpty(o)) {
     		try {
     			return format.parse(o);
     		} catch (ParseException ex) {
     			format = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
+    			// FIXME: dtto
     			format.setTimeZone(TimeZone.getTimeZone("UTC"));
     			try {
     				return format.parse(o);

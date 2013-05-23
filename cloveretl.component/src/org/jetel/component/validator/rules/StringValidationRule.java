@@ -152,6 +152,7 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 	 * @return Not null output string.
 	 */
 	protected String prepareInput(DataRecord record, String name) {
+		// FIXME: move to StringConverter 
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
 		
 		DataFieldMetadata fieldMetadata = record.getMetadata().getField(name);

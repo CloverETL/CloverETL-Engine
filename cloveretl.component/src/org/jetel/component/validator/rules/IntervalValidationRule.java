@@ -161,6 +161,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		
 		T record = converter.<T>convert(dataField.getValue());
 		if(record == null) {
+			// FIXME: remove unused check for null
 			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", nodePath, resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
