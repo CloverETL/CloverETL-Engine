@@ -21,6 +21,7 @@ package org.jetel.graph.runtime;
 import java.util.ArrayList;
 
 import org.apache.log4j.MDC;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.Node;
@@ -92,6 +93,9 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		} catch (RuntimeException e) {
 			exception = e;
 			throw e;
+		} catch (Exception e) {
+			exception = e;
+			throw new JetelRuntimeException(e);
 		} finally {
 			ContextProvider.unregister(c);
 			MDC.remove("runId");
@@ -113,7 +117,7 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 		return node;
 	}
 	
-	public abstract void work() throws InterruptedException;
+	public abstract void work() throws Exception, InterruptedException;
 	
 	public Thread startWorker() {
 		thread = new Thread(this);
