@@ -346,7 +346,9 @@ public class FileUtilsTest extends CloverTestCase {
 	}
 	
 	public void testRemoveFinalSlashIfNecessary() {
-		assertEquals("c:/project", FileUtils.removeFinalSlashIfNecessary("c:/project/"));
-		assertEquals("c:/project", FileUtils.removeFinalSlashIfNecessary("c:/project"));
+		assertNull(FileUtils.removeTrailingSlash(null));
+		assertEquals("", FileUtils.removeTrailingSlash(""));
+		assertEquals("c:/project", FileUtils.removeTrailingSlash("c:/project/"));
+		assertEquals("c:/project", FileUtils.removeTrailingSlash("c:/project"));
 	}
 }
