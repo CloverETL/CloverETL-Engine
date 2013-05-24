@@ -41,7 +41,7 @@ public class CircularBufferQueue {
 	private CloverBuffer readingDataBuffer;
 	private int writingPosition;
 	private int readingPosition;
-	//private int limit;
+	private int readingLimit;
 	private int capacity;
 	private boolean isBlocking;
 	
@@ -56,7 +56,7 @@ public class CircularBufferQueue {
 		readingDataBuffer.clear();
 		writingPosition = 0;
 		readingPosition = 0;
-		//limit = initialCapacity;
+		readingLimit = initialCapacity;
 		this.capacity = initialCapacity;
 		isBlocking = true;
 	}
@@ -66,7 +66,6 @@ public class CircularBufferQueue {
 	}
 
 	public boolean offer(DataRecord dataRecord, int recordSize) {
-    	
     	if (secureWriting(recordSize + ByteBufferUtils.SIZEOF_INT)) {
     		ByteBufferUtils.encodeLength(writingDataBuffer, recordSize);
     		dataRecord.serialize(writingDataBuffer);
@@ -95,7 +94,7 @@ public class CircularBufferQueue {
     		if (capacity - writingPosition >= expectedRemaining) {
     			return true;
     		} else if (readingPosition > expectedRemaining) {
-    			readingDataBuffer.limit(writingPosition);
+    			readingLimit = writingPosition;
     			writingDataBuffer.position(0);
     			return true;
     		} else {
@@ -111,9 +110,10 @@ public class CircularBufferQueue {
     }
 
     private synchronized void advanceWritingPosition() {
+    	if (readingPosition == writingPosition) {
+    		notify(); //notify blockingPoll()
+    	}
     	writingPosition = writingDataBuffer.position();
-		//logger.info("notifying blockingPoll() " + this);
-    	notify(); //notify blockingPoll()
     }
 
     public DataRecord poll(DataRecord record) {
@@ -136,10 +136,9 @@ public class CircularBufferQueue {
     	if (secureReading()) {
     		int length = ByteBufferUtils.decodeLength(readingDataBuffer);
     		if (length != Integer.MAX_VALUE) {
-    			int formerLimit = readingDataBuffer.limit();
 	    		readingDataBuffer.limit(readingDataBuffer.position() + length);
 	    		buffer.put(readingDataBuffer);
-	    		readingDataBuffer.limit(formerLimit);
+	    		readingDataBuffer.limit(capacity);
 	    		advanceReadingPosition();
 	    		buffer.flip();
 	    		return buffer;
@@ -169,11 +168,8 @@ public class CircularBufferQueue {
     	if (result == null) {
     		synchronized (this) {
     			while (isBlocking && (result = poll(buffer)) == null) {
-    				//logger.info("going to sleep in blockingPoll() " + this);
     				wait();
-    				//logger.info("waking up from blockingPoll() " + this);
     			}
-				//logger.info("woke up from blockingPoll() " + this);
     		}
     	}
     	return result;
@@ -183,8 +179,9 @@ public class CircularBufferQueue {
     	if (readingPosition == writingPosition) {
     		return false;
     	} else {
-    		if (readingPosition == readingDataBuffer.limit()) {
+    		if (readingPosition == readingLimit) {
     			readingDataBuffer.clear();
+    			readingLimit = capacity;
     		}
     		return true;
     	}
@@ -211,18 +208,16 @@ public class CircularBufferQueue {
 		writingPosition = 0;
 		readingPosition = 0;
 		isBlocking = true;
+		readingLimit = capacity;
 	}
 
 	public synchronized void flip() {
 		//writingDataBuffer has position=0, limit=<last_real_data_byte>
-		int limit = writingDataBuffer.limit();
-		readingDataBuffer.clear();
-		readingDataBuffer.limit(limit);
-		readingPosition = 0;
-		writingDataBuffer.clear();
-		writingDataBuffer.position(limit);
-		writingPosition = limit;
-		isBlocking = true;
+		int newReadingLimit = writingDataBuffer.limit();
+		clear();
+		readingLimit = newReadingLimit;
+		writingDataBuffer.position(newReadingLimit);
+		writingPosition = newReadingLimit;
 	}
 	
 	public synchronized void setBlocking(boolean isBlocking) {
