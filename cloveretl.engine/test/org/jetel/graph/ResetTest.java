@@ -37,6 +37,7 @@ public class ResetTest extends CloverTestCase {
 			"../cloveretl.examples/DataProfiling/",
 			"../cloveretl.examples/DataSampling/",
 			"../cloveretl.examples/ExtExamples/",
+			"../cloveretl.examples/RealWorldExamples/",
 			"../cloveretl.test.scenarios/",
 			"../cloveretl.examples.commercial/",
 			"../cloveretl.examples/CompanyTransactionsTutorial/"
@@ -173,6 +174,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("JoinMergeIssue_FailWhenMasterUnsorted.grf") // ok, is to fail
 							&& !file.getName().equals("UDW_remoteZipPartitioning_fail_CL-2564.grf") // ok, is to fail
 							&& !file.getName().equals("checkConfigTest.grf") // ok, is to fail
+							&& !file.getName().equals("DebuggingGraph.grf") // ok, is to fail
 							&& !file.getName().startsWith("Proxy_") // allowed to run only on virt-cyan as proxy tests
 							&& !file.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
 							&& !file.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
