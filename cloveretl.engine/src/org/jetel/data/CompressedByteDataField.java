@@ -20,6 +20,7 @@ package org.jetel.data;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 
@@ -104,6 +105,18 @@ public class CompressedByteDataField extends ByteDataField {
 		setNull(false);
 	}
 
+	@Override
+	public void setValue(ByteBuffer value) {
+		if (value==null){ 
+			this.setNull(true);
+			return;
+		}
+		//TODO:not optimal, allocating extra array of bytes to reuse existing functionality
+		byte[] data = new byte[value.remaining()];
+		value.get(data);
+		setValue(data);
+	}
+	
     @Override
     public void setValue(DataField fromField) {
         if (fromField instanceof CompressedByteDataField){
