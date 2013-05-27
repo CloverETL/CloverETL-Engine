@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.util.Collection;
@@ -58,7 +59,7 @@ import org.jetel.main.runGraph;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
 import org.jetel.util.bytes.SeekableByteChannel;
-import org.jetel.util.compile.ClassLoaderUtils;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -464,12 +465,26 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
-		return ClassLoaderUtils.createClassLoader(urls, parent, greedy);
+		//return ClassLoaderUtils.createClassLoader(urls, parent, greedy);
+		return createClassLoader(urls, parent, greedy);
 	}
 
 	@Override
 	public ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
-		return ClassLoaderUtils.createClassLoader(urls, parent, greedy);
+		//return ClassLoaderUtils.createClassLoader(urls, parent, greedy);
+		
+		if (parent == null) {
+			parent = PrimitiveAuthorityProxy.class.getClassLoader();
+		}
+        if (urls == null || urls.length == 0) {
+        	return parent;
+        } else {
+        	if (greedy) {
+        		return new GreedyURLClassLoader(urls, parent);
+        	} else {
+        		return new URLClassLoader(urls, parent);
+        	}
+        }
 	}
 	
 	@Override
