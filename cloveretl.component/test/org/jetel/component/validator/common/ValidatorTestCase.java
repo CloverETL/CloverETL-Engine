@@ -52,7 +52,7 @@ import org.jetel.util.property.PropertyRefResolver;
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 26.1.2013
  */
-public class ValidatorTestCase extends CloverTestCase {
+public abstract class ValidatorTestCase extends CloverTestCase {
 	
 	@Override
 	public void setUp() {

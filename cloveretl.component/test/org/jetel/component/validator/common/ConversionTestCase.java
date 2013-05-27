@@ -18,7 +18,6 @@
  */
 package org.jetel.component.validator.common;
 
-import org.jetel.component.validator.common.ValidatorTestCase;
 import org.jetel.component.validator.rules.ConversionValidationRule;
 
 /**
@@ -26,7 +25,7 @@ import org.jetel.component.validator.rules.ConversionValidationRule;
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 19.5.2013
  */
-public class ConversionTestCase extends ValidatorTestCase {
+public abstract class ConversionTestCase extends ValidatorTestCase {
 
 	/**
 	 * Sets number format
