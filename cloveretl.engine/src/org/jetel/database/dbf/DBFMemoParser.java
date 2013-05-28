@@ -256,6 +256,7 @@ public class DBFMemoParser {
 			super(charset,file);
 		}
 		
+		@Override
 		void init() throws IOException{
 			buffer = ByteBuffer.allocate(DBFMemoParser.INITIAL_BUFFER_SIZE);
 			buffer.order(ByteOrder.BIG_ENDIAN);
@@ -268,6 +269,7 @@ public class DBFMemoParser {
 			maxBlockNum=buffer.getInt(0);
 		}
 		
+		@Override
 		ByteBuffer getMemoBytes(long blocknum) throws IOException{
 			file.position(blocknum * blocksize);
 			buffer.clear();
@@ -305,6 +307,7 @@ public class DBFMemoParser {
 			super(charset,file);
 		}
 
+		@Override
 		void init() throws IOException {
 			buffer = ByteBuffer.allocate(DBFMemoParser.INITIAL_BUFFER_SIZE);
 			buffer.order(ByteOrder.BIG_ENDIAN);
@@ -317,6 +320,7 @@ public class DBFMemoParser {
 			maxBlockNum = buffer.getInt(0);
 		}
 
+		@Override
 		ByteBuffer getMemoBytes(long  blocknum) throws IOException {
 			file.position(blocknum * blocksize);
 			buffer.clear();
@@ -353,6 +357,7 @@ public class DBFMemoParser {
 			super(charset,file);
 		}
 
+		@Override
 		void init() throws IOException {
 			buffer = ByteBuffer.allocate(DBT_BLOCK_SIZE);
 			buffer.order(ByteOrder.BIG_ENDIAN);
@@ -365,6 +370,7 @@ public class DBFMemoParser {
 			maxBlockNum = buffer.getInt(0);
 		}
 
+		@Override
 		ByteBuffer getMemoBytes(long  blocknum) throws IOException {
 			file.position(blocknum * DBT_BLOCK_SIZE);
 			resultBuffer.clear();
