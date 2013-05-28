@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.Charset;
@@ -52,6 +53,7 @@ public class DBFMemoParser {
 
 	public static final int MAX_MEMO_SIZE = 65536;
 	public static final int INITIAL_BUFFER_SIZE = 2048;
+	public static final int MAX_DBASE_III_MEMO_SIZE_SUPPORTED = 8192;
 
 
 	private String charsetName;
@@ -85,7 +87,10 @@ public class DBFMemoParser {
 			break;
 		case FOXPRO:
 			parser = new FoxProMemoParser(charset,file);
-		break;
+			break;
+		case DBASE_III:
+			parser = new DBaseIIIMemoParser(charset, file);
+			break;
 		default:
 			throw new IOException("Unsupported memo file type: "+type);
 		}
@@ -335,4 +340,66 @@ public class DBFMemoParser {
 			return buffer;
 		}
 	}
+	
+	private class DBaseIIIMemoParser extends MemoParser {
+
+		static final int DBT_BLOCK_SIZE = 512;
+		static final byte DBT_BLOCK_TERMINATOR_CHAR = 0x1a;
+		ByteBuffer buffer;
+		ByteBuffer resultBuffer;
+		int maxBlockNum;
+
+		DBaseIIIMemoParser(Charset charset, SeekableByteChannel file) {
+			super(charset,file);
+		}
+
+		void init() throws IOException {
+			buffer = ByteBuffer.allocate(DBT_BLOCK_SIZE);
+			buffer.order(ByteOrder.BIG_ENDIAN);
+			resultBuffer = ByteBuffer.allocate(DBFMemoParser.MAX_DBASE_III_MEMO_SIZE_SUPPORTED);
+			resultBuffer.order(ByteOrder.BIG_ENDIAN);
+			file.position(0); // seek to the beginning
+			buffer.limit(DBT_BLOCK_SIZE);
+			file.read(buffer);
+			buffer.flip();
+			maxBlockNum = buffer.getInt(0);
+		}
+
+		ByteBuffer getMemoBytes(long  blocknum) throws IOException {
+			file.position(blocknum * DBT_BLOCK_SIZE);
+			resultBuffer.clear();
+			while(true){
+				buffer.clear();
+				file.read(buffer);
+				buffer.flip();
+				int pos=seekTerminator(buffer);
+				try{
+				if (pos>=0){
+					buffer.limit(pos-1);
+					resultBuffer.put(buffer);
+					break;
+				}else{
+					resultBuffer.put(buffer);
+				}
+				}catch(BufferOverflowException ex){
+					throw new IOException(String.format("Maximum supported DBaseIII memo size [%d] exceeded !",DBFMemoParser.MAX_DBASE_III_MEMO_SIZE_SUPPORTED));
+				}
+			}
+			resultBuffer.flip();
+			return resultBuffer;
+		}
+		
+		private int seekTerminator(ByteBuffer buffer) throws IOException{
+			boolean full = buffer.remaining() == DBT_BLOCK_SIZE;
+			for(int i=buffer.limit()-1;i>0;i--){
+				if ((buffer.get(i)==DBT_BLOCK_TERMINATOR_CHAR) && i>0 && buffer.get(i-1) == DBT_BLOCK_TERMINATOR_CHAR){
+					return i-1;
+				}
+			}
+			if (!full) throw new IOException("Invalid memo data - probably missing terminator char !");
+			return -1;
+		}
+		
+	}
+	
 }
