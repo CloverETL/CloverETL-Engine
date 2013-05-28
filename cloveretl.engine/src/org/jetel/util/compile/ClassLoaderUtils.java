@@ -23,17 +23,23 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.URLDecoder;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.LoadClassException;
 import org.jetel.graph.Node;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * @author David Pavlis, JavlinConsulting, s.r.o.
@@ -162,7 +168,6 @@ public class ClassLoaderUtils {
 		return node.getGraph().getAuthorityProxy().createClassLoader(runtimeClasspath, parentClassLoader, true);
 	}
 
-	/*
 	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) {
 		ClassLoader classLoader;
 		if (StringUtils.isEmpty(classpath)) {
@@ -185,7 +190,7 @@ public class ClassLoaderUtils {
 		}
 
 		return classLoader;
-	}*/
+	}
 
 	/*
 	public static ClassLoader createClassLoader(List<URL> urls, ClassLoader parent, boolean greedy) {
