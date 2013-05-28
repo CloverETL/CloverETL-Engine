@@ -19,10 +19,7 @@
 		<RegEx expression="Exception raised by user: O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="3"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="ExecutingExternal" graphFile="graph/ExecutingExternal.grf">
-		<FlatFile outputFile="data-out/command.out" supposedFile="supposed-out/command.out"/>
-		<FlatFile outputFile="data-out/files.out" supposedFile="supposed-out/files.out"/>
-	</FunctionalTest>
+	<FunctionalTest ident="ExecutingExternal" graphFile="graph/ExecutingExternal.grf" />
 	
 	<FunctionalTest ident="FiltersLookups" graphFile="graph/FiltersLookups.grf">
 		<FlatFile outputFile="data-out/orders_late.txt" supposedFile="supposed-out/orders_late.txt"/>
@@ -38,8 +35,7 @@
 		<FlatFile outputFile="data-out/people1.xml" supposedFile="supposed-out/people1.xml"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="ReadingComplexData" graphFile="graph/ReadingComplexData.grf">
-	</FunctionalTest>
+	<FunctionalTest ident="ReadingComplexData" graphFile="graph/ReadingComplexData.grf" />
 	
 	<FunctionalTest ident="SpreadsheetReadWrite" graphFile="graph/SpreadsheetReadWrite.grf">
 		<FlatFile outputFile="data-out/orders_delimited.txt" supposedFile="supposed-out/orders_delimited.txt"/>
@@ -50,8 +46,7 @@
 		<RegEx expression="Returned code for http request" occurences="0"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="WebServicesWSClient" graphFile="graph/WebServicesWSClient.grf">
-	</FunctionalTest>
+	<FunctionalTest ident="WebServicesWSClient" graphFile="graph/WebServicesWSClient.grf" />
 	
 	<FunctionalTest ident="WritingTextData" graphFile="graph/WritingTextData.grf">
 		<FlatFile outputFile="data-out/customers/AK.txt" supposedFile="supposed-out/AK.txt"/>
