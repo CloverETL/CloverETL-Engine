@@ -25,7 +25,7 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="DataQualityFirewall" graphFile="jobflow/DataQualityFirewall.jbf" excludedEtlEnvironment="engine">
-		<RegEx expression="Moved \".*employees.csv\" to \".*data-out\/incoming_processed\/.*\/employees.csv\"" occurences="1"/>
+		<RegEx expression="Moved &quot;.*employees\.csv&quot; to &quot;.*data-out\/incoming_processed\/.*\/employees\.csv&quot;" occurences="1"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="ExecuteExternalUtility" graphFile="jobflow/ExecuteExternalUtility.jbf" excludedEtlEnvironment="engine" />
