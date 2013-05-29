@@ -113,7 +113,7 @@ public class BufferedEdge extends EdgeBase {
 		outputRecordCounter = 0;
 		inputRecordCounter = 0;
 		byteCounter = 0;
-		recordBuffer.setVerbose(proxy.getGraph().getRuntimeContext().isVerboseMode());
+		recordBuffer.setVerbose(verbose);
 		recordBuffer.preExecute();
 	}
 	

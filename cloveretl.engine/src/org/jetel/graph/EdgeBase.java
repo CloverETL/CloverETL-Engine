@@ -35,6 +35,9 @@ public abstract class EdgeBase {
 
 	protected Edge proxy;
 
+	/** Is the graph running in verbose mode? Cache of GraphRuntimeContext.isVerboseMode() variable. */
+	protected boolean verbose;
+
 
 	/**
 	 *  Constructor for the Edge object
@@ -58,7 +61,9 @@ public abstract class EdgeBase {
 	 * @see GraphElement#preExecute()
 	 */
 	public void preExecute() {
-		//empty implementation
+		if (proxy != null) {
+			verbose = proxy.getGraph().getRuntimeContext().isVerboseMode();
+		}
     }
     
 	/**
