@@ -73,7 +73,8 @@ public class TLDateFormatLocaleCache extends TLCache {
 				// either both format and locale were literals (thus cached at init)
 				|| (cachedFormatter != null 
 						&& format.equals(cachedFormatter.getPattern()) 
-						&& (locale == null || locale.equals(previousLocaleString))
+						// careful when locale is null! See test_convertlib_date2str.ctl
+						&& ((locale == previousLocaleString) || (locale != null && locale.equals(previousLocaleString)))
 					)
 				// or format is already cached and previous inputs match the current ones
 				)

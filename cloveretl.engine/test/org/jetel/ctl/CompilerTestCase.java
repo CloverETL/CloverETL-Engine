@@ -3527,6 +3527,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		SimpleDateFormat sdfEN = new SimpleDateFormat("yyyy:MMMM:dd", MiscUtils.createLocale("en"));
 		check("englishBornDate", sdfEN.format(BORN_VALUE));
+		
+		
+		{
+			String[] locales = {"en", "pl", null, "cs.CZ", null};
+			List<String> expectedDates = new ArrayList<String>();
+			
+			for (String locale: locales) {
+				expectedDates.add(new SimpleDateFormat("yyyy:MMMM:dd", MiscUtils.createLocale(locale)).format(BORN_VALUE));
+			}
+			
+			check("loopTest", expectedDates);
+		}
+		
 	}
 	
 	public void test_convertlib_decimal2double() {
