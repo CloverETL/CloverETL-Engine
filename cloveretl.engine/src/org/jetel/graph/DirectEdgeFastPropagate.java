@@ -42,8 +42,6 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     protected long byteCounter;
     protected AtomicInteger bufferedRecords;
 
-    /** Is the graph running in verbose mode? Cache of GraphRuntimeContext.isVerboseMode() variable. */
-	private boolean verbose;
 	/** How long has been reader blocked on the edge (in nanoseconds). */
 	private long readerWaitingTime;
 	/** How long has been writer blocked on the edge (in nanoseconds). */
@@ -115,7 +113,6 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     public void preExecute() {
     	super.preExecute();
     	
-		verbose = proxy.getGraph().getRuntimeContext().isVerboseMode();
 		readerWaitingTime = 0;
 		writerWaitingTime = 0;
     }

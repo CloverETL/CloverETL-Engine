@@ -29,6 +29,9 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.util.WeakHashMap;
+
+import org.jetel.exception.JetelRuntimeException;
 
 /**
  * This class is only implementation of {@link CloverBuffer}, at least for now.
@@ -79,6 +82,13 @@ public class DynamicCloverBuffer extends CloverBuffer {
 	 */
 	private ByteBuffer buf;
 
+	/**
+	 * This is weak reference cache for all read only view created by {@link #asReadOnlyBuffer()}.
+	 * This cache is used in case capacity of this buffer has been changed, then
+	 * all read only views are updated as well.
+	 */
+	private WeakHashMap<DynamicCloverBuffer, Void> childReadOnlyBuffers;
+	
     /**
      * Basic constructor. Simple growable wrapper of ByteBuffer is created.
      * @param buf
@@ -213,6 +223,22 @@ public class DynamicCloverBuffer extends CloverBuffer {
             }
             buf.position(pos);
             buf.order(bo);
+            
+            if (childReadOnlyBuffers != null) {
+            	//capacity of this buffer has been changed, let's update also all read only views
+            	//this update is not performed in a synchronisation block!
+	            for (DynamicCloverBuffer childReadOnlyBuffer : childReadOnlyBuffers.keySet()) {
+	            	int childPosition = childReadOnlyBuffer.position();
+	            	int childLimit = childReadOnlyBuffer.limit();
+	            	int childMark = childReadOnlyBuffer.markValue();
+	            	
+	            	childReadOnlyBuffer.buf = this.buf.asReadOnlyBuffer();
+	            	
+	            	childReadOnlyBuffer.position(childPosition);
+	            	childReadOnlyBuffer.limit(childLimit);
+	            	childReadOnlyBuffer.mark = childMark;
+	            }
+            }
         }
 
         return this;
@@ -317,6 +343,13 @@ public class DynamicCloverBuffer extends CloverBuffer {
         if (newCapacity > limit()) {
             // We call limit() directly to prevent StackOverflowError
             buf.limit(newCapacity);
+
+            if (childReadOnlyBuffers != null) {
+            	//limit is updated even in all read only views
+    	        for (DynamicCloverBuffer childReadOnlyBuffer : childReadOnlyBuffers.keySet()) {
+    	        	childReadOnlyBuffer.limit(newCapacity);
+    	        }
+            }
         }
     }
 
@@ -1019,11 +1052,22 @@ public class DynamicCloverBuffer extends CloverBuffer {
 
     /**
      * {@inheritDoc}
+     * This operation is potentially dangerous. Resulted read only view
+     * is automatically updated in case capacity of this buffer will be changed.
+     * This update is not synchronised, so if the view is used in different thread
+     * than this buffer, inappropriate behaviour could be noticed while extending
+     * capacity of this buffer. 
      */
     @Override
     public final CloverBuffer asReadOnlyBuffer() {
-        recapacityAllowed = false;
-        return new DynamicCloverBuffer(this, this.buf.asReadOnlyBuffer());
+    	//see #slice() - similar issue
+        //recapacityAllowed = false;
+        DynamicCloverBuffer result = new DynamicCloverBuffer(this, this.buf.asReadOnlyBuffer());
+        if (childReadOnlyBuffers == null) {
+        	childReadOnlyBuffers = new WeakHashMap<DynamicCloverBuffer, Void>();
+        }
+        childReadOnlyBuffers.put(result, null);
+        return result;
     }
 
     @Override
@@ -1281,7 +1325,7 @@ public class DynamicCloverBuffer extends CloverBuffer {
     @Override
 	protected ByteBuffer reallocateByteBuffer(int requestedCapacity, boolean direct) {
     	if (requestedCapacity > maximumCapacity) {
-    		throw new BufferOverflowException();
+    		throw new JetelRuntimeException("Realocation of CloverBuffer failed. Requested capacity is " + requestedCapacity + " and maximum capacity is " + maximumCapacity + ".", new BufferOverflowException());
     	}
     	return super.reallocateByteBuffer(requestedCapacity, direct);
     }
