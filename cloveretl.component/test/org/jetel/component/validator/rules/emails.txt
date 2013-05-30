@@ -1,0 +1,75 @@
+; email tests data set
+; flags in column 1:
+; V: valid email address
+; I: invalid email address
+; X: skipped email address (not correctly recognized by our implementation)
+; flags in column 2:
+; P: plain email address
+; p: not plain email address (contains personal naming part)
+; flags in column 3:
+; G: group email address
+; g: non-group email address
+; column 4: padding space
+
+VPg abigail@example.com
+Vpg abigail@example.com 
+Vpg  abigail@example.com
+Xpg abigail @example.com
+VPg *@example.net
+VPg "\""@foo.bar
+VPg fred&barny@example.com
+VPg ---@example.com
+VPg foo-bar@example.net
+VPg "127.0.0.1"@[127.0.0.1]
+Vpg Abigail <abigail@example.com>
+Vpg Abigail<abigail@example.com>
+Vpg Abigail<@a,@b,@c:abigail@example.com>
+Vpg "This is a phrase"<abigail@example.com>
+Vpg "Abigail "<abigail@example.com>
+Xpg "Joe & J. Harvey" <example @Org>
+Xpg Abigail <abigail @ example.com>
+Xpg Abigail made this <  abigail   @   example  .    com    >
+Xpg Abigail(the bitch)@example.com
+Xpg Abigail <abigail @ example . (bar) com >
+Xpg Abigail < (one)  abigail (two) @(three)example . (bar) com (quz) >
+Xpg Abigail (foo) (((baz)(nested) (comment)) ! ) < (one)  abigail (two) @(three)example . (bar) com (quz) >
+Xpg Abigail <abigail(fo\(o)@example.com>
+Xpg Abigail <abigail(fo\)o)@example.com>
+Vpg (foo) abigail@example.com
+Vpg abigail@example.com (foo)
+Vpg "Abi\"gail" <abigail@example.com>
+VPg abigail@[example.com]
+VPg abigail@[exa\[ple.com]
+VPg abigail@[exa\]ple.com]
+Xpg ":sysmail"@  Some-Group. Some-Org
+Xpg Muhammed.(I am  the greatest) Ali @(the)Vegas.WBA
+VPg mailbox.sub1.sub2@this-domain
+VPg sub-net.mailbox@sub-domain.domain
+VPG name:;
+VPG ':;
+VPG name:   ;
+Vpg Alfred Neuman <Neuman@BBN-TENEXA>
+VPg Neuman@BBN-TENEXA
+Vpg "George, Ted" <Shared@Group.Arpanet>
+XPg Wilt . (the  Stilt) Chamberlain@NBA.US
+VPG Cruisers:  Port@Portugal, Jones@SEA;
+VPg $@[]
+Xpg *()@[]
+Xpg "quoted ( brackets" ( a comment )@example.com
+Ixx Just a string
+Ixx string
+Ixx (comment)
+Ixx ()@example.com
+Ixx fred(&)barny@example.com
+Xxx fred\ barny@example.com
+Ixx Abigail <abi gail @ example.com>
+Ixx Abigail <abigail(fo(o)@example.com>
+Ixx Abigail <abigail(fo)o)@example.com>
+Ixx "Abi"gail" <abigail@example.com>
+Xxx abigail@[exa]ple.com]
+Xxx abigail@[exa[ple.com]
+Xxx abigail@[exaple].com]
+Ixx abigail@
+Ixx @example.com
+Ixx phrase: abigail@example.com abigail@example.com ;
+Ixx invalidŁchar@example.com

@@ -18,18 +18,12 @@
  */
 package org.jetel.component.validator.utils;
 
-import java.util.Map;
-
-import javax.xml.bind.JAXBException;
-
-import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.CustomRule;
 import org.jetel.component.validator.ValidationGroup;
-import org.jetel.component.validator.ValidationNode;
 import org.jetel.component.validator.common.ValidatorTestCase;
-import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.rules.ComparisonValidationRule;
 import org.jetel.component.validator.rules.DateValidationRule;
+import org.jetel.component.validator.rules.EmailValidationRule;
 import org.jetel.component.validator.rules.EnumMatchValidationRule;
 import org.jetel.component.validator.rules.IntervalValidationRule;
 import org.jetel.component.validator.rules.LookupValidationRule;
@@ -66,6 +60,7 @@ public class ValidationRulesPersisterTest extends ValidatorTestCase {
 		subgroup.addChild(new NumberValidationRule());
 		subgroup.addChild(new PatternMatchValidationRule());
 		subgroup.addChild(new StringLengthValidationRule());
+		subgroup.addChild(new EmailValidationRule());
 		group.addChild(subgroup);
 		try {
 			String temp = ValidationRulesPersister.serialize(group);

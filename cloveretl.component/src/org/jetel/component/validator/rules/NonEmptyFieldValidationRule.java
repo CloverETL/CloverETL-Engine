@@ -112,7 +112,9 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 			return State.NOT_VALIDATED;
 		}
 		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+		if (logger.isTraceEnabled()) {
+			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+		}
 		
 		String resolvedTarget = resolve(target.getValue());
 		

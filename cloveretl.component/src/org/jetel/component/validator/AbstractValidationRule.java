@@ -31,6 +31,7 @@ import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.rules.ComparisonValidationRule;
 import org.jetel.component.validator.rules.CustomValidationRule;
 import org.jetel.component.validator.rules.DateValidationRule;
+import org.jetel.component.validator.rules.EmailValidationRule;
 import org.jetel.component.validator.rules.EnumMatchValidationRule;
 import org.jetel.component.validator.rules.IntervalValidationRule;
 import org.jetel.component.validator.rules.LookupValidationRule;
@@ -62,7 +63,8 @@ import org.jetel.metadata.DataRecordMetadata;
 		DateValidationRule.class,
 		NumberValidationRule.class,
 		LookupValidationRule.class,
-		CustomValidationRule.class
+		CustomValidationRule.class,
+		EmailValidationRule.class
 	})
 public abstract class AbstractValidationRule extends ValidationNode {
 	

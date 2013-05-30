@@ -221,7 +221,7 @@ public abstract class ValidatorTestCase extends CloverTestCase {
 		if(graphWrapper == null) {
 			graphWrapper = new DummyGraphWrapper();
 		}
-		assertEquals(state, rule.isValid(record, ea, graphWrapper));
+		assertEquals("Rule '" + rule.getName() + "'\nwrong result for record:\n" + record.toString(), state, rule.isValid(record, ea, graphWrapper));
 		if(state == ValidationNode.State.INVALID && ea.isEmpty()) {
 			fail("When rule is INVALID at least one validation error expected in error accumulator.");
 		}
