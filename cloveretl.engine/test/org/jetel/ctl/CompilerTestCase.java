@@ -1952,8 +1952,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("jpluss", "100hello");
 		check("splusm", "hello" + Long.valueOf(Integer.MAX_VALUE));
 		check("mpluss", Long.valueOf(Integer.MAX_VALUE) + "hello");
-		check("splusm1", "hello" + 0.001D);
-		check("m1pluss", 0.001D + "hello");
+		check("splusm1", "hello" + Double.valueOf(0.001D));
+		check("m1pluss", Double.valueOf(0.001D) + "hello");
 		check("splusd1", "hello" + new BigDecimal("0.0001"));
 		check("d1pluss", new BigDecimal("0.0001", MAX_PRECISION) + "hello");
 	}
