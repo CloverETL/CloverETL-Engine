@@ -122,7 +122,9 @@ public abstract class ValidationNode {
 	 * @param message Description of output point from rule
 	 */
 	public void logSuccess(String message) {
-		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.VALID + ": " + message);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.VALID + ": " + message);
+		}
 	}
 	
 	/**
@@ -130,7 +132,9 @@ public abstract class ValidationNode {
 	 * @param message Description of output point from rule
 	 */
 	public void logNotValidated(String message) {
-		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.NOT_VALIDATED + ": " + message);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.NOT_VALIDATED + ": " + message);
+		}
 	}
 	
 	/**
@@ -138,7 +142,9 @@ public abstract class ValidationNode {
 	 * @param message Description of output point from rule
 	 */
 	public void logError(String message) {
-		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.INVALID + ": " + message);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.INVALID + ": " + message);
+		}
 	}
 	
 	/**
@@ -146,14 +152,18 @@ public abstract class ValidationNode {
 	 * @param message Serialized parameters
 	 */
 	public void logParams(String params) {
-		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parameters:\n" + params);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parameters:\n" + params);
+		}
 	}
 	
 	/**
 	 * Log language setting of parent
 	 */
 	public void logParentLangaugeSetting() {
-		logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parent language setting:\n" + parentLanguageSetting);
+		if (logger.isTraceEnabled()) {
+			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parent language setting:\n" + parentLanguageSetting);
+		}
 	}
 	
 	
