@@ -7,7 +7,6 @@
 	<FunctionalTest ident="_Introduction" graphFile="graph/_Introduction.grf" />
 	
 	<FunctionalTest ident="CreditCardFraudDetection" graphFile="graph/CreditCardFraudDetection.grf">
-		<FlatFile outputFile="data-out/missing-currency.html" supposedFile="supposed-out/missing-currency.html"/>
 		<FlatFile outputFile="data-out/risky-customer.html" supposedFile="supposed-out/risky-customer.html"/>
 	</FunctionalTest>
 	
