@@ -105,7 +105,7 @@ public class GraphRuntimeContext {
 		dictionaryContent = new DictionaryValuesContainer();
 		clusterNodeId = null;
 		jobType = JobType.DEFAULT;
-		authorityProxy = new PrimitiveAuthorityProxy();
+		authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
 	}
 	
 	/* (non-Javadoc)

@@ -63,7 +63,7 @@ public abstract class IAuthorityProxy {
 	
 	public static IAuthorityProxy getDefaultProxy() {
 		if (defaultProxy == null) {
-			defaultProxy = new PrimitiveAuthorityProxy();
+			defaultProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
 		}
 		return defaultProxy;
 	}

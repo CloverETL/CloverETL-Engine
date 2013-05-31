@@ -36,7 +36,9 @@ import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.dictionary.DictionaryTypeFactory;
+import org.jetel.graph.runtime.AuthorityProxyFactory;
 import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
 import org.jetel.plugin.generalobject.GeneralObjectFactory;
 import org.jetel.util.file.FileUtils;
@@ -146,10 +148,10 @@ public class Plugins {
         deactivePlugins = new HashMap<String, PluginDescriptor>();
 
         if (pluginLocations == null || pluginLocations.length == 0) {
-        	logger.warn("Engine starts without plugins.");
         	if (pluginLocations == null) {
         		pluginLocations = new PluginLocation[0];
         	}
+        	throw new JetelRuntimeException("No engine plugins found.");
         }
         
         Plugins.pluginLocations = pluginLocations;
@@ -171,6 +173,7 @@ public class Plugins {
         TLCompilerFactory.init();
         GeneralObjectFactory.init();
         CustomPathResolverFactory.init();
+        AuthorityProxyFactory.init();
     }
     
     public static Map<String, PluginDescriptor> getPluginDescriptors(){
