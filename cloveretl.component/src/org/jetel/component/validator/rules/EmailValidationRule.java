@@ -27,13 +27,11 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
-import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
@@ -50,7 +48,7 @@ import org.jetel.util.string.StringUtils;
  */
 @XmlRootElement(name="email")
 @XmlType(propOrder={"plainAddressParam", "allowGroupAddressesParam"})
-public class EmailValidationRule extends AbstractValidationRule {
+public class EmailValidationRule extends StringValidationRule {
 	
 	public static final int INVALID_EMAIL_ADDRESS = 1301;
 	public static final int NOT_PLAIN_EMAIL_ADDRESS = 1302;
@@ -62,12 +60,16 @@ public class EmailValidationRule extends AbstractValidationRule {
 	private BooleanValidationParamNode allowGroupAddressesParam = new BooleanValidationParamNode(false);
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		
 		params.add(plainAddressParam);
 		params.add(allowGroupAddressesParam);
 		plainAddressParam.setName("Plain e-mail address only"); // FIXME why does this need to be called here explicitly?
 		allowGroupAddressesParam.setName("Allow group addresses");
+		
+		params.addAll(super.initialize(inMetadata, graphWrapper));
+		
 		return params;
 	}
 
@@ -88,8 +90,7 @@ public class EmailValidationRule extends AbstractValidationRule {
 		}
 		
 		String resolvedTarget = resolve(target.getValue());
-		DataField field = record.getField(resolvedTarget);
-		String inputString = field.toString();
+		String inputString = prepareInput(record, resolvedTarget);
 		
 		boolean plainAddress = plainAddressParam.getValue();
 		boolean allowGroupAddresses = allowGroupAddressesParam.getValue();
