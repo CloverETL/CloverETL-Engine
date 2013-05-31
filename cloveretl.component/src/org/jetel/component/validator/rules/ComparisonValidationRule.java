@@ -100,6 +100,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 	@XmlElement(name="value")
 	private StringValidationParamNode value = new StringValidationParamNode();
 	
+	@Override
 	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		operator.setName("Operator");

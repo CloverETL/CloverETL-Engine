@@ -78,7 +78,8 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		addLanguageSetting(new LanguageSetting());
 	}
 
-	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	@Override
+	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		final DataRecordMetadata inputMetadata = inMetadata;
 		
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();

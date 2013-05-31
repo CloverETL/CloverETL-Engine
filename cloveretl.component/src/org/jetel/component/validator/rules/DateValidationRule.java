@@ -79,7 +79,8 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 		addLanguageSetting(new LanguageSetting());
 	}
 	
-	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	@Override
+	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		trimInput.setName("Trim input");
 		trimInput.setTooltip("Trim input before validation.");

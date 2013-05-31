@@ -98,6 +98,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	private StringValidationParamNode to = new StringValidationParamNode();
 	
 	
+	@Override
 	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		boundaries.setName("Boundaries");

@@ -89,7 +89,8 @@ public class StringLengthValidationRule extends StringValidationRule {
 	@XmlElement(name="to",required=true)
 	private IntegerValidationParamNode to = new IntegerValidationParamNode();
 	
-	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	@Override
+	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		type.setName("Criterion");
 		params.add(type);

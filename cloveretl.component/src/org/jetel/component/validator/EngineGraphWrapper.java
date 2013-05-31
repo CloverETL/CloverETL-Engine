@@ -49,6 +49,7 @@ public class EngineGraphWrapper implements GraphWrapper {
 		this.refResolver = new PropertyRefResolver(graph.getGraphProperties());
 	}
 	
+	@Override
 	public List<String> getLookupTables() {
 		Iterator<String> temp = graph.getLookupTables();
 		List<String> output = new ArrayList<String>();
@@ -60,23 +61,28 @@ public class EngineGraphWrapper implements GraphWrapper {
 		return output;
 	}
 	
+	@Override
 	public LookupTable getLookupTable(String name) {
 		return graph.getLookupTable(name);
 	}
 	
+	@Override
 	public PropertyRefResolver getRefResolver() {
 		return refResolver;
 	}
 	
+	@Override
 	public void init(ValidationGroup root) {
 		initParentTable(root);
 		initCustomRules(root);
 	}
 	
+	@Override
 	public List<String> getNodePath(ValidationNode needle) {
 		return ValidatorUtils.getNodePath(needle, parentTable);
 	}
 	
+	@Override
 	public Map<Integer, CustomRule> getCustomRules() {
 		return customRules;
 	}
@@ -89,6 +95,7 @@ public class EngineGraphWrapper implements GraphWrapper {
 		customRules = root.getCustomRules();
 	}
 
+	@Override
 	public TransformationGraph getTransformationGraph() {
 		return graph;
 	}

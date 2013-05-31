@@ -64,7 +64,8 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	@XmlElement(name="pattern",required=true)
 	private StringValidationParamNode pattern = new StringValidationParamNode();
 	
-	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	@Override
+	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		pattern.setName("Pattern to match");
 		pattern.setPlaceholder("Regular expression, for syntax see documentation");
@@ -83,8 +84,10 @@ public class PatternMatchValidationRule extends StringValidationRule {
 			return State.NOT_VALIDATED;
 		}
 		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-		logParentLangaugeSetting();
+		if (isLoggingEnabled()) {
+			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+			logParentLangaugeSetting();
+		}
 		
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedPattern = resolve(pattern.getValue());

@@ -166,6 +166,9 @@ public abstract class ValidationNode {
 		}
 	}
 	
+	public boolean isLoggingEnabled() {
+		return logger.isTraceEnabled();
+	}
 	
 	
 	/**

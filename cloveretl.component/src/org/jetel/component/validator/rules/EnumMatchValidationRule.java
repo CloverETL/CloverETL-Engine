@@ -78,7 +78,8 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	
 	private Set<Object> tempValues;
 	
-	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	@Override
+	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		values.setName("Accept values");
 		values.setTooltip("For example:\nfirst,second\nfirst,\"second,third\",fourth");

@@ -44,6 +44,7 @@ public class ValidationErrorAccumulator implements Iterable<ValidationError> {
 	/**
 	 * Return iterator for all errors
 	 */
+	@Override
 	public Iterator<ValidationError> iterator() {
 		return errors.iterator();
 	}
