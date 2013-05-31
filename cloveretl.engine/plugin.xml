@@ -78,4 +78,9 @@
 		<parameter id="className" value="org.jetel.ctl.extensions.IntegralLib"/>
 	</extension>
 	
+	<extension point-id="urlResolver">
+		<parameter id="className" value="org.jetel.util.file.SMBPathResolver"/>
+		<parameter id="type" value="SMB"/>
+	</extension>
+	
 </plugin>

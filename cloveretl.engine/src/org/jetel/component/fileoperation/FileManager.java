@@ -226,6 +226,7 @@ public class FileManager {
 //			manager.registerHandler(new SFTPOperationHandler());
 			manager.registerHandler(new PooledSFTPOperationHandler());
 			manager.registerHandler(new PooledFTPOperationHandler());
+			manager.registerHandler(new SMBOperationHandler());
 		}
 	}
 	
