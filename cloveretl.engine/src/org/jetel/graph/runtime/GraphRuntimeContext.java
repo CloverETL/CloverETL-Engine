@@ -108,7 +108,7 @@ public class GraphRuntimeContext {
 		clusterNodeId = null;
 		jobType = JobType.DEFAULT;
 		isSubJob = false;
-		authorityProxy = new PrimitiveAuthorityProxy();
+		authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
 	}
 	
 	/* (non-Javadoc)
