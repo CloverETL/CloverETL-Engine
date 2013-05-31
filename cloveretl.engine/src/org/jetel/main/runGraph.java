@@ -47,7 +47,6 @@ import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
 import org.jetel.graph.runtime.AuthorityProxyFactory;
-import org.jetel.graph.runtime.CloverFuture;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy;
