@@ -46,9 +46,9 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class BinaryDataFormatter extends AbstractFormatter {
 
-	WritableByteChannel writer;
-	CloverBuffer buffer;
-	DataRecordMetadata metaData;
+	private WritableByteChannel writer;
+	private CloverBuffer buffer;
+	private DataRecordMetadata metaData;
 	private boolean useDirectBuffers = true;
 	
 	
@@ -96,7 +96,8 @@ public class BinaryDataFormatter extends AbstractFormatter {
 	@Override
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		this.metaData = _metadata;
-		buffer = CloverBuffer.allocate(Defaults.Record.RECORDS_BUFFER_SIZE, useDirectBuffers);
+		int limitSize = Math.max(Defaults.Record.RECORD_LIMIT_SIZE, Defaults.Record.RECORDS_BUFFER_SIZE);
+		buffer = CloverBuffer.allocate(Defaults.Record.RECORDS_BUFFER_SIZE, limitSize, useDirectBuffers);
  	}
 
 	public DataRecordMetadata getMetadata() {
