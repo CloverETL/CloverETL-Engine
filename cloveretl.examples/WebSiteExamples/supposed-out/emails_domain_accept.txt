@@ -6,6 +6,7 @@ gooddomain@google.com
 another@google.com
 yetanother@google.com
 one@good.email.com
+second.mail@is.good.net
 test@javlin.eu
 info@javlin.eu
 test@cloveretl.net
