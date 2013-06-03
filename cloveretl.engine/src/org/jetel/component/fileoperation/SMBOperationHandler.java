@@ -107,9 +107,15 @@ public class SMBOperationHandler implements IOperationHandler {
 	}
 
 	private static String decodeURI(URI fileUri) {
-		StringBuilder sb = new StringBuilder(fileUri.getScheme());
-		 // decode everything except authority
-		sb.append("://").append(fileUri.getRawAuthority()).append(fileUri.getPath());
+		 // decode %-encoding in everything except authority
+		StringBuilder sb = new StringBuilder();
+		if (fileUri.getScheme() != null) {
+			sb.append(fileUri.getScheme()).append("://");
+		}
+		if (fileUri.getRawAuthority() != null) {
+			sb.append(fileUri.getRawAuthority());
+		}
+		sb.append(fileUri.getPath());
 		if (fileUri.getQuery() != null) {
 			sb.append('?').append(fileUri.getQuery());
 		}
