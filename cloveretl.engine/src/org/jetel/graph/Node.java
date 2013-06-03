@@ -500,7 +500,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	            		if (!inputPort.isEOF()) {
 	            			runResult = Result.ERROR;
 	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-	            					new ErrorMsgBody(runResult.code(), "Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records.", null));
+	            					new ErrorMsgBody(runResult.code(), runResult.message(), createNodeException(new JetelRuntimeException("Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records."))));
 	            			sendMessage(msg);
 	            			return;
 	            		}

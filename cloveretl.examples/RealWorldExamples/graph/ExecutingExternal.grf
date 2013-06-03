@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Evaluation Devel" modified="Fri Jun 17 10:18:55 CEST 2011" modifiedBy="avackova" name="graphSystemExecute" revision="1.103" showComponentDetails="true">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Commercial" modified="Tue May 28 14:24:09 CEST 2013" modifiedBy="sedlacek" name="graphSystemExecute" revision="1.104" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="strings" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -8,7 +8,7 @@
 </Metadata>
 <Property id="GraphParameter0" name="MY_DIR" value="${GRAPH_DIR}"/>
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="436" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="UNIX - Case III: Pass data to stdin and then read the output stdout" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="586" x="25" y="709">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="436" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="UNIX - Case III: Pass data to stdin and then read the output stdout" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="586" x="25" y="709">
 <attr name="text"><![CDATA[
 PLEASE NOTE: DOES NOT WORK ON MAC OS!
 This case shows how data can be sent
@@ -32,18 +32,18 @@ and standard output to output port. These
 two work much like UniversalDataWriter
 (stdin) and UniversalDataReader (stdout).]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="111" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="TASK: Run a system command." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="1029" x="25" y="9">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="111" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="TASK: Run a system command." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="1029" x="25" y="9">
 <attr name="text"><![CDATA[SOLUTION:  use the SystemExecute component to run a separate process:
 - records are read in from the input edge,  serialized and sent to stdin of the command
 - stdout of the command is read, parsed and sent to the output edge or printed to console]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="244" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Side-note on the Command interpreter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="429" x="620" y="142">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="244" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Side-note on the Command interpreter" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="429" x="620" y="142">
 <attr name="text"><![CDATA[
 If Command Interpreter is specified ('sh' in this case), the system command is saved to a temp file as a script and then it is executed by the interpreter.
 
 Note that ${} is replaced by the temp file name when the interpreter is called]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="244" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="UNIX - Case I: Execute a command. Ignore both stdin and stdout" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="586" x="25" y="142">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="244" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="UNIX - Case I: Execute a command. Ignore both stdin and stdout" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="586" x="25" y="142">
 <attr name="text"><![CDATA[
 This simple example just executes
 a simple command (cat) and does
@@ -55,13 +55,13 @@ the 'cat' command is sent to
 console - the stdout of the
 running graph.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="255" backgroundColorR="255" folded="false" height="748" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="WINDOWS users" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="433" x="621" y="396">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="748" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="WINDOWS users" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="433" x="621" y="396">
 <attr name="text"><![CDATA[SystemExecute works on Windows too!
 Enable these two components and disable all other in the Unix cases.
 
 Here, 'dir' command returns a list of files in the current directory and this list is read by CloverETL and put to a file]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" folded="false" height="302" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="UNIX - Case II: Execute a command and read its stdout" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="586" x="25" y="395">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="302" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="UNIX - Case II: Execute a command and read its stdout" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="586" x="25" y="395">
 <attr name="text"><![CDATA[
 Lists information about the files
 (the current directory by default). 
@@ -80,33 +80,33 @@ the "save file list" writer.]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/pattern.txt" guiHeight="101" guiName="read file pattern" guiWidth="149" guiX="287" guiY="772" id="DATA_READER1" type="DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/pattern.txt" guiName="read file pattern" guiX="287" guiY="772" id="DATA_READER1" type="DATA_READER">
 <attr name="finalRecord"><![CDATA[30]]></attr>
 <attr name="startRecord"><![CDATA[0]]></attr>
 <attr name="guiDescription"><![CDATA[File's paths with wildcards]]></attr>
 </Node>
-<Node enabled="disabled" fileURL="${DATAOUT_DIR}/others/command_win.out" guiHeight="101" guiName="save file list" guiWidth="128" guiX="888" guiY="554" id="DATA_WRITER0" type="DATA_WRITER">
+<Node enabled="disabled" fileURL="${DATAOUT_DIR}/others/command_win.out" guiName="save file list" guiX="888" guiY="554" id="DATA_WRITER0" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Saves list of files in desired directory]]></attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiHeight="101" guiName="saves file list" guiWidth="128" guiX="433" guiY="535" id="DATA_WRITER1" type="DATA_WRITER">
+<Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/command.out" guiName="saves file list" guiX="433" guiY="535" id="DATA_WRITER1" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Saves list of files in desired directory]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/files.out" guiHeight="101" guiName="save file list" guiWidth="128" guiX="466" guiY="991" id="DATA_WRITER2" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/files.out" guiName="save file list" guiX="466" guiY="991" id="DATA_WRITER2" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Saves list of files in desired directory]]></attr>
 </Node>
-<Node append="false" deleteBatch="true" enabled="enabled" guiHeight="69" guiName="cat " guiWidth="128" guiX="345" guiY="210" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE">
-<attr name="command"><![CDATA[cat -n graph/graphExecutingExternal.grf]]></attr>
+<Node append="false" deleteBatch="true" enabled="enabled" guiName="cat " guiX="345" guiY="210" id="SYS_EXECUTE0" interpreter="${}" type="SYS_EXECUTE">
+<attr name="command"><![CDATA[cat -n graph/ExecutingExternal.grf]]></attr>
 </Node>
-<Node append="true" deleteBatch="true" enabled="enabled" guiHeight="69" guiName="list" guiWidth="128" guiX="254" guiY="438" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE">
+<Node append="true" deleteBatch="true" enabled="enabled" guiName="list" guiX="254" guiY="438" id="SYS_EXECUTE1" interpreter="sh ${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[ls ${MY_DIR}]]></attr>
 </Node>
-<Node deleteBatch="true" enabled="enabled" guiHeight="69" guiName="execute batch" guiWidth="132" guiX="365" guiY="906" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE">
+<Node deleteBatch="true" enabled="enabled" guiName="execute batch" guiX="365" guiY="906" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[while read in; do
   echo $in
   find -name "$in" 
 done]]></attr>
 </Node>
-<Node deleteBatch="true" enabled="disabled" guiHeight="69" guiName="WINDOWS _ dir" guiWidth="140" guiX="658" guiY="554" id="SYS_EXECUTE3" interpreter="${}" type="SYS_EXECUTE">
+<Node deleteBatch="true" enabled="disabled" guiName="WINDOWS _ dir" guiX="658" guiY="554" id="SYS_EXECUTE3" interpreter="${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[dir]]></attr>
 </Node>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="10:0|456:883|345:883|-82:134" guiLocks="null|null|883" guiRouter="Manual" id="Edge3" inPort="Port 0 (input for command)" metadata="Metadata0" outPort="Port 0 (output)" router="Manhattan" toNode="SYS_EXECUTE2:0"/>

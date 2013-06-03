@@ -20,6 +20,7 @@ package org.jetel.data;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -233,6 +234,23 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 		setNull(false);
 	}
 
+	/**
+	 *  Sets the value of the field
+	 *
+	 *@param  value  value is copied into internal byte array using
+	 */
+	public void setValue(ByteBuffer value) {
+        if(value != null) {
+            this.value = new byte[value.remaining()];
+            value.get(this.value);
+            setNull(false);
+        } else {
+            setNull(true);
+        }
+	}
+
+	
+	
     @Override
 	public void reset(){
          if (metadata.isNullable()){
