@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="lib/saxon9.jar"/>
 	<classpathentry kind="lib" path="lib/saxon9-dom.jar"/>
 	<classpathentry kind="lib" path="lib/mail-1.4.2.jar"/>
+	<classpathentry kind="lib" path="lib/libphonenumber-5.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

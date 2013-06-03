@@ -31,6 +31,7 @@ import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
 import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
 import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
+import org.jetel.component.validator.rules.PhoneNumberValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
 import org.junit.Test;
 
@@ -61,6 +62,7 @@ public class ValidationRulesPersisterTest extends ValidatorTestCase {
 		subgroup.addChild(new PatternMatchValidationRule());
 		subgroup.addChild(new StringLengthValidationRule());
 		subgroup.addChild(new EmailValidationRule());
+		subgroup.addChild(new PhoneNumberValidationRule());
 		group.addChild(subgroup);
 		try {
 			String temp = ValidationRulesPersister.serialize(group);

@@ -39,6 +39,7 @@ import org.jetel.component.validator.rules.NonEmptyFieldValidationRule;
 import org.jetel.component.validator.rules.NonEmptySubsetValidationRule;
 import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
+import org.jetel.component.validator.rules.PhoneNumberValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -64,7 +65,8 @@ import org.jetel.metadata.DataRecordMetadata;
 		NumberValidationRule.class,
 		LookupValidationRule.class,
 		CustomValidationRule.class,
-		EmailValidationRule.class
+		EmailValidationRule.class,
+		PhoneNumberValidationRule.class
 	})
 public abstract class AbstractValidationRule extends ValidationNode {
 	

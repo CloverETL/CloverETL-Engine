@@ -162,6 +162,7 @@ public class EmailValidationRule extends StringValidationRule {
 				state = false;
 			}
 		}
+		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
 		return state;
 	}
 
