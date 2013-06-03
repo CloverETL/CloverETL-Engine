@@ -51,28 +51,28 @@ import org.jetel.util.file.FileUtils;
  */
 public class BinaryDataParser extends AbstractParser {
 
-	ReadableByteChannel reader;
+	private ReadableByteChannel reader;
 	/*
 	 * just remember the inputstream we used to create "reader" channel
 	 */
-	InputStream backendStream;
-	DataRecordMetadata metadata;
-	CloverBuffer buffer;
-	IParserExceptionHandler exceptionHandler;
+	private InputStream backendStream;
+	private DataRecordMetadata metadata;
+	private CloverBuffer buffer;
+	private IParserExceptionHandler exceptionHandler;
 	/*
 	 * aux variable
 	 */
-	int recordSize;
+	private int recordSize;
 	/*
 	 * Size of read buffer
 	 */
-	int bufferLimit = -1;
+	private int bufferLimit = -1;
 	/*
 	 * Whether an attempt to delete file from the underlying should be made on close()
 	 */
-	File deleteOnClose;
+	private File deleteOnClose;
 	
-	boolean useDirectBuffers = true;
+	private boolean useDirectBuffers = true;
 	
 	private final static int LEN_SIZE_SPECIFIER = 4;
 	
@@ -248,7 +248,8 @@ public class BinaryDataParser extends AbstractParser {
 		}
 		int buffSize = bufferLimit > 0 ? Math.min(Defaults.Record.RECORDS_BUFFER_SIZE, bufferLimit)
 				: Defaults.Record.RECORDS_BUFFER_SIZE;
-		buffer = CloverBuffer.allocate(buffSize, useDirectBuffers);
+		int limitSize = Math.max(Defaults.Record.RECORDS_BUFFER_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+		buffer = CloverBuffer.allocate(buffSize, limitSize, useDirectBuffers);
 		buffer.clear();
 		buffer.limit(0);
 
