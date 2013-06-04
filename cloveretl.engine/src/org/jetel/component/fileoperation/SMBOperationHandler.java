@@ -576,12 +576,12 @@ public class SMBOperationHandler implements IOperationHandler {
 
 			// ... but do not %-encode authority (use authority from URL, everything else from URI)
 			StringBuilder sb = new StringBuilder();
-			sb.append(uri.getScheme()).append("://").append(url.getAuthority()).append(uri.getPath());
-			if (uri.getQuery() != null) {
-				sb.append('?').append(uri.getQuery());
+			sb.append(uri.getScheme()).append("://").append(url.getAuthority()).append(uri.getRawPath());
+			if (uri.getRawQuery() != null) {
+				sb.append('?').append(uri.getRawQuery());
 			}
-			if (uri.getFragment() != null) {
-				sb.append('#').append(uri.getFragment());
+			if (uri.getRawFragment() != null) {
+				sb.append('#').append(uri.getRawFragment());
 			}
 			
 			return new URI(sb.toString());
