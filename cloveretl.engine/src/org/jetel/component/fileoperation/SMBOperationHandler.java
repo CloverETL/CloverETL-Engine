@@ -564,16 +564,27 @@ public class SMBOperationHandler implements IOperationHandler {
 		return null;
 	}
 
-	// TODO test %-encoding in the authority
 	private static SingleCloverURI createSingleCloverURI(SmbFile file) {
 		return CloverURI.createSingleURI(toURI(file));
 	}
 
 	static URI toURI(SmbFile file) {
 		URL url = file.getURL(); // may contain spaces in path
-		// FIXME %-encoding test! ... seems authority (and others) may get encoded twice...
 		try {
-			return new URI(url.getProtocol(), url.getAuthority(), url.getPath(), url.getQuery(), url.getRef()); // encodes URI invalid characters (e.g. spaces in path)
+			// %-encode path, query and fragment...
+			URI uri = new URI(url.getProtocol(), null, url.getPath(), url.getQuery(), url.getRef());
+
+			// ... but do not %-encode authority (use authority from URL, everything else from URI)
+			StringBuilder sb = new StringBuilder();
+			sb.append(uri.getScheme()).append("://").append(url.getAuthority()).append(uri.getPath());
+			if (uri.getQuery() != null) {
+				sb.append('?').append(uri.getQuery());
+			}
+			if (uri.getFragment() != null) {
+				sb.append('#').append(uri.getFragment());
+			}
+			
+			return new URI(sb.toString());
 		} catch (URISyntaxException e) {
 			// shouldn't happen
 			throw new JetelRuntimeException(e);
@@ -594,12 +605,14 @@ public class SMBOperationHandler implements IOperationHandler {
 	
 	@Override
 	public File getFile(SingleCloverURI uri, FileParameters params) throws IOException {
-		// TODO is it a good idea to mix handling of SMB using both jcifs.smb.SmbFile and java.io.File?
+		throw new UnsupportedOperationException(); // this method isn't used anyway (if I'm not blind)
+		/*
+		The following should work, but is it a good idea to mix handling of SMB using both jcifs.smb.SmbFile and java.io.File?
 		URI smbUri = uri.toURI();
 		if (smbUri.getUserInfo() == null) {
 			try {
 				// TODO refactor & TEST!!! all those shitty possibilities
-				String ssp = "////" + smbUri.getAuthority() + (smbUri.getPort() != -1 ? ":" + smbUri.getPort() : "") + smbUri.getRawPath() + (smbUri.getRawQuery() != null ? smbUri.getRawQuery() : "");
+				String ssp = "////" + smbUri.getAuthority() + smbUri.getRawPath() + (smbUri.getRawQuery() != null ? smbUri.getRawQuery() : "");
 				URI fileUri = new URI("file", ssp, smbUri.getRawFragment());
 				return new File(fileUri);
 			} catch (URISyntaxException e) {
@@ -607,6 +620,7 @@ public class SMBOperationHandler implements IOperationHandler {
 			}
 		}
 		throw new MalformedURLException("Cannot convert smb:// URL with nonempty user info to java.io.File");
+		*/
 	}
 
 	@Override
