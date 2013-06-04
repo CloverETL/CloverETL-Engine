@@ -18,7 +18,6 @@
  */
 package org.jetel.component.fileoperation;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,7 +35,7 @@ import org.jetel.component.fileoperation.result.ResolveResult;
 
 public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 	
-	private static final String BASE_URI = "smb://javlin:javlin@VIRT-ORANGE/SMBTestPub/";
+	private static final String BASE_URI = "smb://virt-orange%3BSMBTest:p%40ss%7B%2F%7D@VIRT-ORANGE/SMBTestPub/";   // unescaped password: p@ss{/}
 
 	protected IOperationHandler handler = null;
 	
@@ -55,6 +54,7 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 			assertTrue(result.getFirstErrorMessage(), result.success());
 			return tmpDirUri.getSingleURI().toURI();
 		} catch (URISyntaxException ex) {
+			ex.printStackTrace();
 			return null;
 		}
 	}
@@ -164,7 +164,7 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 		}
 		
 	}
-
+	
 	@Override
 	public void testList() throws Exception {
 		super.testList();
@@ -174,10 +174,16 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 		CloverURI uri;
 		ListResult result;
 		// TODO cannot list item "javlintest" of new SmbFile("smb://").listFiles() 
-		for (SmbFile file : new SmbFile("smb://javlin:javlin@VIRT-ORANGE/").listFiles()) { // TODO may be slow
+		//SmbFile[] listedFiles = new SmbFile("smb://").listFiles();
+		SmbFile[] listedFiles = new SmbFile("smb://javlin:javlin@VIRT-ORANGE/").listFiles();
+		for (SmbFile file : listedFiles) { // TODO may be slow
 			printFileInfo(file);
 			if (file.exists()) {
 				uri = CloverURI.createURI(file.toString());
+//				InfoResult iResult = manager.info(uri);
+//				System.out.println(iResult.success());
+//				System.out.println(((SMBFileInfo)iResult.getInfo()).canRead());
+//				System.out.println(((SMBFileInfo)iResult.getInfo()).canWrite());
 				result = manager.list(uri);
 				System.out.println(uri);
 				Exception e = result.getFirstError();
@@ -250,19 +256,4 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 		}
 	}
 	
-	public void testGetFile() throws IOException {
-		// FIXME use unimprovised paths and non-local File
-		SingleCloverURI uri = CloverURI.createSingleURI(null, "smb://tkramolis:mojeheslo@virt-pink/tkramolis/test.txt");
-		try {
-			manager.getFile(uri);
-			fail();
-		} catch (RuntimeException e) {
-		}
-		printFileInfo(new SmbFile(uri.toURI().toString()));
-		
-		uri = CloverURI.createSingleURI(null, "smb://tecra3/UNCTest/test.txt");
-		printFileInfo(new SmbFile(uri.toURI().toString()));
-		File f = manager.getFile(uri);
-		assertTrue(f.exists());
-	}
 }
