@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 
 import junit.framework.AssertionFailedError;
 
@@ -40,6 +41,8 @@ import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
@@ -81,6 +84,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	static {
 		Calendar c = Calendar.getInstance();
 		c.set(2008, 12, 25, 13, 25, 55);
+		c.set(Calendar.MILLISECOND, 333);
 		BORN_VALUE = c.getTime();
 		BORN_MILLISEC_VALUE = c.getTimeInMillis();
 	}
@@ -1224,7 +1228,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("longString", String.valueOf(tmp));
 	}
 	
-	public void test_type_date() {
+	public void test_type_date() throws Exception {
 		doCompile("test_type_date");
 		check("d3", new GregorianCalendar(2006, GregorianCalendar.AUGUST, 1).getTime());
 		check("d2", new GregorianCalendar(2006, GregorianCalendar.AUGUST, 2, 15, 15, 3).getTime());
@@ -1233,6 +1237,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("nullValue");
 		check("minValue", new GregorianCalendar(1970, GregorianCalendar.JANUARY, 1, 1, 0, 0).getTime());
 		checkNull("varWithNullInitializer");
+		
+		// test with a default time zone set on the GraphRuntimeContext
+		Context context = null;
+		try {
+			tearDown();
+			setUp();
+			
+			TransformationGraph graph = new TransformationGraph();
+			graph.getRuntimeContext().setTimeZone("GMT+8");
+			context = ContextProvider.registerGraph(graph);
+
+			doCompile("test_type_date");
+			
+			Calendar calendar = new GregorianCalendar(2006, GregorianCalendar.AUGUST, 2, 15, 15, 3);
+			calendar.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+			check("d2", calendar.getTime());
+			calendar.set(2006, 0, 1, 1, 2, 3);
+			check("d1", calendar.getTime());
+		} finally {
+			ContextProvider.unregister(context);
+		}
 	}
 	
 	public void test_type_boolean() {
@@ -3094,6 +3119,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate14", false);
 		// empty string: invalid
 		check("isDate15", false);
+		
+		check("isDate16", false);
+		check("isDate17", true);
+		check("isDate18", true);
+		check("isDate19", false);
 	}
 	
 	public void test_stringlib_removeBlankSpace() {
@@ -3540,6 +3570,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			check("loopTest", expectedDates);
 		}
 		
+		SimpleDateFormat sdfGMT8 = new SimpleDateFormat("yyyy:MMMM:dd z", MiscUtils.createLocale("en"));
+		sdfGMT8.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+		check("timeZone", sdfGMT8.format(BORN_VALUE));
+		
 	}
 	
 	public void test_convertlib_decimal2double() {
@@ -3681,6 +3715,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		check("date1", checkDate);
 		check("date2", checkDate);
+		
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+		cal.set(2013, 04, 30, 17, 15, 12);
+		check("withTimeZone1", cal.getTime());
+		
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT-8"));
+		cal.set(2013, 04, 30, 17, 15, 12);
+		check("withTimeZone2", cal.getTime());
+		
+		assertFalse(getVariable("withTimeZone1").equals(getVariable("withTimeZone2")));
 	}
 
 	public void test_convertlib_str2decimal() {
@@ -3996,5 +4042,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ref", ref);
 		check("query", query);
 		
+	}
+	
+	public void test_randomlib_randomDate() {
+		doCompile("test_randomlib_randomDate");
+		
+		final long HOUR = 60L * 60L * 1000L;
+		Date BORN_VALUE_NO_MILLIS = new Date(BORN_VALUE.getTime() / 1000L * 1000L);
+		
+		check("noTimeZone1", BORN_VALUE);
+		check("noTimeZone2", BORN_VALUE_NO_MILLIS);
+		
+		check("withTimeZone1", new Date(BORN_VALUE_NO_MILLIS.getTime() + 2*HOUR)); // timezone changes from GMT+5 to GMT+3
+		check("withTimeZone2", new Date(BORN_VALUE_NO_MILLIS.getTime() - 2*HOUR)); // timezone changes from GMT+3 to GMT+5
 	}
 }

@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Level;
 import org.jetel.data.Defaults;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
@@ -66,6 +67,8 @@ public class GraphRuntimeContext {
 	private boolean debugMode;
 	private String debugDirectory;
 	private boolean tokenTracking;
+	private String timeZone;
+	private String locale;
 	
 	/**
 	 * This classpath is extension of 'current' classpath used for loading extra classes specified inside the graph.
@@ -109,6 +112,8 @@ public class GraphRuntimeContext {
 		jobType = JobType.DEFAULT;
 		isSubJob = false;
 		authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
+		locale = null;
+		timeZone = null;
 	}
 	
 	/* (non-Javadoc)
@@ -618,6 +623,46 @@ public class GraphRuntimeContext {
 	 */
 	public void setSubJob(boolean isSubJob) {
 		this.isSubJob = isSubJob;
+	}
+
+	/**
+	 * @return the locale
+	 */
+	public String getLocale() {
+		return locale;
+	}
+	
+	/**
+	 * @param locale the locale to set
+	 */
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public static String getDefaultLocale() {
+		GraphRuntimeContext context = ContextProvider.getRuntimeContext();
+		String locale = context != null ? context.getLocale() : null;
+		return !StringUtils.isEmpty(locale) ? locale : Defaults.DEFAULT_LOCALE;
+	}
+
+	/**
+	 * @return the timeZone
+	 */
+	public String getTimeZone() {
+		return timeZone;
+	}
+
+	/**
+	 * @param timeZone the timeZone to set
+	 */
+	public void setTimeZone(String timeZone) {
+		this.timeZone = timeZone;
+	}
+
+	public static String getDefaultTimeZone() {
+		GraphRuntimeContext context = ContextProvider.getRuntimeContext();
+		String timeZone = context != null ? context.getTimeZone() : null;
+		return !StringUtils.isEmpty(timeZone) ? timeZone : Defaults.DEFAULT_TIME_ZONE;
 	}
 
 	/**

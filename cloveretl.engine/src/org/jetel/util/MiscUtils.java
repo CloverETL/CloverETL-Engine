@@ -31,6 +31,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -42,6 +43,29 @@ public final class MiscUtils {
 	private MiscUtils() {
 	}
 
+	/**
+	 * Returns the default locale,
+	 * either set in the {@link GraphRuntimeContext}
+	 * or as {@link Defaults#DEFAULT_LOCALE}.
+	 * 
+	 * @return
+	 */
+	public static Locale getDefaultLocale() {
+		return MiscUtils.createLocale(null);
+	}
+	
+	/**
+	 * Returns the string representing the default locale,
+	 * either set in the {@link GraphRuntimeContext}
+	 * or as {@link Defaults#DEFAULT_LOCALE}.
+	 * 
+	 * @return
+	 */
+	public static String getDefautLocaleId() {
+		Locale locale = getDefaultLocale();
+		return (locale != null) ? MiscUtils.localeToString(locale) : Defaults.DEFAULT_LOCALE;
+	}
+	
 	/**
      * Creates locale from clover internal format - <language_identifier>[.<country_identifier>]
      * Examples:
@@ -59,7 +83,7 @@ public final class MiscUtils {
 		Locale locale = null;
 
 		if (StringUtils.isEmpty(localeStr)) {
-			locale = MiscUtils.createLocale(Defaults.DEFAULT_LOCALE);
+			locale = MiscUtils.createLocale(GraphRuntimeContext.getDefaultLocale());
 		} else {
 			String[] localeLC = localeStr.split("\\.");
 			if (localeLC.length > 1) {

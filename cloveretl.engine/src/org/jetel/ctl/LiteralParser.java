@@ -26,6 +26,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.jetel.util.formatter.TimeZoneProvider;
+
 /**
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -37,7 +39,9 @@ public class LiteralParser {
 	private static final DateFormat DATE_FORMATTER_TEMPLATE;
 	private static final DateFormat DATETIME_FORMATTER_TEMPLATE;
 	
-	static {
+    private static final Calendar CALENDAR = Calendar.getInstance();
+
+    static {
 		DATE_FORMATTER_TEMPLATE = new SimpleDateFormat("yyyy-MM-dd");
 		DATE_FORMATTER_TEMPLATE.setLenient(false);
 		
@@ -45,14 +49,19 @@ public class LiteralParser {
 		DATETIME_FORMATTER_TEMPLATE.setLenient(false);
 	}
 	
+    // if performance is insufficient, use a pool to store and reuse SimpleDateFormat instances
     private final DateFormat dateFormatter;
     private final DateFormat datetimeFormatter;
-    private final Calendar calendar = Calendar.getInstance();
     
 	public LiteralParser() {
+		TimeZoneProvider timeZone = new TimeZoneProvider();
+		
 		// SimpleDateFormat creation is expensive, cloning is slightly faster
     	dateFormatter = (DateFormat) DATE_FORMATTER_TEMPLATE.clone();
+    	dateFormatter.setTimeZone(timeZone.getJavaTimeZone());
+    	
     	datetimeFormatter = (DateFormat) DATETIME_FORMATTER_TEMPLATE.clone();
+    	datetimeFormatter.setTimeZone(timeZone.getJavaTimeZone());
 	}
 
 	public int parseInt(String valueImage) throws NumberFormatException {
@@ -143,13 +152,15 @@ public class LiteralParser {
 			throw new ParseException("Date literal '" + valueImage + "' has invalid format.", p1.getErrorIndex()); 
 		}
 		
-		calendar.setTime(date);
-		// set all time fields to zero
-		calendar.set(Calendar.HOUR, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND,0);
-		calendar.set(Calendar.MILLISECOND,0);
-		valueObj = calendar.getTime();
+		synchronized (CALENDAR) { // Calendar is not thread-safe and we're calling multiple methods
+			CALENDAR.setTime(date);
+			// set all time fields to zero
+			CALENDAR.set(Calendar.HOUR, 0);
+			CALENDAR.set(Calendar.MINUTE, 0);
+			CALENDAR.set(Calendar.SECOND, 0);
+			CALENDAR.set(Calendar.MILLISECOND, 0);
+			valueObj = CALENDAR.getTime();
+		}
 		
 		return valueObj;
 	}

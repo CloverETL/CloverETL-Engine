@@ -3,6 +3,7 @@ string bornDate;
 string czechBornDate;
 string englishBornDate;
 string[] loopTest;
+string timeZone;
 
 function integer transform() {
 	date input = 1987-05-12;
@@ -16,6 +17,8 @@ function integer transform() {
 	for (integer i = 0; i < locales.length(); i++) {
 		loopTest.push(date2str($firstInput.Born, 'yyyy:MMMM:dd', locales[i]));
 	} 
+	
+	timeZone = date2str($firstInput.Born, 'yyyy:MMMM:dd z', 'en', 'GMT+8');
 	
 	return 0;	
 }

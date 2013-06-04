@@ -118,6 +118,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	private TypedProperties recordProperties = new TypedProperties();
 	private String localeStr = null;
+	private String timeZoneStr = null;
 
 	/** a format string for numbers */
 	private String numberFormatStr = null;
@@ -1023,6 +1024,20 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
+	 * @param timeZoneStr the timeZoneStr to set
+	 */
+	public void setTimeZoneStr(String timeZoneStr) {
+		this.timeZoneStr = timeZoneStr;
+	}
+
+	/**
+	 * @return the timeZoneStr
+	 */
+	public String getTimeZoneStr() {
+		return timeZoneStr;
+	}
+
+	/**
 	 * Sets the number format pattern as a default format string for numeric data fields.
 	 *
 	 * @param numberFormatStr the new number format pattern
@@ -1104,6 +1119,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 		dataRecordMetadata.setRecordProperties(recordProperties);
 		dataRecordMetadata.setLocaleStr(localeStr);
+		dataRecordMetadata.setTimeZoneStr(timeZoneStr);
 		dataRecordMetadata.setCollatorSensitivity(collatorSensitivity);
 		
 		return dataRecordMetadata;

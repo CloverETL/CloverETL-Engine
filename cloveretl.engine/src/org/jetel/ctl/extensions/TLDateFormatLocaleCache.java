@@ -19,7 +19,6 @@
 package org.jetel.ctl.extensions;
 
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
 
@@ -33,47 +32,93 @@ public class TLDateFormatLocaleCache extends TLCache {
 
 	private DateFormatter cachedFormatter;
 	private String previousLocaleString;
+	private String previousTimeZoneString;
 	
-	public TLDateFormatLocaleCache(TLFunctionCallContext context, int pos1, int pos2) {
-		createCachedLocaleFormat(context, pos1, pos2);
+	/**
+	 * @deprecated Use {@link #TLDateFormatLocaleCache(TLFunctionCallContext, int, int, int)} instead. 
+	 */
+	@Deprecated
+	public TLDateFormatLocaleCache(TLFunctionCallContext context, int patternPos, int localePos) {
+		createCachedLocaleFormat(context, patternPos, localePos, -1);
+	}
+
+	public TLDateFormatLocaleCache(TLFunctionCallContext context, int patternPos, int localePos, int timeZonePos) {
+		createCachedLocaleFormat(context, patternPos, localePos, timeZonePos);
 	}
 	
-	public void createCachedLocaleFormat(TLFunctionCallContext context, int pos1, int pos2) {
+	public void createCachedLocaleFormat(TLFunctionCallContext context, int patternPos, int localePos, int timeZonePos) {
 		
-		if (context.getLiteralsSize() <= pos1)
+		if (context.getLiteralsSize() <= patternPos)
 			return;
 
-		if (!(context.getParamValue(pos1) instanceof String))
+		if (!(context.getParamValue(patternPos) instanceof String))
 			return;
 		
 		// this construction which allows overloading, where you can use the parameter on the same position as 'format' but 
 		// in different meaning with overloaded functions (as long as it is not 'String')
-		if (context.getLiteralsSize() <= pos2 || !(context.getParamValue(pos2) instanceof String)) {
-			String paramPattern = (String)context.getParamValue(pos1);
-			if (context.isLiteral(pos1)) {
+		if (context.getLiteralsSize() <= localePos || !(context.getParamValue(localePos) instanceof String)) {
+			String paramPattern = (String)context.getParamValue(patternPos);
+			if (context.isLiteral(patternPos)) {
 				cachedFormatter = DateFormatterFactory.getFormatter(paramPattern);
 			}
 			return;
 		}
 		
-		String paramPattern = (String)context.getParamValue(pos1);
-		String paramLocale = (String)context.getParamValue(pos2);
-		if (context.isLiteral(pos1) && context.isLiteral(pos2)) {
-			cachedFormatter = DateFormatterFactory.getFormatter(paramPattern, MiscUtils.createLocale(paramLocale));
+		if (context.getLiteralsSize() > timeZonePos) {
+			if (context.isLiteral(patternPos) && context.isLiteral(localePos) && context.isLiteral(timeZonePos)) {
+				String paramPattern = (String) context.getParamValue(patternPos);
+				String paramLocale = (String) context.getParamValue(localePos);
+				String paramTimeZone = (String) context.getParamValue(timeZonePos);
+				cachedFormatter = DateFormatterFactory.getFormatter(paramPattern, paramLocale, paramTimeZone);
+			}
+		} else {
+			if (context.isLiteral(patternPos) && context.isLiteral(localePos)) {
+				String paramPattern = (String) context.getParamValue(patternPos);
+				String paramLocale = (String) context.getParamValue(localePos);
+				cachedFormatter = DateFormatterFactory.getFormatter(paramPattern, paramLocale);
+			}
 		}
+		
 	}
 
 	
-	public DateFormatter getCachedLocaleFormatter(TLFunctionCallContext context, String format, String locale,
-			int pos1, int pos2) {
-		
-		if (context.getLiteralsSize() > Math.max(pos1, pos2)) {
-			// if we use the variant with both format and locale specified
-			if ((context.isLiteral(pos1) && context.isLiteral(pos2))
-				// either both format and locale were literals (thus cached at init)
+	private DateFormatter getCachedFormatter3(TLFunctionCallContext context, 
+			String format, String locale, String timeZone,
+			int patternPos, int localePos, int timeZonePos) {
+		// if we use the variant with format, locale and time zone specified
+		if ((context.isLiteral(patternPos) && context.isLiteral(localePos) && context.isLiteral(timeZonePos))
+				// either format, locale and timeZone were literals (thus cached at init)
+					
 				|| (cachedFormatter != null 
 						&& format.equals(cachedFormatter.getPattern()) 
-						// careful when locale is null! See test_convertlib_date2str.ctl
+						// careful when locale or timeZone is null! See test_convertlib_date2str.ctl
+						&& ((locale == previousLocaleString) || (locale != null && locale.equals(previousLocaleString)))
+						&& ((timeZone == previousTimeZoneString) || (timeZone != null && timeZone.equals(previousTimeZoneString)))
+					)
+				// or format is already cached and previous inputs match the current ones
+				)
+		{
+			return cachedFormatter;
+		} else {
+			// otherwise we have to recompute cache and remember just in the case future input will be the same
+			cachedFormatter = DateFormatterFactory.getFormatter(format, locale, timeZone);
+			previousLocaleString = locale;
+			previousTimeZoneString = timeZone;
+
+			return cachedFormatter;
+		}
+	}
+	
+	private DateFormatter getCachedFormatter2(TLFunctionCallContext context, 
+			String format, String locale,
+			int patternPos, int localePos) {
+		// we use the variant with format and locale specified
+		if ((context.isLiteral(patternPos) && context.isLiteral(localePos))
+				// either format, locale and timeZone were literals (thus cached at init)
+					
+				|| (cachedFormatter != null 
+						&& format.equals(cachedFormatter.getPattern()) 
+						// careful when locale or timeZone is null! See test_convertlib_date2str.ctl
 						&& ((locale == previousLocaleString) || (locale != null && locale.equals(previousLocaleString)))
 					)
 				// or format is already cached and previous inputs match the current ones
@@ -82,33 +127,57 @@ public class TLDateFormatLocaleCache extends TLCache {
 				return cachedFormatter;
 			} else {
 				// otherwise we have to recompute cache and remember just in the case future input will be the same
-				if (locale == null) {
-					cachedFormatter = DateFormatterFactory.getFormatter(format);
-					previousLocaleString = locale;
-				} else {
-					cachedFormatter = DateFormatterFactory.getFormatter(format, MiscUtils.createLocale(locale));
-					previousLocaleString = locale;
-				}
+				cachedFormatter = DateFormatterFactory.getFormatter(format, locale);
+				previousLocaleString = locale;
 
 				return cachedFormatter;
 			}
+	}
+
+	private DateFormatter getCachedFormatter1(TLFunctionCallContext context, 
+			String format, 
+			int patternPos) {
+		// just format is specified, but not locale
+		if (context.isLiteral(patternPos) 
+				|| (cachedFormatter != null && format.equals(cachedFormatter.getPattern()))
+			) 
+		{
+			return cachedFormatter;
+		} else {
+			// same as above but just for format (default locale and time zone is used) 
+			cachedFormatter = DateFormatterFactory.getFormatter(format);
+
+			return cachedFormatter;				
 		}
-		if (context.getLiteralsSize() > pos1 && context.getLiteralsSize() <= pos2) {
-			// just format is specified, but not locale
-			if (context.isLiteral(pos1) 
-					|| (cachedFormatter != null && format.equals(cachedFormatter.getPattern()))
-				) 
-			{
-				return cachedFormatter;
-			} else {
-				// same as above but just for format (default locale is used) 
-				cachedFormatter = DateFormatterFactory.getFormatter(format);
+	}
 
-				return cachedFormatter;				
-			}
+	/**
+	 * @deprecated Use {@link #getCachedLocaleFormatter(TLFunctionCallContext, String, String, String, int, int, int)} instead.
+	 */
+	@Deprecated
+	public DateFormatter getCachedLocaleFormatter(TLFunctionCallContext context, 
+			String format, String locale,
+			int patternPos, int localePos) {
+		return getCachedLocaleFormatter(context, format, locale, null, patternPos, localePos, -1);
+	}
+
+	public DateFormatter getCachedLocaleFormatter(TLFunctionCallContext context, 
+			String format, String locale, String timeZone,
+			int patternPos, int localePos, int timeZonePos) {
+		
+		// context.getLiteralsSize() actually returns the number of parameters, not just the number of literals
+		
+		if (context.getLiteralsSize() > Math.max(Math.max(patternPos, localePos), timeZonePos)) {
+			// if we use the variant with format, locale and time zone specified
+			return getCachedFormatter3(context, format, locale, timeZone, patternPos, localePos, timeZonePos);
+		} else if (context.getLiteralsSize() > Math.max(patternPos, localePos) && context.getLiteralsSize() <= timeZonePos) {
+			// if we use the variant with format and locale specified
+			return getCachedFormatter2(context, format, locale, patternPos, localePos);
+		} else if (context.getLiteralsSize() > patternPos && context.getLiteralsSize() <= localePos) {
+			// if we use the variant with only format specified
+			return getCachedFormatter1(context, format, patternPos);
 		}
 		
 		throw new TransformLangExecutorRuntimeException("Format not correctly specified for the date.");
-		
 	}
 }
