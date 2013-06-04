@@ -488,14 +488,16 @@ public class DBOutputTable extends Node {
 		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		
+		// create connection instance, which represents connection to a database
+		try {
+			connection = dbConnection.getConnection(getId(), OperationType.WRITE);
+		} catch (JetelException e1) {
+			throw new ComponentNotReadyException(e1);
+		}
+		
 		if (firstRun()) {// a phase-dependent part of initialization
 
-			// create connection instance, which represents connection to a database
-			try {
-				connection = dbConnection.getConnection(getId(), OperationType.WRITE);
-			} catch (JetelException e1) {
-				throw new ComponentNotReadyException(e1);
-			}
+			
 
 			// prepare rejectedRecord and keysRecord
 			boolean supportsConnectionKeyGenaration = false;
@@ -590,24 +592,9 @@ public class DBOutputTable extends Node {
 			if (keysRecord != null) {
 				keysRecord.reset();
 			}
-			
-			if (getGraph().getRuntimeContext().isBatchMode() && dbConnection.isThreadSafeConnections()) {
-				try {
-					connection = dbConnection.getConnection(getId(), OperationType.WRITE);
-					for (SQLCloverStatement eachStatement : statement) {
-						try {
-							eachStatement.setConnection(connection);
-						} catch (Exception e) {
-							throw new ComponentNotReadyException(this, e.getMessage(), e);
-						}
-					}
-				} catch (JetelException exception) {
-					throw new ComponentNotReadyException(exception);
-				}
-			}
-
 			for (SQLCloverStatement eachStatement : statement) {
 				try {
+					eachStatement.setConnection(connection);
 					eachStatement.setInRecord(inRecord);
 					eachStatement.reset();
 				} catch (Exception e) {
@@ -627,10 +614,7 @@ public class DBOutputTable extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		if (getGraph().getRuntimeContext().isBatchMode()) { 
-			// otherwise connection is closed in TransformationGraph.free()
-			dbConnection.closeConnection(getId(), OperationType.WRITE);
-		}
+		dbConnection.closeConnection(getId(), OperationType.WRITE);
 	}
 	
 	/**

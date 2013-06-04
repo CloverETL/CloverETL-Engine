@@ -376,16 +376,13 @@ public class DBInputTable extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		if (getGraph().getRuntimeContext().isBatchMode()) { 
-			// otherwise connection is closed in TransformationGraph.free()
-			connection.closeConnection(getId(), OperationType.READ);
-		}
+		connection.closeConnection(getId(), OperationType.READ);
 	}
 	
 
 	@Override
     public synchronized void free() {
-    	super.free();    	
+    	super.free();
     }
 
 

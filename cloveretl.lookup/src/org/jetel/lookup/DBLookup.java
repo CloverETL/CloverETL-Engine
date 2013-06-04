@@ -42,6 +42,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.primitive.SimpleCache;
 
 /**
@@ -151,7 +152,7 @@ public final class DBLookup implements Lookup {
 		try {
 			statement.setInRecord(keyRecord);
 		} catch (ComponentNotReadyException e) {
-			throw new RuntimeException("Failed to update statement record.", e);
+			throw new JetelRuntimeException("Failed to update statement record.", e);
 		}
 		seek();
 	}
@@ -175,7 +176,7 @@ public final class DBLookup implements Lookup {
 					String[] fieldName = statement.getCloverOutputFields();
 					DataFieldMetadata fieldMetadata;
 					String tableName = dbMeta.getTableName(1);
-					dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+					dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordParsingType.DELIMITED);
 					dbMetadata.setLabel(tableName);
 					dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
 					dbMetadata.setRecordDelimiter("\n");

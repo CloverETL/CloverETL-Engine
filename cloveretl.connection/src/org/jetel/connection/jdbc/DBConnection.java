@@ -25,6 +25,7 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -468,11 +469,23 @@ public class DBConnection extends GraphElement implements IConnection {
         if (isThreadSafeConnections()) {
         	CacheKey key = new CacheKey(elementId, operationType);
             connection = (DBConnectionInstance) connectionsCache.get(key);
+            if (connection != null) {
+            	if (!isValid(connectionInstance)) {
+            		closeConnection(connection.getSqlConnection());
+            		connection = null;
+            	}
+            }
             if (connection == null) {
                 connection = new DBConnectionInstance(this, connect(operationType), operationType);
                 connectionsCache.put(key, connection);
             }
         } else {
+        	if (connectionInstance != null) {
+        		if (!isValid(connectionInstance)) {
+        			closeConnection(connectionInstance.getSqlConnection());
+        			connectionInstance = null;
+        		}
+        	}
             if (connectionInstance == null) {
                 connectionInstance = new DBConnectionInstance(this, connect(operationType), operationType);
             }
@@ -502,6 +515,21 @@ public class DBConnection extends GraphElement implements IConnection {
 				throw new JetelException("Cannot establish DB connection (" + getId() + ").", e);
 			}
     	}
+    }
+    
+    protected boolean isValid(DBConnectionInstance connection) {
+    	
+    	try {
+    		try {
+    			return connection.getSqlConnection().isValid(Defaults.DBConnection.VALIDATION_TIMEOUT);
+    		} catch (SQLFeatureNotSupportedException e) {
+    			logger.info("Connection does not support validation, checking whether closed.");
+    		}
+    		return !connection.getSqlConnection().isClosed();
+    	} catch (Exception e) {
+    		logger.warn("Error while validating DB connection.", e);
+    	}
+    	return false;
     }
 
     /**
@@ -586,11 +614,11 @@ public class DBConnection extends GraphElement implements IConnection {
     
     /**
      * Closes connection stored in cache under key specified by elementId and operationType.
-     * Connection is closed only if DBConnection is thread-safe.
+     * Connection is closed only if DBConnection is thread-safe and graph is in batch mode.
      * Closed connection is also removed from cache.
      */
     public synchronized void closeConnection(String elementId, OperationType operationType) {
-    	if (isThreadSafeConnections()) {
+    	if (isThreadSafeConnections() && getGraph().getRuntimeContext().isBatchMode()) {
         	CacheKey key = new CacheKey(elementId, operationType);
         	DBConnectionInstance connection = connectionsCache.remove(key);
         	if (connection != null)
@@ -959,7 +987,6 @@ public class DBConnection extends GraphElement implements IConnection {
 			throw new ComponentNotReadyException("Invalid ResultSet type field name in jdbc specific: " + getJdbcSpecific().getResultSetParameterTypeField(), e);
 		}
     }
-    
 	
 	public TypedProperties getExtraProperties() {
 		return jdbcProperties;
@@ -977,14 +1004,6 @@ public class DBConnection extends GraphElement implements IConnection {
 		public CacheKey(String elementId, OperationType operationType) {
 			this.elementId = elementId;
 			this.operationType = operationType;
-		}
-
-		public String getElementId() {
-			return elementId;
-		}
-
-		public OperationType getOperationType() {
-			return operationType;
 		}
 		
 		@Override

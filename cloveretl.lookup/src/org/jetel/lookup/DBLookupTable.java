@@ -53,6 +53,7 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.string.StringUtils;
@@ -183,20 +184,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		if (firstRun()) {// a phase-dependent part of initialization
-			try {
-				dbConnection = connection.getConnection(getId(), OperationType.READ);
-			} catch (JetelException e) {
-				throw new ComponentNotReadyException("Can't connect to database: " + e.getMessage(), e);
-			}
-		} else {
-			if (getGraph() != null && getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) {
-				try {
-					dbConnection = connection.getConnection(getId(), OperationType.READ);
-				} catch (JetelException e) {
-					throw new ComponentNotReadyException("Can't connect to database: " + e.getMessage(), e);
-				}
-			}
+		try {
+			dbConnection = connection.getConnection(getId(), OperationType.READ);
+		} catch (JetelException e) {
+			throw new ComponentNotReadyException("Can't connect to database: " + e.getMessage(), e);
 		}
 	}
     
@@ -212,9 +203,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		} finally {
 			activeLookups.clear();
 		}
-		if (getGraph() != null && getGraph().getRuntimeContext().isBatchMode()) {
-			connection.closeConnection(getId(), OperationType.READ);
-		}
+		connection.closeConnection(getId(), OperationType.READ);
 	}
 	
 	@Override
@@ -406,7 +395,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 					String[] fieldName = st.getCloverOutputFields();
 					DataFieldMetadata fieldMetadata;
 					String tableName = dbMeta.getTableName(1);
-					dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordMetadata.DELIMITED_RECORD);
+					dbMetadata = new DataRecordMetadata(DataRecordMetadata.EMPTY_NAME, DataRecordParsingType.DELIMITED);
 					dbMetadata.setLabel(tableName);
 					dbMetadata.setFieldDelimiter(Defaults.Component.KEY_FIELDS_DELIMITER);
 					dbMetadata.setRecordDelimiter("\n");

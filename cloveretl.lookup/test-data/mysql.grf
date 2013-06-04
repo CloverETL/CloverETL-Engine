@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="jan.michalica" created="Wed Sep 19 13:13:55 CEST 2012" guiVersion="0.0.0.devel" id="1348053596677" licenseType="Commercial" modified="Thu Sep 20 13:35:01 CEST 2012" modifiedBy="jan.michalica" name="mysql" revision="1.21" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="name" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="recordName2" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="value" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record fieldDelimiter="|" name="recordName3" recordDelimiter="\r\n" type="delimited">
+<Field name="key" type="string"/>
+<Field name="value" type="string"/>
+</Record>
+</Metadata>
+<Connection database="MYSQL" dbURL="jdbc:mysql://localhost:3306/testdb?rewriteBatchedStatements=true&amp;amp;useSSL=true&amp;amp;requireSSL=true" id="JDBC0" jdbcSpecific="MYSQL" name="MyConn" password="root" type="JDBC" user="root"/>
+<LookupTable dbConnection="JDBC0" id="LookupTable0" maxCached="3" metadata="Metadata2" name="dbLookup0" type="dbLookup">
+<attr name="sqlQuery"><![CDATA[select * from mapping as m where m.key = ?]]></attr>
+</LookupTable>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="67" guiName="DataGenerator" guiWidth="128" guiX="75" guiY="189" id="DATA_GENERATOR0" recordsNumber="100" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+	$out.0.name = toString(randomLong(0, 100));
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="67" guiName="Reformat" guiWidth="128" guiX="514" guiY="189" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.name = $in.0.name;
+	recordName3 mapped_value = lookup(dbLookup0).get($in.0.name);
+	$out.0.value = mapped_value == null ? null : mapped_value.value;
+
+	return OK;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="67" guiName="Reformat" guiWidth="128" guiX="520" guiY="298" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.name = $in.0.name;
+	recordName3 mapped_value = lookup(dbLookup0).get($in.0.name);
+	$out.0.value = mapped_value == null ? null : mapped_value.value;
+
+	return OK;
+}
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="72" guiName="SimpleCopy" guiWidth="128" guiX="290" guiY="189" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="67" guiName="Trash" guiWidth="128" guiX="715" guiY="189" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiHeight="67" guiName="Trash" guiWidth="128" guiX="715" guiY="298" id="TRASH1" type="TRASH"/>
+<Edge debugMode="false" fromNode="DATA_GENERATOR0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="TRASH1:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="REFORMAT1:0"/>
+</Phase>
+</Graph>

@@ -152,6 +152,7 @@ public class CTLAbstractTransformAdapter implements Transform {
 
     @Override
     public void preExecute() throws ComponentNotReadyException {
+    	executor.preExecute();
     	if (functionPreExecute != null) {
 			executor.executeFunction(functionPreExecute, NO_ARGUMENTS);
     	}
@@ -162,6 +163,7 @@ public class CTLAbstractTransformAdapter implements Transform {
     	if (functionPostExecute != null) {
 			executor.executeFunction(functionPostExecute, NO_ARGUMENTS);
     	}
+    	executor.postExecute();
     }
 
     @Override
