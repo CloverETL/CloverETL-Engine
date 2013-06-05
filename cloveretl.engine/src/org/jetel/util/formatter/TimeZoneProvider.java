@@ -82,7 +82,7 @@ public class TimeZoneProvider implements Serializable {
 	 * @param timeZoneStr
 	 */
 	public TimeZoneProvider(String timeZoneStr) {
-		if (timeZoneStr == null) {
+		if (StringUtils.isEmpty(timeZoneStr)) {
 			timeZoneStr = GraphRuntimeContext.getDefaultTimeZone();
 		}
 		this.config = timeZoneStr;
