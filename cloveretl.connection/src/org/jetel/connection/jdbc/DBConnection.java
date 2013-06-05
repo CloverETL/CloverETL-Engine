@@ -522,7 +522,10 @@ public class DBConnection extends GraphElement implements IConnection {
     	try {
     		try {
     			return connection.getSqlConnection().isValid(Defaults.DBConnection.VALIDATION_TIMEOUT);
-    		} catch (SQLFeatureNotSupportedException e) {
+    		} catch (Throwable t) {
+    			if (t instanceof ThreadDeath) {
+    				throw (ThreadDeath)t;
+    			}
     			logger.info("Connection does not support validation, checking whether closed.");
     		}
     		return !connection.getSqlConnection().isClosed();
