@@ -106,7 +106,7 @@ public class SMBOperationHandler implements IOperationHandler {
 		return new SmbFile(decodeURI(fileUri));
 	}
 
-	private static String decodeURI(URI fileUri) {
+	public static String decodeURI(URI fileUri) {
 		 // decode %-encoding in everything except authority
 		StringBuilder sb = new StringBuilder();
 		if (fileUri.getScheme() != null) {

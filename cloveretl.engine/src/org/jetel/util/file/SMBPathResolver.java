@@ -22,11 +22,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import jcifs.smb.Handler;
+import jcifs.smb.SmbException;
 import jcifs.smb.SmbFile;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
@@ -46,9 +50,9 @@ import org.jetel.component.fileoperation.SMBOperationHandler;
 public class SMBPathResolver implements CustomPathResolver {
 
 	/** The name of SMB protocol. */
-	public static final String SMB_PROTOCOL = "smb";
+	public static final String SMB_PROTOCOL = "smb"; //$NON-NLS-1$
 	/** The URL prefix of SMB URLs. */
-	public static final String SMB_PROTOCOL_URL_PREFIX = SMB_PROTOCOL + "://";
+	public static final String SMB_PROTOCOL_URL_PREFIX = SMB_PROTOCOL + "://"; //$NON-NLS-1$
 
 	public static boolean isSmbUrl(String url) {
 		return url != null && url.startsWith(SMB_PROTOCOL_URL_PREFIX);
@@ -57,7 +61,13 @@ public class SMBPathResolver implements CustomPathResolver {
 	@Override
 	public InputStream getInputStream(URL contextURL, String input) throws IOException {
 		if (isSmbUrl(input)) {
-			return new SmbFileInputStream(input);
+			try {
+				return new SmbFileInputStream(SMBOperationHandler.decodeURI(new URI(input)));
+			} catch (SmbException e) {
+				throw new SMBException(MessageFormat.format(FileMessages.getString("SMBPathResolver_failed_to_open_input_stream"), input), e); //$NON-NLS-1$
+			} catch (URISyntaxException e) {
+				throw new SMBException(MessageFormat.format(FileMessages.getString("SMBPathResolver_failed_to_open_input_stream"), input), e); //$NON-NLS-1$
+			}
 		}
 		return null;
 	}
@@ -65,7 +75,13 @@ public class SMBPathResolver implements CustomPathResolver {
 	@Override
 	public OutputStream getOutputStream(URL contextURL, String output, boolean appendData, int compressLevel) throws IOException {
 		if (isSmbUrl(output)) {
-			return new SmbFileOutputStream(output, appendData);
+			try {
+				return new SmbFileOutputStream(SMBOperationHandler.decodeURI(new URI(output)), appendData);
+			} catch (SmbException e) {
+				throw new SMBException(MessageFormat.format(FileMessages.getString("SMBPathResolver_failed_to_open_output_stream"), output), e); //$NON-NLS-1$
+			} catch (URISyntaxException e) {
+				throw new SMBException(MessageFormat.format(FileMessages.getString("SMBPathResolver_failed_to_open_output_stream"), output), e); //$NON-NLS-1$
+			}
 		}
 		return null;
 	}
@@ -75,7 +91,7 @@ public class SMBPathResolver implements CustomPathResolver {
 		if (isSmbUrl(fileURL)) {
 			return new URL(contextURL, fileURL, new Handler());
 		}
-		throw new MalformedURLException("Not a SMB URL: " + fileURL);
+		throw new MalformedURLException(MessageFormat.format(FileMessages.getString("SMBPathResolver_not_a_smb_url"), fileURL)); //$NON-NLS-1$
 	}
 
 	@Override
@@ -86,14 +102,33 @@ public class SMBPathResolver implements CustomPathResolver {
 	@Override
 	public List<String> resolveWildcardURL(URL contextURL, String fileURL) throws IOException {
 		if (isSmbUrl(fileURL)) {
-			List<SmbFile> resolvedFiles = SMBOperationHandler.resolve(fileURL);
-			List<String> result = new ArrayList<String>(resolvedFiles.size());
-			for (SmbFile file: resolvedFiles) {
-				result.add(file.getURL().toString());
+			try {
+				List<SmbFile> resolvedFiles = SMBOperationHandler.resolve(SMBOperationHandler.decodeURI(new URI(fileURL)));
+				List<String> result = new ArrayList<String>(resolvedFiles.size());
+				for (SmbFile file: resolvedFiles) {
+					result.add(file.getURL().toString());
+				}
+				return result;
+			} catch (SmbException e) {
+				throw new SMBException(MessageFormat.format(FileMessages.getString("SMBPathResolver_filed_to_resolve_wildcards"), fileURL), e); //$NON-NLS-1$
+			} catch (URISyntaxException e) {
+				throw new SMBException(MessageFormat.format(FileMessages.getString("SMBPathResolver_filed_to_resolve_wildcards"), fileURL), e); //$NON-NLS-1$
 			}
-			return result;
 		}
-		throw new MalformedURLException("Cannot handle '" + fileURL + "', only smb:// URL supported");
+		throw new MalformedURLException(MessageFormat.format(FileMessages.getString("SMBPathResolver_cannot_handle_url"), fileURL)); //$NON-NLS-1$
 	}
-
+	
+	/** 
+	 * Because jcifs.smb.SmbException never contains info about what URL was handled when error occurred,
+	 * this class is used to wrap any jcifs.smb.SmbException thrown and contains culprit URL in its message.
+	 */
+	public static class SMBException extends IOException {
+		
+		private static final long serialVersionUID = 1L;
+		
+		public SMBException(String msg, Throwable cause) {
+			super(msg, cause);
+		}
+	}
+	
 }
