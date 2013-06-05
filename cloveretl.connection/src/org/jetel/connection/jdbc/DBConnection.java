@@ -618,7 +618,8 @@ public class DBConnection extends GraphElement implements IConnection {
      * Closed connection is also removed from cache.
      */
     public synchronized void closeConnection(String elementId, OperationType operationType) {
-    	if (isThreadSafeConnections() && getGraph().getRuntimeContext().isBatchMode()) {
+    	boolean batchMode = getGraph() == null ? true : getGraph().getRuntimeContext().isBatchMode();
+    	if (isThreadSafeConnections() && batchMode) {
         	CacheKey key = new CacheKey(elementId, operationType);
         	DBConnectionInstance connection = connectionsCache.remove(key);
         	if (connection != null)
