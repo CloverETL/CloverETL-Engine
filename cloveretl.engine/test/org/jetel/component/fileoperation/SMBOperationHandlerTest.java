@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import jcifs.smb.SmbFile;
 
@@ -30,12 +32,13 @@ import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.result.CopyResult;
 import org.jetel.component.fileoperation.result.CreateResult;
 import org.jetel.component.fileoperation.result.DeleteResult;
+import org.jetel.component.fileoperation.result.ListResult;
 import org.jetel.component.fileoperation.result.MoveResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
 
 public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 	
-	private static final String BASE_URI = "smb://virt-orange%3BSMBTest:p%40ss%7B%2F%7D@VIRT-ORANGE/SMBTestPub/";   // unescaped password: p@ss{/}
+	private static final String BASE_URI = "smb://virt-orange%3BSMBTest:p%40ss%7B%2F%7D@VIRT-ORANGE/SMBTestPub/";   // unescaped password: p@ss{/}    and %3B is ';'
 
 	protected IOperationHandler handler = null;
 	
@@ -256,4 +259,27 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 		}
 	}
 	
+	
+	public void testAdministrativeShare() throws Exception {
+		URI uri = new URI("smb://administrator:semafor@VIRT-ORANGE/ADMIN$/");
+		SingleCloverURI cloverURI = CloverURI.createSingleURI(uri);
+		ListResult result = manager.list(cloverURI);
+		
+		assertTrue(result.successCount() >= 50); // at least say 50 files in the "Windows" directory
+
+		// check that some expected files are in list result
+		Set<URI> expectedFiles = new HashSet<URI>(Arrays.asList(
+				uri.resolve("Boot/"),
+				uri.resolve("system/"),
+				uri.resolve("System32/"),
+				uri.resolve("explorer.exe"),
+				uri.resolve("system.ini"),
+				uri.resolve("syconfig.INI")
+				));
+		
+		for (Info i : result.getResult()) {
+			expectedFiles.remove(i.getURI());
+		}
+		assertTrue("Some expected files were not listed: " + expectedFiles, expectedFiles.isEmpty());
+	}
 }
