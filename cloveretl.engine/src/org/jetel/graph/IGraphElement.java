@@ -21,6 +21,7 @@ package org.jetel.graph;
 import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.util.property.PropertyRefResolver;
 
 /**
  * This interface should be implemented by all elements living in a transformation graph -
@@ -201,5 +202,13 @@ public interface IGraphElement {
      * @return dedicated logger for this graph element
      */
     public Logger getLog();
+    
+    /**
+     * This methods is easy way how to get valid property reference resolver,
+     * which can be used to resolve graph parameters (${x}), special characters (\n) and
+     * in-line CTL code (`today()`) in a given string.
+     * @return property reference resolver populated with parameters of parent graph
+     */
+    public PropertyRefResolver getPropertyRefResolver();
     
 }

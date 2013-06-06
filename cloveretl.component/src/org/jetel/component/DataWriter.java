@@ -335,7 +335,7 @@ public class DataWriter extends Node {
 		DataWriter aDataWriter = null;
 		
 		aDataWriter = new DataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
 								xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
         if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
@@ -366,7 +366,7 @@ public class DataWriter extends Node {
 			aDataWriter.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
         }
 		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
-			aDataWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+			aDataWriter.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
         }
 		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 			aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));

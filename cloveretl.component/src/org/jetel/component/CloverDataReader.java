@@ -239,8 +239,8 @@ public class CloverDataReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
-					xattribs.getStringEx(XML_INDEXFILEURL_ATTRIBUTE,null,RefResFlag.SPEC_CHARACTERS_OFF));
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL),
+					xattribs.getStringEx(XML_INDEXFILEURL_ATTRIBUTE, null, RefResFlag.URL));
 		if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
 			aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
 		}

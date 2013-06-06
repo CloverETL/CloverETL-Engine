@@ -188,7 +188,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		TypedProperties typedProperties = new TypedProperties(properties, getGraph());
 
 		setUser(typedProperties.getStringProperty(XML_USER_ATTRIBUTE, null));
-		setPassword(typedProperties.getStringProperty(XML_PASSWORD_ATTRIBUTE, null));
+		setPassword(typedProperties.getStringProperty(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS));
 		setDbUrl(typedProperties.getStringProperty(XML_DBURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 		setDbDriver(typedProperties.getStringProperty(XML_DBDRIVER_ATTRIBUTE, null));
 		setDatabase(typedProperties.getStringProperty(XML_DATABASE_ATTRIBUTE, null));
@@ -453,7 +453,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
             if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
                 return new DBConnectionImpl(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
             } else {
-                Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE});
+                Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE}, RefResFlag.ALL_OFF.forceSecureParameters(false));
                 
                 return new DBConnectionImpl(id, connectionProps);
             }

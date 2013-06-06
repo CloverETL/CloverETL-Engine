@@ -767,7 +767,7 @@ public class RunGraph extends Node{
 		runG.setCloverCmdLineArgs(DEFAULT_CLOVER_CMD_LINE);
 								
 		if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
-			runG.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+			runG.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_GRAPH_NAME_ATTRIBUTE)) {				
 			runG.setGraphName(xattribs.getString(XML_GRAPH_NAME_ATTRIBUTE));

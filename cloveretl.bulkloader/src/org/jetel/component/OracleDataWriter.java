@@ -549,9 +549,9 @@ public class OracleDataWriter extends BulkLoader {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
         OracleDataWriter oracleDataWriter = new OracleDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-                xattribs.getString(XML_SQLLDR_ATTRIBUTE),
+                xattribs.getStringEx(XML_SQLLDR_ATTRIBUTE, RefResFlag.URL),
                 xattribs.getString(XML_USER_ATTRIBUTE),
-                xattribs.getString(XML_PASSWORD_ATTRIBUTE),
+                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS),
                 xattribs.getString(XML_TNSNAME_ATTRIBUTE));
         if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
             oracleDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
@@ -563,13 +563,13 @@ public class OracleDataWriter extends BulkLoader {
             oracleDataWriter.setControl(xattribs.getString(XML_CONTROL_ATTRIBUTE));
         }
         if (xattribs.exists(XML_LOG_ATTRIBUTE)) {
-            oracleDataWriter.setLogFileName(xattribs.getString(XML_LOG_ATTRIBUTE));
+            oracleDataWriter.setLogFileName(xattribs.getStringEx(XML_LOG_ATTRIBUTE, RefResFlag.URL));
         }
         if (xattribs.exists(XML_BAD_ATTRIBUTE)) {
-            oracleDataWriter.setBadFileName(xattribs.getString(XML_BAD_ATTRIBUTE));
+            oracleDataWriter.setBadFileName(xattribs.getStringEx(XML_BAD_ATTRIBUTE, RefResFlag.URL));
         }
         if (xattribs.exists(XML_DISCARD_ATTRIBUTE)) {
-            oracleDataWriter.setDiscardFileName(xattribs.getString(XML_DISCARD_ATTRIBUTE));
+            oracleDataWriter.setDiscardFileName(xattribs.getStringEx(XML_DISCARD_ATTRIBUTE, RefResFlag.URL));
         }
         if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
             oracleDataWriter.setDbFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -578,7 +578,7 @@ public class OracleDataWriter extends BulkLoader {
             oracleDataWriter.setUseFileForExchange(xattribs.getBoolean(XML_USE_FILE_FOR_EXCHANGE_ATTRIBUTE));
         }
         if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-        	oracleDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+        	oracleDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
 		}
         if (xattribs.exists(XML_MAX_ERRORS_ATTRIBUTE)) {
         	oracleDataWriter.setMaxErrors(xattribs.getInteger(XML_MAX_ERRORS_ATTRIBUTE));

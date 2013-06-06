@@ -55,6 +55,7 @@ import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -398,7 +399,7 @@ public class DBFDataWriter extends Node {
 		DBFDataWriter aDataWriter = null;
 		
 		aDataWriter = new DBFDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getString(XML_FILEURL_ATTRIBUTE),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
 								xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
 								TYPES[xattribs.getInteger(XML_DBF_TYPE, 1)]);
@@ -430,7 +431,7 @@ public class DBFDataWriter extends Node {
             aDataWriter.setExcludeFields(xattribs.getString(XML_EXCLUDE_FIELDS_ATTRIBUTE));
         }
 		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
-			aDataWriter.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+			aDataWriter.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
         }
 		
 		return aDataWriter;

@@ -43,6 +43,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -358,7 +359,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     				id,
     				graph,
     				xattribs.getString(XML_NAME_ATTRIBUTE),
-    				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
+    				xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL),
     				xattribs.getLong(XML_START_ATTRIBUTE),
     				xattribs.getInteger(XML_STEP_ATTRIBUTE),
     				xattribs.getInteger(XML_CACHED_ATTRIBUTE));

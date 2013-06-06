@@ -20,6 +20,10 @@ package org.jetel.util;
 
 import java.util.Properties;
 
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.ContextProvider.Context;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -99,4 +103,38 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertTrue(resolver.resolveRef("${recursion}").matches("a*\\$\\{recursion\\}"));
 	}
 
+	public void testSecureParameters() {
+		TransformationGraph graph = new TransformationGraph();
+		graph.getRuntimeContext().setAuthorityProxy(new PrimitiveAuthorityProxy() {
+			@Override
+			public String getSecureParamater(String parameterName) {
+				if (parameterName.equals("secureParameter")) {
+					return "secureValue";
+				} else if (parameterName.equals("password")) {
+					return "otherPass";
+				} else {
+					return null;
+				}
+			}
+		});
+		
+		Context c = ContextProvider.registerGraph(graph);
+		try {
+			assertEquals("neco ${secureParameter} neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.REGULAR));
+			assertEquals("neco ${secureParameter} neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.ALL_OFF));
+			assertEquals("neco ${secureParameter} neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.CTL_EXPRESSIONS_OFF));
+			assertEquals("neco ${secureParameter} neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.SPEC_CHARACTERS_OFF));
+			assertEquals("neco secureValue neco", resolver.resolveRef("neco ${secureParameter} neco", RefResFlag.SECURE_PARAMATERS));
+			assertEquals("neco secureValue neco myself neco", resolver.resolveRef("neco ${secureParameter} neco ${user} neco", RefResFlag.SECURE_PARAMATERS));
+			assertEquals("\\nneco secureValue neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.SECURE_PARAMATERS));
+			assertEquals("\\nneco secureValue neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.ALL_OFF.resolveSecureParameters(true)));
+			assertEquals("\nneco secureValue neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.ALL_OFF.resolveSecureParameters(true).resolveSpecCharacters(true)));
+			assertEquals("\nneco ${secureParameter} neco myself neco", resolver.resolveRef("\\nneco ${secureParameter} neco ${user} neco", RefResFlag.ALL_OFF.resolveSecureParameters(false).resolveSpecCharacters(true)));
+			assertEquals("otherPass", resolver.resolveRef("${password}", RefResFlag.ALL_OFF.resolveSecureParameters(true)));
+			assertEquals("xxxyyyzzz", resolver.resolveRef("${password}", RefResFlag.ALL_OFF.resolveSecureParameters(false)));
+		} finally {
+			ContextProvider.unregister(c);
+		}
+	}
+	
 }

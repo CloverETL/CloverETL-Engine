@@ -313,11 +313,11 @@ public class DBFDataReader extends Node {
 		
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
 					xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		} else {
 			dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 			dbfDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
@@ -332,7 +332,7 @@ public class DBFDataReader extends Node {
         	dbfDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
         }
 		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
-			dbfDataReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+			dbfDataReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
 			dbfDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));

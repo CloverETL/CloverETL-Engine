@@ -102,9 +102,9 @@ public abstract class TreeWriter extends Node {
 
 	public static Node readCommonAttributes(TreeWriter writer, ComponentXMLAttributes xattribs)
 			throws XMLConfigurationException, AttributeNotFoundException {
-		writer.setFileUrl(xattribs.getString(XML_FILE_URL_ATTRIBUTE));
+		writer.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
 		writer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
-		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
+		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.URL);
 		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
 		if (mappingURL != null)
 			writer.setMappingURL(mappingURL);
@@ -112,7 +112,7 @@ public abstract class TreeWriter extends Node {
 			writer.setMappingString(mapping);
 		else {
 			// throw configuration exception
-			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
+			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL);
 		}
 		if (xattribs.exists(XML_CACHE_SIZE)) {
 			writer.setCacheSize(StringUtils.parseMemory(xattribs.getString(XML_CACHE_SIZE)));
@@ -142,7 +142,7 @@ public abstract class TreeWriter extends Node {
 			writer.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
-			writer.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+			writer.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
 		}
 
 		return writer;
