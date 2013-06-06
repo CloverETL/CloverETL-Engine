@@ -116,5 +116,15 @@ public class CommonFormats {
 	 * List of all available timezones
 	 */
 	public static final String[] timezones = TimeZone.getAvailableIDs();
-		
+	
+	public static final String[] phoneNumbers = new String[] {
+		"+1 DDD.DDD.DDDD",
+		"+1 (DDD) DDD-DDDD",
+		"DDD DDD DDD",
+		"+D{7,15}",
+		"+D{1,5} D{3} D{3} D{3,6}",
+		"8 DDDD DD-DD-DD",
+		"(02x) DDDD DDDD"
+	};
+
 }

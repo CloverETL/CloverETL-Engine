@@ -30,9 +30,9 @@ import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
-import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.rules.PhoneNumberPattern.PhoneNumberPatternFormatException;
+import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
@@ -66,7 +66,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 	private StringEnumValidationParamNode region = new StringEnumValidationParamNode();
 	
 	@XmlElement(name="pattern",required=false)
-	private StringValidationParamNode pattern = new StringValidationParamNode();
+	private StringEnumValidationParamNode pattern = new StringEnumValidationParamNode();
 
 	private PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
 	private PhoneNumberPattern requiredPhoneNumberPattern;
@@ -109,6 +109,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		String[] regions = phoneUtil.getSupportedRegions().toArray(new String[0]);
 		Arrays.sort(regions);
 		region.setOptions(regions);
+		pattern.setOptions(CommonFormats.phoneNumbers);
 		
 		params.addAll(super.initialize(inMetadata, graphWrapper));
 		return params;
@@ -199,7 +200,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		return region;
 	}
 	
-	public StringValidationParamNode getPattern() {
+	public StringEnumValidationParamNode getPattern() {
 		return pattern;
 	}
 
