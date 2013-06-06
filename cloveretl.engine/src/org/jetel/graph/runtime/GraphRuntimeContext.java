@@ -713,6 +713,18 @@ public class GraphRuntimeContext {
 			public Object parseValue(String s) {
 				return parseBoolean(s);
 			}
+		},
+		LOCALE("locale", String.class) {
+			@Override
+			public Object parseValue(String s) {
+				return s;
+			}
+		},
+		TIME_ZONE("timeZone", String.class) {
+			@Override
+			public Object parseValue(String s) {
+				return s;
+			}
 		};
 		
 		String key;
