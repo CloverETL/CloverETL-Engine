@@ -42,15 +42,14 @@ public class DirectEdge extends EdgeBase {
 	private CloverBuffer readBuffer;
 	private CloverBuffer writeBuffer;
 	private CloverBuffer tmpDataRecord;
-	private long recordCounter;
+	private long inputRecordCounter;
+	private long outputRecordCounter;
     private long byteCounter;
     private AtomicInteger bufferedRecords; 
 	private volatile boolean isClosed;
     private boolean readerWait;
     private volatile boolean writerWait;
 	private int readBufferLimit;
-    /** Is the graph running in verbose mode? Cache of GraphRuntimeContext.isVerboseMode() variable. */
-	private boolean verbose;
 	/** How long has been reader blocked on the edge (in nanoseconds). */
 	private long readerWaitingTime;
 	/** How long has been writer blocked on the edge (in nanoseconds). */
@@ -72,12 +71,12 @@ public class DirectEdge extends EdgeBase {
 	
 	@Override
 	public long getOutputRecordCounter() {
-		return recordCounter;
+		return outputRecordCounter;
 	}
 
     @Override
 	public long getInputRecordCounter() {
-        return recordCounter;
+        return inputRecordCounter;
     }
 
 
@@ -123,7 +122,8 @@ public class DirectEdge extends EdgeBase {
 		// we are ready to supply data
 		readBuffer = CloverBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
 		writeBuffer = CloverBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
-		recordCounter = 0;
+		inputRecordCounter = 0;
+		outputRecordCounter = 0;
         byteCounter=0;
         bufferedRecords=new AtomicInteger(0);
 		readBuffer.flip(); // we start with empty read buffer
@@ -137,7 +137,6 @@ public class DirectEdge extends EdgeBase {
 	public void preExecute() {
 		super.preExecute();
 		
-		verbose = proxy.getGraph().getRuntimeContext().isVerboseMode();
 		readerWaitingTime = 0;
 		writerWaitingTime = 0;
 	}
@@ -146,7 +145,8 @@ public class DirectEdge extends EdgeBase {
 	public void reset() {
 		readBuffer.clear();
 		writeBuffer.clear();
-		recordCounter = 0;
+		inputRecordCounter = 0;
+		outputRecordCounter = 0;
         byteCounter=0;
         bufferedRecords.set(0);
 		readBuffer.flip(); // we start with empty read buffer
@@ -185,6 +185,7 @@ public class DirectEdge extends EdgeBase {
 	        throw new IOException("BufferUnderflow when reading/deserializing record. It can be caused by different metadata.");
 	    }
         bufferedRecords.decrementAndGet();
+        inputRecordCounter++;
         
 		return record;
 	}
@@ -223,6 +224,7 @@ public class DirectEdge extends EdgeBase {
             throw new IOException("BufferUnderflow when reading/deserializing record. It can be caused by different metadata.");
 	    }
         bufferedRecords.decrementAndGet();
+	    inputRecordCounter++;
 	    
 	    return true;
 	}
@@ -292,7 +294,7 @@ public class DirectEdge extends EdgeBase {
 
         byteCounter += length;
 
-        recordCounter++;
+        outputRecordCounter++;
         // one more record written
         bufferedRecords.incrementAndGet();
     }
@@ -325,7 +327,7 @@ public class DirectEdge extends EdgeBase {
         }
 
         byteCounter += dataLength;
-        recordCounter++;
+        outputRecordCounter++;
         bufferedRecords.incrementAndGet();
     }
 

@@ -19,8 +19,10 @@
 package org.jetel.util.property;
 
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -32,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.CTLExpressionEvaluator;
 import org.jetel.interpreter.ParseException;
@@ -184,7 +187,7 @@ public class PropertyRefResolver {
 	 * is disabled
 	 */
 	public String resolveRef(String value) {
-		return resolveRef(value, RefResFlag.REGULAR);
+		return resolveRef(value, null);
 	}
 
 	/**
@@ -267,11 +270,11 @@ public class PropertyRefResolver {
 
 		boolean valueModified = false;
 
-		if (flag.resolveCTLstatements()) {
-			valueModified |= evaluateExpressions(value);
+		if (flag.resolveCTLStatements()) {
+			valueModified |= evaluateExpressions(value, flag);
 		}
 
-		valueModified |= resolveReferences(value, flag.resolveCTLstatements());
+		valueModified |= resolveReferences(value, flag);
 
 		//
 		// resolve special characters if desired
@@ -295,7 +298,7 @@ public class PropertyRefResolver {
 	 *
 	 * @return <code>true</code> if at least one CTL expression was found and evaluated, <code>false</code> otherwise
 	 */
-	private boolean evaluateExpressions(StringBuilder value) {
+	private boolean evaluateExpressions(StringBuilder value, RefResFlag flag) {
 		if (!Defaults.GraphProperties.EXPRESSION_EVALUATION_ENABLED) {
 			return false;
 		}
@@ -318,7 +321,7 @@ public class PropertyRefResolver {
 			} else {
 				// resolve property references that might be present in the CTL expression
 				StringBuilder resolvedExpression = new StringBuilder(expression);
-				resolveReferences(resolvedExpression, true);
+				resolveReferences(resolvedExpression, flag);
 
 				// make sure that expression quotes are unescaped before evaluation of the CTL expression
 				StringUtils.unescapeCharacters(resolvedExpression, EXPRESSION_QUOTE);
@@ -351,7 +354,7 @@ public class PropertyRefResolver {
 	 *
 	 * @return <code>true</code> if at least one property reference was found and resolved, <code>false</code> otherwise
 	 */
-	private boolean resolveReferences(StringBuilder value, boolean resolveCTLstatements) {
+	private boolean resolveReferences(StringBuilder value, RefResFlag flag) {
 		boolean anyReferenceResolved = false;
 		Matcher propertyMatcher = propertyPattern.matcher(value);
 
@@ -363,7 +366,26 @@ public class PropertyRefResolver {
 
 			// resolve the property reference
 			String reference = propertyMatcher.group(1);
-			String resolvedReference = properties.getProperty(reference);
+			String resolvedReference = null;
+			
+			//should be secure parameters resolved?
+			if (flag.resolveSecureParameters()) {
+				//try to load parameter from secure storage
+				resolvedReference = ContextProvider.getAuthorityProxy().getSecureParamater(reference);
+			} else {
+//this behaviour is turned off for now, wo we really want this?
+//				if (flag.forceSecureParameters()) {
+//					//in case the parameter is secured, but the secure parameters should not be resolved by the flag
+//					//an exception is thrown to inform user about this situation ASAP
+//					if (ContextProvider.getAuthorityProxy().getSecureParamater(reference) != null) {
+//						throw new JetelRuntimeException("Secure parameter '" + reference + "' cannot be resolved in this attribute.");
+//					}
+//				}
+			}
+			
+			if (resolvedReference == null) {
+				resolvedReference = properties.getProperty(reference);
+			}
 			
 			if (resolvedReference == null) {
 				resolvedReference = MiscUtils.getEnvSafe(reference);
@@ -385,12 +407,12 @@ public class PropertyRefResolver {
 			if (resolvedReference != null) {
 				// evaluate the CTL expression that might be present in the property
 				StringBuilder evaluatedReference = new StringBuilder(resolvedReference);
-				if (resolveCTLstatements) {
-					evaluateExpressions(evaluatedReference);
+				if (flag.resolveCTLStatements()) {
+					evaluateExpressions(evaluatedReference, flag);
 				}
 				value.replace(propertyMatcher.start(), propertyMatcher.end(), evaluatedReference.toString());
 				propertyMatcher.reset(value);
-				if (resolveCTLstatements) {
+				if (flag.resolveCTLStatements()) {
 					anyReferenceResolved = true;
 				}
 			} else {
@@ -438,9 +460,7 @@ public class PropertyRefResolver {
 	 * @param properties properties to be resolved
 	 */
 	public void resolveAll(Properties properties) {
-		for (Entry<Object, Object> property : properties.entrySet()) {
-			properties.setProperty((String) property.getKey(), resolveRef((String) property.getValue()));
-		}
+		resolveAll(properties, null);
 	}
 
 	/**
@@ -450,9 +470,12 @@ public class PropertyRefResolver {
 	 * @param properties
 	 * @param refResFlag
 	 */
-	public void resolveAll(Properties properties, RefResFlag refResFlag) {
+	public void resolveAll(Properties properties, RefResFlag refResFlag, String... excludedProperties) {
+		List<String> excludedPropertiesList = Arrays.asList(excludedProperties);
 		for (Entry<Object, Object> property : properties.entrySet()) {
-			properties.setProperty((String) property.getKey(), resolveRef((String) property.getValue(), refResFlag));
+			if (!excludedPropertiesList.contains((String) property.getKey())) {
+				properties.setProperty((String) property.getKey(), resolveRef((String) property.getValue(), refResFlag));
+			}
 		}
 	}
 

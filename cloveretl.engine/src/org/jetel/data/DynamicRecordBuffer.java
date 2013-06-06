@@ -296,8 +296,7 @@ public class DynamicRecordBuffer {
 				//this is the best approximation how the writerWaitingTime can be calculated
 				long startTime = System.nanoTime();
 				diskSlot.write(writeDataBuffer);
-				long endTime = System.nanoTime();
-				writerWaitingTime += endTime - startTime;
+				writerWaitingTime += System.nanoTime() - startTime;
 			} else {
 				diskSlot.write(writeDataBuffer);
 			}

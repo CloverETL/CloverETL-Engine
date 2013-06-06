@@ -28,7 +28,6 @@ import java.net.URLDecoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -37,12 +36,9 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.LoadClassException;
 import org.jetel.graph.Node;
-import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
-import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
-import org.jetel.util.protocols.sandbox.SandboxConnection;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -152,9 +148,10 @@ public class ClassLoaderUtils {
 	 * @param libraryPaths
 	 * @return
 	 */
+	/*
 	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths) {
 		return new GreedyURLClassLoader(libraryPaths, parentCl);
-	}
+	}*/
 	
 	/**
 	 * Answers class loader composed of the node's plugin classloader and current runtime context
@@ -168,11 +165,7 @@ public class ClassLoaderUtils {
 		
 		ClassLoader parentClassLoader = new MultiParentClassLoader(classLoaders.toArray(new ClassLoader[0]));
 		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
-		if (runtimeClasspath != null && runtimeClasspath.length > 0) {
-			return new GreedyURLClassLoader(node.getGraph().getRuntimeContext().getRuntimeClassPath(), parentClassLoader);
-		} else {
-			return parentClassLoader;
-		}
+		return node.getGraph().getAuthorityProxy().createClassLoader(runtimeClasspath, parentClassLoader, true);
 	}
 
 	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) {
@@ -199,13 +192,15 @@ public class ClassLoaderUtils {
 		return classLoader;
 	}
 
+	/*
 	public static ClassLoader createClassLoader(List<URL> urls, ClassLoader parent, boolean greedy) {
 		URL[] urlsArray = null;
 		if (urls != null)
 			urlsArray = new URL[urls.size()];
 		return createClassLoader(urls == null ? null : urls.toArray(urlsArray), parent, greedy);
-	}
+	}*/
 	
+	/*
 	public static ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
 		if (parent == null) {
 			parent = PrimitiveAuthorityProxy.class.getClassLoader();
@@ -219,7 +214,7 @@ public class ClassLoaderUtils {
         		return new URLClassLoader(urls, parent);
         	}
         }
-	}
+	}*/
 
 	/**
 	 * Convert the given classpath in string form to array of URLs, which
@@ -238,30 +233,32 @@ public class ClassLoaderUtils {
 			if (SandboxUrlUtils.isSandboxUrl(urls[i])) {
 				URL localUrl = SandboxUrlUtils.toLocalFileUrl(urls[i]);
 				if (localUrl != null) {
-					// sandbox URL is replaced by URL of local file
+					// sandbox URL can be replaced by URL of local file
 					urls[i] = localUrl;
 				} else {
-					try {
-						// test whether sandbox protocol can be handled
-						// it just proves, there is StreamHandler for sandbox protocol registered
-						// openConnection() doesn't open any connection/stream - we can call it
-						SandboxConnection sc = (SandboxConnection) urls[i].openConnection();
-						// sandbox connection will work fine
-					} catch (Exception e) {
-						throw new SandboxURLException("Could not resolve sandbox URL: " + urls[i], e);
-					}
+					// sandbox URLs to remote sandboxes will be processed on server-side of AuthorityProxy
 				}
 			}
 		}
 		for (int i = 0; i < urls.length; ++i) {
-			if ("file".equals(urls[i].getProtocol())) {
-				File file = FileUtils.convertUrlToFile(urls[i]);
-				if (file.isDirectory() && !urls[i].toString().endsWith("/")) {
-					urls[i] = new URL(urls[i].toString() + "/");
-				}
+			urls[i] = cleanURL(urls[i]);
+		}// for
+		return urls;
+	}
+	
+	/**
+	 * @param localUrl
+	 * @return
+	 * @throws MalformedURLException 
+	 */
+	public static URL cleanURL(URL url) throws MalformedURLException {
+		if ("file".equals(url.getProtocol())) {
+			File file = FileUtils.convertUrlToFile(url);
+			if (file.isDirectory() && !url.toString().endsWith("/")) {
+				url = new URL(url.toString() + "/");
 			}
 		}
-		return urls;
+		return url;
 	}
 	
     /**

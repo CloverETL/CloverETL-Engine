@@ -337,7 +337,7 @@ public class CloverBufferTest extends CloverTestCase {
     	try {
     		buffer.put((byte) 0);
     		assert false;
-    	} catch (BufferOverflowException e) {
+    	} catch (Exception e) {
     		//that is correct
     	}
     	
@@ -352,7 +352,7 @@ public class CloverBufferTest extends CloverTestCase {
     	try {
     		buffer.put((byte) 0);
     		assert false;
-    	} catch (BufferOverflowException e) {
+    	} catch (Exception e) {
     		//that is correct
     	}
     }

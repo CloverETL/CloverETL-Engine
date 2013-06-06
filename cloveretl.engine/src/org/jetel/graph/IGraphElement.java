@@ -21,6 +21,7 @@ package org.jetel.graph;
 import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.util.property.PropertyRefResolver;
 
 /**
  * This interface should be implemented by all elements living in a transformation graph -
@@ -54,17 +55,21 @@ public interface IGraphElement {
     public final static String XML_NAME_ATTRIBUTE = "name";
 
     /**
-     * Check the element configuration.<br>
-     * This method is called for each graph element before the graph is executed. This method should
-     * verify that all required parameters are set and element may be use.
+     * Checks the configuration of this graph element.
+     * This method should verify that all required parameters are set and that the element can be used.
+     * 
+     * This method might be called before graph execution,
+     * in such case it will be called before the {@link #init()} method.
+     * It is not guaranteed that this method will ever be called, but also this method may be called repeatedly.
+     * All resources allocated in this method should be freed in this method too.
      */
     public ConfigurationStatus checkConfig(ConfigurationStatus status);
 
     /**
      * Initialization of the graph element. This initialization is done exactly once at the start
-     * of existence the graph element. All resources, which are intended to be allocated all the time
-     * of graph existence (including time between particular graph runs), should be allocated in this
-     * method. All here allocated resources should be release in {@link #free()} method.
+     * of the existence of this graph element. All resources which are intended to remain allocated during the whole time
+     * of the graph existence (including time between each graph run), should be allocated in this
+     * method. All resources allocated in this method should be released in the {@link #free()} method.
      *
      * @throws ComponentNotReadyException some of the required resource is not available or other
      * precondition is not accomplish
@@ -72,9 +77,10 @@ public interface IGraphElement {
     public void init() throws ComponentNotReadyException;
 
     /**
-     * This is also initialization method, which is invoked before each separate graph run.
-     * Contrary the init() procedure here should be allocated only resources for this graph run.
-     * All here allocated resources should be released in #postExecute() method.
+     * This is also initialization method, which is invoked before each separate graph run. That is,
+     * it can be invoked multiple times. Use {@link #firstRun()} to determine whether given invocation is the first one.
+     * Contrary to the {@link #init()} procedure, this method should allocate only resources for this single graph run.
+     * All resources allocated in this method should be released in the {@link #postExecute()} method.
      * 
      * @throws ComponentNotReadyException some of the required resource is not available or other
      * precondition is not accomplish
@@ -99,10 +105,10 @@ public interface IGraphElement {
      * Each exception thrown from this method causes a FATAL error - the graph and all affected
      * systems are in unexpected state.
      * 
-     * This method can be called only once the postExecute() method was already finished. Only
-     * one of commit() and rollback() methods can be invoked.
+     * This method will be called only once the postExecute() method was already finished. Only
+     * one of commit() and rollback() methods will be invoked.
      *  
-     * NOTE: in the future this method will be called in the end of so called check-point area, what
+     * NOTE: in the future this method will be called in the end of so called check-point area, which
      * is something like restart-ability point defined somewhere inside the graph. For now whole graph
      * forms one restart-ability area.
      */
@@ -116,10 +122,10 @@ public interface IGraphElement {
      * Each exception thrown from this method causes a FATAL error - the graph and all affected
      * systems are in unexpected state.
      * 
-     * This method can be called only once the postExecute() method was already finished. Only
-     * one of commit() and rollback() methods can be invoked.
+     * This method will be called only once the postExecute() method was already finished. Only
+     * one of commit() and rollback() methods will be invoked.
      * 
-     * NOTE: in the future this method will be called in the end of so called check-point area, what
+     * NOTE: in the future this method will be called in the end of so called check-point area, which
      * is something like restart-ability point defined somewhere inside the graph. For now whole graph
      * forms one restart-ability area.
      */
@@ -141,7 +147,7 @@ public interface IGraphElement {
     /**
      * This is de-initialization method for this graph element. All resources allocated
      * in {@link #init()} method should be released here. This method is invoked only once
-     * at the end of element existence.
+     * at the end of this graph element existence.
      */
     public void free();
 
@@ -196,5 +202,13 @@ public interface IGraphElement {
      * @return dedicated logger for this graph element
      */
     public Logger getLog();
+    
+    /**
+     * This methods is easy way how to get valid property reference resolver,
+     * which can be used to resolve graph parameters (${x}), special characters (\n) and
+     * in-line CTL code (`today()`) in a given string.
+     * @return property reference resolver populated with parameters of parent graph
+     */
+    public PropertyRefResolver getPropertyRefResolver();
     
 }

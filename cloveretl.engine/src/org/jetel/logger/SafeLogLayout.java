@@ -51,7 +51,7 @@ public class SafeLogLayout extends PatternLayout {
 		if (event.getMessage() instanceof String) {
 			// obfuscate password in the message itself
             String message = event.getRenderedMessage();
-    		String safeMessage = SafeLogUtils.obfuscatePassword(message);
+    		String safeMessage = SafeLogUtils.obfuscateSensitiveInformation(message);
 
     		// obfuscate the stack trace, if there is any
     		ThrowableInformation throwableInformation = null;
@@ -62,7 +62,7 @@ public class SafeLogLayout extends PatternLayout {
     			if (stringRepresentation != null) {
     				safeStringRepresentation = new String[stringRepresentation.length];
     				for (int i=0; i < stringRepresentation.length; i++) {
-    					safeStringRepresentation[i] = SafeLogUtils.obfuscatePassword(stringRepresentation[i]);
+    					safeStringRepresentation[i] = SafeLogUtils.obfuscateSensitiveInformation(stringRepresentation[i]);
     				}
     			}
     			

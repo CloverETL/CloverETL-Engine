@@ -25,6 +25,8 @@ import java.util.Stack;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
+import org.jetel.graph.JobType;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * This is graph cycle detector. Inspects a graph provided by a {@link GraphProvider} and
@@ -44,6 +46,8 @@ import org.jetel.graph.Edge;
  */
 public class GraphCycleInspector {
 
+	public static final String WHILE_LOOP_COMPONENT_TYPE = "WHILE_LOOP"; //TODO what is better place?
+	
 	private GraphProvider graphProvider;
 
 	private List<InspectedComponent> visitedComponents = new ArrayList<InspectedComponent>();
@@ -144,15 +148,44 @@ public class GraphCycleInspector {
 		} while (!component.equals(endOfCycle) && (!bufferedEdgeFound || !reverseEdgeFound));
 		
 		if (!bufferedEdgeFound || !reverseEdgeFound) {
-			throw new JetelRuntimeException("Oriented cycle found in the graph. " + theCycle);
+			//oriented cycle found!
+			orientedCycleFound(theCycle);
 		}
 	}
 
+	private void orientedCycleFound(List<InspectedComponent> theCycle) {
+		//if whole cycle is in a jobflow and contains a WhileCycle component, then it is ok, otherwise exception is thrown
+		TransformationGraph g = null;
+		boolean hasWhileCycle = false;
+		for (InspectedComponent c : theCycle) {
+			if (c.getComponent().getType().equals(WHILE_LOOP_COMPONENT_TYPE)) {
+				hasWhileCycle = true;
+			}
+			if (g == null) {
+				g = c.getComponent().getGraph();
+			} else if (g != c.getComponent().getGraph()) {
+				throw new JetelRuntimeException("Oriented cycle found in the graph. " + theCycle);
+			}
+		}
+		if (g.getJobType() != JobType.JOBFLOW) {
+			throw new JetelRuntimeException("Oriented cycle found in the graph. Cycles are available only in jobflows. " + theCycle);
+		}
+		if (!hasWhileCycle) {
+			throw new JetelRuntimeException("Oriented cycle without WhileCycle component found in the graph. " + theCycle);
+		}
+	}
+	
 	/**
 	 * @return
 	 */
 	private void setEdgeAsBuffered(Edge edge) {
-		edge.setEdgeType(EdgeTypeEnum.BUFFERED);
+		if (edge.getGraph().getJobType() == JobType.ETL_GRAPH) {
+			edge.setEdgeType(EdgeTypeEnum.BUFFERED);
+		} else if (edge.getGraph().getJobType() == JobType.JOBFLOW) {
+			edge.setEdgeType(EdgeTypeEnum.BUFFERED_FAST_PROPAGATE);
+		} else {
+			throw new JetelRuntimeException("unexpected job type " + edge.getGraph().getJobType());
+		}
 	}
 
 }

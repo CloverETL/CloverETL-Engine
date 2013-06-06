@@ -2187,10 +2187,10 @@ public class HttpConnector extends Node {
 		HttpConnector httpConnector = new HttpConnector(xattribs.getString(XML_ID_ATTRIBUTE));
 
 		/** base properties */
-		httpConnector.setUrl(xattribs.getString(XML_URL_ATTRIBUTE, null));
+		httpConnector.setUrl(xattribs.getStringEx(XML_URL_ATTRIBUTE, null, RefResFlag.URL));
 		httpConnector.setRequestMethod(xattribs.getString(XML_REQUEST_METHOD_ATTRIBUTE, HttpGet.METHOD_NAME));
-		httpConnector.setInputFileUrl(xattribs.getStringEx(XML_INPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
-		httpConnector.setOutputFileUrl(xattribs.getStringEx(XML_OUTPUT_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+		httpConnector.setInputFileUrl(xattribs.getStringEx(XML_INPUT_FILEURL_ATTRIBUTE, null, RefResFlag.URL));
+		httpConnector.setOutputFileUrl(xattribs.getStringEx(XML_OUTPUT_FILEURL_ATTRIBUTE, null, RefResFlag.URL));
 		httpConnector.setAppendOutput(xattribs.getBoolean(XML_APPEND_OUTPUT_ATTRIBUTE, DEFAULT_APPEND_OUTPUT));
 		httpConnector.setAdditionalRequestHeaders(xattribs.getString(XML_ADDITIONAL_HTTP_HEADERS_ATTRIBUTE, null));
 		httpConnector.setRequestContent(xattribs.getString(XML_REQUEST_CONTENT_ATTRIBUTE, null));
@@ -2201,7 +2201,7 @@ public class HttpConnector extends Node {
 		httpConnector.setTemporaryFilePrefix(xattribs.getString(XML_TEMPORARY_FILE_PREFIX, "http-response-"));
 		httpConnector.setAuthenticationMethod(xattribs.getString(XML_AUTHENTICATION_METHOD_ATTRIBUTE, "BASIC"));
 		httpConnector.setUsername(xattribs.getString(XML_USERNAME_ATTRIBUTE, null));
-		httpConnector.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE, null));
+		httpConnector.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS));
 		httpConnector.setAddInputFieldsAsParameters(xattribs.getBoolean(XML_ADD_INPUT_FIELDS_AS_PARAMETERS_ATTRIBUTE, false));
 		httpConnector.setAddInputFieldsAsParametersTo(xattribs.getString(XML_ADD_INPUT_FIELDS_AS_PARAMETERS_TO_ATTRIBUTE, "QUERY"));
 		httpConnector.setIgnoredFields(xattribs.getString(XML_IGNORED_FIELDS_ATTRIBUTE, null));

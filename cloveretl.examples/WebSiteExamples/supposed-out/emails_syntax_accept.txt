@@ -1,0 +1,17 @@
+one@good.email.com
+second.mail@is.good.net
+gooddomain@google.com
+dalsidomena@seznam.cz
+another@google.com
+yetanother@google.com
+bad@nonexistent.domain
+test@javlin.eu
+reallybad@nonexistent.domain
+test@cloveretl.net
+info@opensys.com
+sales@opensys.com
+nonexistent@opensys.com
+test@seznam.cz
+mail@nonexistent.domain
+info@javlin.eu
+info@opensys.com

@@ -50,6 +50,7 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -299,7 +300,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 			lookupTable.setName(properties.getStringProperty(XML_NAME_ATTRIBUTE));
 		}
 		if (properties.containsKey(XML_FILE_URL)) {
-			lookupTable.setFileURL(properties.getStringProperty(XML_FILE_URL));
+			lookupTable.setFileURL(properties.getStringProperty(XML_FILE_URL, null, RefResFlag.URL));
 		}
 		if (properties.containsKey(XML_CHARSET)) {
 			lookupTable.setCharset(properties.getStringProperty(XML_CHARSET));
@@ -342,7 +343,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 			lookupTable.setName(xattribs.getString(XML_NAME_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_FILE_URL)) {
-			lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
+			lookupTable.setFileURL(xattribs.getStringEx(XML_FILE_URL, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_CHARSET)) {
 			lookupTable.setCharset(xattribs.getString(XML_CHARSET));

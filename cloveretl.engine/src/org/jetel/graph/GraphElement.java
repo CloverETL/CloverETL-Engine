@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -257,6 +258,16 @@ public abstract class GraphElement implements IGraphElement {
     	return jobType;
     }
 
+    @Override
+    public PropertyRefResolver getPropertyRefResolver() {
+    	TransformationGraph graph = getGraph();
+    	if (graph != null) {
+    		return new PropertyRefResolver(graph.getGraphProperties());
+    	} else {
+    		return new PropertyRefResolver();
+    	}
+    }
+    
     @Override
     public String toString() {
     	return identifiersToString(getId(), getName());

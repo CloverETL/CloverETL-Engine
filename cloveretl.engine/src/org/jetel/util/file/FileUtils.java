@@ -1925,15 +1925,15 @@ public class FileUtils {
 	/**
 	 * Deletes last directory delimiter.
 	 * stolen from com.cloveretl.gui.utils.FileUtils
-	 * @param address
+	 * @param path
 	 * @return
 	 */
-	public static final String removeFinalSlashIfNecessary(String address) {
-		int end = address.length()-1;
-		if (address.charAt(end) == '/') {
-			return address.substring(0, end);
+	public static String removeTrailingSlash(String path) {
+		
+		if (path != null && path.length() > 0 && path.charAt(path.length() - 1) == '/') {
+			return path.substring(0, path.length() - 1);
 		}
-		return address;
+		return path;
 	}
 	
 	/**

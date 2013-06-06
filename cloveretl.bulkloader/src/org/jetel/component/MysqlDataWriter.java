@@ -866,12 +866,12 @@ public class MysqlDataWriter extends BulkLoader {
 
 		MysqlDataWriter mysqlDataWriter = new MysqlDataWriter(
 				xattribs.getString(XML_ID_ATTRIBUTE), 
-				xattribs.getString(XML_MYSQL_PATH_ATTRIBUTE), 
+				xattribs.getStringEx(XML_MYSQL_PATH_ATTRIBUTE, RefResFlag.URL), 
 				xattribs.getString(XML_DATABASE_ATTRIBUTE), 
 				xattribs.getString(XML_TABLE_ATTRIBUTE));
 
 		if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-			mysqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+			mysqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
 			mysqlDataWriter.setColumnDelimiter(xattribs.getStringEx(XML_COLUMN_DELIMITER_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -883,10 +883,10 @@ public class MysqlDataWriter extends BulkLoader {
 			mysqlDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-			mysqlDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+			mysqlDataWriter.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
 		}
 		if (xattribs.exists(XML_COMMAND_URL_ATTRIBUTE)) {
-			mysqlDataWriter.setCommandURL((xattribs.getStringEx(XML_COMMAND_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF)));
+			mysqlDataWriter.setCommandURL((xattribs.getStringEx(XML_COMMAND_URL_ATTRIBUTE, RefResFlag.URL)));
 		}
 		if (xattribs.exists(XML_LOCK_TABLE_ATTRIBUTE)) {
 		    mysqlDataWriter.setLockTable(xattribs.getBoolean(XML_LOCK_TABLE_ATTRIBUTE));

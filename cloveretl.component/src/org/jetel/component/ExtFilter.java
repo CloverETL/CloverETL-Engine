@@ -193,8 +193,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 				}
 
 			}catch(ClassCastException ex){
-				logger.error("Invalid filter expression - does not evaluate to TRUE/FALSE !");
-				throw new JetelException("Invalid filter expression - does not evaluate to TRUE/FALSE !",ex);
+				throw new JetelException("Invalid filter expression - does not evaluate to TRUE/FALSE !", ex);
 			}
 			SynchronizeUtils.cloverYield();
 		}

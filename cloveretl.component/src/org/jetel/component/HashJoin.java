@@ -826,7 +826,7 @@ public class HashJoin extends Node {
 				xattribs.getString(XML_JOINKEY_ATTRIBUTE), 
 				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null), 
-				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
+				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL), 
 				joinType);
 
 		if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {

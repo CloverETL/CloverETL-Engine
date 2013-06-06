@@ -63,7 +63,7 @@ public abstract class IAuthorityProxy {
 	
 	public static IAuthorityProxy getDefaultProxy() {
 		if (defaultProxy == null) {
-			defaultProxy = new PrimitiveAuthorityProxy();
+			defaultProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
 		}
 		return defaultProxy;
 	}
@@ -550,4 +550,27 @@ public abstract class IAuthorityProxy {
 	
 	public abstract boolean isClusterEnabled();
 	
+	/**
+	 * Returns secret value of the given parameter or null if no value is available.
+	 * An exception can be thrown in case the authority decides the parameter should be resolved
+	 * but the requested value is not available or no enough permission for this operation is granted.
+	 */
+	public String getSecureParamater(String parameterName) {
+		//no secure storage is implemented in default authority proxy
+		return null;
+	}
+
+	/**
+	 * Backward operation for secure parameter resolution. All occurrences
+	 * of sensitive values in the given text should be substituted
+	 * by secure parameter reference - ${SECURE_PARAMETER_NAME}.
+	 * The authority proxy should cache all already resolved secure parameters
+	 * and only these secure parameters should be considered in this obfuscation.
+	 * @param text text which should be obfuscated
+	 * @return obfuscated text
+	 */
+	public String obfuscateSecureParameters(String text) {
+		return text;
+	}
+
 }

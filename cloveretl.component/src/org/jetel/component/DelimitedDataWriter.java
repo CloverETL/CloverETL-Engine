@@ -320,7 +320,7 @@ public class DelimitedDataWriter extends Node {
 		DelimitedDataWriter aDelimitedDataWriterNIO = null;
 		
 		aDelimitedDataWriterNIO = new DelimitedDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
 								xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT));	
 		if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
@@ -351,7 +351,7 @@ public class DelimitedDataWriter extends Node {
 			aDelimitedDataWriterNIO.setPartitionOutFields(xattribs.getString(XML_PARTITION_OUTFIELDS_ATTRIBUTE));
         }
 		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
-			aDelimitedDataWriterNIO.setPartitionUnassignedFileName(xattribs.getString(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE));
+			aDelimitedDataWriterNIO.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
         }
 		
 		return aDelimitedDataWriterNIO;

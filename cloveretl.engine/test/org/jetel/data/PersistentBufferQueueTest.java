@@ -34,11 +34,13 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class PersistentBufferQueueTest extends CloverTestCase {
 
+	private static final int NUM_ITERATIONS = 10000;
+	
 	public void testSingleThread() {
 		PersistentBufferQueue queue = new PersistentBufferQueue();
 		CloverBuffer buffer = CloverBuffer.allocate(10);
 		
-		for (int j = 0; j < 10000; j++) {
+		for (int j = 0; j < NUM_ITERATIONS; j++) {
 			for (int i = 0; i < 11; i++) {
 				buffer.clear();
 				buffer.putInt(i * j);
@@ -52,6 +54,7 @@ public class PersistentBufferQueueTest extends CloverTestCase {
 				assertTrue(buffer.limit() == 4);
 				assertTrue(buffer.getInt() == i * j);
 			}
+			assertTrue(queue.poll(buffer) == null);
 		}
 	}
 
@@ -62,11 +65,11 @@ public class PersistentBufferQueueTest extends CloverTestCase {
 			@Override
 			public Void call() {
 				CloverBuffer buffer = CloverBuffer.allocate(10);
-				for (int i = 0; i< 10000; i++) {
+				for (int i = 0; i < NUM_ITERATIONS; i++) {
 					buffer.clear();
 					buffer.putInt(i);
 					buffer.flip();
-					while (!queue.offer(buffer));
+					assertTrue(queue.offer(buffer));
 				}
 				return null;
 			}
@@ -75,12 +78,83 @@ public class PersistentBufferQueueTest extends CloverTestCase {
 			@Override
 			public Void call() {
 				CloverBuffer buffer = CloverBuffer.allocate(10);
-				for (int i = 0; i < 10000; i++) {
+				for (int i = 0; i < NUM_ITERATIONS; i++) {
 					buffer.clear();
 					while(queue.poll(buffer) == null);
 					assertTrue(buffer.limit() == 4);
 					assertTrue(buffer.getInt() == i);
 				}
+				
+				assertTrue(queue.poll(buffer) == null);
+				return null;
+			}
+		};
+		
+		ExecutorService pool = Executors.newFixedThreadPool(2);
+		pool.submit(producent).get();
+		pool.submit(consument).get();
+	}
+
+	public void testGrowingBuffers() throws InterruptedException, ExecutionException {
+		final PersistentBufferQueue queue = new PersistentBufferQueue();
+		
+		Callable<Void> producent = new Callable<Void>() {
+			@Override
+			public Void call() {
+				CloverBuffer buffer = CloverBuffer.allocate(10);
+				int size = 1;
+				boolean grow = true;
+				for (int i = 0; i < NUM_ITERATIONS; i++) {
+					if (size > 10000) {
+						grow = false;
+					}
+					if (size < 1) {
+						size = 1;
+						grow = true;
+					}
+					if (grow) {
+						size *= 2;
+					} else {
+						size /= 2;
+					}
+					buffer.clear();
+					for (int j = 0; j < size; j++) {
+						buffer.put((byte) (j % 127));
+					}
+					buffer.flip();
+					assertTrue(queue.offer(buffer));
+				}
+				return null;
+			}
+		};
+		Callable<Void> consument = new Callable<Void>() {
+			@Override
+			public Void call() {
+				CloverBuffer buffer = CloverBuffer.allocate(10);
+				int size = 1;
+				boolean grow = true;
+				for (int i = 0; i < NUM_ITERATIONS; i++) {
+					if (size > 10000) {
+						grow = false;
+					}
+					if (size < 1) {
+						size = 1;
+						grow = true;
+					}
+					if (grow) {
+						size *= 2;
+					} else {
+						size /= 2;
+					}
+					buffer.clear();
+					while(queue.poll(buffer) == null);
+					assertTrue(buffer.limit() == size);
+					for (int j = 0; j < size; j++) {
+						assertTrue(buffer.get() == (j % 127));
+					}
+				}
+				
+				assertTrue(queue.poll(buffer) == null);
 				return null;
 			}
 		};

@@ -150,13 +150,13 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	protected static void readCommonAttributes(TreeReader treeReader, ComponentXMLAttributes xattribs)
 			throws XMLConfigurationException, AttributeNotFoundException {
-		treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			treeReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}
 		treeReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 
-		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
+		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.URL);
 		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
 		if (mappingURL != null) {
 			treeReader.setMappingURL(mappingURL);
@@ -164,7 +164,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			treeReader.setMappingString(mapping);
 		} else {
 			// throw configuration exception
-			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
+			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL);
 		}
 
 		treeReader.setImplicitMapping(xattribs.getBoolean(XML_IMPLICIT_MAPPING_ATTRIBUTE, false));
