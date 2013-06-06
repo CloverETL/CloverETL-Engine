@@ -100,6 +100,7 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		target.setPlaceholder("Specified by mapping");
 		lookup.setName("Lookup name");
 		lookup.setOptions(graphWrapper.getLookupTables().toArray(new String[0]));
 		params.add(lookup);

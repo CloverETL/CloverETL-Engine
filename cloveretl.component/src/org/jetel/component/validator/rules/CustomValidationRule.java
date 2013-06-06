@@ -105,6 +105,7 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		}
 		
 		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		target.setPlaceholder("Specified by mapping");
 		mappingParam.setName("Parameters mapping");
 		mappingParam.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
 		params.add(mappingParam);
