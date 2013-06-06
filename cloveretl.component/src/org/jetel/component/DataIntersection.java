@@ -668,9 +668,9 @@ public class DataIntersection extends Node {
 		intersection = new DataIntersection(
                 xattribs.getString(XML_ID_ATTRIBUTE),
                 xattribs.getString(XML_JOINKEY_ATTRIBUTE),
-                xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null ,RefResFlag.SPEC_CHARACTERS_OFF), 
+                xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
                 xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-                xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+                xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL));
     	intersection.setSlaveDuplicates(xattribs.getBoolean(
     			XML_KEY_DUPLICATES_ATTRIBUTE, true));
 		intersection.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));

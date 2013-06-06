@@ -41,6 +41,7 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -275,7 +276,7 @@ public class HadoopWriter extends Node {
 		HadoopWriter writer = null;
 
 		writer = new HadoopWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-				xattribs.getString(XML_FILEURL_ATTRIBUTE),
+				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
 				xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
 				xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE),
 				xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));

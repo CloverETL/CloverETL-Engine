@@ -328,7 +328,7 @@ public class JmsReader extends Node {
 				xattribs.getString(XML_SELECTOR_ATTRIBUTE, null),
 				xattribs.getString(XML_PSORCLASS_ATTRIBUTE, null),
 				xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
-				xattribs.getStringEx(XML_PSORURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getStringEx(XML_PSORURL_ATTRIBUTE, null, RefResFlag.URL),
 				xattribs.getInteger(XML_MAXMSGCNT_ATTRIBUTE, 0),
 				xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE, 0),
 				xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor 

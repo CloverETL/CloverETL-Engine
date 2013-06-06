@@ -318,11 +318,11 @@ public class XmlXPathReader extends Node {
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		XmlXPathReader aXmlXPathReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
+		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.URL);
 		if (mappingURL != null) {
 			aXmlXPathReader = new XmlXPathReader(
 					xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL),
 					mappingURL);
 		} else {
 			Document mappingDocument = null;
@@ -334,7 +334,7 @@ public class XmlXPathReader extends Node {
 			
 			aXmlXPathReader = new XmlXPathReader(
 					xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.URL),
 					mappingDocument);
 		}
 		

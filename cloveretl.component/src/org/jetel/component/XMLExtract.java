@@ -301,12 +301,12 @@ public class XMLExtract extends Node {
 		extract = new XMLExtract(xattribs.getString(XML_ID_ATTRIBUTE));
 
 		// set input file
-		extract.setInputFile(xattribs.getStringEx(XML_SOURCEURI_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		extract.setInputFile(xattribs.getStringEx(XML_SOURCEURI_ATTRIBUTE, RefResFlag.URL));
 
 		extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE, true));
 
 		// set mapping
-		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
+		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.URL);
 		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
 		NodeList nodes = xmlElement.getChildNodes();
 		if (mappingURL != null)
@@ -318,7 +318,7 @@ public class XMLExtract extends Node {
 			// mapping xml elements are child nodes of the component
 			extract.setNodes(nodes);
 		} else {
-			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration
+			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL); // throw configuration
 																								// exception
 		}
 

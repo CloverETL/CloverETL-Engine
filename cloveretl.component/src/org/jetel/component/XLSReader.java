@@ -188,11 +188,11 @@ public class XLSReader extends Node {
 
         if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
             aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-                    xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), fieldMap, xattribs.getString(XML_CHARSET_ATTRIBUTE));
+                    xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL), fieldMap, xattribs.getString(XML_CHARSET_ATTRIBUTE));
 
         } else {
             aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-                    xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), fieldMap);
+                    xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL), fieldMap);
         }
 
         aXLSReader.setParserType(XLSType.valueOfIgnoreCase(xattribs.getString(XML_PARSER_ATTRIBUTE, null)));
@@ -216,7 +216,7 @@ public class XLSReader extends Node {
         } 
 
         if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-            aXLSReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+            aXLSReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.URL));
         }
 
         if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {

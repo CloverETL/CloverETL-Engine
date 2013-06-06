@@ -42,6 +42,7 @@ import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.bytes.WritableByteChannelIterator;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -317,7 +318,7 @@ public class TextTableWriter extends Node {
 		String fields = xattribs.getString(XML_MASK_ATTRIBUTE,null);
 		String[] aFields = fields == null ? null : fields.split(";");
 		aDataWriter = new TextTableWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getString(XML_FILEURL_ATTRIBUTE),
+								xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
 								xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
 								xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
 								aFields);

@@ -158,7 +158,7 @@ public abstract class DataGenerator extends Node {
 			dataGenerator = new ExtDataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
 					xattribs.getStringEx(XML_GENERATE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 					xattribs.getString(XML_GENERATECLASS_ATTRIBUTE, null), 
-					xattribs.getStringEx(XML_GENERATEURL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_GENERATEURL_ATTRIBUTE, null, RefResFlag.URL),
 					xattribs.getLong(XML_RECORDS_NUMBER_ATTRIBUTE));
 			
 			((ExtDataGenerator)dataGenerator).setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));

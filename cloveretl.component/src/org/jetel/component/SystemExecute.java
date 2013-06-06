@@ -665,10 +665,10 @@ public class SystemExecute extends Node{
 				xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
 		sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 		if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
-			sysExec.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+			sysExec.setOutputFile(xattribs.getStringEx(XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_WORKING_DIRECTORY_ATTRIBUTE)){
-			sysExec.setWorkingDirectory(xattribs.getString(XML_WORKING_DIRECTORY_ATTRIBUTE));
+			sysExec.setWorkingDirectory(xattribs.getStringEx(XML_WORKING_DIRECTORY_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
 		}
 		if (xattribs.exists(XML_ENVIRONMENT_ATTRIBUTE)) {
 			sysExec.setEnvironment(xattribs.getString(XML_ENVIRONMENT_ATTRIBUTE));
