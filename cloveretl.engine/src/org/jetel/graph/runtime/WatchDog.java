@@ -32,17 +32,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
 import javax.management.ObjectName;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.ObfuscatingException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.GraphElement;
@@ -161,7 +159,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			try {
 				mbs.unregisterMBean(jmxObjectName);
 			} catch (Exception e) {
-				logger.error("JMX error - ObjectName cannot be unregistered.", e);
+				ExceptionUtils.logException(logger, "JMX error - ObjectName cannot be unregistered.", e);
 			}
 		}
 	}
@@ -218,12 +216,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
            	try {
            		graph.preExecute();
            	} catch (Exception e) {
-    			causeException = e;
+    			setCauseException(e);
     			if (e instanceof ComponentNotReadyException) {
     				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
     			}
            		watchDogStatus = Result.ERROR;
-           		logger.error("Graph pre-execute initialization failed.", e);
+           		ExceptionUtils.logException(logger, "Graph pre-execute initialization failed.", e);
            	}
 
            	//run all phases
@@ -274,12 +272,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           	try {
 	           		graph.postExecute();
 	           	} catch (Exception e) {
-	    			causeException = e;
+	    			setCauseException(e);
 	    			if (e instanceof ComponentNotReadyException) {
 	    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
 	    			}
 	           		watchDogStatus = Result.ERROR;
-	           		logger.error("Graph post-execute method failed.", e);
+	           		ExceptionUtils.logException(logger, "Graph post-execute method failed.", e);
 	           	}
 
 	           	//aborted graph does not follow last phase status
@@ -293,17 +291,17 @@ public class WatchDog implements Callable<Result>, CloverPost {
            		try {
            			graph.commit();
            		} catch (Exception e) {
-           			causeException = e;
+           			setCauseException(e);
 	           		watchDogStatus = Result.ERROR;
-	           		logger.fatal("Graph commit failed", e);
+	           		ExceptionUtils.logException(logger, "Graph commit failed", e, Level.FATAL);
            		}
            	} else {
            		try {
            			graph.rollback();
            		} catch (Exception e) {
-           			causeException = e;
+           			setCauseException(e);
 	           		watchDogStatus = Result.ERROR;
-	           		logger.fatal("Graph rollback failed", e);
+	           		ExceptionUtils.logException(logger, "Graph rollback failed", e, Level.FATAL);
            		}
            	}
            	
@@ -314,7 +312,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
            	
             logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
        	} catch (Throwable t) {
-       		causeException = t;
+       		setCauseException(t);
        		causeGraphElement = null;
        		watchDogStatus = Result.ERROR;
        		ExceptionUtils.logException(logger, "Error watchdog execution", t);
@@ -403,15 +401,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
             logger.debug("register MBean with name:"+name);
             // Register the  MBean
             mbs.registerMBean(cloverJMX, jmxObjectName);
-
-        } catch (MalformedObjectNameException e) {
-            logger.error(e);
-        } catch (InstanceAlreadyExistsException e) {
-        	logger.error(e);
-        } catch (MBeanRegistrationException e) {
-        	logger.error(e);
-        } catch (NotCompliantMBeanException e) {
-        	logger.error(e);
+        } catch (Exception e) {
+        	ExceptionUtils.logException(logger, null, e);
         }
     }
 
@@ -468,12 +459,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			if (message != null) {
 				switch(message.getType()){
 				case ERROR:
-					causeException = ((ErrorMsgBody) message.getBody()).getSourceException();
+					setCauseException(((ErrorMsgBody) message.getBody()).getSourceException());
 					causeGraphElement = message.getSender();
-					if (causeException == null) {
-						causeException = new JetelRuntimeException(String.format("Graph element %s failed with unknown cause.", causeGraphElement));
+					if (getCauseException() == null) {
+						setCauseException(new JetelRuntimeException(String.format("Graph element %s failed with unknown cause.", causeGraphElement)));
 					}
-					ExceptionUtils.logException(logger, null, causeException);
+					ExceptionUtils.logException(logger, null, getCauseException());
 					return Result.ERROR;
 				case MESSAGE:
 					synchronized (_MSG_LOCK) {
@@ -545,7 +536,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		        try {
 					currentPhase.postExecute();
 				} catch (Exception e) {
-					logger.warn(e);
+					ExceptionUtils.logException(logger, null, e, Level.WARN);
 				}
 			}
 			//if the graph is waiting on a phase synchronization point the watchdog is woken up with current status ABORTED 
@@ -627,8 +618,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		try {
 			phase.preExecute();
 		} catch (ComponentNotReadyException e) {
-			logger.error("Phase pre-execute initialization failed", e);
-			causeException = e;
+			ExceptionUtils.logException(logger, "Phase pre-execute initialization failed", e);
+			setCauseException(e);
 			causeGraphElement = e.getGraphElement();
 			return Result.ERROR;
 		}
@@ -677,8 +668,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
         	try {
         		phase.postExecute();
         	} catch (ComponentNotReadyException e) {
-    			logger.error("Phase post-execute finalization failed", e);
-    			causeException = e;
+        		ExceptionUtils.logException(logger, "Phase post-execute finalization failed", e);
+    			setCauseException(e);
     			causeGraphElement = e.getGraphElement();
     			phaseStatus = Result.ERROR;
         	}
@@ -723,6 +714,15 @@ public class WatchDog implements Callable<Result>, CloverPost {
         return causeException;
     }
 
+    /**
+     * Sets cause exception of graph failure.
+     * The given cause exception is wrapped to obfuscate
+     * sensitive information.
+     * @param e
+     */
+    protected void setCauseException(Throwable e) {
+    	causeException = new ObfuscatingException(e);
+    }
 
     /**
      * Returns ID of Node which caused

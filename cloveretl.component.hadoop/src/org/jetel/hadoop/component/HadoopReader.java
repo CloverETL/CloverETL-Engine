@@ -305,7 +305,7 @@ public class HadoopReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		hadoopReader = new HadoopReader(xattribs.getString(XML_ID_ATTRIBUTE),
-				xattribs.getString(XML_FILEURL_ATTRIBUTE),
+				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, RefResFlag.URL),
 				xattribs.getString(XML_KEY_FIELD_NAME_ATTRIBUTE),
 				xattribs.getString(XML_VALUE_FIELD_NAME_ATTRIBUTE));
 			
@@ -325,8 +325,7 @@ public class HadoopReader extends Node {
 			hadoopReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-			hadoopReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,
-					RefResFlag.SPEC_CHARACTERS_OFF));
+			hadoopReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
 			hadoopReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));

@@ -1115,7 +1115,7 @@ public class DBOutputTable extends Node {
 			outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
 					SQLUtil.split(xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
-							xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)))));
+							xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)))));
 		}else if (xattribs.exists(XML_SQLQUERY_ATRIBUTE)) {
 				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
 				xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),

@@ -54,8 +54,9 @@ import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 /**
@@ -142,8 +143,8 @@ public class JmsConnection extends GraphElement implements IConnection {
 		this.libraries = libraries;
 	}
 	
-	private static Properties readConfig(URL contextURL, String cfgFile, TransformationGraph graph) {
-		Properties config = new Properties();
+	private static TypedProperties readConfig(URL contextURL, String cfgFile, TransformationGraph graph) {
+		TypedProperties config = new TypedProperties(null, graph);
 		try {
             InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, cfgFile));
 			config.load(stream);
@@ -151,7 +152,6 @@ public class JmsConnection extends GraphElement implements IConnection {
 		} catch (Exception ex) {
 			throw new RuntimeException("Config file for JMS connection not found (" + cfgFile +")", ex);
 		}
-		(new PropertyRefResolver(graph.getGraphProperties())).resolveAll(config);
 		return config;
 	}
 
@@ -480,17 +480,17 @@ public class JmsConnection extends GraphElement implements IConnection {
 		JmsConnection con;
 		if (xattribs.exists(XML_CONFIG_ATTRIBUTE)) {
 			// TODO move readConfig() to init() method - fromXML shouldn't read anything from external files
-			Properties config = readConfig(graph.getRuntimeContext().getContextURL(), 
+			TypedProperties config = readConfig(graph.getRuntimeContext().getContextURL(), 
 					xattribs.getString(XML_CONFIG_ATTRIBUTE), graph);
 			con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
-					config.getProperty(XML_INICTX_FACTORY_ATTRIBUTE, null),
-					config.getProperty(XML_PROVIDER_URL_ATTRIBUTE, null),
-					config.getProperty(XML_CON_FACTORY_ATTRIBUTE, null),
-					config.getProperty(XML_USERNAME_ATTRIBUTE, null),
-					config.getProperty(XML_PASSWORD_ATTRIBUTE, null),
-					config.getProperty(XML_DESTINATION_ATTRIBUTE, null),
-					Boolean.valueOf(config.getProperty(XML_PASSWORD_ENCRYPTED, "false")), 
-					config.getProperty(XML_LIBRARIES_ATTRIBUTE, null)
+					config.getStringProperty(XML_INICTX_FACTORY_ATTRIBUTE, null),
+					config.getStringProperty(XML_PROVIDER_URL_ATTRIBUTE, null),
+					config.getStringProperty(XML_CON_FACTORY_ATTRIBUTE, null),
+					config.getStringProperty(XML_USERNAME_ATTRIBUTE, null),
+					config.getStringProperty(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS),
+					config.getStringProperty(XML_DESTINATION_ATTRIBUTE, null),
+					config.getBooleanProperty(XML_PASSWORD_ENCRYPTED, false), 
+					config.getStringProperty(XML_LIBRARIES_ATTRIBUTE, null)
 					);
 		} else {
 			con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
@@ -498,7 +498,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 					xattribs.getString(XML_PROVIDER_URL_ATTRIBUTE, null),
 					xattribs.getString(XML_CON_FACTORY_ATTRIBUTE, null),
 					xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
-					xattribs.getString(XML_PASSWORD_ATTRIBUTE, null),
+					xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS),
 					xattribs.getString(XML_DESTINATION_ATTRIBUTE, null),
 					xattribs.getBoolean(XML_PASSWORD_ENCRYPTED, false),
 					xattribs.getString(XML_LIBRARIES_ATTRIBUTE, null)

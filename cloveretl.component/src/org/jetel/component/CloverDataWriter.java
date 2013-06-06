@@ -310,7 +310,7 @@ public class CloverDataWriter extends Node {
 		CloverDataWriter aDataWriter = null;
 		
 		aDataWriter = new CloverDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
 				xattribs.getBoolean(XML_SAVEINDEX_ATRRIBUTE,false));
 		aDataWriter.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 		aDataWriter.setSaveMetadata(xattribs.getBoolean(XML_SAVEMETADATA_ATTRIBUTE,false));

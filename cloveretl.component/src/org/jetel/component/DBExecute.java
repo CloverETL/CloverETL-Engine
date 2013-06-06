@@ -758,7 +758,7 @@ public class DBExecute extends Node {
         String query = null, fileURL = null;
 
     	if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-            fileURL = xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
+            fileURL = xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL);
         } else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)) {
             query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
         } else if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {

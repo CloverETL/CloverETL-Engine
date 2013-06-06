@@ -23,10 +23,13 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.jetel.exception.CompoundException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.SerializableException;
 import org.jetel.exception.StackTraceWrapperException;
+import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -62,6 +65,14 @@ public class ExceptionUtils {
 					stringWriter.append("\n");
 					stringWriter.append(stackTraceToString(innerThrowable));
 				}
+			} else if (throwable instanceof SerializableException
+					&& ((SerializableException) throwable).instanceOf(CompoundException.class)) {
+				//the CompoundException could be wrapped in SerializableException
+				//special handling is needed
+				for (Throwable innerThrowable : ((SerializableException) throwable).getCauses()) {
+					stringWriter.append("\n");
+					stringWriter.append(stackTraceToString(innerThrowable));
+				}
 			}
 			
 			//StackTraceWrapperException has to be handled in special way - stacktrace of a cause is stored in local attribute
@@ -71,7 +82,7 @@ public class ExceptionUtils {
 					stringWriter.append("Caused by: " + causeStackTrace);
 				}
 			}
-			return stringWriter.toString();
+			return SafeLogUtils.obfuscateSensitiveInformation(stringWriter.toString());
 		}
 	}
 
@@ -98,7 +109,7 @@ public class ExceptionUtils {
     	for (ErrorMessage errMessage : errMessages) {
     		appendMessage(result, errMessage.message, errMessage.depth);
     	}
-    	return result.toString();
+    	return SafeLogUtils.obfuscateSensitiveInformation(result.toString());
     }
 
     private static class ErrorMessage {
@@ -125,7 +136,7 @@ public class ExceptionUtils {
     	String lastMessage = "";
     	while (true) {
     		//extract message from current exception
-    		String newMessage = getMessageNonRecurisve(exceptionIterator, lastMessage);
+    		String newMessage = getMessageNonRecursive(exceptionIterator, lastMessage);
     		
     		if (newMessage != null) {
     			result.add(new ErrorMessage(depth, newMessage));
@@ -141,6 +152,18 @@ public class ExceptionUtils {
     			break;
     		}
     		
+			//the CompoundException could be wrapped in SerializableException
+			//special handling is needed
+    		if (exceptionIterator instanceof SerializableException) {
+    			SerializableException se = (SerializableException) exceptionIterator;
+    			if (se.instanceOf(CompoundException.class)) {
+        			for (Throwable t : se.getCauses()) {
+        				result.addAll(getMessages(t, depth));
+        			}
+        			break;
+    			}
+    		}
+    		
     		if (exceptionIterator.getCause() == null || exceptionIterator.getCause() == exceptionIterator) {
     			break;
     		} else {
@@ -150,13 +173,20 @@ public class ExceptionUtils {
     	return result;
     }
     
-    private static String getMessageNonRecurisve(Throwable t, String lastMessage) {
+    private static String getMessageNonRecursive(Throwable t, String lastMessage) {
     	String message = null;
     	//NPE is handled in special way
-		if (t instanceof NullPointerException 
-				&& (StringUtils.isEmpty(t.getMessage()) || t.getMessage().equalsIgnoreCase("null"))) {
+		if ((t instanceof NullPointerException)
+				&&
+				(StringUtils.isEmpty(t.getMessage()) || t.getMessage().equalsIgnoreCase("null"))) {
 			//in case the NPE has no reasonable message, we append more descriptive error message
 			message = "Unexpected null value.";
+		} else if ((t instanceof SerializableException && ((SerializableException) t).instanceOf(NullPointerException.class))
+				&&
+				(StringUtils.isEmpty(t.getMessage()) || t.getMessage().equalsIgnoreCase("null"))) {
+			//the NPE can be wrapped also in SerializableException
+			message = "Unexpected null value.";
+
 		} else if (!StringUtils.isEmpty(t.getMessage())) {
 			//only non-empty messages are considered
 			message = t.getMessage();
@@ -173,11 +203,20 @@ public class ExceptionUtils {
 		// FIXME: UnknownHostException("bla.bla") will be reduced to "bla.bla" with the "unknown host" info missing
 		// sometimes we cannot affect this at all, as in the case of http-client library, see HttpConnector
 		Throwable cause = t.getCause();
-		if (message != null && cause != null
-				&&
-			 (message.equals(cause.getClass().getName())
-					 || message.equals(cause.getClass().getName() + ": " + cause.getMessage()))) {
-				 message = null;
+		if (message != null && cause != null) {
+			if (!(cause instanceof SerializableException)) {
+				if (message.equals(cause.getClass().getName())
+						 || message.equals(cause.getClass().getName() + ": " + cause.getMessage())) {
+						message = null;
+				}
+			} else {
+				//SerializableException needs special handling
+				SerializableException serializableCause = (SerializableException) cause;
+				if (message.equals(serializableCause.getWrappedExceptionClass().getName())
+						 || message.equals(serializableCause.getWrappedExceptionClass().getName() + ": " + serializableCause.getMessage())) {
+						message = null;
+				}
+			}
 		}
 		
 		return message;
@@ -198,17 +237,21 @@ public class ExceptionUtils {
 
 	/**
 	 * Print out the given exception in preferred form into the given logger. 
-	 * @param logger
-	 * @param message
-	 * @param t
 	 */
 	public static void logException(Logger logger, String message, Throwable t) {
+		logException(logger, message, t, Level.ERROR);
+	}
+	
+	/**
+	 * Print out the given exception in preferred form into the given logger. 
+	 */
+	public static void logException(Logger logger, String message, Throwable t, Level level) {
 		String completeMessage = ExceptionUtils.getMessage(message, t);
 		if (!StringUtils.isEmpty(completeMessage)) {
-			logger.error(completeMessage);
+			logger.log(level, completeMessage);
 		}
 		if (t != null) {
-			logger.error("Error details:\n" + ExceptionUtils.stackTraceToString(t));
+			logger.log(level, "Error details:\n" + ExceptionUtils.stackTraceToString(t));
 		}
 	}
 	
@@ -220,16 +263,33 @@ public class ExceptionUtils {
 	 */
 	public static boolean instanceOf(Throwable t, Class<? extends Throwable> exceptionClass) {
 		while (t != null) {
-			if (exceptionClass.isInstance(t)) {
-				return true;
-			}
-			if (t instanceof CompoundException) {
-				for (Throwable cause : ((CompoundException) t).getCauses()) {
-					if (instanceOf(cause, exceptionClass)) {
-						return true;
-					}
+			//special handling of SerializableException
+			if (t instanceof SerializableException) {
+				SerializableException se = (SerializableException) t;
+				if (se.instanceOf(exceptionClass)) {
+					return true;
 				}
-				return false;
+				
+				if (se.instanceOf(CompoundException.class)) {
+					for (Throwable cause : se.getCauses()) {
+						if (instanceOf(cause, exceptionClass)) {
+							return true;
+						}
+					}
+					return false;
+				}
+			} else {
+				if (exceptionClass.isInstance(t)) {
+					return true;
+				}
+				if (t instanceof CompoundException) {
+					for (Throwable cause : ((CompoundException) t).getCauses()) {
+						if (instanceOf(cause, exceptionClass)) {
+							return true;
+						}
+					}
+					return false;
+				}
 			}
 			if (t != t.getCause()) {
 				t = t.getCause();
@@ -245,6 +305,8 @@ public class ExceptionUtils {
 	 * @param t root of searched exception chain
 	 * @param exceptionClass searched exception type
 	 * @return list of exceptions with a given type in the given exception chain
+	 * 
+	 * @note this method does not respect SerializableException wrapper
 	 */
 	public static <T extends Throwable> List<T> getAllExceptions(Throwable t, Class<T> exceptionClass) {
 		List<T> result = new ArrayList<T>();

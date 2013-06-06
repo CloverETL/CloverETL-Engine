@@ -394,13 +394,13 @@ public class XSLDataTransformer extends Node {
 		if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
 			xslTransformer = new XSLDataTransformer(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_MAPPING_ATTRIBUTE),
-					xattribs.getStringEx(XML_XSLT_FILE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_XSLT_FILE_ATTRIBUTE, null, RefResFlag.URL),
 					xattribs.getString(XML_XSLT_ATTRIBUTE, null));
 		} else {
 			xslTransformer = new XSLDataTransformer(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_XML_INPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
-					xattribs.getStringEx(XML_XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
-					xattribs.getStringEx(XML_XSLT_FILE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_XML_INPUT_FILE_ATTRIBUTE, RefResFlag.URL),
+					xattribs.getStringEx(XML_XML_OUTPUT_FILE_ATTRIBUTE, RefResFlag.URL),
+					xattribs.getStringEx(XML_XSLT_FILE_ATTRIBUTE, null, RefResFlag.URL),
 					xattribs.getString(XML_XSLT_ATTRIBUTE, null));
 		}
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {

@@ -283,11 +283,11 @@ public class DelimitedDataReader extends Node {
 
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL),
 					xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		} else {
 			aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL));
 		}
 		aDelimitedDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
         if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)) {
@@ -303,7 +303,7 @@ public class DelimitedDataReader extends Node {
 			aDelimitedDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-			aDelimitedDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+			aDelimitedDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
 			aDelimitedDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));

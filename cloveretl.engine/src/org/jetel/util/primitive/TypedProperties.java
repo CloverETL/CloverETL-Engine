@@ -212,15 +212,7 @@ public class TypedProperties extends Properties {
     }
 
     private String resolvePropertyReferences(String s) {
-    	if (s != null) {
-    		s = localPropertyRefResolver.resolveRef(s);
-    	}
-    	
-    	if(propertyRefResolver != null && s != null) {
-    		return propertyRefResolver.resolveRef(s);
-    	} else {
-    		return s;
-    	}
+    	return resolvePropertyReferences(s, null);
     }
     
     /**

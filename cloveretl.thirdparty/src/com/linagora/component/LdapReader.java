@@ -39,6 +39,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -304,16 +305,16 @@ public class LdapReader extends Node {
 		if(xattribs.exists(XML_USER_ATTRIBUTE) && xattribs.exists(XML_PASSWORD_ATTRIBUTE) ) {
 			aLdapReader = new LdapReader(
 					xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_LDAPURL_ATTRIBUTE),
+					xattribs.getStringEx(XML_LDAPURL_ATTRIBUTE, RefResFlag.URL),
 					xattribs.getString(XML_BASE_ATTRIBUTE),
 					xattribs.getString(XML_FILTER_ATTRIBUTE),
 					i_scope,
 					xattribs.getString(XML_USER_ATTRIBUTE),
-					xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+					xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
 		} else {
 			aLdapReader = new LdapReader(
 					xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_LDAPURL_ATTRIBUTE),
+					xattribs.getStringEx(XML_LDAPURL_ATTRIBUTE, RefResFlag.URL),
 					xattribs.getString(XML_BASE_ATTRIBUTE),
 					xattribs.getString(XML_FILTER_ATTRIBUTE),
 					i_scope);

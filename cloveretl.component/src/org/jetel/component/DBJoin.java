@@ -566,7 +566,7 @@ public class DBJoin extends Node {
 		connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE);
 		if (xattribs.exists(XML_URL_ATTRIBUTE)) {
 			query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getRuntimeContext().getContextURL(), 
-         		   xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
+         		   xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
 		} else {
 			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
 		}
@@ -577,7 +577,7 @@ public class DBJoin extends Node {
                 connectionName,query,joinKey,
                 xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
                 xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
-                xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF));
+                xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE,null, RefResFlag.URL));
 		dbjoin.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		dbjoin.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
 		if (xattribs.exists(XML_DB_METADATA_ATTRIBUTE)){
