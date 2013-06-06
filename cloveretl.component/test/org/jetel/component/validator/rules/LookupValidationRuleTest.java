@@ -47,7 +47,7 @@ public class LookupValidationRuleTest extends ValidatorTestCase {
 	}
 	
 	@Test
-	public void testReadyness() {
+	public void testReadyness() throws ComponentNotReadyException {
 		DataRecord record1 = RF.addIntegerField(null, "id", 10);
 		DataRecord record2 = RF.addIntegerField(null, "id", 10);
 		record2 = RF.addIntegerField(record2, "id2", 7);
@@ -55,20 +55,28 @@ public class LookupValidationRuleTest extends ValidatorTestCase {
 		record3 = RF.addIntegerField(record3, "b", 7);
 		
 		DummyGraphWrapper graphWrapper = new DummyGraphWrapper();
-		graphWrapper.addLookupTable(new SimpleLookupTable("testLookup1", record1.getMetadata().getName(), new String[]{"id"}, 0));
-		graphWrapper.addLookupTable(new SimpleLookupTable("testLookup2", record2.getMetadata().getName(), new String[]{"id", "id2"}, 0));
+		SimpleLookupTable lt = new SimpleLookupTable("testLookup1", record1.getMetadata(), new String[]{"id"}, null);
+		lt.init();
+		graphWrapper.addLookupTable(lt);
+		SimpleLookupTable lt2 = new SimpleLookupTable("testLookup2", record2.getMetadata(), new String[]{"id", "id2"}, null);
+		lt2.init();
+		graphWrapper.addLookupTable(lt2);
 		
-		assertReadyness(false, newRule("id", "", "id=id", false), record1.getMetadata(), null, graphWrapper);	// Empty lookup name
-		assertReadyness(false, newRule("id", "testTable", "id=id", false), record1.getMetadata(), null, graphWrapper);	// Not-existent lookup
-		assertReadyness(false, newRule("id", "testLookup1", "id=id2", false), record1.getMetadata(), null, graphWrapper);	// Wrong mapping
-		assertReadyness(false, newRule("id", "testLookup1", "", false), record1.getMetadata(), null, graphWrapper);	// Empty mapping	
-		assertReadyness(true, newRule("id", "testLookup1", "id=id", false), record1.getMetadata(), null, graphWrapper);
+		assertReadyness(false, newRule("zzz", "", "id:=id", false), record1.getMetadata(), null, graphWrapper);	// Empty lookup name
+		assertReadyness(false, newRule("zzz", "testTable", "id:=id", false), record1.getMetadata(), null, graphWrapper);	// Not-existent lookup
+		assertReadyness(false, newRule("zzz", "testLookup1", "id:=id2", false), record1.getMetadata(), null, graphWrapper);	// Wrong mapping
+		assertReadyness(false, newRule("zzz", "testLookup1", "", false), record1.getMetadata(), null, graphWrapper);	// Empty mapping	
+		assertReadyness(true, newRule("zzz", "testLookup1", "id:=id", false), record1.getMetadata(), null, graphWrapper);
 		
-		assertReadyness(false, newRule("a,b", "testLookup2", "id=a", false), record3.getMetadata(), null, graphWrapper);
-		assertReadyness(false, newRule("a,b", "testLookup2", "id=asdasd", false), record3.getMetadata(), null, graphWrapper);
-		assertReadyness(false, newRule("a,b", "testLookup2", "id=b,id2=dd", false), record3.getMetadata(), null, graphWrapper);
-		assertReadyness(true, newRule("a,b", "testLookup2", "id=a,id2=b", false), record3.getMetadata(), null, graphWrapper);
-		assertReadyness(true, newRule("a,b", "testLookup2", "id2=a,id=b", false), record3.getMetadata(), null, graphWrapper);
+		assertReadyness(false, newRule("zzz", "testLookup2", "id:=a", false), record3.getMetadata(), null, graphWrapper);
+		assertReadyness(false, newRule("zzz", "testLookup2", "id:=asdasd", false), record3.getMetadata(), null, graphWrapper);
+		assertReadyness(false, newRule("zzz", "testLookup2", "id:=b;id2:=dd", false), record3.getMetadata(), null, graphWrapper);
+		assertReadyness(true, newRule("zzz", "testLookup2", "id:=a;id2:=b", false), record3.getMetadata(), null, graphWrapper);
+		assertReadyness(true, newRule("zzz", "testLookup2", "id2:=a;id:=b", false), record3.getMetadata(), null, graphWrapper);
+		assertReadyness(false, newRule("zzz", "testLookup2", "idx:=a;id:=b", false), record3.getMetadata(), null, graphWrapper);
+		assertReadyness(false, newRule("zzz", "testLookup2", "id:=a;id:=b", false), record3.getMetadata(), null, graphWrapper);
+		assertReadyness(true, newRule("zzz", "testLookup2", "id:=a;id2:=b", false), record3.getMetadata(), null, graphWrapper);
+		assertReadyness(false, newRule("zzz", "testLookup2", "id:=a;id2:=b;id3=b", false), record3.getMetadata(), null, graphWrapper);
 	}
 	
 	@Test
@@ -91,21 +99,21 @@ public class LookupValidationRuleTest extends ValidatorTestCase {
 		graphWrapper.getLookupTable("testLookup1").put(RF.addIntegerField(null, "id", 4));
 		graphWrapper.getLookupTable("testLookup1").put(RF.addIntegerField(null, "id", 2));
 		
-		assertValid(newRule("a", "testLookup1", "id=a", false), RF.addIntegerField(null, "a", 8), null, graphWrapper);
-		assertInvalid(newRule("a", "testLookup1", "id=a", false), RF.addIntegerField(null, "a", 7), null, graphWrapper);
-		assertValid(newRule("a", "testLookup1", "id=a", false), RF.addIntegerField(null, "a", 6), null, graphWrapper);
-		assertInvalid(newRule("a", "testLookup1", "id=a", false), RF.addIntegerField(null, "a", 5), null, graphWrapper);
-		assertValid(newRule("a", "testLookup1", "id=a", false), RF.addIntegerField(null, "a", 4), null, graphWrapper);
-		assertInvalid(newRule("a", "testLookup1", "id=a", false), RF.addIntegerField(null, "a", 3), null, graphWrapper);
-		assertValid(newRule("a", "testLookup1", "id=a", false), RF.addIntegerField(null, "a", 2), null, graphWrapper);
+		assertValid(newRule("a", "testLookup1", "id:=a", false), RF.addIntegerField(null, "a", 8), null, graphWrapper);
+		assertInvalid(newRule("a", "testLookup1", "id:=a", false), RF.addIntegerField(null, "a", 7), null, graphWrapper);
+		assertValid(newRule("a", "testLookup1", "id:=a", false), RF.addIntegerField(null, "a", 6), null, graphWrapper);
+		assertInvalid(newRule("a", "testLookup1", "id:=a", false), RF.addIntegerField(null, "a", 5), null, graphWrapper);
+		assertValid(newRule("a", "testLookup1", "id:=a", false), RF.addIntegerField(null, "a", 4), null, graphWrapper);
+		assertInvalid(newRule("a", "testLookup1", "id:=a", false), RF.addIntegerField(null, "a", 3), null, graphWrapper);
+		assertValid(newRule("a", "testLookup1", "id:=a", false), RF.addIntegerField(null, "a", 2), null, graphWrapper);
 		
-		assertInvalid(newRule("a", "testLookup1", "id=a", true), RF.addIntegerField(null, "a", 8), null, graphWrapper);
-		assertValid(newRule("a", "testLookup1", "id=a", true), RF.addIntegerField(null, "a", 7), null, graphWrapper);
-		assertInvalid(newRule("a", "testLookup1", "id=a", true), RF.addIntegerField(null, "a", 6), null, graphWrapper);
-		assertValid(newRule("a", "testLookup1", "id=a", true), RF.addIntegerField(null, "a", 5), null, graphWrapper);
-		assertInvalid(newRule("a", "testLookup1", "id=a", true), RF.addIntegerField(null, "a", 4), null, graphWrapper);
-		assertValid(newRule("a", "testLookup1", "id=a", true), RF.addIntegerField(null, "a", 3), null, graphWrapper);
-		assertInvalid(newRule("a", "testLookup1", "id=a", true), RF.addIntegerField(null, "a", 2), null, graphWrapper);
+		assertInvalid(newRule("a", "testLookup1", "id:=a", true), RF.addIntegerField(null, "a", 8), null, graphWrapper);
+		assertValid(newRule("a", "testLookup1", "id:=a", true), RF.addIntegerField(null, "a", 7), null, graphWrapper);
+		assertInvalid(newRule("a", "testLookup1", "id:=a", true), RF.addIntegerField(null, "a", 6), null, graphWrapper);
+		assertValid(newRule("a", "testLookup1", "id:=a", true), RF.addIntegerField(null, "a", 5), null, graphWrapper);
+		assertInvalid(newRule("a", "testLookup1", "id:=a", true), RF.addIntegerField(null, "a", 4), null, graphWrapper);
+		assertValid(newRule("a", "testLookup1", "id:=a", true), RF.addIntegerField(null, "a", 3), null, graphWrapper);
+		assertInvalid(newRule("a", "testLookup1", "id:=a", true), RF.addIntegerField(null, "a", 2), null, graphWrapper);
 	}
 	
 	@Test
@@ -127,13 +135,13 @@ public class LookupValidationRuleTest extends ValidatorTestCase {
 		graphWrapper.getLookupTable("testLookup1").put(RF.addIntegerField(RF.addIntegerField(null, "id2", 6), "id", 8));
 		graphWrapper.getLookupTable("testLookup1").put(RF.addIntegerField(RF.addIntegerField(null, "id2", 8), "id", 6));
 		
-		assertValid(newRule("a,b", "testLookup1", "id=a,id2=b", false), RF.addIntegerField(RF.addIntegerField(null, "b", 6), "a", 8), null, graphWrapper);
-		assertValid(newRule("a,b", "testLookup1", "id=a,id2=b", false), RF.addIntegerField(RF.addIntegerField(null, "b", 8), "a", 6), null, graphWrapper);
-		assertInvalid(newRule("a,b", "testLookup1", "id=a,id2=b", false), RF.addIntegerField(RF.addIntegerField(null, "b", 7), "a", 8), null, graphWrapper);
+		assertValid(newRule("a,b", "testLookup1", "id:=a;id2:=b", false), RF.addIntegerField(RF.addIntegerField(null, "b", 6), "a", 8), null, graphWrapper);
+		assertValid(newRule("a,b", "testLookup1", "id:=a;id2:=b", false), RF.addIntegerField(RF.addIntegerField(null, "b", 8), "a", 6), null, graphWrapper);
+		assertInvalid(newRule("a,b", "testLookup1", "id:=a;id2:=b", false), RF.addIntegerField(RF.addIntegerField(null, "b", 7), "a", 8), null, graphWrapper);
 		
-		assertInvalid(newRule("a,b", "testLookup1", "id=a,id2=b", true), RF.addIntegerField(RF.addIntegerField(null, "b", 6), "a", 8), null, graphWrapper);
-		assertInvalid(newRule("a,b", "testLookup1", "id=a,id2=b", true), RF.addIntegerField(RF.addIntegerField(null, "b", 8), "a", 6), null, graphWrapper);
-		assertValid(newRule("a,b", "testLookup1", "id=a,id2=b", true), RF.addIntegerField(RF.addIntegerField(null, "b", 7), "a", 8), null, graphWrapper);
+		assertInvalid(newRule("a,b", "testLookup1", "id:=a;id2:=b", true), RF.addIntegerField(RF.addIntegerField(null, "b", 6), "a", 8), null, graphWrapper);
+		assertInvalid(newRule("a,b", "testLookup1", "id:=a;id2:=b", true), RF.addIntegerField(RF.addIntegerField(null, "b", 8), "a", 6), null, graphWrapper);
+		assertValid(newRule("a,b", "testLookup1", "id:=a;id2:=b", true), RF.addIntegerField(RF.addIntegerField(null, "b", 7), "a", 8), null, graphWrapper);
 
 		
 	}
@@ -142,7 +150,7 @@ public class LookupValidationRuleTest extends ValidatorTestCase {
 		LookupValidationRule temp = createRule(LookupValidationRule.class);
 		temp.getTarget().setValue(target);
 		temp.getLookup().setValue(lookup);
-		temp.getKeyMapping().setValue(keyMapping);
+		temp.getMappingParam().setValue(keyMapping);
 		if(rejectPresent) {
 			temp.getPolicy().setValue(POLICY.REJECT_PRESENT);
 		}

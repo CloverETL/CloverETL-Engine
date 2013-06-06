@@ -234,7 +234,8 @@ public abstract class ValidatorTestCase extends CloverTestCase {
 		if(graphWrapper == null) {
 			graphWrapper = new DummyGraphWrapper();
 		}
-		assertEquals(expected, rule.isReady(inputMetadata, rea, graphWrapper));
+		boolean isReady = rule.isReady(inputMetadata, rea, graphWrapper);
+		assertEquals(rea.getAllErrorsInString(), expected, isReady);
 		if(!expected && rea.getErrors().isEmpty()) {
 			fail("When rule is NOT READY at least one readyness error expected in error accumulator.");
 		}

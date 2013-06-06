@@ -26,6 +26,8 @@ import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.NavigatingVisitor;
 import org.jetel.ctl.TLCompiler;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.ASTnode.CLVFParameters;
+import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.data.TLType;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.TransformationGraph;
@@ -64,7 +66,17 @@ public class CTLCustomRuleUtils {
     	
     	@Override
     	public Object visit(CLVFFunctionDeclaration node, Object data) {
-    		functions.add(new Function(node.name, node.getFormalParameters()));
+    		CLVFParameters params = (CLVFParameters)node.jjtGetChild(1);
+    		
+    		TLType[] paramTypes = new TLType[params.jjtGetNumChildren()];
+    		String[] paramNames = new String[params.jjtGetNumChildren()];
+    		for (int i=0; i<params.jjtGetNumChildren(); i++) {
+    			CLVFVariableDeclaration p = (CLVFVariableDeclaration)params.jjtGetChild(i);
+    			paramTypes[i] = p.getType();
+    			paramNames[i] = p.getName();
+    		}
+
+    		functions.add(new Function(node.name, paramNames, paramTypes));
     		return super.visit(node, data);
     	}
     }
@@ -99,11 +111,13 @@ public class CTLCustomRuleUtils {
      * Wrapper for function definition
      */
     public static class Function {
-    	private String name;
-    	private TLType[] parametersType;
-    	public Function(String name, TLType[] parameters) {
+    	private final String name;
+    	private final String[] parameterNames;
+    	private final TLType[] parametersType;
+    	public Function(String name, String[] parameterNames, TLType[] parameterTypes) {
     		this.name = name;
-    		parametersType = parameters;
+    		this.parameterNames = parameterNames;
+    		this.parametersType = parameterTypes;
     	}
     	
 		public String getName() {
@@ -112,6 +126,10 @@ public class CTLCustomRuleUtils {
 		
 		public TLType[] getParametersType() {
 			return parametersType;
+		}
+		
+		public String[] getParameterNames() {
+			return parameterNames;
 		}
     }
 }

@@ -100,17 +100,20 @@ public class CustomValidationRuleTest extends ValidatorTestCase {
 		
 		temp = createRule(CustomValidationRule.class);
 		temp.getRef().setValue(1);
-		temp.getTarget().setValue("field2");
+		temp.getTarget().setValue("zzzz");
+		temp.getMappingParam().setValue("input:=field2");
 		assertReadyness(true, temp, record.getMetadata(), null, graphWrapper);
 		
 		temp = createRule(CustomValidationRule.class);
 		temp.getRef().setValue(2);
-		temp.getTarget().setValue("field,field2");
+		temp.getTarget().setValue("zzzz");
+		temp.getMappingParam().setValue("input:=field;input2:=field2");
 		assertReadyness(false, temp, record.getMetadata(), null, graphWrapper);
 		
 		temp = createRule(CustomValidationRule.class);
 		temp.getRef().setValue(2);
-		temp.getTarget().setValue("field3,field2");
+		temp.getTarget().setValue("zzzz");
+		temp.getMappingParam().setValue("input:=field3;input2:=field2");
 		assertReadyness(true, temp, record.getMetadata(), null, graphWrapper);
 	}
 	
@@ -129,13 +132,15 @@ public class CustomValidationRuleTest extends ValidatorTestCase {
 		CustomValidationRule temp;
 		temp = createRule(CustomValidationRule.class);
 		temp.getRef().setValue(1);
-		temp.getTarget().setValue("field");
+		temp.getTarget().setValue("zzz");
+		temp.getMappingParam().setValue("input:=field");
 		assertInvalid(temp, record1, null, graphWrapper);
 		assertValid(temp, record2, null, graphWrapper);
 		
 		temp = createRule(CustomValidationRule.class);
 		temp.getRef().setValue(2);
-		temp.getTarget().setValue("field,field2");
+		temp.getTarget().setValue("zzz");
+		temp.getMappingParam().setValue("input:=field;input2:=field2");
 		assertValid(temp, record3, null, graphWrapper);
 		assertInvalid(temp, record2, null, graphWrapper);
 		

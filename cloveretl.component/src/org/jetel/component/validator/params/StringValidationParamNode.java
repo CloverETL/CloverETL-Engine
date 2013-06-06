@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlValue;
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 28.11.2012
  */
-final public class StringValidationParamNode extends ValidationParamNode {
+public class StringValidationParamNode extends ValidationParamNode {
 	@XmlValue
 	String value = new String();
 	

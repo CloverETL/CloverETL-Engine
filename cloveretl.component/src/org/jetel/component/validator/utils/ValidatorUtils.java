@@ -20,6 +20,7 @@ package org.jetel.component.validator.utils;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.rules.CustomValidationRule;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
+import org.jetel.data.Defaults;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -84,6 +86,10 @@ public class ValidatorUtils {
 		return temp;
 	}
 	
+	public static Map<String, String> parseMappingToMap(String input) throws ParseException {
+		return parseStringToMap(input, Defaults.ASSIGN_SIGN, Defaults.Component.KEY_FIELDS_DELIMITER_REGEX, true);
+	}
+	
 	/**
 	 * Checks whether given field exists in given metadata
 	 * @param fieldName Field to check
@@ -110,6 +116,15 @@ public class ValidatorUtils {
 		}
 		for(int i = 0; i < temp.length; i++) {
 			if(inputMetadata.getField(temp[i]) == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public static boolean areValidFields(Collection<String> fields, DataRecordMetadata inputMetadata) {
+		for (String field : fields) {
+			if(inputMetadata.getField(field) == null) {
 				return false;
 			}
 		}

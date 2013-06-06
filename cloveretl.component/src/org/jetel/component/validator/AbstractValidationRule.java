@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.rules.AbstractMappingValidationRule;
 import org.jetel.component.validator.rules.ComparisonValidationRule;
 import org.jetel.component.validator.rules.CustomValidationRule;
 import org.jetel.component.validator.rules.DateValidationRule;
@@ -66,7 +67,8 @@ import org.jetel.metadata.DataRecordMetadata;
 		LookupValidationRule.class,
 		CustomValidationRule.class,
 		EmailValidationRule.class,
-		PhoneNumberValidationRule.class
+		PhoneNumberValidationRule.class,
+		AbstractMappingValidationRule.class
 	})
 public abstract class AbstractValidationRule extends ValidationNode {
 	
@@ -78,7 +80,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	 *  @see AbstractValidationRule#getTargetType()
 	 */
 	public static enum TARGET_TYPE {
-		ONE_FIELD, UNORDERED_FIELDS, ORDERED_FIELDS
+		ONE_FIELD, UNORDERED_FIELDS, MAPPING_SPECIFIED
 	}
 	
 	private Map<String, String> tempParams;

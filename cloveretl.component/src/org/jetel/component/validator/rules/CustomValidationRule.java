@@ -18,10 +18,15 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -29,7 +34,6 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.CTLRecordTransform;
 import org.jetel.component.Validator;
-import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.CustomRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
@@ -43,6 +47,7 @@ import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
+import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
@@ -70,7 +75,7 @@ import org.jetel.util.string.StringUtils;
  */
 @XmlRootElement(name="custom")
 @XmlType(propOrder={"ref"})
-public class CustomValidationRule extends AbstractValidationRule {
+public class CustomValidationRule extends AbstractMappingValidationRule {
 	
 	public static final int ERROR = 1101;			/** Custom rule returned false thus the record is invalid */
 	public static final int ERROR_EXECUTION = 1102;	/** Error executing rule (invalid code, some runtime problems...) */
@@ -81,15 +86,38 @@ public class CustomValidationRule extends AbstractValidationRule {
 	private CTLMapping tempMapping;
 	private DataRecord tempCustomRuleOutputRecord;
 	private DataRecord tempCustomRuleInputRecord;
+	
+	private String[] ruleParameters;
+	private String functionName;
+	private Map<String, String> mapping;
 
 	@Override
 	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		return new ArrayList<ValidationParamNode>();
+		CustomRule selectedRule = getSelectedRule(graphWrapper);
+		Function firstFunction = getFirstFunction(selectedRule, inMetadata, graphWrapper);
+		TLType[] parameterTypes = firstFunction.getParametersType();
+		String[] parameterNames = firstFunction.getParameterNames();
+		functionName = firstFunction.getName();
+		
+		ruleParameters = new String[parameterTypes.length];
+		for (int i = 0; i < parameterTypes.length; i++) {
+			ruleParameters[i] = parameterNames[i];
+		}
+		
+		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+		mappingParam.setName("Parameters mapping");
+		mappingParam.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
+		params.add(mappingParam);
+		return params;
 	}
-
+	
 	@Override
-	public TARGET_TYPE getTargetType() {
-		return TARGET_TYPE.ORDERED_FIELDS;
+	public String[] getMappingTargetFields() {
+		return ruleParameters;
+	}
+	
+	private void initializeMapping() throws ParseException {
+		mapping = ValidatorUtils.parseMappingToMap(resolve(mappingParam.getValue()));
 	}
 
 	@Override
@@ -100,25 +128,33 @@ public class CustomValidationRule extends AbstractValidationRule {
 		}
 		
 		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-		logParentLangaugeSetting();
+		DataRecordMetadata metadata = record.getMetadata();
+		if (isLoggingEnabled()) {
+			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
+			logParentLangaugeSetting();
+		}
 		
-		String resolvedTarget = resolve(target.getValue());
-		String parsedTargets[] = ValidatorUtils.parseTargets(resolvedTarget);
+		try {
+			initializeMapping();
+		} catch (ParseException e) {
+			// FIXME field is not invalid, the state of the rule is invalid
+			// make sure this state cannot happen, make the rule fail in initialization method
+			throw new JetelRuntimeException(e);
+		}
 		
-		Map<Integer, CustomRule> customRules = graphWrapper.getCustomRules();
-		CustomRule selectedRule = customRules.get(ref.getValue());
-		List<Function> functions = CTLCustomRuleUtils.findFunctions(graphWrapper.getTransformationGraph(), new DataRecordMetadata[]{record.getMetadata()}, new DataRecordMetadata[]{Validator.createCustomRuleOutputMetadata()}, selectedRule.getCode());
-		String codeToExecute = getCustomValidationRuleTransformation(selectedRule.getCode(), functions.get(0), parsedTargets);
+		CustomRule selectedRule = getSelectedRule(graphWrapper);
+		Function firstFunction = getFirstFunction(selectedRule, metadata, graphWrapper);
+		String[] orderedParameterFields = getOrderedParameterFields(firstFunction.getParameterNames());
+		String codeToExecute = getCustomValidationRuleTransformation(selectedRule.getCode(), firstFunction, orderedParameterFields);
 		
-		initMapping(codeToExecute, record.getMetadata(), graphWrapper);
+		initMapping(codeToExecute, metadata, graphWrapper);
 		
 		tempCustomRuleOutputRecord.reset();
 		tempCustomRuleInputRecord.reset();
 		tempCustomRuleInputRecord.copyFrom(record);
 		
 		HashMap<String, String> values = new HashMap<String, String>();
-		for(String field: parsedTargets) {
+		for(String field: orderedParameterFields) {
 			values.put(field, record.getField(field).toString());
 		}
 		
@@ -126,23 +162,50 @@ public class CustomValidationRule extends AbstractValidationRule {
 			tempMapping.init("dummy");
 			tempMapping.execute();
 		} catch (Exception ex) {
-			logError("Function '" + functions.get(0).getName() + "' could not be executed.");
-			raiseError(ea, ERROR_EXECUTION, "Given function could not be executed.", graphWrapper.getNodePath(this), parsedTargets, values);
+			logError("Function '" + firstFunction.getName() + "' could not be executed.");
+			raiseError(ea, ERROR_EXECUTION, "Given function could not be executed.", graphWrapper.getNodePath(this), orderedParameterFields, values);
 			return State.INVALID;
 		}
 		Boolean value = (Boolean) tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_RESULT).getValue(); 
 		if(value != null && value) {
-			logSuccess("Fields '" + resolvedTarget + "' passed function '" + functions.get(0).getName() + "'.");
+			logSuccess("Fields '" + Arrays.toString(orderedParameterFields) + "' passed function '" + firstFunction.getName() + "'.");
 			return State.VALID;
 		} else {
 			String message = new String();
 			if(tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_MESSAGE).getValue() != null) {
 				message = tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_MESSAGE).getValue().toString();
 			}
-			logError("Fields '" + resolvedTarget + "' didn't passed function '" + functions.get(0).getName() + "'.");
-			raiseError(ea, ERROR, message , graphWrapper.getNodePath(this), parsedTargets, values);
+			logError("Fields '" + Arrays.toString(orderedParameterFields) + "' didn't passed function '" + firstFunction.getName() + "'.");
+			raiseError(ea, ERROR, message , graphWrapper.getNodePath(this), orderedParameterFields, values);
 			return State.INVALID;
 		}
+	}
+
+	/**
+	 * @param selectedRule
+	 * @param metadata
+	 * @param graphWrapper
+	 * @return
+	 */
+	private Function getFirstFunction(CustomRule selectedRule, DataRecordMetadata metadata, GraphWrapper graphWrapper) {
+		List<Function> functions = CTLCustomRuleUtils.findFunctions(
+				graphWrapper.getTransformationGraph(),
+				new DataRecordMetadata[] { metadata },
+				new DataRecordMetadata[] { Validator.createCustomRuleOutputMetadata() },
+				selectedRule.getCode()
+			);
+		Function firstFunction = functions.get(0);
+		return firstFunction;
+	}
+
+	/**
+	 * @param graphWrapper
+	 * @return
+	 */
+	private CustomRule getSelectedRule(GraphWrapper graphWrapper) {
+		Map<Integer, CustomRule> customRules = graphWrapper.getCustomRules();
+		CustomRule selectedRule = customRules.get(ref.getValue());
+		return selectedRule;
 	}
 
 	@Override
@@ -154,59 +217,90 @@ public class CustomValidationRule extends AbstractValidationRule {
 		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		boolean fieldsAreValid = true;
-		String resolvedTarget = resolve(target.getValue());
-		if(!resolvedTarget.isEmpty() && !ValidatorUtils.areValidFields(resolvedTarget, inputMetadata)) {
-			accumulator.addError(target, this, "Some of target fields are not present in input metadata.");
+		try {
+			initializeMapping();
+		} catch (ParseException e) {
+			accumulator.addError(mappingParam, this, "Cannot parse mapping: " + e.getMessage());
+			return false;
+		}
+		Collection<String> mappingInputFields = mapping.values();
+		if(!ValidatorUtils.areValidFields(mappingInputFields, inputMetadata)) {
+			accumulator.addError(mappingParam, this, "Some of mapping source fields are not present in input metadata.");
 			state = false;
 			fieldsAreValid = false;
 		}
 		Integer customRuleId = ref.getValue();
 		if(customRuleId == null) {
-			accumulator.addError(target, this, "Invalid custom rule ID.");
+			accumulator.addError(ref, this, "Invalid custom rule ID.");
 			state = false;
 		}
 		Map<Integer, CustomRule> customRules = graphWrapper.getCustomRules();
 		if(customRules == null) {
-			accumulator.addError(target, this, "No custom validation rules.");
+			accumulator.addError(ref, this, "No custom validation rules.");
 			return false; // Stop check here
 		}
 		CustomRule selectedRule = customRules.get(ref.getValue());
 		if(selectedRule == null) {
-			accumulator.addError(target, this, "Invalid custom rule. Delete this validation rule.");
+			accumulator.addError(ref, this, "Invalid custom rule. Delete this validation rule.");
 			return false; // Stop check here
 		}
 		List<Function> functions;
 		try { 
-			functions = CTLCustomRuleUtils.findFunctions(graphWrapper.getTransformationGraph(), new DataRecordMetadata[]{inputMetadata}, new DataRecordMetadata[]{Validator.createCustomRuleOutputMetadata()}, selectedRule.getCode());
+			functions = CTLCustomRuleUtils.findFunctions(
+					graphWrapper.getTransformationGraph(),
+					new DataRecordMetadata[] { inputMetadata },
+					new DataRecordMetadata[] { Validator.createCustomRuleOutputMetadata() },
+					selectedRule.getCode()
+				);
 		} catch (JetelRuntimeException ex) {
-			accumulator.addError(target, this, "Parsing of validation rule failed with message: " + ex.getMessage());
+			accumulator.addError(ref, this, "Parsing of validation rule failed with message: " + ex.getMessage());
 			return false; // Stop check here 
 		}
 		if(functions.size() == 0) {
-			accumulator.addError(target, this, "No function found in custom validation rule.");
+			accumulator.addError(ref, this, "No function found in custom validation rule.");
 			return false; // Stop check here
 		}
-		if(functions.get(0).getName().equals("transform")) {
-			accumulator.addError(target, this, "Invalid name of custom validaton rule. Name 'transform' is reserved.");
+		Function firstFunction = functions.get(0);
+		if(firstFunction.getName().equals("transform")) {
+			accumulator.addError(ref, this, "Invalid name of custom validaton rule. Name 'transform' is reserved.");
 			return false; // Stop check here
 		}
-
-		String parsedTargets[] = ValidatorUtils.parseTargets(resolvedTarget);
-		if(parsedTargets.length < functions.get(0).getParametersType().length) {
-			accumulator.addError(target, this, "Not enough parameters for the custom validation rule.");
-			return false; // Stop check here
+		Set<String> parameterNames = new HashSet<String>();
+		String[] parameterNamesArray = firstFunction.getParameterNames();
+		for (String param : parameterNamesArray) {
+			parameterNames.add(param);
 		}
-		if(parsedTargets.length > functions.get(0).getParametersType().length) {
-			accumulator.addError(target, this, "Too much parameters for the custom validation rule.");
-			return false; // Stop check here
+		Set<String> mappingTargetFields = mapping.keySet();
+		if (!parameterNames.containsAll(mappingTargetFields)) {
+			accumulator.addError(mappingParam, this, "Mapping sets parameters that do not exist.");
+			return false;
 		}
+		if (!mappingTargetFields.containsAll(parameterNames)) {
+			accumulator.addError(mappingParam, this, "Mapping does not set all the function parameters.");
+			return false;
+		}
+		String[] orderedParameterFields = getOrderedParameterFields(parameterNamesArray);
 		if(fieldsAreValid) {
-			String codeToExecute = getCustomValidationRuleTransformation(selectedRule.getCode(), functions.get(0), parsedTargets);
+			String codeToExecute = getCustomValidationRuleTransformation(selectedRule.getCode(), firstFunction, orderedParameterFields);
 			state &= tryToCompile(codeToExecute, accumulator, inputMetadata, graphWrapper);
-		}	
+		}
 		return state;
 	}
 	
+	/**
+	 * @param parameterNamesArray
+	 * @return
+	 */
+	private String[] getOrderedParameterFields(String[] parameterNamesArray) {
+		String[] retval = new String[parameterNamesArray.length];
+		
+		for (int i = 0; i < retval.length; i++) {
+			retval[i] = mapping.get(parameterNamesArray[i]);
+		}
+		
+		return retval;
+	}
+
 	/**
 	 * Prepares transformation code for compilation/execution.
 	 * Prepends function transform() which call function from custom validation rule provided by user.
@@ -289,6 +383,21 @@ public class CustomValidationRule extends AbstractValidationRule {
 	
 	public IntegerValidationParamNode getRef() {
 		return ref;
+	}
+	
+	@Override
+	public String getDetailName() {
+		return String.format("%s (function '%s')", getName(), functionName);
+	}
+	
+	@Override
+	public String getMappingName() {
+		return "Function parameters mapping";
+	}
+	
+	@Override
+	public String getTargetMappedItemName() {
+		return "Parameter";
 	}
 
 }
