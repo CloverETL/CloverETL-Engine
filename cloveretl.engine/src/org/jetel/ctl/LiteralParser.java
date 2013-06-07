@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import org.jetel.util.MiscUtils;
 import org.jetel.util.formatter.TimeZoneProvider;
 
 /**
@@ -39,7 +40,7 @@ public class LiteralParser {
 	private static final DateFormat DATE_FORMATTER_TEMPLATE;
 	private static final DateFormat DATETIME_FORMATTER_TEMPLATE;
 	
-    private static final Calendar CALENDAR = Calendar.getInstance();
+    private static final Calendar CALENDAR = MiscUtils.getDefaultCalendar();
 
     static {
 		DATE_FORMATTER_TEMPLATE = new SimpleDateFormat("yyyy-MM-dd");

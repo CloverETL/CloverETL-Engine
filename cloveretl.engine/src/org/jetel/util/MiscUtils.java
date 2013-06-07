@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Locale;
 
 import org.apache.log4j.Logger;
@@ -34,6 +35,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.string.StringUtils;
 
 public final class MiscUtils {
@@ -114,6 +116,33 @@ public final class MiscUtils {
 		}
 		return language 
 			+ (!StringUtils.isEmpty(country) ? ("." + country) : "");
+	}
+	
+	/**
+	 * Replacement for {@link Calendar#getInstance(java.util.TimeZone, Locale)},
+	 * uses the locale and time zone defined in
+	 * {@link Defaults} or {@link GraphRuntimeContext}
+	 * if either if the parameters is <code>null</code>.
+	 * 
+	 * @param localeStr
+	 * @param timeZoneStr
+	 * @return
+	 */
+	public static Calendar createCalendar(String localeStr, String timeZoneStr) {
+		Locale locale = MiscUtils.createLocale(localeStr);
+		TimeZoneProvider timeZone = new TimeZoneProvider(timeZoneStr);
+		return Calendar.getInstance(timeZone.getJavaTimeZone(), locale);
+	}
+	
+	/**
+	 * Replacement for {@link Calendar#getInstance()},
+	 * uses the locale and time zone defined in
+	 * {@link Defaults} or {@link GraphRuntimeContext}.
+	 * 
+	 * @return
+	 */
+	public static Calendar getDefaultCalendar() {
+		return createCalendar(null, null);
 	}
 	
 	/**

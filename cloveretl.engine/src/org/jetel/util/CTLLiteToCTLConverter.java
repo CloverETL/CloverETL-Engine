@@ -24,6 +24,7 @@ package org.jetel.util;
  * $Header$
  */
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -314,7 +315,7 @@ public class CTLLiteToCTLConverter {
 		StringBuffer transCode = new StringBuffer(SOURCE_CODE_BUFFER_INITIAL_SIZE);
 
 		transCode.append("// automatically generated on ");
-		transCode.append(java.util.Calendar.getInstance().getTime()).append("\n");
+		transCode.append(new Date()).append("\n");
 		transCode.append("function transform() {\n"); 
 
 		sourceCode.insert(0, transCode.toString());

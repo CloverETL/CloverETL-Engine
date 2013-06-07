@@ -43,6 +43,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordParsingType;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
@@ -323,7 +324,7 @@ public class DBFDataFormatter extends AbstractFormatter {
 			writer.truncate(writer.position());
 				
 		// update header - last update + rec counter
-		Calendar cal=Calendar.getInstance();
+		Calendar cal = MiscUtils.getDefaultCalendar();
 		dataBuffer.clear();
 		dataBuffer.put((byte) (cal.get(Calendar.YEAR) - 1900)); //year
 		dataBuffer.put((byte) cal.get(Calendar.MONTH)); //month

@@ -19,7 +19,8 @@
 package org.jetel.ctl.extensions;
 
 import java.util.Calendar;
-import java.util.Locale;
+
+import org.jetel.util.MiscUtils;
 
 /**
  * @author jakub (jakub.lehotsky@javlin.eu)
@@ -33,7 +34,7 @@ public class TLCalendarCache extends TLCache {
 	private Object previousLocale;
 
 	public TLCalendarCache() {
-		cachedCalendar = Calendar.getInstance();
+		cachedCalendar = MiscUtils.getDefaultCalendar();
 	}
 	
 	public TLCalendarCache(TLFunctionCallContext context, int position) {
@@ -47,10 +48,12 @@ public class TLCalendarCache extends TLCache {
 	 */
 	private void createCachedCalendar(TLFunctionCallContext context, int position) {
 		
-		if (context.getLiteralsSize() > position && context.isLiteral(position))
-			cachedCalendar = Calendar.getInstance(new Locale((String)context.getParamValue(position)));
-		else
-			cachedCalendar = Calendar.getInstance();
+		if ((context.getLiteralsSize()) > position && context.isLiteral(position)) {
+			String localeStr = (String) context.getParamValue(position);
+			cachedCalendar = MiscUtils.createCalendar(localeStr, null); // TODO time zone as parameter?
+		} else {
+			cachedCalendar = MiscUtils.getDefaultCalendar();
+		}
 	}
 
 	
@@ -62,7 +65,7 @@ public class TLCalendarCache extends TLCache {
 		if (context.isLiteral(position) || (cachedCalendar != null && locale.equals(previousLocale))) {
 			return cachedCalendar;
 		} else {
-			cachedCalendar = Calendar.getInstance(new Locale(locale));
+			cachedCalendar = MiscUtils.createCalendar(locale, null);
 			previousLocale = locale;
 			return cachedCalendar;
 		}
