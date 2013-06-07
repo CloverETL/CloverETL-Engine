@@ -33,7 +33,6 @@ import org.jetel.component.validator.ValidationNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.rules.CustomValidationRule;
 import org.jetel.component.validator.utils.ValidationRulesPersister;
-import org.jetel.component.validator.utils.ValidationRulesPersisterException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DateDataField;
@@ -42,6 +41,7 @@ import org.jetel.data.IntegerDataField;
 import org.jetel.data.ListDataField;
 import org.jetel.data.MapDataField;
 import org.jetel.data.StringDataField;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
@@ -204,27 +204,14 @@ public class Validator extends Node {
 			return status;
 		}
 		
-		// URL for external validation rules have higher priority
-		String tempRules;
-		if(externalRulesURL != null) {
-			tempRules = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), externalRulesURL,null);
-		} else {
-			tempRules = rules;
-		}
-		
-		if(tempRules == null || tempRules.isEmpty()) {
-			ConfigurationProblem problem = new ConfigurationProblem("No validation rules.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+		try {
+			initRootGroup();
+		} catch (ComponentNotReadyException e) {
+			ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
 			status.add(problem);
 			return status;
 		}
-		
-		try {
-			rootGroup = ValidationRulesPersister.deserialize(tempRules);
-		} catch (ValidationRulesPersisterException e) {
-			ConfigurationProblem problem = new ConfigurationProblem("Cannot parse validation rules.", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
-			status.add(problem);
-		}
-		
+
 		ReadynessErrorAcumulator accumulator = new ReadynessErrorAcumulator();
 		GraphWrapper graphWrapper = new EngineGraphWrapper(getGraph());
 		graphWrapper.init(rootGroup);
@@ -242,6 +229,33 @@ public class Validator extends Node {
 			}
 		}
 		
+		try {
+			initMapping();
+		} catch(Exception e) {
+			ConfigurationProblem problem = new ConfigurationProblem("Cannot initialize error output mapping", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+			status.add(problem);
+			return status;
+		}
+		return status;
+	}
+
+	private void initRootGroup() throws ComponentNotReadyException {
+		// URL for external validation rules have higher priority
+		String tempRules;
+		if(externalRulesURL != null) {
+			tempRules = FileUtils.getStringFromURL(getGraph().getRuntimeContext().getContextURL(), externalRulesURL, null);
+		} else {
+			tempRules = rules;
+		}
+		
+		if(tempRules == null || tempRules.isEmpty()) {
+			throw new ComponentNotReadyException("No validation rules.");
+		}
+
+		rootGroup = ValidationRulesPersister.deserialize(tempRules);
+	}
+
+	private void initMapping() throws ComponentNotReadyException {
 		if(getOutputPort(INVALID_OUTPUT_PORT) != null) {
 			errorMapping = new CTLMapping("Error output", this);
 			inputRecord = errorMapping.addInputMetadata(MAPPING_INPUT_RECORD, getInputPort(INPUT_PORT).getMetadata());
@@ -255,14 +269,8 @@ public class Validator extends Node {
 				errorMapping.addAutoMapping(MAPPING_INPUT_ERROR, MAPPING_OUTPUT_RECORD);
 			}
 			
-			try {
-				errorMapping.init(XML_ERROR_MAPPING);
-			} catch(Exception e) {
-				ConfigurationProblem problem = new ConfigurationProblem("Cannot initialize error output mapping", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
-				status.add(problem);
-				return status;
-			}
-			errorMapping.preExecute();
+			errorMapping.init(XML_ERROR_MAPPING);
+			
 			// Enable record multiplication only if user demanded mapping at least one of reporting field
 			List<DataFieldMetadata> usedInputFields = errorMapping.findUsedInputFields(getGraph());
 			for(DataFieldMetadata inField : usedInputFields) {
@@ -280,7 +288,21 @@ public class Validator extends Node {
 			inputRecord = DataRecordFactory.newRecord(getInputPort(INPUT_PORT).getMetadata());
 			inputRecord.init();
 		}
-		return status;
+	}
+
+	@Override
+	public void init() throws ComponentNotReadyException {
+		super.init();
+		
+		initRootGroup();
+		initMapping();
+	}
+	
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		super.preExecute();
+		errorMapping.preExecute();
+		processedRecords = 0;
 	}
 
 	@Override
