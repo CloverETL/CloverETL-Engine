@@ -18,6 +18,7 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -161,6 +162,15 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 		}
 	}
 	
+	@Override
+	protected void generate(URI root, int depth) throws IOException {
+		int i = 0;
+		for ( ; i < 20; i++) {
+			String name = String.valueOf(i);
+			URI child = URIUtils.getChildURI(root, name);
+			manager.create(CloverURI.createSingleURI(child));
+		}
+	}
 	
 	public void testAdministrativeShare() throws Exception {
 		URI uri = new URI("smb://administrator:semafor@VIRT-ORANGE/ADMIN$/");
