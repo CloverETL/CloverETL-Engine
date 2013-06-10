@@ -696,6 +696,7 @@ defined.version.suffix=release
 				author="true"
 				failonerror="true"
 				private="false"
+				useexternalfiles="yes"
 				>
 			<fileset dir="${dir.src.javadoc}">
 				<include name="**/*.java"/>
