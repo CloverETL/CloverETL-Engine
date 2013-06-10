@@ -690,15 +690,12 @@ defined.version.suffix=release
 		<echo message="Building code documentation..." />
 		<property name="dist.subdir" value="cloverETL/javadoc"/>
 		<mkdir dir="${dir.doc}/${dist.subdir}" />
-		<!--
 		<javadoc 
 				destdir="${dir.doc}/${dist.subdir}" 
 				packagenames="*"
 				author="true"
 				failonerror="true"
 				private="false"
-				useexternalfile="yes"
-				Encoding="UTF-8"
 				>
 			<fileset dir="${dir.src.javadoc}">
 				<include name="**/*.java"/>
@@ -710,7 +707,7 @@ defined.version.suffix=release
 			</classpath>
 			<doclet name="com.sun.tools.doclets.standard.Standard">
 				<param name="-breakiterator" value="on" />
-				 Following tag definition is here to get rid of complains produced by standard doclet
+				<!-- Following tag definition is here to get rid of complains produced by standard doclet-->
 				<param name="-tag" value="revision" />
 			</doclet>
 			<doctitle>
@@ -720,7 +717,7 @@ defined.version.suffix=release
 				<![CDATA[<address>Copyright &#169; 2002-${build.year} Javlin a.s.</address>]]>
 			</bottom>
 			<link href="http://java.sun.com/j2se/${java.src.version}.0/docs/api/"/>
-		</javadoc>-->
+		</javadoc>
 	</target>
 	
 	<target name="collect-javadoc-src" depends="init">
