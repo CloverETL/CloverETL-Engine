@@ -18,7 +18,6 @@
  */
 package org.jetel.component.fileoperation;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
@@ -102,37 +101,6 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 		assertTrue(handler.canPerform(Operation.write(SMBOperationHandler.SMB_SCHEME)));
 	}
 	
-	public void testNativePath() throws Exception {
-		
-/*		TODO probably remove 
- 		CloverURI uri;
-		SmbFile file;
-		
-		uri = relativeURI("."); // the only platform-independent test
-		file = new SmbFile(uri.getAbsoluteURI().getSingleURI().toString());
-		uri = CloverURI.createURI(file.getCanonicalPath());
-		System.out.println(uri.getAbsoluteURI().getSingleURI().getPath());
-		assertTrue(manager.info(uri).isDirectory());
-*/		
-		// TODO move these into a graph test that will run on Windows
-//		uri = CloverURI.createURI("\\\\LINUXFILE\\share\\milan");
-//		System.out.println(uri.getAbsoluteURI().getSingleURI().getPath());
-//		assertTrue(manager.info(uri).isDirectory());
-//
-//		uri = CloverURI.createURI("//LINUXFILE/share/milan");
-//		System.out.println(uri.getAbsoluteURI().getSingleURI().getPath());
-//		assertTrue(manager.info(uri).isDirectory());
-//		
-//		uri = CloverURI.createURI("//LINUXFILE/share/m*l?n");
-//		System.out.println(uri.getAbsoluteURI().getSingleURI().getPath());
-//		ListResult listResult = manager.list(uri);
-//		assertTrue(listResult.success());
-//		List<Info> infos = listResult.getResult(0);
-//		System.out.println(infos);
-//		assertFalse(infos.isEmpty());
-
-	}
-
 	@Override
 	public void testCopy() throws Exception {
 		super.testCopy();
@@ -168,72 +136,6 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 		
 	}
 	
-	@Override
-	public void testList() throws Exception {
-		super.testList();
-		/*
-		 * TODO baaaah! do something reasonable or remove!
-		 * 
-		CloverURI uri;
-		ListResult result;
-		// TODO cannot list item "javlintest" of new SmbFile("smb://").listFiles() 
-		//SmbFile[] listedFiles = new SmbFile("smb://").listFiles();
-		SmbFile[] listedFiles = new SmbFile("smb://javlin:javlin@VIRT-ORANGE/").listFiles();
-		for (SmbFile file : listedFiles) { // TODO may be slow
-			printFileInfo(file);
-			if (file.exists()) {
-				uri = CloverURI.createURI(file.toString());
-//				InfoResult iResult = manager.info(uri);
-//				System.out.println(iResult.success());
-//				System.out.println(((SMBFileInfo)iResult.getInfo()).canRead());
-//				System.out.println(((SMBFileInfo)iResult.getInfo()).canWrite());
-				result = manager.list(uri);
-				System.out.println(uri);
-				Exception e = result.getFirstError();
-				if (e != null) throw e;
-				assertTrue(result.success());
-				System.out.println(result.getResult());
-			}
-		}
-		*/
-	}
-
-	// TODO remove (or move to SmbFileInfo?)
-	public static void printFileInfo(SmbFile file) throws IOException {
-		System.out.println("-- " + file);
-		System.out.print("   Type: ");
-		switch (file.getType()) {
-		case SmbFile.TYPE_COMM:
-			System.out.println("communications device");
-			break;
-		case SmbFile.TYPE_FILESYSTEM:
-			System.out.println("file system (file or directory)");
-			break;
-		case SmbFile.TYPE_NAMED_PIPE:
-			System.out.println("named pipe");
-			break;
-		case SmbFile.TYPE_PRINTER:
-			System.out.println("printer");
-			break;
-		case SmbFile.TYPE_SERVER:
-			System.out.println("server");
-			break;
-		case SmbFile.TYPE_SHARE:
-			System.out.println("share");
-			break;
-		case SmbFile.TYPE_WORKGROUP:
-			System.out.println("workgroup");
-			break;
-		}
-		System.out.println("   Server/Workgroup: " + file.getServer());
-		System.out.println("   Share: " + file.getShare());
-		
-//		for (ACE a : file.getSecurity()) {
-//			System.out.println("   ACE:  " + (!StringUtils.isEmpty(a.getSID().getDomainName()) ? a.getSID().getDomainName() + "\\" : "") + a.getSID().getAccountName() + ", allow=" + a.isAllow() + ", exec=" + ((a.getAccessMask() & ACE.FILE_EXECUTE) != 0));
-//			
-//		}
-	}
-
 	@Override
 	public void testResolve() throws Exception {
 		super.testResolve();
