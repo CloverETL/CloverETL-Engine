@@ -463,6 +463,9 @@ public class SMBOperationHandler implements IOperationHandler {
 	}
 	
 	public static List<SmbFile> resolve(String wildcardURL) throws IOException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new IOException(FileOperationMessages.getString("IOperationHandler.interrupted")); //$NON-NLS-1$
+		}
 		if (!hasWildcards(wildcardURL)) {
 			return Arrays.asList(new SmbFile(wildcardURL));
 		}
