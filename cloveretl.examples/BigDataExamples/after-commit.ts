@@ -9,12 +9,13 @@
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>
 	
+	<!-- this is not a test, it only sets correct parameters to hadoop.prm (the graph is not a part of the examples
+		and thus it is placed in data-tmp -->
+	<FunctionalTest ident="SetHadoopParameters" graphFile="data-tmp/setParameters.grf" excludedEtlEnvironment="engine" />
+	
 	<FunctionalTest ident="UniqueVisits-HadoopHive" graphFile="jobflow/UniqueVisits-HadoopHive.jbf" excludedEtlEnvironment="engine">
 		<Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
 		<Property name="LIB_DIR" value="../../cloveretl.test.scenarios/lib" />
-		<Property name="HADOOP_JOBTRACKER_HOST" value="virt-hotel.javlin.eu" />
-		<Property name="HADOOP_HIVE_URL" value="jdbc\:hive\://virt-hotel.javlin.eu\:10000/default" />
-		<Property name="HADOOP_NAMENODE_HOST" value="virt-hotel.javlin.eu" />
 		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>
@@ -22,9 +23,6 @@
 	<FunctionalTest ident="UniqueVisits-HadoopMapReduce" graphFile="jobflow/UniqueVisits-HadoopMapReduce.jbf" excludedEtlEnvironment="engine">
 		<Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
 		<Property name="LIB_DIR" value="../../cloveretl.test.scenarios/lib" />
-		<Property name="HADOOP_JOBTRACKER_HOST" value="virt-hotel.javlin.eu" />
-		<Property name="HADOOP_HIVE_URL" value="jdbc\:hive\://virt-hotel.javlin.eu\:10000/default" />
-		<Property name="HADOOP_NAMENODE_HOST" value="virt-hotel.javlin.eu" />
 		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>
