@@ -3463,6 +3463,102 @@ public abstract class CompilerTestCase extends CloverTestCase {
     	check("bornExtractDate", cal.getTime());
     	check("originalDate", BORN_VALUE);
 	}
+	
+	public void test_datelib_createDate() {
+		doCompile("test_datelib_createDate");
+		
+		Calendar cal = Calendar.getInstance();
+		
+		// no time zone
+		cal.clear();
+		cal.set(2013, 5, 11);
+		check("date1", cal.getTime());
+		
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		check("dateTime1", cal.getTime());
+		
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		cal.set(Calendar.MILLISECOND, 123);
+		check("dateTimeMillis1", cal.getTime());
+
+		// literal
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+5"));
+		
+		cal.clear();
+		cal.set(2013, 5, 11);
+		check("date2", cal.getTime());
+		
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		check("dateTime2", cal.getTime());
+
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		cal.set(Calendar.MILLISECOND, 123);
+		check("dateTimeMillis2", cal.getTime());
+
+		// variable
+		cal.clear();
+		cal.set(2013, 5, 11);
+		check("date3", cal.getTime());
+		
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		check("dateTime3", cal.getTime());
+
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		cal.set(Calendar.MILLISECOND, 123);
+		check("dateTimeMillis3", cal.getTime());
+	}
+	
+	public void test_datelib_getPart() {
+		doCompile("test_datelib_getPart");
+		
+		Calendar cal = Calendar.getInstance();
+		
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+1"));
+		cal.set(2013, 5, 11, 14, 46, 34);
+		cal.set(Calendar.MILLISECOND, 123);
+		
+		Date date = cal.getTime();
+		
+		cal = Calendar.getInstance();
+		cal.setTime(date);
+		
+		// no time zone
+		check("year1", cal.get(Calendar.YEAR));
+		check("month1", cal.get(Calendar.MONTH) + 1);
+		check("day1", cal.get(Calendar.DAY_OF_MONTH));
+		check("hour1", cal.get(Calendar.HOUR_OF_DAY));
+		check("minute1", cal.get(Calendar.MINUTE));
+		check("second1", cal.get(Calendar.SECOND));
+		check("millisecond1", cal.get(Calendar.MILLISECOND));
+		
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+5"));
+		
+		// literal
+		check("year2", cal.get(Calendar.YEAR));
+		check("month2", cal.get(Calendar.MONTH) + 1);
+		check("day2", cal.get(Calendar.DAY_OF_MONTH));
+		check("hour2", cal.get(Calendar.HOUR_OF_DAY));
+		check("minute2", cal.get(Calendar.MINUTE));
+		check("second2", cal.get(Calendar.SECOND));
+		check("millisecond2", cal.get(Calendar.MILLISECOND));
+
+		// variable
+		check("year3", cal.get(Calendar.YEAR));
+		check("month3", cal.get(Calendar.MONTH) + 1);
+		check("day3", cal.get(Calendar.DAY_OF_MONTH));
+		check("hour3", cal.get(Calendar.HOUR_OF_DAY));
+		check("minute3", cal.get(Calendar.MINUTE));
+		check("second3", cal.get(Calendar.SECOND));
+		check("millisecond3", cal.get(Calendar.MILLISECOND));
+	}
+	
 //-----------------Convert Lib tests-----------------------
 	public void test_convertlib_cache() {
 		// set default locale to en.US so the date is formatted uniformly on all systems
@@ -4056,4 +4152,5 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("withTimeZone1", new Date(BORN_VALUE_NO_MILLIS.getTime() + 2*HOUR)); // timezone changes from GMT+5 to GMT+3
 		check("withTimeZone2", new Date(BORN_VALUE_NO_MILLIS.getTime() - 2*HOUR)); // timezone changes from GMT+3 to GMT+5
 	}
+	
 }
