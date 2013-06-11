@@ -87,34 +87,32 @@ public class SlaveReader extends InputReader {
 		if (inPort == null) {
 			rec[CURRENT] = rec[NEXT] = null;
 			return false;
-		} 
-		while(inPort.readRecord(rec[NEXT]) != null) {
+		}
+		if (firstRun) {	// first call of this function
+			firstRun = false;
+			// load first record of the run
+			if (inPort.readRecord(rec[NEXT]) == null) {
+				rec[CURRENT] = rec[NEXT] = null;
+				return false;
+			}
 			recCounter++;
-			needsRewind = false;
-			if (firstRun) {
-				firstRun = false;
-				boolean nullInKey = false;
-				for (int keyF: key.getKeyFields()) {
-					if (rec[NEXT].getField(keyF).isNull()) {
-						nullInKey = true;
-						break;
-					}
-				}
-				if (!nullInKey) {
-					swap();
-					return true;
-				}
-			} else {
-				int comparison = key.compare(rec[CURRENT], rec[NEXT]);
-				if (comparison != 0) {
-					inputOrdering = updateOrdering(comparison, inputOrdering);
-					swap();
-					return true;
-				}
+		}
+		swap();
+		needsRewind = false;
+		while (inPort.readRecord(rec[NEXT]) != null) {
+			recCounter++;
+			int comparison = key.compare(rec[CURRENT], rec[NEXT]);
+			if (comparison != 0) {
+				inputOrdering = updateOrdering(comparison, inputOrdering);
+				return true;
 			}
 		}
-		rec[CURRENT] = rec[NEXT] = null;
-		return false;
+		rec[NEXT] = null;
+		if (rec[CURRENT] == null) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	private boolean loadNextRunKeepLast() throws InterruptedException, IOException {
@@ -137,7 +135,6 @@ public class SlaveReader extends InputReader {
 		// set current record to the last one from the run to be loaded and next record to the first one
 		// from the following run
 			needsRewind = false;
-			rec[NEXT].reset();
 			if (inPort.readRecord(rec[NEXT]) == null) {
 				rec[NEXT] = null;
 				return true;
