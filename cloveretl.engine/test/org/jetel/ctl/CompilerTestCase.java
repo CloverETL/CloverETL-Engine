@@ -3830,6 +3830,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("parsedDecimal1", new BigDecimal("100.13"));
 		check("parsedDecimal2", new BigDecimal("123123123.123"));
 		check("parsedDecimal3", new BigDecimal("-350000.01"));
+		check("parsedDecimal4", new BigDecimal("1000000"));
+		check("parsedDecimal5", new BigDecimal("1000000.99"));
+		check("parsedDecimal6", new BigDecimal("123123123.123"));
 	}
 
 	public void test_convertlib_str2double() {
