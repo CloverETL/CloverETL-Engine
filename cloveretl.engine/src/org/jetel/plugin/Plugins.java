@@ -148,10 +148,10 @@ public class Plugins {
         deactivePlugins = new HashMap<String, PluginDescriptor>();
 
         if (pluginLocations == null || pluginLocations.length == 0) {
+        	logger.warn("Engine starts without plugins.");
         	if (pluginLocations == null) {
         		pluginLocations = new PluginLocation[0];
         	}
-        	throw new JetelRuntimeException("No engine plugins found.");
         }
         
         Plugins.pluginLocations = pluginLocations;
