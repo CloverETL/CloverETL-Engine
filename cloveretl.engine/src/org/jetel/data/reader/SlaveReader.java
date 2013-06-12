@@ -215,12 +215,4 @@ public class SlaveReader extends InputReader {
         return inputOrdering;
 	}
 	
-	@Override
-	public String getInfo() {
-		// because swap() was already called, records would be in wrong sequence
-		if (!keepLast) {
-			swap();
-		}
-		return super.getInfo();
-	}
 }
