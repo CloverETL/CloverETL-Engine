@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE TestScenario SYSTEM "testscenario.dtd">
+
+<TestScenario ident="BigDataExamples" description="BigDataExamples distributed with Designer" useJMX="true">
+	<GlobalRegEx ident="error" expression="^ERROR" caseSensitive="false" occurences="0" />
+	
+	<FunctionalTest ident="UniqueVisits-CloverETL" graphFile="jobflow/UniqueVisits-CloverETL.jbf" excludedEtlEnvironment="engine">
+		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
+		<DeleteFile file="data-tmp/unique_visitors.txt"/>
+	</FunctionalTest>
+	
+	<!-- this is not a test, it only sets correct parameters to hadoop.prm (the graph is not a part of the examples
+		and thus it is placed in data-tmp -->
+	<FunctionalTest ident="SetHadoopParameters" graphFile="data-tmp/setParameters.grf" excludedEtlEnvironment="engine" />
+	
+	<FunctionalTest ident="UniqueVisits-HadoopHive" graphFile="jobflow/UniqueVisits-HadoopHive.jbf" excludedEtlEnvironment="engine">
+		<Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
+		<Property name="LIB_DIR" value="../../cloveretl.test.scenarios/lib" />
+		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
+		<DeleteFile file="data-tmp/unique_visitors.txt"/>
+	</FunctionalTest>
+	
+	<FunctionalTest ident="UniqueVisits-HadoopMapReduce" graphFile="jobflow/UniqueVisits-HadoopMapReduce.jbf" excludedEtlEnvironment="engine">
+		<Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
+		<Property name="LIB_DIR" value="../../cloveretl.test.scenarios/lib" />
+		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
+		<DeleteFile file="data-tmp/unique_visitors.txt"/>
+	</FunctionalTest>
+
+</TestScenario>
