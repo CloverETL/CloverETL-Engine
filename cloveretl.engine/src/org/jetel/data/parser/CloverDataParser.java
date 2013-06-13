@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
@@ -37,6 +36,7 @@ import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.JetelVersion;
@@ -227,8 +227,6 @@ public class CloverDataParser extends AbstractParser {
                 recordFile = FileUtils.getReadableChannel(projectURL, !inData.startsWith("zip:") ? inData : 
                 	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
                 	
-                //read and check header of clover binary data format to check out the compatibility issues
-                checkCompatibilityHeader(recordFile);
                 initIndexFile(fileName);
             } catch (IOException ex) {
                 throw new ComponentNotReadyException(ex);
@@ -236,56 +234,68 @@ public class CloverDataParser extends AbstractParser {
         } else if (inStream != null) {
         	indexFile = null;
         	recordFile = Channels.newChannel(inStream);
-        	//read and check header of clover binary data format to check out the compatibility issues
-            checkCompatibilityHeader(recordFile);
         }
     	recordBuffer.clear();
 		try {
 			ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
 			recordBuffer.flip();
 		} catch (IOException e) {
-			throw new ComponentNotReadyException(e.getLocalizedMessage());
+			throw new ComponentNotReadyException(e);
 		}
+        //read and check header of clover binary data format to check out the compatibility issues
+        checkCompatibilityHeader(recordBuffer, metadata);
     }
 
-    public static void checkCompatibilityHeader(ReadableByteChannel recordFile) throws ComponentNotReadyException {
-        ByteBuffer headerBuffer = ByteBuffer.allocateDirect(Defaults.Component.CLOVER_DATA_HEADER_SIZE);
-        headerBuffer.clear();
-        
-    	try {
-			if (recordFile.read(headerBuffer) != Defaults.Component.CLOVER_DATA_HEADER_SIZE) {
-	        	//clover binary data format is definitely incompatible with current version - header is not present
-	        	throw new ComponentNotReadyException("Source clover data file is obsolete. " +
-	        			"Data cannot be read. Header data structure is missing or invalid.");
-			}
+    public static void checkCompatibilityHeader(ReadableByteChannel recordFile, DataRecordMetadata metadata) throws ComponentNotReadyException {
+        CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
+    	buffer.clear();
+		try {
+			ByteBufferUtils.reload(buffer.buf(), recordFile);
+			buffer.flip();
 		} catch (IOException e) {
-        	throw new ComponentNotReadyException(e);
+			throw new ComponentNotReadyException(e);
 		}
-    	headerBuffer.flip();
-    	
-        //read clover binary data header and check backward compatibility
-        //better header description is at CloverDataFormatter.setDataTarget() method
-        if (Defaults.Component.CLOVER_DATA_HEADER != headerBuffer.getLong()) {
-        	//clover binary data format is definitely incompatible with current version - header is not present
-        	throw new ComponentNotReadyException("Source clover data file is obsolete. Data cannot be read.");
-        }
-        if (Defaults.Component.CLOVER_DATA_COMPATIBILITY_HASH != headerBuffer.getLong()) {
-        	byte majorVersion = headerBuffer.get();
-        	byte minorVersion = headerBuffer.get();
-        	byte revisionVersion = headerBuffer.get();
-        	//clover binary data format is incompatible with current version - compatibility hash was changed
-        	throw new ComponentNotReadyException("Source clover data file is obsolete (version " + majorVersion + "." + minorVersion + "." + revisionVersion + "). Data cannot be read.");
-        }
-    	byte majorVersion = headerBuffer.get();
-    	byte minorVersion = headerBuffer.get();
-    	byte revisionVersion = headerBuffer.get();
-    	if (majorVersion != JetelVersion.getMajorVersion() || minorVersion != JetelVersion.getMinorVersion()) {
-    		logger.warn("Source clover data file was produced by incompatible clover engine version " + majorVersion + "." + minorVersion + "." + revisionVersion + ". It is not encouraged usage of clover binary format.");
-    	}
-    	byte[] extraBytes = new byte[4];
-    	headerBuffer.get(extraBytes);
-    	if (BitArray.isSet(extraBytes, 0) ^ Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
-        	throw new ComponentNotReadyException("Source file with binary data format is not compatible. Engine producer has different setup of Defaults.Record.USE_FIELDS_NULL_INDICATORS (see documentation). Data cannot be read.");
+    	checkCompatibilityHeader(buffer, metadata);
+    }
+
+    public static void checkCompatibilityHeader(CloverBuffer buffer, DataRecordMetadata metadata) throws ComponentNotReadyException {
+    	try {
+	        //read clover binary data header and check backward compatibility
+	        //better header description is at CloverDataFormatter.setDataTarget() method
+	        if (CloverDataFormatter.CLOVER_DATA_HEADER != buffer.getLong()) {
+	        	//clover binary data format is definitely incompatible with current version - header is not present
+	        	throw new ComponentNotReadyException("Source clover data file is obsolete. Data cannot be read.");
+	        }
+	        long cloverDataCompatibilityHash = buffer.getLong();
+	    	byte majorVersion = buffer.get();
+	    	byte minorVersion = buffer.get();
+	    	byte revisionVersion = buffer.get();
+	    	if (cloverDataCompatibilityHash != CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_2_9
+	    			&& cloverDataCompatibilityHash != CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_3_5) {
+	        	//clover binary data format is incompatible with current version - unknown compatibility hash
+	        	throw new ComponentNotReadyException("Source clover data file is not supported (version " + majorVersion + "." + minorVersion + "." + revisionVersion + "). Data cannot be read.");
+	    	}
+	        
+	    	if (majorVersion != JetelVersion.getMajorVersion() || minorVersion != JetelVersion.getMinorVersion()) {
+	    		logger.warn("Source clover data file was produced by incompatible clover engine version " + majorVersion + "." + minorVersion + "." + revisionVersion + ". It is not encouraged usage of clover binary format.");
+	    	}
+	    	byte[] extraBytes = new byte[4];
+	    	buffer.get(extraBytes);
+	    	if (BitArray.isSet(extraBytes, 0) ^ Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
+	        	throw new ComponentNotReadyException("Source file with binary data format is not compatible. Engine producer has different setup of Defaults.Record.USE_FIELDS_NULL_INDICATORS (see documentation). Data cannot be read.");
+	    	}
+	    	if (cloverDataCompatibilityHash == CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_3_5) {
+	    		//check metadata compatibility
+	    		DataRecordMetadata persistedMetadata = DataRecordMetadata.deserialize(buffer);
+	    		if (!metadata.equals(persistedMetadata, false)) {
+	    			logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + persistedMetadata.toStringDataTypes());
+	    			throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
+	    		}
+	    	}
+    	} catch (ComponentNotReadyException e) {
+    		throw e;
+    	} catch (Exception e) {
+    		throw new JetelRuntimeException("Source clover data file does not have valid header.", e);
     	}
     }
 
@@ -351,7 +361,7 @@ public class CloverDataParser extends AbstractParser {
 			}
 			recordBuffer.flip();
 		}
-		record.deserialize(recordBuffer);
+		record.deserializeUnitary(recordBuffer);
 		sourceRecordCounter++;
 		return record;
 	}

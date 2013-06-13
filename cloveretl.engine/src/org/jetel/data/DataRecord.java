@@ -290,6 +290,18 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	}
 
 	/**
+	 * Unitary deserialization should be compatible with
+	 * unitary serialization. Moreover this type of unitary
+	 * serialization and deserialization should be compatible
+	 * with all descendants of DataRecord - for now it is only
+	 * Token and DataRecord. So for example serialized
+	 * DataRecord can be deserialized into Token and vice versa.
+	 */
+	public void deserializeUnitary(CloverBuffer buffer) {
+		this.deserialize(buffer);
+	}
+
+	/**
 	 * @deprecated use {@link #deserialize(CloverBuffer)} instead
 	 */
 	@Deprecated
@@ -540,7 +552,19 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
             }
         }
     }
-	
+
+	/**
+	 * Unitary deserialization should be compatible with
+	 * unitary serialization. Moreover this type of unitary
+	 * serialization and deserialization should be compatible
+	 * with all descendants of DataRecord - for now it is only
+	 * Token and DataRecord. So for example serialized
+	 * DataRecord can be deserialized into Token and vice versa.
+	 */
+	public void serializeUnitary(CloverBuffer buffer) {
+		this.serialize(buffer);
+	}
+
 	/**
 	 * @deprecated use {@link #serialize(CloverBuffer)} instead
 	 */
@@ -702,7 +726,20 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
         }
 		return size;
 	}
-	
+
+	/**
+	 * Size of unitary serialization form of this data record.
+	 * Unitary deserialization should be compatible with
+	 * unitary serialization. Moreover this type of unitary
+	 * serialization and deserialization should be compatible
+	 * with all descendants of DataRecord - for now it is only
+	 * Token and DataRecord. So for example serialized
+	 * DataRecord can be deserialized into Token and vice versa.
+	 */
+	public int getSizeSerializedUnitary() {
+		return this.getSizeSerialized();
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
