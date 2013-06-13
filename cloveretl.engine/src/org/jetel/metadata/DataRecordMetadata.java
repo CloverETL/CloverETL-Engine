@@ -43,6 +43,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.QuotingDecoder;
@@ -1487,6 +1488,23 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 
 	/**
+	 * @return string representation of this metadata, only data types are presented
+	 */
+	public String toStringDataTypes() {
+		StringBuilder result = new StringBuilder();
+		result.append('[');
+		for (DataFieldMetadata field : getFields()) {
+			result.append(field.toStringDataType());
+			result.append(", ");
+		}
+		if (result.length() > 1) {
+			result.setLength(result.length() - 2);
+		}
+		result.append(']');
+		return result.toString();
+	}
+	
+	/**
 	 * Iterator for contained field metadata.
 	 *
 	 * @see java.lang.Iterable#iterator()
@@ -1663,6 +1681,43 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 		
 		metadata.setNames(newRecordName, originalNames);
+	}
+
+	/**
+	 * This method serialise only data types of all fields.
+	 * Counterpart operation is {@link #deserialize(CloverBuffer)}.
+	 * @param buffer
+	 */
+	public void serialize(CloverBuffer buffer) {
+		buffer.putInt(getNumFields());
+		for (DataFieldMetadata field : fields) {
+			field.serialize(buffer);
+		}
+	}
+	
+	/**
+	 * This method deserialise metadata, only data types are deserialized.
+	 * This method is counterpart for {@link #serialize(CloverBuffer)} method.
+	 * @param buffer
+	 * @return
+	 */
+	public static DataRecordMetadata deserialize(CloverBuffer buffer) {
+		DataRecordMetadata recordMetadata = new DataRecordMetadata("record");
+		
+		int numFields = buffer.getInt();
+		for (int i = 0; i < numFields; i++) {
+			DataFieldType dataType = DataFieldType.fromByteIdentifier(buffer.get());
+			DataFieldContainerType containerType = DataFieldContainerType.fromByteIdentifier(buffer.get());
+			
+			DataFieldMetadata fieldMetadata = new DataFieldMetadata("field", dataType, null, containerType);
+			if (dataType == DataFieldType.DECIMAL) {
+				fieldMetadata.setProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(buffer.getInt()));
+				fieldMetadata.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(buffer.getInt()));
+			}
+			recordMetadata.addField(fieldMetadata);
+		}
+		
+		return recordMetadata;
 	}
 	
 }

@@ -30,12 +30,20 @@ import org.jetel.util.string.StringUtils;
  */
 public enum DataFieldContainerType {
 
-	SINGLE(""), LIST("list"), MAP("map");
+	SINGLE("", (byte) 0), LIST("list", (byte) 1), MAP("map", (byte) 2);
 	
 	private final String displayName;
 	
-	private DataFieldContainerType(String displayName) {
+	/** This byte identifier is used by metadata serialisation into a byte stream.
+	 * (This is used by CloverDataReader/Writer to serialise used metadata into data file.)
+	 * DataFieldContainerType.ordinal() could be used instead, but this could be non-intentionally
+	 * changed by adding new container type. So custom ordinal number is used instead to ensure
+	 * stability against code changes. */
+	private byte byteIdentifier;
+
+	private DataFieldContainerType(String displayName, byte byteIdentifier) {
 		this.displayName = displayName;
+		this.byteIdentifier = byteIdentifier;
 	}
 	
 	/**
@@ -67,6 +75,15 @@ public enum DataFieldContainerType {
 		return displayName;
 	}
 	
+	/** This byte identifier is used by metadata serialisation into a byte stream.
+	 * (This is used by CloverDataReader/Writer to serialise used metadata into data file.)
+	 * DataFieldContainerType.ordinal() could be used instead, but this could be non-intentionally
+	 * changed by adding new container type. So custom ordinal number is used instead to ensure
+	 * stability against code changes. */
+	public byte getByteIdentifier() {
+		return byteIdentifier;
+	}
+	
 	/**
 	 * Returns an array containing all display names.
 	 * @return
@@ -80,4 +97,19 @@ public enum DataFieldContainerType {
 		return result;
 	}
 	
+	/**
+	 * @param byteIdentifier
+	 * @return container type associated with given byte identifier
+	 * @see #getByteIdentifier()
+	 */
+	public static DataFieldContainerType fromByteIdentifier(byte byteIdentifier) {
+		for (DataFieldContainerType containerType : values()) {
+			if (containerType.getByteIdentifier() == byteIdentifier) {
+				return containerType;
+			}
+		}
+		
+		throw new IllegalArgumentException("Unknown field container type identifier '" + byteIdentifier + "'.");
+	}
+
 }
