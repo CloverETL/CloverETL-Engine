@@ -14,15 +14,11 @@
 	<FunctionalTest ident="SetHadoopParameters" graphFile="data-tmp/setParameters.grf" excludedEtlEnvironment="engine" />
 	
 	<FunctionalTest ident="UniqueVisits-HadoopHive" graphFile="jobflow/UniqueVisits-HadoopHive.jbf" excludedEtlEnvironment="engine">
-		<Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
-		<Property name="LIB_DIR" value="../../cloveretl.test.scenarios/lib" />
 		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="UniqueVisits-HadoopMapReduce" graphFile="jobflow/UniqueVisits-HadoopMapReduce.jbf" excludedEtlEnvironment="engine">
-		<Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
-		<Property name="LIB_DIR" value="../../cloveretl.test.scenarios/lib" />
 		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>
