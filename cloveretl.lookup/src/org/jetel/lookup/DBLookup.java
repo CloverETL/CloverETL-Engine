@@ -152,7 +152,7 @@ public final class DBLookup implements Lookup {
 		try {
 			statement.setInRecord(keyRecord);
 		} catch (ComponentNotReadyException e) {
-			throw new RuntimeException("Failed to update statement record.", e);
+			throw new JetelRuntimeException("Failed to update statement record.", e);
 		}
 		seek();
 	}

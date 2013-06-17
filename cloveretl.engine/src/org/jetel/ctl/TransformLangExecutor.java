@@ -264,6 +264,24 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		
 	}
 	
+	private static class PostExecuteCleanupVisitor extends NavigatingVisitor {
+		
+		public void cleanup(Node node) {
+			node.jjtAccept(this, null);
+		}
+		
+		@Override
+		public Object visit(CLVFLookupNode node, Object data) {
+			/*
+			 * clear cached lookup - it could hold invalid JDBC connection
+			 * and we do not want to use it in next run (MULE-79)
+			 */
+			node.setLookup(null);
+			node.setLookupIndex(0);
+			node.setLookupRecord(null);
+			return data;
+		}
+	}
 	
 	/**
 	 * Constructor
@@ -409,6 +427,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		init.initialize(ast);
 	}
 	
+	public void preExecute() {}
+	
+	public void postExecute() {
+		
+		PostExecuteCleanupVisitor cleanup = new PostExecuteCleanupVisitor();
+		cleanup.cleanup(ast);
+		lookupCache.clear();
+		lookupCounter = 0;
+	}
 	
 	/**
 	 * Causes interpreter to keep the global scope.

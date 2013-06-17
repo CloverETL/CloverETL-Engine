@@ -488,14 +488,16 @@ public class DBOutputTable extends Node {
 		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		
-		if (firstRun()) {// a phase-dependent part of initialization
-
 			// create connection instance, which represents connection to a database
 			try {
 				connection = dbConnection.getConnection(getId(), OperationType.WRITE);
 			} catch (JetelException e1) {
 				throw new ComponentNotReadyException(e1);
 			}
+
+		if (firstRun()) {// a phase-dependent part of initialization
+
+			
 
 			// prepare rejectedRecord and keysRecord
 			boolean supportsConnectionKeyGenaration = false;
@@ -585,10 +587,6 @@ public class DBOutputTable extends Node {
 			if (keysRecord != null) {
 				keysRecord.reset();
 			}
-			
-			if (getGraph().getRuntimeContext().isBatchMode() && dbConnection.isThreadSafeConnections()) {
-				try {
-					connection = dbConnection.getConnection(getId(), OperationType.WRITE);
 					for (SQLCloverStatement eachStatement : statement) {
 						try {
 							eachStatement.setConnection(connection);
@@ -622,11 +620,8 @@ public class DBOutputTable extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		if (getGraph().getRuntimeContext().isBatchMode()) { 
-			// otherwise connection is closed in TransformationGraph.free()
 			dbConnection.closeConnection(getId(), OperationType.WRITE);
 		}
-	}
 	
 	/**
 	 * @param dbTableName The dbTableName to set.
