@@ -488,16 +488,14 @@ public class DBOutputTable extends Node {
 		inRecord = DataRecordFactory.newRecord(inPort.getMetadata());
 		inRecord.init();
 		
-			// create connection instance, which represents connection to a database
-			try {
-				connection = dbConnection.getConnection(getId(), OperationType.WRITE);
-			} catch (JetelException e1) {
-				throw new ComponentNotReadyException(e1);
-			}
+		// create connection instance, which represents connection to a database
+		try {
+			connection = dbConnection.getConnection(getId(), OperationType.WRITE);
+		} catch (JetelException e1) {
+			throw new ComponentNotReadyException(e1);
+		}
 
 		if (firstRun()) {// a phase-dependent part of initialization
-
-			
 
 			// prepare rejectedRecord and keysRecord
 			boolean supportsConnectionKeyGenaration = false;
@@ -587,20 +585,9 @@ public class DBOutputTable extends Node {
 			if (keysRecord != null) {
 				keysRecord.reset();
 			}
-					for (SQLCloverStatement eachStatement : statement) {
-						try {
-							eachStatement.setConnection(connection);
-						} catch (Exception e) {
-							throw new ComponentNotReadyException(this, e);
-						}
-					}
-				} catch (JetelException exception) {
-					throw new ComponentNotReadyException(exception);
-				}
-			}
-
 			for (SQLCloverStatement eachStatement : statement) {
 				try {
+					eachStatement.setConnection(connection);
 					eachStatement.setInRecord(inRecord);
 					eachStatement.reset();
 				} catch (Exception e) {
