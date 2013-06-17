@@ -176,7 +176,6 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
 							&& !file.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
 							&& !file.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
-							&& !file.getName().equals("DBLookupTable_negativeResponse_noCache.grf") // remove after CLO-715 solved
 							&& !file.getName().equals("BeanWriterReader_employees.grf") // remove after CL-2474 solved
 							&& !file.getName().equals("EmptyGraph.grf"); // ok, is to fail
 					
