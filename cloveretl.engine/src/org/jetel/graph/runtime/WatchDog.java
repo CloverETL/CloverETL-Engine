@@ -96,7 +96,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private MultiValueMap<IGraphElement, Message<?>> outMsgMap;
     private volatile Throwable causeException;
     private volatile IGraphElement causeGraphElement;
-    private CloverJMX cloverJMX;
+    protected CloverJMX cloverJMX;
 //    private volatile boolean runIt;
     private boolean provideJMX = true;
     private boolean finishJMX = true; //whether the JMX mbean should be unregistered on the graph finish 
@@ -257,6 +257,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           		cloverJMX.phaseStarted(phases[currentPhaseNum]);
 	           		//execute phase
 	                phaseResult = executePhase(phases[currentPhaseNum]);
+	                phases[currentPhaseNum].setResult(phaseResult);
 	                
 	                if(phaseResult == Result.ABORTED)      {
 	                	cloverJMX.phaseAborted();
@@ -620,7 +621,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	 * @param  phase  Description of the Parameter
 	 * @return        Description of the Return Value
 	 */
-	private Result executePhase(Phase phase) {
+	protected Result executePhase(Phase phase) {
 		currentPhase = phase;
 		
 		//preExecute() invocation
@@ -684,7 +685,6 @@ public class WatchDog implements Callable<Result>, CloverPost {
         	}
         }
         
-        phase.setResult(phaseStatus);
 		return phaseStatus;
 	}
 
@@ -723,7 +723,10 @@ public class WatchDog implements Callable<Result>, CloverPost {
         return causeException;
     }
 
-
+    protected void setCauseException(Throwable causeException) {
+    	this.causeException = causeException;
+    }
+    
     /**
      * Returns ID of Node which caused
      * graph to stop processing.
@@ -735,7 +738,11 @@ public class WatchDog implements Callable<Result>, CloverPost {
         return causeGraphElement;
     }
 
-    public String getErrorMessage() {
+    protected void setCauseGraphElement(IGraphElement causeGraphElement) {
+    	this.causeGraphElement = causeGraphElement;
+    }
+    
+	public String getErrorMessage() {
     	return ExceptionUtils.getMessage(getCauseException());
     }
     

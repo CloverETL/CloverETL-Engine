@@ -52,6 +52,7 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
+import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
@@ -625,9 +626,14 @@ public class TransformationGraphXMLReaderWriter {
 			graphEdge.setFilterExpression(debugFilterExpression);
 			graphEdge.setDebugSampleData(debugSampleData);
 			// set edge type
-			EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.valueOfIgnoreCase(edgeType);
-			if (edgeTypeEnum != null) graphEdge.setEdgeType(edgeTypeEnum);
-			else if (fastPropagate) graphEdge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
+			if (runtimeContext.getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION) {
+				//in single thread execution all edges are buffered
+				graphEdge.setEdgeType(EdgeTypeEnum.BUFFERED);
+			} else {
+				EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.valueOfIgnoreCase(edgeType);
+				if (edgeTypeEnum != null) graphEdge.setEdgeType(edgeTypeEnum);
+				else if (fastPropagate) graphEdge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
+			}
             
             // assign edge to fromNode
 			specNodePort = fromNodeAttr.split(":");
