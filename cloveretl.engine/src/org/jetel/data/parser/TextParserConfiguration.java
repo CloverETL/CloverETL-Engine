@@ -37,6 +37,7 @@ public class TextParserConfiguration implements Cloneable {
 	private String charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 	private boolean verbose = true;
 	private boolean treatMultipleDelimitersAsOne = false;
+	private boolean quotedStringsOverride = false;
 	private boolean quotedStrings = false;
 	private Character quoteChar = null;
 	private Boolean trim = null;
@@ -79,7 +80,7 @@ public class TextParserConfiguration implements Cloneable {
 	}
 
 	public TextParserConfiguration(String charset, boolean verbose, DataRecordMetadata metadata,
-			boolean treatMultipleDelimitersAsOne, boolean quotedStrings, Character quoteChar, Boolean skipLeadingBlanks,
+			boolean treatMultipleDelimitersAsOne, boolean quotedStringsOverride, boolean quotedStrings, Character quoteChar, Boolean skipLeadingBlanks,
 			Boolean skipTrailingBlanks, Boolean trim, boolean incremental, 
 			PolicyType policyType) {
 		super();
@@ -89,6 +90,7 @@ public class TextParserConfiguration implements Cloneable {
 		}
 		this.verbose = verbose;
 		this.treatMultipleDelimitersAsOne = treatMultipleDelimitersAsOne;
+		this.quotedStringsOverride = quotedStringsOverride;
 		this.quotedStrings = quotedStrings;
 		this.quoteChar = quoteChar;
 		this.skipLeadingBlanks = skipLeadingBlanks;
@@ -148,10 +150,24 @@ public class TextParserConfiguration implements Cloneable {
 	}
 
 	/**
+	 * @return the quotedStringsOverride
+	 */
+	public boolean isQuotedStringsOverride() {
+		return quotedStringsOverride;
+	}
+	
+	/**
 	 * @return the quotedStrings
 	 */
 	public boolean isQuotedStrings() {
 		return quotedStrings;
+	}
+	
+	/**
+	 * @param quotedStringsOverride the quotedStringsOverride to set
+	 */
+	public void setQuotedStringsOverride(boolean quotedStringsOverride) {
+		this.quotedStringsOverride = quotedStringsOverride;
 	}
 
 	/**

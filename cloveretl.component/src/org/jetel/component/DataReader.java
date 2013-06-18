@@ -375,12 +375,8 @@ public class DataReader extends Node {
 		parserCfg.setCharset(charset);
 		parserCfg.setVerbose(logging ? true : verbose); //verbose mode is true by default in case the logging port is used
         parserCfg.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
-        if (quotedStringsHasDefaultValue) {
-			//quoted strings has default value -> set the quoted string field from metadata
-        	parserCfg.setQuotedStrings(getOutMetadata().get(0).isQuotedStrings());
-        	parserCfg.setQuoteChar(getOutMetadata().get(0).getQuoteChar());
-		} else {
-			//quoted string is set by the user
+        if (!quotedStringsHasDefaultValue) {
+        	parserCfg.setQuotedStringsOverride(true);
 			parserCfg.setQuotedStrings(quotedStrings);
 			parserCfg.setQuoteChar(quoteChar);
 		}
