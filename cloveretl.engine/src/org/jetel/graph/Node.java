@@ -69,7 +69,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
     private static final Log logger = LogFactory.getLog(Node.class);
 
-    protected Thread nodeThread;
+    private Thread nodeThread;
+    private final Object nodeThreadMonitor = new Object(); // nodeThread variable is guarded by this monitor
+    
     /**
      * List of all threads under this component.
      * For instance parallel reader uses threads for parallel reading.
@@ -85,7 +87,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
 	protected volatile boolean runIt = true;
 
-	private volatile Result runResult;
+	private Result runResult;
+	private final Object runResultMonitor = new Object(); // runResult variable is guarded by this monitor
+	
     protected Throwable resultException;
     protected String resultMessage;
 	
@@ -153,7 +157,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		outPorts = new TreeMap<Integer, OutputPort>();
 		inPorts = new TreeMap<Integer, InputPort>();
         phase = null;
-        runResult=Result.N_A; // result is not known yet
+        setResultCode(Result.N_A); // result is not known yet
         childThreads = Collections.synchronizedList(new ArrayList<Thread>());
         allocation = EngineComponentAllocation.createBasedOnNeighbours();
 	}
@@ -363,16 +367,20 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@since     July 29, 2002
      *@see       org.jetel.graph.Node.Result
 	 */
-	public synchronized Result getResultCode() {
-		return runResult;
+	public Result getResultCode() {
+		synchronized (runResultMonitor) {
+			return runResult;
+		}
 	}
 
 	/**
 	 * Sets the result code of component.
 	 * @param result
 	 */
-	public synchronized void setResultCode(Result result) {
-		this.runResult = result;
+	public void setResultCode(Result result) {
+		synchronized (runResultMonitor) {
+			this.runResult = result;
+		}
 	}
 
 	/**
@@ -381,9 +389,11 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 * @param newResult new component result
 	 * @param expectedOldResult expected value of current result
 	 */
-	public synchronized void setResultCode(Result newResult, Result expectedOldResult) {
-		if (runResult == expectedOldResult) {
-			runResult = newResult;
+	public void setResultCode(Result newResult, Result expectedOldResult) {
+		synchronized (runResultMonitor) {
+			if (runResult == expectedOldResult) {
+				runResult = newResult;
+			}
 		}
 	}
 	
@@ -394,8 +404,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return    The ResultMsg value
 	 *@since     July 29, 2002
 	 */
-	public synchronized String getResultMsg() {
-		return runResult!=null ? runResult.message() : null;
+	public String getResultMsg() {
+		Result result = getResultCode();
+		return result != null ? result.message() : null;
 	}
 
     /**
@@ -418,7 +429,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     public void init() throws ComponentNotReadyException {
         super.init();
 
-        runResult = Result.READY;
+        setResultCode(Result.READY);
 
         refreshBufferedValues();
 
@@ -452,7 +463,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 			}
         }
 
-        runResult = Result.RUNNING;
+        setResultCode(Result.RUNNING);
     }
     
 	/**
@@ -462,7 +473,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 */
 	@Override
 	public void run() {
-        runResult = Result.RUNNING; // set running result, so we know run() method was started
+        setResultCode(Result.RUNNING); // set running result, so we know run() method was started
         
 		Context c = ContextProvider.registerNode(this);
         try {
@@ -484,23 +495,25 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		executeBarrier.await();
     		
     		//execute() invocation
-            if((runResult = execute()) == Result.ERROR) {
+    		Result result = execute();
+    		setResultCode(result);
+            if (result == Result.ERROR) {
                 Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                        new ErrorMsgBody(runResult.code(), 
-                                resultMessage != null ? resultMessage : runResult.message(), null));
+                        new ErrorMsgBody(Result.ERROR.code(), 
+                                resultMessage != null ? resultMessage : Result.ERROR.message(), null));
                 sendMessage(msg);
             }
             
-            if (runResult == Result.FINISHED_OK) {
+            if (result == Result.FINISHED_OK) {
             	if (runIt == false) { //component returns ok tag, but the component was actually aborted
-            		runResult = Result.ABORTED;
+            		setResultCode(Result.ABORTED);
             	} else if (checkEofOnInputPorts()) { // true by default
 	            	//check whether all input ports are already closed
 	            	for (InputPort inputPort : getInPorts()) {
 	            		if (!inputPort.isEOF()) {
-	            			runResult = Result.ERROR;
+	            			setResultCode(Result.ERROR);
 	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-	            					new ErrorMsgBody(runResult.code(), runResult.message(), createNodeException(new JetelRuntimeException("Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records."))));
+	            					new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), createNodeException(new JetelRuntimeException("Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records."))));
 	            			sendMessage(msg);
 	            			return;
 	            		}
@@ -510,19 +523,19 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             	broadcastEOF();
             }
         } catch (InterruptedException ex) {
-            runResult=Result.ABORTED;
+            setResultCode(Result.ABORTED);
         } catch (Exception ex) {
-            runResult=Result.ERROR;
+            setResultCode(Result.ERROR);
             resultException = createNodeException(ex);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
+                    new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
             sendMessage(msg);
         } catch (Throwable ex) {
         	logger.fatal(ex); 
-            runResult=Result.ERROR;
+            setResultCode(Result.ERROR);
             resultException = createNodeException(ex);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
+                    new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
             sendMessage(msg);
         } finally {
 			ContextProvider.unregister(c);
@@ -558,39 +571,51 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		abort(null);
 	}
 	
-	public synchronized void abort(Throwable cause) {
+	public void abort(Throwable cause) {
 		int attempts = 30;
 		runIt = false;
 		
-		while (!runResult.isStop() && attempts-- > 0){
-			if (logger.isDebugEnabled()) {
-				logger.debug("trying to interrupt thread " + getNodeThread());
-			}
-			//interrupt main node thread
-			getNodeThread().interrupt();
-			//interrupt all child threads if any
-			for (Thread childThread : getChildThreads()) {
-				if (logger.isDebugEnabled()) {
-					logger.debug("trying to interrupt child thread " + childThread);
+		synchronized (nodeThreadMonitor) {
+			Thread nodeThread = getNodeThread();
+			if (nodeThread != null) {
+				//rename node thread
+				String newThreadName = "exNode_" + getGraph().getRuntimeContext().getRunId() + "_" + getGraph().getId() + "_" + getId();
+				if (logger.isTraceEnabled())
+						logger.trace("rename thread " + nodeThread.getName() + " to " + newThreadName);
+			  	nodeThread.setName(newThreadName);
+			  	
+			  	//interrupt node threads
+				while (!getResultCode().isStop() && attempts-- > 0){
+					if (logger.isDebugEnabled()) {
+						logger.debug("trying to interrupt thread " + nodeThread);
+					}
+					//interrupt main node thread
+					nodeThread.interrupt();
+					//interrupt all child threads if any
+					for (Thread childThread : getChildThreads()) {
+						if (logger.isDebugEnabled()) {
+							logger.debug("trying to interrupt child thread " + childThread);
+						}
+						childThread.interrupt();
+					}
+					//wait some time for graph result
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+					}
 				}
-				childThread.interrupt();
-			}
-			//wait some time for graph result
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) {
 			}
 		}
 		if (cause != null) {
-            runResult=Result.ERROR;
+            setResultCode(Result.ERROR);
             resultException = createNodeException(cause);
             Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
-                    new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
+                    new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), resultException));
             sendMessage(msg);
             sendFinishMessage();
-		} else if (!runResult.isStop()) {
+		} else if (!getResultCode().isStop()) {
 			logger.debug("Node '" + getId() + "' was not interrupted in legal way.");
-			runResult = Result.ABORTED;
+			setResultCode(Result.ABORTED);
 			sendFinishMessage();
 		}
 	}
@@ -598,41 +623,45 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     /**
      * @return thread of running node; <b>null</b> if node does not running
      */
-    public synchronized Thread getNodeThread() {
-        return nodeThread;
+    public Thread getNodeThread() {
+    	synchronized (nodeThreadMonitor) {
+    		return nodeThread;
+    	}
     }
 
     /**
      * Sets actual thread in which this node current running.
      * @param nodeThread
      */
-    private synchronized void setNodeThread(Thread nodeThread) {
-		if(nodeThread != null) {
-    		this.nodeThread = nodeThread;
-    		
-			//thread context classloader is preset to a reasonable classloader
-			//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
-    		nodeThread.setContextClassLoader(this.getClass().getClassLoader());
-    		
-			String oldName = nodeThread.getName();
-    		long runId = getGraph().getRuntimeContext().getRunId();
-    		nodeThread.setName(getId()+"_"+runId);
-			MDC.put("runId", getGraph().getRuntimeContext().getRunId());
-			
-			if (logger.isTraceEnabled()) {
-				logger.trace("set thread name; old:"+oldName+" new:"+ nodeThread.getName());
-				logger.trace("set thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
+    private void setNodeThread(Thread nodeThread) {
+    	synchronized (nodeThreadMonitor) {
+			if(nodeThread != null) {
+	    		this.nodeThread = nodeThread;
+	    		
+				//thread context classloader is preset to a reasonable classloader
+				//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
+	    		nodeThread.setContextClassLoader(this.getClass().getClassLoader());
+	    		
+				String oldName = nodeThread.getName();
+	    		long runId = getGraph().getRuntimeContext().getRunId();
+	    		nodeThread.setName(getId()+"_"+runId);
+				MDC.put("runId", getGraph().getRuntimeContext().getRunId());
+				
+				if (logger.isTraceEnabled()) {
+					logger.trace("set thread name; old:"+oldName+" new:"+ nodeThread.getName());
+					logger.trace("set thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
+				}
+				
+			} else {
+				MDC.remove("runId");
+				long runId = getGraph().getRuntimeContext().getRunId();
+				if (logger.isTraceEnabled()) 
+					logger.trace("reset thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
+				
+				this.nodeThread.setName("<unnamed>");
+				this.nodeThread = null;
 			}
-			
-		} else {
-			MDC.remove("runId");
-			long runId = getGraph().getRuntimeContext().getRunId();
-			if (logger.isTraceEnabled()) 
-				logger.trace("reset thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
-			
-			this.nodeThread.setName("<unnamed>");
-			this.nodeThread = null;
-		}
+    	}
     }
     
 	/**
@@ -1282,7 +1311,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     synchronized public void reset() throws ComponentNotReadyException {
     	super.reset();
     	runIt = true;
-        runResult=Result.READY;
+        setResultCode(Result.READY);
         resultMessage = null;
         resultException = null;
         childThreads.clear();
