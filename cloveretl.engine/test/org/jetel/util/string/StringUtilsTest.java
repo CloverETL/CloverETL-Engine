@@ -287,6 +287,9 @@ public class StringUtilsTest extends CloverTestCase {
 		str = "1234E+56";
 		assertTrue(StringUtils.isNumber(str));
 		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+		
+		assertFalse(StringUtils.isNumber(""));
+		assertEquals(-1, StringUtils.isInteger(""));
 	}
 
 	public void testSplit() throws Exception {
