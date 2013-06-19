@@ -25,7 +25,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.TreeMap;
 import java.util.concurrent.CyclicBarrier;
@@ -52,6 +51,7 @@ import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.PrimitiveComponentTokenTracker;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ClusterUtils;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -536,26 +536,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     private Exception createNodeException(Throwable cause) {
     	//compose error message, for example 
     	//"Component [Reformat:REFORMAT] finished with status ERROR. (In0: 11 recs, Out0: 10 recs, Out1: 0 recs)"
-    	
-    	//collect information from input ports
-    	StringBuilder recordsMessage = new StringBuilder();
-    	Map<Integer, InputPort> inPorts = getInputPorts();
-    	for (Entry<Integer, InputPort> inPort : inPorts.entrySet()) {
-    		if (recordsMessage.length() > 0) {
-    			recordsMessage.append(", ");
-    		}
-    		recordsMessage.append("In" + inPort.getKey() + ": " + inPort.getValue().getInputRecordCounter() + " recs");
-    	}
-    	
-    	//collect information from output ports
-    	Map<Integer, OutputPort> outPorts = getOutputPorts();
-    	for (Entry<Integer, OutputPort> outPort : outPorts.entrySet()) {
-    		if (recordsMessage.length() > 0) {
-    			recordsMessage.append(", ");
-    		}
-    		recordsMessage.append("Out" + outPort.getKey() + ": " + outPort.getValue().getOutputRecordCounter() + " recs");
-    	}
-
+    	String recordsMessage = MiscUtils.getInOutRecordsMessage(this);
     	return new JetelRuntimeException("Component " + this + " finished with status ERROR." +
     			(recordsMessage.length() > 0 ? " (" + recordsMessage + ")" : ""), cause);
     }
