@@ -183,11 +183,11 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("CompanyChecks.grf") // an example that needs embedded derby
 							&& !file.getName().equals("DatabaseAccess.grf") // an example that needs embedded derby
 							&& !file.getName().equals("graphDatabaseAccess.grf") // an example that needs embedded derby
+							&& !file.getName().equals("XMLReader_no_output_port.grf") // ok, is to fail
 							&& !file.getName().startsWith("Proxy_") // allowed to run only on virt-cyan as proxy tests
 							&& !file.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
 							&& !file.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
 							&& !file.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
-							&& !file.getName().equals("DBLookupTable_negativeResponse_noCache.grf") // remove after CLO-715 solved
 							&& !file.getName().equals("BeanWriterReader_employees.grf") // remove after CL-2474 solved
 							&& !file.getName().equals("EmptyGraph.grf"); // ok, is to fail
 					

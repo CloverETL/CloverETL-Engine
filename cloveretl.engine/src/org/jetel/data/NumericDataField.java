@@ -447,7 +447,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 	 * Call super otherwise.
 	 */
 	@Override
-	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException {
 		if (binaryFormat != null) {
 			switch (binaryFormat) {
 			case DOUBLE_BIG_ENDIAN: 
@@ -471,8 +471,9 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 			default:
 				throw new JetelRuntimeException("Invalid binary format: " + binaryFormat);
 			}
+			return 0;
 		} else {
-			super.toByteBuffer(dataBuffer, encoder);
+			return super.toByteBuffer(dataBuffer, encoder);
 		}
 	}
 

@@ -137,6 +137,14 @@ public abstract class AbstractTextParser extends AbstractParser implements TextP
 		return cfg;
 	}
 	
+	protected boolean isQuotedStrings() {
+		return cfg.isQuotedStringsOverride() ? cfg.isQuotedStrings() : cfg.getMetadata().isQuotedStrings();
+	}
+	
+	protected Character getQuoteChar() {
+		return cfg.isQuotedStringsOverride() ? cfg.getQuoteChar() : cfg.getMetadata().getQuoteChar();
+	}
+	
 	protected boolean isSkipFieldTrailingBlanks(int fieldIndex) {
 		return(cfg.getSkipTrailingBlanks() != null && cfg.getSkipTrailingBlanks())
 			|| (cfg.getTrim() != null && cfg.getTrim())

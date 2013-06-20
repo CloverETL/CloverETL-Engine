@@ -185,22 +185,12 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		if (firstRun()) {// a phase-dependent part of initialization
 			try {
 				sqlConnection = connection.getConnection(getId(), OperationType.READ);
 			} catch (JetelException e) {
 				throw new ComponentNotReadyException("Can't connect to database", e);
 			}
-		} else {
-			if (getGraph() != null && getGraph().getRuntimeContext().isBatchMode() && connection.isThreadSafeConnections()) {
-				try {
-					sqlConnection = connection.getConnection(getId(), OperationType.READ);
-				} catch (JetelException e) {
-					throw new ComponentNotReadyException("Can't connect to database", e);
 				}
-			}
-		}
-	}
     
     @Override
 	public void postExecute() throws ComponentNotReadyException {
@@ -214,10 +204,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		} finally {
 			activeLookups.clear();
 		}
-		if (getGraph() != null && getGraph().getRuntimeContext().isBatchMode()) {
 			connection.closeConnection(getId(), OperationType.READ);
 		}
-	}
 	
     public static DBLookupTable fromProperties(TypedProperties properties) 
     throws AttributeNotFoundException, GraphConfigurationException{
