@@ -1,6 +1,8 @@
 package org.jetel.ctl;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
@@ -3105,7 +3107,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			"isBlank(?)",
 			"isDate(?, \"yyyy\")",
 			"isUrl(?)",
-			"length(?)",
+			"string x = ?; length(x)",
 			"lowerCase(?)",
 			"matches(?, \"\")",
 			"NYSIIS(?)",
