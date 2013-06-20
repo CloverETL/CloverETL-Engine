@@ -143,7 +143,8 @@ public class StringDataField extends DataField implements CharSequence{
         } else if (value instanceof char[]) {
             setValue(new String((char[]) value));
         } else {
-        	BadDataFormatException ex = new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + value.toString(), value.toString());
+			BadDataFormatException ex = new BadDataFormatException("String field \""+ getMetadata().getName() + "\" can not be set to value " + value.toString(), value.toString());
+			ex.setFieldName(getMetadata().getName());
         	ex.setFieldNumber(getMetadata().getNumber());
         	throw ex;
         }
