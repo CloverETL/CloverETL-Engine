@@ -44,7 +44,7 @@ public class AuthorityProxyFactory {
 
     private static Log logger = LogFactory.getLog(AuthorityProxyFactory.class);
 
-	private final static Map<String, AuthorityProxyDescription> authorityProxyMap = new HashMap<String, AuthorityProxyDescription>();
+	private static final Map<String, AuthorityProxyDescription> authorityProxyMap = new HashMap<String, AuthorityProxyDescription>();
 	
 	/**
 	 * Populate internal cache of all available authority proxies - proxies from clover plugin system.
@@ -135,7 +135,8 @@ public class AuthorityProxyFactory {
 		if (maxPriorityAuthorityProxy != null) {
 			return createAuthorityProxy(maxPriorityAuthorityProxy.getType());
 		} else {
-            throw new RuntimeException("No AuthorityProxy found.");
+			logger.debug("No authority proxy registered. Using PrimitiveAuthorityProxy.");
+			return new PrimitiveAuthorityProxy();
 		}
 	}
 

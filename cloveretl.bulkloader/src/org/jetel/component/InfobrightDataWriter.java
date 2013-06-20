@@ -465,6 +465,7 @@ public class InfobrightDataWriter extends Node {
 			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
 				final TextParserConfiguration parserCfg = new TextParserConfiguration();
 				parserCfg.setCharset(charset);
+				parserCfg.setQuotedStringsOverride(true);
 				parserCfg.setQuotedStrings(true);
 				parserCfg.setMetadata(getOutputPort(WRITE_TO_PORT).getMetadata());
 				dataParser = TextParserFactory.getParser(parserCfg);
