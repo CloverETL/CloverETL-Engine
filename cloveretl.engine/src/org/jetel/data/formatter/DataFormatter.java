@@ -48,6 +48,7 @@ public class DataFormatter extends AbstractFormatter {
 	private String charSet = null;
 	private CloverBuffer fieldBuffer;
 	private CloverBuffer fieldFiller;
+	private int numberOfBytesPerFillerChar; //this is size of DEFAULT_FILLER_CHAR character in bytes in given charset
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
@@ -56,6 +57,7 @@ public class DataFormatter extends AbstractFormatter {
 	private int[] delimiterLength;
 	private int[] fieldLengths;
 	private boolean[] quotedFields;
+	private boolean[] byteBasedFields;
 	private CloverBuffer dataBuffer;
 	private String sFooter; 
 	private String sHeader; 
@@ -108,6 +110,7 @@ public class DataFormatter extends AbstractFormatter {
         delimiterLength = new int[metadata.getNumFields()];
 		fieldLengths = new int[metadata.getNumFields()];
 		quotedFields = new boolean[metadata.getNumFields()];
+		byteBasedFields = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
 				quotedFields[i] = quotedStrings 
@@ -125,6 +128,7 @@ public class DataFormatter extends AbstractFormatter {
 			} else {
 				fieldLengths[i] = metadata.getField(i).getSize();
 			}
+			byteBasedFields[i] = metadata.getField(i).isByteBased();
 		}
 		try {
 			if(metadata.isSpecifiedRecordDelimiter()) {
@@ -243,23 +247,34 @@ public class DataFormatter extends AbstractFormatter {
 					dataBuffer.put(fieldBuffer);
 					if (delimiters[i] != null) dataBuffer.put(delimiters[i]); //for eof delimiter
 				} else { //fixlen field
-					if (fieldLengths[i] > dataBuffer.remaining()) {
-						flush();
-					}
 					fieldBuffer.clear();
-					record.getField(i).toByteBuffer(fieldBuffer, encoder);
-					size = fieldBuffer.position();
+					size = record.getField(i).toByteBuffer(fieldBuffer, encoder, fieldLengths[i]);
+					if (byteBasedFields[i]) {
+						size = fieldBuffer.position();
+					}
 					if (size < fieldLengths[i]) {
 						fieldFiller.rewind();
-						fieldFiller.limit(fieldLengths[i] - size);
+						fieldFiller.limit((fieldLengths[i] - size) * numberOfBytesPerFillerChar);
 						fieldBuffer.put(fieldFiller);
+						fieldBuffer.flip();
+					} else if (size > fieldLengths[i] && byteBasedFields[i]) {
+						//only byte based fields need to be manually truncated
+						//the string based fields are already truncated in toByteBuffer function
+						fieldBuffer.flip();
+						fieldBuffer.limit(fieldLengths[i]);
+					} else {
+						fieldBuffer.flip();
 					}
-					encLen += size;
-					fieldBuffer.flip();
-					fieldBuffer.limit(fieldLengths[i]);
+					
+					if (dataBuffer.remaining() < fieldBuffer.limit()) {
+						flush();
+					}
 					dataBuffer.put(fieldBuffer);
+
+					encLen += fieldBuffer.limit();
 					if (i == metadata.getNumFields() -1 && recordDelimiter != null){
 						dataBuffer.put(recordDelimiter);
+						encLen += recordDelimiter.length;
 					}
 				}
 			}
@@ -292,6 +307,7 @@ public class DataFormatter extends AbstractFormatter {
 
 		try {
 			fieldFiller = CloverBuffer.wrap(encoder.encode(CharBuffer.wrap(fillerArray)));
+			numberOfBytesPerFillerChar = fieldFiller.limit() / fillerArray.length;
 		} catch (Exception ex) {
 			throw new RuntimeException("Failed initialization of FIELD_FILLER buffer :" + ex);
 		}
