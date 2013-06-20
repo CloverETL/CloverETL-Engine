@@ -435,7 +435,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	 * Call super otherwise.
 	 */
 	@Override
-	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException {
 		if (binaryFormat != null) {
 			switch (binaryFormat) {
 			case BIG_ENDIAN: case LITTLE_ENDIAN:
@@ -447,8 +447,9 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 			default:
 				throw new JetelRuntimeException("Invalid binary format: " + binaryFormat);
 			}
+			return 0;
 		} else {
-			super.toByteBuffer(dataBuffer, encoder);
+			return super.toByteBuffer(dataBuffer, encoder);
 		}
 	}
 
