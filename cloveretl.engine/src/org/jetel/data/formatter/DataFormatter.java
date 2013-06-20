@@ -49,6 +49,7 @@ public class DataFormatter extends AbstractFormatter {
 	private String charSet = null;
 	private CloverBuffer fieldBuffer;
 	private CloverBuffer fieldFiller;
+	private int numberOfBytesPerFillerChar; //this is size of DEFAULT_FILLER_CHAR character in bytes in given charset
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
