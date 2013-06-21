@@ -319,40 +319,38 @@ public class NodeTrackingDetail implements NodeTracking {
 		long phaseExecutionTime = getParentPhaseTracking().getExecutionTime();
 		
 		if (CloverJMX.isThreadCpuTimeSupported()) {
-			synchronized (node) {//this is the guard of Node.nodeThread variable
-				Thread nodeThread = node.getNodeThread();
-				if (nodeThread != null) {
-					//totalCPUTime
-					long tempTotalCPUTime = TrackingUtils.convertTime(
-							CloverJMX.THREAD_MXBEAN.getThreadCpuTime(node.getNodeThread().getId()), 
+			Thread nodeThread = node.getNodeThread();
+			if (nodeThread != null) {
+				//totalCPUTime
+				long tempTotalCPUTime = TrackingUtils.convertTime(
+						CloverJMX.THREAD_MXBEAN.getThreadCpuTime(nodeThread.getId()), 
+						TimeUnit.NANOSECONDS,
+						TrackingUtils.DEFAULT_TIME_UNIT);
+				//totalCPUTime for child threads
+				for (Thread childThread : node.getChildThreads()) {
+					tempTotalCPUTime += TrackingUtils.convertTime(
+							CloverJMX.THREAD_MXBEAN.getThreadCpuTime(childThread.getId()),
 							TimeUnit.NANOSECONDS,
 							TrackingUtils.DEFAULT_TIME_UNIT);
-					//totalCPUTime for child threads
-					for (Thread childThread : node.getChildThreads()) {
-						tempTotalCPUTime += TrackingUtils.convertTime(
-								CloverJMX.THREAD_MXBEAN.getThreadCpuTime(childThread.getId()),
-								TimeUnit.NANOSECONDS,
-								TrackingUtils.DEFAULT_TIME_UNIT);
-					}
-					if (tempTotalCPUTime > totalCPUTime) {
-						totalCPUTime = tempTotalCPUTime;
-					}
-					
-					//totalUserTime
-					long tempTotalUserTime = TrackingUtils.convertTime(
-							CloverJMX.THREAD_MXBEAN.getThreadUserTime(node.getNodeThread().getId()),
+				}
+				if (tempTotalCPUTime > totalCPUTime) {
+					totalCPUTime = tempTotalCPUTime;
+				}
+				
+				//totalUserTime
+				long tempTotalUserTime = TrackingUtils.convertTime(
+						CloverJMX.THREAD_MXBEAN.getThreadUserTime(nodeThread.getId()),
+						TimeUnit.NANOSECONDS,
+						TrackingUtils.DEFAULT_TIME_UNIT);
+				//totalUserTime for child threads
+				for (Thread childThread : node.getChildThreads()) {
+					tempTotalUserTime += TrackingUtils.convertTime(
+							CloverJMX.THREAD_MXBEAN.getThreadUserTime(childThread.getId()),
 							TimeUnit.NANOSECONDS,
 							TrackingUtils.DEFAULT_TIME_UNIT);
-					//totalUserTime for child threads
-					for (Thread childThread : node.getChildThreads()) {
-						tempTotalUserTime += TrackingUtils.convertTime(
-								CloverJMX.THREAD_MXBEAN.getThreadUserTime(childThread.getId()),
-								TimeUnit.NANOSECONDS,
-								TrackingUtils.DEFAULT_TIME_UNIT);
-					}
-					if(tempTotalUserTime > totalUserTime) {
-						totalUserTime = tempTotalUserTime;
-					}
+				}
+				if(tempTotalUserTime > totalUserTime) {
+					totalUserTime = tempTotalUserTime;
 				}
 			}
 		}

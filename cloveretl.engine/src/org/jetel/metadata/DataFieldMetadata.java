@@ -33,6 +33,7 @@ import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.ExceptionUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
 import org.jetel.util.formatter.BooleanFormatterFactory;
 import org.jetel.util.formatter.DateFormatter;
@@ -1103,18 +1104,20 @@ public class DataFieldMetadata implements Serializable {
 		DataFieldMetadata dataFieldMetadata = (DataFieldMetadata) object;
 
 		if (this.type == dataFieldMetadata.getDataType()) {
+			//decimal data type has to have identical length and scale
+			if (this.type == DataFieldType.DECIMAL) {
+				if (!getProperty(LENGTH_ATTR).equals(dataFieldMetadata.getProperty(LENGTH_ATTR))
+						|| !getProperty(SCALE_ATTR).equals(dataFieldMetadata.getProperty(SCALE_ATTR))) {
+					return false;
+				}
+			}
+
 			if (isFixed() && dataFieldMetadata.isFixed()) {
 				// both fixed
 				return (getSize() == dataFieldMetadata.getSize());
 			} else if (!isFixed() && !dataFieldMetadata.isFixed()) {
 				// both delimited
-				if (this.type == DataFieldType.DECIMAL) {
-					return (getProperty(LENGTH_ATTR).equals(dataFieldMetadata.getProperty(LENGTH_ATTR))
-							&& getProperty(SCALE_ATTR).equals(dataFieldMetadata.getProperty(SCALE_ATTR)));
-				} else {
-					// the same type and both delimited
-					return true;
-				}
+				return true;
 			} else {
 				// one fixed and the second delimited
 				return !checkFixDelType;
@@ -1182,11 +1185,40 @@ public class DataFieldMetadata implements Serializable {
 		}
 	}
 
+	/**
+	 * This method serialise only data type and length and scale for decimal type.
+	 * @param buffer
+	 */
+	public void serialize(CloverBuffer buffer) {
+		buffer.put(type.getByteIdentifier());
+		buffer.put(containerType.getByteIdentifier());
+		if (type == DataFieldType.DECIMAL) {
+			buffer.putInt(getFieldProperties().getIntProperty(DataFieldMetadata.LENGTH_ATTR));
+			buffer.putInt(getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR));
+		}
+	}
+	
 	@Override
 	public String toString(){
 		return "Field [name:" + this.name + ", type:" + this.type.toString(getContainerType()) +
 				(containerType != DataFieldContainerType.SINGLE ? ", containerType:" + containerType.getDisplayName() : "") +
 				", position:" + this.number  + "]";
+	}
+	
+	/**
+	 * @return string representation of this field metadata, only data type is presented
+	 */
+	public String toStringDataType() {
+		StringBuilder result = new StringBuilder();
+		result.append(getDataType().toString(getContainerType()));
+		if (getDataType() == DataFieldType.DECIMAL) {
+			result.append('(');
+			result.append(getProperty(DataFieldMetadata.LENGTH_ATTR));
+			result.append(',');
+			result.append(getProperty(DataFieldMetadata.SCALE_ATTR));
+			result.append(")");
+		}
+		return result.toString();
 	}
 	
 	/**

@@ -1747,6 +1747,9 @@ public class StringUtils {
 	 *         3 if str is integer but has more than 18 digits
 	 */
 	public static short isInteger(CharSequence str) {
+		if (str.length() == 0) {
+			return -1;
+		}
 		int start = 0;
 		if (str.charAt(0) == '-') {
 			start = 1;
@@ -1780,6 +1783,9 @@ public class StringUtils {
 	 * @return
 	 */
 	public static boolean isNumber(CharSequence str) {
+		if (str.length() == 0) {
+			return false;
+		}
 		int start = 0;
 		if (str.charAt(0) == '-') {
 			start = 1;

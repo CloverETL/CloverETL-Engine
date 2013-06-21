@@ -641,38 +641,26 @@ public class WatchDog implements Callable<Result>, CloverPost {
                 threadManager.notifyAll();
             }
             
-        	/////////////////
-        	//is this code really necessary? why?
-        	for (Node node : phase.getNodes().values()) {
-        		synchronized (node) { //this is the guard of Node.nodeThread variable
-            		Thread t = node.getNodeThread();
-            		long runId = this.getGraphRuntimeContext().getRunId();
-            		if (t == null) {
-            			continue;
-            		}
-    				String newThreadName = "exNode_"+runId+"_"+getGraph().getId()+"_"+node.getId();
-					if (logger.isTraceEnabled())
-							logger.trace("rename thread "+t.getName()+" to " + newThreadName);
-  			  		t.setName(newThreadName);
-            		// explicit interruption of threads of failed graph; (some nodes may be still running)
-            		if (!node.getResultCode().isStop()) {
+            try {
+	            //abort still running components - for failed graphs
+	        	for (Node node : phase.getNodes().values()) {
+	        		if (!node.getResultCode().isStop()) {
 	    				if (logger.isTraceEnabled())
 								logger.trace("try to abort node "+node);
-            			node.abort();
-            		}
-        		}
-        	}// for
-        	/////////////////
-            
-        	//postExecute() invocation
-        	try {
-        		phase.postExecute();
-        	} catch (ComponentNotReadyException e) {
-        		ExceptionUtils.logException(logger, "Phase post-execute finalization failed", e);
-    			setCauseException(e);
-    			causeGraphElement = e.getGraphElement();
-    			phaseStatus = Result.ERROR;
-        	}
+	        			node.abort();
+	        		}
+	        	}
+            } finally {
+	        	//postExecute() invocation
+	        	try {
+	        		phase.postExecute();
+	        	} catch (ComponentNotReadyException e) {
+	        		ExceptionUtils.logException(logger, "Phase post-execute finalization failed", e);
+	    			setCauseException(e);
+	    			causeGraphElement = e.getGraphElement();
+	    			phaseStatus = Result.ERROR;
+	        	}
+            }
         }
         
         phase.setResult(phaseStatus);

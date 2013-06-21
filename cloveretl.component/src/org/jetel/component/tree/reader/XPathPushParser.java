@@ -31,6 +31,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.JetelRuntimeException;
 
 /**
  * This unit traverses tree structure using given mapping. Results of the traversal are pushed into
@@ -175,6 +176,9 @@ public class XPathPushParser {
 			throws AbortParsingException {
 
 		DataField field = null;
+		if (target == null) {
+			throw new JetelRuntimeException("Cannot perform field mapping for '" + mapping.getCloverField() + "' as there was no output port specified");
+		}
 		try {
 			field = target.getField(mapping.getCloverField());
 		} catch (ArrayIndexOutOfBoundsException e) {

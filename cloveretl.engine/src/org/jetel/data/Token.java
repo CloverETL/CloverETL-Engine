@@ -77,6 +77,11 @@ public class Token extends DataRecord {
 	}
 	
 	@Override
+	public void serializeUnitary(CloverBuffer buffer) {
+		super.serialize(buffer);
+	}
+	
+	@Override
 	public void serialize(CloverBuffer buffer, int[] whichFields) {
 		serializeTokenId(buffer);
 		
@@ -100,6 +105,12 @@ public class Token extends DataRecord {
 	}
 
 	@Override
+	public void deserializeUnitary(CloverBuffer buffer) {
+		super.deserialize(buffer);
+		tokenId = -1;
+	}
+
+	@Override
 	public void deserialize(CloverBuffer buffer, int[] whichFields) {
 		deserializeTokenId(buffer);
 		
@@ -118,7 +129,12 @@ public class Token extends DataRecord {
 	public int getSizeSerialized() {
 		return super.getSizeSerialized() + ((tokenId == -1) ? 1 : 1 + TOKEN_ID_LENGTH);
 	}
-	
+
+	@Override
+	public int getSizeSerializedUnitary() {
+		return super.getSizeSerialized();
+	}
+
 	@Override
 	public void copyFrom(DataRecord fromRecord) {
 		super.copyFrom(fromRecord);

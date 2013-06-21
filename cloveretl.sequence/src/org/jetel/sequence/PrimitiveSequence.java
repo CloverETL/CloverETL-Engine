@@ -93,35 +93,23 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * @see org.jetel.graph.GraphElement#init()
      */
     @Override
-    synchronized public void init() throws ComponentNotReadyException {
+    public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
 		alreadyIncremented = false;
     }
 
-    
-    
     @Override
-	public synchronized void preExecute() throws ComponentNotReadyException {
+	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		if (firstRun()) {//a phase-dependent part of initialization
-    		//all necessary elements have been initialized in init()
-    	} else {
-    		logger.debug("Primitive sequence '" + getId() + "' reset.");
-    		resetValue();
-    	}
+		resetValue();
 	}
 
-	@Override
-    public synchronized void reset() throws ComponentNotReadyException {
-    	super.reset();
-    }
-    
     /**
      * @see org.jetel.graph.GraphElement#free()
      */
     @Override
-    synchronized public void free() {
+    public void free() {
         if(!isInitialized()) return;
         super.free();
         //no op
@@ -196,7 +184,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
         return false;
     }
 
-    public synchronized long getStart() {
+    public long getStart() {
         return start;
     }
 
@@ -204,12 +192,12 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * Sets start value and resets this sequencer.
      * @param start
      */
-    public synchronized void setStart(long start) {
+    public void setStart(long start) {
         this.start = start;
         resetValue();
     }
 
-    public synchronized long getStep() {
+    public long getStep() {
         return step;
     }
 
@@ -217,11 +205,11 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * Sets step value and resets this sequencer.
      * @param step
      */
-    public synchronized void setStep(long step) {
+    public void setStep(long step) {
         this.step = step;
     }
 
-    static public PrimitiveSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
+    public static PrimitiveSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException, AttributeNotFoundException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
         String configAttr = xattribs.getString(XML_SEQCONFIG_ATTRIBUTE, "");
@@ -253,8 +241,8 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
         		TypedProperties typedProperties = new TypedProperties(tempProperties, graph);
 
         		seq.setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
-        		seq.start = typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0);
-        		seq.step = typedProperties.getLongProperty(XML_STEP_ATTRIBUTE, 0);
+        		seq.setStart(typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0));
+        		seq.setStep(typedProperties.getLongProperty(XML_STEP_ATTRIBUTE, 0));
         		
                 stream.close();
             } catch (Exception ex) {

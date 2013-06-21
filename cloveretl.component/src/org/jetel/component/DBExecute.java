@@ -422,19 +422,13 @@ public class DBExecute extends Node {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-		if (firstRun()) { //a phase-dependent part of initialization
-    		initConnection();
-    	} else {
-    		if (getGraph().getRuntimeContext().isBatchMode() && dbConnection.isThreadSafeConnections()) {
-    			initConnection();
-    		}
-    		if (outRecord != null) {
-    			outRecord.reset();
-    		}
-    		if (errRecord != null) {
-    			errRecord.reset();
-    		}
-    	}
+		acquireConnection();
+		if (outRecord != null) {
+			outRecord.reset();
+		}
+		if (errRecord != null) {
+			errRecord.reset();
+		}
 		if (getInPorts().size() > 0) {
 			inRecord = DataRecordFactory.newRecord(getInputPort(READ_FROM_PORT).getMetadata());
 			inRecord.init();
@@ -476,12 +470,10 @@ public class DBExecute extends Node {
 		} catch (SQLException e) {
 			logger.warn("SQLException when closing statement", e);
 		}
-		if (getGraph().getRuntimeContext().isBatchMode()) {
-			dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
-		}
+		dbConnection.closeConnection(getId(), procedureCall ? OperationType.CALL : OperationType.WRITE);
 	}
 
-	private void initConnection() throws ComponentNotReadyException {
+	private void acquireConnection() throws ComponentNotReadyException {
 		try {
 			if (procedureCall) {
 				connection = dbConnection.getConnection(getId(), OperationType.CALL);

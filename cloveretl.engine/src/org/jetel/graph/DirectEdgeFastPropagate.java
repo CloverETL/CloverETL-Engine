@@ -243,7 +243,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         
         recordsBuffer.setFull(buffer);
         record.rewind();
-        inputRecordCounter++;
+        outputRecordCounter++;
         bufferedRecords.incrementAndGet();
     }
 
