@@ -38,6 +38,15 @@ public class SafeLogUtils {
 	/** Pattern for identifying URL with password in a given text */
 	private static final Pattern URL_PASSWORD_PATTERN = Pattern.compile(".+://(.*?):([^\\*]*?)@.+");
 	
+	/*
+	 * a://b:c@d
+	 * 
+	 * Input text matches:
+	 * group #0 = a://b:c@d
+	 * group #1 = b
+	 * group #2 = c
+	 * 
+	 */
 
 	/**
 	 * Obfuscates passwords in URLs in given text.
