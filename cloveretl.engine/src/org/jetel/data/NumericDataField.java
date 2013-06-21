@@ -472,7 +472,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable<O
 			}
 			return 0;
 		} else {
-			return super.toByteBuffer(dataBuffer, encoder);
+			return super.toByteBuffer(dataBuffer, encoder, maxLength);
 		}
 	}
 

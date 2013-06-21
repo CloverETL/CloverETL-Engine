@@ -449,7 +449,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 			}
 			return 0;
 		} else {
-			return super.toByteBuffer(dataBuffer, encoder);
+			return super.toByteBuffer(dataBuffer, encoder, maxLength);
 		}
 	}
 
