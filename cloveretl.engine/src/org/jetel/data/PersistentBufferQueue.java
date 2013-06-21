@@ -168,7 +168,7 @@ public class PersistentBufferQueue {
 		private void open() {
 			try {
 				//graph id is part of temp file - just a temporary solution for finding leaking graph
-				String graphId = ContextProvider.getGraph().getId();
+				String graphId = ContextProvider.getGraph() != null ? ContextProvider.getGraph().getId() : "null";
 				tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(TMP_FILE_PREFIX + "_" + graphId + "_", TMP_FILE_SUFFIX, -1);
 				tempFileChannel = new RandomAccessFile(tempFile, TMP_FILE_MODE).getChannel();
 			} catch (Exception e) {
