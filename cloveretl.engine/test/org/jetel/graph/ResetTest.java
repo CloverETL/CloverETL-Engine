@@ -172,6 +172,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SystemExecute_printBatchFile.grf") // ok, is to fail
 							&& !file.getName().equals("JoinMergeIssue_FailWhenMasterUnsorted.grf") // ok, is to fail
 							&& !file.getName().equals("UDW_remoteZipPartitioning_fail_CL-2564.grf") // ok, is to fail
+							&& !file.getName().equals("XMLReader_no_output_port.grf") // ok, is to fail
 							&& !file.getName().startsWith("Proxy_") // allowed to run only on virt-cyan as proxy tests
 							&& !file.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server
 							&& !file.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
