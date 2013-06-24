@@ -208,12 +208,7 @@ public class ExternalSortDataRecord implements ISortDataRecord {
 	public void reset() {
 		sorter.reset();
 		if (carouselInitialized && tapeCarousel != null) {
-			try {
-				tapeCarousel.rewind();
-			} catch (Exception e) {
-				carouselInitialized = false;
-				tapeCarousel = null;
-			}
+			tapeCarousel.clear();
 		}
 		recordBuffer.clear();
 		this.prevIndex = -1;

@@ -110,12 +110,12 @@ public class TapeCarousel {
         }
     }
     
-    public void clear() throws InterruptedException {
+    public void clear() {
         for(int i=0;i<tapeArray.length;i++){
             try{
                 tapeArray[i].clear();
             }catch(IOException ex){
-                throw new RuntimeException("IOException when cleaning tape in carousel: "+ex);
+                throw new RuntimeException("IOException when cleaning tape in carousel.", ex);
             }
         }
     }
