@@ -18,9 +18,8 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -75,11 +74,12 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 	private String resolvedTarget;
 	private boolean initialized = false;
 	
-	private void init() {
+	private void init(GraphWrapper graphWrapper) {
 		if (initialized) {
 			return;
 		}
 		initialized = true;
+		setPropertyRefResolver(graphWrapper);
 		resolvedTarget = resolve(target.getValue());
 		String patternValue = resolve(pattern.getValue());
 		if (patternValue != null && !patternValue.isEmpty()) {
@@ -96,24 +96,28 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 	}
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		setPropertyRefResolver(graphWrapper);
 		phoneUtil = PhoneNumberUtil.getInstance();
 		
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
-		
-		params.add(region);
-		params.add(pattern);
 		region.setName("Region");
 		pattern.setName("Required pattern");
 		String[] regions = phoneUtil.getSupportedRegions().toArray(new String[0]);
 		Arrays.sort(regions);
 		region.setOptions(regions);
 		pattern.setOptions(CommonFormats.phoneNumbers);
-		
-		params.addAll(super.initialize(inMetadata, graphWrapper));
-		return params;
 	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(region);
+		parametersContainer.add(pattern);
+	}
+	
 	
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -124,7 +128,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		if (logger.isTraceEnabled()) {
 			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		}
-		init();
+		init(graphWrapper);
 		
 		String inputString = prepareInput(record, resolvedTarget);
 		

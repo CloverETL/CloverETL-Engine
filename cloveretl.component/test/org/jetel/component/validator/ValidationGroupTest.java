@@ -18,12 +18,9 @@
  */
 package org.jetel.component.validator;
 
-import java.util.List;
-
 import org.jetel.component.validator.ValidationGroup.Conjunction;
 import org.jetel.component.validator.ValidationNode.State;
 import org.jetel.component.validator.common.ValidatorTestCase;
-import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.junit.Test;
@@ -244,10 +241,6 @@ public class ValidationGroupTest extends ValidatorTestCase {
 		}
 		@Override
 		public String getCommonDescription() {
-			return null;
-		}
-		@Override
-		protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 			return null;
 		}
 	}

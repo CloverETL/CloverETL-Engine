@@ -18,8 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -65,17 +64,21 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	private StringValidationParamNode pattern = new StringValidationParamNode();
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		pattern.setName("Pattern to match");
 		pattern.setPlaceholder("Regular expression, for syntax see documentation");
-		params.add(pattern);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
 		ignoreCase.setName("Ignore case");
-		params.add(ignoreCase);
-		return params;
 	}
 	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(pattern);
+		parametersContainer.add(ignoreCase);
+	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {

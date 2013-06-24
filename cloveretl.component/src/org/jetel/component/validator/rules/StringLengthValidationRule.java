@@ -18,8 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -90,10 +89,10 @@ public class StringLengthValidationRule extends StringValidationRule {
 	private IntegerValidationParamNode to = new IntegerValidationParamNode();
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		type.setName("Criterion");
-		params.add(type);
 		from.setPlaceholder("Not set");
 		from.setEnabledHandler(new EnabledHandler() {
 			
@@ -106,7 +105,6 @@ public class StringLengthValidationRule extends StringValidationRule {
 			}
 		});
 		from.setName("From");
-		params.add(from);
 		to.setPlaceholder("Not set");
 		to.setEnabledHandler(new EnabledHandler() {
 			
@@ -119,11 +117,16 @@ public class StringLengthValidationRule extends StringValidationRule {
 			}
 		});
 		to.setName("To");
-		params.add(to);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
-		return params;
 	}
 	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(type);
+		parametersContainer.add(from);
+		parametersContainer.add(to);
+	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {

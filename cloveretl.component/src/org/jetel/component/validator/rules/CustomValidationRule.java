@@ -19,7 +19,6 @@
 package org.jetel.component.validator.rules;
 
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -92,7 +91,28 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	private Map<String, String> mapping;
 
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
+		initializeRuleDetails(inMetadata, graphWrapper);
+		
+		target.setPlaceholder("Specified by mapping");
+		mappingParam.setName("Parameters mapping");
+		mappingParam.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
+	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(mappingParam);
+	}
+
+	/**
+	 * @param inMetadata
+	 * @param graphWrapper
+	 */
+	private void initializeRuleDetails(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		CustomRule selectedRule = getSelectedRule(graphWrapper);
 		Function firstFunction = getFirstFunction(selectedRule, inMetadata, graphWrapper);
 		TLType[] parameterTypes = firstFunction.getParametersType();
@@ -103,13 +123,6 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		for (int i = 0; i < parameterTypes.length; i++) {
 			ruleParameters[i] = parameterNames[i];
 		}
-		
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
-		target.setPlaceholder("Specified by mapping");
-		mappingParam.setName("Parameters mapping");
-		mappingParam.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
-		params.add(mappingParam);
-		return params;
 	}
 	
 	@Override

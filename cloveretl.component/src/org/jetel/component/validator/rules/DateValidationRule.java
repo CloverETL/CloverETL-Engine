@@ -19,9 +19,8 @@
 package org.jetel.component.validator.rules;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -80,16 +79,22 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 	}
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		trimInput.setName("Trim input");
 		trimInput.setTooltip("Trim input before validation.");
-		params.add(trimInput);
 		
 		LanguageSetting languageSetting = getLanguageSettings(0);
 		languageSetting.initialize();
 		languageSetting.getNumberFormat().setHidden(true); // No need for number format
-		return params;
+	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(trimInput);
 	}
 
 	@Override

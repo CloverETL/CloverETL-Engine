@@ -18,8 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -60,17 +59,19 @@ public class EmailValidationRule extends StringValidationRule {
 	private BooleanValidationParamNode allowGroupAddressesParam = new BooleanValidationParamNode(false);
 	
 	@Override
-	public List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+	public void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
 		
-		params.add(plainAddressParam);
-		params.add(allowGroupAddressesParam);
 		plainAddressParam.setName("Plain e-mail address only"); // FIXME why does this need to be called here explicitly?
 		allowGroupAddressesParam.setName("Allow group addresses");
+	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
 		
-		params.addAll(super.initialize(inMetadata, graphWrapper));
-		
-		return params;
+		parametersContainer.add(plainAddressParam);
+		parametersContainer.add(allowGroupAddressesParam);
 	}
 
 	@Override

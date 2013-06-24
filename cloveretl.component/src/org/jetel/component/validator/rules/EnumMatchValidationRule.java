@@ -18,8 +18,8 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -79,15 +79,14 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	private Set<Object> tempValues;
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		values.setName("Accept values");
 		values.setTooltip("For example:\nfirst,second\nfirst,\"second,third\",fourth");
 		values.setPlaceholder("Comma separated list of values");
-		params.add(values);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
+		
 		ignoreCase.setName("Ignore case");
-		params.add(ignoreCase);
 		ignoreCase.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -99,7 +98,6 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 			}
 		});
 		trimInput.setName("Trim input");
-		params.add(trimInput);
 		trimInput.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -110,7 +108,15 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 				return false;
 			}
 		});
-		return params;
+	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(values);
+		parametersContainer.add(ignoreCase);
+		parametersContainer.add(trimInput);
 	}
 
 	@Override

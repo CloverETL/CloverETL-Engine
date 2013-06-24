@@ -21,9 +21,8 @@ package org.jetel.component.validator.rules;
 import java.io.UnsupportedEncodingException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -79,12 +78,12 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 	}
 
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		final DataRecordMetadata inputMetadata = inMetadata;
 		
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		trimInput.setName("Trim input");
-		params.add(trimInput);
 		trimInput.setEnabledHandler(new EnabledHandler() {
 			@Override
 			public boolean isEnabled() {
@@ -141,8 +140,13 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 				return false;
 			}
 		});
+	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
 		
-		return params;
+		parametersContainer.add(trimInput);
 	}
 	
 	/**

@@ -18,7 +18,9 @@
  */
 package org.jetel.component.validator;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,11 +85,12 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		ONE_FIELD, UNORDERED_FIELDS, MAPPING_SPECIFIED
 	}
 	
-	private Map<String, String> tempParams;
-	private List<ValidationParamNode> params;
-	
 	@XmlElement(name="target",required=true)
 	protected StringValidationParamNode target = new StringValidationParamNode();
+	
+	private Map<String, String> processedParametersValues;
+
+	private List<ValidationParamNode> ruleParametersList;
 	
 	/**
 	 * Returns lazy initialized param nodes for GUI. Intended to be used in GUI.
@@ -97,10 +100,13 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	 * @return List of all param nodes
 	 */
 	public List<ValidationParamNode> getParamNodes(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		if(params == null) {
-			params = initialize(inMetadata, graphWrapper);
+		if(ruleParametersList == null) {
+			initializeParameters(inMetadata, graphWrapper);
+			List<ValidationParamNode> parameters = new ArrayList<ValidationParamNode>();
+			registerParameters(parameters);
+			ruleParametersList = parameters;
 		}
-		return params;
+		return ruleParametersList;
 	}
 	
 	/**
@@ -111,8 +117,8 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	 * @param graphWrapper Graph wrapper to be able finish initialization and reach some graph parameters.
 	 * @return Map of all param nodes and its values
 	 */
-	public Map<String, String> getProcessedParams(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		if(tempParams == null) {
+	protected Map<String, String> getProcessedParams(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		if(processedParametersValues == null) {
 			Map<String, String> temp = new HashMap<String, String>();
 			// Shared params
 			temp.put("Targets", getTarget().getValue());
@@ -120,9 +126,9 @@ public abstract class AbstractValidationRule extends ValidationNode {
 			for(ValidationParamNode paramNode : paramNodes) {
 				temp.put(paramNode.getName(), paramNode.toString());
 			}
-			tempParams = temp;
+			processedParametersValues = temp;
 		}
-		return tempParams;
+		return processedParametersValues;
 	}
 	/**
 	 * Returns lazy initialized param nodes in map mostly for debugging reason. Intended to be used in engine.
@@ -131,20 +137,20 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	 * @return Map of all param nodes and its values
 	 */
 	public Map<String, String> getProcessedParams() {
-		return tempParams;
+		return processedParametersValues;
 	}
 	
 	/**
 	 * Initialize param nodes.
-	 * Have in mind:
-	 * <ul>
-	 *   <li>Always return not null</li>
-	 * </ul>
+	 * 
 	 * @param inMetadata Metadata incoming record
 	 * @param graphWrapper Graph wrapper to be able finish initialization and reach some graph parameters
-	 * @return List of all param nodes
 	 */
-	protected abstract List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper);
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	}
+	
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+	}
 	
 	public StringValidationParamNode getTarget() {
 		return target;

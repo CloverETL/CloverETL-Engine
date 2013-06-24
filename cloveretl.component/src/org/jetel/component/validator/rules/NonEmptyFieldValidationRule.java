@@ -18,8 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -84,14 +83,13 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		final DataRecordMetadata inputMetadata = inMetadata;
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		goal.setName("Valid");
-		params.add(goal);
 		trimInput.setName("Trim input");
 		trimInput.setTooltip("Trim input before validation.");
-		params.add(trimInput);
 		trimInput.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -103,7 +101,14 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 				return false;
 			}
 		});
-		return params;
+	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(goal);
+		parametersContainer.add(trimInput);
 	}
 
 	@Override

@@ -19,9 +19,8 @@
 package org.jetel.component.validator.rules;
 
 import java.text.ParseException;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -97,22 +96,26 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 	private Map<String, String> tempMapping;
 
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
 		
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		target.setPlaceholder("Specified by mapping");
 		lookup.setName("Lookup name");
 		lookup.setOptions(graphWrapper.getLookupTables().toArray(new String[0]));
-		params.add(lookup);
 		mappingParam.setName("Key mapping");
 		mappingParam.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
-		params.add(mappingParam);
 		policy.setName("Rule policy");
-		params.add(policy);
 		
 		init(graphWrapper);
+	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
 		
-		return params;
+		parametersContainer.add(lookup);
+		parametersContainer.add(mappingParam);
+		parametersContainer.add(policy);
 	}
 	
 	@Override

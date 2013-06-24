@@ -18,7 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -101,15 +101,20 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 	private StringValidationParamNode value = new StringValidationParamNode();
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		operator.setName("Operator");
-		params.add(operator);
 		value.setName("Compare with");
 		value.setPlaceholder("Standard Clover format, for details see documentation.");
-		params.add(value);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
-		return params;
+	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(operator);
+		parametersContainer.add(value);
 	}
 
 	@Override

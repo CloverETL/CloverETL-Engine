@@ -18,9 +18,8 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import java.util.TimeZone;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -131,12 +130,12 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 	protected Comparator<?> tempComparator;
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		final DataRecordMetadata inputMetadata = inMetadata;
 		
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
 		useType.setName("Compare as");
-		params.add(useType);
 		
 		LanguageSetting languageSetting = getLanguageSettings(0);
 		languageSetting.initialize();
@@ -184,7 +183,13 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 				return false;
 			}
 		});
-		return params;
+	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(useType);
 	}
 	
 	public void initConversionUtils(DataFieldType fieldType) {

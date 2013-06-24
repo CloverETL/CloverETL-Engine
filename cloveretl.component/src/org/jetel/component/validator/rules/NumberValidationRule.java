@@ -20,8 +20,7 @@ package org.jetel.component.validator.rules;
 
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import java.util.Locale;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -74,18 +73,23 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 	}
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		trimInput.setName("Trim input");
 		trimInput.setTooltip("Trim input before validation.");
-		params.add(trimInput);
 		
 		LanguageSetting languageSetting = getLanguageSettings(0);
 		languageSetting.initialize();
 		languageSetting.getDateFormat().setHidden(true);
 		languageSetting.getTimezone().setHidden(true);
-		return params;
 	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(trimInput);
+	}
+	
 
 	@Override
 	public TARGET_TYPE getTargetType() {

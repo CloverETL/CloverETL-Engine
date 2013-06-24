@@ -18,7 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -99,20 +99,26 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	
 	
 	@Override
-	protected List<ValidationParamNode> initialize(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		ArrayList<ValidationParamNode> params = new ArrayList<ValidationParamNode>();
+	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+		super.initializeParameters(inMetadata, graphWrapper);
+		
 		boundaries.setName("Boundaries");
-		params.add(boundaries);
 		from.setName("From");
 		from.setPlaceholder("Standard Clover format, for details see documentation.");
-		params.add(from);
 		to.setName("To");
 		to.setPlaceholder("Not set");
 		to.setPlaceholder("Standard Clover format, for details see documentation.");
-		params.add(to);
-		params.addAll(super.initialize(inMetadata, graphWrapper));
-		return params;
 	}
+	
+	@Override
+	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
+		super.registerParameters(parametersContainer);
+		
+		parametersContainer.add(boundaries);
+		parametersContainer.add(from);
+		parametersContainer.add(to);
+	}
+	
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
