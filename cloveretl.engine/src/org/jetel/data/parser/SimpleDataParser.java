@@ -88,7 +88,7 @@ public class SimpleDataParser extends AbstractTextParser {
 	public static Integer getParserSpeed(TextParserConfiguration cfg) {
 		if (cfg.isVerbose()) {
 			logger.debug("This parser can't be used because 'verbose' feature");
-		} else if (cfg.isQuotedStrings()) {
+		} else if (cfg.isQuotedStringsOverride() ? cfg.isQuotedStrings() : cfg.getMetadata().isQuotedStrings()) {
 			logger.debug("This parser can't be used because of the 'quotedStrings' feature");
 		} else if (cfg.isTreatMultipleDelimitersAsOne()) {
 			logger.debug("This parser can't be used because of the 'treatMultipleDelimitersAsOne' feature");
