@@ -34,7 +34,7 @@ public abstract class PortTrackingDetail implements PortTracking {
 
 	private static final long serialVersionUID = -8999440507780259714L;
 	
-	private static final int MIN_TIMESLACE = 100000;
+	private static final int MIN_TIMESLACE = 1000;
 
 	private long lastGatherTime;
 
@@ -206,18 +206,18 @@ public abstract class PortTrackingDetail implements PortTracking {
 	abstract void gatherTrackingDetails();
 	
 	protected void gatherTrackingDetails0(long newTotalRecords, long newTotalBytes, int waitingRecords) {
-		long currentTime = System.nanoTime();
+		long currentTime = System.currentTimeMillis();
 		long timespan = lastGatherTime != 0 ? currentTime - lastGatherTime : 0; 
 
     	if(timespan > MIN_TIMESLACE) { // for too small time slice are statistic values too distorted
     	    //recordFlow
-	        recordFlow = (int) (((long) (newTotalRecords - totalRecords)) * 1000000000 / timespan);
+	        recordFlow = (int) (((long) (newTotalRecords - totalRecords)) * 1000 / timespan);
 
 	        //recordPeak
 	        recordPeak = Math.max(recordPeak, recordFlow);
 
     	    //byteFlow
-	        byteFlow = (int) (((long) (newTotalBytes - totalBytes)) * 1000000000 / timespan);
+	        byteFlow = (int) (((long) (newTotalBytes - totalBytes)) * 1000 / timespan);
 
 	        //bytePeak
 	        bytePeak = Math.max(bytePeak, byteFlow);
@@ -243,11 +243,11 @@ public abstract class PortTrackingDetail implements PortTracking {
 	}
 
 	void phaseFinished() {
-	    //recordFlow
-        recordFlow = 0;
+	    //recordFlow - average flow is calculated 
+        recordFlow = (int) ((totalRecords * 1000) / getParentNodeTracking().getParentPhaseTracking().getExecutionTime());
 
-	    //byteFlow
-        byteFlow = 0;
+	    //byteFlow - average flow is calculated
+        byteFlow = (int) ((totalBytes * 1000) / getParentNodeTracking().getParentPhaseTracking().getExecutionTime());
 	}
 	
 }
