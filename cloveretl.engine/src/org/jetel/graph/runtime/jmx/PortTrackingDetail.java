@@ -243,11 +243,16 @@ public abstract class PortTrackingDetail implements PortTracking {
 	}
 
 	void phaseFinished() {
-	    //recordFlow - average flow is calculated 
-        recordFlow = (int) ((totalRecords * 1000) / getParentNodeTracking().getParentPhaseTracking().getExecutionTime());
-
-	    //byteFlow - average flow is calculated
-        byteFlow = (int) ((totalBytes * 1000) / getParentNodeTracking().getParentPhaseTracking().getExecutionTime());
+		long executionTime = getParentNodeTracking().getParentPhaseTracking().getExecutionTime();
+		if (executionTime > 0) {
+		    //recordFlow - average flow is calculated
+			recordFlow = (int) ((totalRecords * 1000) / executionTime);
+		    //byteFlow - average flow is calculated
+	        byteFlow = (int) ((totalBytes * 1000) / executionTime);
+		} else {
+			recordFlow = 0;
+			byteFlow = 0;
+		}
 	}
 	
 }
