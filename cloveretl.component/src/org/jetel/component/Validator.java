@@ -125,6 +125,7 @@ public class Validator extends Node {
 	private DataRecord inputRecord;
 	private DataRecord errorRecord;
 	private boolean recordMultiplication = false;
+	private GraphWrapper graphWrapper;
 	
 	/**
 	 * Minimalistic constructor to ensure component name to init
@@ -296,6 +297,10 @@ public class Validator extends Node {
 		
 		initRootGroup();
 		initMapping();
+		
+		graphWrapper = new EngineGraphWrapper(getGraph());
+		graphWrapper.init(rootGroup);
+		rootGroup.init(inputRecord, graphWrapper);
 	}
 	
 	@Override
@@ -303,13 +308,12 @@ public class Validator extends Node {
 		super.preExecute();
 		errorMapping.preExecute();
 		processedRecords = 0;
+		rootGroup.preExecute();
 	}
 
 	@Override
 	protected Result execute() throws Exception {
 		logger.trace("Executing Validator component");
-		
-		ValidationGroup root = rootGroup;
 		
 		// Prepare ports and structures for records
 		InputPortDirect inPort = getInputPortDirect(INPUT_PORT);
@@ -318,9 +322,6 @@ public class Validator extends Node {
 	
 		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 	
-		// Prepare provider for accessing graph
-		GraphWrapper graphWrapper = new EngineGraphWrapper(getGraph());
-		graphWrapper.init(root);
 		ValidationErrorAccumulator errorAccumulator = new ValidationErrorAccumulator();
 		
 		// Iterate over data
@@ -336,7 +337,7 @@ public class Validator extends Node {
 			inputRecord.reset();
 			inputRecord.init();
 			inputRecord.deserialize(recordBuffer);
-			if(root.isValid(inputRecord,errorAccumulator, graphWrapper) != ValidationNode.State.INVALID) {
+			if(rootGroup.isValid(inputRecord,errorAccumulator, graphWrapper) != ValidationNode.State.INVALID) {
 				MiscUtils.sendRecordToPort(validPort, inputRecord);
 				logger.trace("Record number " + processedRecords + " is VALID.");
 			} else {
@@ -360,6 +361,13 @@ public class Validator extends Node {
 		}
 		broadcastEOF();
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		errorMapping.postExecute();
+		rootGroup.postExecute();
 	}
 	
 	/**

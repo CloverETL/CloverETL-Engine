@@ -44,7 +44,10 @@ import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
 import org.jetel.component.validator.rules.PhoneNumberValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
+import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Class with shared functionality for all validation rules.
@@ -107,6 +110,17 @@ public abstract class AbstractValidationRule extends ValidationNode {
 			ruleParametersList = parameters;
 		}
 		return ruleParametersList;
+	}
+	
+	@Override
+	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(record, graphWrapper);
+		
+		DataRecordMetadata metadata = record.getMetadata();
+		if (isLoggingEnabled()) {
+			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
+			logParentLangaugeSetting();
+		}
 	}
 	
 	/**

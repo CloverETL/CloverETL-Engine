@@ -37,6 +37,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.utils.CustomRulesMapAdapter;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -144,6 +145,33 @@ public class ValidationGroup extends ValidationNode {
 	
 	@XmlAttribute(name="nextCustomRuleId")
 	private Integer nextCustomRuleId = 0; 
+	
+	@Override
+	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(record, graphWrapper);
+		
+		for (ValidationNode child : childs) {
+			child.init(record, graphWrapper);
+		}
+	}
+	
+	@Override
+	public void preExecute() {
+		super.preExecute();
+		
+		for (ValidationNode child : childs) {
+			child.preExecute();
+		}
+	}
+	
+	@Override
+	public void postExecute() {
+		super.postExecute();
+		
+		for (ValidationNode child : childs) {
+			child.postExecute();
+		}
+	}
 	
 	/**
 	 * Adds custom validation rule to tree

@@ -48,12 +48,12 @@ import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.ctl.data.TLType;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
-import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Rule for executing CTL2 custom rule carried in {@link CustomRule} saved in the root of
@@ -89,6 +89,8 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	private String[] ruleParameters;
 	private String functionName;
 	private Map<String, String> mapping;
+	private Function firstFunction;
+	private String[] orderedParameterFields;
 
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -108,10 +110,6 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		parametersContainer.add(mappingParam);
 	}
 
-	/**
-	 * @param inMetadata
-	 * @param graphWrapper
-	 */
 	private void initializeRuleDetails(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		CustomRule selectedRule = getSelectedRule(graphWrapper);
 		Function firstFunction = getFirstFunction(selectedRule, inMetadata, graphWrapper);
@@ -130,6 +128,28 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		return ruleParameters;
 	}
 	
+	@Override
+	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(record, graphWrapper);
+		
+		try {
+			initializeMapping();
+		} catch (ParseException e) {
+			throw new ComponentNotReadyException(e);
+		}
+		
+		DataRecordMetadata metadata = record.getMetadata();
+		
+		CustomRule selectedRule = getSelectedRule(graphWrapper);
+		firstFunction = getFirstFunction(selectedRule, metadata, graphWrapper);
+		orderedParameterFields = getOrderedParameterFields(firstFunction.getParameterNames());
+		String codeToExecute = getCustomValidationRuleTransformation(selectedRule.getCode(), firstFunction, orderedParameterFields);
+		
+		initMapping(codeToExecute, metadata, graphWrapper);
+		
+		tempMapping.init("dummy");
+	}
+	
 	private void initializeMapping() throws ParseException {
 		mapping = ValidatorUtils.parseMappingToMap(resolve(mappingParam.getValue()));
 	}
@@ -140,43 +160,19 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		
-		setPropertyRefResolver(graphWrapper);
-		DataRecordMetadata metadata = record.getMetadata();
-		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
-			logParentLangaugeSetting();
+		if (!isInitialized()) {
+			throw new IllegalStateException("Rule not initialized");
 		}
-		
-		try {
-			initializeMapping();
-		} catch (ParseException e) {
-			// FIXME field is not invalid, the state of the rule is invalid
-			// make sure this state cannot happen, make the rule fail in initialization method
-			throw new JetelRuntimeException(e);
-		}
-		
-		CustomRule selectedRule = getSelectedRule(graphWrapper);
-		Function firstFunction = getFirstFunction(selectedRule, metadata, graphWrapper);
-		String[] orderedParameterFields = getOrderedParameterFields(firstFunction.getParameterNames());
-		String codeToExecute = getCustomValidationRuleTransformation(selectedRule.getCode(), firstFunction, orderedParameterFields);
-		
-		initMapping(codeToExecute, metadata, graphWrapper);
 		
 		tempCustomRuleOutputRecord.reset();
 		tempCustomRuleInputRecord.reset();
 		tempCustomRuleInputRecord.copyFrom(record);
 		
-		HashMap<String, String> values = new HashMap<String, String>();
-		for(String field: orderedParameterFields) {
-			values.put(field, record.getField(field).toString());
-		}
-		
 		try {
-			tempMapping.init("dummy");
 			tempMapping.execute();
 		} catch (Exception ex) {
 			logError("Function '" + firstFunction.getName() + "' could not be executed.");
+			HashMap<String, String> values = getAnalyzedValuesSnapshot(record, orderedParameterFields);
 			raiseError(ea, ERROR_EXECUTION, "Given function could not be executed.", graphWrapper.getNodePath(this), orderedParameterFields, values);
 			return State.INVALID;
 		}
@@ -189,18 +185,21 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 			if(tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_MESSAGE).getValue() != null) {
 				message = tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_MESSAGE).getValue().toString();
 			}
-			logError("Fields '" + Arrays.toString(orderedParameterFields) + "' didn't passed function '" + firstFunction.getName() + "'.");
+			logError("Fields '" + Arrays.toString(orderedParameterFields) + "' did not pass function '" + firstFunction.getName() + "'.");
+			HashMap<String, String> values = getAnalyzedValuesSnapshot(record, orderedParameterFields);
 			raiseError(ea, ERROR, message , graphWrapper.getNodePath(this), orderedParameterFields, values);
 			return State.INVALID;
 		}
 	}
 
-	/**
-	 * @param selectedRule
-	 * @param metadata
-	 * @param graphWrapper
-	 * @return
-	 */
+	private HashMap<String, String> getAnalyzedValuesSnapshot(DataRecord record, String[] orderedParameterFields) {
+		HashMap<String, String> values = new HashMap<String, String>();
+		for(String field: orderedParameterFields) {
+			values.put(field, record.getField(field).toString());
+		}
+		return values;
+	}
+
 	private Function getFirstFunction(CustomRule selectedRule, DataRecordMetadata metadata, GraphWrapper graphWrapper) {
 		List<Function> functions = CTLCustomRuleUtils.findFunctions(
 				graphWrapper.getTransformationGraph(),
@@ -212,10 +211,6 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		return firstFunction;
 	}
 
-	/**
-	 * @param graphWrapper
-	 * @return
-	 */
 	private CustomRule getSelectedRule(GraphWrapper graphWrapper) {
 		Map<Integer, CustomRule> customRules = graphWrapper.getCustomRules();
 		CustomRule selectedRule = customRules.get(ref.getValue());
@@ -301,10 +296,6 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		return state;
 	}
 	
-	/**
-	 * @param parameterNamesArray
-	 * @return
-	 */
 	private String[] getOrderedParameterFields(String[] parameterNamesArray) {
 		String[] retval = new String[parameterNamesArray.length];
 		

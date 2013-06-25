@@ -18,9 +18,12 @@
  */
 package org.jetel.component.validator.rules;
 
+import junit.framework.Assert;
+
 import org.jetel.component.validator.CustomRule;
 import org.jetel.component.validator.common.ValidatorTestCase;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.junit.Test;
 
 /**
@@ -134,14 +137,36 @@ public class CustomValidationRuleTest extends ValidatorTestCase {
 		temp.getRef().setValue(1);
 		temp.getTarget().setValue("zzz");
 		temp.getMappingParam().setValue("input:=field");
+		try {
+			temp.init(record1, graphWrapper);
+		} catch (ComponentNotReadyException e) {
+			Assert.fail(e.getMessage());
+		}
 		assertInvalid(temp, record1, null, graphWrapper);
+		try {
+			temp.init(record2, graphWrapper);
+		} catch (ComponentNotReadyException e) {
+			Assert.fail(e.getMessage());
+		}
 		assertValid(temp, record2, null, graphWrapper);
 		
 		temp = createRule(CustomValidationRule.class);
 		temp.getRef().setValue(2);
 		temp.getTarget().setValue("zzz");
 		temp.getMappingParam().setValue("input:=field;input2:=field2");
+		
+		try {
+			temp.init(record3, graphWrapper);
+		} catch (ComponentNotReadyException e) {
+			Assert.fail(e.getMessage());
+		}
 		assertValid(temp, record3, null, graphWrapper);
+		
+		try {
+			temp.init(record2, graphWrapper);
+		} catch (ComponentNotReadyException e) {
+			Assert.fail(e.getMessage());
+		}
 		assertInvalid(temp, record2, null, graphWrapper);
 		
 		

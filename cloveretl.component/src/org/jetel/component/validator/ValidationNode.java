@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.rules.LanguageSettingsValidationRule;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.property.PropertyRefResolver;
 
@@ -61,11 +62,28 @@ public abstract class ValidationNode {
 	
 	private PropertyRefResolver refResolver;
 	
+	private boolean initialized;
+	
 	/**
 	 * Class constructor which sets default name of rule.
 	 */
 	public ValidationNode() {
 		setName(getCommonName());
+	}
+	
+	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		initialized = true;
+		refResolver = graphWrapper.getRefResolver();
+	}
+
+	public boolean isInitialized() {
+		return initialized;
+	}
+	
+	public void preExecute() {
+	}
+	
+	public void postExecute() {
 	}
 	
 	/**
