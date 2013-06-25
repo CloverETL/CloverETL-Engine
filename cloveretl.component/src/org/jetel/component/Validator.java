@@ -36,7 +36,6 @@ import org.jetel.component.validator.utils.ValidationRulesPersister;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DateDataField;
-import org.jetel.data.Defaults;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.ListDataField;
 import org.jetel.data.MapDataField;
@@ -57,7 +56,6 @@ import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
 import org.jetel.util.MiscUtils;
-import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -320,23 +318,13 @@ public class Validator extends Node {
 		OutputPortDirect validPort = getOutputPortDirect(VALID_OUTPUT_PORT);
 		OutputPortDirect invalidPort = getOutputPortDirect(INVALID_OUTPUT_PORT);
 	
-		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-	
 		ValidationErrorAccumulator errorAccumulator = new ValidationErrorAccumulator();
 		
 		// Iterate over data
-		boolean hasData = true;
-		while(hasData && runIt) {
+		while(runIt && inPort.readRecord(inputRecord) != null) {
 			errorAccumulator.reset();
-			if(!inPort.readRecordDirect(recordBuffer)) {
-				hasData = false;
-				continue;
-			}
 			processedRecords++;
 			logger.trace("Validation of record number " + processedRecords + " has started.");
-			inputRecord.reset();
-			inputRecord.init();
-			inputRecord.deserialize(recordBuffer);
 			if(rootGroup.isValid(inputRecord,errorAccumulator, graphWrapper) != ValidationNode.State.INVALID) {
 				MiscUtils.sendRecordToPort(validPort, inputRecord);
 				logger.trace("Record number " + processedRecords + " is VALID.");
