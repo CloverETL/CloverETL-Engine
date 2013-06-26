@@ -29,16 +29,16 @@ import org.jetel.test.CloverTestCase;
 public class SafeLogUtilsTest extends CloverTestCase {
 
 	public void testObfuscateSensitiveInformation() {
-		assertEquals("a://b:***@d", SafeLogUtils.obfuscatePassword("a://b:c@d"));
-		assertEquals("://b:c@d", SafeLogUtils.obfuscatePassword("://b:c@d"));
-		assertEquals("a://b:c@", SafeLogUtils.obfuscatePassword("a://b:c@"));
-		assertEquals("a://:***@d", SafeLogUtils.obfuscatePassword("a://:c@d"));
-		assertEquals("a://b:***@d", SafeLogUtils.obfuscatePassword("a://b:@d"));
-		assertEquals("a:a://b:***@d", SafeLogUtils.obfuscatePassword("a:a://b:c@d"));
-		assertEquals("a://b:***@d", SafeLogUtils.obfuscatePassword("a://b:a b@d"));
-		assertEquals("a://b/:a@d", SafeLogUtils.obfuscatePassword("a://b/:a@d"));
-		assertEquals("a://b:***@a@d", SafeLogUtils.obfuscatePassword("a://b:a@a@d"));
-		assertEquals("a://b:***@d a://b:***@d", SafeLogUtils.obfuscatePassword("a://b:c@d a://b:c@d"));
+		assertEquals("a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:c@d"));
+		assertEquals("://b:c@d", SafeLogUtils.obfuscateSensitiveInformation("://b:c@d"));
+		assertEquals("a://b:c@", SafeLogUtils.obfuscateSensitiveInformation("a://b:c@"));
+		assertEquals("a://:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://:c@d"));
+		assertEquals("a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:@d"));
+		assertEquals("a:a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a:a://b:c@d"));
+		assertEquals("a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:a b@d"));
+		assertEquals("a://b/:a@d", SafeLogUtils.obfuscateSensitiveInformation("a://b/:a@d"));
+		assertEquals("a://b:***@a@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:a@a@d"));
+		assertEquals("a://b:***@d a://b:***@d", SafeLogUtils.obfuscateSensitiveInformation("a://b:c@d a://b:c@d"));
 	}
 
 }
