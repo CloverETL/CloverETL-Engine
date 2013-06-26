@@ -173,7 +173,7 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		} catch (Exception ex) {
 			logError("Function '" + firstFunction.getName() + "' could not be executed.");
 			HashMap<String, String> values = getAnalyzedValuesSnapshot(record, orderedParameterFields);
-			raiseError(ea, ERROR_EXECUTION, "Given function could not be executed.", graphWrapper.getNodePath(this), orderedParameterFields, values);
+			if (ea != null) raiseError(ea, ERROR_EXECUTION, "Given function could not be executed.", orderedParameterFields, values);
 			return State.INVALID;
 		}
 		Boolean value = (Boolean) tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_RESULT).getValue(); 
@@ -187,7 +187,7 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 			}
 			logError("Fields '" + Arrays.toString(orderedParameterFields) + "' did not pass function '" + firstFunction.getName() + "'.");
 			HashMap<String, String> values = getAnalyzedValuesSnapshot(record, orderedParameterFields);
-			raiseError(ea, ERROR, message , graphWrapper.getNodePath(this), orderedParameterFields, values);
+			if (ea != null) raiseError(ea, ERROR, message , orderedParameterFields, values);
 			return State.INVALID;
 		}
 	}

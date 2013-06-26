@@ -20,7 +20,6 @@ package org.jetel.component.validator.rules;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -36,6 +35,7 @@ import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.component.validator.utils.convertors.Converter;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -96,7 +96,8 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	private StringValidationParamNode from = new StringValidationParamNode();
 	@XmlElement(name="to")
 	private StringValidationParamNode to = new StringValidationParamNode();
-	
+	private String resolvedTarget;
+	private int fieldPosition;
 	
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -119,6 +120,28 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		parametersContainer.add(to);
 	}
 	
+	@Override
+	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(record, graphWrapper);
+		
+		setPropertyRefResolver(graphWrapper);
+		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
+		logParentLangaugeSetting();
+		logLanguageSettings();
+		
+		resolvedTarget = resolve(target.getValue());
+		fieldPosition = record.getMetadata().getFieldPosition(resolvedTarget);
+		
+		DataField field = record.getField(fieldPosition);
+		DataFieldType fieldType = computeType(field);
+
+		try {
+			initConversionUtils(fieldType);
+		} catch (IllegalArgumentException ex) {
+			throw new ComponentNotReadyException("Cannot initialize conversion and comparator tools.", ex);
+		}
+	}
+	
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -126,33 +149,18 @@ public class IntervalValidationRule extends ConversionValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-		logParentLangaugeSetting();
-		logLanguageSettings();
 		
-		String resolvedTarget = resolve(target.getValue());
-		
-		List<String> nodePath = graphWrapper.getNodePath(this);
-		
-		DataField field = record.getField(resolvedTarget);
-		DataFieldType fieldType = computeType(field);
-		
-		try {
-			initConversionUtils(fieldType);
-		} catch (IllegalArgumentException ex) {
-			logError("Cannot initialize conversion and comparator tools.");
-			raiseError(ea, ERROR_INIT_CONVERSION, "The target has wrong length.", nodePath, target.getValue(), field.getValue().toString());
-			return State.INVALID;
-		}
+		DataField field = record.getField(fieldPosition);
 		
 		// Null values are valid by definition
 		if(field.isNull()) {
-			logSuccess("Field '" + resolvedTarget + "' is null.");
+			if (isLoggingEnabled()) {
+				logSuccess("Field '" + resolvedTarget + "' is null.");
+			}
 			return State.VALID;
 		}
 		
-		State status = checkInType(field, tempConverter, tempComparator, ea, nodePath);
+		State status = checkInType(field, tempConverter, tempComparator, ea);
 		
 		if(status == State.VALID) {
 			return State.VALID;
@@ -161,7 +169,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		}
 	}
 	
-	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea, List<String> nodePath) {
+	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedTo = resolve(to.getValue());
 		String resolvedFrom = resolve(from.getValue());
@@ -169,17 +177,20 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		T record = converter.<T>convert(dataField.getValue());
 		if(record == null) {
 			// FIXME: remove unused check for null
-			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", nodePath, resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
+			if (ea != null)
+				raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 		final BOUNDARIES_TYPE boundaries = (BOUNDARIES_TYPE) this.boundaries.getValue();
 		T from = converter.<T>convertFromCloverLiteral(resolvedFrom);
 		T to = converter.<T>convertFromCloverLiteral(resolvedTo);
 		if(from == null) {
-			raiseError(ea, ERROR_FROM_CONVERSION, "Conversion of value 'From' failed.", nodePath, resolvedTarget,this.from.getValue());
+			if (ea != null)
+				raiseError(ea, ERROR_FROM_CONVERSION, "Conversion of value 'From' failed.", resolvedTarget,this.from.getValue());
 		}
 		if(to == null) {
-			raiseError(ea, ERROR_TO_CONVERSION, "Conversion of value 'To' failed.", nodePath, resolvedTarget,this.to.getValue());
+			if (ea != null)
+				raiseError(ea, ERROR_TO_CONVERSION, "Conversion of value 'To' failed.", resolvedTarget,this.to.getValue());
 		}
 		if(from == null || to == null) {
 			return State.INVALID;
@@ -197,7 +208,9 @@ public class IntervalValidationRule extends ConversionValidationRule {
 			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ('" + from.toString() + "', '" + to.toString() + "').");
 			return State.VALID;
 		} else {
-			raiseError(ea, ERROR_NOT_IN_INTERVAL, "Incoming value not in given interval.", nodePath, resolvedTarget, record.toString());
+			if (ea != null) {
+				raiseError(ea, ERROR_NOT_IN_INTERVAL, "Incoming value not in given interval.", resolvedTarget, record.toString());
+			}
 			return State.INVALID;
 		}
 	}

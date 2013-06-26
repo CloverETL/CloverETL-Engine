@@ -20,7 +20,6 @@ package org.jetel.component.validator.rules;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -130,14 +129,14 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		
 		String resolvedTarget = resolve(target.getValue());
 		
-		List<String> nodePath = graphWrapper.getNodePath(this);
-		
 		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", nodePath, resolvedTarget, field.getValue().toString());
+			if (ea != null) {
+				raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", resolvedTarget, field.getValue().toString());
+			}
 			return State.INVALID;
 		}
 		
@@ -147,7 +146,7 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 			return State.VALID;
 		}
 		
-		State status = checkInType(field, tempConverter, tempComparator, ea, nodePath);
+		State status = checkInType(field, tempConverter, tempComparator, ea);
 		
 		if(status == State.VALID) {
 			return State.VALID;
@@ -156,13 +155,15 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		}
 	}
 	
-	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea, List<String> nodePath) {
+	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedValue = resolve(value.getValue());
 		
 		T record = converter.<T>convert(dataField.getValue());
 		if(record == null) {
-			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion failed.", nodePath, resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
+			if (ea != null) {
+				raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion failed.", resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
+			}
 			return State.INVALID;
 		}
 
@@ -170,7 +171,9 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		
 		T value = converter.<T>convertFromCloverLiteral(resolvedValue);
 		if(value == null) {
-			raiseError(ea, ERROR_VALUE_CONVERSION, "Conversion of value failed.", nodePath, resolvedTarget,this.value.getValue());
+			if (ea != null) {
+				raiseError(ea, ERROR_VALUE_CONVERSION, "Conversion of value failed.", resolvedTarget,this.value.getValue());
+			}
 			return State.INVALID;
 		}
 		if(operator == OPERATOR_TYPE.E && comparator.compare(record, value) == 0) {
@@ -192,7 +195,9 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' >= '" + value.toString() + "'.");
 			return State.VALID;
 		} else {
-			raiseError(ea, ERROR_CONDITION_NOT_MET, "Incoming value did not meet the condition.", nodePath, resolvedTarget, dataField.getValue().toString());
+			if (ea != null) {
+				raiseError(ea, ERROR_CONDITION_NOT_MET, "Incoming value did not meet the condition.", resolvedTarget, dataField.getValue().toString());
+			}
 			return State.INVALID;
 		}
 	}

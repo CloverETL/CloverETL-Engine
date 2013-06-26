@@ -35,6 +35,7 @@ import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -81,6 +82,8 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 	
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
+	private String resolvedTarget;
+	private int fieldPosition;
 	
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -110,6 +113,15 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 		parametersContainer.add(goal);
 		parametersContainer.add(trimInput);
 	}
+	
+	@Override
+	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(record, graphWrapper);
+		
+		resolvedTarget = resolve(target.getValue());
+		fieldPosition = record.getMetadata().getFieldPosition(resolvedTarget);
+		setPropertyRefResolver(graphWrapper);
+	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -117,18 +129,15 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		setPropertyRefResolver(graphWrapper);
-		if (logger.isTraceEnabled()) {
+		if (isLoggingEnabled()) {
 			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		}
 		
-		String resolvedTarget = resolve(target.getValue());
-		
-		DataField field = record.getField(resolvedTarget);
-		String inputString = field.toString();
+		DataField field = record.getField(fieldPosition);
 		
 		// Special treatment for strings as they can be filled with whitespaces
 		if(field.getMetadata().getDataType() == DataFieldType.STRING) {
+			String inputString = field.toString();
 			if(trimInput.getValue()) {
 				inputString = inputString.trim();
 			}
@@ -141,17 +150,25 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 				return State.VALID;	
 			} 
 		} else if(goal.getValue() == GOALS.EMPTY && field.isNull()) {
-			logSuccess("Field '" + resolvedTarget + "' is empty.");
+			if (isLoggingEnabled()) {
+				logSuccess("Field '" + resolvedTarget + "' is empty.");
+			}
 			return State.VALID;
 		} else if(goal.getValue() == GOALS.NONEMPTY && !field.isNull()) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + field.getValue() + "' is nonempty.");
+			if (isLoggingEnabled()) {
+				logSuccess("Field '" + resolvedTarget + "' with value '" + field.getValue() + "' is nonempty.");
+			}
 			return State.VALID;
 		}
-		// Error reporting
-		if(goal.getValue() == GOALS.NONEMPTY) {
-			raiseError(ea, ERROR_FIELD_EMPTY, "The target field is empty, expected to be nonempty.", graphWrapper.getNodePath(this), resolvedTarget, inputString);
-		} else {
-			raiseError(ea, ERROR_FIELD_NONEMPTY, "The target field is nonempty, expected to be empty.", graphWrapper.getNodePath(this), resolvedTarget, inputString);
+		
+		if (ea != null) {
+			String inputString = field.toString();
+			// Error reporting
+			if(goal.getValue() == GOALS.NONEMPTY) {
+				raiseError(ea, ERROR_FIELD_EMPTY, "The target field is empty, expected to be nonempty.", resolvedTarget, inputString);
+			} else {
+				raiseError(ea, ERROR_FIELD_NONEMPTY, "The target field is nonempty, expected to be empty.", resolvedTarget, inputString);
+			}
 		}
 		return State.INVALID;
 	}

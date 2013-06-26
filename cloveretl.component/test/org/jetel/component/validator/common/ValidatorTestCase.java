@@ -42,6 +42,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.test.CloverTestCase;
@@ -220,6 +221,11 @@ public abstract class ValidatorTestCase extends CloverTestCase {
 		}
 		if(graphWrapper == null) {
 			graphWrapper = new DummyGraphWrapper();
+		}
+		try {
+			rule.init(record, graphWrapper);
+		} catch (ComponentNotReadyException e) {
+			fail(e.getMessage());
 		}
 		assertEquals("Rule '" + rule.getName() + "'\nwrong result for record:\n" + record.toString(), state, rule.isValid(record, ea, graphWrapper));
 		if(state == ValidationNode.State.INVALID && ea.isEmpty()) {

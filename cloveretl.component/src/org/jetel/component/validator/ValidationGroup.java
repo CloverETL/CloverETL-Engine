@@ -152,6 +152,12 @@ public class ValidationGroup extends ValidationNode {
 		
 		for (ValidationNode child : childs) {
 			child.init(record, graphWrapper);
+			child.setParentLanguageSetting(LanguageSetting.hierarchicMerge(languageSetting, parentLanguageSetting));
+		}
+		
+		AbstractValidationRule prelimitaryConditionRule = getPrelimitaryConditionRule();
+		if (prelimitaryConditionRule != null) {
+			prelimitaryConditionRule.setParentLanguageSetting(LanguageSetting.hierarchicMerge(languageSetting, parentLanguageSetting));
 		}
 	}
 	
@@ -254,7 +260,7 @@ public class ValidationGroup extends ValidationNode {
 	/**
 	 * @return Prelimitary condition
 	 */
-	public AbstractValidationRule getPrelimitaryCondition() {
+	public AbstractValidationRule getPrelimitaryConditionRule() {
 		if(prelimitaryCondition == null) {
 			return null;
 		}
@@ -299,15 +305,16 @@ public class ValidationGroup extends ValidationNode {
 		}
 		setPropertyRefResolver(graphWrapper);
 		
-		AbstractValidationRule prelimitaryCondition = getPrelimitaryCondition();
-		logParams("Conjunction: " + conjunction + "\n" +
-						"Lazy: " + laziness + "\n" +
-						"Prelimitary condition: " + ((prelimitaryCondition == null)? null: prelimitaryCondition.getName()) + "\n" +
-						"Language settings: " + languageSetting);
+		AbstractValidationRule prelimitaryConditionRule = getPrelimitaryConditionRule();
+		if (isLoggingEnabled()) {
+			logParams("Conjunction: " + conjunction + "\n" +
+							"Lazy: " + laziness + "\n" +
+							"Prelimitary condition: " + ((prelimitaryConditionRule == null)? null: prelimitaryConditionRule.getName()) + "\n" +
+							"Language settings: " + languageSetting);
+		}
 		
-		if(prelimitaryCondition != null) {
-			prelimitaryCondition.setParentLanguageSetting(LanguageSetting.hierarchicMerge(languageSetting, parentLanguageSetting));
-			if(prelimitaryCondition.isValid(record, null, graphWrapper) == State.INVALID) {
+		if(prelimitaryConditionRule != null) {
+			if(prelimitaryConditionRule.isValid(record, null, graphWrapper) == State.INVALID) {
 				logNotValidated("Prelimitary condition of group was invalid.");
 				return State.NOT_VALIDATED;
 			}
@@ -315,7 +322,6 @@ public class ValidationGroup extends ValidationNode {
 		State currentState = State.NOT_VALIDATED;
 		State childState;
 		for(int i = 0; i < childs.size(); i++) {
-			childs.get(i).setParentLanguageSetting(LanguageSetting.hierarchicMerge(languageSetting, parentLanguageSetting));
 			childState = childs.get(i).isValid(record,ea, graphWrapper);
 			if(conjunction == Conjunction.AND) {
 				currentState = Conjunction.and(currentState, childState);
@@ -331,11 +337,9 @@ public class ValidationGroup extends ValidationNode {
 			}
 		}
 		if(currentState == State.INVALID) {
-			logError(""); // No extra message, validation rule should already provide it
 			return State.INVALID;
 		}
 		if(currentState == State.VALID) {
-			logSuccess(""); // No extra message, validation rule should already provide it
 			return State.VALID;
 		}
 		logNotValidated("Group has no children.");

@@ -164,7 +164,8 @@ public class StringLengthValidationRule extends StringValidationRule {
 			logSuccess("Field '" + resolvedTarget + "' with value '" + tempString + "' has length " + length);
 		} else {
 			logError("Field '" + target.getValue() + "' with value '" + tempString + "' has length " + length);
-			raiseError(ea, ERROR_WRONG_LENGTH, "The target has wrong length.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
+			if (ea != null)
+				raiseError(ea, ERROR_WRONG_LENGTH, "The target has wrong length.", resolvedTarget, tempString);
 		}
 		
 		return result;

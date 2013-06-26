@@ -136,16 +136,19 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		try {
 			phoneNumber = phoneUtil.parse(inputString, resolvedRegion);
 		} catch (NumberParseException e) {
-			raiseError(ea, ERROR_CODE_CANNOT_PARSE, e.getMessage(), graphWrapper.getNodePath(this), resolvedTarget, inputString);
+			if (ea != null)
+				raiseError(ea, ERROR_CODE_CANNOT_PARSE, e.getMessage(), resolvedTarget, inputString);
 			return State.INVALID;
 		}
 		if (!phoneUtil.isValidNumber(phoneNumber)) {
-			raiseError(ea, ERROR_CODE_INVALID_PHONE_NUMBER, "Invalid phone number", graphWrapper.getNodePath(this), resolvedTarget, inputString);
+			if (ea != null)
+				raiseError(ea, ERROR_CODE_INVALID_PHONE_NUMBER, "Invalid phone number", resolvedTarget, inputString);
 			return State.INVALID;
 		}
 		if (requiredPhoneNumberPattern != null) {
 			if (!requiredPhoneNumberPattern.matches(inputString)) {
-				raiseError(ea, ERROR_CODE_PATTERN_MISMATCH, "Phone number doesn't match the required pattern", graphWrapper.getNodePath(this), resolvedTarget, inputString);
+				if (ea != null)
+					raiseError(ea, ERROR_CODE_PATTERN_MISMATCH, "Phone number doesn't match the required pattern", resolvedTarget, inputString);
 				return State.INVALID;
 			}
 		}

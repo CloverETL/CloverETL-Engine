@@ -200,7 +200,8 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 		try {
 			initTempMapping();
 		} catch (ParseException e) {
-			raiseError(ea, ERROR_MAPPING, "Mapping is incorrect.", graphWrapper.getNodePath(this), fields, null);
+			if (ea != null)
+				raiseError(ea, ERROR_MAPPING, "Mapping is incorrect.", fields, null);
 			return State.INVALID;
 		}
 		Map<String, DataField> values = new HashMap<String, DataField>();
@@ -213,13 +214,15 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 		try {
 			init(graphWrapper);
 		} catch (IllegalArgumentException ex) {
-			raiseError(ea, ERROR_INIT, "Error on initializing lookup table, lookup or record.", graphWrapper.getNodePath(this), fields, valuesInString);
+			if (ea != null)
+				raiseError(ea, ERROR_INIT, "Error on initializing lookup table, lookup or record.", fields, valuesInString);
 			return State.INVALID;
 		}
 		try {
 			populateTempRecord(values);
 		} catch (Exception ex) {
-			raiseError(ea, ERROR_MAPPING, "Mapping is incorrect.", graphWrapper.getNodePath(this), fields, valuesInString);
+			if (ea != null)
+				raiseError(ea, ERROR_MAPPING, "Mapping is incorrect.", fields, valuesInString);
 			return State.INVALID;
 		}
 		tempLookup.seek(tempRecord);
@@ -232,9 +235,11 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 			return State.VALID;
 		}
 		if(policy.getValue() == POLICY.REJECT_MISSING) {
-			raiseError(ea, ERROR_RECORD_MISSING, "Given field(s) values was not present in the lookup table. Missing are invalid.", graphWrapper.getNodePath(this), fields, valuesInString);
+			if (ea != null)
+				raiseError(ea, ERROR_RECORD_MISSING, "Given field(s) values was not present in the lookup table. Missing are invalid.", fields, valuesInString);
 		} else {
-			raiseError(ea, ERROR_RECORD_PRESENT, "Given field(s) values was found in the lookup table. Present are invalid.", graphWrapper.getNodePath(this), fields, valuesInString);
+			if (ea != null)
+				raiseError(ea, ERROR_RECORD_PRESENT, "Given field(s) values was found in the lookup table. Present are invalid.", fields, valuesInString);
 		}
 		return State.INVALID;
 	}

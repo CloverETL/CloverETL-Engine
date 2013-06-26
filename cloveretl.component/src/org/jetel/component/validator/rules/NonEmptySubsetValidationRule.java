@@ -165,10 +165,12 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 			}
 		}
 		// Error reporting
-		if(goal.getValue() == GOALS.EMPTY) {
-			raiseError(ea, ERROR_NOT_ENOUGH_NONEMPTY, "Only " + ok + " field(s) empty, " + count.getValue() +" empty field(s) required." , graphWrapper.getNodePath(this), targetField, values);
-		} else {
-			raiseError(ea, ERROR_NOT_ENOUGH_EMPTY, "Only " + ok + " field(s) nonempty, " + count.getValue() +" nonempty field(s) required.", graphWrapper.getNodePath(this), targetField, values);
+		if (ea != null) {
+			if(goal.getValue() == GOALS.EMPTY) {
+				raiseError(ea, ERROR_NOT_ENOUGH_NONEMPTY, "Only " + ok + " field(s) empty, " + count.getValue() +" empty field(s) required." , targetField, values);
+			} else {
+				raiseError(ea, ERROR_NOT_ENOUGH_EMPTY, "Only " + ok + " field(s) nonempty, " + count.getValue() +" nonempty field(s) required.", targetField, values);
+			}
 		}
 		return State.INVALID;
 	}

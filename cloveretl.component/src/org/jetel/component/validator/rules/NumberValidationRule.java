@@ -121,7 +121,8 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 		}
 		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
 			logError("Field '" + resolvedTarget + "' is not a string.");
-			raiseError(ea, ERROR_STRING, "The target field is not a string.", graphWrapper.getNodePath(this), resolvedTarget, field.getValue().toString());
+			if (ea != null)
+				raiseError(ea, ERROR_STRING, "The target field is not a string.", resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -146,14 +147,16 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 			Number parsedNumber = numberFormat.parse(tempString, pos);
 			if(parsedNumber == null || pos.getIndex() != tempString.length()) {
 				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' contains leftovers after parsed value.");
-				raiseError(ea, ERROR_PARSING, "The target filed could not be parsed.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
+				if (ea != null)
+					raiseError(ea, ERROR_PARSING, "The target filed could not be parsed.", resolvedTarget, tempString);
 				return State.INVALID;
 			}
 			logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedNumber + "'");
 			return State.VALID;
 		} catch (Exception ex) {
 			logError("Field '" + resolvedTarget + "' with value '" + tempString + "' could not be parsed.");
-			raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", graphWrapper.getNodePath(this), resolvedTarget, tempString);
+			if (ea != null)
+				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
 			return State.INVALID;
 		}
 	}

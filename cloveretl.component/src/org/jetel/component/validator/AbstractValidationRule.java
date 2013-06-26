@@ -186,7 +186,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	 * @param fields List of fields on which the error has happened
 	 * @param values Map of field and values
 	 */
-	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, List<String> path, List<String> fields, Map<String, String> values) {
+	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, List<String> fields, Map<String, String> values) {
 		if(accumulator == null) {
 			return;
 		}
@@ -196,7 +196,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		} else {
 			error.setName(getName());
 		}
-		error.setPath(path);
+		error.setPath(nodePath);
 		error.setCode(code);
 		error.setMessage(message);
 		error.setFields(fields);
@@ -204,19 +204,27 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		error.setParams(getProcessedParams());
 		
 		accumulator.addError(error);
-		logError(message);
-		logger.trace(error);
+		if (isLoggingEnabled()) {
+			logError(message);
+			logger.trace(error);
+		}
 	}
 	
 	/** @see #raiseError(ValidationErrorAccumulator, int, String, String, List, Map) */
-	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, List<String> path, String[] fields, Map<String, String> values) {
-		raiseError(accumulator, code, message, path, Arrays.asList(fields), values);
+	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, String[] fields, Map<String, String> values) {
+		if (accumulator == null) {
+			return;
+		}
+		raiseError(accumulator, code, message, Arrays.asList(fields), values);
 	}
 	
 	/** @see #raiseError(ValidationErrorAccumulator, int, String, String, List, Map) */
-	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, List<String> path, String field, String value) {
+	public void raiseError(ValidationErrorAccumulator accumulator, int code, String message, String field, String value) {
+		if (accumulator == null) {
+			return;
+		}
 		HashMap<String, String> temp = new HashMap<String, String>();
 		temp.put(field, value);
-		raiseError(accumulator, code, message, path, Arrays.asList(field), temp);
+		raiseError(accumulator, code, message, Arrays.asList(field), temp);
 	}
 }

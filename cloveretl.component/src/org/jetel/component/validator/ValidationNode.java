@@ -18,6 +18,8 @@
  */
 package org.jetel.component.validator;
 
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
@@ -60,9 +62,13 @@ public abstract class ValidationNode {
 	
 	protected LanguageSetting parentLanguageSetting;
 	
+	protected List<String> nodePath;
+	
 	private PropertyRefResolver refResolver;
 	
 	private boolean initialized;
+	
+	private Boolean traceLoggingEnabled = null;
 	
 	/**
 	 * Class constructor which sets default name of rule.
@@ -74,6 +80,7 @@ public abstract class ValidationNode {
 	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		initialized = true;
 		refResolver = graphWrapper.getRefResolver();
+		nodePath = graphWrapper.getNodePath(this);
 	}
 
 	public boolean isInitialized() {
@@ -140,7 +147,7 @@ public abstract class ValidationNode {
 	 * @param message Description of output point from rule
 	 */
 	public void logSuccess(String message) {
-		if (logger.isTraceEnabled()) {
+		if (isLoggingEnabled()) {
 			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.VALID + ": " + message);
 		}
 	}
@@ -150,7 +157,7 @@ public abstract class ValidationNode {
 	 * @param message Description of output point from rule
 	 */
 	public void logNotValidated(String message) {
-		if (logger.isTraceEnabled()) {
+		if (isLoggingEnabled()) {
 			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.NOT_VALIDATED + ": " + message);
 		}
 	}
@@ -160,7 +167,7 @@ public abstract class ValidationNode {
 	 * @param message Description of output point from rule
 	 */
 	public void logError(String message) {
-		if (logger.isTraceEnabled()) {
+		if (isLoggingEnabled()) {
 			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.INVALID + ": " + message);
 		}
 	}
@@ -170,7 +177,7 @@ public abstract class ValidationNode {
 	 * @param message Serialized parameters
 	 */
 	public void logParams(String params) {
-		if (logger.isTraceEnabled()) {
+		if (isLoggingEnabled()) {
 			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parameters:\n" + params);
 		}
 	}
@@ -179,13 +186,16 @@ public abstract class ValidationNode {
 	 * Log language setting of parent
 	 */
 	public void logParentLangaugeSetting() {
-		if (logger.isTraceEnabled()) {
+		if (isLoggingEnabled()) {
 			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parent language setting:\n" + parentLanguageSetting);
 		}
 	}
 	
 	public boolean isLoggingEnabled() {
-		return logger.isTraceEnabled();
+		if (traceLoggingEnabled == null) {
+			traceLoggingEnabled = logger.isTraceEnabled();
+		}
+		return traceLoggingEnabled;
 	}
 	
 	

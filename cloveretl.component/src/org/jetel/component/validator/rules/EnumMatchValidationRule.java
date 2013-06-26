@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -132,25 +131,25 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		
 		String resolvedTarget = resolve(target.getValue());
 		
-		List<String> nodePath = graphWrapper.getNodePath(this);
-		
 		DataField field = record.getField(resolvedTarget);
 		DataFieldType fieldType = computeType(field);
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", nodePath, resolvedTarget, field.getValue().toString());
+			if (ea != null)
+				raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
 		try {
 			getParsedValues();
 		} catch (NullPointerException ex) {
-			raiseError(ea, ERROR_PARSING_VALUES, "Cannot parse given enum in given type.", nodePath, resolvedTarget, field.getValue().toString());
+			if (ea != null)
+				raiseError(ea, ERROR_PARSING_VALUES, "Cannot parse given enum in given type.", resolvedTarget, field.getValue().toString());
 			return State.INVALID;
 		}
 		
-		State status = checkInType(field, tempComparator, ea, nodePath);
+		State status = checkInType(field, tempComparator, ea);
 		
 		if(status == State.VALID) {
 			return State.VALID;
@@ -176,12 +175,13 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea, List<String> nodePath) {
+	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea) {
 		String resolvedTarget = resolve(target.getValue());
 		
 		T record = tempConverter.<T>convert(dataField.getValue());
 		if(record == null) {
-			raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", nodePath, resolvedTarget,(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
+			if (ea != null)
+				raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", resolvedTarget,(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
 		
@@ -212,7 +212,8 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 				}
 			}
 		}
-		raiseError(ea, ERROR_NO_MATCH, "No match.", nodePath, resolvedTarget, record.toString());
+		if (ea != null)
+			raiseError(ea, ERROR_NO_MATCH, "No match.", resolvedTarget, record.toString());
 		return State.INVALID;
 	}
 	

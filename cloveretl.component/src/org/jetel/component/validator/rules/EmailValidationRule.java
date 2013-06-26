@@ -97,7 +97,8 @@ public class EmailValidationRule extends StringValidationRule {
 		boolean allowGroupAddresses = allowGroupAddressesParam.getValue();
 		ValidationError validationResult = validate(inputString, plainAddress, allowGroupAddresses);
 		if (validationResult != null) {
-			raiseError(ea, validationResult.getErrorCode(), validationResult.getErrorMessage(), graphWrapper.getNodePath(this), resolvedTarget, inputString);
+			if (ea != null)
+				raiseError(ea, validationResult.getErrorCode(), validationResult.getErrorMessage(), resolvedTarget, inputString);
 			return State.INVALID;
 		}
 		else {
