@@ -77,7 +77,7 @@ public abstract class ValidationNode {
 		setName(getCommonName());
 	}
 	
-	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		initialized = true;
 		refResolver = graphWrapper.getRefResolver();
 		nodePath = graphWrapper.getNodePath(this);

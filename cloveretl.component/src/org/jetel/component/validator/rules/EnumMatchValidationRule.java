@@ -131,8 +131,9 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 		
 		String resolvedTarget = resolve(target.getValue());
 		
+		// FIXME move things to init()
 		DataField field = record.getField(resolvedTarget);
-		DataFieldType fieldType = computeType(field);
+		DataFieldType fieldType = computeType(field.getMetadata().getDataType());
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {

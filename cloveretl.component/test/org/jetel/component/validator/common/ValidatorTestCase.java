@@ -223,7 +223,7 @@ public abstract class ValidatorTestCase extends CloverTestCase {
 			graphWrapper = new DummyGraphWrapper();
 		}
 		try {
-			rule.init(record, graphWrapper);
+			rule.init(record.getMetadata(), graphWrapper);
 		} catch (ComponentNotReadyException e) {
 			fail(e.getMessage());
 		}

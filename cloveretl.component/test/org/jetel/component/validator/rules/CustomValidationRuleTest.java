@@ -138,13 +138,13 @@ public class CustomValidationRuleTest extends ValidatorTestCase {
 		temp.getTarget().setValue("zzz");
 		temp.getMappingParam().setValue("input:=field");
 		try {
-			temp.init(record1, graphWrapper);
+			temp.init(record1.getMetadata(), graphWrapper);
 		} catch (ComponentNotReadyException e) {
 			Assert.fail(e.getMessage());
 		}
 		assertInvalid(temp, record1, null, graphWrapper);
 		try {
-			temp.init(record2, graphWrapper);
+			temp.init(record2.getMetadata(), graphWrapper);
 		} catch (ComponentNotReadyException e) {
 			Assert.fail(e.getMessage());
 		}
@@ -156,14 +156,14 @@ public class CustomValidationRuleTest extends ValidatorTestCase {
 		temp.getMappingParam().setValue("input:=field;input2:=field2");
 		
 		try {
-			temp.init(record3, graphWrapper);
+			temp.init(record3.getMetadata(), graphWrapper);
 		} catch (ComponentNotReadyException e) {
 			Assert.fail(e.getMessage());
 		}
 		assertValid(temp, record3, null, graphWrapper);
 		
 		try {
-			temp.init(record2, graphWrapper);
+			temp.init(record2.getMetadata(), graphWrapper);
 		} catch (ComponentNotReadyException e) {
 			Assert.fail(e.getMessage());
 		}

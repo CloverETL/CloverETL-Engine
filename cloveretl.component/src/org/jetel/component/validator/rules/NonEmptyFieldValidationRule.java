@@ -115,11 +115,11 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 	}
 	
 	@Override
-	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
-		super.init(record, graphWrapper);
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
 		
 		resolvedTarget = resolve(target.getValue());
-		fieldPosition = record.getMetadata().getFieldPosition(resolvedTarget);
+		fieldPosition = metadata.getFieldPosition(resolvedTarget);
 		setPropertyRefResolver(graphWrapper);
 	}
 

@@ -43,7 +43,6 @@ import org.jetel.component.validator.utils.convertors.DecimalConverter;
 import org.jetel.component.validator.utils.convertors.DoubleConverter;
 import org.jetel.component.validator.utils.convertors.LongConverter;
 import org.jetel.component.validator.utils.convertors.StringConverter;
-import org.jetel.data.DataField;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -192,7 +191,7 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 		parametersContainer.add(useType);
 	}
 	
-	public void initConversionUtils(DataFieldType fieldType) {
+	protected void initConversionUtils(DataFieldType fieldType) {
 		if(tempComparator == null) {
 			if (fieldType == DataFieldType.STRING) {
 				tempComparator = StringComparator.getInstance();
@@ -268,8 +267,7 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 		return status;
 	}
 	
-	protected DataFieldType computeType(DataField field) {
-		DataFieldType fieldType = field.getMetadata().getDataType();
+	protected DataFieldType computeType(DataFieldType fieldType) {
 		if(useType.getValue() == METADATA_TYPES.STRING) {
 			fieldType = DataFieldType.STRING;
 		} else if(useType.getValue() == METADATA_TYPES.DATE) {

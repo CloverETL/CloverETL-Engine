@@ -147,11 +147,11 @@ public class ValidationGroup extends ValidationNode {
 	private Integer nextCustomRuleId = 0; 
 	
 	@Override
-	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
-		super.init(record, graphWrapper);
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
 		
 		for (ValidationNode child : childs) {
-			child.init(record, graphWrapper);
+			child.init(metadata, graphWrapper);
 			child.setParentLanguageSetting(LanguageSetting.hierarchicMerge(languageSetting, parentLanguageSetting));
 		}
 		

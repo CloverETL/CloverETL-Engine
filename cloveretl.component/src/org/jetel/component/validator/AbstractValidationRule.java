@@ -44,7 +44,6 @@ import org.jetel.component.validator.rules.NumberValidationRule;
 import org.jetel.component.validator.rules.PatternMatchValidationRule;
 import org.jetel.component.validator.rules.PhoneNumberValidationRule;
 import org.jetel.component.validator.rules.StringLengthValidationRule;
-import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -113,10 +112,9 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	}
 	
 	@Override
-	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
-		super.init(record, graphWrapper);
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
 		
-		DataRecordMetadata metadata = record.getMetadata();
 		if (isLoggingEnabled()) {
 			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
 			logParentLangaugeSetting();

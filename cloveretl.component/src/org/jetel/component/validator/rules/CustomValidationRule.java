@@ -129,16 +129,14 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	}
 	
 	@Override
-	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
-		super.init(record, graphWrapper);
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
 		
 		try {
 			initializeMapping();
 		} catch (ParseException e) {
 			throw new ComponentNotReadyException(e);
 		}
-		
-		DataRecordMetadata metadata = record.getMetadata();
 		
 		CustomRule selectedRule = getSelectedRule(graphWrapper);
 		firstFunction = getFirstFunction(selectedRule, metadata, graphWrapper);
