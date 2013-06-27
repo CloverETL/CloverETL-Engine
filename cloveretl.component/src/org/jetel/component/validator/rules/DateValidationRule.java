@@ -18,11 +18,8 @@
  */
 package org.jetel.component.validator.rules;
 
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -37,15 +34,12 @@ import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
-import org.jetel.metadata.DataFieldFormatType;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.formatter.DateFormatter;
+import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.string.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
 /**
  * <p>Rule for checking that incoming string field is date according to specific format.</p>
@@ -73,6 +67,12 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 	
 	@XmlElement(name="trimInput",required=false)
 	private BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
+	private String resolvedTarget;
+	private String resolvedFormat;
+	private String resolvedLocale;
+	private String resolvedTimezone; // FIXME use this
+	private int fieldPosition;
+	private DateFormatter dateFormat;
 	
 	public DateValidationRule() {
 		addLanguageSetting(new LanguageSetting());
@@ -101,6 +101,33 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 	public TARGET_TYPE getTargetType() {
 		return TARGET_TYPE.ONE_FIELD;
 	}
+	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		
+		if (isLoggingEnabled()) {
+			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
+			logParentLangaugeSetting();
+			logLanguageSettings();
+		}
+		
+		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
+		
+		resolvedTarget = resolve(target.getValue());
+		resolvedFormat = resolve(computedLS.getDateFormat().getValue());
+		resolvedLocale = resolve(computedLS.getLocale().getValue());
+		resolvedTimezone = resolve(computedLS.getTimezone().getValue());
+		
+		fieldPosition = metadata.getFieldPosition(resolvedTarget);
+
+		if(metadata.getField(fieldPosition).getDataType() != DataFieldType.STRING) {
+			throw new ComponentNotReadyException("Field '" + resolvedTarget + "' is not a string.");
+		}
+		
+		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
+		dateFormat = DateFormatterFactory.getFormatter(resolvedFormat, realLocale);
+	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -108,84 +135,43 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-		logParentLangaugeSetting();
-		logLanguageSettings();
 		
-		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
-		
-		String resolvedTarget = resolve(target.getValue());
-		String resolvedFormat = resolve(computedLS.getDateFormat().getValue());
-		String resolvedLocale = resolve(computedLS.getLocale().getValue());
-		String resolvedTimezone = resolve(computedLS.getTimezone().getValue());
-		
-		DataField field = record.getField(resolvedTarget);
+		DataField field = record.getField(fieldPosition);
 		// Null values are valid by definition
 		if(field.isNull()) {
 			logSuccess("Field '" + resolvedTarget + "' is null.");
 			return State.VALID;
 		}
 		
-		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
-			logError("Field '" + resolvedTarget + "' is not a string.");
-			if (ea != null)
-				raiseError(ea, ERROR_STRING, "The target field is not a string.", resolvedTarget, field.getValue().toString());
-			return State.INVALID;
-		}
-		
 		String tempString = field.toString();
 		if(trimInput.getValue()) {
 			tempString = tempString.trim();
 		}
-		DataFieldFormatType formatType = DataFieldFormatType.getFormatType(resolvedFormat);
-	
-		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
-		if(formatType == DataFieldFormatType.JAVA || formatType == null) {
-			try {
-				SimpleDateFormat dateFormat;
-				if (formatType == null) {
-					dateFormat = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT, realLocale);
-				} else {
-					dateFormat = new SimpleDateFormat(formatType.getFormat(resolvedFormat), realLocale);
-				}
-				dateFormat.setTimeZone(TimeZone.getTimeZone(resolvedTimezone));
-				
-				Date parsedDate = dateFormat.parse(tempString);
-				if(!dateFormat.format(parsedDate).equals(tempString.trim())) {
-					logError("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
-					if (ea != null)
-						raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", resolvedTarget, tempString);
-					return State.INVALID;
-				}
-				logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
-				return State.VALID;
-			} catch (Exception ex) {
-				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' is not a date with given settings.");
-				if (ea != null)
-					raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
-				return State.INVALID;	
+		
+		boolean parsed = dateFormat.tryParse(tempString);
+		/*
+		 * FIXME: decide whether we keep this or not
+		if(!dateFormat.format(parsedDate).equals(tempString.trim())) {
+			logError("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
+			if (ea != null)
+				raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", resolvedTarget, tempString);
+			return State.INVALID;
+		}
+		*/
+		
+		if (parsed) {
+			if (isLoggingEnabled()) {
+				logSuccess("Field '" + resolvedTarget + "' with value '" + tempString + "' is date with given settings.");
 			}
-		} else {
-			try {
-				DateTimeFormatter formatter = DateTimeFormat.forPattern(formatType.getFormat(resolvedFormat));
-				formatter = formatter.withLocale(realLocale);
-				formatter = formatter.withZone(DateTimeZone.forID(resolvedTimezone));
-				DateTime parsedDate = formatter.parseDateTime(tempString);
-				if(!parsedDate.toString(formatter).equals(tempString.trim())) {
-					logError("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
-					if (ea != null)
-						raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", resolvedTarget, tempString);
-					return State.INVALID;
-				}
-				logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is date with given settings.");
-				return State.VALID;
-			} catch (Exception ex) {
+			return State.VALID;
+		}
+		else {
+			if (isLoggingEnabled()) {
 				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' is not a date with given settings.");
-				if (ea != null)
-					raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
-				return State.INVALID;
 			}
+			if (ea != null)
+				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
+			return State.INVALID;	
 		}
 	}
 

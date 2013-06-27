@@ -87,7 +87,7 @@ public class DateValidationRuleTest extends ValidatorTestCase {
 		// Default pattern (DateTime)
 		assertInvalid(rule, RF.addStringField(null, "field", "2012-06-08"));
 		assertValid(rule, RF.addStringField(null, "field", "2012-06-08 10:20:30"));
-		assertInvalid(rule, RF.addStringField(null, "field", "2012-6-8 10:20:30"));
+		assertValid(rule, RF.addStringField(null, "field", "2012-6-8 10:20:30"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2012-13-08 10:20:30"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2011-2-29 10:20:30"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2012-asdf"));
@@ -136,7 +136,7 @@ public class DateValidationRuleTest extends ValidatorTestCase {
 		assertValid(rule, RF.addStringField(null, "field", "2012-02-02"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2011-02-29"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2012a-02-02"));
-		assertInvalid(rule, RF.addStringField(null, "field", "2012-2-2"));
+		assertValid(rule, RF.addStringField(null, "field", "2012-2-2"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2012-2-2a"));
 	}
 	
@@ -146,7 +146,21 @@ public class DateValidationRuleTest extends ValidatorTestCase {
 		
 		rule.getLanguageSettings(0).getLocale().setValue("hi.IN");
 		assertValid(rule, RF.addStringField(null, "field", "२०११-०३-०३ १६:५३:०९"));
-		assertInvalid(rule, RF.addStringField(null, "field", "2011-01-01 10:30:40"));
+		assertValid(rule, RF.addStringField(null, "field", "2011-01-01 10:30:40"));
+	}
+	
+	public void testMonthNames() {
+		DateValidationRule rule = createRule(DateValidationRule.class);
+		rule.getTarget().setValue("field");
+		rule.getLanguageSettings(0).getDateFormat().setValue("yyyy MMM d");
+		rule.getLanguageSettings(0).getLocale().setValue("cs.CZ");
+		
+		assertValid(rule, RF.addStringField(null, "field", "2012 Prosinec 1"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012 December 1"));
+		
+		rule.getLanguageSettings(0).getLocale().setValue("en.EN");
+		assertInvalid(rule, RF.addStringField(null, "field", "2012 Prosinec 1"));
+		assertValid(rule, RF.addStringField(null, "field", "2012 December 1"));
 	}
 	
 	@Test
@@ -154,14 +168,14 @@ public class DateValidationRuleTest extends ValidatorTestCase {
 		DateValidationRule rule = createRule(DateValidationRule.class);
 		rule.getTarget().setValue("field");
 		
-		assertInvalid(rule, RF.addLongField(null, "field", 1000000l));
-		assertInvalid(rule, RF.addLongField(null, "field", 0l));
-		assertInvalid(rule, RF.addNumberField(null, "field", 1123.54));
-		assertInvalid(rule, RF.addNumberField(null, "field", 0d));
-		assertInvalid(rule, RF.addDecimalField(null, "field", getDecimal("12366.45")));
-		assertInvalid(rule, RF.addDecimalField(null, "field", getDecimal("0")));
-		assertInvalid(rule, RF.addBooleanField(null, "field", true));
-		assertInvalid(rule, RF.addBooleanField(null, "field", false));
+		assertFailsInit(rule, RF.addLongField(null, "field", 1000000l));
+		assertFailsInit(rule, RF.addLongField(null, "field", 0l));
+		assertFailsInit(rule, RF.addNumberField(null, "field", 1123.54));
+		assertFailsInit(rule, RF.addNumberField(null, "field", 0d));
+		assertFailsInit(rule, RF.addDecimalField(null, "field", getDecimal("12366.45")));
+		assertFailsInit(rule, RF.addDecimalField(null, "field", getDecimal("0")));
+		assertFailsInit(rule, RF.addBooleanField(null, "field", true));
+		assertFailsInit(rule, RF.addBooleanField(null, "field", false));
 	}
 	
 }
