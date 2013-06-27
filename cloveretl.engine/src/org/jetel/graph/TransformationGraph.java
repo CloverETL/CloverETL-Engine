@@ -139,6 +139,11 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private GraphRuntimeContext initialRuntimeContext;
 	
+	/**
+	 * Job type of the parent transformation graph of this graph element - {@link JobType#ETL_GRAPH} or {@link JobType#JOBFLOW}.
+	 */
+	private JobType jobType = JobType.ETL_GRAPH;
+
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -226,6 +231,11 @@ public final class TransformationGraph extends GraphElement {
      */
     public void setJobType(JobType jobType) {
     	this.jobType = jobType;
+    }
+    
+    @Override
+    public JobType getJobType() {
+    	return jobType;
     }
     
     /**
