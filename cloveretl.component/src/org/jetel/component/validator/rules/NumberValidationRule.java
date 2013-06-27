@@ -37,6 +37,8 @@ import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -65,8 +67,12 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 	
 	private static final int LANGUAGE_SETTING_ACCESSOR_0 = 0;
 	
+	private int fieldPosition;
+	
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
+	private DecimalFormat numberFormat;
+	private String resolvedTarget;
 
 	public NumberValidationRule() {
 		addLanguageSetting(new LanguageSetting());
@@ -95,6 +101,44 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 	public TARGET_TYPE getTargetType() {
 		return TARGET_TYPE.ONE_FIELD;
 	}
+	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		
+		if (isLoggingEnabled()) {
+			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
+			logParentLangaugeSetting();
+			logLanguageSettings();
+		}
+		
+		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
+		
+		resolvedTarget = resolve(target.getValue());
+		String resolvedFormat = resolve(computedLS.getNumberFormat().getValue());
+		String resolvedLocale = resolve(computedLS.getLocale().getValue());
+		
+		fieldPosition = metadata.getFieldPosition(resolvedTarget);
+		if (fieldPosition == -1) {
+			throw new ComponentNotReadyException("Field '" + resolvedTarget + "' is null.");
+		}
+		DataFieldMetadata fieldMetadata = metadata.getField(fieldPosition);
+		if(fieldMetadata.getDataType() != DataFieldType.STRING) {
+			throw new ComponentNotReadyException("Field '" + resolvedTarget + "' is not a string.");
+		}
+		
+		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
+		numberFormat = (DecimalFormat) DecimalFormat.getInstance(realLocale);
+		// Special handling with two named formatting masks
+		if(computedLS.getNumberFormat().getValue().equals(CommonFormats.INTEGER)) {
+			numberFormat.applyPattern("#");
+			numberFormat.setParseIntegerOnly(true);
+		} else if(computedLS.getNumberFormat().getValue().equals(CommonFormats.NUMBER)) {
+				numberFormat.applyPattern("#");
+		} else if(!computedLS.getNumberFormat().getValue().isEmpty()) {
+			numberFormat.applyPattern(resolvedFormat);
+		}
+	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -102,59 +146,38 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-		logParentLangaugeSetting();
-		logLanguageSettings();
 		
-		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
-		
-		String resolvedTarget = resolve(target.getValue());
-		String resolvedFormat = resolve(computedLS.getNumberFormat().getValue());
-		String resolvedLocale = resolve(computedLS.getLocale().getValue());
-		
-		DataField field = record.getField(target.getValue());
-		// Null values are valid by definition
+		DataField field = record.getField(fieldPosition);
 		if(field.isNull()) {
-			logSuccess("Field '" + resolvedTarget + "' is null.");
+			if (isLoggingEnabled()) {
+				logSuccess("Field '" + resolvedTarget + "' is null.");
+			}
 			return State.VALID;
 		}
-		if(field.getMetadata().getDataType() != DataFieldType.STRING) {
-			logError("Field '" + resolvedTarget + "' is not a string.");
-			if (ea != null)
-				raiseError(ea, ERROR_STRING, "The target field is not a string.", resolvedTarget, field.getValue().toString());
-			return State.INVALID;
-		}
-		
 		String tempString = field.toString();
 		if(trimInput.getValue()) {
 			tempString = tempString.trim();
 		}
-		
-		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
+
 		try {
-			DecimalFormat numberFormat = (DecimalFormat) DecimalFormat.getInstance(realLocale);
-			// Special handling with two named formatting masks
-			if(computedLS.getNumberFormat().getValue().equals(CommonFormats.INTEGER)) {
-				numberFormat.applyPattern("#");
-				numberFormat.setParseIntegerOnly(true);
-			} else if(computedLS.getNumberFormat().getValue().equals(CommonFormats.NUMBER)) {
-					numberFormat.applyPattern("#");
-			} else if(!computedLS.getNumberFormat().getValue().isEmpty()) {
-				numberFormat.applyPattern(resolvedFormat);
-			}
 			ParsePosition pos = new ParsePosition(0);
 			Number parsedNumber = numberFormat.parse(tempString, pos);
 			if(parsedNumber == null || pos.getIndex() != tempString.length()) {
-				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' contains leftovers after parsed value.");
+				if (isLoggingEnabled()) {
+					logError("Field '" + resolvedTarget + "' with value '" + tempString + "' contains leftovers after parsed value.");
+				}
 				if (ea != null)
 					raiseError(ea, ERROR_PARSING, "The target filed could not be parsed.", resolvedTarget, tempString);
 				return State.INVALID;
 			}
-			logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedNumber + "'");
+			if (isLoggingEnabled()) {
+				logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedNumber + "'");
+			}
 			return State.VALID;
 		} catch (Exception ex) {
-			logError("Field '" + resolvedTarget + "' with value '" + tempString + "' could not be parsed.");
+			if (isLoggingEnabled()) {
+				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' could not be parsed.");
+			}
 			if (ea != null)
 				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
 			return State.INVALID;
