@@ -41,6 +41,8 @@ import org.jetel.util.compile.ClassLoaderUtils;
  */
 public class RecordFilterFactory {
 
+	private static final DataRecordMetadata NO_METADATA[] = new DataRecordMetadata[0];
+	
 	public static RecordFilter createFilter(String className, Node node) throws ComponentNotReadyException {
 		return ClassLoaderUtils.loadClassInstance(RecordFilter.class, className, node);
 	}
@@ -53,7 +55,7 @@ public class RecordFilterFactory {
 		
 		if (filterExpression.contains(org.jetel.ctl.TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
 			// new CTL initialization
-			ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, metadata, null, "UTF-8");
+			ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, metadata, NO_METADATA, "UTF-8");
 	    	
 			List<ErrorMessage> msgs = compiler.compileExpression(filterExpression, CTLRecordFilter.class, id, CTLRecordFilterAdapter.ISVALID_FUNCTION_NAME, boolean.class);
 	    	if (compiler.errorCount() > 0) {
@@ -81,7 +83,7 @@ public class RecordFilterFactory {
 	    	filter.init();
 		} else {
 			// old TL initialization
-			TransformLangParser parser=new TransformLangParser(metadata, null, filterExpression);
+			TransformLangParser parser = new TransformLangParser(metadata, NO_METADATA, filterExpression);
 			try {
 				  final CLVFStartExpression recordFilter = parser.StartExpression();
 				  filter = new RecordFilterTL(recordFilter);
