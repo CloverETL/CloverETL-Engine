@@ -98,11 +98,11 @@ public class Validator extends Node {
 		SERIAL_NUMBER(DataFieldType.INTEGER),
 		MESSAGE(DataFieldType.STRING),
 		NAME(DataFieldType.STRING),
-		PATH(DataFieldType.STRING),
+		PATH(DataFieldType.STRING, DataFieldContainerType.LIST),
 		FIELDS(DataFieldType.STRING, DataFieldContainerType.LIST),
-		VALUES(DataFieldType.STRING, DataFieldContainerType.LIST),
+		VALUES(DataFieldType.STRING, DataFieldContainerType.MAP),
 		PARAMS(DataFieldType.STRING, DataFieldContainerType.MAP),
-		CREATED(DataFieldType.DATE, DataFieldContainerType.MAP),
+		CREATED(DataFieldType.DATE),
 		GRAPH(DataFieldType.STRING);
 		
 		private final DataFieldType dataFieldType;
@@ -152,7 +152,11 @@ public class Validator extends Node {
 	private CTLMapping errorMapping;
 	private DataRecord inputRecord;
 	private DataRecord errorRecord;
+	
+	// FIXME this does more than just record multiplication
+	// make sure this var is used properly!
 	private boolean recordMultiplication = false;
+	
 	private GraphWrapper graphWrapper;
 	
 	/**
