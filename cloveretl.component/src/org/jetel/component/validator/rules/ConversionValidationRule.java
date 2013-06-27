@@ -84,7 +84,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @see LanguageSettingsValidationRule
  */
 @XmlType(propOrder={"useTypeJAXB"})
-public abstract class ConversionValidationRule extends LanguageSettingsValidationRule {
+public abstract class ConversionValidationRule<T> extends LanguageSettingsValidationRule {
 	
 	protected static final int LANGUAGE_SETTING_ACCESSOR_0 = 0;
 
@@ -126,7 +126,7 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 	}
 		
 	protected Converter tempConverter;
-	protected Comparator<?> tempComparator;
+	protected Comparator<T> tempComparator;
 	
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -194,19 +194,19 @@ public abstract class ConversionValidationRule extends LanguageSettingsValidatio
 	protected void initConversionUtils(DataFieldType fieldType) {
 		if(tempComparator == null) {
 			if (fieldType == DataFieldType.STRING) {
-				tempComparator = StringComparator.getInstance();
+				tempComparator = (Comparator<T>) StringComparator.getInstance();
 			} else if (fieldType == DataFieldType.INTEGER
 					|| fieldType == DataFieldType.LONG
 					|| fieldType == DataFieldType.BYTE
 					|| fieldType == DataFieldType.CBYTE
 					|| fieldType == DataFieldType.BOOLEAN) {
-				tempComparator = LongComparator.getInstance();
+				tempComparator = (Comparator<T>) LongComparator.getInstance();
 			} else if (fieldType == DataFieldType.DATE) {
-				tempComparator = DateComparator.getInstance();
+				tempComparator = (Comparator<T>) DateComparator.getInstance();
 			} else if (fieldType == DataFieldType.NUMBER) {
-				tempComparator = DoubleComparator.getInstance();
+				tempComparator = (Comparator<T>) DoubleComparator.getInstance();
 			} else if (fieldType == DataFieldType.DECIMAL) {
-				tempComparator = DecimalComparator.getInstance();
+				tempComparator = (Comparator<T>) DecimalComparator.getInstance();
 			} else {
 				throw new IllegalArgumentException("Cannot determine comparator for validation.");
 			}

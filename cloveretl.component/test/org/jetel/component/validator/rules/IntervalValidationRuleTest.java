@@ -208,23 +208,23 @@ public class IntervalValidationRuleTest extends ConversionTestCase {
 	
 	@Test
 	public void testInvalidInputs() {
-		assertInvalid(newRule("field", "[]", "5.66A", "7.85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
-		assertInvalid(newRule("field", "[]", "5.66A", "7,85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
+		assertFailsInit(newRule("field", "[]", "5.66A", "7.85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
+		assertFailsInit(newRule("field", "[]", "5.66A", "7,85"), RF.addDecimalField(null, "field", getDecimal("6.76")));
 		
-		assertInvalid(newRule("field", "[]", "5.66a", "7.85"), RF.addNumberField(null, "field", 6.76d));
-		assertInvalid(newRule("field", "[]", "5.66", "7.dd85"), RF.addNumberField(null, "field", 6.76d));
+		assertFailsInit(newRule("field", "[]", "5.66a", "7.85"), RF.addNumberField(null, "field", 6.76d));
+		assertFailsInit(newRule("field", "[]", "5.66", "7.dd85"), RF.addNumberField(null, "field", 6.76d));
 		
-		assertInvalid(newRule("field", "[]", "a5", "8"), RF.addLongField(null, "field", 7l));
-		assertInvalid(newRule("field", "[]", "5", "8,0"), RF.addLongField(null, "field", 7l));
-		assertInvalid(newRule("field", "[]", "5", "8.0"), RF.addLongField(null, "field", 7l));
+		assertFailsInit(newRule("field", "[]", "a5", "8"), RF.addLongField(null, "field", 7l));
+		assertFailsInit(newRule("field", "[]", "5", "8,0"), RF.addLongField(null, "field", 7l));
+		assertFailsInit(newRule("field", "[]", "5", "8.0"), RF.addLongField(null, "field", 7l));
 	}
 	@Test
 	public void testNonConvertible() {
-		assertInvalid(newRule("field", "[]", "5.66", "7.85"), RF.addIntegerField(null, "field", 7));
-		assertInvalid(newRule("field", "[]", "5.66", "7.85"), RF.addLongField(null, "field", 7l));
-		assertInvalid(newRule("field", "[]", "a", "s"), RF.addLongField(null, "field", 7l));
-		assertInvalid(newRule("field", "[]", "a", "s"), RF.addDecimalField(null, "field", getDecimal("7")));
-		assertInvalid(newRule("field", "[]", "a", "s"), RF.addNumberField(null, "field", 7d));
+		assertFailsInit(newRule("field", "[]", "5.66", "7.85"), RF.addIntegerField(null, "field", 7));
+		assertFailsInit(newRule("field", "[]", "5.66", "7.85"), RF.addLongField(null, "field", 7l));
+		assertFailsInit(newRule("field", "[]", "a", "s"), RF.addLongField(null, "field", 7l));
+		assertFailsInit(newRule("field", "[]", "a", "s"), RF.addDecimalField(null, "field", getDecimal("7")));
+		assertFailsInit(newRule("field", "[]", "a", "s"), RF.addNumberField(null, "field", 7d));
 	}
 	
 	public void testUserSelectedType() {

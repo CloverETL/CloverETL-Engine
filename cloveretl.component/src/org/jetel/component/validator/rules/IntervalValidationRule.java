@@ -57,7 +57,7 @@ import org.jetel.util.string.StringUtils;
  */
 @XmlRootElement(name="interval")
 @XmlType(propOrder={"boundariesJAXB", "from", "to"})
-public class IntervalValidationRule extends ConversionValidationRule {
+public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 	
 	public static final int ERROR_INIT_CONVERSION = 801;	/** Initialization of converter and comparator failed */
 	public static final int ERROR_FIELD_CONVERSION = 802;	/** Converting of incoming field failed */
@@ -98,6 +98,11 @@ public class IntervalValidationRule extends ConversionValidationRule {
 	private StringValidationParamNode to = new StringValidationParamNode();
 	private String resolvedTarget;
 	private int fieldPosition;
+	private T fromTyped;
+	private T toTyped;
+	private String resolvedTo;
+	private String resolvedFrom;
+	private BOUNDARIES_TYPE boundariesValue;
 	
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -139,8 +144,20 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		} catch (IllegalArgumentException ex) {
 			throw new ComponentNotReadyException("Cannot initialize conversion and comparator tools.", ex);
 		}
+		
+		resolvedTo = resolve(to.getValue());
+		resolvedFrom = resolve(from.getValue());
+		
+		boundariesValue = (BOUNDARIES_TYPE) this.boundaries.getValue();
+		fromTyped = tempConverter.<T>convertFromCloverLiteral(resolvedFrom);
+		toTyped = tempConverter.<T>convertFromCloverLiteral(resolvedTo);
+		if(fromTyped == null) {
+			throw new ComponentNotReadyException("Conversion of value 'From' failed.");
+		}
+		if(toTyped == null) {
+			throw new ComponentNotReadyException("Conversion of value 'To' failed.");
+		}
 	}
-	
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -152,6 +169,7 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		DataField field = record.getField(fieldPosition);
 		
 		// Null values are valid by definition
+		// XXX really? why?
 		if(field.isNull()) {
 			if (isLoggingEnabled()) {
 				logSuccess("Field '" + resolvedTarget + "' is null.");
@@ -168,50 +186,37 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		}
 	}
 	
-	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
-		String resolvedTarget = resolve(target.getValue());
-		String resolvedTo = resolve(to.getValue());
-		String resolvedFrom = resolve(from.getValue());
-		
-		T record = converter.<T>convert(dataField.getValue());
-		if(record == null) {
+	private State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+		T incomingValue = converter.<T>convert(dataField.getValue());
+		if(incomingValue == null) {
 			// FIXME: remove unused check for null
 			if (ea != null)
 				raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			return State.INVALID;
 		}
-		final BOUNDARIES_TYPE boundaries = (BOUNDARIES_TYPE) this.boundaries.getValue();
-		T from = converter.<T>convertFromCloverLiteral(resolvedFrom);
-		T to = converter.<T>convertFromCloverLiteral(resolvedTo);
-		if(from == null) {
-			if (ea != null)
-				raiseError(ea, ERROR_FROM_CONVERSION, "Conversion of value 'From' failed.", resolvedTarget,this.from.getValue());
-		}
-		if(to == null) {
-			if (ea != null)
-				raiseError(ea, ERROR_TO_CONVERSION, "Conversion of value 'To' failed.", resolvedTarget,this.to.getValue());
-		}
-		if(from == null || to == null) {
-			return State.INVALID;
-		}
-		if(boundaries == BOUNDARIES_TYPE.CLOSED_CLOSED && comparator.compare(record, from) >= 0 && comparator.compare(record, to) <= 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ['" + from.toString() + "', '" + to.toString() + "'].");
-			return State.VALID;
-		} else if(boundaries == BOUNDARIES_TYPE.CLOSED_OPEN && comparator.compare(record, from) >= 0 && comparator.compare(record, to) < 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ['" + from.toString() + "', '" + to.toString() + "').");
-			return State.VALID;
-		} else if(boundaries == BOUNDARIES_TYPE.OPEN_CLOSED && comparator.compare(record, from) > 0 && comparator.compare(record, to) <= 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ('" + from.toString() + "', '" + to.toString() + "'].");
-			return State.VALID;
-		} else if(boundaries == BOUNDARIES_TYPE.OPEN_OPEN && comparator.compare(record, from) > 0 && comparator.compare(record, to) < 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' is in interval ('" + from.toString() + "', '" + to.toString() + "').");
-			return State.VALID;
+		
+		State state;
+		if(boundariesValue == BOUNDARIES_TYPE.CLOSED_CLOSED && comparator.compare(incomingValue, fromTyped) >= 0 && comparator.compare(incomingValue, toTyped) <= 0) {
+			state = State.VALID;
+		} else if(boundariesValue == BOUNDARIES_TYPE.CLOSED_OPEN && comparator.compare(incomingValue, fromTyped) >= 0 && comparator.compare(incomingValue, toTyped) < 0) {
+			state = State.VALID;
+		} else if(boundariesValue == BOUNDARIES_TYPE.OPEN_CLOSED && comparator.compare(incomingValue, fromTyped) > 0 && comparator.compare(incomingValue, toTyped) <= 0) {
+			state = State.VALID;
+		} else if(boundariesValue == BOUNDARIES_TYPE.OPEN_OPEN && comparator.compare(incomingValue, fromTyped) > 0 && comparator.compare(incomingValue, toTyped) < 0) {
+			state = State.VALID;
 		} else {
 			if (ea != null) {
-				raiseError(ea, ERROR_NOT_IN_INTERVAL, "Incoming value not in given interval.", resolvedTarget, record.toString());
+				raiseError(ea, ERROR_NOT_IN_INTERVAL, "Incoming value not in given interval.", resolvedTarget, incomingValue.toString());
 			}
-			return State.INVALID;
+			state = State.INVALID;
 		}
+		
+		if (state == State.VALID && isLoggingEnabled()) {
+			logSuccess(String.format("Field '%s' with value '%s' is in interval from: '%s', to: '%s' (%s).",
+					resolvedTarget, incomingValue.toString(), fromTyped.toString(), toTyped.toString(), boundaries.toString()));
+		}
+		
+		return state;
 	}
 	
 	@Override

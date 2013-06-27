@@ -61,7 +61,7 @@ import org.jetel.util.string.StringUtils;
  */
 @XmlRootElement(name="enumMatch")
 @XmlType(propOrder={"values" , "ignoreCase", "trimInput"})
-public class EnumMatchValidationRule extends ConversionValidationRule {
+public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 	
 	public static final int ERROR_INIT_CONVERSION = 701;	/** Converter and/or comparator could not been initialized */
 	public static final int ERROR_PARSING_VALUES = 702;		/** Enumeration provided by user could not been parsed */
@@ -176,7 +176,7 @@ public class EnumMatchValidationRule extends ConversionValidationRule {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private <T extends Object> State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+	private State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea) {
 		String resolvedTarget = resolve(target.getValue());
 		
 		T record = tempConverter.<T>convert(dataField.getValue());

@@ -215,6 +215,15 @@ public abstract class ValidatorTestCase extends CloverTestCase {
 		assertState(State.NOT_VALIDATED, rule, record, null, null);
 	}
 	
+	protected void assertFailsInit(ValidationNode rule, DataRecord record) {
+		try {
+			rule.init(record.getMetadata(), new DummyGraphWrapper());
+		} catch (ComponentNotReadyException e) {
+			return;
+		}
+		fail("Rule didn't fail in init");
+	}
+	
 	private void assertState(ValidationNode.State state, ValidationNode rule, DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(ea == null) {
 			ea = new ValidationErrorAccumulator();

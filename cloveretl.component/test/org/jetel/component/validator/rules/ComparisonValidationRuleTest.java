@@ -250,7 +250,7 @@ public class ComparisonValidationRuleTest extends ConversionTestCase {
 		// As longs
 		assertInvalid(inType("l",newRule("field", "==", "50")), RF.addDecimalField(null, "field", getDecimal("50")));
 		assertValid(inType("l",newRule("field", "==", "50")), RF.addStringField(null, "field", "50"));
-		assertInvalid(inType("l",newRule("field", "==", "50.55")), RF.addDecimalField(null, "field", getDecimal("50.55")));
+		assertFailsInit(inType("l",newRule("field", "==", "50.55")), RF.addDecimalField(null, "field", getDecimal("50.55")));
 		
 		// As decimals
 		assertValid(inType("d",newRule("field", "==", "50.55")), RF.addDecimalField(null, "field", getDecimal("50.55")));

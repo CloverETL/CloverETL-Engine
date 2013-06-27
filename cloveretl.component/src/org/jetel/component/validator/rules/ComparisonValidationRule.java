@@ -35,6 +35,8 @@ import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.component.validator.utils.convertors.Converter;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -56,7 +58,7 @@ import org.jetel.util.string.StringUtils;
  */
 @XmlRootElement(name="comparison")
 @XmlType(propOrder={"operatorJAXB", "value" })
-public class ComparisonValidationRule extends ConversionValidationRule {
+public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 	
 	public static final int ERROR_INIT_CONVERSION = 901;	/** Could not initialize converter and/or comparator */
 	public static final int ERROR_FIELD_CONVERSION = 902;	/** Could not convert incoming value */
@@ -98,6 +100,10 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 	
 	@XmlElement(name="value")
 	private StringValidationParamNode value = new StringValidationParamNode();
+	private String resolvedTarget;
+	private int fieldPosition;
+	private OPERATOR_TYPE operatorValue;
+	private T valueTyped;
 	
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -115,6 +121,35 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		parametersContainer.add(operator);
 		parametersContainer.add(value);
 	}
+	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		
+		if (isLoggingEnabled()) {
+			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
+			logParentLangaugeSetting();
+			logLanguageSettings();
+		}
+		
+		resolvedTarget = resolve(target.getValue());
+		fieldPosition = metadata.getFieldPosition(resolvedTarget);
+		DataFieldMetadata metadataField = metadata.getField(fieldPosition);
+		DataFieldType fieldType = computeType(metadataField.getDataType());
+		try {
+			initConversionUtils(fieldType);
+		} catch (IllegalArgumentException ex) {
+			throw new ComponentNotReadyException(ex);
+		}
+		
+		String resolvedValue = resolve(value.getValue());
+		operatorValue = (OPERATOR_TYPE) this.operator.getValue();
+		
+		valueTyped = tempConverter.<T>convertFromCloverLiteral(resolvedValue);
+		if(valueTyped == null) {
+			throw new ComponentNotReadyException("Conversion of value failed for value " + resolvedValue);
+		}
+	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -122,28 +157,14 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-		logParentLangaugeSetting();
-		logLanguageSettings();
 		
-		String resolvedTarget = resolve(target.getValue());
-		
-		/// FIXME - move things to init()
-		DataField field = record.getField(resolvedTarget);
-		DataFieldType fieldType = computeType(field.getMetadata().getDataType());
-		try {
-			initConversionUtils(fieldType);
-		} catch (IllegalArgumentException ex) {
-			if (ea != null) {
-				raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", resolvedTarget, field.getValue().toString());
-			}
-			return State.INVALID;
-		}
+		DataField field = record.getField(fieldPosition);
 		
 		// Null values are valid from definition
 		if(field.isNull()) {
-			logSuccess("Field '" + resolvedTarget + "' is null.");
+			if (isLoggingEnabled()) {
+				logSuccess("Field '" + resolvedTarget + "' is null.");
+			}
 			return State.VALID;
 		}
 		
@@ -156,51 +177,42 @@ public class ComparisonValidationRule extends ConversionValidationRule {
 		}
 	}
 	
-	private <T extends Object> State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
-		String resolvedTarget = resolve(target.getValue());
-		String resolvedValue = resolve(value.getValue());
-		
-		T record = converter.<T>convert(dataField.getValue());
-		if(record == null) {
+	private State checkInType(DataField dataField, Converter converter, Comparator<T> comparator, ValidationErrorAccumulator ea) {
+		T incomingValue = converter.<T>convert(dataField.getValue());
+		if(incomingValue == null) {
 			if (ea != null) {
 				raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion failed.", resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
 			}
 			return State.INVALID;
 		}
 
-		final OPERATOR_TYPE operator = (OPERATOR_TYPE) this.operator.getValue();
-		
-		T value = converter.<T>convertFromCloverLiteral(resolvedValue);
-		if(value == null) {
-			if (ea != null) {
-				raiseError(ea, ERROR_VALUE_CONVERSION, "Conversion of value failed.", resolvedTarget,this.value.getValue());
-			}
-			return State.INVALID;
-		}
-		if(operator == OPERATOR_TYPE.E && comparator.compare(record, value) == 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' = '" + value.toString() + "'.");
-			return State.VALID;
-		} else if(operator == OPERATOR_TYPE.NE && comparator.compare(record, value) != 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' != '" + value.toString() + "'.");
-			return State.VALID;
-		} else if(operator == OPERATOR_TYPE.G && comparator.compare(record, value) > 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' > '" + value.toString() + "'.");
-			return State.VALID;
-		} else if(operator == OPERATOR_TYPE.L && comparator.compare(record, value) < 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' < '" + value.toString() + "'.");
-			return State.VALID;
-		} else if(operator == OPERATOR_TYPE.LE && comparator.compare(record, value) <= 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' <= '" + value.toString() + "'.");
-			return State.VALID;
-		} else if(operator == OPERATOR_TYPE.GE && comparator.compare(record, value) >= 0) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' >= '" + value.toString() + "'.");
-			return State.VALID;
+		State state;
+		if(operatorValue == OPERATOR_TYPE.E && comparator.compare(incomingValue, valueTyped) == 0) {
+			state = State.VALID;
+		} else if(operatorValue == OPERATOR_TYPE.NE && comparator.compare(incomingValue, valueTyped) != 0) {
+			state = State.VALID;
+		} else if(operatorValue == OPERATOR_TYPE.G && comparator.compare(incomingValue, valueTyped) > 0) {
+			state = State.VALID;
+		} else if(operatorValue == OPERATOR_TYPE.L && comparator.compare(incomingValue, valueTyped) < 0) {
+			state = State.VALID;
+		} else if(operatorValue == OPERATOR_TYPE.LE && comparator.compare(incomingValue, valueTyped) <= 0) {
+			state = State.VALID;
+		} else if(operatorValue == OPERATOR_TYPE.GE && comparator.compare(incomingValue, valueTyped) >= 0) {
+			state = State.VALID;
 		} else {
 			if (ea != null) {
 				raiseError(ea, ERROR_CONDITION_NOT_MET, "Incoming value did not meet the condition.", resolvedTarget, dataField.getValue().toString());
 			}
-			return State.INVALID;
+			state = State.INVALID;
 		}
+		
+		if (isLoggingEnabled() && state == State.VALID) {
+			String msg = String.format("Field '%s' with value '%s' %s '%s'.",
+					resolvedTarget, incomingValue.toString(), operatorValue.toString(), value.toString());
+			logSuccess(msg);
+		}
+		
+		return state;
 	}
 	
 	@Override
