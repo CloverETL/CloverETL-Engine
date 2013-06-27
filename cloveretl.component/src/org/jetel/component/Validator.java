@@ -152,11 +152,7 @@ public class Validator extends Node {
 	private CTLMapping errorMapping;
 	private DataRecord inputRecord;
 	private DataRecord errorRecord;
-	
-	// FIXME this does more than just record multiplication
-	// make sure this var is used properly!
-	private boolean recordMultiplication = false;
-	
+	private boolean errorInfoMapped = false;
 	private GraphWrapper graphWrapper;
 	
 	/**
@@ -283,9 +279,9 @@ public class Validator extends Node {
 		}
 		
 		try {
-			initMapping();
+			initBufferRecordsAndMappings();
 		} catch(Exception e) {
-			ConfigurationProblem problem = new ConfigurationProblem("Cannot initialize error output mapping", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH);
+			ConfigurationProblem problem = new ConfigurationProblem(e, ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.HIGH, XML_ERROR_MAPPING);
 			status.add(problem);
 			return status;
 		}
@@ -308,8 +304,11 @@ public class Validator extends Node {
 		rootGroup = ValidationRulesPersister.deserialize(tempRules);
 	}
 
-	private void initMapping() throws ComponentNotReadyException {
-		if(getOutputPort(INVALID_OUTPUT_PORT) != null) {
+	private void initBufferRecordsAndMappings() throws ComponentNotReadyException {
+		errorInfoMapped = false;
+		errorMapping = null;
+
+		if(getOutputPort(INVALID_OUTPUT_PORT) != null && errorMappingCode != null && !errorMappingCode.isEmpty()) {
 			errorMapping = new CTLMapping("Error output", this);
 			inputRecord = errorMapping.addInputMetadata(MAPPING_INPUT_RECORD, getInputPort(INPUT_PORT).getMetadata());
 			errorRecord = errorMapping.addInputMetadata(MAPPING_INPUT_ERROR, createErrorOutputMetadata());
@@ -319,16 +318,13 @@ public class Validator extends Node {
 			
 			errorMapping.init(XML_ERROR_MAPPING);
 			
-			// Enable record multiplication only if user demanded mapping at least one of reporting field
 			List<DataFieldMetadata> usedInputFields = errorMapping.findUsedInputFields(getGraph());
+			outerloop:
 			for(DataFieldMetadata inField : usedInputFields) {
 				for(DataFieldMetadata errInField : errorRecord.getMetadata()) {
-					if(recordMultiplication) {
-						break;
-					}
 					if(inField == errInField) {
-						recordMultiplication = true;
-						break;
+						errorInfoMapped = true;
+						break outerloop;
 					}
 				}
 			}
@@ -343,7 +339,7 @@ public class Validator extends Node {
 		super.init();
 		
 		initRootGroup();
-		initMapping();
+		initBufferRecordsAndMappings();
 		
 		graphWrapper = new EngineGraphWrapper(getGraph());
 		graphWrapper.init(rootGroup);
@@ -370,7 +366,7 @@ public class Validator extends Node {
 		OutputPortDirect invalidPort = getOutputPortDirect(INVALID_OUTPUT_PORT);
 	
 		ValidationErrorAccumulator errorAccumulator = null;
-		if (invalidPort != null && errorMappingCode != null && !errorMappingCode.isEmpty()) {
+		if (errorInfoMapped) {
 			errorAccumulator = new ValidationErrorAccumulator();
 		}
 		
@@ -394,9 +390,11 @@ public class Validator extends Node {
 				validPort.writeRecordDirect(recordBuffer);
 			} else {
 				if(invalidPort != null) {
-					if (errorMappingCode != null && !errorMappingCode.isEmpty()) {
-						if(recordMultiplication) {
-							// If there are no errors somebody did implement validation rule wrong!
+					if (errorMapping != null) {
+						if(errorAccumulator != null) {
+							if (errorAccumulator.isEmpty()) {
+								throw new IllegalStateException("Validation marked record as invalid but no errors have been reported");
+							}
 							for(ValidationError error : errorAccumulator) {
 								populateErrorRecord(error);
 								errorMapping.execute();
