@@ -73,10 +73,10 @@ public class IntervalValidationRule extends ConversionValidationRule {
 		@Override
 		public String toString() {
 			if(this.equals(OPEN_CLOSED)) {
-				return "From inclusive, to exclusive";
+				return "From exclusive, to inclusive";
 			}
 			if(this.equals(CLOSED_OPEN)) {
-				return "From exclusive, to inclusive";
+				return "From inclusive, to exclusive";
 			}
 			if(this.equals(OPEN_OPEN)) {
 				return "From exclusive, to exclusive";
