@@ -571,7 +571,7 @@ public class DB2DataWriter extends Node {
     private static final String XML_TABLE_ATTRIBUTE = "table";
     private static final String XML_MODE_ATTRIBUTE = "loadMode";
     private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
-    private static final String XML_FILEMETADATA_ATTRIBUTE = "fileMetadata";
+    public static final String XML_FILEMETADATA_ATTRIBUTE = "fileMetadata";
     private static final String XML_USEPIPE_ATTRIBUTE = "useNamedPipe";
     private static final String XML_COLUMNDELIMITER_ATTRIBUTE = "columnDelimiter";
 	private static final String XML_INTERPRETER_ATTRIBUTE = "sqlInterpreter";
