@@ -90,8 +90,7 @@ public class EmailValidationRule extends StringValidationRule {
 			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		}
 		
-		String resolvedTarget = resolve(target.getValue());
-		String inputString = prepareInput(record, resolvedTarget);
+		String inputString = prepareInput(record);
 		
 		boolean plainAddress = plainAddressParam.getValue();
 		boolean allowGroupAddresses = allowGroupAddressesParam.getValue();

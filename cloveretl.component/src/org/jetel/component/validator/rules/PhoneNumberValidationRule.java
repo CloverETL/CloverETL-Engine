@@ -130,7 +130,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		}
 		init(graphWrapper);
 		
-		String inputString = prepareInput(record, resolvedTarget);
+		String inputString = prepareInput(record);
 		
 		PhoneNumber phoneNumber;
 		try {

@@ -137,11 +137,9 @@ public class StringLengthValidationRule extends StringValidationRule {
 		setPropertyRefResolver(graphWrapper);
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
-		String resolvedTarget = resolve(target.getValue());
-		
 		String tempString = null;
 		try {
-			tempString = prepareInput(record, resolvedTarget);
+			tempString = prepareInput(record);
 		} catch (IllegalArgumentException ex) {
 			// Should not happen when isReady is called before
 			return State.INVALID;

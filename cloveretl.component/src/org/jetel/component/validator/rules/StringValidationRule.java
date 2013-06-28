@@ -42,6 +42,7 @@ import org.jetel.data.DateDataField;
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -72,6 +73,16 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 	
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
+
+	protected String resolvedTarget;
+
+	private String resolvedFormat;
+
+	private String resolvedLocale;
+
+	private String resolvedTimezone;
+
+	private int fieldPosition;
 	
 	public StringValidationRule() {
 		addLanguageSetting(new LanguageSetting());
@@ -149,32 +160,41 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		parametersContainer.add(trimInput);
 	}
 	
-	/**
-	 * Takes care about getting string from field of given name.
-	 * Method take care about converting non-string fields with respect to language setting. 
-	 * @param record Whole record
-	 * @param name Name of obtained field
-	 * @return Not null output string.
-	 */
-	protected String prepareInput(DataRecord record, String name) {
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		resolvedTarget = resolve(getTarget().getValue());
+		fieldPosition = metadata.getFieldPosition(resolvedTarget);
+		
 		// FIXME: move to StringConverter 
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
 		
-		DataFieldMetadata fieldMetadata = record.getMetadata().getField(name);
+		DataFieldMetadata fieldMetadata = metadata.getField(resolvedTarget);
 		if(fieldMetadata == null) {
 			throw new IllegalArgumentException("Unknown field.");
 		}
 		
-		String resolvedFormat;
 		if(fieldMetadata.getDataType() == DataFieldType.DATE) {
 			resolvedFormat = resolve(computedLS.getDateFormat().getValue());
 		} else {
 			resolvedFormat = resolve(computedLS.getNumberFormat().getValue());
 		}
-		String resolvedLocale = resolve(computedLS.getLocale().getValue());
-		String resolvedTimezone = resolve(computedLS.getTimezone().getValue());
+		resolvedLocale = resolve(computedLS.getLocale().getValue());
+		resolvedTimezone = resolve(computedLS.getTimezone().getValue());
+	}
+	
+	/**
+	 * Takes care about getting string from given field.
+	 * Method takes care about converting non-string fields with respect to language setting. 
+	 * 
+	 * @param record Whole record
+	 * @param name Name of obtained field
+	 * @return Not null output string.
+	 */
+	
+	protected String prepareInput(DataRecord record) {
+		DataField field = record.getField(fieldPosition);
 		
-		DataField field = record.getField(name);
 		if(field.isNull()) {
 			return "";	// string is wanted!
 		}

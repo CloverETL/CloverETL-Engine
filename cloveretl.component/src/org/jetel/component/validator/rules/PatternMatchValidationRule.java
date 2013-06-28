@@ -34,6 +34,7 @@ import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -62,6 +63,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	private BooleanValidationParamNode ignoreCase = new BooleanValidationParamNode(false);
 	@XmlElement(name="pattern",required=true)
 	private StringValidationParamNode pattern = new StringValidationParamNode();
+	private Pattern regexPattern;
 	
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -79,6 +81,27 @@ public class PatternMatchValidationRule extends StringValidationRule {
 		parametersContainer.add(pattern);
 		parametersContainer.add(ignoreCase);
 	}
+	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		
+		if (isLoggingEnabled()) {
+			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
+			logParentLangaugeSetting();
+		}
+		String resolvedPattern = resolve(pattern.getValue());
+		
+		try {
+			if(ignoreCase.getValue()) {
+				regexPattern = Pattern.compile(resolvedPattern, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+			} else {
+				regexPattern = Pattern.compile(resolvedPattern, Pattern.UNICODE_CASE);
+			}
+		} catch (PatternSyntaxException e) {
+			throw new ComponentNotReadyException("Invalid pattern specified", e);
+		}
+	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -86,40 +109,24 @@ public class PatternMatchValidationRule extends StringValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		setPropertyRefResolver(graphWrapper);
-		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-			logParentLangaugeSetting();
-		}
-		
-		String resolvedTarget = resolve(target.getValue());
-		String resolvedPattern = resolve(pattern.getValue());
 		
 		String tempString = null;
 		try {
-			tempString = prepareInput(record, resolvedTarget);
+			tempString = prepareInput(record);
 		} catch (IllegalArgumentException ex) {
 			// Should not happen when isReady is called before
 			return State.INVALID;
 		}
-		Pattern pm;
-		try {
-			if(ignoreCase.getValue()) {
-				pm = Pattern.compile(resolvedPattern, Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-			} else {
-				pm = Pattern.compile(resolvedPattern, Pattern.UNICODE_CASE);
+
+		if(regexPattern.matcher(tempString).matches()) {
+			if (isLoggingEnabled()) {
+				logSuccess("Field '" + resolvedTarget +  "' with value '" + tempString + "' has some match.");
 			}
-		} catch (PatternSyntaxException e) {
-			logError("Pattern '" + resolvedPattern + "' is invalid.");
-			if (ea != null)
-				raiseError(ea, ERROR_INVALID_PATTERN, "The pattern is invalid.", resolvedTarget, tempString);
-			return State.INVALID;
-		}
-		if(pm.matcher(tempString).matches()) {
-			logSuccess("Field '" + resolvedTarget +  "' with value '" + tempString + "' has some match.");
 			return State.VALID;
 		} else {
-			logError("Field '" + resolvedTarget +  "' with value '" + tempString + "' has no match.");
+			if (isLoggingEnabled()) {
+				logError("Field '" + resolvedTarget +  "' with value '" + tempString + "' has no match.");
+			}
 			if (ea != null)
 				raiseError(ea, ERROR_NO_MATCH, "No match.", resolvedTarget, tempString);
 			return State.INVALID;
