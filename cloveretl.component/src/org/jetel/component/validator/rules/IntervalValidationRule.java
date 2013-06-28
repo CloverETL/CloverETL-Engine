@@ -38,7 +38,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Rule for checking that incoming value is in interval provided by user.</p>
@@ -128,11 +127,6 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 	@Override
 	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		super.init(metadata, graphWrapper);
-		
-		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
-		logParentLangaugeSetting();
-		logLanguageSettings();
 		
 		resolvedTarget = resolve(target.getValue());
 		fieldPosition = metadata.getFieldPosition(resolvedTarget);

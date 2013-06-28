@@ -28,10 +28,13 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.AbstractValidationRule;
+import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldFormatType;
+import org.jetel.metadata.DataRecordMetadata;
 import org.joda.time.format.DateTimeFormat;
 
 /**
@@ -99,10 +102,19 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 		}
 	}
 	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		
+		if (isLoggingEnabled()) {
+			logLanguageSettings();
+		}
+	}
+	
 	/**
 	 * Log language settings
 	 */
-	public void logLanguageSettings() {
+	private void logLanguageSettings() {
 		int i = 0;
 		for(LanguageSetting temp : languageSettings) {
 			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has language setting #" + i++ + ":\n" + temp);	

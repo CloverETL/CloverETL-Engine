@@ -34,9 +34,9 @@ import org.jetel.component.validator.rules.PhoneNumberPattern.PhoneNumberPattern
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -71,29 +71,6 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 	private PhoneNumberPattern requiredPhoneNumberPattern;
 	
 	private String resolvedRegion;
-	private String resolvedTarget;
-	private boolean initialized = false;
-	
-	private void init(GraphWrapper graphWrapper) {
-		if (initialized) {
-			return;
-		}
-		initialized = true;
-		setPropertyRefResolver(graphWrapper);
-		resolvedTarget = resolve(target.getValue());
-		String patternValue = resolve(pattern.getValue());
-		if (patternValue != null && !patternValue.isEmpty()) {
-			try {
-				requiredPhoneNumberPattern = PhoneNumberPattern.create(patternValue);
-			} catch (PhoneNumberPatternFormatException e) {
-				throw new JetelRuntimeException(e);
-			}
-		}
-		else {
-			requiredPhoneNumberPattern = null;
-		}
-		resolvedRegion = resolve(region.getValue());
-	}
 	
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -118,6 +95,24 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		parametersContainer.add(pattern);
 	}
 	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		
+		String patternValue = resolve(pattern.getValue());
+		if (patternValue != null && !patternValue.isEmpty()) {
+			try {
+				requiredPhoneNumberPattern = PhoneNumberPattern.create(patternValue);
+			} catch (PhoneNumberPatternFormatException e) {
+				throw new JetelRuntimeException(e);
+			}
+		}
+		else {
+			requiredPhoneNumberPattern = null;
+		}
+		resolvedRegion = resolve(region.getValue());
+	}
+	
 	
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -125,10 +120,6 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		if (logger.isTraceEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-		}
-		init(graphWrapper);
 		
 		String inputString = prepareInput(record);
 		

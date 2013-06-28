@@ -32,10 +32,10 @@ import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * Rule that check email address conformity to RFC 822 using the javax.mail package.
@@ -62,7 +62,7 @@ public class EmailValidationRule extends StringValidationRule {
 	public void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		plainAddressParam.setName("Plain e-mail address only"); // FIXME why does this need to be called here explicitly?
+		plainAddressParam.setName("Plain e-mail address only");
 		allowGroupAddressesParam.setName("Allow group addresses");
 	}
 	
@@ -78,16 +78,17 @@ public class EmailValidationRule extends StringValidationRule {
 	public TARGET_TYPE getTargetType() {
 		return TARGET_TYPE.ONE_FIELD;
 	}
+	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
-		}
-		setPropertyRefResolver(graphWrapper);
-		if (logger.isTraceEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		}
 		
 		String inputString = prepareInput(record);
@@ -101,7 +102,7 @@ public class EmailValidationRule extends StringValidationRule {
 			return State.INVALID;
 		}
 		else {
-			if (logger.isTraceEnabled()) {
+			if (isLoggingEnabled()) {
 				logSuccess("Field '" + resolvedTarget + "' has valid email address.");
 			}
 			return State.VALID;

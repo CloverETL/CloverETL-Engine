@@ -41,7 +41,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Rule for checking that incoming string field is number according to specific format.</p>
@@ -105,12 +104,6 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 	@Override
 	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		super.init(metadata, graphWrapper);
-		
-		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
-			logParentLangaugeSetting();
-			logLanguageSettings();
-		}
 		
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
 		

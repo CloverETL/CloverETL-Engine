@@ -88,6 +88,9 @@ public abstract class ValidationNode {
 		initialized = true;
 		refResolver = graphWrapper.getRefResolver();
 		nodePath = graphWrapper.getNodePath(this);
+		if (isLoggingEnabled()) {
+			logParentLangaugeSetting();
+		}
 	}
 	
 	/**
@@ -197,7 +200,7 @@ public abstract class ValidationNode {
 	 * Log all parameters of rule
 	 * @param message Serialized parameters
 	 */
-	public void logParams(String params) {
+	protected void logParams(String params) {
 		if (isLoggingEnabled()) {
 			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parameters:\n" + params);
 		}
@@ -206,7 +209,7 @@ public abstract class ValidationNode {
 	/**
 	 * Log language setting of parent
 	 */
-	public void logParentLangaugeSetting() {
+	private void logParentLangaugeSetting() {
 		if (isLoggingEnabled()) {
 			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parent language setting:\n" + parentLanguageSetting);
 		}

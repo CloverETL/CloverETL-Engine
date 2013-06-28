@@ -39,7 +39,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Rule for comparing incoming value with reference value provided by user.
@@ -125,12 +124,6 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 	@Override
 	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		super.init(metadata, graphWrapper);
-		
-		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
-			logParentLangaugeSetting();
-			logLanguageSettings();
-		}
 		
 		resolvedTarget = resolve(target.getValue());
 		fieldPosition = metadata.getFieldPosition(resolvedTarget);

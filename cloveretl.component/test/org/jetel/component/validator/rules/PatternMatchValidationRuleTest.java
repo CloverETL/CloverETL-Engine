@@ -83,8 +83,8 @@ public class PatternMatchValidationRuleTest extends ValidatorTestCase {
 		assertInvalid(rule, RF.addStringField(null, "field", "e"));
 		
 		rule.getPattern().setValue("asdfčě+š=é+$$$.\\\\sdf?*-9+?");
-		assertInvalid(rule, RF.addStringField(null, "field", ""));
-		assertInvalid(rule, RF.addStringField(null, "field", "some text"));
+		assertFailsInit(rule, RF.addStringField(null, "field", ""));
+		assertFailsInit(rule, RF.addStringField(null, "field", "some text"));
 	}
 	@Test
 	public void testCaseInsensitive() {
@@ -118,9 +118,9 @@ public class PatternMatchValidationRuleTest extends ValidatorTestCase {
 		assertInvalid(rule, RF.addStringField(null, "field", "E"));
 		
 		rule.getPattern().setValue("asdfčě+š=é+$$$.\\\\sdf?*-9+?");
-		assertInvalid(rule, RF.addStringField(null, "field", ""));
-		assertInvalid(rule, RF.addStringField(null, "field", "some text"));
-		assertInvalid(rule, RF.addStringField(null, "field", "SOME TEXT"));
+		assertFailsInit(rule, RF.addStringField(null, "field", ""));
+		assertFailsInit(rule, RF.addStringField(null, "field", "some text"));
+		assertFailsInit(rule, RF.addStringField(null, "field", "SOME TEXT"));
 			
 	}
 	@Test

@@ -117,7 +117,6 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		
 		if (isLoggingEnabled()) {
 			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
-			logParentLangaugeSetting();
 		}
 	}
 	

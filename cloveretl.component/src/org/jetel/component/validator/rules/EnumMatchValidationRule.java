@@ -124,10 +124,6 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-		logParentLangaugeSetting();
-		logLanguageSettings();
 		
 		String resolvedTarget = resolve(target.getValue());
 		

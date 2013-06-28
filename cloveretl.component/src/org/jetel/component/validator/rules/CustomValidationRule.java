@@ -363,9 +363,6 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	}
 	
 	private void initMapping(String sourceCode, DataRecord record, GraphWrapper graphWrapper) {
-		if(tempMapping != null) {
-			return;
-		}
 		// Dummy Node as there is not much need of it
 		tempMapping = new CTLMapping("Custom validation rule", new Node("DUMMY", graphWrapper.getTransformationGraph()) {
 			

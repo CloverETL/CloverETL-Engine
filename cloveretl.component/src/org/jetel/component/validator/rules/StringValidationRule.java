@@ -171,7 +171,7 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		
 		DataFieldMetadata fieldMetadata = metadata.getField(resolvedTarget);
 		if(fieldMetadata == null) {
-			throw new IllegalArgumentException("Unknown field.");
+			throw new ComponentNotReadyException("Unknown field.");
 		}
 		
 		if(fieldMetadata.getDataType() == DataFieldType.DATE) {

@@ -232,9 +232,9 @@ public abstract class ValidatorTestCase extends CloverTestCase {
 			graphWrapper = new DummyGraphWrapper();
 		}
 		try {
-			rule.init(record.getMetadata(), graphWrapper);
+			rule.init(record, graphWrapper);
 		} catch (ComponentNotReadyException e) {
-			fail(e.getMessage());
+			throw new RuntimeException(e);
 		}
 		assertEquals("Rule '" + rule.getName() + "'\nwrong result for record:\n" + record.toString(), state, rule.isValid(record, ea, graphWrapper));
 		if(state == ValidationNode.State.INVALID && ea.isEmpty()) {

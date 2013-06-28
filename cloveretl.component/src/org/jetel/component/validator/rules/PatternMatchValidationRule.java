@@ -36,7 +36,6 @@ import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Rule for checking whether given fields fulfils given regular expression</p>
@@ -86,10 +85,6 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		super.init(metadata, graphWrapper);
 		
-		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
-			logParentLangaugeSetting();
-		}
 		String resolvedPattern = resolve(pattern.getValue());
 		
 		try {
@@ -111,12 +106,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 		}
 		
 		String tempString = null;
-		try {
-			tempString = prepareInput(record);
-		} catch (IllegalArgumentException ex) {
-			// Should not happen when isReady is called before
-			return State.INVALID;
-		}
+		tempString = prepareInput(record);
 
 		if(regexPattern.matcher(tempString).matches()) {
 			if (isLoggingEnabled()) {

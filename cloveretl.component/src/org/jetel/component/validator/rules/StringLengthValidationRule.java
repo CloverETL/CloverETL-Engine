@@ -138,12 +138,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		String tempString = null;
-		try {
-			tempString = prepareInput(record);
-		} catch (IllegalArgumentException ex) {
-			// Should not happen when isReady is called before
-			return State.INVALID;
-		}
+		tempString = prepareInput(record);
 		Integer length = Integer.valueOf(tempString.length());
 		State result = State.INVALID;
 		if(type.getValue() == TYPES.EXACT && length.equals(from.getValue())) {
