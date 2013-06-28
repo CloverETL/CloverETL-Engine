@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -52,11 +53,6 @@ public abstract class GraphElement implements IGraphElement {
 
     private boolean initialized;
 
-	/**
-	 * Job type of the parent transformation graph of this graph element - {@link JobType#ETL_GRAPH} or {@link JobType#JOBFLOW}.
-	 */
-	protected JobType jobType = JobType.ETL_GRAPH;
-    
     /**
      * This variable is here just for backward compatibility. Deprecated {@link #reset()} method
      * cannot be invoked in first run of transformation graph. 
@@ -122,7 +118,6 @@ public abstract class GraphElement implements IGraphElement {
     @Override
 	synchronized public void init() throws ComponentNotReadyException {
         initialized = true;
-        jobType = getGraph() != null ? getGraph().getJobType() : JobType.ETL_GRAPH;
     }
 
     /* (non-Javadoc)
@@ -254,9 +249,19 @@ public abstract class GraphElement implements IGraphElement {
     
     @Override
 	public JobType getJobType() {
-    	return jobType;
+        return getGraph() != null ? getGraph().getJobType() : JobType.DEFAULT;
     }
 
+    @Override
+    public PropertyRefResolver getPropertyRefResolver() {
+    	TransformationGraph graph = getGraph();
+    	if (graph != null) {
+    		return new PropertyRefResolver(graph.getGraphProperties());
+    	} else {
+    		return new PropertyRefResolver();
+    	}
+    }
+    
     @Override
     public String toString() {
     	return identifiersToString(getId(), getName());

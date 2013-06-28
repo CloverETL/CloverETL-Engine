@@ -375,12 +375,8 @@ public class DataReader extends Node {
 		parserCfg.setCharset(charset);
 		parserCfg.setVerbose(logging ? true : verbose); //verbose mode is true by default in case the logging port is used
         parserCfg.setTreatMultipleDelimitersAsOne(treatMultipleDelimitersAsOne);
-        if (quotedStringsHasDefaultValue) {
-			//quoted strings has default value -> set the quoted string field from metadata
-        	parserCfg.setQuotedStrings(getOutMetadata().get(0).isQuotedStrings());
-        	parserCfg.setQuoteChar(getOutMetadata().get(0).getQuoteChar());
-		} else {
-			//quoted string is set by the user
+        if (!quotedStringsHasDefaultValue) {
+        	parserCfg.setQuotedStringsOverride(true);
 			parserCfg.setQuotedStrings(quotedStrings);
 			parserCfg.setQuoteChar(quoteChar);
 		}
@@ -454,7 +450,7 @@ public class DataReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-				xattribs.getStringEx(XML_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL),
 				xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 				xattribs.getBoolean(XML_VERBOSE_ATTRIBUTE, false));
 		aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
@@ -496,7 +492,7 @@ public class DataReader extends Node {
 			aDataReader.setTreatMultipleDelimitersAsOne(xattribs.getBoolean(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
-			aDataReader.setIncrementalFile(xattribs.getString(XML_INCREMENTAL_FILE_ATTRIBUTE));
+			aDataReader.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
 			aDataReader.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));

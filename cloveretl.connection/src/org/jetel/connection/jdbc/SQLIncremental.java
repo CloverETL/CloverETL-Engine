@@ -322,16 +322,18 @@ public class SQLIncremental {
 	 * @return
 	 * @throws ComponentNotReadyException
 	 */
-	private String createSelectKeyQuery() throws ComponentNotReadyException{
+	private String createSelectKeyQuery() throws ComponentNotReadyException {
+		if (StringUtils.isEmpty(sqlQuery)) {
+			throw new ComponentNotReadyException("SQL query is empty");
+		}
 		StringBuilder query = new StringBuilder(sqlQuery);
 		int whereIndex = query.toString().toLowerCase().indexOf("where");
 		if (whereIndex == -1) {
-			throw new ComponentNotReadyException("\"where\" clause not found in sql query!!!");
+			throw new ComponentNotReadyException("\"WHERE\" clause not found in SQL query!");
 		}
 		query.setLength(whereIndex);
 		query.append("where 0=1");
 		return query.toString();
-    	
 	}
 	
 	/**
@@ -382,6 +384,10 @@ public class SQLIncremental {
 	public String getPreparedQuery() {
 		if (preparedQuery == null) return sqlQuery;
 		return preparedQuery;
+	}
+	
+	public void setQuery(String sqlQuery) {
+		this.sqlQuery = sqlQuery;
 	}
 	
 	public Properties getKey(){

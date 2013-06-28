@@ -41,6 +41,7 @@ import org.jetel.connection.jdbc.driver.JdbcDriverImpl;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
 import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
+import org.jetel.data.Defaults;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
@@ -188,7 +189,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		TypedProperties typedProperties = new TypedProperties(properties, getGraph());
 
 		setUser(typedProperties.getStringProperty(XML_USER_ATTRIBUTE, null));
-		setPassword(typedProperties.getStringProperty(XML_PASSWORD_ATTRIBUTE, null));
+		setPassword(typedProperties.getStringProperty(XML_PASSWORD_ATTRIBUTE, null, RefResFlag.SECURE_PARAMATERS));
 		setDbUrl(typedProperties.getStringProperty(XML_DBURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 		setDbDriver(typedProperties.getStringProperty(XML_DBDRIVER_ATTRIBUTE, null));
 		setDatabase(typedProperties.getStringProperty(XML_DATABASE_ATTRIBUTE, null));
@@ -336,11 +337,23 @@ public class DBConnectionImpl extends AbstractDBConnection {
         if (isThreadSafeConnections()) {
         	CacheKey key = new CacheKey(elementId, operationType);
             connection = connectionsCache.get(key);
+            if (connection != null) {
+            	if (!isValid(connection)) {
+            		closeConnection(connection);
+            		connection = null;
+            	}
+            }
             if (connection == null) {
                 connection = connect(operationType);
                 connectionsCache.put(key, connection);
             }
         } else {
+        	if (sharedConnection != null) {
+        		if (!isValid(sharedConnection)) {
+        			closeConnection(sharedConnection);
+        			sharedConnection = null;
+        		}
+        	}
             if (sharedConnection == null) {
                 sharedConnection = connect(operationType);
             }
@@ -348,6 +361,24 @@ public class DBConnectionImpl extends AbstractDBConnection {
         }
         
         return connection;
+    }
+    
+    protected boolean isValid(SqlConnection connection) {
+    	
+    	try {
+    		try {
+    			return connection.isValid(Defaults.DBConnection.VALIDATION_TIMEOUT);
+    		} catch (Throwable t) {
+    			if (t instanceof ThreadDeath) {
+    				throw (ThreadDeath)t;
+    			}
+    			logger.info("Connection does not support validation, checking whether closed.");
+    		}
+    		return !connection.isClosed();
+    	} catch (Exception e) {
+    		logger.warn("Error while validating DB connection.", e);
+    	}
+    	return false;
     }
     
     /**
@@ -427,7 +458,8 @@ public class DBConnectionImpl extends AbstractDBConnection {
      */
     @Override
 	public synchronized void closeConnection(String elementId, OperationType operationType) {
-    	if (isThreadSafeConnections()) {
+    	boolean batchMode = getGraph() == null ? true : getGraph().getRuntimeContext().isBatchMode();
+    	if (isThreadSafeConnections() && batchMode) {
         	CacheKey key = new CacheKey(elementId, operationType);
         	SqlConnection connection = connectionsCache.remove(key);
         	if (connection != null)
@@ -453,7 +485,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
             if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
                 return new DBConnectionImpl(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
             } else {
-                Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE});
+                Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE}, RefResFlag.ALL_OFF.forceSecureParameters(false));
                 
                 return new DBConnectionImpl(id, connectionProps);
             }

@@ -229,7 +229,7 @@ public class JavaExecute extends Node {
                 xattribs.getString(XML_ID_ATTRIBUTE),
                 xattribs.getStringEx(XML_RUNNABLE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
                 xattribs.getString(XML_RUNNABLECLASS_ATTRIBUTE, null),
-                xattribs.getStringEx(XML_RUNNABLEURL_ATTRIBUTE,null, RefResFlag.SPEC_CHARACTERS_OFF),
+                xattribs.getStringEx(XML_RUNNABLEURL_ATTRIBUTE, null, RefResFlag.URL),
                 internalProperties);
 
         javaExecute.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));

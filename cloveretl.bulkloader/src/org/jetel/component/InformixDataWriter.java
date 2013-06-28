@@ -582,7 +582,7 @@ public class InformixDataWriter extends BulkLoader {
 
     	InformixDataWriter informixDataWriter = new InformixDataWriter(
     			xattribs.getString(XML_ID_ATTRIBUTE),
-                xattribs.getString(XML_DB_LOADER_PATH_ATTRIBUTE),
+                xattribs.getStringEx(XML_DB_LOADER_PATH_ATTRIBUTE, RefResFlag.URL),
                 xattribs.getString(XML_DATABASE_ATTRIBUTE));
     	if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
     		informixDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
@@ -591,7 +591,7 @@ public class InformixDataWriter extends BulkLoader {
     		informixDataWriter.setCommand(xattribs.getString(XML_COMMAND_ATTRIBUTE));
     	}
     	if (xattribs.exists(XML_ERROR_LOG_ATTRIBUTE)) {
-    		informixDataWriter.setErrorLog(xattribs.getString(XML_ERROR_LOG_ATTRIBUTE));
+    		informixDataWriter.setErrorLog(xattribs.getStringEx(XML_ERROR_LOG_ATTRIBUTE, RefResFlag.URL));
     	}
     	if (xattribs.exists(XML_MAX_ERRORS_ATTRIBUTE)) {
     		informixDataWriter.setMaxErrors(xattribs.getInteger(XML_MAX_ERRORS_ATTRIBUTE));
@@ -606,7 +606,7 @@ public class InformixDataWriter extends BulkLoader {
     		informixDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));
     	}
     	if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-    		informixDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+    		informixDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
     	}
     	if (xattribs.exists(XML_HOST_ATTRIBUTE)) {
     		informixDataWriter.setHost(xattribs.getString(XML_HOST_ATTRIBUTE));
@@ -618,7 +618,7 @@ public class InformixDataWriter extends BulkLoader {
     		informixDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
     	}
     	if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-    		informixDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+    		informixDataWriter.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
     	}
     	if (xattribs.exists(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE)) {
     		informixDataWriter.setIgnoreUniqueKeyViolation(xattribs.getBoolean(XML_IGNORE_UNIQUE_KEY_VIOLATION_ATTRIBUTE));

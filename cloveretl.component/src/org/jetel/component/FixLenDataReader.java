@@ -339,7 +339,7 @@ public class FixLenDataReader extends Node {
 			byteMode = xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE);
 		}
 		aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, "", RefResFlag.SPEC_CHARACTERS_OFF),
+					xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, "", RefResFlag.URL),
 					charset, byteMode);
 		if (xattribs.exists(XML_ENABLEINCOMPLETE_ATTRIBUTE)){
 			aFixLenDataReaderNIO.setEnableIncomplete(xattribs.getBoolean(XML_ENABLEINCOMPLETE_ATTRIBUTE));
@@ -367,7 +367,7 @@ public class FixLenDataReader extends Node {
 			aFixLenDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)){
-			aFixLenDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+			aFixLenDataReaderNIO.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)){
 			aFixLenDataReaderNIO.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));

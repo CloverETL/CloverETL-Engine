@@ -39,8 +39,11 @@ import org.jetel.exception.TransformException;
 public abstract class CTLRecordFilter extends CTLAbstractTransform implements RecordFilter {
 
 	/** Input data record used for filtering, or <code>null</code> if not accessible. */
-	private DataRecord inputRecord = null;
+	private DataRecord[] inputRecords = null;
 
+	// this is just temporary array for #isValid(DataRecord record) to avoid create new array for each invocation
+	private DataRecord[] tempInputRecords = new DataRecord[1];
+	
 	@Override
 	public final void init() throws ComponentNotReadyException {
 		globalScopeInit();
@@ -60,10 +63,16 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 
 	@Override
 	public boolean isValid(DataRecord record) throws TransformException {
+		tempInputRecords[0] = record;
+		return isValid(tempInputRecords);
+	}
+	
+	@Override
+	public boolean isValid(DataRecord[] records) throws TransformException {
 		boolean result = false;
 
 		// only input record is accessible within the isValid() function
-		inputRecord = record;
+		inputRecords = records;
 
 		try {
 			result = isValidDelegate();
@@ -73,7 +82,7 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 		}
 
 		// make the input record inaccessible again
-		inputRecord = null;
+		inputRecords = null;
 
 		return result;
 	}
@@ -90,15 +99,15 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 
 	@Override
 	protected final DataRecord getInputRecord(int index) {
-		if (inputRecord == null) {
+		if (inputRecords == null) {
 			throw new TransformLangExecutorRuntimeException(INPUT_RECORDS_NOT_ACCESSIBLE);
 		}
 
-		if (index != 0) {
+		if (index < 0 || index >= inputRecords.length) {
 			throw new TransformLangExecutorRuntimeException(new Object[] { index }, INPUT_RECORD_NOT_DEFINED);
 		}
 
-		return inputRecord;
+		return inputRecords[index];
 	}
 
 	@Override

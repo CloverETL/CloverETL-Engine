@@ -59,6 +59,7 @@ import org.jetel.util.MiscUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -434,7 +435,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			lookupTable.setLocale(XML_LOCALE);
 		}
 		if (properties.containsKey(XML_FILE_URL)){
-			lookupTable.setFileURL(properties.getStringProperty(XML_FILE_URL));
+			lookupTable.setFileURL(properties.getStringProperty(XML_FILE_URL, null, RefResFlag.URL));
 		}
 		lookupTable.setCharset(properties.getStringProperty(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
 		boolean[] startInclude = null;
@@ -505,7 +506,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			lookupTable.setLocale(XML_LOCALE);
 		}
 		if (xattribs.exists(XML_FILE_URL)){
-			lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
+			lookupTable.setFileURL(xattribs.getStringEx(XML_FILE_URL, RefResFlag.URL));
 		}
 		lookupTable.setCharset(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
 		boolean[] startInclude = null;

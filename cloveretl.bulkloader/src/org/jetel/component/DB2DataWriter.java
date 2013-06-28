@@ -571,7 +571,7 @@ public class DB2DataWriter extends Node {
     private static final String XML_TABLE_ATTRIBUTE = "table";
     private static final String XML_MODE_ATTRIBUTE = "loadMode";
     private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
-    private static final String XML_FILEMETADATA_ATTRIBUTE = "fileMetadata";
+    public static final String XML_FILEMETADATA_ATTRIBUTE = "fileMetadata";
     private static final String XML_USEPIPE_ATTRIBUTE = "useNamedPipe";
     private static final String XML_COLUMNDELIMITER_ATTRIBUTE = "columnDelimiter";
 	private static final String XML_INTERPRETER_ATTRIBUTE = "sqlInterpreter";
@@ -1716,11 +1716,11 @@ public class DB2DataWriter extends Node {
         DB2DataWriter writer = new DB2DataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
                 xattribs.getString(XML_DATABASE_ATTRIBUTE),
                 xattribs.getString(XML_USERNAME_ATTRIBUTE),
-                xattribs.getString(XML_PASSWORD_ATTRIBUTE),
+                xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS),
                 xattribs.getString(XML_TABLE_ATTRIBUTE),
                 LoadMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, DEFAULT_TABLE_LOAD_MODE).toLowerCase()),
-                xattribs.getString(XML_FILEURL_ATTRIBUTE, null),
-                xattribs.getString(XML_FILEMETADATA_ATTRIBUTE, null));
+                xattribs.getStringEx(XML_FILEURL_ATTRIBUTE, null, RefResFlag.URL),
+                xattribs.getStringEx(XML_FILEMETADATA_ATTRIBUTE, null, RefResFlag.URL));
 		if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
 			String[] pairs = StringUtils.split(xattribs.getString(XML_FIELDMAP_ATTRIBUTE));
 			String[] cloverFields = new String[pairs.length];
@@ -1759,7 +1759,7 @@ public class DB2DataWriter extends Node {
             writer.setParameters((xattribs.getString(XML_PARAMETERS_ATTRIBUTE)));
         }
         if(xattribs.exists(XML_REJECTEDRECORDSURL_ATTRIBUTE)) {
-            writer.setRejectedURL((xattribs.getString(XML_REJECTEDRECORDSURL_ATTRIBUTE)));
+            writer.setRejectedURL(xattribs.getStringEx(XML_REJECTEDRECORDSURL_ATTRIBUTE, RefResFlag.URL));
         }
         if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)) {
         	writer.setProperty(ROW_COUNT_PARAM, xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE));
@@ -1771,7 +1771,7 @@ public class DB2DataWriter extends Node {
         	writer.setRecordSkip(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
         }
         if (xattribs.exists(XML_BATCHURL_ATTRIBUTE)) {
-        	writer.setBatchURL(xattribs.getStringEx(XML_BATCHURL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+        	writer.setBatchURL(xattribs.getStringEx(XML_BATCHURL_ATTRIBUTE, RefResFlag.URL));
         }
         if (xattribs.exists(XML_WARNING_LINES_ATTRIBUTE)) {
         	writer.setWarningNumber(xattribs.getInteger(XML_WARNING_LINES_ATTRIBUTE));

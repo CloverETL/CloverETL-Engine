@@ -167,7 +167,9 @@ public class PersistentBufferQueue {
 		
 		private void open() {
 			try {
-				tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, -1);
+				//graph id is part of temp file name
+				String graphId = ContextProvider.getGraph() != null ? ContextProvider.getGraph().getId() : "null";
+				tempFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(TMP_FILE_PREFIX + "_" + graphId + "_", TMP_FILE_SUFFIX, -1);
 				tempFileChannel = new RandomAccessFile(tempFile, TMP_FILE_MODE).getChannel();
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Can't open TMP file in", e);

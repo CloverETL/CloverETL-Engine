@@ -68,6 +68,26 @@ import de.schlichtherle.util.zip.ZipOutputStream;
  */
 public class CloverDataFormatter extends AbstractFormatter {
 	
+	/**
+	 * This long value is used as a header for internal clover binary data sources/targets.
+	 * CloverDataReader and CloverDataWriter components are dedicated to work with this data format.
+	 * Each clover data source (since 2.9 version) starts with this value and follows
+	 * with compatibility value @see CLOVER_DATA_COMPATIBILITY_HASH, one byte for major version number,
+	 * one byte for minor version number, one byte for revision number, and other four bytes
+	 * for type of encoding.
+	 * NOTE: cannot be changed from defaultProperties file
+	 */
+	public final static long CLOVER_DATA_HEADER = 7198760165196065077L;
+
+	/**
+	 * This long value is used for decision about inter-version compatibility
+	 * of clover binary format. Need to be changed whenever clover engine changed way how to
+	 * data records are serialized.
+	 * NOTE: cannot be changed from defaultProperties file
+	 */
+	public final static long CLOVER_DATA_COMPATIBILITY_HASH_2_9 = 620003156160528134L;
+	public final static long CLOVER_DATA_COMPATIBILITY_HASH_3_5 = 7252194213196531926L;
+
 	
 	public final static char FILE_SEPARATOR = '/';
 	public final static String DATA_DIRECTORY = "DATA" + FILE_SEPARATOR;
@@ -89,6 +109,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	private ReadableByteChannel idxReader;
 	private boolean isOpen = false;
 	private URL projectURL;
+	private DataRecordMetadata metadata;	
 	
 	private final static short LEN_SIZE_SPECIFIER = 4;
 	private final static int SHORT_SIZE_BYTES = 2;
@@ -110,7 +131,8 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
 	@Override
-	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
+	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
+		this.metadata = metadata;
         buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
  	}
 
@@ -149,7 +171,7 @@ public class CloverDataFormatter extends AbstractFormatter {
         	}
         	try {
 				if (((FileChannel) writer).size() > 0) {
-					CloverDataParser.checkCompatibilityHeader(Channels.newChannel(new FileInputStream(file)));
+					CloverDataParser.checkCompatibilityHeader(Channels.newChannel(new FileInputStream(file)), metadata);
 				} else {
 					//write header information for compatibility testing while later reading
 			        writeCompatibilityHeader();
@@ -168,8 +190,8 @@ public class CloverDataFormatter extends AbstractFormatter {
     private void writeCompatibilityHeader() {
         //write a clover data binary header @see Defaults.Component.CLOVER_DATA_HEADER
         //HEADER & COMPATIBILITY_HASH & MAJOR_VERSION & MINOR_VERSION & REVISION_VERSION & 4_EXTRA_BYTES
-        buffer.putLong(Defaults.Component.CLOVER_DATA_HEADER);
-        buffer.putLong(Defaults.Component.CLOVER_DATA_COMPATIBILITY_HASH);
+        buffer.putLong(CLOVER_DATA_HEADER);
+        buffer.putLong(CLOVER_DATA_COMPATIBILITY_HASH_3_5);
         buffer.put((byte) JetelVersion.getMajorVersion());
         buffer.put((byte) JetelVersion.getMinorVersion());
         buffer.put((byte) JetelVersion.getRevisionVersion());
@@ -180,6 +202,8 @@ public class CloverDataFormatter extends AbstractFormatter {
         	BitArray.set(extraBytes, 0);
         }
         buffer.put(extraBytes);
+        //serialize used metadata into data file - will be used to validate input file by CloverDataParser 
+        metadata.serialize(buffer);
     }
     
     @Override
@@ -303,7 +327,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 */
 	@Override
 	public int write(DataRecord record) throws IOException {
-		int recordSize = record.getSizeSerialized();
+		int recordSize = record.getSizeSerializedUnitary();
 		if (saveIndex) {
 			//if size is grater then Short, change to negative Short
 			short index = recordSize + LEN_SIZE_SPECIFIER <= Short.MAX_VALUE ? 
@@ -318,7 +342,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 			flush();
 		}
 		buffer.putInt(recordSize);
-		record.serialize(buffer);
+		record.serializeUnitary(buffer);
         
         return recordSize + LEN_SIZE_SPECIFIER;
 	}

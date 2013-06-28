@@ -289,11 +289,31 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @param  encoder                       Charset encoder which could be used to encode characters
 	 * @param  dataBuffer                    Description of the Parameter
 	 * @exception  CharacterCodingException  Description of the Exception
+	 * @return number of written characters for string based fields ((DataFieldMetadata.isByteBased() == false); byte based fields return 0
 	 * @since                                October 31, 2002
 	 */
-	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+		return toByteBuffer(dataBuffer, encoder, Integer.MAX_VALUE);
+	}
+	
+	/**
+	 *  Encode the field's value into ByteBuffer. The numeric value is encoded as a string representation.
+	 * 
+	 * @param dataBuffer buffer where the field's value is written
+	 * @param encoder encoder which is used for string to byte conversion
+	 * @param maxLength for string based fields (DataFieldMetadata.isByteBased() == false) maximum number of character written to output buffer;
+	 * 			byte based fields can ignore this parameter 
+	 * @return
+	 * @throws CharacterCodingException
+	 */
+	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException {
 		try {
-			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
+			String s = toString();
+			if (s.length() > maxLength) {
+				s = s.substring(0, maxLength);
+			}
+			dataBuffer.put(encoder.encode(CharBuffer.wrap(s)));
+			return s.length();
 		} catch (BufferOverflowException e) {
 			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 		}

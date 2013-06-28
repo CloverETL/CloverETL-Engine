@@ -38,7 +38,8 @@ import org.jetel.util.bytes.CloverBuffer;
 public class DirectEdgeFastPropagate extends EdgeBase {
     
     protected EdgeRecordBufferPool recordsBuffer;
-    protected long recordCounter;
+    protected long inputRecordCounter;
+    protected long outputRecordCounter;
     protected long byteCounter;
     protected AtomicInteger bufferedRecords;
 
@@ -63,12 +64,12 @@ public class DirectEdgeFastPropagate extends EdgeBase {
 
     @Override
 	public long getOutputRecordCounter() {
-        return recordCounter;
+        return outputRecordCounter;
     }
 
     @Override
 	public long getInputRecordCounter() {
-        return recordCounter;
+        return inputRecordCounter;
     }
 
     @Override
@@ -102,7 +103,8 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         // initialize & open the data pipe
         // we are ready to supply data
         recordsBuffer = new EdgeRecordBufferPool(Defaults.Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS);
-        recordCounter = 0;
+        inputRecordCounter = 0;
+        outputRecordCounter = 0;
         byteCounter=0;
         bufferedRecords=new AtomicInteger(0);
 
@@ -120,7 +122,8 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     @Override
     public void reset() {
         recordsBuffer.reset();
-		recordCounter = 0;
+		inputRecordCounter = 0;
+		outputRecordCounter = 0;
 		byteCounter=0;
 		bufferedRecords.set(0);
     }
@@ -150,6 +153,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         
         recordsBuffer.setFree(buffer);
         bufferedRecords.decrementAndGet();
+        inputRecordCounter++;
         
         return record;
     }
@@ -181,6 +185,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         record.flip();
         
         bufferedRecords.decrementAndGet();
+        inputRecordCounter++;
         
         return true;
     }
@@ -208,7 +213,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         
         byteCounter+=buffer.remaining();        
         recordsBuffer.setFull(buffer);      
-        recordCounter++;
+        outputRecordCounter++;
         bufferedRecords.incrementAndGet();
         // one more record written
     }
@@ -238,7 +243,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         
         recordsBuffer.setFull(buffer);
         record.rewind();
-        recordCounter++;
+        outputRecordCounter++;
         bufferedRecords.incrementAndGet();
     }
 

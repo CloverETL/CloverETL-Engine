@@ -6,10 +6,7 @@
 	
 	<FunctionalTest ident="_Introduction" graphFile="graph/_Introduction.grf" />
 	
-	<FunctionalTest ident="CreditCardFraudDetection" graphFile="graph/CreditCardFraudDetection.grf">
-		<FlatFile outputFile="data-out/missing-currency.html" supposedFile="supposed-out/missing-currency.html"/>
-		<FlatFile outputFile="data-out/risky-customer.html" supposedFile="supposed-out/risky-customer.html"/>
-	</FunctionalTest>
+	<FunctionalTest ident="CreditCardFraudDetection" graphFile="graph/CreditCardFraudDetection.grf" />
 	
 	<FunctionalTest ident="EmailValidation" graphFile="graph/EmailValidation.grf">
 		<FlatFile outputFile="data-out/emails_domain_accept.txt" supposedFile="supposed-out/emails_domain_accept.txt"/>
@@ -35,7 +32,7 @@
 	
 	<FunctionalTest ident="SalesforceWebService" graphFile="jobflow/SalesforceWebService.jbf" excludedEtlEnvironment="engine">
 		<Property name="FORCE.COM_PASSWORD" value="frA8AS4U" />
-		<Property name="FORCE.COM_SECURITY_TOKEN" value="aoGzCJaCsPFUAEE2a4oINmCx" />
+		<Property name="FORCE.COM_SECURITY_TOKEN" value="aTSqcAM7QJa9dXZWPF5vjxxi" />
 		<Property name="FORCE.COM_USER" value="support@javlin.eu" />
 	</FunctionalTest>
 

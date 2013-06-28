@@ -61,4 +61,28 @@ public class DataFieldContainerTypeTest extends CloverTestCase {
 		assertTrue(namesList.contains("map"));
 	}
 	
+	public void testGetByteIdentifier() {
+		assertEquals((byte) 0, DataFieldContainerType.SINGLE.getByteIdentifier());
+		assertEquals((byte) 1, DataFieldContainerType.LIST.getByteIdentifier());
+		assertEquals((byte) 2, DataFieldContainerType.MAP.getByteIdentifier());
+	}
+	
+	public void testFromByteIdentifier() {
+		assertEquals(DataFieldContainerType.SINGLE, DataFieldContainerType.fromByteIdentifier((byte) 0));
+		assertEquals(DataFieldContainerType.LIST, DataFieldContainerType.fromByteIdentifier((byte) 1));
+		assertEquals(DataFieldContainerType.MAP, DataFieldContainerType.fromByteIdentifier((byte) 2));
+		try {
+			DataFieldContainerType.fromByteIdentifier((byte) 3);
+			assertTrue(false);
+		} catch (Exception e) {
+			//OK
+		}
+		try {
+			DataFieldContainerType.fromByteIdentifier((byte) -1);
+			assertTrue(false);
+		} catch (Exception e) {
+			//OK
+		}
+	}
+	
 }

@@ -1011,14 +1011,14 @@ public class MsSqlDataWriter extends BulkLoader {
 
 		MsSqlDataWriter msSqlDataWriter = new MsSqlDataWriter(
 				xattribs.getString(XML_ID_ATTRIBUTE), 
-				xattribs.getString(XML_BCP_UTILITY_PATH_ATTRIBUTE),
+				xattribs.getStringEx(XML_BCP_UTILITY_PATH_ATTRIBUTE, RefResFlag.URL),
 				xattribs.getString(XML_DATABASE_ATTRIBUTE));
 
 		if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
 			msSqlDataWriter.setTable(xattribs.getString(XML_TABLE_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_FILE_URL_ATTRIBUTE)) {
-			msSqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+			msSqlDataWriter.setFileUrl(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
 		}
 		if (xattribs.exists(XML_OWNER_ATTRIBUTE)) {
 			msSqlDataWriter.setOwner(xattribs.getString(XML_OWNER_ATTRIBUTE));
@@ -1030,7 +1030,7 @@ public class MsSqlDataWriter extends BulkLoader {
 			msSqlDataWriter.setUser(xattribs.getString(XML_USER_ATTRIBUTE));
 		}
 		if (xattribs.exists(XML_PASSWORD_ATTRIBUTE)) {
-			msSqlDataWriter.setPassword(xattribs.getString(XML_PASSWORD_ATTRIBUTE));
+			msSqlDataWriter.setPassword(xattribs.getStringEx(XML_PASSWORD_ATTRIBUTE, RefResFlag.SECURE_PARAMATERS));
 		}
 		if (xattribs.exists(XML_COLUMN_DELIMITER_ATTRIBUTE)) {
     		msSqlDataWriter.setColumnDelimiter(xattribs.getString(XML_COLUMN_DELIMITER_ATTRIBUTE));

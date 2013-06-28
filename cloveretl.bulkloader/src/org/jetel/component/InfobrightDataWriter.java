@@ -66,6 +66,7 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 import com.infobright.etl.model.BrighthouseRecord;
@@ -464,6 +465,7 @@ public class InfobrightDataWriter extends Node {
 			} else if (getOutputPort(WRITE_TO_PORT) != null) {//prepare parser for output port
 				final TextParserConfiguration parserCfg = new TextParserConfiguration();
 				parserCfg.setCharset(charset);
+				parserCfg.setQuotedStringsOverride(true);
 				parserCfg.setQuotedStrings(true);
 				parserCfg.setMetadata(getOutputPort(WRITE_TO_PORT).getMetadata());
 				dataParser = TextParserFactory.getParser(parserCfg);
@@ -597,7 +599,7 @@ public class InfobrightDataWriter extends Node {
 			loader.setDataFormat(xattribs.getString(XML_DATA_FORMAT_ATTRIBUTE));
 		}
         if (xattribs.exists(XML_LOG_FILE_ATTRIBUTE)) {
-			loader.setLogFile(xattribs.getString(XML_LOG_FILE_ATTRIBUTE));
+			loader.setLogFile(xattribs.getStringEx(XML_LOG_FILE_ATTRIBUTE, RefResFlag.URL));
 			loader.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
 		}
         if (xattribs.exists(XML_PIPE_NAMEPREFIX_ATTRIBUTE)) {

@@ -56,8 +56,8 @@ public abstract class PluginableItemDescription {
     abstract protected List<String> getClassNames();
 
     /**
-     * Just preloads a class reference of this graph element description.
-     * It is neccesary for the clover server.
+     * Just pre-loads a class reference of this graph element description.
+     * It is necessary for the clover server.
      * @throws ComponentNotReadyException 
      */
     private void preloadClass() throws ComponentNotReadyException {

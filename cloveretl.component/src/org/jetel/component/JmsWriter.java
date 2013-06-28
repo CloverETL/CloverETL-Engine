@@ -45,6 +45,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Element;
 
 
@@ -274,7 +275,7 @@ public class JmsWriter extends Node {
 				xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
 				xattribs.getString(XML_PSORCLASS_ATTRIBUTE, null),
 				xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
-				xattribs.getString(XML_PSORURL_ATTRIBUTE, null),
+				xattribs.getStringEx(XML_PSORURL_ATTRIBUTE, null, RefResFlag.URL),
 				xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor
 						XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE,
 						XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE

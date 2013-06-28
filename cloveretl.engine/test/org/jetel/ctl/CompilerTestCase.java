@@ -1,6 +1,8 @@
 package org.jetel.ctl;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
@@ -3094,6 +3096,57 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate14", false);
 		// empty string: invalid
 		check("isDate15", false);
+	}
+	
+	public void test_stringlib_empty_strings() {
+		String[] expressions = new String[] {
+			"isInteger(?)",
+			"isNumber(?)",
+			"isLong(?)",
+			"isAscii(?)",
+			"isBlank(?)",
+			"isDate(?, \"yyyy\")",
+			"isUrl(?)",
+			"string x = ?; length(x)",
+			"lowerCase(?)",
+			"matches(?, \"\")",
+			"NYSIIS(?)",
+			"removeBlankSpace(?)",
+			"removeDiacritic(?)",
+			"removeNonAscii(?)",
+			"removeNonPrintable(?)",
+			"replace(?, \"a\", \"a\")",
+			"translate(?, \"ab\", \"cd\")",
+			"trim(?)",
+			"upperCase(?)",
+			"chop(?)",
+			"concat(?)",
+			"getAlphanumericChars(?)",
+		};
+		
+		StringBuilder sb = new StringBuilder();
+		for (String expr : expressions) {
+			String emptyString = expr.replace("?", "\"\"");
+			boolean crashesEmpty = test_expression_crashes(emptyString);
+			
+			assertFalse("Function " + emptyString + " crashed", crashesEmpty);
+			
+			String nullString = expr.replace("?", "null");
+			boolean crashesNull = test_expression_crashes(nullString);
+			sb.append(String.format("|%20s|%5s|%5s|%n", expr, crashesEmpty ? "CRASH" : "ok", crashesNull ? "CRASH" : "ok"));
+		}
+		
+		System.out.println(sb.toString());
+	}
+	
+	private boolean test_expression_crashes(String expr) {
+		String expStr = "function integer transform() { " + expr + "; return 0; }";
+		try {
+			doCompile(expStr, "test_stringlib_empty_null_strings");
+			return false;
+		} catch (RuntimeException e) {
+			return true;
+		}
 	}
 	
 	public void test_stringlib_removeBlankSpace() {

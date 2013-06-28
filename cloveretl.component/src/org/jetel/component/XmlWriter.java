@@ -992,7 +992,7 @@ public class XmlWriter extends Node {
 		writer = new XmlWriter(xattribs.getString(XML_ID_ATTRIBUTE));
 		
         // set mapping
-        String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null,RefResFlag.SPEC_CHARACTERS_OFF);
+        String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.URL);
         String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
         NodeList nodes = xmlElement.getChildNodes();
         if (mappingURL != null) 
@@ -1004,7 +1004,7 @@ public class XmlWriter extends Node {
             //mapping xml elements are child nodes of the component
         	writer.setMappingNodes(nodes);
         } else {
-        	xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF); // throw configuration exception
+        	xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL); // throw configuration exception
         }
 
 		boolean omitNewLines = xattribs.getBoolean(XML_SINGLE_ROW_ATTRIBUTE, false); // singleRow is deprecated attribute, but still possible ... 
@@ -1023,7 +1023,7 @@ public class XmlWriter extends Node {
 		String dtdSystemId = xattribs.getString(XML_DTD_SYSTEM_ID_ATTRIBUTE, null);
 		writer.setDtdSystemId(dtdSystemId);
 		
-		String fileUrl = xattribs.getString(XML_FILE_URL_ATTRIBUTE);
+		String fileUrl = xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL);
 		writer.setFileUrl(fileUrl);
 		
 		String rootDefaultNamespace = xattribs.getString(XML_ROOT_DEFAULT_NAMESPACE_ATTRIBUTE, "");

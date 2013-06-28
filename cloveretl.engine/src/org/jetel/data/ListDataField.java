@@ -410,7 +410,7 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 	
 	@Override
-	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException {
 		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be serialized to bytes. List and map container types are not supported.");
 	}
 	

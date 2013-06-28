@@ -398,13 +398,14 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	}
 
 	@Override
-	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException {
 		try {
 			if (!isNull()) {
 				dataBuffer.put(getByteArray());
 			} else {
 				dataBuffer.put(encoder.encode(CharBuffer.wrap(metadata.getNullValue())));
 			}
+			return 0;
 		} catch (BufferOverflowException e) {
 			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
 		}

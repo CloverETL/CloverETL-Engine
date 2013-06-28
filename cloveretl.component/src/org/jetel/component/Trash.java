@@ -326,7 +326,7 @@ public class Trash extends Node {
 				setDebugPrint(componentAttributes.getBoolean(XML_DEBUGPRINT_ATTRIBUTE));
 			}
 			if (componentAttributes.exists(XML_DEBUGFILENAME_ATTRIBUTE)) {
-				setDebugFile(componentAttributes.getStringEx(XML_DEBUGFILENAME_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+				setDebugFile(componentAttributes.getStringEx(XML_DEBUGFILENAME_ATTRIBUTE, RefResFlag.URL));
 			}
 			if (componentAttributes.exists(XML_DEBUGAPPEND_ATTRIBUTE)) {
 				setDebugAppend(componentAttributes.getBoolean(XML_DEBUGAPPEND_ATTRIBUTE));

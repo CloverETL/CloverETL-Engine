@@ -127,6 +127,7 @@ public class Denormalizer extends Node {
 	public static final String XML_CHARSET_ATTRIBUTE = "charset";
 	public static final String XML_KEY_ATTRIBUTE = "key";
 	public static final String XML_SIZE_ATTRIBUTE = "groupSize";
+	public static final String XML_INCOMPLETE_GROUP_ALLOWED = "incompleteGroupAllowed";
 	public static final String XML_ORDER_ATTRIBUTE = "order";
 	public static final String XML_ERROR_ACTIONS_ATTRIBUTE = "errorActions";
     public static final String XML_ERROR_LOG_ATTRIBUTE = "errorLog";
@@ -158,6 +159,7 @@ public class Denormalizer extends Node {
 	protected String[] key;
 	RecordKey recordKey;
 	private int size = 0;
+	private boolean incompleteGroupAllowed = false;
 		
 	private String errorActionsString;
 	private Map<Integer, ErrorAction> errorActions = new HashMap<Integer, ErrorAction>();
@@ -270,8 +272,10 @@ public class Denormalizer extends Node {
 		}
 		if (currentRecord == null) {
 			if (size > 0 && counter % size != 0) {
-				throw new TransformException("Incomplete group - required group size: " + size
-						+ ", current record in group: " + (counter % size), counter, -1);
+				if (!incompleteGroupAllowed) {
+					throw new TransformException("Incomplete group - required group size: " + size
+							+ ", current record in group: " + (counter % size), counter, -1);
+				}
 			}
 			return true;
 		}
@@ -489,6 +493,12 @@ public class Denormalizer extends Node {
 			createRecordDenormalizeFactory().checkConfig(status);
 		}
 
+		//incompleteGroupAllowed attribute is ignored for 'key' grouping
+		if (incompleteGroupAllowed && size <= 0) {
+        	status.add(new ConfigurationProblem("Attribute 'incompleteGroupAllowed' is ignored in case groupSize attribute is not used for records grouping.", 
+            		ConfigurationStatus.Severity.WARNING, this, ConfigurationStatus.Priority.NORMAL, XML_INCOMPLETE_GROUP_ALLOWED));
+		}
+		
         return status;
    }
 
@@ -535,7 +545,7 @@ public class Denormalizer extends Node {
 				xattribs.getString(XML_ID_ATTRIBUTE),					
 				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF),
+				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL),
 				parseKeyList(xattribs.getString(XML_KEY_ATTRIBUTE, null)),
 				order
 				);
@@ -552,6 +562,9 @@ public class Denormalizer extends Node {
 		}
 		if (xattribs.exists(XML_SIZE_ATTRIBUTE)) {
 			denorm.setGroupSize(xattribs.getInteger(XML_SIZE_ATTRIBUTE));
+		}
+		if (xattribs.exists(XML_INCOMPLETE_GROUP_ALLOWED)) {
+			denorm.setIncompleteGroupAllowed(xattribs.getBoolean(XML_INCOMPLETE_GROUP_ALLOWED));
 		}
 
 		denorm.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
@@ -572,7 +585,11 @@ public class Denormalizer extends Node {
 	public int getGroupSize() {
 		return size;
 	}
-	
+
+	public void setIncompleteGroupAllowed(boolean incompleteGroupAllowed) {
+		this.incompleteGroupAllowed = incompleteGroupAllowed;
+	}
+
 	public void setErrorLog(String errorLog) {
 		this.errorLogURL = errorLog;
 	}

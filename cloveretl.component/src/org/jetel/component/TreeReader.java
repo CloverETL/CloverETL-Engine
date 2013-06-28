@@ -83,6 +83,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.CloverWorker;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -150,13 +151,13 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	protected static void readCommonAttributes(TreeReader treeReader, ComponentXMLAttributes xattribs)
 			throws XMLConfigurationException, AttributeNotFoundException {
-		treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF));
+		treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			treeReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}
 		treeReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 
-		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF);
+		String mappingURL = xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, null, RefResFlag.URL);
 		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
 		if (mappingURL != null) {
 			treeReader.setMappingURL(mappingURL);
@@ -164,7 +165,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			treeReader.setMappingString(mapping);
 		} else {
 			// throw configuration exception
-			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.SPEC_CHARACTERS_OFF);
+			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL);
 		}
 
 		treeReader.setImplicitMapping(xattribs.getBoolean(XML_IMPLICIT_MAPPING_ATTRIBUTE, false));
@@ -715,20 +716,20 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 					TreeStreamParser treeStreamParser = parserProvider.getTreeStreamParser();
 					treeStreamParser.setTreeContentHandler(new TreeXmlContentHandlerAdapter());
 					XMLReader treeXmlReader = new TreeXMLReaderAdaptor(treeStreamParser);
-					pipeTransformer = new PipeTransformer(treeXmlReader);
+					pipeTransformer = new PipeTransformer(TreeReader.this, treeXmlReader);
 
 					pipeTransformer.setInputOutput(Channels.newWriter(pipe.sink(), "UTF-8"), source);
-					pipeParser = new PipeParser(pushParser, rootContext);
+					pipeParser = new PipeParser(TreeReader.this, pushParser, rootContext);
 					pipeParser.setInput(Channels.newReader(pipe.source(), "UTF-8"));
 				} catch (TransformerFactoryConfigurationError e) {
 					throw new JetelRuntimeException("Failed to instantiate transformer", e);
 				}
 
-				pipeTransformer.start();
-				pipeParser.start();
+				Thread transformingThread = pipeTransformer.startWorker();
+				Thread parsingThread = pipeParser.startWorker();
 
-				manageThread(pipeTransformer);
-				manageThread(pipeParser);
+				manageThread(transformingThread);
+				manageThread(parsingThread);
 			} else {
 				throw new JetelRuntimeException("Could not read input " + input);
 			}
@@ -771,14 +772,15 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			}
 		}
 
-		private class PipeTransformer extends Thread {
+		private class PipeTransformer extends CloverWorker {
 
 			private XMLReader treeXmlReader;
 			private Transformer transformer;
 			private Writer pipedWriter;
 			private InputSource source;
 
-			public PipeTransformer(XMLReader treeXmlReader) {
+			public PipeTransformer(Node node, XMLReader treeXmlReader) {
+				super(node, "PipeTransformer");
 				try {
 					this.transformer = TransformerFactory.newInstance().newTransformer();
 					this.treeXmlReader = treeXmlReader;
@@ -790,7 +792,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			}
 
 			@Override
-			public void run() {
+			public void work() {
 				javax.xml.transform.Result result = new StreamResult(pipedWriter);
 				try {
 					transformer.transform(new SAXSource(treeXmlReader, source), result);
@@ -806,27 +808,28 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			}
 		}
 		
-		private class PipeParser extends Thread {
+		private class PipeParser extends CloverWorker {
 
 			private XPathPushParser pushParser;
 			private MappingContext rootContext;
-
 			private Reader pipedReader;
-
-			public PipeParser(XPathPushParser pushParser, MappingContext rootContext) {
-				this.pushParser = pushParser;
-				this.rootContext = rootContext;
+			
+			public PipeParser(Node node, XPathPushParser parser, MappingContext root) {
+				super(node, "PipeParser");
+				this.pushParser = parser;
+				this.rootContext = root;
 			}
-
+			
+			
 			@Override
-			public void run() {
+			public void work() throws InterruptedException {
 				try {
 					pushParser.parse(rootContext, new SAXSource(new InputSource(pipedReader)));
 				} catch (Throwable t) {
 					StreamConvertingXPathProcessor.this.failure = t;
 				}
 			}
-
+			
 			private void setInput(Reader pipedReader) {
 				this.pipedReader = pipedReader;
 			}

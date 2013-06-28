@@ -36,7 +36,7 @@ import org.jetel.util.string.CloverString;
  */
 public enum DataFieldType {
 
-	STRING("string", CloverString.class, false, false, 'S') {
+	STRING("string", (byte) 0, CloverString.class, false, false, 'S') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -50,7 +50,7 @@ public enum DataFieldType {
 		}
 	},
 
-	DATE("date", Date.class, false, true, 'D') {
+	DATE("date", (byte) 1, Date.class, false, true, 'D') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -66,7 +66,7 @@ public enum DataFieldType {
 		}
 	},
 
-	NUMBER("number", Double.class, true, true,'N') {
+	NUMBER("number", (byte) 2, Double.class, true, true,'N') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -82,7 +82,7 @@ public enum DataFieldType {
 		}
 	},
 
-	INTEGER("integer", Integer.class, true, true, 'i') {
+	INTEGER("integer", (byte) 3, Integer.class, true, true, 'i') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -100,7 +100,7 @@ public enum DataFieldType {
 		}
 	},
 
-	LONG("long", Long.class, true, true, 'l') {
+	LONG("long", (byte) 4, Long.class, true, true, 'l') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -117,7 +117,7 @@ public enum DataFieldType {
 		}
 	},
 
-	DECIMAL("decimal", Decimal.class, true, true, 'd') {
+	DECIMAL("decimal", (byte) 5, Decimal.class, true, true, 'd') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -135,7 +135,7 @@ public enum DataFieldType {
 		}
 	},
 
-	BYTE("byte", byte[].class, false, false, 'B') {
+	BYTE("byte", (byte) 6, byte[].class, false, false, 'B') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -148,7 +148,7 @@ public enum DataFieldType {
 		}
 	},
 
-	CBYTE("cbyte", byte[].class, false, false, 'Z') {
+	CBYTE("cbyte", (byte) 7, byte[].class, false, false, 'Z') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -161,7 +161,7 @@ public enum DataFieldType {
 		}
 	},
 	
-	BOOLEAN("boolean", Boolean.class, false, true, 'b') {
+	BOOLEAN("boolean", (byte) 8, Boolean.class, false, true, 'b') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -174,18 +174,18 @@ public enum DataFieldType {
 		}
 	},
 
-	NULL("null", Void.class, false, false, 'n'),
+	NULL("null", (byte) 100, Void.class, false, false, 'n'),
 
-	UNKNOWN("unknown", Void.class, false, false, ' '),
+	UNKNOWN("unknown", (byte) 101, Void.class, false, false, ' '),
 
 	@Deprecated
-	SEQUENCE("sequence", Void.class, false, false, 'q'),
+	SEQUENCE("sequence", (byte) 102, Void.class, false, false, 'q'),
 
 	/**
 	 * @deprecated use {@link #DATE} instead
 	 */
 	@Deprecated
-	DATETIME("datetime", Date.class, false, true, 'T') {
+	DATETIME("datetime", (byte) 103, Date.class, false, true, 'T') {
 		@Override
 		public boolean isSubtype(DataFieldType otherType) {
 			switch (otherType) {
@@ -215,8 +215,16 @@ public enum DataFieldType {
 	//short data type identification (it is identical with old fashion character identification of a type)
 	private char shortName;
 	
-	private DataFieldType(String name, Class<?> clazz, boolean isNumeric, boolean isTrimType, char shortName) {
+	/** This byte identifier is used by metadata serialisation into a byte stream.
+	 * (This is used by CloverDataReader/Writer to serialise used metadata into data file.)
+	 * DataFieldType.ordinal() could be used instead, but this could be non-intentionally
+	 * changed by adding new data type. So custom ordinal number is used instead to ensure
+	 * stability against code changes. */
+	private byte byteIdentifier;
+	
+	private DataFieldType(String name, byte byteIdentifier,  Class<?> clazz, boolean isNumeric, boolean isTrimType, char shortName) {
 		this.name = name;
+		this.byteIdentifier = byteIdentifier;
 		this.clazz = clazz;
 		this.isNumeric = isNumeric;
 		this.isTrimType = isTrimType;
@@ -228,6 +236,15 @@ public enum DataFieldType {
 	 */
 	public String getName() {
 		return name;
+	}
+	
+	/** This byte identifier is used by metadata serialisation into a byte stream.
+	 * (This is used by CloverDataReader/Writer to serialise used metadata into data file.)
+	 * DataFieldType.ordinal() could be used instead, but this could be non-intentionally
+	 * changed by adding new data type. So custom ordinal number is used instead to ensure
+	 * stability against code changes. */
+	public byte getByteIdentifier() {
+		return byteIdentifier;
 	}
 	
 	@Override
@@ -349,6 +366,21 @@ public enum DataFieldType {
 		}
 		
 		throw new IllegalArgumentException("Unknown data type '" + name + "'.");
+	}
+	
+	/**
+	 * @param byteIdentifier
+	 * @return data type associated with given byte identifier
+	 * @see #getByteIdentifier()
+	 */
+	public static DataFieldType fromByteIdentifier(byte byteIdentifier) {
+		for (DataFieldType dataType : values()) {
+			if (dataType.getByteIdentifier() == byteIdentifier) {
+				return dataType;
+			}
+		}
+		
+		throw new IllegalArgumentException("Unknown data type identifier '" + byteIdentifier + "'.");
 	}
 	
 }

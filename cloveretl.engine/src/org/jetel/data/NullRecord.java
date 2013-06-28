@@ -232,7 +232,8 @@ final class NullField extends DataField{
 	}
 
 	@Override
-	public void toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException {
+		return 0;
 	}
 
 	@Override

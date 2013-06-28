@@ -383,7 +383,7 @@ public class Partition extends Node {
 			setPartitionRanges(ranges);
 			setPartitionSource(xattribs.getStringEx(XML_PARTIONSOURCE_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
 			setPartitionClass(xattribs.getString(XML_PARTITIONCLASS_ATTRIBUTE, null));
-			setPartitionURL(xattribs.getStringEx(XML_PARTITIONURL_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
+			setPartitionURL(xattribs.getStringEx(XML_PARTITIONURL_ATTRIBUTE, null, RefResFlag.URL));
 			setFunctionParameters(xattribs.attributes2Properties(
 					new String[]{XML_ID_ATTRIBUTE,XML_PARTIONSOURCE_ATTRIBUTE,
 							XML_PARTITIONCLASS_ATTRIBUTE, XML_PARTITIONURL_ATTRIBUTE, 

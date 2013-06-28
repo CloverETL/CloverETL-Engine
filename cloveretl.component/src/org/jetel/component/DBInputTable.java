@@ -373,15 +373,12 @@ public class DBInputTable extends Node {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		if (getGraph().getRuntimeContext().isBatchMode()) { 
-			// otherwise connection is closed in TransformationGraph.free()
-			connection.closeConnection(getId(), OperationType.READ);
-		}
+		connection.closeConnection(getId(), OperationType.READ);
 	}
 	
 	@Override
     public synchronized void free() {
-    	super.free();    	
+    	super.free();
     }
 
 	/**
@@ -426,7 +423,7 @@ public class DBInputTable extends Node {
             	aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
             }
             if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-            	aDBInputTable.setURL(xattribs.getStringEx(XML_URL_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+            	aDBInputTable.setURL(xattribs.getStringEx(XML_URL_ATTRIBUTE, RefResFlag.URL));
             }
             if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
                 aDBInputTable.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
@@ -435,7 +432,7 @@ public class DBInputTable extends Node {
             	aDBInputTable.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
             }
             if (xattribs.exists(XML_INCREMENTAL_FILE_ATTRIBUTE)) {
-            	aDBInputTable.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE,RefResFlag.SPEC_CHARACTERS_OFF));
+            	aDBInputTable.setIncrementalFile(xattribs.getStringEx(XML_INCREMENTAL_FILE_ATTRIBUTE, RefResFlag.URL));
             }
             if (xattribs.exists(XML_INCREMENTAL_KEY_ATTRIBUTE)) {
             	aDBInputTable.setIncrementalKey(xattribs.getString(XML_INCREMENTAL_KEY_ATTRIBUTE));

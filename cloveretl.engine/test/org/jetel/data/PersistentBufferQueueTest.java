@@ -56,6 +56,7 @@ public class PersistentBufferQueueTest extends CloverTestCase {
 			}
 			assertTrue(queue.poll(buffer) == null);
 		}
+		queue.close();
 	}
 
 	public void testMultiThread() throws InterruptedException, ExecutionException {
@@ -93,6 +94,7 @@ public class PersistentBufferQueueTest extends CloverTestCase {
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 		pool.submit(producent).get();
 		pool.submit(consument).get();
+		queue.close();
 	}
 
 	public void testGrowingBuffers() throws InterruptedException, ExecutionException {
@@ -162,6 +164,7 @@ public class PersistentBufferQueueTest extends CloverTestCase {
 		ExecutorService pool = Executors.newFixedThreadPool(2);
 		pool.submit(producent).get();
 		pool.submit(consument).get();
+		queue.close();
 	}
 
 }

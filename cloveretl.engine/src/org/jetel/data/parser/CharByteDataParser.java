@@ -511,7 +511,7 @@ public class CharByteDataParser extends AbstractTextParser {
 					if (field.isByteBased()) { // delimited byte field consumer
 						fieldConsumers[numConsumers] = new DelimByteFieldConsumer(inputReader, idx, getByteDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift(), acceptDefaultFieldDelimiter, cfg.isTryToMatchLongerDelimiter());
 					} else { // delimited char field consumer
-						fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, getCharDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, cfg.isQuotedStrings(), cfg.getQuoteChar(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift(), acceptDefaultFieldDelimiter, cfg.isTryToMatchLongerDelimiter());
+						fieldConsumers[numConsumers] = new DelimCharFieldConsumer(inputReader, idx, getCharDelimSearcher(), cfg.isTreatMultipleDelimitersAsOne(), field.isEofAsDelimiter(), lastNonAutoFilledField == idx ? true : false, isQuotedStrings(), getQuoteChar(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift(), acceptDefaultFieldDelimiter, cfg.isTryToMatchLongerDelimiter());
 					}
 				}
 				idx++;

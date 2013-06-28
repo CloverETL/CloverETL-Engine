@@ -83,4 +83,10 @@
 		<parameter id="type" value="SMB"/>
 	</extension>
 	
+	<extension point-id="authorityProxy">
+		<parameter id="type" value="PrimitiveAuthorityProxy"/>
+		<parameter id="className" value="org.jetel.graph.runtime.PrimitiveAuthorityProxy"/>
+		<parameter id="priority" value="0"/>
+	</extension>
+	
 </plugin>

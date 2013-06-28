@@ -64,7 +64,7 @@ public class SafeLog implements Log {
 	 * @param message
 	 */
 	public void debugObfuscated(String message) {
-		debug(SafeLogUtils.obfuscatePassword(message), message);
+		debug(SafeLogUtils.obfuscateSensitiveInformation(message), message);
 	}
 
 	/** Logs an obfuscated message if the sensitive log is not enabled. Otherwise 
@@ -74,7 +74,7 @@ public class SafeLog implements Log {
 	 * @param throwable
 	 */
 	public void debugObfuscated(String message, Throwable throwable) {
-		debug(SafeLogUtils.obfuscatePassword(message), message, throwable);
+		debug(SafeLogUtils.obfuscateSensitiveInformation(message), message, throwable);
 	}
 
 	/** Logs an obfuscated message if the sensitive log is not enabled. Otherwise 
@@ -83,7 +83,7 @@ public class SafeLog implements Log {
 	 * @param message
 	 */
 	public void errorObfuscated(String message) {
-		error(SafeLogUtils.obfuscatePassword(message), message);
+		error(SafeLogUtils.obfuscateSensitiveInformation(message), message);
 	}
 
 	/** Logs an obfuscated message if the sensitive log is not enabled. Otherwise 
@@ -93,7 +93,7 @@ public class SafeLog implements Log {
 	 * @param throwable
 	 */
 	public void errorObfuscated(String message, Throwable throwable) {
-		error(SafeLogUtils.obfuscatePassword(message), message);
+		error(SafeLogUtils.obfuscateSensitiveInformation(message), message);
 	}
 
 	/** Logs an obfuscated message if the sensitive log is not enabled. Otherwise 
@@ -102,7 +102,7 @@ public class SafeLog implements Log {
 	 * @param message
 	 */
 	public void fatalObfuscated(String message) {
-		fatal(SafeLogUtils.obfuscatePassword(message), message);
+		fatal(SafeLogUtils.obfuscateSensitiveInformation(message), message);
 	}
 
 	/** Logs an obfuscated message if the sensitive log is not enabled. Otherwise 
@@ -112,7 +112,7 @@ public class SafeLog implements Log {
 	 * @param throwable
 	 */
 	public void fatalObfuscated(String message, Throwable throwable) {
-		fatal(SafeLogUtils.obfuscatePassword(message), message);
+		fatal(SafeLogUtils.obfuscateSensitiveInformation(message), message);
 	}
 
 	/** Logs an obfuscated message if the sensitive log is not enabled. Otherwise 
@@ -121,7 +121,7 @@ public class SafeLog implements Log {
 	 * @param message
 	 */
 	public void infoObfuscated(String message) {
-		info(SafeLogUtils.obfuscatePassword(message), message);
+		info(SafeLogUtils.obfuscateSensitiveInformation(message), message);
 	}
 
 	/** Logs an obfuscated message if the sensitive log is not enabled. Otherwise 
@@ -131,7 +131,7 @@ public class SafeLog implements Log {
 	 * @param throwable
 	 */
 	public void infoObfuscated(String message, Throwable throwable) {
-		info(SafeLogUtils.obfuscatePassword(message), message);
+		info(SafeLogUtils.obfuscateSensitiveInformation(message), message);
 	}	
 	
 	/** Logs an obfuscated message if the sensitive log is not enabled. Otherwise 
@@ -140,7 +140,7 @@ public class SafeLog implements Log {
 	 * @param message
 	 */
 	public void warnObfuscated(String message) {
-		warn(SafeLogUtils.obfuscatePassword(message), message);
+		warn(SafeLogUtils.obfuscateSensitiveInformation(message), message);
 	}
 
 	/** Logs an obfuscated message if the sensitive log is not enabled. Otherwise 
@@ -150,7 +150,7 @@ public class SafeLog implements Log {
 	 * @param throwable
 	 */
 	public void warnObfuscated(String message, Throwable throwable) {
-		warn(SafeLogUtils.obfuscatePassword(message), message);
+		warn(SafeLogUtils.obfuscateSensitiveInformation(message), message);
 	}	
 	
 	/** Logs a standard message if the sensitive log is not enabled. Otherwise 
