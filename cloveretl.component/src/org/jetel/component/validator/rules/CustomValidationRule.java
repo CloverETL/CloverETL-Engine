@@ -84,7 +84,6 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	
 	private CTLMapping tempMapping;
 	private DataRecord tempCustomRuleOutputRecord;
-	private DataRecord tempCustomRuleInputRecord;
 	
 	private String[] ruleParameters;
 	private String functionName;
@@ -129,26 +128,26 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	}
 	
 	@Override
-	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
-		super.init(metadata, graphWrapper);
+	public void init(DataRecord record, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(record, graphWrapper);
 		
 		try {
-			initializeMapping();
+			initializeParametersMapping();
 		} catch (ParseException e) {
 			throw new ComponentNotReadyException(e);
 		}
 		
 		CustomRule selectedRule = getSelectedRule(graphWrapper);
-		firstFunction = getFirstFunction(selectedRule, metadata, graphWrapper);
+		firstFunction = getFirstFunction(selectedRule, record.getMetadata(), graphWrapper);
 		orderedParameterFields = getOrderedParameterFields(firstFunction.getParameterNames());
 		String codeToExecute = getCustomValidationRuleTransformation(selectedRule.getCode(), firstFunction, orderedParameterFields);
 		
-		initMapping(codeToExecute, metadata, graphWrapper);
+		initMapping(codeToExecute, record, graphWrapper);
 		
 		tempMapping.init("dummy");
 	}
 	
-	private void initializeMapping() throws ParseException {
+	private void initializeParametersMapping() throws ParseException {
 		mapping = ValidatorUtils.parseMappingToMap(resolve(mappingParam.getValue()));
 	}
 
@@ -162,9 +161,10 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 			throw new IllegalStateException("Rule not initialized");
 		}
 		
-		tempCustomRuleOutputRecord.reset();
-		tempCustomRuleInputRecord.reset();
-		tempCustomRuleInputRecord.copyFrom(record);
+		// tempCustomRuleOutputRecord.reset();
+		if (tempMapping.getInputRecord(0) != record) {
+			throw new IllegalStateException("Incoming record reference is different to the one stored in CTLMapping");
+		}
 		
 		try {
 			tempMapping.execute();
@@ -235,7 +235,7 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		boolean state = true;
 		boolean fieldsAreValid = true;
 		try {
-			initializeMapping();
+			initializeParametersMapping();
 		} catch (ParseException e) {
 			accumulator.addError(mappingParam, this, "Cannot parse mapping: " + e.getMessage());
 			return false;
@@ -362,7 +362,7 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		return true;
 	}
 	
-	private void initMapping(String sourceCode, DataRecordMetadata inputMetadata, GraphWrapper graphWrapper) {
+	private void initMapping(String sourceCode, DataRecord record, GraphWrapper graphWrapper) {
 		if(tempMapping != null) {
 			return;
 		}
@@ -380,7 +380,8 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 			}
 		});
 		tempMapping.setTransformation(sourceCode);
-		tempCustomRuleInputRecord = tempMapping.addInputMetadata("in", inputMetadata);
+		tempMapping.addInputRecord("in", record);
+		tempMapping.setOutputSetDefaults(false);
 		tempCustomRuleOutputRecord = tempMapping.addOutputMetadata("out", Validator.createCustomRuleOutputMetadata());
 	}
 	

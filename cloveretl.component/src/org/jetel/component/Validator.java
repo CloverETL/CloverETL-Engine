@@ -343,7 +343,7 @@ public class Validator extends Node {
 		
 		graphWrapper = new EngineGraphWrapper(getGraph());
 		graphWrapper.init(rootGroup);
-		rootGroup.init(inputRecord.getMetadata(), graphWrapper);
+		rootGroup.init(inputRecord, graphWrapper);
 	}
 	
 	@Override

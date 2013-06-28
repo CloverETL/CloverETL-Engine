@@ -77,10 +77,31 @@ public abstract class ValidationNode {
 		setName(getCommonName());
 	}
 	
+	/**
+	 * Main Initialization method.
+	 * <p>
+	 * Always call super.init(..) when overriding this method.
+	 * <p>
+	 * If the you need a reference to the input record, use {@link #init(DataRecordMetadata, GraphWrapper)
+	 */
 	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		initialized = true;
 		refResolver = graphWrapper.getRefResolver();
 		nodePath = graphWrapper.getNodePath(this);
+	}
+	
+	/**
+	 * Alternative initialization method to {@link #init(DataRecordMetadata, GraphWrapper)}.
+	 * <p>
+	 * The ValidationNode can decide to use the inputRecord reference,
+	 * in such case this method should be overriden and it's parent
+	 * implementation called as the first thing. This will cause
+	 * all parent implementations to be called and then also all
+	 * {@link #init(DataRecordMetadata, GraphWrapper)} implementations
+	 * to be called too.
+	 */
+	public void init(DataRecord inputRecord, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		init(inputRecord.getMetadata(), graphWrapper);
 	}
 
 	public boolean isInitialized() {
