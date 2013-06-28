@@ -91,7 +91,7 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 		}
 	};
 	
-	private EnumValidationParamNode operator = new EnumValidationParamNode(OPERATOR_TYPE.values(), OPERATOR_TYPE.E);
+	private EnumValidationParamNode<OPERATOR_TYPE> operator = new EnumValidationParamNode<OPERATOR_TYPE>(OPERATOR_TYPE.values(), OPERATOR_TYPE.E);
 	@SuppressWarnings("unused")
 	@XmlElement(name="operator", required=true)
 	private String getOperatorJAXB() { return ((Enum<?>) operator.getValue()).name(); }
@@ -243,7 +243,7 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 	/**
 	 * @return Param node with operator
 	 */
-	public EnumValidationParamNode getOperator() {
+	public EnumValidationParamNode<OPERATOR_TYPE> getOperator() {
 		return operator;
 	}
 	/**

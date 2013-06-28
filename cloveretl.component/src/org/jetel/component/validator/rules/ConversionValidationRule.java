@@ -114,7 +114,7 @@ public abstract class ConversionValidationRule<T> extends LanguageSettingsValida
 		}
 	}
 	
-	protected EnumValidationParamNode useType = new EnumValidationParamNode(METADATA_TYPES.values(), METADATA_TYPES.DEFAULT);
+	protected EnumValidationParamNode<METADATA_TYPES> useType = new EnumValidationParamNode<METADATA_TYPES>(METADATA_TYPES.values(), METADATA_TYPES.DEFAULT);
 	@XmlElement(name="useType")
 	@SuppressWarnings("unused")
 	private String getUseTypeJAXB() { return ((Enum<?>) useType.getValue()).name(); }

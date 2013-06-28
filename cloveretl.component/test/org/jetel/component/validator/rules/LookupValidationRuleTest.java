@@ -149,7 +149,7 @@ public class LookupValidationRuleTest extends ValidatorTestCase {
 	private LookupValidationRule newRule(String target, String lookup, String keyMapping, boolean rejectPresent) {
 		LookupValidationRule temp = createRule(LookupValidationRule.class);
 		temp.getTarget().setValue(target);
-		temp.getLookup().setValue(lookup);
+		temp.getLookupParam().setValue(lookup);
 		temp.getMappingParam().setValue(keyMapping);
 		if(rejectPresent) {
 			temp.getPolicy().setValue(POLICY.REJECT_PRESENT);

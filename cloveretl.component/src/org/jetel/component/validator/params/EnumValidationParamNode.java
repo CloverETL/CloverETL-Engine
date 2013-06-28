@@ -25,19 +25,18 @@ package org.jetel.component.validator.params;
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
  * @created 10.11.2012
  */
-final public class EnumValidationParamNode extends ValidationParamNode {
-	Enum value;
-	Enum[] options;
+final public class EnumValidationParamNode<T extends Enum<T>> extends ValidationParamNode {
+	T value;
+	T[] options;
 	
 	@SuppressWarnings("unused")
 	private EnumValidationParamNode() {} // For JAXB
 	
-	public EnumValidationParamNode(Enum[] options, Enum value) {
+	public EnumValidationParamNode(T[] options, T value) {
 		this.options = options;
 		setValue(value);
-		
-	}	
-	public void setValue(Enum value) {
+	}
+	public void setValue(T value) {
 		for(Object option : options) {
 			if(option.equals(value)) {
 				this.value = value;
@@ -45,7 +44,7 @@ final public class EnumValidationParamNode extends ValidationParamNode {
 			}
 		}
 	}
-	public Enum getValue() {
+	public T getValue() {
 		return value;
 	}
 
@@ -54,14 +53,14 @@ final public class EnumValidationParamNode extends ValidationParamNode {
 	 * @param input
 	 */
 	public void setFromString(String input) {
-		for(Enum option : options) {
+		for(T option : options) {
 			if(option.name().equals(input)) {
 				value = option;
 				return;
 			}
 		}
 	}
-	public Enum[] getOptions() {
+	public T[] getOptions() {
 		return options;
 	}
 	

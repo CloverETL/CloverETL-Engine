@@ -35,13 +35,13 @@ import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.ValidatorUtils;
-import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DataRecordFactory;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -59,7 +59,7 @@ import org.jetel.util.string.StringUtils;
  * @see GraphWrapper
  */
 @XmlRootElement(name="lookup")
-@XmlType(propOrder={"lookup", "policyJAXB"})
+@XmlType(propOrder={"lookupParam", "policyJAXB"})
 public class LookupValidationRule extends AbstractMappingValidationRule {
 	public static final int ERROR_INIT = 1001;
 	public static final int ERROR_MAPPING = 1002;
@@ -81,105 +81,106 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 	}
 	
 	@XmlElement(name="lookup",required=true)
-	private StringEnumValidationParamNode lookup = new StringEnumValidationParamNode();
+	private StringEnumValidationParamNode lookupParam = new StringEnumValidationParamNode();
 	
-	private EnumValidationParamNode policy = new EnumValidationParamNode(POLICY.values(), POLICY.REJECT_MISSING);
+	private EnumValidationParamNode<POLICY> policy = new EnumValidationParamNode<POLICY>(POLICY.values(), POLICY.REJECT_MISSING);
 	@XmlElement(name="policy", required=true)
 	@SuppressWarnings("unused")
-	private String getPolicyJAXB() { return ((Enum<?>) policy.getValue()).name(); }
+	private String getPolicyJAXB() { return policy.getValue().name(); }
 	@SuppressWarnings("unused")
 	private void setPolicyJAXB(String input) { this.policy.setFromString(input); }
 	
-	private LookupTable tempLookupTable;
-	private Lookup tempLookup;
-	private DataRecord tempRecord;
-	private Map<String, String> tempMapping;
+	private LookupTable lookupTable;
+	private RecordKey lookupKey;
+	private String[] lookupKeyFieldNamesArrays = new String[0];
+	private String[] inputDataKeyFields;
+	private Lookup lookup;
+	
+	private Map<String, String> keyMappingMap;
 
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
 		target.setPlaceholder("Specified by mapping");
-		lookup.setName("Lookup name");
-		lookup.setOptions(graphWrapper.getLookupTables().toArray(new String[0]));
+		lookupParam.setName("Lookup name");
+		lookupParam.setOptions(graphWrapper.getLookupTables().toArray(new String[0]));
 		mappingParam.setName("Key mapping");
 		mappingParam.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
 		policy.setName("Rule policy");
 		
-		init(graphWrapper);
+		try {
+			initLookupTable(graphWrapper, inMetadata);
+		} catch (ComponentNotReadyException e) {
+			throw new JetelRuntimeException(e);
+		}
 	}
 	
 	@Override
 	protected void registerParameters(Collection<ValidationParamNode> parametersContainer) {
 		super.registerParameters(parametersContainer);
 		
-		parametersContainer.add(lookup);
+		parametersContainer.add(lookupParam);
 		parametersContainer.add(mappingParam);
 		parametersContainer.add(policy);
 	}
 	
 	@Override
 	public String[] getMappingTargetFields() {
-		if (tempRecord == null) {
-			return new String[0];
-		}
-		else {
-			return tempRecord.getMetadata().getFieldNamesArray();
-		}
+		return lookupKeyFieldNamesArrays;
 	}
 
 	/**
 	 * Lazy and one graph run persistent initialization of lookup table nad lookup.
 	 * @param graphWrapper Graph wrapper
+	 * @throws ComponentNotReadyException 
 	 * @throws IllegalArgumentException when initialization fails (due to lookup problems)
 	 */
-	private void init(GraphWrapper graphWrapper) throws IllegalArgumentException {
-		if(tempLookupTable == null) {
-			tempLookupTable = graphWrapper.getLookupTable(resolve(lookup.getValue()));
-			if(tempLookupTable == null) {
-				return;
-			}
-			try {
-				tempLookupTable.init();
-			} catch (ComponentNotReadyException ex) {
-				throw new IllegalArgumentException(ex);
-			}
+	private void initLookupTable(GraphWrapper graphWrapper, DataRecordMetadata inputDataMetadata) throws ComponentNotReadyException {
+		try {
+			parseKeyMapping();
+		} catch (ParseException e) {
+			throw new ComponentNotReadyException(e);
 		}
-		if(tempLookup == null) {
-			DataRecordMetadata metadata = null;
-			try {
-				metadata = tempLookupTable.getKeyMetadata();
-				tempLookup = tempLookupTable.createLookup(new RecordKey(metadata.getFieldNamesArray(), metadata));
-			} catch (ComponentNotReadyException ex) {
-				throw new IllegalArgumentException(ex);
-			}
-			tempRecord = DataRecordFactory.newRecord(metadata);
-			tempRecord.init();
+		
+		lookupTable = graphWrapper.getLookupTable(resolve(lookupParam.getValue()));
+		if(lookupTable == null) {
+			throw new ComponentNotReadyException("Lookup table " + lookupParam.getValue() + " not found");
 		}
+		lookupTable.init();
+		
+		DataRecordMetadata lookupKeyMetadata = lookupTable.getKeyMetadata();
+		lookupKeyFieldNamesArrays = lookupKeyMetadata.getKeyFieldNames().toArray(new String[0]);
+		
+		inputDataKeyFields = new String[lookupKeyMetadata.getNumFields()];
+		
+		for (int i = 0; i < inputDataKeyFields.length; i++) {
+			DataFieldMetadata lookupKeyField = lookupKeyMetadata.getField(i);
+			String inputFieldName = keyMappingMap.get(lookupKeyField.getName());
+			if (inputFieldName == null) {
+				throw new ComponentNotReadyException("Lookup key '" + lookupKeyField.getName() + "' is not mapped.");
+			}
+			inputDataKeyFields[i] = inputFieldName;
+		}
+		
+		lookupKey = new RecordKey(inputDataKeyFields, inputDataMetadata);
+		lookupKey.init();
+		lookup = lookupTable.createLookup(lookupKey);
 	}
-	/**
-	 * Populate record with mapped lookup key with values from incoming value.
-	 * @param inputRecordValues Map of fields and its values of incoming record
-	 * @throws ParseException when provided key mapping is invalid
-	 */
-	private void populateTempRecord(Map<String, DataField> inputRecordValues) throws ParseException {
-		tempRecord.reset();
-		tempRecord.init();
-		initTempMapping();
-		for(Map.Entry<String, String> mappingEntry : tempMapping.entrySet()) {
-			String lookupKeyFieldName = mappingEntry.getKey();
-			String inputFieldName = mappingEntry.getValue();
-			DataField lookupKeyValue = inputRecordValues.get(inputFieldName);
-			tempRecord.getField(lookupKeyFieldName).setValue(lookupKeyValue);
-		}
+	
+	private void parseKeyMapping() throws ParseException {
+		keyMappingMap = ValidatorUtils.parseMappingToMap(resolve(mappingParam.getValue()));
 	}
-	/**
-	 * @throws ParseException
-	 */
-	private void initTempMapping() throws ParseException {
-		if(tempMapping == null) {
-			tempMapping = ValidatorUtils.parseMappingToMap(resolve(mappingParam.getValue()));
+	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		
+		if (isLoggingEnabled()) {
+			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
 		}
+
+		initLookupTable(graphWrapper, metadata);
 	}
 	
 	@Override
@@ -188,60 +189,31 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		setPropertyRefResolver(graphWrapper);
-		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
-		}
 		
-		String resolvedTarget = resolve(target.getValue());
-		
-		// Extract target fields
-		String[] fields = ValidatorUtils.parseTargets(resolvedTarget);
-		try {
-			initTempMapping();
-		} catch (ParseException e) {
-			if (ea != null)
-				raiseError(ea, ERROR_MAPPING, "Mapping is incorrect.", fields, null);
-			return State.INVALID;
-		}
-		Map<String, DataField> values = new HashMap<String, DataField>();
-		Map<String, String> valuesInString = new HashMap<String, String>();
-		for(String field : tempMapping.values()) {
-			values.put(field, record.getField(field));
-			valuesInString.put(field, record.getField(field).toString());
-		}
-		
-		try {
-			init(graphWrapper);
-		} catch (IllegalArgumentException ex) {
-			if (ea != null)
-				raiseError(ea, ERROR_INIT, "Error on initializing lookup table, lookup or record.", fields, valuesInString);
-			return State.INVALID;
-		}
-		try {
-			populateTempRecord(values);
-		} catch (Exception ex) {
-			if (ea != null)
-				raiseError(ea, ERROR_MAPPING, "Mapping is incorrect.", fields, valuesInString);
-			return State.INVALID;
-		}
-		tempLookup.seek(tempRecord);
-		if(policy.getValue() == POLICY.REJECT_MISSING && tempLookup.getNumFound() > 0) {
+		lookup.seek(record);
+		if(policy.getValue() == POLICY.REJECT_MISSING && lookup.getNumFound() > 0) {
 			logSuccess("Given field(s) values was found in the lookup table.");
 			return State.VALID;
 		}
-		if(policy.getValue() == POLICY.REJECT_PRESENT && tempLookup.getNumFound() == 0) {
+		else if(policy.getValue() == POLICY.REJECT_PRESENT && lookup.getNumFound() == 0) {
 			logSuccess("Given field(s) values was not present in the lookup table.");
 			return State.VALID;
 		}
-		if(policy.getValue() == POLICY.REJECT_MISSING) {
-			if (ea != null)
-				raiseError(ea, ERROR_RECORD_MISSING, "Given field(s) values was not present in the lookup table. Missing are invalid.", fields, valuesInString);
-		} else {
-			if (ea != null)
-				raiseError(ea, ERROR_RECORD_PRESENT, "Given field(s) values was found in the lookup table. Present are invalid.", fields, valuesInString);
+		else {
+			if (ea != null) {
+				Map<String, String> valuesInString = null;
+				valuesInString = new HashMap<String, String>();
+				for(String field : keyMappingMap.values()) {
+					valuesInString.put(field, record.getField(field).toString());
+				}
+				if(policy.getValue() == POLICY.REJECT_MISSING) {
+					raiseError(ea, ERROR_RECORD_MISSING, "Given field(s) values was not present in the lookup table. Missing are invalid.", inputDataKeyFields, valuesInString);
+				} else {
+					raiseError(ea, ERROR_RECORD_PRESENT, "Given field(s) values was found in the lookup table. Present are invalid.", inputDataKeyFields, valuesInString);
+				}
+			}
+			return State.INVALID;
 		}
-		return State.INVALID;
 	}
 
 	@Override
@@ -251,27 +223,27 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 		}
 		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		String resolvedLookup = resolve(lookup.getValue());
+		String resolvedLookup = resolve(lookupParam.getValue());
 		String resolvedKeyMapping = resolve(mappingParam.getValue());
 		try {
-			initTempMapping();
+			parseKeyMapping();
 		} catch (ParseException e) {
 			accumulator.addError(mappingParam, this, e.getMessage());
 			state = false;
 			return state;
 		}
-		if(!ValidatorUtils.areValidFields(tempMapping.values(), inputMetadata)) { 
+		if(!ValidatorUtils.areValidFields(keyMappingMap.values(), inputMetadata)) { 
 			accumulator.addError(target, this, "Some of target fields are not present in input metadata.");
 			state = false;
 		}
 		LookupTable lookupTable = null;
 		if(resolvedLookup.isEmpty()) {
-			accumulator.addError(lookup, this, "No lookup table provided.");
+			accumulator.addError(lookupParam, this, "No lookup table provided.");
 			state = false;
 		} else {
 			lookupTable = graphWrapper.getLookupTable(resolvedLookup);
 			if(lookupTable == null) {
-				accumulator.addError(lookup, this, "Unknown lookup table.");
+				accumulator.addError(lookupParam, this, "Unknown lookup table.");
 				state = false;
 			}
 		}
@@ -309,14 +281,14 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 	/**
 	 * @return Param node with lookup name
 	 */
-	public StringEnumValidationParamNode getLookup() {
-		return lookup;
+	public StringEnumValidationParamNode getLookupParam() {
+		return lookupParam;
 	}
 	
 	/**
 	 * @return Param node with current policy
 	 */
-	public EnumValidationParamNode getPolicy() {
+	public EnumValidationParamNode<POLICY> getPolicy() {
 		return policy;
 	}
 
@@ -332,7 +304,7 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 	
 	@Override
 	public String getDetailName() {
-		return String.format("%s ('%s')", getName(), resolve(lookup.getValue()));
+		return String.format("%s ('%s')", getName(), resolve(lookupParam.getValue()));
 	}
 	
 	@Override
