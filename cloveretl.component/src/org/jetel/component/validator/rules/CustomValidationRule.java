@@ -169,23 +169,33 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		try {
 			tempMapping.execute();
 		} catch (Exception ex) {
-			logError("Function '" + firstFunction.getName() + "' could not be executed.");
-			HashMap<String, String> values = getAnalyzedValuesSnapshot(record, orderedParameterFields);
-			if (ea != null) raiseError(ea, ERROR_EXECUTION, "Given function could not be executed.", orderedParameterFields, values);
+			if (isLoggingEnabled()) {
+				logError("Function '" + firstFunction.getName() + "' could not be executed.");
+			}
+			if (ea != null) {
+				HashMap<String, String> values = getAnalyzedValuesSnapshot(record, orderedParameterFields);
+				raiseError(ea, ERROR_EXECUTION, "Given function could not be executed.", orderedParameterFields, values);
+			}
 			return State.INVALID;
 		}
 		Boolean value = (Boolean) tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_RESULT).getValue(); 
 		if(value != null && value) {
-			logSuccess("Fields '" + Arrays.toString(orderedParameterFields) + "' passed function '" + firstFunction.getName() + "'.");
+			if (isLoggingEnabled()) {
+				logSuccess("Fields '" + Arrays.toString(orderedParameterFields) + "' passed function '" + firstFunction.getName() + "'.");
+			}
 			return State.VALID;
 		} else {
-			String message = new String();
-			if(tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_MESSAGE).getValue() != null) {
-				message = tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_MESSAGE).getValue().toString();
+			if (isLoggingEnabled()) {
+				logError("Fields '" + Arrays.toString(orderedParameterFields) + "' did not pass function '" + firstFunction.getName() + "'.");
 			}
-			logError("Fields '" + Arrays.toString(orderedParameterFields) + "' did not pass function '" + firstFunction.getName() + "'.");
-			HashMap<String, String> values = getAnalyzedValuesSnapshot(record, orderedParameterFields);
-			if (ea != null) raiseError(ea, ERROR, message , orderedParameterFields, values);
+			if (ea != null) {
+				String message = new String();
+				if(tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_MESSAGE).getValue() != null) {
+					message = tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_MESSAGE).getValue().toString();
+				}
+				HashMap<String, String> values = getAnalyzedValuesSnapshot(record, orderedParameterFields);
+				raiseError(ea, ERROR, message , orderedParameterFields, values);
+			}
 			return State.INVALID;
 		}
 	}
