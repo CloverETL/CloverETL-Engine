@@ -1,15 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="3.4.0.M2" id="1253101461188" licenseType="Commercial" modified="Wed Mar 06 17:53:04 CET 2013" modifiedBy="Pavel" name="g" revision="1.377" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Kokon" created="Wed Sep 16 10:19:19 CEST 2009" guiVersion="0.0.0.devel" id="1253101461188" licenseType="Commercial" modified="Mon Jul 01 11:40:44 CEST 2013" modifiedBy="magda" name="g" revision="1.379" showComponentDetails="true">
 <Global>
-<Metadata id="Metadata10">
-<Record fieldDelimiter="|" name="ArrayOfForecast" recordDelimiter="\r\n" type="delimited">
-<Field name="ArrayOfForecastId" type="string"/>
-<Field name="ForecastReturnId" type="string"/>
+<Metadata id="Metadata10" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="ArrayOfForecast" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="ArrayOfForecastId" type="integer"/>
+<Field name="ForecastReturnId" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Forecast" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="ForecastId" type="string"/>
-<Field name="ArrayOfForecastId" type="string"/>
+<Field name="ForecastId" type="integer"/>
+<Field name="ArrayOfForecastId" type="integer"/>
 <Field format="yyy-MM-dd'T'HH:mm:ss" name="Date" type="date"/>
 <Field name="WeatherID" type="string"/>
 <Field name="Desciption" type="string"/>
@@ -17,8 +18,8 @@
 </Metadata>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Forecast1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="ForecastId" type="string"/>
-<Field name="ArrayOfForecastId" type="string"/>
+<Field name="ForecastId" type="integer"/>
+<Field name="ArrayOfForecastId" type="integer"/>
 <Field name="Date" type="date"/>
 <Field name="WeatherID" type="string"/>
 <Field name="Desciption" type="string"/>
@@ -40,7 +41,7 @@
 </Metadata>
 <Metadata id="Metadata6" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="ForecastReturn" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="ForecastReturnId" type="string"/>
+<Field name="ForecastReturnId" type="integer"/>
 <Field name="Success" type="string"/>
 <Field name="ResponseText" type="string"/>
 <Field name="State" type="string"/>
@@ -50,18 +51,18 @@
 </Metadata>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="ForecastReturn1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="ForecastReturnId" type="string"/>
+<Field name="ForecastReturnId" type="integer"/>
 <Field name="Success" type="string"/>
 <Field name="ResponseText" type="string"/>
 <Field name="State" type="string"/>
 <Field name="City" type="string"/>
 <Field name="WeatherStationCity" type="string"/>
-<Field name="ArrayOfForecastId" type="string"/>
+<Field name="ArrayOfForecastId" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata8" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Temperature" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
-<Field name="ForecastId" type="string"/>
+<Field name="ForecastId" type="integer"/>
 <Field name="MorningLow" type="string"/>
 <Field name="DaytimeHigh" type="string"/>
 </Record>
