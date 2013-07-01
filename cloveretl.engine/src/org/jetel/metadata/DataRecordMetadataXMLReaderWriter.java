@@ -155,6 +155,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String FORMAT_ATTR = "format";
 	private static final String DEFAULT_ATTR = "default";
 	private static final String LOCALE_ATTR = "locale";
+	private static final String TIMEZONE_ATTR = "timeZone";
 	private static final String NULLABLE_ATTR = "nullable";
 	private static final String NULL_VALUE_ATTR = "nullValue";
 	private static final String COMPRESSED_ATTR = "compressed";
@@ -393,6 +394,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getLocaleStr() != null) {
 					fieldElement.setAttribute(LOCALE_ATTR, field.getLocaleStr());
 				}
+				if (field.getTimeZoneStr() != null) {
+					fieldElement.setAttribute(TIMEZONE_ATTR, field.getTimeZoneStr());
+				}
 				if (field.getAutoFilling() != null) {
 					fieldElement.setAttribute(AUTO_FILLING_ATTR, field.getAutoFilling());
 				}
@@ -473,6 +477,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String fieldDelimiter = null;
 		String sizeStr = null;
 		String recLocaleStr = null;
+		String recTimeZoneStr = null;
 		String recNullValue = null;
 		String itemName;
 		String itemValue;
@@ -492,14 +497,16 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			itemName = attributes.item(i).getNodeName();
 			itemValue = refResolver.resolveRef(attributes.item(i)
 					.getNodeValue());
-			if (itemName.equalsIgnoreCase("name")) {
+			if (itemName.equalsIgnoreCase(NAME_ATTR)) {
 				recordName = itemValue;
 			} else if (itemName.equalsIgnoreCase(LABEL_ATTR)) {
 				recordLabel = itemValue;
 			} else if (itemName.equalsIgnoreCase(TYPE_ATTR)) {
 				recordType = itemValue;
-			} else if (itemName.equalsIgnoreCase("locale")) {
+			} else if (itemName.equalsIgnoreCase(LOCALE_ATTR)) {
 				recLocaleStr = itemValue;
+			} else if (itemName.equalsIgnoreCase(TIMEZONE_ATTR)) {
+				recTimeZoneStr = itemValue;
 			} else if (itemName.equalsIgnoreCase(NULL_VALUE_ATTR)) {
 				recNullValue = itemValue;
 			} else if (itemName.equalsIgnoreCase(RECORD_DELIMITER_ATTR)) {
@@ -546,6 +553,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 		if (recLocaleStr != null) {
 			recordMetadata.setLocaleStr(recLocaleStr);
+		}
+		if (recTimeZoneStr != null) {
+			recordMetadata.setTimeZoneStr(recTimeZoneStr);
 		}
 		if (recNullValue != null) {
 			recordMetadata.setNullValue(recNullValue);
@@ -615,6 +625,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String nullable = null;
 			String nullValue = null;
 			String localeStr = null;
+			String timeZoneStr = null;
 			/*String*/ collatorSensitivity = null;
 			String compressed = null;
 			String autoFilling = null;
@@ -631,28 +642,30 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					fieldType = getFieldType(itemValue);
 				} else if (itemName.equalsIgnoreCase(CONTAINER_TYPE_ATTR)) {
 					containerType = DataFieldContainerType.fromString(itemValue);
-				} else if (itemName.equalsIgnoreCase("name")) {
+				} else if (itemName.equalsIgnoreCase(NAME_ATTR)) {
 					name = itemValue;
 				} else if (itemName.equalsIgnoreCase(LABEL_ATTR)) {
 					label = itemValue;
-				} else if (itemName.equalsIgnoreCase("size")) {
+				} else if (itemName.equalsIgnoreCase(SIZE_ATTR)) {
 					size = itemValue;
 				} else if (itemName.equalsIgnoreCase(SHIFT_ATTR)) {
 					shift = itemValue;
-				} else if (itemName.equalsIgnoreCase("delimiter")) {
+				} else if (itemName.equalsIgnoreCase(DELIMITER_ATTR)) {
 					delimiter = itemValue;
 				} else if (itemName.equalsIgnoreCase(EOF_AS_DELIMITER_ATTR)) {
 					eofAsDelimiter = itemValue;
-				} else if (itemName.equalsIgnoreCase("format")) {
+				} else if (itemName.equalsIgnoreCase(FORMAT_ATTR)) {
 					format = itemValue;
-				} else if (itemName.equalsIgnoreCase("default")) {
+				} else if (itemName.equalsIgnoreCase(DEFAULT_ATTR)) {
 					defaultValue = itemValue;
-				} else if (itemName.equalsIgnoreCase("nullable")) {
+				} else if (itemName.equalsIgnoreCase(NULLABLE_ATTR)) {
 					nullable = itemValue;
 				} else if (itemName.equalsIgnoreCase(NULL_VALUE_ATTR)) {
 					nullValue = itemValue;
-				} else if (itemName.equalsIgnoreCase("locale")) {
+				} else if (itemName.equalsIgnoreCase(LOCALE_ATTR)) {
 					localeStr = itemValue;
+				} else if (itemName.equalsIgnoreCase(TIMEZONE_ATTR)) {
+					timeZoneStr = itemValue;
 				} else if (itemName.equalsIgnoreCase(COLLATOR_SENSITIVITY_ATTR)) {
 					collatorSensitivity = itemValue;
 				}else if (itemName.equalsIgnoreCase("trim")) {
@@ -747,6 +760,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			// set localeStr if defined
 			if (localeStr != null) {
 				field.setLocaleStr(localeStr);
+			}
+			
+			// set timeZoneStr if defined
+			if (timeZoneStr != null) {
+				field.setTimeZoneStr(timeZoneStr);
 			}
 
 			// set collator sensitivity if defined

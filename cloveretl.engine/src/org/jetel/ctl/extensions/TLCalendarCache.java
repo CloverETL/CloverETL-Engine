@@ -19,51 +19,105 @@
 package org.jetel.ctl.extensions;
 
 import java.util.Calendar;
-import java.util.Locale;
+
+import org.jetel.util.MiscUtils;
 
 /**
  * @author jakub (jakub.lehotsky@javlin.eu)
  *         (c) Javlin, a.s. (www.cloveretl.com)
+ * @author krivanekm
  *
  * @created May 25, 2010
  */
 public class TLCalendarCache extends TLCache {
 	
-	Calendar cachedCalendar;
-	private Object previousLocale;
+	private Calendar cachedCalendar;
+	private String previousLocale;
+	private String previousTimeZone;
 
 	public TLCalendarCache() {
-		cachedCalendar = Calendar.getInstance();
+		cachedCalendar = MiscUtils.getDefaultCalendar();
 	}
 	
-	public TLCalendarCache(TLFunctionCallContext context, int position) {
-		createCachedCalendar(context, position);
+	public TLCalendarCache(TLFunctionCallContext context, int localePosition) {
+		this(context, localePosition, -1);
 	}
-		
-		 
+	
+	public TLCalendarCache(TLFunctionCallContext context, int localePosition, int timeZonePosition) {
+		createCachedCalendar(context, localePosition, timeZonePosition);
+	}
+	
+	/**
+	 * Equivalent to calling {@link #TLCalendarCache(TLFunctionCallContext, int, int)}
+	 * with -1 as the second parameter.
+	 * 
+	 * @param context
+	 * @param timeZonePosition
+	 * @return new time-zone sensitive {@link TLCalendarCache}
+	 */
+	public static TLCalendarCache withTimeZone(TLFunctionCallContext context, int timeZonePosition) {
+		return new TLCalendarCache(context, -1, timeZonePosition);
+	}
+	
 	/**
 	 * @param context
-	 * @param position
+	 * @param localePosition
+	 * @param timeZonePosition
 	 */
-	private void createCachedCalendar(TLFunctionCallContext context, int position) {
+	private void createCachedCalendar(TLFunctionCallContext context, int localePosition, int timeZonePosition) {
+		String localeStr = null;
+		String timeZoneStr = null;
 		
-		if (context.getLiteralsSize() > position && context.isLiteral(position))
-			cachedCalendar = Calendar.getInstance(new Locale((String)context.getParamValue(position)));
-		else
-			cachedCalendar = Calendar.getInstance();
+		if ((localePosition >= 0) && (context.getLiteralsSize() > localePosition) && context.isLiteral(localePosition)) {
+			localeStr = (String) context.getParamValue(localePosition);
+		}
+		
+		if ((timeZonePosition >= 0) && (context.getLiteralsSize() > timeZonePosition) && context.isLiteral(timeZonePosition)) {
+			Object timeZone = context.getParamValue(timeZonePosition);
+			if (timeZone instanceof String) { // allow overriding; in compiled mode, context.getParams() returns null 
+				timeZoneStr = (String) timeZone;
+			}
+		}
+		
+		cachedCalendar = MiscUtils.createCalendar(localeStr, timeZoneStr);
 	}
-
 	
 	public Calendar getCalendar() {
 		return cachedCalendar;
 	}
 	
-	public Calendar getCachedCalendar(TLFunctionCallContext context, String locale, int position) {
-		if (context.isLiteral(position) || (cachedCalendar != null && locale.equals(previousLocale))) {
+	/**
+	 * Returns cached locale-sensitive calendar instance.
+	 * 
+	 * @param context
+	 * @param locale
+	 * @param localePosition
+	 * @return
+	 */
+	public Calendar getCachedCalendar(TLFunctionCallContext context, String locale, int localePosition) {
+		if (context.isLiteral(localePosition) || (cachedCalendar != null && locale.equals(previousLocale))) {
 			return cachedCalendar;
 		} else {
-			cachedCalendar = Calendar.getInstance(new Locale(locale));
+			cachedCalendar = MiscUtils.createCalendar(locale, null);
 			previousLocale = locale;
+			return cachedCalendar;
+		}
+	}
+
+	/**
+	 * Returns cached time zone-sensitive calendar instance.
+	 * 
+	 * @param context
+	 * @param timeZone
+	 * @param timeZonePosition
+	 * @return
+	 */
+	public Calendar getCachedCalendarWithTimeZone(TLFunctionCallContext context, String timeZone, int timeZonePosition) {
+		if ((context.getLiteralsSize() > timeZonePosition) && context.isLiteral(timeZonePosition) || (cachedCalendar != null && ((timeZone == previousTimeZone) || timeZone.equals(previousTimeZone)))) {
+			return cachedCalendar;
+		} else {
+			cachedCalendar = MiscUtils.createCalendar(null, timeZone);
+			previousTimeZone = timeZone;
 			return cachedCalendar;
 		}
 	}

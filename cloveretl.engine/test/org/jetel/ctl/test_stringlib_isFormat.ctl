@@ -36,6 +36,10 @@ boolean isDate12;
 boolean isDate13;
 boolean isDate14;
 boolean isDate15;
+boolean isDate16;
+boolean isDate17;
+boolean isDate18;
+boolean isDate19;
 
 function integer transform() {
 	test='test';
@@ -85,5 +89,13 @@ function integer transform() {
 	isDate13=isDate('12-prosinec-1996','dd-MMM-yyyy','en.US'); 
 	isDate14=isDate('24:00 20.11.2007','HH:mm dd.MM.yyyy');
 	isDate15=isDate('','HH:mm dd.MM.yyyy');
+	
+	// switch to DST in USA from 2 to 3 AM, 2:30 does not exist in New York
+	isDate16=isDate('10/03/2013 02:30', 'dd/MM/yyyy HH:mm', 'en.US', 'America/New_York');
+	isDate17=isDate('10/03/2013 02:30', 'dd/MM/yyyy HH:mm', 'cs.CZ', 'Europe/Prague');
+	// switch to DST in CR from 2 to 3 AM, 2:30 does not exist in Prague
+	isDate18=isDate('31/03/2013 02:30', 'dd/MM/yyyy HH:mm', 'en.US', 'America/New_York');
+	isDate19=isDate('31/03/2013 02:30', 'dd/MM/yyyy HH:mm', 'cs.CZ', 'Europe/Prague');
+	
 	return 0;
 }

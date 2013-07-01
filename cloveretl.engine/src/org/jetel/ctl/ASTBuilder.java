@@ -116,6 +116,8 @@ public class ASTBuilder extends NavigatingVisitor {
 	/** Problem collector */
 	private ProblemReporter problemReporter;
 	
+	private LiteralParser literalParser = new LiteralParser();
+	
 	public ASTBuilder(TransformationGraph graph, DataRecordMetadata[] inputMetadata, DataRecordMetadata[] outputMetadata,
 			Map<String, List<CLVFFunctionDeclaration>> declaredFunctions, ProblemReporter problemReporter) {
 		this.inputMetadata = inputMetadata;
@@ -849,7 +851,7 @@ public class ASTBuilder extends NavigatingVisitor {
 		String errorMessage = null;
 		String hint = null;
 		try {
-			lit.computeValue();
+			lit.computeValue(literalParser);
 		} catch (NumberFormatException e) {
 			switch (lit.getTokenKind()) {
 			case TransformLangParserConstants.FLOATING_POINT_LITERAL:

@@ -19,6 +19,7 @@
 package org.jetel.util.formatter;
 
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.util.MiscUtils;
@@ -33,20 +34,32 @@ import org.jetel.util.MiscUtils;
  * @created 17th August 2009
  */
 public final class DateFormatterFactory {
-
+	
+	public static DateFormatter getFormatter(String formatString, Locale locale, String timeZoneId) {
+		TimeZoneProvider timeZoneProvider = new TimeZoneProvider(timeZoneId);
+		if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JODA) {
+			return new JodaDateFormatter(DataFieldFormatType.JODA.getFormat(formatString), locale, timeZoneProvider.getJodaTimeZone());
+		} else {
+			TimeZone tz = timeZoneProvider.getJavaTimeZone();
+			if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {
+				return new JavaDateFormatter(DataFieldFormatType.JAVA.getFormat(formatString), locale, tz);
+			} else {
+				return new JavaDateFormatter(locale, tz);
+			}
+		}
+		
+	}
 
 	public static DateFormatter getFormatter(String formatString, Locale locale) {
-		if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JODA) {
-			return new JodaDateFormatter(DataFieldFormatType.JODA.getFormat(formatString), locale);
-		} else if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {
-				return new JavaDateFormatter(DataFieldFormatType.JAVA.getFormat(formatString), locale);
-		} else {
-			return new JavaDateFormatter(locale);
-		}
+		return getFormatter(formatString, locale, null);
 	}
 
 	public static DateFormatter getFormatter(String formatString, String localeString) {
-		return getFormatter(formatString, MiscUtils.createLocale(localeString));
+		return getFormatter(formatString, localeString, null);
+	}
+
+	public static DateFormatter getFormatter(String formatString, String localeString, String timeZoneString) {
+		return getFormatter(formatString, MiscUtils.createLocale(localeString), timeZoneString);
 	}
 
 	public static DateFormatter getFormatter(String formatString) {
