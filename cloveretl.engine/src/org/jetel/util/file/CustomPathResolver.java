@@ -90,8 +90,8 @@ public interface CustomPathResolver {
 	 * @param contextURL working/home directory
 	 * @param fileURL
 	 * @return list of resolved filenames 
-	 * @throws MalformedURLException if the the wildcard can't be resolved for whatever reason
+	 * @throws IOException if the the wildcard can't be resolved for whatever reason
 	 */
-	public List<String> resolveWildcardURL(URL contextURL, String fileURL) throws MalformedURLException;
+	public List<String> resolveWildcardURL(URL contextURL, String fileURL) throws IOException;
 
 }
