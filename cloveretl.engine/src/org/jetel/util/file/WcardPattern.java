@@ -529,7 +529,7 @@ public class WcardPattern {
 			if (resolver.handlesURL(parent, fileName)) {
 				try {
 					return resolver.resolveWildcardURL(parent, fileName);
-				} catch (MalformedURLException e) {
+				} catch (IOException e) {
 					// NOTHING - will be handled the standard way below
 				}
 			}

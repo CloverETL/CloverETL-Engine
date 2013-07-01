@@ -77,7 +77,12 @@
 		<parameter id="libraryName" value="integral"/>
 		<parameter id="className" value="org.jetel.ctl.extensions.IntegralLib"/>
 	</extension>
-
+	
+	<extension point-id="urlResolver">
+		<parameter id="className" value="org.jetel.util.file.SMBPathResolver"/>
+		<parameter id="type" value="SMB"/>
+	</extension>
+	
 	<extension point-id="authorityProxy">
 		<parameter id="type" value="PrimitiveAuthorityProxy"/>
 		<parameter id="className" value="org.jetel.graph.runtime.PrimitiveAuthorityProxy"/>
