@@ -135,6 +135,13 @@ public class DataFieldMetadata implements Serializable {
 	 * @see java.util.Locale
 	 */
 	private String localeStr = null;
+	
+	/**
+	 * Timezone string.
+	 * 
+	 * @see java.util.TimeZone
+	 */
+	private String timeZoneStr = null;
 
 	/**
 	 * See Collator.setStregth(String strength). It is used only in string fields.
@@ -727,7 +734,7 @@ public class DataFieldMetadata implements Serializable {
 		if (type != DataFieldType.DATE) {
 			throw new UnsupportedOperationException("DateFormatter is available only for date field metadata.");
 		}
-		return DateFormatterFactory.getFormatter(getFormatStr(), getLocaleStr());
+		return DateFormatterFactory.getFormatter(getFormatStr(), getLocaleStr(), getTimeZoneStr());
 	}
 
 	/**
@@ -983,6 +990,28 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * @param timeZoneStr the timeZoneStr to set
+	 */
+	public void setTimeZoneStr(String timeZoneStr) {
+		this.timeZoneStr = timeZoneStr;
+	}
+
+	/**
+	 * @return the timeZoneStr
+	 */
+	public String getTimeZoneStr() {
+		if (timeZoneStr != null) {
+			return timeZoneStr;
+		}
+
+		if (dataRecordMetadata != null) {
+			return dataRecordMetadata.getTimeZoneStr();
+		}
+
+		return null;
+	}
+
+	/**
 	 * Set collator sensitivity string.	
 	 * @param collatorSensitivity
 	 */
@@ -1082,6 +1111,7 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setAutoFilling(autoFilling);
 		dataFieldMetadata.setFieldProperties(fieldProperties);
 		dataFieldMetadata.setLocaleStr(localeStr);
+		dataFieldMetadata.setTimeZoneStr(timeZoneStr);
 		dataFieldMetadata.setCollatorSensitivity(collatorSensitivity);
 
 		return dataFieldMetadata;

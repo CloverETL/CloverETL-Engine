@@ -141,6 +141,8 @@ public class runGraph {
     public final static String CLOVER_CLASS_PATH = "-classpath";
     public final static String CLOVER_COMPILE_CLASS_PATH = "-compileclasspath";
     public final static String INIT_PROXY_AUTHENTICATOR_SWITCH = "-proxyauth";
+    public final static String LOCALE_SWITCH = "-locale";
+    public final static String TIME_ZONE_SWITCH = "-timezone";
 	
 	/**
 	 *  Description of the Method
@@ -169,6 +171,8 @@ public class runGraph {
         URL contextURL = null;
         String classPathString = null;
         String compileClassPathString = null;
+        String locale = null;
+        String timeZone = null;
         
         List<SerializedDictionaryValue> dictionaryValues = new ArrayList<SerializedDictionaryValue>();
         
@@ -300,6 +304,12 @@ public class runGraph {
             	        return null;
             	    }
             	});            
+            } else if (args[i].startsWith(LOCALE_SWITCH)){
+                i++;
+                locale = args[i];
+            } else if (args[i].startsWith(TIME_ZONE_SWITCH)){
+                i++;
+                timeZone = args[i];
             } else if (args[i].startsWith("-")) {
                 System.err.println("Unknown option: " + args[i]);
                 System.exit(-1);
@@ -337,6 +347,8 @@ public class runGraph {
         runtimeContext.setDebugMode(debugMode);
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
+        runtimeContext.setLocale(locale);
+        runtimeContext.setTimeZone(timeZone);
     	if (classPathString != null) {
     		try {
 				runtimeContext.setRuntimeClassPath(FileUtils.getFileUrls(contextURL, classPathString.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX)));
