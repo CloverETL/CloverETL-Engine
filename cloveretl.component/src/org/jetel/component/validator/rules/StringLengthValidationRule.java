@@ -34,7 +34,6 @@ import org.jetel.component.validator.params.ValidationParamNode.EnabledHandler;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Rule for checking string length of incoming field. Every non-string input is converted to string.</p>
@@ -76,7 +75,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 		}
 	}
 	
-	private EnumValidationParamNode type = new EnumValidationParamNode(TYPES.values(), TYPES.EXACT);
+	private EnumValidationParamNode<TYPES> type = new EnumValidationParamNode<TYPES>(TYPES.values(), TYPES.EXACT);
 	@XmlElement(name="type", required=true)
 	@SuppressWarnings("unused")
 	private String getTypeJAXB() { return ((Enum<?>) type.getValue()).name(); }
@@ -134,8 +133,6 @@ public class StringLengthValidationRule extends StringValidationRule {
 			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
-		setPropertyRefResolver(graphWrapper);
-		logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		
 		String tempString = null;
 		tempString = prepareInput(record);
@@ -154,11 +151,16 @@ public class StringLengthValidationRule extends StringValidationRule {
 			result = State.VALID;
 		}
 		if(result == State.VALID) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + tempString + "' has length " + length);
+			if (isLoggingEnabled()) {
+				logSuccess("Field '" + resolvedTarget + "' with value '" + tempString + "' has length " + length);
+			}
 		} else {
-			logError("Field '" + target.getValue() + "' with value '" + tempString + "' has length " + length);
-			if (ea != null)
+			if (isLoggingEnabled()) {
+				logError("Field '" + target.getValue() + "' with value '" + tempString + "' has length " + length);
+			}
+			if (ea != null) {
 				raiseError(ea, ERROR_WRONG_LENGTH, "The target has wrong length.", resolvedTarget, tempString);
+			}
 		}
 		
 		return result;
@@ -203,7 +205,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 	/**
 	 * @return Param node with type of condition
 	 */
-	public EnumValidationParamNode getType() {
+	public EnumValidationParamNode<TYPES> getType() {
 		return type;
 	}
 	/**
