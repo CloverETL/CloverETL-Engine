@@ -40,6 +40,8 @@ import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.component.validator.utils.comparators.StringComparator;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.StringUtils;
@@ -75,7 +77,9 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 	@XmlElement(name="trimInput",required=false)
 	protected BooleanValidationParamNode trimInput = new BooleanValidationParamNode(false);
 	
-	private Set<Object> tempValues;
+	private Set<T> tempValues;
+	private String resolvedTarget;
+	private int fieldPosition;
 	
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
@@ -117,6 +121,28 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 		parametersContainer.add(ignoreCase);
 		parametersContainer.add(trimInput);
 	}
+	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		resolvedTarget = resolve(target.getValue());
+		
+		fieldPosition = metadata.getFieldPosition(resolvedTarget);
+		DataFieldMetadata field = metadata.getField(fieldPosition);
+		DataFieldType fieldType = computeType(field.getDataType());
+		try {
+			initConversionUtils(fieldType);
+		} catch (IllegalArgumentException ex) {
+			throw new ComponentNotReadyException("Cannot initialize conversion and comparator tools.");
+		}
+		
+		try {
+			getParsedValues();
+		} catch (NullPointerException ex) {
+			throw new ComponentNotReadyException("Cannot parse given enum in given type.");
+		}
+
+	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
@@ -125,27 +151,7 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 			return State.NOT_VALIDATED;
 		}
 		
-		String resolvedTarget = resolve(target.getValue());
-		
-		// FIXME move things to init()
-		DataField field = record.getField(resolvedTarget);
-		DataFieldType fieldType = computeType(field.getMetadata().getDataType());
-		try {
-			initConversionUtils(fieldType);
-		} catch (IllegalArgumentException ex) {
-			if (ea != null)
-				raiseError(ea, ERROR_INIT_CONVERSION, "Cannot initialize conversion and comparator tools.", resolvedTarget, field.getValue().toString());
-			return State.INVALID;
-		}
-		
-		try {
-			getParsedValues();
-		} catch (NullPointerException ex) {
-			if (ea != null)
-				raiseError(ea, ERROR_PARSING_VALUES, "Cannot parse given enum in given type.", resolvedTarget, field.getValue().toString());
-			return State.INVALID;
-		}
-		
+		DataField field = record.getField(fieldPosition);
 		State status = checkInType(field, tempComparator, ea);
 		
 		if(status == State.VALID) {
@@ -155,12 +161,12 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 		}
 	}
 	
-	private Set<Object> getParsedValues() {
+	private Set<T> getParsedValues() {
 		if(tempValues == null) {
 			Set<String> values = parseValues(ignoreCase.getValue());
-			Set<Object> out = new HashSet<Object>();
+			Set<T> out = new HashSet<T>();
 			for(String value : values) {
-				Object temp = tempConverter.convertFromCloverLiteral(value);
+				T temp = tempConverter.convertFromCloverLiteral(value);
 				if(temp == null) {
 					throw new NullPointerException("Cannot parse values");
 				}
@@ -171,10 +177,7 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 		return tempValues;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private State checkInType(DataField dataField, Comparator<T> comparator, ValidationErrorAccumulator ea) {
-		String resolvedTarget = resolve(target.getValue());
-		
 		T record = tempConverter.<T>convert(dataField.getValue());
 		if(record == null) {
 			if (ea != null)
@@ -182,10 +185,11 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 			return State.INVALID;
 		}
 		
-		Set<Object> temp = getParsedValues();
+		Set<T> temp = getParsedValues();
 		String stringRecord;
 		String stringItem;
-		for(Object item : temp) {
+		/// FIXME temp.contains(...) should be used instead
+		for(T item : temp) {
 			if(comparator instanceof StringComparator) {
 				if(trimInput.getValue()) {
 					stringRecord = ((String) record).trim();
@@ -198,14 +202,17 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 					stringItem = stringItem.toLowerCase();
 				}
 				if(((StringComparator) comparator).compare(stringRecord, stringItem) == 0) {
-					logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' matched item '" + item.toString() + "' as strings.");
-					return State.VALID;		
+					if (isLoggingEnabled()) {
+						logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' matched item '" + item.toString() + "' as strings.");
+					}
+					return State.VALID;
 				}	
 			} else {
-				// Explicit cast to T, implicit assumption that the type right because of right pair of convertor and comparator
-				if(comparator.compare((T) item, record) == 0) {
-					logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' matched item '" + item.toString() + "'.");
-					return State.VALID;		
+				if(comparator.compare(item, record) == 0) {
+					if (isLoggingEnabled()) {
+						logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' matched item '" + item.toString() + "'.");
+					}
+					return State.VALID;
 				}
 			}
 		}
