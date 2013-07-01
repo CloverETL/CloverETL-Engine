@@ -285,18 +285,14 @@ public class DataRecordTape {
 	 * tmp file is truncated.
 	 * @throws InterruptedException 
 	 */
-	public void clear() throws IOException, InterruptedException {
-		try {
-			dataChunks.clear();
-			if( tmpFileChannel.isOpen() ){
-				tmpFileChannel.truncate(0);
-				tmpFileChannel.position(0);
-			}
-			currentDataChunkIndex=-1;
-			currentDataChunk=null;
-		} catch (ClosedChannelException e) {
-			throw new InterruptedException();
+	public void clear() throws IOException {
+		dataChunks.clear();
+		if( tmpFileChannel.isOpen() ){
+			tmpFileChannel.truncate(0);
+			tmpFileChannel.position(0);
 		}
+		currentDataChunkIndex=-1;
+		currentDataChunk=null;
 	}
 
 	/**

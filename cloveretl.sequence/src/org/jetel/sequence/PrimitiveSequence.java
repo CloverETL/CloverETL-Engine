@@ -18,6 +18,7 @@
  */
 package org.jetel.sequence;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
@@ -26,14 +27,13 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
 
@@ -62,8 +62,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     private static final String XML_STEP_ATTRIBUTE = "step";
     private static final String XML_SEQCONFIG_ATTRIBUTE = "seqConfig";
 
-	private static Exception initFromConfigFileException;
-
+    private String configFileName; //file name with external definition of this primitive sequence
     private long value = 0;
     private long start = 0;
     private long step = 1;
@@ -80,12 +79,6 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-    	if (initFromConfigFileException != null) {
-    		status.add("Failed to initialize sequence from definition file; " + initFromConfigFileException, Severity.ERROR, this, Priority.NORMAL);
-    		return status;
-    	}
-
-        //TODO
         return status;
     }
 
@@ -97,6 +90,31 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
         if(isInitialized()) return;
 		super.init();
 		alreadyIncremented = false;
+		
+		//load external definition of this sequence
+		if (!StringUtils.isEmpty(configFileName)) {
+			try {
+	        	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
+	        	InputStream stream = null;
+	        	try {
+		            stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
+		
+		            Properties tempProperties = new Properties();
+		            tempProperties.load(stream);
+		    		TypedProperties typedProperties = new TypedProperties(tempProperties, getGraph());
+		
+		    		setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
+		    		setStart(typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0));
+		    		setStep(typedProperties.getLongProperty(XML_STEP_ATTRIBUTE, 0));
+	        	} finally {
+	        		if (stream != null) {
+	        			stream.close();
+	        		}
+	        	}
+			} catch (IOException e) {
+				throw new ComponentNotReadyException("Loading of external definition of PrimitiveSequence failed.", e);
+			}
+		}
     }
 
     @Override
@@ -231,28 +249,16 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 					xattribs.getString(XML_ID_ATTRIBUTE),
 					graph,
 					xattribs.getString(XML_NAME_ATTRIBUTE, ""));
-			
-            try {
-            	URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
-                InputStream stream = FileUtils.getFileURL(projectURL, configAttr).openStream();
-
-                Properties tempProperties = new Properties();
-                tempProperties.load(stream);
-        		TypedProperties typedProperties = new TypedProperties(tempProperties, graph);
-
-        		seq.setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
-        		seq.setStart(typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0));
-        		seq.setStep(typedProperties.getLongProperty(XML_STEP_ATTRIBUTE, 0));
-        		
-                stream.close();
-            } catch (Exception ex) {
-                initFromConfigFileException = ex;
-            }
+			seq.setConfigFileName(configAttr);
 			
 			return seq;
 		}
     }
 
+    public void setConfigFileName(String configFileName) {
+    	this.configFileName = configFileName;
+    }
+    
 	@Override
 	public boolean isShared() {
 		return false;

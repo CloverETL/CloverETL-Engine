@@ -226,6 +226,7 @@ public class FileManager {
 //			manager.registerHandler(new SFTPOperationHandler());
 			manager.registerHandler(new PooledSFTPOperationHandler());
 			manager.registerHandler(new PooledFTPOperationHandler());
+			manager.registerHandler(new SMBOperationHandler());
 		}
 	}
 	
@@ -763,7 +764,7 @@ public class FileManager {
 						result.addFailure(targetExpression, new IOException(format(FileOperationMessages.getString("FileManager.resolve_failed"), targetExpression.getPath()))); //$NON-NLS-1$
 					}
 				} catch (Exception ex) {
-					result.addFailure(targetExpression, new IOException(format(FileOperationMessages.getString("FileManager.resolve_failed"), targetExpression.getPath()))); //$NON-NLS-1$
+					result.addFailure(targetExpression, new IOException(format(FileOperationMessages.getString("FileManager.resolve_failed"), targetExpression.getPath()), ex)); //$NON-NLS-1$
 				}
 			}
 		}

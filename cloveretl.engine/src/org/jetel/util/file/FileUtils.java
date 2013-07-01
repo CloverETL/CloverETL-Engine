@@ -1600,7 +1600,7 @@ public class FileUtils {
             }
 			file = new File(sUrl);
 		} catch (Exception e) {
-			throw new ComponentNotReadyException(e + ": " + fileURL);
+			throw new ComponentNotReadyException(e + ": " + fileURL, e);
 		}
 		//check if can write to this file
 		tmp = file.exists() ? file.canWrite() : createFile(file, mkDirs);

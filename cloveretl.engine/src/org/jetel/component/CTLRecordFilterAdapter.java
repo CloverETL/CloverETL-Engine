@@ -24,6 +24,7 @@ import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 
 public class CTLRecordFilterAdapter implements RecordFilter {
@@ -77,12 +78,17 @@ public class CTLRecordFilterAdapter implements RecordFilter {
 			// execute code in global scope
 			executor.execute();
 	}
+
+	@Override
+	public boolean isValid(DataRecord record) throws TransformException {
+		sourceRec[0] = record;
+		return isValid(sourceRec);
+	}
 	
 	@Override
-	public boolean isValid(DataRecord source) {
-		sourceRec[0] = source;
+	public boolean isValid(DataRecord[] records) {
 		// pass source as function parameter, but also as a global record
-		final Object retVal = executor.executeFunction(valid, EMPTY_ARGUMENTS, sourceRec, null);
+		final Object retVal = executor.executeFunction(valid, EMPTY_ARGUMENTS, records, null);
 		if (retVal == null || retVal instanceof Boolean == false) {
 			throw new TransformLangExecutorRuntimeException(ISVALID_FUNCTION_NAME + "() function must return 'boolean'");
 		}

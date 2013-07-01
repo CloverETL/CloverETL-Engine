@@ -74,7 +74,6 @@ public class GraphTrackingLogger extends TrackingLogger {
         	logger.info("Node                   ID        Port       #Records        #KB   Rec/s    KB/s");
         }
         logger.info("---------------------------------------------------------------------------------");
-        long executionTime = TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS);
         for (NodeTracking nodeDetail : cloverJMX.getGraphTracking().getRunningPhaseTracking().getNodeTracking()) {
             Object nodeInfo[] = {nodeDetail.getNodeName(), nodeDetail.getNodeID(), nodeDetail.getResult().message()};
             int nodeSizes[] = {-23, -41, 15};
@@ -91,15 +90,15 @@ public class GraphTrackingLogger extends TrackingLogger {
                             "In:" + Integer.toString(i), 
                             Long.toString(inputPortDetail.getTotalRecords()),
                             Long.toString(inputPortDetail.getTotalBytes() >> 10),
-                            Integer.toString(finalTracking && executionTime > 0 ? (int) (inputPortDetail.getTotalRecords() / executionTime) : inputPortDetail.getRecordFlow()),
-                            Integer.toString(finalTracking && executionTime > 0 ? (int) ((inputPortDetail.getTotalBytes() >> 10) / executionTime) : inputPortDetail.getByteFlow() >> 10)};
+                            Integer.toString(inputPortDetail.getRecordFlow()),
+                            Integer.toString(inputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU)); 
                 } else {
                         portInfo = new Object[] {"In:" + Integer.toString(i), 
                         Long.toString(inputPortDetail.getTotalRecords()),
                         Long.toString(inputPortDetail.getTotalBytes() >> 10),
-                        Integer.toString(finalTracking && executionTime > 0 ? (int) (inputPortDetail.getTotalRecords() / executionTime) : inputPortDetail.getRecordFlow()),
-                        Integer.toString(finalTracking && executionTime > 0 ? (int) ((inputPortDetail.getTotalBytes() >> 10) / executionTime) : inputPortDetail.getByteFlow() >> 10)};
+                        Integer.toString(inputPortDetail.getRecordFlow()),
+                        Integer.toString(inputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                 }
                 i++;
@@ -114,15 +113,15 @@ public class GraphTrackingLogger extends TrackingLogger {
                             "Out:" + Integer.toString(i), 
                             Long.toString(outputPortDetail.getTotalRecords()),
                             Long.toString(outputPortDetail.getTotalBytes() >> 10),
-                            Integer.toString(finalTracking && executionTime > 0 ? (int) (outputPortDetail.getTotalRecords() / executionTime) : outputPortDetail.getRecordFlow()),
-                            Integer.toString(finalTracking && executionTime > 0 ? (int) ((outputPortDetail.getTotalBytes() >> 10) / executionTime) : outputPortDetail.getByteFlow() >> 10)};
+                            Integer.toString(outputPortDetail.getRecordFlow()),
+                            Integer.toString(outputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
                 }else{
                     portInfo = new Object[] {"Out:" + Integer.toString(i), 
                     	Long.toString(outputPortDetail.getTotalRecords()),
                         Long.toString(outputPortDetail.getTotalBytes() >> 10),
-                        Integer.toString(finalTracking && executionTime > 0 ? (int) (outputPortDetail.getTotalRecords() / executionTime) : outputPortDetail.getRecordFlow()),
-                        Integer.toString(finalTracking && executionTime > 0 ? (int) ((outputPortDetail.getTotalBytes() >> 10) / executionTime) : outputPortDetail.getByteFlow() >> 10)};
+                        Integer.toString(outputPortDetail.getRecordFlow()),
+                        Integer.toString(outputPortDetail.getByteFlow() >> 10)};
                     logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                 }
                 i++;
@@ -130,7 +129,7 @@ public class GraphTrackingLogger extends TrackingLogger {
             //CPU usage has to be printed also for components without ports
             if (!cpuPrinted) {
                 final float cpuUsage = (finalTracking ? nodeDetail.getPeakUsageCPU() : nodeDetail.getUsageCPU());
-                portInfo = new Object[] {" %cpu:", cpuUsage >= 0.01f ? Integer.toString((int) (cpuUsage * 100)) : ".."};
+                portInfo = new Object[] {" %cpu:", Integer.toString((int) (cpuUsage * 100))};
                 logger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
             }
         }

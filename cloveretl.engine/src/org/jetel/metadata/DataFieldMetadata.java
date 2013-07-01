@@ -1147,7 +1147,7 @@ public class DataFieldMetadata implements Serializable {
 		
 		// verify default value - approved by kokon
 		if (defaultValue != null || defaultValueStr != null) {
-			DataField dataField = DataFieldFactory.createDataField(this, true);
+			DataField dataField = DataFieldFactory.createDataField(this, false);
 			try {
 				dataField.setToDefaultValue();
 			} catch (RuntimeException e) {

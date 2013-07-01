@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
@@ -48,9 +49,14 @@ public class RecordFilterTL implements RecordFilter {
 	}
 
 	@Override
-	public boolean isValid(DataRecord record) {
+	public boolean isValid(DataRecord record) throws TransformException {
 		input[0] = record;
-		executor.setInputRecords(input);
+		return isValid(input);
+	}
+	
+	@Override
+	public boolean isValid(DataRecord[] records) {
+		executor.setInputRecords(records);
 		executor.visit(filterExpression, null);
 		return executor.getResult() == TLBooleanValue.TRUE;
 	}
