@@ -377,11 +377,14 @@ public class HttpConnector extends Node {
 	 * The name of an XML attribute representing consumer key, used for OAuth authentication
 	 */
 	private final static String XML_CONSUMER_KEY_ATTRIBUTE = "consumerKey";
-
 	/**
 	 * The name of an XML attribute representing consumer secret, used for OAuth authentication
 	 */
 	private final static String XML_CONSUMER_SECRET_ATTRIBUTE = "consumerSecret";
+
+	private final static String XML_OAUTH_ACCESS_TOKEN_ATTRIBUTE = "oAuthAccessToken";
+	
+	private final static String XML_OAUTH_ACCESS_TOKEN_SECRET_ATTRIBUTE = "oAuthAccessTokenSecret";
 	
 	private final static String XML_RAW_HTTP_HEADERS_ATTRIBUTE = "rawHeaders";
 	
@@ -950,12 +953,21 @@ public class HttpConnector extends Node {
     private static final int IP_CONSUMER_SECRET_INDEX = 15;
     private static final String IP_CONSUMER_SECRET_NAME = "consumerSecret";
     
-	/**
+	private String oAuthAccessToken;
+	private String oAuthAccessTokenToUse;
+	private static final int IP_OATUH_TOKEN_INDEX = 16;
+    private static final String IP_OATUH_TOKEN_NAME = "oAuthAccessToken";
+
+	private String oAuthAccessTokenSecret;
+	private String oAuthAccessTokenSecretToUse;
+	private static final int IP_OATUH_TOKEN_SECRET_INDEX = 17;
+    private static final String IP_OATUH_TOKEN_SECRET_NAME = "oAuthAccessTokenSecret";
+/**
 	 * <code>true</code> if the responses should be stored to temporary files, <code>false</code> otherwise.  
 	 */
 	private boolean storeResponseToTempFile;
 	private Boolean storeResponseToTempFileToUse;
-	private static final int IP_STORE_RESPONSE_TO_TEMP_INDEX = 16;
+	private static final int IP_STORE_RESPONSE_TO_TEMP_INDEX = 18;
     private static final String IP_STORE_RESPONSE_TO_TEMP_NAME = "storeResponseToTempFile";
     
 	/** 
@@ -963,7 +975,7 @@ public class HttpConnector extends Node {
 	 */
 	private String temporaryFilePrefix;
 	private String temporaryFilePrefixToUse;
-	private static final int IP_TEMP_FILE_PREFIX_INDEX = 17;
+	private static final int IP_TEMP_FILE_PREFIX_INDEX = 19;
     private static final String IP_TEMP_FILE_PREFIX_NAME = "temporaryFilePrefix";
     
 	/**
@@ -971,7 +983,7 @@ public class HttpConnector extends Node {
 	 */
 	private String multipartEntities;
 	private String multipartEntitiesToUse;
-	private static final int IP_MULTIPART_ENTITIES_INDEX = 18;
+	private static final int IP_MULTIPART_ENTITIES_INDEX = 20;
     private static final String IP_MULTIPART_ENTITIES_NAME = "multipartEntities";
     
 	/**
@@ -979,7 +991,7 @@ public class HttpConnector extends Node {
 	 */
 	private String rawHttpHeaders;
 	private List<CharSequence> rawHttpHeadersToUse;
-	private static final int IP_RAW_HTTP_HEADERS_INDEX = 19;
+	private static final int IP_RAW_HTTP_HEADERS_INDEX = 21;
     private static final String IP_RAW_HTTP_HEADERS_NAME = "rawHTTPHeaders";
 
 	/**
@@ -1355,6 +1367,8 @@ public class HttpConnector extends Node {
 		multipartEntitiesToUse = getStringInputParameterValue(IP_MULTIPART_ENTITIES_INDEX);
 		consumerKeyToUse = getStringInputParameterValue(IP_CONSUMER_KEY_INDEX);
 		consumerSecretToUse = getStringInputParameterValue(IP_CONSUMER_SECRET_INDEX);
+		oAuthAccessTokenToUse = getStringInputParameterValue(IP_OATUH_TOKEN_INDEX);
+		oAuthAccessTokenSecretToUse = getStringInputParameterValue(IP_OATUH_TOKEN_SECRET_INDEX);
 		rawHttpHeadersToUse = (List<CharSequence>) inputParamsRecord.getField(IP_RAW_HTTP_HEADERS_INDEX).getValue();
 
 		additionalRequestHeadersToUse = (Map<String, CharSequence>) inputParamsRecord.getField(IP_ADDITIONAL_REQUEST_HEADERS_INDEX).getValue();
@@ -1759,6 +1773,8 @@ public class HttpConnector extends Node {
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_MULTIPART_ENTITIES_NAME, multipartEntities);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_CONSUMER_KEY_NAME, consumerKey);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_CONSUMER_SECRET_NAME, consumerSecret);
+		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_OATUH_TOKEN_NAME, oAuthAccessToken);
+		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_OATUH_TOKEN_SECRET_NAME, oAuthAccessTokenSecret);
 		if (!StringUtils.isEmpty(rawHttpHeaders)) {
 			inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_RAW_HTTP_HEADERS_NAME, parseRawHttpHeadersItems());
 		}
@@ -2209,6 +2225,8 @@ public class HttpConnector extends Node {
 		httpConnector.setUrlInputField(xattribs.getString(XML_URL_FROM_INPUT_FIELD_ATTRIBUTE, null));
 		httpConnector.setConsumerKey(xattribs.getString(XML_CONSUMER_KEY_ATTRIBUTE, null));
 		httpConnector.setConsumerSecret(xattribs.getString(XML_CONSUMER_SECRET_ATTRIBUTE, null));
+		httpConnector.setoAuthAccessToken(xattribs.getString(XML_OAUTH_ACCESS_TOKEN_ATTRIBUTE, null));
+		httpConnector.setoAuthAccessTokenSecret(xattribs.getString(XML_OAUTH_ACCESS_TOKEN_SECRET_ATTRIBUTE, null));
 		httpConnector.setRawHttpHeaders(xattribs.getString(XML_RAW_HTTP_HEADERS_ATTRIBUTE, null));
 		httpConnector.setRequestCookies(xattribs.getString(XML_REQUEST_COOKIES_ATTRIBUTE, null));
 		httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
@@ -2808,7 +2826,11 @@ public class HttpConnector extends Node {
 		// configure OAuth authentication
 		if (!StringUtils.isEmpty(consumerKeyToUse) && !StringUtils.isEmpty(consumerSecretToUse)){
 			// Consumer instance that should be used (used for OAuth authentication)
-			oauthConsumer = new CommonsHttpOAuthConsumer(consumerKeyToUse, consumerSecretToUse);				
+			oauthConsumer = new CommonsHttpOAuthConsumer(consumerKeyToUse, consumerSecretToUse);	
+
+			if(!StringUtils.isEmpty(this.oAuthAccessTokenToUse) && !StringUtils.isEmpty(this.oAuthAccessTokenSecretToUse)) {
+				oauthConsumer.setTokenWithSecret(oAuthAccessTokenToUse, oAuthAccessTokenSecretToUse);
+			}
 		}
 		
 		// Set cookie policy to send all cookies in a request regardless of CookieOrigin (because we don't set it anyway)
@@ -3161,6 +3183,8 @@ public class HttpConnector extends Node {
 		inputParamsRecord.getField(IP_MULTIPART_ENTITIES_INDEX).setValue(multipartEntitiesToUse);
 		inputParamsRecord.getField(IP_CONSUMER_KEY_INDEX).setValue(consumerKeyToUse);
 		inputParamsRecord.getField(IP_CONSUMER_SECRET_INDEX).setValue(consumerSecretToUse);
+		inputParamsRecord.getField(IP_OATUH_TOKEN_INDEX).setValue(oAuthAccessTokenToUse);
+		inputParamsRecord.getField(IP_OATUH_TOKEN_SECRET_INDEX).setValue(oAuthAccessTokenSecretToUse);
 		inputParamsRecord.getField(IP_RAW_HTTP_HEADERS_INDEX).setValue(rawHttpHeadersToUse);
 	}
 
@@ -3226,6 +3250,8 @@ public class HttpConnector extends Node {
 		metadata.addField(IP_PASSWORD_INDEX, new DataFieldMetadata(IP_PASSWORD_NAME, DataFieldType.STRING, null));
 		metadata.addField(IP_CONSUMER_KEY_INDEX, new DataFieldMetadata(IP_CONSUMER_KEY_NAME, DataFieldType.STRING, null));
 		metadata.addField(IP_CONSUMER_SECRET_INDEX, new DataFieldMetadata(IP_CONSUMER_SECRET_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_OATUH_TOKEN_INDEX, new DataFieldMetadata(IP_OATUH_TOKEN_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_OATUH_TOKEN_SECRET_INDEX, new DataFieldMetadata(IP_OATUH_TOKEN_SECRET_NAME, DataFieldType.STRING, null));
 		metadata.addField(IP_STORE_RESPONSE_TO_TEMP_INDEX, new DataFieldMetadata(IP_STORE_RESPONSE_TO_TEMP_NAME, DataFieldType.BOOLEAN, null));
 		metadata.addField(IP_TEMP_FILE_PREFIX_INDEX, new DataFieldMetadata(IP_TEMP_FILE_PREFIX_NAME, DataFieldType.STRING, null));
 		metadata.addField(IP_MULTIPART_ENTITIES_INDEX, new DataFieldMetadata(IP_MULTIPART_ENTITIES_NAME, DataFieldType.STRING, null));
@@ -3490,6 +3516,36 @@ public class HttpConnector extends Node {
 	
 	public void setRawHttpHeaders(String rawHttpHeaders) {
 		this.rawHttpHeaders = rawHttpHeaders;
+	}
+	
+	
+
+	/**
+	 * @return the oAuthAccessToken
+	 */
+	public String getoAuthAccessToken() {
+		return oAuthAccessToken;
+	}
+
+	/**
+	 * @param oAuthAccessToken the oAuthAccessToken to set
+	 */
+	public void setoAuthAccessToken(String oAuthAccessToken) {
+		this.oAuthAccessToken = oAuthAccessToken;
+	}
+
+	/**
+	 * @return the oAuthAccessTokenSecret
+	 */
+	public String getoAuthAccessTokenSecret() {
+		return oAuthAccessTokenSecret;
+	}
+
+	/**
+	 * @param oAuthAccessTokenSecret the oAuthAccessTokenSecret to set
+	 */
+	public void setoAuthAccessTokenSecret(String oAuthAccessTokenSecret) {
+		this.oAuthAccessTokenSecret = oAuthAccessTokenSecret;
 	}
 
 	@Override

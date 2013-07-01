@@ -31,6 +31,7 @@ import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.compile.ClassLoaderUtils;
 
 /**
  * @author Martin Zatopek (info@cloveretl.com)
@@ -40,19 +41,21 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class RecordFilterFactory {
 
+	private static final DataRecordMetadata NO_METADATA[] = new DataRecordMetadata[0];
+	
 	public static RecordFilter createFilter(String className, Node node) throws ComponentNotReadyException {
-		
-		return RecordTransformFactory.loadClassInstance(className, RecordFilter.class, node);
+		return ClassLoaderUtils.loadClassInstance(RecordFilter.class, className, node);
+	}
+	public static RecordFilter createFilter(String filterExpression, DataRecordMetadata metadata, TransformationGraph graph, String id, Log logger) throws ComponentNotReadyException {
+		return createFilter(filterExpression, new DataRecordMetadata[] { metadata }, graph, id, logger);
 	}
 	
-	public static RecordFilter createFilter(String filterExpression, DataRecordMetadata metadata, TransformationGraph graph, String id, Log logger) throws ComponentNotReadyException {
+	public static RecordFilter createFilter(String filterExpression, DataRecordMetadata[] metadata, TransformationGraph graph, String id, Log logger) throws ComponentNotReadyException {
 		RecordFilter filter;
 		
 		if (filterExpression.contains(org.jetel.ctl.TransformLangExecutor.CTL_TRANSFORM_CODE_ID)) {
 			// new CTL initialization
-			DataRecordMetadata[] inputMetadata = new DataRecordMetadata[] { metadata };
-			DataRecordMetadata[] outputMetadata = new DataRecordMetadata[] { metadata };
-			ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inputMetadata, outputMetadata, "UTF-8");
+			ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, metadata, NO_METADATA, "UTF-8");
 	    	
 			List<ErrorMessage> msgs = compiler.compileExpression(filterExpression, CTLRecordFilter.class, id, CTLRecordFilterAdapter.ISVALID_FUNCTION_NAME, boolean.class);
 	    	if (compiler.errorCount() > 0) {
@@ -80,7 +83,7 @@ public class RecordFilterFactory {
 	    	filter.init();
 		} else {
 			// old TL initialization
-			TransformLangParser parser=new TransformLangParser(metadata, filterExpression);
+			TransformLangParser parser = new TransformLangParser(metadata, NO_METADATA, filterExpression);
 			try {
 				  final CLVFStartExpression recordFilter = parser.StartExpression();
 				  filter = new RecordFilterTL(recordFilter);

@@ -109,4 +109,40 @@ public class DataFieldTypeTest extends CloverTestCase {
 		try { DataFieldType.fromName("sTrinG"); assertTrue(false); } catch (IllegalArgumentException e) { /*OK*/ }
 	}
 
+	public void testGetByteIdentifier() {
+		assertEquals((byte) 0, DataFieldType.STRING.getByteIdentifier());
+		assertEquals((byte) 1, DataFieldType.DATE.getByteIdentifier());
+		assertEquals((byte) 2, DataFieldType.NUMBER.getByteIdentifier());
+		assertEquals((byte) 3, DataFieldType.INTEGER.getByteIdentifier());
+		assertEquals((byte) 4, DataFieldType.LONG.getByteIdentifier());
+		assertEquals((byte) 5, DataFieldType.DECIMAL.getByteIdentifier());
+		assertEquals((byte) 6, DataFieldType.BYTE.getByteIdentifier());
+		assertEquals((byte) 7, DataFieldType.CBYTE.getByteIdentifier());
+		assertEquals((byte) 8, DataFieldType.BOOLEAN.getByteIdentifier());
+	}
+
+	public void testFromByteIdentifier() {
+		assertEquals(DataFieldType.STRING, DataFieldType.fromByteIdentifier((byte) 0));
+		assertEquals(DataFieldType.DATE, DataFieldType.fromByteIdentifier((byte) 1));
+		assertEquals(DataFieldType.NUMBER, DataFieldType.fromByteIdentifier((byte) 2));
+		assertEquals(DataFieldType.INTEGER, DataFieldType.fromByteIdentifier((byte) 3));
+		assertEquals(DataFieldType.LONG, DataFieldType.fromByteIdentifier((byte) 4));
+		assertEquals(DataFieldType.DECIMAL, DataFieldType.fromByteIdentifier((byte) 5));
+		assertEquals(DataFieldType.BYTE, DataFieldType.fromByteIdentifier((byte) 6));
+		assertEquals(DataFieldType.CBYTE, DataFieldType.fromByteIdentifier((byte) 7));
+		assertEquals(DataFieldType.BOOLEAN, DataFieldType.fromByteIdentifier((byte) 8));
+		try {
+			DataFieldType.fromByteIdentifier((byte) 9);
+			assertTrue(false);
+		} catch (Exception e) {
+			//OK
+		}
+		try {
+			DataFieldType.fromByteIdentifier((byte) -1);
+			assertTrue(false);
+		} catch (Exception e) {
+			//OK
+		}
+	}
+
 }

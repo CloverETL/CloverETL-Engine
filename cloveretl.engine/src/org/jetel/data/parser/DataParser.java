@@ -137,7 +137,7 @@ public class DataParser extends AbstractTextParser {
 		decoder = Charset.forName(cfg.getCharset()).newDecoder();
 		reader = null;
 		exceptionHandler = cfg.getExceptionHandler();
-		qDecoder.setQuoteChar(cfg.getQuoteChar());
+		qDecoder.setQuoteChar(getQuoteChar());
 	}
 	
 	/**
@@ -261,7 +261,7 @@ public class DataParser extends AbstractTextParser {
 				fieldLengths[i] = cfg.getMetadata().getField(i).getSize();
 			}
 			DataFieldType type = cfg.getMetadata().getDataFieldType(i);
-			quotedFields[i] = cfg.isQuotedStrings() 
+			quotedFields[i] = isQuotedStrings() 
 					&& type != DataFieldType.BYTE
 					&& type != DataFieldType.CBYTE;
 		}

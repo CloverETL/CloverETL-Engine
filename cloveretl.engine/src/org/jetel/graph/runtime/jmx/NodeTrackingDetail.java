@@ -18,8 +18,11 @@
  */
 package org.jetel.graph.runtime.jmx;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.log4j.Logger;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -54,6 +57,15 @@ public class NodeTrackingDetail implements NodeTracking {
     private float usageUser;
     private float peakUsageUser;
     private int usedMemory;
+    
+    /**
+     * Initial CPU time for component's threads.
+     * Component's threads can be recycled, so we
+     * need to remember initial state of CPU and user time for each of them.
+     * Keys are Thread.getId() longs.
+     */
+    private final transient Map<Long, Long> initialThreadCpuTime = new HashMap<Long, Long>(); 
+    private final transient Map<Long, Long> initialThreadUserTime = new HashMap<Long, Long>(); 
     
 	public NodeTrackingDetail(PhaseTrackingDetail parentPhaseDetail, Node node) {
 		this.parentPhaseDetail = parentPhaseDetail;
@@ -319,40 +331,26 @@ public class NodeTrackingDetail implements NodeTracking {
 		long phaseExecutionTime = getParentPhaseTracking().getExecutionTime();
 		
 		if (CloverJMX.isThreadCpuTimeSupported()) {
-			synchronized (node) {//this is the guard of Node.nodeThread variable
-				Thread nodeThread = node.getNodeThread();
-				if (nodeThread != null) {
-					//totalCPUTime
-					long tempTotalCPUTime = TrackingUtils.convertTime(
-							CloverJMX.THREAD_MXBEAN.getThreadCpuTime(node.getNodeThread().getId()), 
-							TimeUnit.NANOSECONDS,
-							TrackingUtils.DEFAULT_TIME_UNIT);
-					//totalCPUTime for child threads
-					for (Thread childThread : node.getChildThreads()) {
-						tempTotalCPUTime += TrackingUtils.convertTime(
-								CloverJMX.THREAD_MXBEAN.getThreadCpuTime(childThread.getId()),
-								TimeUnit.NANOSECONDS,
-								TrackingUtils.DEFAULT_TIME_UNIT);
-					}
-					if (tempTotalCPUTime > totalCPUTime) {
-						totalCPUTime = tempTotalCPUTime;
-					}
-					
-					//totalUserTime
-					long tempTotalUserTime = TrackingUtils.convertTime(
-							CloverJMX.THREAD_MXBEAN.getThreadUserTime(node.getNodeThread().getId()),
-							TimeUnit.NANOSECONDS,
-							TrackingUtils.DEFAULT_TIME_UNIT);
-					//totalUserTime for child threads
-					for (Thread childThread : node.getChildThreads()) {
-						tempTotalUserTime += TrackingUtils.convertTime(
-								CloverJMX.THREAD_MXBEAN.getThreadUserTime(childThread.getId()),
-								TimeUnit.NANOSECONDS,
-								TrackingUtils.DEFAULT_TIME_UNIT);
-					}
-					if(tempTotalUserTime > totalUserTime) {
-						totalUserTime = tempTotalUserTime;
-					}
+			Thread nodeThread = node.getNodeThread();
+			if (nodeThread != null) {
+				//totalCPUTime
+				long tempTotalCPUTime = getThreadCpuTime(nodeThread);
+				//totalCPUTime for child threads
+				for (Thread childThread : node.getChildThreads()) {
+					tempTotalCPUTime += getThreadCpuTime(childThread);
+				}
+				if (tempTotalCPUTime > totalCPUTime) {
+					totalCPUTime = tempTotalCPUTime;
+				}
+				
+				//totalUserTime
+				long tempTotalUserTime = getThreadUserTime(nodeThread);
+				//totalUserTime for child threads
+				for (Thread childThread : node.getChildThreads()) {
+					tempTotalUserTime += getThreadUserTime(childThread);
+				}
+				if(tempTotalUserTime > totalUserTime) {
+					totalUserTime = tempTotalUserTime;
 				}
 			}
 		}
@@ -394,4 +392,41 @@ public class NodeTrackingDetail implements NodeTracking {
 			outputPortDetail.phaseFinished();
 		}
 	}
+	
+	/**
+	 * @return CPU time of given thread, first call for each thread is just initialization call
+	 * where current CPU time is cached and used for next invocations.
+	 */
+	private long getThreadCpuTime(Thread thread) {
+		long threadCPUTime = TrackingUtils.convertTime(
+				CloverJMX.THREAD_MXBEAN.getThreadCpuTime(thread.getId()), 
+				TimeUnit.NANOSECONDS,
+				TrackingUtils.DEFAULT_TIME_UNIT);
+		
+		if (!initialThreadCpuTime.containsKey(thread.getId())) {
+			initialThreadCpuTime.put(thread.getId(), threadCPUTime);
+			return 0;
+		} else {
+			return threadCPUTime - initialThreadCpuTime.get(thread.getId());
+		}
+	}
+
+	/**
+	 * @return user time of given thread, first call for each thread is just initialization call
+	 * where current user time is cached and used for next invocations.
+	 */
+	private long getThreadUserTime(Thread thread) {
+		long threadUserTime = TrackingUtils.convertTime(
+				CloverJMX.THREAD_MXBEAN.getThreadUserTime(thread.getId()),
+				TimeUnit.NANOSECONDS,
+				TrackingUtils.DEFAULT_TIME_UNIT);
+		
+		if (!initialThreadUserTime.containsKey(thread.getId())) {
+			initialThreadUserTime.put(thread.getId(), threadUserTime);
+			return 0;
+		} else {
+			return threadUserTime - initialThreadUserTime.get(thread.getId());
+		}
+	}
+
 }

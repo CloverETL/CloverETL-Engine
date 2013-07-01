@@ -223,13 +223,13 @@ public class PhaseTrackingDetail implements PhaseTracking {
 	}
 
 	void phaseFinished() {
+		result = phase.getResult();
+		endTime = System.currentTimeMillis();
+
 		//notice all node - phase finished
 		for(NodeTrackingDetail nodeDetail : nodesDetails) {
 			nodeDetail.phaseFinished();
 		}
-		
-		result = phase.getResult();
-		endTime = System.currentTimeMillis();
 	}
 
 

@@ -26,11 +26,15 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataFieldMetadata;
@@ -253,4 +257,31 @@ public final class MiscUtils {
 		}
 	}
 	
+	/**
+	 * Returns information about number of received and sent records from/to the given component.
+	 * The resulted string could look like 'In0: 15, In1: 30, Out0:5'
+	 */
+	public static String getInOutRecordsMessage(Node component) {
+    	//collect information from input ports
+    	StringBuilder recordsMessage = new StringBuilder();
+    	Map<Integer, InputPort> inPorts = component.getInputPorts();
+    	for (Entry<Integer, InputPort> inPort : inPorts.entrySet()) {
+    		if (recordsMessage.length() > 0) {
+    			recordsMessage.append(", ");
+    		}
+    		recordsMessage.append("In" + inPort.getKey() + ": " + inPort.getValue().getInputRecordCounter() + " recs");
+    	}
+    	
+    	//collect information from output ports
+    	Map<Integer, OutputPort> outPorts = component.getOutputPorts();
+    	for (Entry<Integer, OutputPort> outPort : outPorts.entrySet()) {
+    		if (recordsMessage.length() > 0) {
+    			recordsMessage.append(", ");
+    		}
+    		recordsMessage.append("Out" + outPort.getKey() + ": " + outPort.getValue().getOutputRecordCounter() + " recs");
+    	}
+    	
+    	return recordsMessage.toString();
+	}
+
 }

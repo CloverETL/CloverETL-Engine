@@ -81,9 +81,9 @@ public class SimpleSequence extends GraphElement implements Sequence {
     
     String filename;
     long sequenceValue;
-    final int step;
-    final long start;
-    final int numCachedValues;
+    int step;
+    long start;
+    int numCachedValues;
     boolean alreadyIncremented = false;
     
     int counter;
@@ -92,7 +92,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
     ByteBuffer buffer;
 
 	private String configFileName;
-	private Exception initFromConfigFileException; 
     private static final String XML_NAME_ATTRIBUTE = "name";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	private static final String XML_START_ATTRIBUTE = "start";
@@ -131,36 +130,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
         super(id, graph);
         this.configFileName = configFilename;
         
-        long start = 0;
-        int step = 0;
-        int cached = 0;
-
-        if(!StringUtils.isEmpty(configFileName)) {
-            try {
-            	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
-                InputStream stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
-
-                Properties tempProperties = new Properties();
-                tempProperties.load(stream);
-        		TypedProperties typedProperties = new TypedProperties(tempProperties, getGraph());
-
-        		setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
-        		this.filename = typedProperties.getStringProperty(XML_FILE_URL_ATTRIBUTE, null);
-        		start = typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0);
-        		step = typedProperties.getIntProperty(XML_STEP_ATTRIBUTE, 0);
-        		cached = typedProperties.getIntProperty(XML_CACHED_ATTRIBUTE, 0);                
-        		
-                stream.close();
-            } catch (Exception ex) {
-                this.filename = null;
-                initFromConfigFileException = ex;
-            }
-        }
-
-		this.start = start;
-		this.sequenceValue = start;
-		this.step = step;
-		this.numCachedValues = cached;
 		this.counter = 0;
 
     }
@@ -238,6 +207,33 @@ public class SimpleSequence extends GraphElement implements Sequence {
 	synchronized public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		
+        if (!StringUtils.isEmpty(configFileName)) {
+            try {
+            	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
+            	InputStream stream = null;
+            	try {
+	                stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
+	
+	                Properties tempProperties = new Properties();
+	                tempProperties.load(stream);
+	        		TypedProperties typedProperties = new TypedProperties(tempProperties, getGraph());
+	
+	        		setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
+	        		setFilename(typedProperties.getStringProperty(XML_FILE_URL_ATTRIBUTE, null));
+	        		start = typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0);
+	        		step = typedProperties.getIntProperty(XML_STEP_ATTRIBUTE, 0);
+	        		numCachedValues = typedProperties.getIntProperty(XML_CACHED_ATTRIBUTE, 0);                
+	        		this.sequenceValue = start;
+            	} finally {
+            		if (stream != null) {
+            			stream.close();
+            		}
+            	}
+            } catch (Exception ex) {
+				throw new ComponentNotReadyException("Loading of external definition of SimpleSequence failed.", ex);
+            }
+        }
 		
         buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
@@ -370,18 +366,17 @@ public class SimpleSequence extends GraphElement implements Sequence {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-    	if (initFromConfigFileException != null) {
-    		status.add("Failed to initialize sequence from definition file; " + initFromConfigFileException, Severity.ERROR, this, Priority.NORMAL);
-    		return status;
-    	}
-    	
-        try {
-			if (!FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), filename)) {
-	            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, "Can't write to " + filename);
+        if (!StringUtils.isEmpty(configFileName)) {
+        	//cache file is checked only for internal sequences, since filename variable is not still initialise for external sequences
+	        try {
+				if (!FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), filename)) {
+		            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, "Can't write to " + filename);
+				}
+			} catch (ComponentNotReadyException e) {
+				status.add(e, Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
 			}
-		} catch (ComponentNotReadyException e) {
-			status.add(e, Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
-		}
+        }
+        
         return status;
     }
 

@@ -4,5 +4,5 @@
 <Field name="Jmeno" nullable="true" shift="0" size="40" skipFirstLine="false" type="string"/>
 <Field name="RC" nullable="true" shift="0" size="11" skipFirstLine="false" type="string"/>
 <Field name="Adresa" nullable="true" shift="0" size="60" skipFirstLine="false" type="string"/>
-<Field length="8" name="Plat" nullable="true" scale="2" shift="0" size="10" skipFirstLine="false" type="decimal"/>
+<Field length="12" name="Plat" nullable="true" scale="2" shift="0" size="10" skipFirstLine="false" type="decimal"/>
 </Record>

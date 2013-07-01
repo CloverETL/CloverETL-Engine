@@ -569,7 +569,12 @@ public class XmlSaxParser {
 								}
 							}
 						} catch (Exception ex) {
-							throw new SAXException(" for output port number '" + m_activeMapping.getOutputPortNumber() + "'. Check also parent mapping. ", ex);
+							String portNumber = "" + m_activeMapping.getOutputPortNumber();
+							if(m_activeMapping.isUsingParentRecord()) {
+								portNumber = "" + m_activeMapping.getProducingParent().getOutputPortNumber();
+							}
+							
+							throw new SAXException(" for output port number '" + portNumber + "' element '"+m_activeMapping.getElementName()+"'. Check also parent mapping. ", ex);
 						}
 
 						// Fill fields from parent record (if any mapped)

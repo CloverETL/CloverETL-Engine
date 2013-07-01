@@ -46,7 +46,7 @@ import org.jetel.graph.TransformationGraph;
  */
 public class GraphCycleInspector {
 
-	public static final String WHILE_LOOP_COMPONENT_TYPE = "WHILE_LOOP"; //TODO what is better place?
+	public static final String LOOP_COMPONENT_TYPE = "LOOP"; //TODO what is better place?
 	
 	private GraphProvider graphProvider;
 
@@ -158,7 +158,7 @@ public class GraphCycleInspector {
 		TransformationGraph g = null;
 		boolean hasWhileCycle = false;
 		for (InspectedComponent c : theCycle) {
-			if (c.getComponent().getType().equals(WHILE_LOOP_COMPONENT_TYPE)) {
+			if (c.getComponent().getType().equals(LOOP_COMPONENT_TYPE)) {
 				hasWhileCycle = true;
 			}
 			if (g == null) {
