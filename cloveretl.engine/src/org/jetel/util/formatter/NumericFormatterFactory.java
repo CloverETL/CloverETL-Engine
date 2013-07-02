@@ -23,7 +23,6 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import org.jetel.data.Defaults;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -128,7 +127,7 @@ public class NumericFormatterFactory {
 						new DecimalFormatSymbols(locale));
 			} else {
 				numberFormat = new DecimalFormat(formatString,
-						new DecimalFormatSymbols(MiscUtils.createLocale(Defaults.DEFAULT_LOCALE)));
+						new DecimalFormatSymbols(MiscUtils.getDefaultLocale()));
 			}
 		} else if (locale != null) {
 			numberFormat = DecimalFormat.getInstance(locale);

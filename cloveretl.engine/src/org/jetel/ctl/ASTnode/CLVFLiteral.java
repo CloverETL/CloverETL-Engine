@@ -17,16 +17,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.ctl.ASTnode;
-import java.math.BigDecimal;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 import org.jetel.ctl.ExpParser;
-import org.jetel.ctl.TransformLangExecutor;
+import org.jetel.ctl.LiteralParser;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.TransformLangParserConstants;
 import org.jetel.ctl.TransformLangParserVisitor;
@@ -35,18 +29,6 @@ import org.jetel.ctl.data.TLTypePrimitive;
 
 public class CLVFLiteral extends SimpleNode implements TransformLangParserConstants {
 	
-    private static final DateFormat DATE_FORMATTER;
-    private static final DateFormat DATE_TIME_FORMATTER;
-    private static final Calendar calendar = Calendar.getInstance();
-    
-    static {
-    	DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd");
-    	DATE_FORMATTER.setLenient(false);
-    	DATE_TIME_FORMATTER =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    	DATE_TIME_FORMATTER.setLenient(false);
-    }
-    
-    
 	private String valueImage; 
     private Object valueObj;
     private int tokenKind;
@@ -97,55 +79,24 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 		return valueImage;
 	}
 	
-	public void computeValue() 
-	throws NumberFormatException, ParseException {
+	public void computeValue(LiteralParser parser) throws NumberFormatException, ParseException {
 		switch (tokenKind) {
 		case INTEGER_LITERAL:
-			if (valueImage.startsWith("0x")) {
-				// hexadecimal literal -> skip 0x
-				valueObj = Integer.parseInt(valueImage.substring(2),16);
-			} else if (valueImage.startsWith("-0x")) { 
-				// negative hexadecimal literal -> skip -0x
-				valueObj = -Integer.parseInt(valueImage.substring(3),16);
-			} else if (valueImage.startsWith("-0")) {
-				// negative octal literal
-				valueObj = -Integer.parseInt(valueImage.substring(2),8);
-			} else if (valueImage.startsWith("0")) {
-				// octal literal
-				valueObj = Integer.parseInt(valueImage,8);
-			} else {
-				// decimal literal
-				valueObj = Integer.parseInt(valueImage);
-			}
+			valueObj = parser.parseInt(valueImage);
 			setType(TLTypePrimitive.INTEGER);
 			break;
 		case LONG_LITERAL:
-			valueImage = stripDistincter(valueImage,'l','L');
-			if (valueImage.startsWith("0x")) {
-				// hexadecimal literal -> remove 0x prefix
-				valueObj = Long.parseLong(valueImage.substring(2),16);
-			} else if (valueImage.startsWith("-0x")) {
-				valueObj = -Long.parseLong(valueImage.substring(3),16);
-		    } else if (valueImage.startsWith("0")) {
-				// octal literal -> 0 is the distincter, but Java handles that correctly
-				valueObj = Long.parseLong(valueImage,8);
-		    } else if (valueImage.startsWith("-0")) {
-				// negative octal literal
-				valueObj = -Long.parseLong(valueImage.substring(2),8);
-			} else {
-				valueObj = Long.parseLong(valueImage);
-			}
+			valueObj = parser.parseLong(valueImage);
 			setType(TLTypePrimitive.LONG);
 			break;
 		case FLOATING_POINT_LITERAL:	
 			final char distincterChar = valueImage.charAt(valueImage.length()-1);
 			if ( distincterChar == 'D' || distincterChar == 'd') {
 				// decimal literal -> remove trailing distincter
-				final BigDecimal result = new BigDecimal(stripDistincter(valueImage,'d','D'),TransformLangExecutor.MAX_PRECISION);
-				valueObj = result;
+				valueObj = parser.parseBigDecimal(valueImage);
                 setType(TLTypePrimitive.DECIMAL);
-            }else{
-                valueObj=Double.parseDouble(stripDistincter(valueImage,'f','F'));
+            } else {
+                valueObj = parser.parseDouble(valueImage);
                 setType(TLTypePrimitive.DOUBLE);
             }
 			break;
@@ -154,44 +105,15 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			setType(TLTypePrimitive.STRING);
 			break;
 		case BOOLEAN_LITERAL:
-			valueObj = Boolean.parseBoolean(valueImage);
+			valueObj = parser.parseBoolean(valueImage);
 			setType(TLTypePrimitive.BOOLEAN);
 			break;
 		case DATE_LITERAL:
-			final ParsePosition p1 = new ParsePosition(0);
-			Date date = null;
-			synchronized (DATE_FORMATTER) { // DateFormat is not thread-safe
-				date = DATE_FORMATTER.parse(valueImage, p1);
-			}
-			if (date == null) {
-				throw new ParseException("Date literal '" + valueImage + "' could not be parsed.", 0);
-			}
-			if (p1.getIndex() < valueImage.length() - 1) {
-				throw new ParseException("Date literal '" + valueImage + "' has invalid format.", p1.getErrorIndex()); 
-			}
-			//this code can be executed by multiple threads - so statically defined calendar has to be synchronised
-			synchronized (calendar) {
-				calendar.setTime(date);
-				// set all time fields to zero
-				calendar.set(Calendar.HOUR, 0);
-				calendar.set(Calendar.MINUTE, 0);
-				calendar.set(Calendar.SECOND,0);
-				calendar.set(Calendar.MILLISECOND,0);
-				valueObj = calendar.getTime();
-			}
+			valueObj = parser.parseDate(valueImage);
 			setType(TLTypePrimitive.DATETIME);
 			break;
 		case DATETIME_LITERAL:
-			final ParsePosition p2 = new ParsePosition(0);
-			synchronized (DATE_TIME_FORMATTER) { // DateFormat is not thread-safe
-				valueObj = DATE_TIME_FORMATTER.parse(valueImage,p2);
-			}
-			if (valueObj == null) {
-				throw new ParseException("Date-time literal '" + valueImage + "' could not be parsed.", 0);
-			}
-			if (p2.getIndex() < valueImage.length() - 1) {
-				throw new ParseException("Date-time literal '" + valueImage + "' has invalid format.", p2.getErrorIndex());
-			}
+			valueObj = parser.parseDateTime(valueImage);
 			setType(TLTypePrimitive.DATETIME);
 			break;
 		case NULL_LITERAL:
@@ -210,18 +132,6 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 	public String toString() {
 		return super.toString() + " value " + "\"" + valueObj + "\"";
 	}
-	
-	private String stripDistincter(String input, char... dist) {
-		final char c = input.charAt(input.length()-1);
-		for (int i=0; i<dist.length; i++) {
-			if (c == dist[i]) {
-				return input.substring(0,input.length()-1);
-			}
-		}
-		
-		return input;
-	}
-	
 	
 	@Override
 	public SimpleNode duplicate() {

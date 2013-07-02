@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -862,7 +863,7 @@ public class CodeParser {
 
 		//imports
 		transCode.append("// automatically generated on ");
-		transCode.append(java.util.Calendar.getInstance().getTime()).append("\n");
+		transCode.append(new Date()).append("\n");
         transCode.append("import java.util.*;\n");
 		transCode.append("import org.jetel.data.*;\n");
 		transCode.append("import org.jetel.graph.*;\n");

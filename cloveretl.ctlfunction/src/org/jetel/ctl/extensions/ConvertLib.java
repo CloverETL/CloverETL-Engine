@@ -35,6 +35,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.StringFormat;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.PackedDecimal;
 import org.jetel.util.crypto.Base64;
 import org.jetel.util.crypto.Digest;
@@ -131,7 +132,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Integer num, String format) {
-	    return num2str(context, num, format, Defaults.DEFAULT_LOCALE);
+	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -153,7 +154,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Long num, String format) {
-		return num2str(context, num, format, Defaults.DEFAULT_LOCALE); 	
+		return num2str(context, num, format, MiscUtils.getDefautLocaleId()); 	
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -175,7 +176,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, Double num, String format) {
-	    return num2str(context, num, format, Defaults.DEFAULT_LOCALE);
+	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -204,7 +205,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num, String format) {
-	    return num2str(context, num, format, Defaults.DEFAULT_LOCALE);
+	    return num2str(context, num, format, MiscUtils.getDefautLocaleId());
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
@@ -225,7 +226,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
 				} else {
-					locale = Defaults.DEFAULT_LOCALE;
+					locale = MiscUtils.getDefautLocaleId();
 				}
 				String format = stack.popString();
 				if (context.getParams()[0].isInteger()) {
@@ -266,20 +267,24 @@ public class ConvertLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String locale = null;
+			String timeZone = null;
 			
+			if (context.getParams().length > 3) {
+				timeZone = stack.popString();
+			}
 			if (context.getParams().length > 2) {
 				locale = stack.popString();
 			}
 
 			final String pattern = stack.popString();
 			final Date date = stack.popDate();
-			stack.push(date2str(context, date, pattern, locale));
+			stack.push(date2str(context, date, pattern, locale, timeZone));
 		}
 	}
 
 	@TLFunctionInitAnnotation
 	public static final void date2strInit(TLFunctionCallContext context) {
-		context.setCache(new TLDateFormatLocaleCache(context, 1, 2));
+		context.setCache(new TLDateFormatLocaleCache(context, 1, 2, 3));
 	}
 	
 	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
@@ -287,12 +292,16 @@ public class ConvertLib extends TLFunctionLibrary {
 		return date2str(context, date, pattern, null);
 	}
 
-	@TLFunctionAnnotation("Converts date to string according to the specified pattern.")
+	@TLFunctionAnnotation("Converts date to string according to the specified pattern and locale.")
 	public static final String date2str(TLFunctionCallContext context, Date date, String pattern, String locale) {
-		final DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, 1, 2);
-		return formatter.format(date);
+		return date2str(context, date, pattern, locale, null);
 	}
 
+	@TLFunctionAnnotation("Converts date to string according to the specified pattern, locale and time zone.")
+	public static final String date2str(TLFunctionCallContext context, Date date, String pattern, String locale, String timeZone) {
+		final DateFormatter formatter = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
+		return formatter.format(date);
+	}
 	
 	// STR2DATE
 	class Str2DateFunction implements TLFunctionPrototype {
@@ -305,7 +314,11 @@ public class ConvertLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String locale = null;
+			String timeZone = null;
 			
+			if (context.getParams().length > 3) {
+				timeZone = stack.popString();
+			}
 			if (context.getParams().length > 2) {
 				
 				locale = stack.popString();
@@ -314,25 +327,29 @@ public class ConvertLib extends TLFunctionLibrary {
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 		
-			stack.push(str2date(context, input,pattern,locale));
+			stack.push(str2date(context, input, pattern, locale, timeZone));
 		}
 	}
 
 	@TLFunctionInitAnnotation
 	public static final void str2dateInit(TLFunctionCallContext context) {
-		context.setCache(new TLDateFormatLocaleCache(context, 1, 2));
+		context.setCache(new TLDateFormatLocaleCache(context, 1, 2, 3));
 	}
 	
-	@TLFunctionAnnotation("Converts string to date based on a pattern")
-	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale) {
-		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, 1, 2);
-
+	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale and time zone")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
+		DateFormatter formatter = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
 		return formatter.parseDate(input);
 	}
 
-	@TLFunctionAnnotation("Converts string to date based on a pattern")
+	@TLFunctionAnnotation("Converts string to date using the specified pattern and locale")
+	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale) {
+		return str2date(context, input, pattern, null, null);
+	}
+
+	@TLFunctionAnnotation("Converts string to date using the specified pattern")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern) {
-		return str2date(context, input,pattern,null);
+		return str2date(context, input, pattern, null);
 	}
 
 	// DATE2NUM
@@ -631,7 +648,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
 				} else {
-					locale = Defaults.DEFAULT_LOCALE;
+					locale = MiscUtils.getDefautLocaleId();
 				}
 				String format = stack.popString();
 				final String input = stack.popString();
@@ -1314,7 +1331,7 @@ public class ConvertLib extends TLFunctionLibrary {
 		if (position < 0 || position >= record.getNumFields()) {
 			throw new JetelRuntimeException("field with index " + position + " does not exist in metadata '" + record.getMetadata().getName() + "'");
 		}
-		return record.getField(position).getMetadata().getTypeAsString();
+		return record.getField(position).getMetadata().getDataType().getName();
 	}
 
 	//GETFIELDTYPE
