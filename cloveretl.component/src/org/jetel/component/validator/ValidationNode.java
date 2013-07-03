@@ -31,7 +31,6 @@ import org.jetel.component.validator.rules.LanguageSettingsValidationRule;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.property.PropertyRefResolver;
 
 /**
  * Abstract class with shared functionality of validation rules or group.
@@ -64,8 +63,6 @@ public abstract class ValidationNode {
 	
 	protected List<String> nodePath;
 	
-	private PropertyRefResolver refResolver;
-	
 	private boolean initialized;
 	
 	private Boolean traceLoggingEnabled = null;
@@ -86,7 +83,6 @@ public abstract class ValidationNode {
 	 */
 	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		initialized = true;
-		refResolver = graphWrapper.getRefResolver();
 		nodePath = graphWrapper.getNodePath(this);
 		if (isLoggingEnabled()) {
 			logParentLangaugeSetting();
@@ -265,21 +261,17 @@ public abstract class ValidationNode {
 	 * Sets property resolver for replacing variables in parameters
 	 * @param graphWrapper Graph Wrapper from which the resolver is obtained
 	 */
+	@Deprecated
 	public void setPropertyRefResolver(GraphWrapper graphWrapper) {
-		if(graphWrapper != null) {
-			this.refResolver = graphWrapper.getRefResolver();	
-		}
 	}
 	/**
 	 * Resolves given string
 	 * @param input String to resolve
 	 * @return Resolved string without variables
 	 */
+	@Deprecated
 	protected String resolve(String input) {
-		if(refResolver == null) {
-			throw new RuntimeException("Cannot resolve variable, no resolver given. Validation rule is implemented wrong (call setPropertyRefResolver before resolve).");
-		}
-		return refResolver.resolveRef(input);
+		return input;
 	}
 	
 	/**
