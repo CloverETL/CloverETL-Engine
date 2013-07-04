@@ -490,7 +490,11 @@ public class StringLib extends TLFunctionLibrary {
 	// IS NUMBER
 	@TLFunctionAnnotation("Checks if the string can be parsed into a double number")
 	public static final boolean isNumber(TLFunctionCallContext context, String input) {
-		return StringUtils.isNumber(input);
+		if (!StringUtils.isEmpty(input)) {
+			return StringUtils.isNumber(input);
+		} else {
+			return false;
+		}
 	}
 
 	class IsNumberFunction implements TLFunctionPrototype {
