@@ -6,6 +6,7 @@ string nullValue;
 boolean isBlank2;
 boolean isAscii1;
 boolean isAscii2;
+boolean isAscii3;
 boolean isNumber;
 boolean isNumber1;
 boolean isNumber2;
@@ -52,6 +53,7 @@ function integer transform() {
 	isBlank2=isBlank(nullValue);
 	isAscii1=isAscii('test');
 	isAscii2=isAscii('aęř');
+	isAscii3=isAscii(nullValue);
 	isNumber=isNumber('t1');
 	isNumber1=isNumber('1g');
 	isNumber2=isNumber('1');
