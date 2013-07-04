@@ -861,6 +861,9 @@ public class StringLib extends TLFunctionLibrary {
 			while (m.find()) {
 				ret.add(m.group(groupNo));
 			}
+		}else{
+			throw new TransformLangExecutorRuntimeException(
+					CtlExtensionsMessages.getString("StringLib.wrong_regexp_group_number")); //$NON-NLS-1$
 		}
 		return ret;
 		
