@@ -911,7 +911,11 @@ public class StringLib extends TLFunctionLibrary {
 //	@TLFunctionParametersAnnotation({"input","regex_pattern"})
 	public static final Boolean matches(TLFunctionCallContext context, String input, String pattern) {
 		// moved to IntegralLib, so that it can be called from the interpreter and compiler
-		return IntegralLib.matches(context, input, pattern);
+		if (input != null) {
+			return IntegralLib.matches(context, input, pattern);			
+		} else {
+			return false;
+		}
 	}
 
 	class MatchesFunction implements TLFunctionPrototype {
