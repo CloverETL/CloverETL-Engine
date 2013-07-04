@@ -512,8 +512,12 @@ public class StringLib extends TLFunctionLibrary {
 	// IS INTEGER
 	@TLFunctionAnnotation("Checks if the string can be parsed into an integer number")
 	public static final boolean isInteger(TLFunctionCallContext context, String input) {
-		int result = StringUtils.isInteger(input);
-		return result == 0 || result == 1;
+		if (!StringUtils.isEmpty(input)) {
+			int result = StringUtils.isInteger(input);
+			return result == 0 || result == 1;
+		} else {
+			return false;
+		}
 	}
 
 	class IsIntegerFunction implements TLFunctionPrototype {
