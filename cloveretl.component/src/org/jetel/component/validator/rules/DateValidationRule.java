@@ -108,10 +108,10 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 		
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
 		
-		resolvedTarget = resolve(target.getValue());
-		resolvedFormat = resolve(computedLS.getDateFormat().getValue());
-		resolvedLocale = resolve(computedLS.getLocale().getValue());
-		resolvedTimezone = resolve(computedLS.getTimezone().getValue());
+		resolvedTarget = target.getValue();
+		resolvedFormat = computedLS.getDateFormat().getValue();
+		resolvedLocale = computedLS.getLocale().getValue();
+		resolvedTimezone = computedLS.getTimezone().getValue();
 		
 		fieldPosition = metadata.getFieldPosition(resolvedTarget);
 
@@ -120,7 +120,7 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 		}
 		
 		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
-		dateFormat = DateFormatterFactory.getFormatter(resolvedFormat, realLocale);
+		dateFormat = DateFormatterFactory.getFormatter(resolvedFormat, realLocale, resolvedTimezone);
 	}
 
 	@Override
