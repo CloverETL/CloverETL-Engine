@@ -3053,6 +3053,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("matches3", false);
 		check("matches4", true);
 		check("matches5", false);
+		check("matches6", false);
+		check("matches7", false);
+		check("matches8", false);
+		check("matches9", true);
+		check("matches10", true);
 	}
 	
 	public void test_stringlib_matchGroups() {
