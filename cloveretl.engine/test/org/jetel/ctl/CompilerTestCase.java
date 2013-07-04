@@ -3174,6 +3174,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isInteger1", false);
 		check("isInteger2", false);
 		check("isInteger3", true);
+		check("isInteger4", false);
+		check("isInteger5", false);
 		check("isLong", true);
 		check("isLong1", false);
 		check("isLong2", false);
