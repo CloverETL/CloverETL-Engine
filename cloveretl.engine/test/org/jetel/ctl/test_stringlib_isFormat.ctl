@@ -20,6 +20,8 @@ boolean isInteger;
 boolean isInteger1;
 boolean isInteger2;
 boolean isInteger3;
+boolean isInteger4;
+boolean isInteger5;
 boolean isLong;
 boolean isLong1;
 boolean isLong2;
@@ -75,6 +77,8 @@ function integer transform() {
 	isInteger1=isInteger('78gd');
 	isInteger2=isInteger('8982.8992');
 	isInteger3=isInteger('-766542378');
+	isInteger4=isInteger(nullValue);
+	isInteger5=isInteger('');
 	printErr(str2integer('-766542378'));
 	isLong=isLong('7864232568822234');
 	isLong1=isLong('12345678901234567890');
