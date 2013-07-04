@@ -3271,6 +3271,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			"string an2;\n" +
 			"string an3;\n" +
 			"string an4;\n" +
+			"string an5;\n" +
+			"string an6;\n" +
+			"string an7;\n" +
+			"string an8;\n" +
 			"function integer transform() {\n" +
 				"an1=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\");\n" +
 				"printErr(an1);\n" +
@@ -3280,6 +3284,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"printErr(an3);\n" +
 				"an4=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",false,true);\n" +
 				"printErr(an4);\n" +
+				"an5=getAlphanumericChars(\"\");\n" +
+				"an6=getAlphanumericChars(\"\",true,true);\n"+
+				"an7=getAlphanumericChars(\"\",true,false);\n"+
+				"an8=getAlphanumericChars(\"\",false,true);\n"+
 				"return 0;\n" +
 			"}\n";
 		doCompile(expStr, "test_getAlphanumericChars");
@@ -3288,6 +3296,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("an2", "a1bcde2f");
 		check("an3", "abcdef");
 		check("an4", "12");
+		check("an5", "");
+		check("an6", "");
+		check("an7", "");
+		check("an8", "");
 	}
 	
 	public void test_stringlib_indexOf(){
