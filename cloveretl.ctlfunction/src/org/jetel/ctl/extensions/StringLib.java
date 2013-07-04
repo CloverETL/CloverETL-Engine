@@ -467,8 +467,11 @@ public class StringLib extends TLFunctionLibrary {
 	// IS ASCII
 	@TLFunctionAnnotation("Checks if the string contains only characters from the US-ASCII encoding")
 	public static final boolean isAscii(TLFunctionCallContext context, String input) {
-		return StringUtils.isAscii(input);
-
+		if(input != null){		
+			return StringUtils.isAscii(input);
+		} else {
+			return false;
+		}
 	}
 
 	class IsAsciiFunction implements TLFunctionPrototype {
