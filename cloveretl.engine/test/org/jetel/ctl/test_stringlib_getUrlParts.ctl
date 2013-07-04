@@ -15,6 +15,15 @@ string[] userInfo;
 string[] ref;
 string[] query;
 
+boolean isURL_empty;
+string path_empty;
+string protocol_empty;
+string host_empty;
+integer port_empty;
+string userInfo_empty;
+string ref_empty;
+string query_empty;
+
 
 function integer transform() {
 	for (integer i = 0; i < urls.length(); i++) {
@@ -27,6 +36,15 @@ function integer transform() {
 		ref[i] = getUrlRef(urls[i]);
 		query[i] = getUrlQuery(urls[i]);
 	}
-	
+
+	isURL_empty = isUrl("");
+	path_empty = getUrlPath("");
+	protocol_empty = getUrlProtocol("");
+	host_empty = getUrlHost("");
+	port_empty = getUrlPort("");
+	userInfo_empty = getUrlUserInfo("");
+	ref_empty = getUrlRef("");
+	query_empty = getUrlQuery("");
+		
 	return 0;
 }
