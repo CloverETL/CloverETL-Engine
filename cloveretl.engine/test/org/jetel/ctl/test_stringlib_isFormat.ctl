@@ -21,6 +21,7 @@ boolean isInteger3;
 boolean isLong;
 boolean isLong1;
 boolean isLong2;
+boolean isLong3;
 boolean isDate5;
 boolean isDate6;
 boolean isDate3;
@@ -73,6 +74,7 @@ function integer transform() {
 	isLong=isLong('7864232568822234');
 	isLong1=isLong('12345678901234567890');
 	isLong2=isLong('LONG!');
+	isLong3=isLong(nullValue);
 	isDate5=isDate('20Jul2000','ddMMMyyyy','en.US');
 	printErr(str2date('20Jul2000','ddMMMyyyy','en.GB'));
 	isDate6=isDate('20July     2000',"ddMMMM     yyyy",'en.US');
