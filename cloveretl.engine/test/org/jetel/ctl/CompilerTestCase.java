@@ -3160,6 +3160,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isBlank2", true);
 		check("isAscii1", true);
 		check("isAscii2", false);
+		check("isAscii3", false);
 		check("isNumber", false);
 		check("isNumber1", false);
 		check("isNumber2", true);
