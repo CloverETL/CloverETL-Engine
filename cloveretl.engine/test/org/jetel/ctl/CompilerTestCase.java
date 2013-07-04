@@ -3198,6 +3198,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate17", true);
 		check("isDate18", true);
 		check("isDate19", false);
+		check("isDate20", false);
 	}
 	
 	public void test_stringlib_empty_strings() {
