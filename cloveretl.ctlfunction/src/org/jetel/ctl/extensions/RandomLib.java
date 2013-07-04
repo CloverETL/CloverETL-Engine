@@ -25,9 +25,7 @@ import java.util.Map;
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.util.DataGenerator;
-import org.jetel.util.MiscUtils;
 import org.jetel.util.formatter.DateFormatter;
-import org.jetel.util.formatter.DateFormatterFactory;
 
 /**
  * @author javlin (info@cloveretl.com)
@@ -256,8 +254,16 @@ public class RandomLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			String locale = null;
+			String timeZone = null;
 			String format;
-			if (context.getParams().length > 3) {
+			if (context.getParams().length > 4) {
+				timeZone = stack.popString();
+				locale = stack.popString();
+				format = stack.popString();
+				String to = stack.popString();
+				String from = stack.popString();
+				stack.push(randomDate(context, from, to, format, locale, timeZone));
+			} else if (context.getParams().length > 3) {
 				locale = stack.popString();
 				format = stack.popString();
 				String to = stack.popString();
@@ -284,7 +290,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
 	public static final void randomDateInit(TLFunctionCallContext context) {
-		context.setCache(new TLDateFormatLocaleCache(context, 2, 3));
+		context.setCache(new TLDateFormatLocaleCache(context, 2, 3, 4));
 	}
 
 	@TLFunctionAnnotation("Generates a random date from interval specified by two dates.")
@@ -302,14 +308,17 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format.")
 	public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format) {
-		DateFormatter df = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, format, null, 1, 2);
-		return randomDate(context, from, to, df);
+		return randomDate(context, from, to, format, null);
 	}
 
 	@TLFunctionAnnotation("Generates a random from interval specified by string representation of dates in given format and locale.")
-	public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format,
-			String locale) {
-		DateFormatter df = DateFormatterFactory.getFormatter(format, MiscUtils.createLocale(locale));
+	public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format, String locale) {
+		return randomDate(context, from, to, format, locale, null);
+	}
+
+	@TLFunctionAnnotation("Generates a random from interval specified by string representation of dates in given format, locale and time zone.")
+	public static final Date randomDate(TLFunctionCallContext context, String from, String to, String format, String locale, String timeZone) {
+		DateFormatter df = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, format, locale, timeZone, 2, 3, 4);
 		return randomDate(context, from, to, df);
 	}
 

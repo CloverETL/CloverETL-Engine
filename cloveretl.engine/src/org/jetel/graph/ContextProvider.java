@@ -104,8 +104,13 @@ public class ContextProvider {
 	 * <code>null</code> if no graph is on thread context
 	 */
 	public static URL getContextURL() {
+		GraphRuntimeContext runtimeContext = getRuntimeContext();
+		return runtimeContext != null ? runtimeContext.getContextURL() : null;
+	}
+	
+	public static GraphRuntimeContext getRuntimeContext() {
 		TransformationGraph graph = getGraph();
-		return graph != null ? graph.getRuntimeContext().getContextURL() : null;
+		return graph != null ? graph.getRuntimeContext() : null;
 	}
 	
 	/**

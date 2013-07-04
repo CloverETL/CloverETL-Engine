@@ -21,7 +21,6 @@ package org.jetel.ctl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -43,9 +42,6 @@ public class Stack {
     /** Grow factor for stack array realocation */
     public static final float GROW_FACTOR = 1.6f;
     
-    // useful instance variables (used when evaluating certain expressions) 
-    public Calendar calendar; 
-    
     private Object[] stack;
     private ArrayList<Object[]> variableStack;
     private int top = -1;
@@ -57,7 +53,6 @@ public class Stack {
 	public Stack(int depth){
 		stack= new Object[depth];
 		variableStack = new ArrayList<Object[]>();
-		calendar = Calendar.getInstance();
 	}
 
 	/**

@@ -23,6 +23,7 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import org.jetel.data.Defaults;
 import org.jetel.util.MiscUtils;
@@ -50,15 +51,26 @@ class JavaDateFormatter implements DateFormatter {
 		this(null, locale);
 	}
 
+	public JavaDateFormatter(Locale locale, TimeZone timeZone) {
+		this(null, locale, timeZone);
+	}
+
 	public JavaDateFormatter(String pattern, Locale locale) {
+		this(pattern, locale, null);
+	}
+
+	public JavaDateFormatter(String pattern, Locale locale, TimeZone timeZone) {
 		if (locale == null) {
-			locale = MiscUtils.createLocale(Defaults.DEFAULT_LOCALE);
+			locale = MiscUtils.getDefaultLocale();
 		}
 		if (pattern == null) {
 			pattern = Defaults.DEFAULT_DATE_FORMAT;
 		}
 		this.dateFormat = new SimpleDateFormat(pattern, locale);
 		this.dateFormat.setLenient(false);
+		if (timeZone != null) {
+			this.dateFormat.setTimeZone(timeZone);
+		}
 		this.locale = locale;
 	}
 

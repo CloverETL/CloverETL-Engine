@@ -46,7 +46,9 @@ import java.util.Calendar;
 /**
  * @author dpavlis
  *
+ * @deprecated Jun 7, 2013 krivanekm - obsolete, Calendar does not respect time zones
  */
+@Deprecated
 public class CloverDate implements Comparable<CloverDate>, Serializable {
 
 	/**
@@ -125,7 +127,7 @@ public class CloverDate implements Comparable<CloverDate>, Serializable {
 	}
 	
 	public void setNow(){
-		datetime=Calendar.getInstance().getTimeInMillis();
+		datetime=System.currentTimeMillis();
 	}
 	
 	public CloverDate duplicate(){

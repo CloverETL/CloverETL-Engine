@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.jetel.data.Defaults;
 import org.jetel.util.MiscUtils;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -50,13 +51,21 @@ class JodaDateFormatter implements DateFormatter {
 	}
 
 	public JodaDateFormatter(String pattern, Locale locale) {
+		this(pattern, locale, null);
+	}
+
+	public JodaDateFormatter(String pattern, Locale locale, DateTimeZone timeZone) {
 		if (pattern == null) {
 			pattern = Defaults.DEFAULT_DATE_FORMAT;
 		}
 		if (locale == null) {
-			locale = MiscUtils.createLocale(Defaults.DEFAULT_LOCALE);
+			locale = MiscUtils.getDefaultLocale();
 		}
-		this.dateTimeFormatter = DateTimeFormat.forPattern(pattern).withLocale(locale);
+		DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern).withLocale(locale);
+		if (timeZone != null) {
+			formatter = formatter.withZone(timeZone);
+		}
+		this.dateTimeFormatter = formatter;
 		this.pattern = pattern;
 		this.locale = locale;
 	}

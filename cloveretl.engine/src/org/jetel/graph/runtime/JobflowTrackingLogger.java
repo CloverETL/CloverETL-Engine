@@ -19,7 +19,7 @@
 package org.jetel.graph.runtime;
 
 import java.text.DateFormat;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -66,7 +66,7 @@ public class JobflowTrackingLogger extends TrackingLogger {
         // France is here just to get 24hour time format
         logger.info("Time: "
             + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
-                format(Calendar.getInstance().getTime()));
+                format(new Date()));
         if (finalTracking) {
         	logger.info("Node                   ID         Port      #Records");
         } else {

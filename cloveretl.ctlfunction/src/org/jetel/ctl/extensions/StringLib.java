@@ -544,7 +544,7 @@ public class StringLib extends TLFunctionLibrary {
 	// IS DATE
 	@TLFunctionInitAnnotation
     public static final void isDateInit(TLFunctionCallContext context) {
-    	context.setCache(new TLDateFormatLocaleCache(context, 1, 2));
+    	context.setCache(new TLDateFormatLocaleCache(context, 1, 2, 3));
     }	
 	
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern")
@@ -554,7 +554,12 @@ public class StringLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern and locale.")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale) {
-		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, 1, 2);
+		return isDate(context, input, pattern, locale, null);
+	}
+
+	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale and time zone.")
+	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
+		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
 		return formatter.tryParse(input);
 	}
 
@@ -569,7 +574,11 @@ public class StringLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 
 			String locale = null;
+			String timeZone = null;
 
+			if (context.getParams().length > 3) {
+				timeZone = stack.popString();
+			}
 			if (context.getParams().length > 2) {
 				locale = stack.popString();
 			}
@@ -577,7 +586,7 @@ public class StringLib extends TLFunctionLibrary {
 			final String pattern = stack.popString();
 			final String input = stack.popString();
 
-			stack.push(isDate(context, input, pattern, locale));
+			stack.push(isDate(context, input, pattern, locale, timeZone));
 		}
 
 	}
@@ -852,6 +861,9 @@ public class StringLib extends TLFunctionLibrary {
 			while (m.find()) {
 				ret.add(m.group(groupNo));
 			}
+		}else{
+			throw new TransformLangExecutorRuntimeException(
+					CtlExtensionsMessages.getString("StringLib.wrong_regexp_group_number")); //$NON-NLS-1$
 		}
 		return ret;
 		

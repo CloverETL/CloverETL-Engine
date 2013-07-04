@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 
 import junit.framework.AssertionFailedError;
 
@@ -42,6 +43,8 @@ import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
@@ -83,6 +86,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	static {
 		Calendar c = Calendar.getInstance();
 		c.set(2008, 12, 25, 13, 25, 55);
+		c.set(Calendar.MILLISECOND, 333);
 		BORN_VALUE = c.getTime();
 		BORN_MILLISEC_VALUE = c.getTimeInMillis();
 	}
@@ -1226,7 +1230,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("longString", String.valueOf(tmp));
 	}
 	
-	public void test_type_date() {
+	public void test_type_date() throws Exception {
 		doCompile("test_type_date");
 		check("d3", new GregorianCalendar(2006, GregorianCalendar.AUGUST, 1).getTime());
 		check("d2", new GregorianCalendar(2006, GregorianCalendar.AUGUST, 2, 15, 15, 3).getTime());
@@ -1235,6 +1239,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkNull("nullValue");
 		check("minValue", new GregorianCalendar(1970, GregorianCalendar.JANUARY, 1, 1, 0, 0).getTime());
 		checkNull("varWithNullInitializer");
+		
+		// test with a default time zone set on the GraphRuntimeContext
+		Context context = null;
+		try {
+			tearDown();
+			setUp();
+			
+			TransformationGraph graph = new TransformationGraph();
+			graph.getRuntimeContext().setTimeZone("GMT+8");
+			context = ContextProvider.registerGraph(graph);
+
+			doCompile("test_type_date");
+			
+			Calendar calendar = new GregorianCalendar(2006, GregorianCalendar.AUGUST, 2, 15, 15, 3);
+			calendar.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+			check("d2", calendar.getTime());
+			calendar.set(2006, 0, 1, 1, 2, 3);
+			check("d1", calendar.getTime());
+		} finally {
+			ContextProvider.unregister(context);
+		}
 	}
 	
 	public void test_type_boolean() {
@@ -1954,8 +1979,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("jpluss", "100hello");
 		check("splusm", "hello" + Long.valueOf(Integer.MAX_VALUE));
 		check("mpluss", Long.valueOf(Integer.MAX_VALUE) + "hello");
-		check("splusm1", "hello" + 0.001D);
-		check("m1pluss", 0.001D + "hello");
+		check("splusm1", "hello" + Double.valueOf(0.001D));
+		check("m1pluss", Double.valueOf(0.001D) + "hello");
 		check("splusd1", "hello" + new BigDecimal("0.0001"));
 		check("d1pluss", new BigDecimal("0.0001", MAX_PRECISION) + "hello");
 	}
@@ -2891,16 +2916,70 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				
 		check("concat", "");
 		check("concat1", "ello hi   ELLO 2,today is " + format.format(new Date()));
+		check("concat2", "");
+		check("concat3", "clover");
 	}
 	
 	public void test_stringlib_countChar() {
 		doCompile("test_stringlib_countChar");
 		check("charCount", 3);
+		check("count2", 0);
+	}
+	
+	public void test_stringlib_countChar_emptychar() {
+		// test: attempt to count empty chars in string.
+		try {
+			doCompile("integer charCount;function integer transform() {charCount = countChar('aaa','');return 0;}", "test_stringlib_countChar_emptychar");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// test: attempt to count empty chars in empty string.
+		try {
+			doCompile("integer charCount;function integer transform() {charCount = countChar('','');return 0;}", "test_stringlib_countChar_emptychar");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_cut() {
 		doCompile("test_stringlib_cut");
 		check("cutInput", Arrays.asList("a", "1edf", "h3ijk"));
+	}
+	
+	public void test_string_cut_expect_error() {
+		// test: Attempt to cut substring from position after the end of original string. E.g. string is 6 char long and
+		// user attempt to cut out after position 8.
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = 'abc1edf2geh3ijk10lmn999opq';cutInput = cut(input,[28,3]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// test: Attempt to cut substring longer then possible. E.g. string is 6 characters long and user cuts from
+		// position
+		// 4 substring 4 characters long
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = 'abc1edf2geh3ijk10lmn999opq';cutInput = cut(input,[20,8]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// test: Attempt to cut a substring with negative length
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = 'abc1edf2geh3ijk10lmn999opq';cutInput = cut(input,[20,-3]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// test: Attempt to cut substring from negative position. E.g cut([-3,3]).
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = 'abc1edf2geh3ijk10lmn999opq';cutInput = cut(input,[-3,3]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_editDistance() {
@@ -2920,6 +2999,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_find() {
 		doCompile("test_stringlib_find");
 		check("findList", Arrays.asList("The quick br", "wn f", "x jumps ", "ver the lazy d", "g"));
+		check("findList2", Arrays.asList("mark.twain"));
+		check("findList3", Arrays.asList());
+		check("findList4", Arrays.asList("", "", "", "", ""));
+		check("findList5", Arrays.asList("twain"));
+	}
+	
+	public void test_stringlib_find_expect_error() {
+		try {
+			doCompile("string[] findList;function integer transform() {findList = find('mark.twain@javlin.eu','(^[a-z]*).([a-z]*)',5);	return 0;}", "test_stringlib_find_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
+
 	}
 	
 	public void test_stringlib_join() {
@@ -3003,6 +3095,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_stringlib_nysiis");
 		check("nysiis1", "CAP");
 		check("nysiis2", "CAP");
+		check("nysiis3", "1234");
+		check("nysiis4", "C2 PRADACTAN");
 	}
 	
 	public void test_stringlib_replace() {
@@ -3096,6 +3190,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate14", false);
 		// empty string: invalid
 		check("isDate15", false);
+		
+		check("isDate16", false);
+		check("isDate17", true);
+		check("isDate18", true);
+		check("isDate19", false);
 	}
 	
 	public void test_stringlib_empty_strings() {
@@ -3224,6 +3323,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("s7", "helloworld");
 		check("s3", "hello ");
 		check("s4", "hello");
+		check("s8", "hello");
+		check("s9", "world");
+		check("s10", "hello");
+		check("s11", "world");
+		check("s12", "mark.twain");
+		check("s13", "two words");
+		check("s14", "");
+		check("s15", "");
+		check("s16", "");
+		check("s17", "");
+		check("s18", "");
+		check("s19", "word");
+		check("s20", "");
 	}
 	
 //-------------------------- MathLib Tests ------------------------
@@ -3486,6 +3598,102 @@ public abstract class CompilerTestCase extends CloverTestCase {
     	check("bornExtractDate", cal.getTime());
     	check("originalDate", BORN_VALUE);
 	}
+	
+	public void test_datelib_createDate() {
+		doCompile("test_datelib_createDate");
+		
+		Calendar cal = Calendar.getInstance();
+		
+		// no time zone
+		cal.clear();
+		cal.set(2013, 5, 11);
+		check("date1", cal.getTime());
+		
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		check("dateTime1", cal.getTime());
+		
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		cal.set(Calendar.MILLISECOND, 123);
+		check("dateTimeMillis1", cal.getTime());
+
+		// literal
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+5"));
+		
+		cal.clear();
+		cal.set(2013, 5, 11);
+		check("date2", cal.getTime());
+		
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		check("dateTime2", cal.getTime());
+
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		cal.set(Calendar.MILLISECOND, 123);
+		check("dateTimeMillis2", cal.getTime());
+
+		// variable
+		cal.clear();
+		cal.set(2013, 5, 11);
+		check("date3", cal.getTime());
+		
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		check("dateTime3", cal.getTime());
+
+		cal.clear();
+		cal.set(2013, 5, 11, 14, 27, 53);
+		cal.set(Calendar.MILLISECOND, 123);
+		check("dateTimeMillis3", cal.getTime());
+	}
+	
+	public void test_datelib_getPart() {
+		doCompile("test_datelib_getPart");
+		
+		Calendar cal = Calendar.getInstance();
+		
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+1"));
+		cal.set(2013, 5, 11, 14, 46, 34);
+		cal.set(Calendar.MILLISECOND, 123);
+		
+		Date date = cal.getTime();
+		
+		cal = Calendar.getInstance();
+		cal.setTime(date);
+		
+		// no time zone
+		check("year1", cal.get(Calendar.YEAR));
+		check("month1", cal.get(Calendar.MONTH) + 1);
+		check("day1", cal.get(Calendar.DAY_OF_MONTH));
+		check("hour1", cal.get(Calendar.HOUR_OF_DAY));
+		check("minute1", cal.get(Calendar.MINUTE));
+		check("second1", cal.get(Calendar.SECOND));
+		check("millisecond1", cal.get(Calendar.MILLISECOND));
+		
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+5"));
+		
+		// literal
+		check("year2", cal.get(Calendar.YEAR));
+		check("month2", cal.get(Calendar.MONTH) + 1);
+		check("day2", cal.get(Calendar.DAY_OF_MONTH));
+		check("hour2", cal.get(Calendar.HOUR_OF_DAY));
+		check("minute2", cal.get(Calendar.MINUTE));
+		check("second2", cal.get(Calendar.SECOND));
+		check("millisecond2", cal.get(Calendar.MILLISECOND));
+
+		// variable
+		check("year3", cal.get(Calendar.YEAR));
+		check("month3", cal.get(Calendar.MONTH) + 1);
+		check("day3", cal.get(Calendar.DAY_OF_MONTH));
+		check("hour3", cal.get(Calendar.HOUR_OF_DAY));
+		check("minute3", cal.get(Calendar.MINUTE));
+		check("second3", cal.get(Calendar.SECOND));
+		check("millisecond3", cal.get(Calendar.MILLISECOND));
+	}
+	
 //-----------------Convert Lib tests-----------------------
 	public void test_convertlib_cache() {
 		// set default locale to en.US so the date is formatted uniformly on all systems
@@ -3580,6 +3788,23 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		SimpleDateFormat sdfEN = new SimpleDateFormat("yyyy:MMMM:dd", MiscUtils.createLocale("en"));
 		check("englishBornDate", sdfEN.format(BORN_VALUE));
+		
+		
+		{
+			String[] locales = {"en", "pl", null, "cs.CZ", null};
+			List<String> expectedDates = new ArrayList<String>();
+			
+			for (String locale: locales) {
+				expectedDates.add(new SimpleDateFormat("yyyy:MMMM:dd", MiscUtils.createLocale(locale)).format(BORN_VALUE));
+			}
+			
+			check("loopTest", expectedDates);
+		}
+		
+		SimpleDateFormat sdfGMT8 = new SimpleDateFormat("yyyy:MMMM:dd z", MiscUtils.createLocale("en"));
+		sdfGMT8.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+		check("timeZone", sdfGMT8.format(BORN_VALUE));
+		
 	}
 	
 	public void test_convertlib_decimal2double() {
@@ -3721,6 +3946,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		check("date1", checkDate);
 		check("date2", checkDate);
+		
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT+8"));
+		cal.set(2013, 04, 30, 17, 15, 12);
+		check("withTimeZone1", cal.getTime());
+		
+		cal.clear();
+		cal.setTimeZone(TimeZone.getTimeZone("GMT-8"));
+		cal.set(2013, 04, 30, 17, 15, 12);
+		check("withTimeZone2", cal.getTime());
+		
+		assertFalse(getVariable("withTimeZone1").equals(getVariable("withTimeZone2")));
 	}
 
 	public void test_convertlib_str2decimal() {
@@ -3728,6 +3965,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("parsedDecimal1", new BigDecimal("100.13"));
 		check("parsedDecimal2", new BigDecimal("123123123.123"));
 		check("parsedDecimal3", new BigDecimal("-350000.01"));
+		check("parsedDecimal4", new BigDecimal("1000000"));
+		check("parsedDecimal5", new BigDecimal("1000000.99"));
+		check("parsedDecimal6", new BigDecimal("123123123.123"));
 	}
 
 	public void test_convertlib_str2double() {
@@ -4037,4 +4277,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("query", query);
 		
 	}
+	
+	public void test_randomlib_randomDate() {
+		doCompile("test_randomlib_randomDate");
+		
+		final long HOUR = 60L * 60L * 1000L;
+		Date BORN_VALUE_NO_MILLIS = new Date(BORN_VALUE.getTime() / 1000L * 1000L);
+		
+		check("noTimeZone1", BORN_VALUE);
+		check("noTimeZone2", BORN_VALUE_NO_MILLIS);
+		
+		check("withTimeZone1", new Date(BORN_VALUE_NO_MILLIS.getTime() + 2*HOUR)); // timezone changes from GMT+5 to GMT+3
+		check("withTimeZone2", new Date(BORN_VALUE_NO_MILLIS.getTime() - 2*HOUR)); // timezone changes from GMT+3 to GMT+5
+	}
+	
 }

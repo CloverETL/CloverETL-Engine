@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.zip.Deflater;
 
 import org.apache.commons.logging.Log;
@@ -35,6 +36,7 @@ import org.jetel.util.MemoryUtils;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.StringUtils;
+import org.joda.time.DateTimeZone;
 
 /**
  * Helper class which contains some framework-wide constants definitions.<br>
@@ -237,6 +239,7 @@ public final class Defaults {
         DEFAULT_TIME_FORMAT = getStringProperties("DEFAULT_TIME_FORMAT", "HH:mm:ss");
         DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
         DEFAULT_LOCALE = getStringProperties("DEFAULT_LOCALE", MiscUtils.localeToString(Locale.getDefault()));
+        DEFAULT_TIME_ZONE = getStringProperties("DEFAULT_TIME_ZONE", "'java:"+ TimeZone.getDefault().getID() + "';'joda:" + DateTimeZone.getDefault().getID() + "'");
         DEFAULT_REGEXP_TRUE_STRING = getStringProperties("DEFAULT_REGEXP_TRUE_STRING", "T|TRUE|YES|Y||t|true|1|yes|y");
         DEFAULT_REGEXP_FALSE_STRING = getStringProperties("DEFAULT_REGEXP_FALSE_STRING", "F|FALSE|NO|N||f|false|0|no|n");
         DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
@@ -312,6 +315,7 @@ public final class Defaults {
 	public static String DEFAULT_TIME_FORMAT;// = "HH:mm:ss";
 	public static String DEFAULT_DATETIME_FORMAT;// = "yyyy-MM-dd HH:mm:ss";
 	public static String DEFAULT_LOCALE;// = MiscUtils.localeToString(Locale.getDefault());
+	public static String DEFAULT_TIME_ZONE;// = TimeZone.getDefault().getID();
 	public static String DEFAULT_REGEXP_TRUE_STRING;// = "T|TRUE|YES|Y|t|true|1|yes|y"
 	public static String DEFAULT_REGEXP_FALSE_STRING;// = "F|FALSE|NO|N|f|false|0|no|n"
 
