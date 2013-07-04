@@ -4288,6 +4288,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ref", ref);
 		check("query", query);
 		
+		check("isURL_empty", false);
+		check("path_empty", null);
+		check("protocol_empty", null);
+		check("host_empty", null);
+		check("port_empty", -2);
+		check("userInfo_empty", null);
+		check("ref_empty", null);
+		check("query_empty", null);
 	}
 	
 	public void test_randomlib_randomDate() {
