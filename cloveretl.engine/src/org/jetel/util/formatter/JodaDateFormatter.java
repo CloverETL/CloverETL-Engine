@@ -70,6 +70,12 @@ class JodaDateFormatter implements DateFormatter {
 	public Date parseDate(String value) {
 		return new Date(parseMillis(value));
 	}
+	
+	@Override
+	public Date parseDateStrict(String value) {
+		// joda is automatically strict about garbage text at the end of the string
+		return parseDate(value);
+	}
 
 	@Override
 	public long parseMillis(String value) {
@@ -100,5 +106,5 @@ class JodaDateFormatter implements DateFormatter {
 	public void setLenient(boolean lenient) {
 		//DO NOTHING - no lenient parsing option
 	}
-
+	
 }

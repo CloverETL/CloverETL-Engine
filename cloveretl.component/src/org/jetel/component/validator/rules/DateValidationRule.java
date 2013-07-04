@@ -19,6 +19,7 @@
 package org.jetel.component.validator.rules;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.Locale;
 
 import javax.xml.bind.annotation.XmlElement;
@@ -141,31 +142,23 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 			tempString = tempString.trim();
 		}
 		
-		boolean parsed = dateFormat.tryParse(tempString);
-		/*
-		 * FIXME: decide whether we keep this or not
-		if(!dateFormat.format(parsedDate).equals(tempString.trim())) {
-			logError("Field '" + resolvedTarget + "' parsed as '" + parsedDate.toString() + "' is not a date with given settings (double check failed).");
-			if (ea != null)
-				raiseError(ea, ERROR_DOUBLE_CHECK, "The target field is not correct date, double check failed.", resolvedTarget, tempString);
-			return State.INVALID;
+		try {
+			Date parsed = dateFormat.parseDateStrict(tempString);
+			// later, register this as output value
 		}
-		*/
-		
-		if (parsed) {
+		catch (IllegalArgumentException e) {
 			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget + "' with value '" + tempString + "' is date with given settings.");
-			}
-			return State.VALID;
-		}
-		else {
-			if (isLoggingEnabled()) {
-				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' is not a date with given settings.");
+				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' cannot be parsed: " + e.getMessage());
 			}
 			if (ea != null)
-				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
+				raiseError(ea, ERROR_PARSING, "Cannot parse date: " + e.getMessage(), resolvedTarget, tempString);
 			return State.INVALID;	
 		}
+		
+		if (isLoggingEnabled()) {
+			logSuccess("Field '" + resolvedTarget + "' with value '" + tempString + "' is date with given settings.");
+		}
+		return State.VALID;
 	}
 
 	@Override
@@ -173,7 +166,6 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		LanguageSetting originalLS = getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0);
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(originalLS, parentLanguageSetting);

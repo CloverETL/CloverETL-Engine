@@ -87,6 +87,10 @@ public class DateValidationRuleTest extends ValidatorTestCase {
 		// Default pattern (DateTime)
 		assertInvalid(rule, RF.addStringField(null, "field", "2012-06-08"));
 		assertValid(rule, RF.addStringField(null, "field", "2012-06-08 10:20:30"));
+		assertValid(rule, RF.addStringField(null, "field", "2012-06-08  10:20:30"));
+		assertValid(rule, RF.addStringField(null, "field", "2012-06-8  10:20:30"));
+		assertValid(rule, RF.addStringField(null, "field", "2012-06-008  10:20:30"));
+		assertInvalid(rule, RF.addStringField(null, "field", "2012-06-08  10:20:30xxxxx"));
 		assertValid(rule, RF.addStringField(null, "field", "2012-6-8 10:20:30"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2012-13-08 10:20:30"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2011-2-29 10:20:30"));
