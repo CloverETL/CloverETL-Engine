@@ -1,8 +1,6 @@
 package org.jetel.ctl;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
@@ -4174,7 +4172,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_utillib_sleep() {
 		long time = System.currentTimeMillis();
 		doCompile("test_utillib_sleep");
-		assertTrue("sleep() function didn't pause execution", System.currentTimeMillis() - time > 1000);
+		long tmp = System.currentTimeMillis() - time;
+		assertTrue("sleep() function didn't pause execution "+ tmp, tmp >= 1000);
 	}
 	
 	public void test_utillib_random_uuid() {
@@ -4301,6 +4300,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("userInfo_empty", null);
 		check("ref_empty", null);
 		check("query_empty", null);
+		
+		check("isURL_null", false);
+		check("path_null", null);
+		check("protocol_null", null);
+		check("host_null", null);
+		check("port_null", -2);
+		check("userInfo_null", null);
+		check("ref_null", null);
+		check("query_empty", null);
+		
 	}
 	
 	public void test_randomlib_randomDate() {
