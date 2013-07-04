@@ -2916,16 +2916,70 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				
 		check("concat", "");
 		check("concat1", "ello hi   ELLO 2,today is " + format.format(new Date()));
+		check("concat2", "");
+		check("concat3", "clover");
 	}
 	
 	public void test_stringlib_countChar() {
 		doCompile("test_stringlib_countChar");
 		check("charCount", 3);
+		check("count2", 0);
+	}
+	
+	public void test_stringlib_countChar_emptychar() {
+		// test: attempt to count empty chars in string.
+		try {
+			doCompile("integer charCount;function integer transform() {charCount = countChar('aaa','');return 0;}", "test_stringlib_countChar_emptychar");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// test: attempt to count empty chars in empty string.
+		try {
+			doCompile("integer charCount;function integer transform() {charCount = countChar('','');return 0;}", "test_stringlib_countChar_emptychar");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_cut() {
 		doCompile("test_stringlib_cut");
 		check("cutInput", Arrays.asList("a", "1edf", "h3ijk"));
+	}
+	
+	public void test_string_cut_expect_error() {
+		// test: Attempt to cut substring from position after the end of original string. E.g. string is 6 char long and
+		// user attempt to cut out after position 8.
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = 'abc1edf2geh3ijk10lmn999opq';cutInput = cut(input,[28,3]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// test: Attempt to cut substring longer then possible. E.g. string is 6 characters long and user cuts from
+		// position
+		// 4 substring 4 characters long
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = 'abc1edf2geh3ijk10lmn999opq';cutInput = cut(input,[20,8]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// test: Attempt to cut a substring with negative length
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = 'abc1edf2geh3ijk10lmn999opq';cutInput = cut(input,[20,-3]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// test: Attempt to cut substring from negative position. E.g cut([-3,3]).
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = 'abc1edf2geh3ijk10lmn999opq';cutInput = cut(input,[-3,3]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_editDistance() {
@@ -2945,6 +2999,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_find() {
 		doCompile("test_stringlib_find");
 		check("findList", Arrays.asList("The quick br", "wn f", "x jumps ", "ver the lazy d", "g"));
+		check("findList2", Arrays.asList("mark.twain"));
+		check("findList3", Arrays.asList());
+		check("findList4", Arrays.asList("", "", "", "", ""));
+		check("findList5", Arrays.asList("twain"));
+	}
+	
+	public void test_stringlib_find_expect_error() {
+		try {
+			doCompile("string[] findList;function integer transform() {findList = find('mark.twain@javlin.eu','(^[a-z]*).([a-z]*)',5);	return 0;}", "test_stringlib_find_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
+
 	}
 	
 	public void test_stringlib_join() {
@@ -3028,6 +3095,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_stringlib_nysiis");
 		check("nysiis1", "CAP");
 		check("nysiis2", "CAP");
+		check("nysiis3", "1234");
+		check("nysiis4", "C2 PRADACTAN");
 	}
 	
 	public void test_stringlib_replace() {
@@ -3254,6 +3323,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("s7", "helloworld");
 		check("s3", "hello ");
 		check("s4", "hello");
+		check("s8", "hello");
+		check("s9", "world");
+		check("s10", "hello");
+		check("s11", "world");
+		check("s12", "mark.twain");
+		check("s13", "two words");
+		check("s14", "");
+		check("s15", "");
+		check("s16", "");
+		check("s17", "");
+		check("s18", "");
+		check("s19", "word");
+		check("s20", "");
 	}
 	
 //-------------------------- MathLib Tests ------------------------
