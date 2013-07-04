@@ -52,6 +52,7 @@ public class EmailValidationRule extends StringValidationRule {
 	public static final int INVALID_EMAIL_ADDRESS = 1301;
 	public static final int NOT_PLAIN_EMAIL_ADDRESS = 1302;
 	public static final int GROUP_EMAIL_ADDRESS = 1303;
+	public static final int EMPTY_EMAIL_ADDRESS = 1304;
 
 	@XmlElement(name="plainAddress",required=false)
 	private BooleanValidationParamNode plainAddressParam = new BooleanValidationParamNode(false);
@@ -92,6 +93,12 @@ public class EmailValidationRule extends StringValidationRule {
 		}
 		
 		String inputString = prepareInput(record);
+		
+		if (inputString == null || inputString.isEmpty()) {
+			if (ea != null)
+				raiseError(ea, EMPTY_EMAIL_ADDRESS, "Empty string instead of e-mail address", resolvedTarget, inputString);
+			return State.INVALID;
+		}
 		
 		boolean plainAddress = plainAddressParam.getValue();
 		boolean allowGroupAddresses = allowGroupAddressesParam.getValue();
@@ -146,8 +153,7 @@ public class EmailValidationRule extends StringValidationRule {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
-		String resolvedTarget = resolve(target.getValue());
+		String resolvedTarget = target.getValue();
 		boolean state = true;
 		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");

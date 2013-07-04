@@ -39,6 +39,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 
 import com.google.i18n.phonenumbers.NumberParseException;
+import com.google.i18n.phonenumbers.NumberParseException.ErrorType;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 
@@ -55,6 +56,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 	private static final int ERROR_CODE_CANNOT_PARSE = 1401;
 	private static final int ERROR_CODE_INVALID_PHONE_NUMBER = 1402;
 	private static final int ERROR_CODE_PATTERN_MISMATCH = 1403;
+	private static final int ERROR_PHONE_NUMBER_EMPTY = 1404;
 
 	@Override
 	public TARGET_TYPE getTargetType() {
@@ -122,13 +124,25 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		}
 		
 		String inputString = prepareInput(record);
+		if (inputString == null || inputString.isEmpty()) {
+			if (ea != null) {
+				raiseError(ea, ERROR_PHONE_NUMBER_EMPTY, "Empty string where phone number was expected", resolvedTarget, inputString);
+			}
+			return State.INVALID;
+		}
 		
 		PhoneNumber phoneNumber;
 		try {
 			phoneNumber = phoneUtil.parse(inputString, resolvedRegion);
 		} catch (NumberParseException e) {
-			if (ea != null)
-				raiseError(ea, ERROR_CODE_CANNOT_PARSE, e.getMessage(), resolvedTarget, inputString);
+			if (ea != null) {
+				if (e.getErrorType() == ErrorType.INVALID_COUNTRY_CODE && (resolvedRegion == null || resolvedRegion.isEmpty())) {
+					raiseError(ea, ERROR_CODE_CANNOT_PARSE, "Phone number starts with invalid country code and no region is specified", resolvedTarget, inputString);
+				}
+				else {
+					raiseError(ea, ERROR_CODE_CANNOT_PARSE, e.getMessage(), resolvedTarget, inputString);
+				}
+			}
 			return State.INVALID;
 		}
 		if (!phoneUtil.isValidNumber(phoneNumber)) {
