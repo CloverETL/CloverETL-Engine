@@ -38,8 +38,11 @@ final public class StringEnumValidationParamNode extends ValidationParamNode {
 		
 	}	
 	public void setValue(String value) {
-		if(value != null) {
+		if(value != null && !this.value.equals(value)) {
 			this.value = value;
+			if (getChangeHandler() != null) {
+				getChangeHandler().changed(value);
+			}
 		}
 	}
 	public String getValue() {

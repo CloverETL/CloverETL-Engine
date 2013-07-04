@@ -137,6 +137,7 @@ public class DateValidationRuleTest extends ValidatorTestCase {
 		rule.getTarget().setValue("field");
 		
 		rule.getLanguageSettings(0).getDateFormat().setValue("joda:yyyy-MM-dd");
+		rule.getLanguageSettings(0).getTimezone().setValue("joda:Europe/Prague");
 		assertValid(rule, RF.addStringField(null, "field", "2012-02-02"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2011-02-29"));
 		assertInvalid(rule, RF.addStringField(null, "field", "2012a-02-02"));

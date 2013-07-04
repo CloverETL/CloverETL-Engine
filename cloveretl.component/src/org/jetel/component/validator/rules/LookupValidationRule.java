@@ -34,6 +34,7 @@ import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
+import org.jetel.component.validator.params.ValidationParamNode.ChangeHandler;
 import org.jetel.component.validator.utils.ValidatorUtils;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
@@ -43,7 +44,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Rule to check whether given field(s) is present or not present in selected lookup table.</p>
@@ -51,7 +51,7 @@ import org.jetel.util.string.StringUtils;
  * Available parameters:
  * <ul>
  * 	<li>Lookup table. ID of lookup table from graph.</li>
- *  <li>Key mapping. Mapping key to fields, comma separated. For example: part_of_lookup_key=field</li
+ *  <li>Key mapping. Mapping key to fields, comma separated. For example: part_of_lookup_key=field</li>
  *  <li>Policy. @see {@link POLICY}</li>
  * </ul>
  * @author drabekj (info@cloveretl.com) (c) Javlin, a.s. (www.cloveretl.com)
@@ -99,18 +99,28 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 	private Map<String, String> keyMappingMap;
 
 	@Override
-	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
+	protected void initializeParameters(final DataRecordMetadata inMetadata, final GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
 		target.setPlaceholder("Specified by mapping");
 		lookupParam.setName("Lookup name");
 		lookupParam.setOptions(graphWrapper.getLookupTables().toArray(new String[0]));
+		lookupParam.setChangeHandler(new ChangeHandler() {
+			@Override
+			public void changed(Object o) {
+				try {
+					initLookupTable(graphWrapper);
+				} catch (ComponentNotReadyException e) {
+					throw new JetelRuntimeException(e);
+				}
+			}
+		});
 		mappingParam.setName("Key mapping");
 		mappingParam.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
 		policy.setName("Rule policy");
 		
 		try {
-			initLookupTable(graphWrapper, inMetadata);
+			initLookupTable(graphWrapper);
 		} catch (ComponentNotReadyException e) {
 			throw new JetelRuntimeException(e);
 		}
@@ -130,28 +140,39 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 		return lookupKeyFieldNamesArrays;
 	}
 
-	/**
-	 * Lazy and one graph run persistent initialization of lookup table nad lookup.
-	 * @param graphWrapper Graph wrapper
-	 * @throws ComponentNotReadyException 
-	 * @throws IllegalArgumentException when initialization fails (due to lookup problems)
-	 */
-	private void initLookupTable(GraphWrapper graphWrapper, DataRecordMetadata inputDataMetadata) throws ComponentNotReadyException {
+	private void initLookupTable(GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		lookupKeyFieldNamesArrays = new String[0];
+		lookupTable = graphWrapper.getLookupTable(lookupParam.getValue());
+		
+		if (lookupTable == null) {
+			return;
+		}
+		lookupTable.init();
+		
+		DataRecordMetadata lookupKeyMetadata = lookupTable.getKeyMetadata();
+		lookupKeyFieldNamesArrays = lookupKeyMetadata.getFieldNamesArray();
+	}
+	
+	private void parseKeyMapping() throws ParseException {
+		keyMappingMap = ValidatorUtils.parseMappingToMap(mappingParam.getValue());
+	}
+	
+	@Override
+	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
+		super.init(metadata, graphWrapper);
+		
+		initLookupTable(graphWrapper);
+		if(lookupTable == null) {
+			throw new ComponentNotReadyException("Lookup table " + lookupParam.getValue() + " not found");
+		}
+		
 		try {
 			parseKeyMapping();
 		} catch (ParseException e) {
 			throw new ComponentNotReadyException(e);
 		}
 		
-		lookupTable = graphWrapper.getLookupTable(resolve(lookupParam.getValue()));
-		if(lookupTable == null) {
-			throw new ComponentNotReadyException("Lookup table " + lookupParam.getValue() + " not found");
-		}
-		lookupTable.init();
-		
 		DataRecordMetadata lookupKeyMetadata = lookupTable.getKeyMetadata();
-		lookupKeyFieldNamesArrays = lookupKeyMetadata.getKeyFieldNames().toArray(new String[0]);
-		
 		inputDataKeyFields = new String[lookupKeyMetadata.getNumFields()];
 		
 		for (int i = 0; i < inputDataKeyFields.length; i++) {
@@ -163,24 +184,9 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 			inputDataKeyFields[i] = inputFieldName;
 		}
 		
-		lookupKey = new RecordKey(inputDataKeyFields, inputDataMetadata);
+		lookupKey = new RecordKey(inputDataKeyFields, metadata);
 		lookupKey.init();
 		lookup = lookupTable.createLookup(lookupKey);
-	}
-	
-	private void parseKeyMapping() throws ParseException {
-		keyMappingMap = ValidatorUtils.parseMappingToMap(resolve(mappingParam.getValue()));
-	}
-	
-	@Override
-	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
-		super.init(metadata, graphWrapper);
-		
-		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
-		}
-
-		initLookupTable(graphWrapper, metadata);
 	}
 	
 	@Override
