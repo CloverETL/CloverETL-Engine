@@ -559,8 +559,13 @@ public class StringLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale and time zone.")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
-		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
-		return formatter.tryParse(input);
+		
+		if(input != null) {
+			DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
+			return formatter.tryParse(input);
+		} else {
+			return false;
+		}
 	}
 
 	class IsDateFunction implements TLFunctionPrototype {
