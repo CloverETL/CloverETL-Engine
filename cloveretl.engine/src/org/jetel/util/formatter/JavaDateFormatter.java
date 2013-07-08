@@ -106,12 +106,17 @@ class JavaDateFormatter implements DateFormatter {
 	
 	@Override
 	public boolean tryParse(String value) {
-		position.setIndex(0);
-		dateFormat.parse(value,position);
-		if (position.getIndex()==0)
+		if(value != null){
+		
+			position.setIndex(0);
+			dateFormat.parse(value,position);
+			if (position.getIndex()==0)
+				return false;
+			else
+				return true;
+		} else {
 			return false;
-		else
-			return true;
+		}
 	}
 
 	@Override
