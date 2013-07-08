@@ -98,7 +98,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		
 		region.setName("Region");
 		region.setPlaceholder("None (international phone number expected)");
-		pattern.setName("Required pattern");
+		pattern.setName("Phone number pattern");
 		pattern.setPlaceholder("None (no strict format required)");
 		
 		String[] regions = phoneUtil.getSupportedRegions().toArray(new String[0]);
