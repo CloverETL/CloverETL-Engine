@@ -1747,7 +1747,7 @@ public class StringUtils {
 	 *         3 if str is integer but has more than 18 digits
 	 */
 	public static short isInteger(CharSequence str) {
-		if (str.length() == 0) {
+		if (str == null || str.length() == 0) {
 			return -1;
 		}
 		int start = 0;
@@ -1783,7 +1783,7 @@ public class StringUtils {
 	 * @return
 	 */
 	public static boolean isNumber(CharSequence str) {
-		if (str.length() == 0) {
+		if (str == null || str.length() == 0) {
 			return false;
 		}
 		int start = 0;
@@ -1832,7 +1832,11 @@ public class StringUtils {
 	}
 
 	public static boolean isAscii(CharSequence str) {
-		return Pattern.matches("\\p{ASCII}*", str);
+		if (str != null) {
+			return Pattern.matches("\\p{ASCII}*", str);
+		} else {
+			return false;
+		}
 	}
 
 	public static String removeNonAscii(String str){
