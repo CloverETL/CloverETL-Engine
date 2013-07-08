@@ -3041,6 +3041,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		//test: input is empty string
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = '';cutInput = cut(input,[0,3]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: second arg is null
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = 'aaaa';cutInput = cut(input,null);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: input is null
+		try {
+			doCompile("string input;string[] cutInput;function integer transform() {input = null;cutInput = cut(input,[5,11]);return 0;}", "test_stringlib_cut_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_editDistance() {
