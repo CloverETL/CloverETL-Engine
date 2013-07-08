@@ -2980,6 +2980,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		//test: null input - test 1
+		try {
+			doCompile("integer charCount;function integer transform() {charCount = countChar(null,'a');return 0;}", "test_stringlib_countChar_emptychar");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null input - test 2
+		try {
+			doCompile("integer charCount;function integer transform() {charCount = countChar(null,'');return 0;}", "test_stringlib_countChar_emptychar");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null input - test 3
+		try {
+			doCompile("integer charCount;function integer transform() {charCount = countChar(null, null);return 0;}", "test_stringlib_countChar_emptychar");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
 	}
 	
 	public void test_stringlib_cut() {
