@@ -19,6 +19,12 @@ string s18;
 string s19;
 string s20;
 
+string s21;
+string s22;
+string s23;
+
+string s24;
+
 function integer transform() {
 	s1=chop("hello\n");
 	s6=chop("hello\r");
@@ -44,5 +50,12 @@ function integer transform() {
 	s18=chop("",'aaa');
 	s19=chop("word",'');
 	s20=chop("",'');
+//	s24=chop("",null);
+	
+//	s21=chop(null,'aaa');
+//	s22=chop(null, '');
+//	s23=chop(null,null);
+	
+	
 	return 0;
 }

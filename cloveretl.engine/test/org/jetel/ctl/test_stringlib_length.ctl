@@ -7,6 +7,9 @@ integer listLength;
 integer mapLength;
 integer recordLength;
 
+integer length_empty;
+integer length_null;
+
 function integer transform() {
 	input=' The QUICk !!$  broWn fox juMPS over the lazy DOG ';
 	lenght1=length(input);
@@ -34,6 +37,9 @@ function integer transform() {
 	firstInput myRecord;
 	recordLength = length(myRecord);
 	printErr("record: " + recordLength);
+	
+	length_empty = length('');
+//	length_null = length(null);
 	
 	return 0;
 }
