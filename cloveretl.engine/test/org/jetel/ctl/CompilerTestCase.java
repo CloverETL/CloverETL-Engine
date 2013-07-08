@@ -3427,6 +3427,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("s19", "word");
 		check("s20", "");
 		check("s21", "");
+		check("s22", "mark.twain");
 	}
 	
 	public void test_stringlib_chop_expect_error() {
@@ -3438,9 +3439,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 
-		
-		
 		//test: regexp pattern is null
+				try {
+					doCompile("string test;function integer transform() {test = chop('aaa', null);return 0;}","test_strlib_chop_erxpect_error");
+					fail();
+				} catch (Exception e) {
+					// do nothing
+				}
+		
+		//test: regexp pattern is null - test 2
 		try {
 			doCompile("string test;function integer transform() {test = chop('', null);return 0;}","test_strlib_chop_erxpect_error");
 			fail();
