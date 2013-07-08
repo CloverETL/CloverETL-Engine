@@ -3078,6 +3078,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("dist9", 0);
 	}
 	
+	public void test_stringlib_editDistance_expect_error(){
+		//test: input - empty string
+		try {
+			doCompile("integer test;function integer transform() {test = editDistance('','mark');return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		//test: input - null
+		try {
+			doCompile("integer test;function integer transform() {test = editDistance(null,'mark');return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		
+	}
+	
 	public void test_stringlib_find() {
 		doCompile("test_stringlib_find");
 		check("findList", Arrays.asList("The quick br", "wn f", "x jumps ", "ver the lazy d", "g"));
