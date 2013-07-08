@@ -2906,6 +2906,44 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("chars", Arrays.asList(expected));
 	}
 	
+	public void test_stringlib_charAt_error(){
+		//test: attempt to access char at position, which is out of bounds -> upper bound 
+		try {
+			doCompile("string test;function integer transform(){test = charAt('milk', 7);return 0;}", "test_stringlib_charAt_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: attempt to access char at position, which is out of bounds -> lower bound 
+		try {
+			doCompile("string test;function integer transform(){test = charAt('milk', -1);return 0;}", "test_stringlib_charAt_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: argument for position is null
+		try {
+			doCompile("string test; integer i = null; function integer transform(){test = charAt('milk', i);return 0;}", "test_stringlib_charAt_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: input is null
+		try {
+			doCompile("string test;function integer transform(){test = charAt(null, 1);return 0;}", "test_stringlib_charAt_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: input is empty string
+		try {
+			doCompile("string test;function integer transform(){test = charAt('', 1);return 0;}", "test_stringlib_charAt_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_stringlib_concat() {
 		doCompile("test_stringlib_concat");
 		
