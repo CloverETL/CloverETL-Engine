@@ -70,7 +70,7 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 	private String resolvedTarget;
 	private String resolvedFormat;
 	private String resolvedLocale;
-	private String resolvedTimezone; // FIXME use this
+	private String resolvedTimezone;
 	private int fieldPosition;
 	private DateFormatter dateFormat;
 	
