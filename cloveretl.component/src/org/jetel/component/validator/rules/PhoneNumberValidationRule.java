@@ -20,6 +20,9 @@ package org.jetel.component.validator.rules;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -57,6 +60,19 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 	private static final int ERROR_CODE_INVALID_PHONE_NUMBER = 1402;
 	private static final int ERROR_CODE_PATTERN_MISMATCH = 1403;
 	private static final int ERROR_PHONE_NUMBER_EMPTY = 1404;
+	
+	private static final Map<String, String> countryCodeToCountryMap;
+	static {
+		countryCodeToCountryMap = new HashMap<String, String>();
+		
+		countryCodeToCountryMap.put("AC", "Ascension Island");
+		countryCodeToCountryMap.put("SS", "South Sudan");
+		String[] isoCountries = Locale.getISOCountries();
+		for (String isoCountry : isoCountries) {
+			Locale locale = new Locale("", isoCountry);
+			countryCodeToCountryMap.put(isoCountry, locale.getDisplayCountry(Locale.ENGLISH));
+		}
+	}
 
 	@Override
 	public TARGET_TYPE getTargetType() {
@@ -78,14 +94,34 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		setPropertyRefResolver(graphWrapper);
 		phoneUtil = PhoneNumberUtil.getInstance();
 		
 		region.setName("Region");
+		region.setPlaceholder("None (international phone number expected)");
 		pattern.setName("Required pattern");
+		pattern.setPlaceholder("None (no strict format required)");
+		
 		String[] regions = phoneUtil.getSupportedRegions().toArray(new String[0]);
+		
 		Arrays.sort(regions);
-		region.setOptions(regions);
+		String[] regionsWithEmptyOption = new String[regions.length + 1];
+		regionsWithEmptyOption[0] = "";
+		
+		for (int i = 0; i < regions.length; i++) {
+			String regionCode = regions[i];
+			String formattedRegion = regionCode;
+			String countryName = countryCodeToCountryMap.get(regionCode);
+			if (countryName != null) {
+				formattedRegion = formattedRegion + " - " + countryName;
+			}
+			formattedRegion = formattedRegion + " (+" + phoneUtil.getCountryCodeForRegion(regionCode) + ")";
+			
+			regionsWithEmptyOption[i + 1] = formattedRegion;
+		}
+		
+		
+		region.setOptions(regionsWithEmptyOption);
+		
 		pattern.setOptions(CommonFormats.phoneNumbers);
 	}
 	
@@ -101,7 +137,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		super.init(metadata, graphWrapper);
 		
-		String patternValue = resolve(pattern.getValue());
+		String patternValue = pattern.getValue();
 		if (patternValue != null && !patternValue.isEmpty()) {
 			try {
 				requiredPhoneNumberPattern = PhoneNumberPattern.create(patternValue);
@@ -112,7 +148,16 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		else {
 			requiredPhoneNumberPattern = null;
 		}
-		resolvedRegion = resolve(region.getValue());
+		
+		resolvedRegion = getRegionCode();
+	}
+
+	private String getRegionCode() {
+		String resolvedRegion = region.getValue();
+		if (resolvedRegion != null && resolvedRegion.length() > 2) {
+			resolvedRegion = resolvedRegion.substring(0, 2).toUpperCase();
+		}
+		return resolvedRegion;
 	}
 	
 	
@@ -167,9 +212,8 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		String resolvedTarget = resolve(target.getValue());
+		String resolvedTarget = target.getValue();
 		if(resolvedTarget.isEmpty()) {
 			accumulator.addError(target, this, "Target is empty.");
 			state = false;
@@ -178,7 +222,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 			accumulator.addError(target, this, "Target field is not present in input metadata.");
 			state = false;
 		}
-		String patternValue = resolve(pattern.getValue());
+		String patternValue = pattern.getValue();
 		if (patternValue != null && !patternValue.isEmpty()) {
 			try {
 				PhoneNumberPattern.create(patternValue);
@@ -187,7 +231,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 				state = false;
 			}
 		}
-		resolvedRegion = resolve(region.getValue());
+		resolvedRegion = getRegionCode();
 		if (resolvedRegion != null && !resolvedRegion.isEmpty()) {
 			if (!phoneUtil.getSupportedRegions().contains(resolvedRegion)) {
 				accumulator.addError(target, this, "Unknown region " + resolvedRegion);

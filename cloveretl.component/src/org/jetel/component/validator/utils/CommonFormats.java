@@ -117,7 +117,8 @@ public class CommonFormats {
 	 */
 	public static final String[] timezones = TimeZone.getAvailableIDs();
 	
-	public static final String[] phoneNumbers = new String[] {
+	public static final String[] phoneNumbers = {
+		"",
 		"+1 DDD.DDD.DDDD",
 		"+1 (DDD) DDD-DDDD",
 		"DDD DDD DDD",
