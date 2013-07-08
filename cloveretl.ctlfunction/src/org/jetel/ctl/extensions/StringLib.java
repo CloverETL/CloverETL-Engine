@@ -467,11 +467,7 @@ public class StringLib extends TLFunctionLibrary {
 	// IS ASCII
 	@TLFunctionAnnotation("Checks if the string contains only characters from the US-ASCII encoding")
 	public static final boolean isAscii(TLFunctionCallContext context, String input) {
-		if(input != null){		
-			return StringUtils.isAscii(input);
-		} else {
-			return false;
-		}
+		return StringUtils.isAscii(input);
 	}
 
 	class IsAsciiFunction implements TLFunctionPrototype {
@@ -490,11 +486,7 @@ public class StringLib extends TLFunctionLibrary {
 	// IS NUMBER
 	@TLFunctionAnnotation("Checks if the string can be parsed into a double number")
 	public static final boolean isNumber(TLFunctionCallContext context, String input) {
-		if (!StringUtils.isEmpty(input)) {
-			return StringUtils.isNumber(input);
-		} else {
-			return false;
-		}
+		return StringUtils.isNumber(input);
 	}
 
 	class IsNumberFunction implements TLFunctionPrototype {
@@ -512,12 +504,8 @@ public class StringLib extends TLFunctionLibrary {
 	// IS INTEGER
 	@TLFunctionAnnotation("Checks if the string can be parsed into an integer number")
 	public static final boolean isInteger(TLFunctionCallContext context, String input) {
-		if (!StringUtils.isEmpty(input)) {
-			int result = StringUtils.isInteger(input);
-			return result == 0 || result == 1;
-		} else {
-			return false;
-		}
+		int result = StringUtils.isInteger(input);
+		return result == 0 || result == 1;
 	}
 
 	class IsIntegerFunction implements TLFunctionPrototype {
@@ -535,12 +523,8 @@ public class StringLib extends TLFunctionLibrary {
 	// IS LONG
 	@TLFunctionAnnotation("Checks if the string can be parsed into a long number")
 	public static final boolean isLong(TLFunctionCallContext context, String input) {
-		if (input != null) {
-			int result = StringUtils.isInteger(input);
-			return result >= 0 && result < 3;
-		} else {
-			return false;
-		}
+		int result = StringUtils.isInteger(input);
+		return result >= 0 && result < 3;
 	}
 
 	class IsLongFunction implements TLFunctionPrototype {
@@ -574,13 +558,8 @@ public class StringLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Checks if the string can be parsed into a date with specified pattern, locale and time zone.")
 	public static final boolean isDate(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
-		
-		if(input != null) {
-			DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
-			return formatter.tryParse(input);
-		} else {
-			return false;
-		}
+		DateFormatter formatter = ((TLDateFormatLocaleCache)context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
+		return formatter.tryParse(input);
 	}
 
 	class IsDateFunction implements TLFunctionPrototype {
@@ -930,12 +909,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Tries to match entire input with specified pattern.")
 //	@TLFunctionParametersAnnotation({"input","regex_pattern"})
 	public static final Boolean matches(TLFunctionCallContext context, String input, String pattern) {
-		// moved to IntegralLib, so that it can be called from the interpreter and compiler
-		if (input != null) {
-			return IntegralLib.matches(context, input, pattern);			
-		} else {
-			return false;
-		}
+		return IntegralLib.matches(context, input, pattern);			
 	}
 
 	class MatchesFunction implements TLFunctionPrototype {
