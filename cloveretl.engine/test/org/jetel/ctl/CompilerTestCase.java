@@ -3037,11 +3037,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("listLength", 8);
 		check("mapLength", 3);
 		check("recordLength", 9);
+		check("length_empty", 0);
 	}
 	
 	public void test_stringlib_lowerCase() {
 		doCompile("test_stringlib_lowerCase");
 		check("lower", "the quick !!$  brown fox jumps over the lazy dog bagr  ");
+		check("lower_empty", "");
+//		System.out.println("string: ["+getVariable("lower_empty")+"]");
 	}
 	
 	public void test_stringlib_matches() {
@@ -3100,6 +3103,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nysiis2", "CAP");
 		check("nysiis3", "1234");
 		check("nysiis4", "C2 PRADACTAN");
+		check("nysiis_empty", "");
 	}
 	
 	public void test_stringlib_replace() {
@@ -3110,7 +3114,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		check("rep", format.format(new Date()).replaceAll("[lL]", "t"));
 		check("rep1", "The cat says meow. All cats say meow.");
-		
+		check("test_empty1", "a");
+		check("test_empty2", "");
 	}
 	
 	public void test_stringlib_right() {
@@ -3144,11 +3149,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_trim() {
 		doCompile("test_stringlib_trim");
 		check("trim1", "im  The QUICk !!$  broWn fox juMPS over the lazy DOG");
+		check("trim_empty", "");
 	}
 	
 	public void test_stringlib_upperCase() {
 		doCompile("test_stringlib_upperCase");
 		check("upper", "THE QUICK !!$  BROWN FOX JUMPS OVER THE LAZY DOG BAGR	");
+		check("test_empty", "");
 	}
 
 	public void test_stringlib_isFormat() {
@@ -3157,10 +3164,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isBlank", Boolean.FALSE);
 		check("blank", "");
 		checkNull("nullValue");
+		check("isBlank1", true);
 		check("isBlank2", true);
 		check("isAscii1", true);
 		check("isAscii2", false);
 		check("isAscii3", false);
+		check("isAscii4", true);
 		check("isNumber", false);
 		check("isNumber1", false);
 		check("isNumber2", true);
@@ -3262,18 +3271,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_removeBlankSpace() {
 		String expStr = 
 			"string r1;\n" +
+			"string str_empty;\n" +
+			"string str_null;\n" +
 			"function integer transform() {\n" +
 				"r1=removeBlankSpace(\"" + StringUtils.specCharToString(" a	b\nc\rd   e \u000Cf\r\n") +	"\");\n" +
 				"printErr(r1);\n" +
+				"str_empty = removeBlankSpace('');\n" +
+//				"str_null = removeBlankSpace(null);\n" +
 				"return 0;\n" +
 			"}\n";
 		doCompile(expStr, "test_removeBlankSpace");
 		check("r1", "abcdef");
+		check("str_empty", "");
 	}
 	
 	public void test_stringlib_removeNonPrintable() {
 		doCompile("test_stringlib_removeNonPrintable");
 		check("nonPrintableRemoved", "AHOJ");
+		check("test_empty", "");
 	}
 	
 	public void test_stringlib_getAlphanumericChars() {
@@ -3286,6 +3301,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			"string an6;\n" +
 			"string an7;\n" +
 			"string an8;\n" +
+			"string an9;\n" +
 			"function integer transform() {\n" +
 				"an1=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\");\n" +
 				"printErr(an1);\n" +
@@ -3299,6 +3315,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"an6=getAlphanumericChars(\"\",true,true);\n"+
 				"an7=getAlphanumericChars(\"\",true,false);\n"+
 				"an8=getAlphanumericChars(\"\",false,true);\n"+
+//				"an9=getAlphanumericChars(null,true,true);\n" +
 				"return 0;\n" +
 			"}\n";
 		doCompile(expStr, "test_getAlphanumericChars");
@@ -3326,6 +3343,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
         doCompile("test_stringlib_removeDiacritic");
         check("test","tescik");
     	check("test1","zabicka");
+    	check("test_empty", "");
 	}
 	
 	public void test_stringlib_translate(){
@@ -3335,8 +3353,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("trans2","hippi");
 		check("trans3","");
 		check("trans4","y lanuaX nXXd thX lXttXr X");
+		check("trans5", "hello");
+		check("test_empty1", "");
+		check("test_empty2", "");
 	}
     
+	public void test_stringlib_removeNonAscii(){
+		doCompile("test_stringlib_removeNonAscii");
+		check("test1", "Sun is shining");
+		check("test2", "");
+		check("test_empty", "");
+	}
+
+	
 	public void test_stringlib_chop() {
 		doCompile("test_stringlib_chop");
 		check("s1", "hello");

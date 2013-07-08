@@ -7,6 +7,7 @@ boolean isBlank2;
 boolean isAscii1;
 boolean isAscii2;
 boolean isAscii3;
+boolean isAscii4;
 boolean isNumber;
 boolean isNumber1;
 boolean isNumber2;
@@ -60,6 +61,7 @@ function integer transform() {
 	isAscii1=isAscii('test');
 	isAscii2=isAscii('aęř');
 	isAscii3=isAscii(nullValue);
+	isAscii4=isAscii(blank);
 	isNumber=isNumber('t1');
 	isNumber1=isNumber('1g');
 	isNumber2=isNumber('1');
@@ -72,19 +74,19 @@ function integer transform() {
 	isNumber6=isNumber('-7888873.2E3');
 	printErr(str2decimal('-7888873.2E3'));
 	isNumber7=isNumber(nullValue);
-	isNumber8=isNumber('');
+	isNumber8=isNumber(blank);
 	isInteger=isInteger('h3');
 	isInteger1=isInteger('78gd');
 	isInteger2=isInteger('8982.8992');
 	isInteger3=isInteger('-766542378');
 	isInteger4=isInteger(nullValue);
-	isInteger5=isInteger('');
+	isInteger5=isInteger(blank);
 	printErr(str2integer('-766542378'));
 	isLong=isLong('7864232568822234');
 	isLong1=isLong('12345678901234567890');
 	isLong2=isLong('LONG!');
 	isLong3=isLong(nullValue);
-	isLong4=isLong('');
+	isLong4=isLong(blank);
 	isDate5=isDate('20Jul2000','ddMMMyyyy','en.US');
 	printErr(str2date('20Jul2000','ddMMMyyyy','en.GB'));
 	isDate6=isDate('20July     2000',"ddMMMM     yyyy",'en.US');
@@ -104,7 +106,7 @@ function integer transform() {
 	isDate12=isDate('12-prosinec-1996','dd-MMM-yyyy','cs.CZ');
 	isDate13=isDate('12-prosinec-1996','dd-MMM-yyyy','en.US'); 
 	isDate14=isDate('24:00 20.11.2007','HH:mm dd.MM.yyyy');
-	isDate15=isDate('','HH:mm dd.MM.yyyy');
+	isDate15=isDate(blank,'HH:mm dd.MM.yyyy');
 	
 	// switch to DST in USA from 2 to 3 AM, 2:30 does not exist in New York
 	isDate16=isDate('10/03/2013 02:30', 'dd/MM/yyyy HH:mm', 'en.US', 'America/New_York');
