@@ -1835,7 +1835,7 @@ public class StringUtils {
 		if (str != null) {
 			return Pattern.matches("\\p{ASCII}*", str);
 		} else {
-			return false;
+			return true;
 		}
 	}
 
