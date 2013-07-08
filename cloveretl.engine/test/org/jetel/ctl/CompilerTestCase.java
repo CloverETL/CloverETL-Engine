@@ -3426,6 +3426,49 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("s18", "");
 		check("s19", "word");
 		check("s20", "");
+		check("s21", "");
+	}
+	
+	public void test_stringlib_chop_expect_error() {
+		//test: arg is null
+		try {
+			doCompile("string test;function integer transform() {test = chop(null);return 0;}","test_strlib_chop_erxpect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		
+		
+		//test: regexp pattern is null
+		try {
+			doCompile("string test;function integer transform() {test = chop('', null);return 0;}","test_strlib_chop_erxpect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: arg is null
+		try {
+			doCompile("string test;function integer transform() {test = chop(null, 'aaa');return 0;}","test_strlib_chop_erxpect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: arg is null - test2
+		try {
+			doCompile("string test;function integer transform() {test = chop(null, '');return 0;}","test_strlib_chop_erxpect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: arg is null - test3
+		try {
+			doCompile("string test;function integer transform() {test = chop(null, null);return 0;}","test_strlib_chop_erxpect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
 	}
 	
 //-------------------------- MathLib Tests ------------------------
