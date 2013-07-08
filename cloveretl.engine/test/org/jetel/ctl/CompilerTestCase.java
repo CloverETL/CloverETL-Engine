@@ -2954,6 +2954,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("concat1", "ello hi   ELLO 2,today is " + format.format(new Date()));
 		check("concat2", "");
 		check("concat3", "clover");
+		check("test_null1", "null");
+		check("test_null2", "null");
+		check("test_null3","skynullisnullblue");
 	}
 	
 	public void test_stringlib_countChar() {
