@@ -94,32 +94,35 @@ public class Validator extends Node {
 	public final static String ERROR_OUTPUT_METADATA_NAME = "Report";
 	
 	private static enum ErrorPortField {
-		CODE(DataFieldType.INTEGER),
-		SERIAL_NUMBER(DataFieldType.INTEGER),
-		MESSAGE(DataFieldType.STRING),
-		NAME(DataFieldType.STRING),
-		PATH(DataFieldType.STRING, DataFieldContainerType.LIST),
-		FIELDS(DataFieldType.STRING, DataFieldContainerType.LIST),
-		VALUES(DataFieldType.STRING, DataFieldContainerType.MAP),
-		PARAMS(DataFieldType.STRING, DataFieldContainerType.MAP),
-		CREATED(DataFieldType.DATE),
-		GRAPH(DataFieldType.STRING);
+		CODE("ruleStatusCode", DataFieldType.INTEGER),
+		SERIAL_NUMBER("recordNo", DataFieldType.INTEGER),
+		MESSAGE("validationMessage", DataFieldType.STRING),
+		NAME("ruleName", DataFieldType.STRING),
+		PATH("rulePath", DataFieldType.STRING, DataFieldContainerType.LIST),
+		FIELDS("fields", DataFieldType.STRING, DataFieldContainerType.LIST),
+		VALUES("validatedValues", DataFieldType.STRING, DataFieldContainerType.MAP),
+		PARAMS("parameters", DataFieldType.STRING, DataFieldContainerType.MAP),
+		CREATED("validationDate", DataFieldType.DATE),
+		GRAPH("graphURL", DataFieldType.STRING);
 		
 		private final DataFieldType dataFieldType;
 		private final DataFieldContainerType dataFieldContainerType;
+		private final String name;
 		
-		private ErrorPortField(DataFieldType dataFieldType) {
+		private ErrorPortField(String name, DataFieldType dataFieldType) {
+			this.name = name;
 			this.dataFieldType = dataFieldType;
 			this.dataFieldContainerType = DataFieldContainerType.SINGLE;
 		}
 		
-		private ErrorPortField(DataFieldType dataFieldType, DataFieldContainerType dataFieldContainerType) {
+		private ErrorPortField(String name, DataFieldType dataFieldType, DataFieldContainerType dataFieldContainerType) {
+			this.name = name;
 			this.dataFieldType = dataFieldType;
 			this.dataFieldContainerType = dataFieldContainerType;
 		}
 		
 		public String getFieldName() {
-			return name().toLowerCase();
+			return name;
 		}
 		
 		public DataFieldType getDataFieldType() {
@@ -447,7 +450,7 @@ public class Validator extends Node {
 	 */
 	private void populateErrorRecord(ValidationError error) {
 		errorRecord.getField(ErrorPortField.SERIAL_NUMBER.getFieldIndex()).setValue(processedRecords - 1);
-		errorRecord.getField(ErrorPortField.GRAPH.getFieldIndex()).setValue(getGraph().getName());
+		errorRecord.getField(ErrorPortField.GRAPH.getFieldIndex()).setValue(getGraph().getRuntimeContext().getJobUrl());
 		errorRecord.getField(ErrorPortField.CODE.getFieldIndex()).setValue(error.getCode());
 		errorRecord.getField(ErrorPortField.MESSAGE.getFieldIndex()).setValue(error.getMessage());
 		errorRecord.getField(ErrorPortField.NAME.getFieldIndex()).setValue(error.getName());
