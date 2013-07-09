@@ -4409,6 +4409,51 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("unescaped", "http://example.com/foo bar^");
 	}
 	
+	public void test_stringlib_escapeUrl_expect_error(){
+		//test: escape - empty string
+		try {
+			doCompile("string test; function integer transform() {test = escapeUrl(''); return 0;}","test_stringlib_escapeUrl_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: escape - null string 
+		try {
+			doCompile("string test; function integer transform() {test = escapeUrl(null); return 0;}","test_stringlib_escapeUrl_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: unescape - empty string
+		try {
+			doCompile("string test; function integer transform() {test = unescapeUrl(''); return 0;}","test_stringlib_escapeUrl_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: unescape - null
+		try {
+			doCompile("string test; function integer transform() {test = unescapeUrl(null); return 0;}","test_stringlib_escapeUrl_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: escape - invalid URL
+		try {
+			doCompile("string test; function integer transform() {test = escapeUrl('somewhere over the rainbow'); return 0;}","test_stringlib_escapeUrl_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: unescpae - invalid URL
+		try {
+			doCompile("string test; function integer transform() {test = unescapeUrl('mister%20postman'); return 0;}","test_stringlib_escapeUrl_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_stringlib_resolveParams() {
 		doCompile("test_stringlib_resolveParams");
 		check("resultNoParams", "Special character representing new line is: \\n calling CTL function MESSAGE; $DATAIN_DIR=./data-in");
