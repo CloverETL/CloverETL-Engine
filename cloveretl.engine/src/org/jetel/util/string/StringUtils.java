@@ -1352,6 +1352,9 @@ public class StringUtils {
 	 * @return String where are only letters and (or) digits from input String
 	 */
 	public static String getOnlyAlphaNumericChars(String str, boolean takeAlpha, boolean takeNumeric) {
+		if (str == null){
+			return null;
+		}
 		if (!takeAlpha && !takeNumeric) {
 			return str;
 		}
