@@ -3124,15 +3124,46 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("findList3", Arrays.asList());
 		check("findList4", Arrays.asList("", "", "", "", ""));
 		check("findList5", Arrays.asList("twain"));
+		check("findList6", Arrays.asList(""));
 	}
 	
 	public void test_stringlib_find_expect_error() {
+		//test: regexp group number higher then count of regexp groups
 		try {
 			doCompile("string[] findList;function integer transform() {findList = find('mark.twain@javlin.eu','(^[a-z]*).([a-z]*)',5);	return 0;}", "test_stringlib_find_expect_error");
 		} catch (Exception e) {
 			// do nothing
 		}
-
+		//test: negative regexp group number
+		try {
+			doCompile("string[] findList;function integer transform() {findList = find('mark.twain@javlin.eu','(^[a-z]*).([a-z]*)',-1);	return 0;}", "test_stringlib_find_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: arg1 null input 
+		try {
+			doCompile("string[] findList;function integer transform() {findList = find(null,'(^[a-z]*).([a-z]*)');	return 0;}", "test_stringlib_find_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: arg2 null input - test1
+		try {
+			doCompile("string[] findList;function integer transform() {findList = find('mark.twain@javlin.eu',null);	return 0;}", "test_stringlib_find_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: arg2 null input - test2
+		try {
+			doCompile("string[] findList;function integer transform() {findList = find('',null);	return 0;}", "test_stringlib_find_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: arg1 and arg2 null input
+		try {
+			doCompile("string[] findList;function integer transform() {findList = find(null,null);	return 0;}", "test_stringlib_find_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_join() {
