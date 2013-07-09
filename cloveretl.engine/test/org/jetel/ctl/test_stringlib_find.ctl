@@ -13,6 +13,7 @@ function integer transform() {
 	findList3 = find('','^[a-z]*.[a-z]*');
 	findList4 = find('mark','');
 	findList5 = find('mark.twain@javlin.eu','(^[a-z]*).([a-z]*)',2);	
-	
+	findList6 = find('','');
+	printErr(findList6);
 	return 0;
 }
