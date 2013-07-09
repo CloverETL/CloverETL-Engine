@@ -87,7 +87,7 @@ public class ValidationGroup extends ValidationNode {
 	@XmlElement(name="prelimitaryCondition")
 	private PrelimitaryCondition prelimitaryCondition;
 	@XmlAttribute
-	private boolean laziness = true;
+	private boolean lazyEvaluation = true;
 	
 	/**
 	 * Implementation of conjunction with neutral element
@@ -271,15 +271,15 @@ public class ValidationGroup extends ValidationNode {
 	 * Sets whether group will be evaluated lazy
 	 * @param laziness True if lazy evaluation is wanted, false otherwise
 	 */
-	public void setLaziness(boolean laziness) {
-		this.laziness = laziness;
+	public void setLazyEvaluation(boolean laziness) {
+		this.lazyEvaluation = laziness;
 	}
 	
 	/**
 	 * @return True if group should be evaluated lazy, false otherwise 
 	 */
-	public boolean getLaziness() {
-		return laziness;
+	public boolean getLazyEvaluation() {
+		return lazyEvaluation;
 	}
 
 	/**
@@ -308,7 +308,7 @@ public class ValidationGroup extends ValidationNode {
 		AbstractValidationRule prelimitaryConditionRule = getPrelimitaryConditionRule();
 		if (isLoggingEnabled()) {
 			logParams("Conjunction: " + conjunction + "\n" +
-							"Lazy: " + laziness + "\n" +
+							"Lazy: " + lazyEvaluation + "\n" +
 							"Prelimitary condition: " + ((prelimitaryConditionRule == null)? null: prelimitaryConditionRule.getName()) + "\n" +
 							"Language settings: " + languageSetting);
 		}
@@ -325,13 +325,13 @@ public class ValidationGroup extends ValidationNode {
 			childState = childs.get(i).isValid(record,ea, graphWrapper);
 			if(conjunction == Conjunction.AND) {
 				currentState = Conjunction.and(currentState, childState);
-				if(laziness && currentState == State.INVALID) {
+				if(lazyEvaluation && currentState == State.INVALID) {
 					break;
 				}
 			}
 			if(conjunction == Conjunction.OR) {
 				currentState = Conjunction.or(currentState, childState);
-				if(laziness && currentState == State.VALID) {
+				if(lazyEvaluation && currentState == State.VALID) {
 					break;
 				}
 			}
