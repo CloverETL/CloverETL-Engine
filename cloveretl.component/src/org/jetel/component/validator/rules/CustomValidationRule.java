@@ -18,6 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,6 +39,7 @@ import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
 import org.jetel.component.validator.ValidationGroup;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.utils.CTLCustomRuleUtils;
@@ -97,9 +99,9 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		
 		initializeRuleDetails(inMetadata, graphWrapper);
 		
-		target.setPlaceholder("Specified by mapping");
-		mappingParam.setName("Parameters mapping");
-		mappingParam.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
+		target.setPlaceholder(ValidatorMessages.getString("CustomValidationRule.TargetFieldsPlaceholder")); //$NON-NLS-1$
+		mappingParam.setName(ValidatorMessages.getString("CustomValidationRule.MappingParameterName")); //$NON-NLS-1$
+		mappingParam.setTooltip(ValidatorMessages.getString("CustomValidationRule.MappingParameterTooltip")); //$NON-NLS-1$
 	}
 	
 	@Override
@@ -144,7 +146,7 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		
 		initMapping(codeToExecute, record, graphWrapper);
 		
-		tempMapping.init("dummy");
+		tempMapping.init("dummy"); //$NON-NLS-1$
 	}
 	
 	private void initializeParametersMapping() throws ParseException {
@@ -154,39 +156,39 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
+			logNotValidated(ValidatorMessages.getString("CustomValidationRule.LogNotEnabled")); //$NON-NLS-1$
 			return State.NOT_VALIDATED;
 		}
 		if (!isInitialized()) {
-			throw new IllegalStateException("Rule not initialized");
+			throw new IllegalStateException(ValidatorMessages.getString("CustomValidationRule.NotInitializedError")); //$NON-NLS-1$
 		}
 		
 		// tempCustomRuleOutputRecord.reset();
 		if (tempMapping.getInputRecord(0) != record) {
-			throw new IllegalStateException("Incoming record reference is different to the one stored in CTLMapping");
+			throw new IllegalStateException(ValidatorMessages.getString("CustomValidationRule.RecordReferenceError")); //$NON-NLS-1$
 		}
 		
 		try {
 			tempMapping.execute();
 		} catch (Exception ex) {
 			if (isLoggingEnabled()) {
-				logError("Function '" + firstFunction.getName() + "' could not be executed.");
+				logError(MessageFormat.format(ValidatorMessages.getString("CustomValidationRule.CouldNotExecuteFunctionLogMessage"), firstFunction.getName())); //$NON-NLS-1$
 			}
 			if (ea != null) {
 				HashMap<String, String> values = getAnalyzedValuesSnapshot(record, orderedParameterFields);
-				raiseError(ea, ERROR_EXECUTION, "Given function could not be executed.", orderedParameterFields, values);
+				raiseError(ea, ERROR_EXECUTION, ValidatorMessages.getString("CustomValidationRule.CannotExecuteFunctionError"), orderedParameterFields, values); //$NON-NLS-1$
 			}
 			return State.INVALID;
 		}
 		Boolean value = (Boolean) tempCustomRuleOutputRecord.getField(Validator.CUSTOM_RULE_RESULT).getValue(); 
 		if(value != null && value) {
 			if (isLoggingEnabled()) {
-				logSuccess("Fields '" + Arrays.toString(orderedParameterFields) + "' passed function '" + firstFunction.getName() + "'.");
+				logSuccess(MessageFormat.format(ValidatorMessages.getString("CustomValidationRule.SuccessLogMessage"), Arrays.toString(orderedParameterFields), firstFunction.getName())); //$NON-NLS-1$
 			}
 			return State.VALID;
 		} else {
 			if (isLoggingEnabled()) {
-				logError("Fields '" + Arrays.toString(orderedParameterFields) + "' did not pass function '" + firstFunction.getName() + "'.");
+				logError(MessageFormat.format(ValidatorMessages.getString("CustomValidationRule.InvalidLogMessage"), Arrays.toString(orderedParameterFields), firstFunction.getName())); //$NON-NLS-1$
 			}
 			if (ea != null) {
 				String message = new String();
@@ -237,28 +239,28 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		try {
 			initializeParametersMapping();
 		} catch (ParseException e) {
-			accumulator.addError(mappingParam, this, "Cannot parse mapping: " + e.getMessage());
+			accumulator.addError(mappingParam, this, ValidatorMessages.getString("CustomValidationRule.CannotParseMappingError") + e.getMessage()); //$NON-NLS-1$
 			return false;
 		}
 		Collection<String> mappingInputFields = mapping.values();
 		if(!ValidatorUtils.areValidFields(mappingInputFields, inputMetadata)) {
-			accumulator.addError(mappingParam, this, "Some of mapping source fields are not present in input metadata.");
+			accumulator.addError(mappingParam, this, ValidatorMessages.getString("CustomValidationRule.MappingSourceFieldsNotInMetadata")); //$NON-NLS-1$
 			state = false;
 			fieldsAreValid = false;
 		}
 		Integer customRuleId = ref.getValue();
 		if(customRuleId == null) {
-			accumulator.addError(ref, this, "Invalid custom rule ID.");
+			accumulator.addError(ref, this, ValidatorMessages.getString("CustomValidationRule.InvalidCustomRuleId")); //$NON-NLS-1$
 			state = false;
 		}
 		Map<Integer, CustomRule> customRules = graphWrapper.getCustomRules();
 		if(customRules == null) {
-			accumulator.addError(ref, this, "No custom validation rules.");
+			accumulator.addError(ref, this, ValidatorMessages.getString("CustomValidationRule.NoCustomRulesError")); //$NON-NLS-1$
 			return false; // Stop check here
 		}
 		CustomRule selectedRule = customRules.get(ref.getValue());
 		if(selectedRule == null) {
-			accumulator.addError(ref, this, "Invalid custom rule. Delete this validation rule.");
+			accumulator.addError(ref, this, ValidatorMessages.getString("CustomValidationRule.InvalidCustomRuleError")); //$NON-NLS-1$
 			return false; // Stop check here
 		}
 		List<Function> functions;
@@ -270,16 +272,16 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 					selectedRule.getCode()
 				);
 		} catch (JetelRuntimeException ex) {
-			accumulator.addError(ref, this, "Parsing of validation rule failed with message: " + ex.getMessage());
+			accumulator.addError(ref, this, ValidatorMessages.getString("CustomValidationRule.ValidationRuleParsingError") + ex.getMessage()); //$NON-NLS-1$
 			return false; // Stop check here 
 		}
 		if(functions.size() == 0) {
-			accumulator.addError(ref, this, "No function found in custom validation rule.");
+			accumulator.addError(ref, this, ValidatorMessages.getString("CustomValidationRule.NoFunctionFoundError")); //$NON-NLS-1$
 			return false; // Stop check here
 		}
 		Function firstFunction = functions.get(0);
-		if(firstFunction.getName().equals("transform")) {
-			accumulator.addError(ref, this, "Invalid name of custom validaton rule. Name 'transform' is reserved.");
+		if(firstFunction.getName().equals("transform")) { //$NON-NLS-1$
+			accumulator.addError(ref, this, ValidatorMessages.getString("CustomValidationRule.TransformReservedWordError")); //$NON-NLS-1$
 			return false; // Stop check here
 		}
 		Set<String> parameterNames = new HashSet<String>();
@@ -289,11 +291,11 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 		}
 		Set<String> mappingTargetFields = mapping.keySet();
 		if (!parameterNames.containsAll(mappingTargetFields)) {
-			accumulator.addError(mappingParam, this, "Mapping sets parameters that do not exist.");
+			accumulator.addError(mappingParam, this, ValidatorMessages.getString("CustomValidationRule.UnknownMappingTargetFields")); //$NON-NLS-1$
 			return false;
 		}
 		if (!mappingTargetFields.containsAll(parameterNames)) {
-			accumulator.addError(mappingParam, this, "Mapping does not set all the function parameters.");
+			accumulator.addError(mappingParam, this, ValidatorMessages.getString("CustomValidationRule.MappingUnmappedFields")); //$NON-NLS-1$
 			return false;
 		}
 		String[] orderedParameterFields = getOrderedParameterFields(parameterNamesArray);
@@ -325,21 +327,21 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	 */
 	private String getCustomValidationRuleTransformation(String oldCode, Function function, String[] parsedTargets) {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append("//#CTL2\n\n");
-		buffer.append("function integer transform() {\n");
-		buffer.append("\t" + function.getName() + "(");
+		buffer.append("//#CTL2\n\n"); //$NON-NLS-1$
+		buffer.append("function integer transform() {\n"); //$NON-NLS-1$
+		buffer.append("\t" + function.getName() + "("); //$NON-NLS-1$ //$NON-NLS-2$
 		for(int i = 0; i < parsedTargets.length; i++) {
-			buffer.append("$in.0." + parsedTargets[i]);
+			buffer.append("$in.0." + parsedTargets[i]); //$NON-NLS-1$
 			if(i + 1 < parsedTargets.length) {
-				buffer.append(", ");
+				buffer.append(", "); //$NON-NLS-1$
 			}
 		}
-		buffer.append(");\n");
-		buffer.append("\treturn OK;\n");
-		buffer.append("}\n");
+		buffer.append(");\n"); //$NON-NLS-1$
+		buffer.append("\treturn OK;\n"); //$NON-NLS-1$
+		buffer.append("}\n"); //$NON-NLS-1$
 		
 		String newCode = new String(oldCode);
-		return newCode.replace("//#CTL2", buffer.toString());
+		return newCode.replace("//#CTL2", buffer.toString()); //$NON-NLS-1$
 	}
 	
 	/**
@@ -351,8 +353,8 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	 * @return
 	 */
 	private boolean tryToCompile(String sourceCode, ReadynessErrorAcumulator accumulator, DataRecordMetadata inputMetadata, GraphWrapper graphWrapper) {
-		ITLCompiler compiler = TLCompilerFactory.createCompiler(graphWrapper.getTransformationGraph(), new DataRecordMetadata[]{inputMetadata}, new DataRecordMetadata[]{Validator.createCustomRuleOutputMetadata()}, "UTF-8");
-		List<ErrorMessage> msgs = compiler.compile(sourceCode, CTLRecordTransform.class, "DUMMY");
+		ITLCompiler compiler = TLCompilerFactory.createCompiler(graphWrapper.getTransformationGraph(), new DataRecordMetadata[]{inputMetadata}, new DataRecordMetadata[]{Validator.createCustomRuleOutputMetadata()}, "UTF-8"); //$NON-NLS-1$
+		List<ErrorMessage> msgs = compiler.compile(sourceCode, CTLRecordTransform.class, "DUMMY"); //$NON-NLS-1$
 		if (compiler.errorCount() > 0) {
     		for (ErrorMessage msg: msgs) {
     			accumulator.addError(target, this, msg.getErrorMessage());
@@ -364,7 +366,7 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	
 	private void initMapping(String sourceCode, DataRecord record, GraphWrapper graphWrapper) {
 		// Dummy Node as there is not much need of it
-		tempMapping = new CTLMapping("Custom validation rule", new Node("DUMMY", graphWrapper.getTransformationGraph()) {
+		tempMapping = new CTLMapping(ValidatorMessages.getString("CustomValidationRule.CTLMappingInternalName"), new Node("DUMMY", graphWrapper.getTransformationGraph()) { //$NON-NLS-1$ //$NON-NLS-2$
 			
 			@Override
 			public String getType() {
@@ -377,19 +379,19 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 			}
 		});
 		tempMapping.setTransformation(sourceCode);
-		tempMapping.addInputRecord("in", record);
+		tempMapping.addInputRecord("in", record); //$NON-NLS-1$
 		tempMapping.setOutputSetDefaults(false);
-		tempCustomRuleOutputRecord = tempMapping.addOutputMetadata("out", Validator.createCustomRuleOutputMetadata());
+		tempCustomRuleOutputRecord = tempMapping.addOutputMetadata("out", Validator.createCustomRuleOutputMetadata()); //$NON-NLS-1$
 	}
 	
 	@Override
 	public String getCommonName() {
-		return "Custom user rule";
+		return ValidatorMessages.getString("CustomValidationRule.CommonName"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Custom rule written in CTL. Validity of incoming record is determined by result of CTL code provider from user.";
+		return ValidatorMessages.getString("CustomValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 	
 	public IntegerValidationParamNode getRef() {
@@ -398,17 +400,17 @@ public class CustomValidationRule extends AbstractMappingValidationRule {
 	
 	@Override
 	public String getDetailName() {
-		return String.format("%s (function '%s')", getName(), functionName);
+		return String.format(ValidatorMessages.getString("CustomValidationRule.DetailName"), getName(), functionName); //$NON-NLS-1$
 	}
 	
 	@Override
 	public String getMappingName() {
-		return "Function parameters mapping";
+		return ValidatorMessages.getString("CustomValidationRule.MappingName"); //$NON-NLS-1$
 	}
 	
 	@Override
 	public String getTargetMappedItemName() {
-		return "Parameter";
+		return ValidatorMessages.getString("CustomValidationRule.TargetMappedItemName"); //$NON-NLS-1$
 	}
 
 }

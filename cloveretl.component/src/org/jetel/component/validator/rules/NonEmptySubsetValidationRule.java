@@ -141,7 +141,6 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		
@@ -167,15 +166,6 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 				ok++;
 			}
 			if(ok >= count.getValue()) {
-				if(goal.getValue() == GOALS.EMPTY) {
-					if (isLoggingEnabled()) {
-						logSuccess(ok + " fields of required " + count.getValue() + " empty");
-					}
-				} else {
-					if (isLoggingEnabled()) {
-						logSuccess(ok + " fields of required " + count.getValue() + " nonempty");
-					}
-				}
 				return State.VALID;
 			}
 		}
@@ -200,7 +190,6 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		if(resolvedTarget.isEmpty()) {

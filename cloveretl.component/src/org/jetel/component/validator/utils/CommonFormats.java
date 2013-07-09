@@ -39,11 +39,11 @@ public class CommonFormats {
 	/**
 	 * Special value for INTEGERS as it needs special treating
 	 */
-	public static final String INTEGER = "INTEGER";
+	public static final String INTEGER = "INTEGER"; //$NON-NLS-1$
 	/**
 	 * Special value for NUMBERS as it needs special treating
 	 */
-	public static final String NUMBER = "NUMBER";
+	public static final String NUMBER = "NUMBER"; //$NON-NLS-1$
 	
 	/**
 	 * @see (NumericFormatAttributeType)
@@ -51,15 +51,15 @@ public class CommonFormats {
 	public static final String[] numbers = {
 		INTEGER,
 		NUMBER,
-		"#",
-		"#.#",
-		"#.###",
-		"000",
-		"000.#",
-		"#.### %",
-		"### \u00A4",
-		"### a string",
-		"-###",
+		"#", //$NON-NLS-1$
+		"#.#", //$NON-NLS-1$
+		"#.###", //$NON-NLS-1$
+		"000", //$NON-NLS-1$
+		"000.#", //$NON-NLS-1$
+		"#.### %", //$NON-NLS-1$
+		"### \u00A4", //$NON-NLS-1$
+		"### a string", //$NON-NLS-1$
+		"-###", //$NON-NLS-1$
 	};
 	public static final String defaultNumber = numbers[0];
 	
@@ -67,25 +67,25 @@ public class CommonFormats {
 	 * @see (DateFormatAttributeType)
 	 */
 	public static final String[] dates = {
-		"yyyy-MM-dd HH:mm:ss",
-		"yyyy-MM-dd",
-		"HH:mm:ss",
-		"dd.MM.yy",
-		"dd/MM/yy",
-		"dd.MM.yyyy",
-		"MM.dd.yyyy",
-		"yyyy-MM-dd hh:mm:ss 'text'",
-		"yyyy.MM.dd HH:mm:ss.SSS z",
-		"EEE, MMM d, yy",
-		"joda:yyyy-MM-dd HH:mm:ss",
-		"joda:yyyy-MM-dd",
-		"joda:HH:mm:ss",
-		"joda:dd.MM.yy",
-		"joda:dd/MM/yy",
-		"joda:dd.MM.yyyy",
-		"joda:MM.dd.yyyy",
-		"joda:yyyy-MM-dd hh:mm:ss 'text'",
-		"joda:EEE, MMM d, yy",
+		"yyyy-MM-dd HH:mm:ss", //$NON-NLS-1$
+		"yyyy-MM-dd", //$NON-NLS-1$
+		"HH:mm:ss", //$NON-NLS-1$
+		"dd.MM.yy", //$NON-NLS-1$
+		"dd/MM/yy", //$NON-NLS-1$
+		"dd.MM.yyyy", //$NON-NLS-1$
+		"MM.dd.yyyy", //$NON-NLS-1$
+		"yyyy-MM-dd hh:mm:ss 'text'", //$NON-NLS-1$
+		"yyyy.MM.dd HH:mm:ss.SSS z", //$NON-NLS-1$
+		"EEE, MMM d, yy", //$NON-NLS-1$
+		"joda:yyyy-MM-dd HH:mm:ss", //$NON-NLS-1$
+		"joda:yyyy-MM-dd", //$NON-NLS-1$
+		"joda:HH:mm:ss", //$NON-NLS-1$
+		"joda:dd.MM.yy", //$NON-NLS-1$
+		"joda:dd/MM/yy", //$NON-NLS-1$
+		"joda:dd.MM.yyyy", //$NON-NLS-1$
+		"joda:MM.dd.yyyy", //$NON-NLS-1$
+		"joda:yyyy-MM-dd hh:mm:ss 'text'", //$NON-NLS-1$
+		"joda:EEE, MMM d, yy", //$NON-NLS-1$
 	};
 	public static final String defaultDate = dates[0];
 	
@@ -99,10 +99,10 @@ public class CommonFormats {
 		List<String> result = new ArrayList<String>();
 		for (Locale locale : availableLocales) {
 			String localeString;
-			if (locale.getCountry().equals("")) {
+			if (locale.getCountry().equals("")) { //$NON-NLS-1$
 				localeString = locale.getLanguage();
 			} else {
-				localeString = locale.getLanguage() + "." + locale.getCountry();
+				localeString = locale.getLanguage() + "." + locale.getCountry(); //$NON-NLS-1$
 			}
 			result.add(localeString);
 		}
@@ -118,14 +118,14 @@ public class CommonFormats {
 	public static final String[] timezones = TimeZone.getAvailableIDs();
 	
 	public static final String[] phoneNumbers = {
-		"",
-		"+1 DDD.DDD.DDDD",
-		"+1 (DDD) DDD-DDDD",
-		"DDD DDD DDD",
-		"+D{7,15}",
-		"+D{1,5} D{3} D{3} D{3,6}",
-		"8 DDDD DD-DD-DD",
-		"(02x) DDDD DDDD"
+		"", //$NON-NLS-1$
+		"+1 DDD.DDD.DDDD", //$NON-NLS-1$
+		"+1 (DDD) DDD-DDDD", //$NON-NLS-1$
+		"DDD DDD DDD", //$NON-NLS-1$
+		"+D{7,15}", //$NON-NLS-1$
+		"+D{1,5} D{3} D{3} D{3,6}", //$NON-NLS-1$
+		"8 DDDD DD-DD-DD", //$NON-NLS-1$
+		"(02x) DDDD DDDD" //$NON-NLS-1$
 	};
 
 }

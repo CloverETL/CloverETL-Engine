@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.data.DataRecord;
@@ -63,8 +64,8 @@ public class EmailValidationRule extends StringValidationRule {
 	public void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		plainAddressParam.setName("Plain e-mail address only");
-		allowGroupAddressesParam.setName("Allow group addresses");
+		plainAddressParam.setName(ValidatorMessages.getString("EmailValidationRule.PlainAddressParameterName")); //$NON-NLS-1$
+		allowGroupAddressesParam.setName(ValidatorMessages.getString("EmailValidationRule.GroupAddressesParameterName")); //$NON-NLS-1$
 	}
 	
 	@Override
@@ -88,7 +89,6 @@ public class EmailValidationRule extends StringValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		
@@ -96,7 +96,7 @@ public class EmailValidationRule extends StringValidationRule {
 		
 		if (inputString == null || inputString.isEmpty()) {
 			if (ea != null)
-				raiseError(ea, EMPTY_EMAIL_ADDRESS, "Empty string instead of e-mail address", resolvedTarget, inputString);
+				raiseError(ea, EMPTY_EMAIL_ADDRESS, ValidatorMessages.getString("EmailValidationRule.EmptyStringError"), resolvedTarget, inputString); //$NON-NLS-1$
 			return State.INVALID;
 		}
 		
@@ -110,7 +110,6 @@ public class EmailValidationRule extends StringValidationRule {
 		}
 		else {
 			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget + "' has valid email address.");
 			}
 			return State.VALID;
 		}
@@ -136,10 +135,10 @@ public class EmailValidationRule extends StringValidationRule {
 			InternetAddress internetAddress = new InternetAddress(inputString);
 			internetAddress.validate();
 			if (!allowGroupAddresses && internetAddress.isGroup()) {
-				return new ValidationError(GROUP_EMAIL_ADDRESS, "Given internet address is a group address");
+				return new ValidationError(GROUP_EMAIL_ADDRESS, ValidatorMessages.getString("EmailValidationRule.GroupAddressError")); //$NON-NLS-1$
 			}
 			if (plainAddress && !inputString.equals(internetAddress.getAddress())) {
-				return new ValidationError(NOT_PLAIN_EMAIL_ADDRESS, "Email address is not plain");
+				return new ValidationError(NOT_PLAIN_EMAIL_ADDRESS, ValidatorMessages.getString("EmailValidationRule.NotPlainEmailAddress")); //$NON-NLS-1$
 			}
 		} catch (AddressException e) {
 			return new ValidationError(INVALID_EMAIL_ADDRESS, e.getMessage());
@@ -156,17 +155,17 @@ public class EmailValidationRule extends StringValidationRule {
 		String resolvedTarget = target.getValue();
 		boolean state = true;
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("EmailValidationRule.TargetEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		DataFieldMetadata field = inputMetadata.getField(resolvedTarget);
 		if(field == null) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("EmailValidationRule.TargetFieldMissing")); //$NON-NLS-1$
 			state = false;
 		}
 		else {
 			if (field.getDataType() != DataFieldType.STRING) {
-				accumulator.addError(target, this, "Target field is not of string type.");
+				accumulator.addError(target, this, ValidatorMessages.getString("EmailValidationRule.TargetFieldNotStringError")); //$NON-NLS-1$
 				state = false;
 			}
 		}
@@ -176,12 +175,12 @@ public class EmailValidationRule extends StringValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "E-mail address";
+		return ValidatorMessages.getString("EmailValidationRule.CommonName"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether given string fields contains valid e-mail address in accordance with RFC 822";
+		return ValidatorMessages.getString("EmailValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 	
 	public BooleanValidationParamNode getPlainAddressParam() {

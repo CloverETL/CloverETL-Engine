@@ -130,7 +130,6 @@ public class StringLengthValidationRule extends StringValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		
@@ -151,13 +150,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 			result = State.VALID;
 		}
 		if(result == State.VALID) {
-			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget + "' with value '" + tempString + "' has length " + length);
-			}
 		} else {
-			if (isLoggingEnabled()) {
-				logError("Field '" + target.getValue() + "' with value '" + tempString + "' has length " + length);
-			}
 			if (ea != null) {
 				raiseError(ea, ERROR_WRONG_LENGTH, "The target has wrong length.", resolvedTarget, tempString);
 			}
@@ -171,7 +164,6 @@ public class StringLengthValidationRule extends StringValidationRule {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		if(resolvedTarget.isEmpty()) {

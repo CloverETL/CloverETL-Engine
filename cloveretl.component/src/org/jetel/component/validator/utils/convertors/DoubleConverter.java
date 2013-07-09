@@ -21,7 +21,6 @@ package org.jetel.component.validator.utils.convertors;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.util.Date;
 import java.util.Locale;
 
@@ -98,13 +97,12 @@ public class DoubleConverter implements Converter {
 				return format.parse(input).doubleValue(); 
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.err.println("HER");
 				return null;
 			}
 		}
 		if(o instanceof byte[]) {
 			// On byte arrays take its size into account rather than content
-			return Double.parseDouble("" +((byte[]) o).length);
+			return Double.valueOf(((byte[]) o).length);
 		}
 		if(o instanceof Date) {
 			return (double) ((Date) o).getTime();

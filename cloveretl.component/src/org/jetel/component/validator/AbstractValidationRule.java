@@ -116,7 +116,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		super.init(metadata, graphWrapper);
 		
 		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n"));
+			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n")); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 	
@@ -132,7 +132,7 @@ public abstract class AbstractValidationRule extends ValidationNode {
 		if(processedParametersValues == null) {
 			Map<String, String> temp = new HashMap<String, String>();
 			// Shared params
-			temp.put("Targets", getTarget().getValue());
+			temp.put("Targets", getTarget().getValue()); //$NON-NLS-1$
 			List<ValidationParamNode> paramNodes = getParamNodes(inMetadata, graphWrapper);
 			for(ValidationParamNode paramNode : paramNodes) {
 				temp.put(paramNode.getName(), paramNode.toString());

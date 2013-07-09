@@ -21,6 +21,7 @@ package org.jetel.component.validator.rules;
 import javax.xml.bind.annotation.XmlElement;
 
 import org.jetel.component.validator.AbstractValidationRule;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.MappingValidationParamNode;
 
 /**
@@ -50,7 +51,7 @@ public abstract class AbstractMappingValidationRule extends AbstractValidationRu
 	public abstract String getTargetMappedItemName();
 	
 	public String getSourceMappedItemName() {
-		return "Input field";
+		return ValidatorMessages.getString("AbstractMappingValidationRule.SourceMappedItemName"); //$NON-NLS-1$
 	}
 
 }

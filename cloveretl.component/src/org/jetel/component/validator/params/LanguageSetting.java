@@ -25,6 +25,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.rules.LanguageSettingsValidationRule;
 import org.jetel.component.validator.utils.CommonFormats;
 import org.jetel.data.Defaults;
@@ -70,24 +71,24 @@ public class LanguageSetting {
 	
 	@Override
 	public String toString() {
-		return "Date format=" + dateFormat.getValue() + ",Number format=" + numberFormat.getValue() + ",Locale=" + locale.getValue() + ",Timezone=" + timezone.getValue();
+		return "Date format=" + dateFormat.getValue() + ",Number format=" + numberFormat.getValue() + ",Locale=" + locale.getValue() + ",Timezone=" + timezone.getValue(); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 	}
 	
 	public void initialize() {
-		dateFormat.setName("Date format mask");
-		dateFormat.setPlaceholder("Inherit from parent group");
+		dateFormat.setName(ValidatorMessages.getString("LanguageSetting.DateFormatParameterName")); //$NON-NLS-1$
+		dateFormat.setPlaceholder(ValidatorMessages.getString("LanguageSetting.DateFormatPlaceholder")); //$NON-NLS-1$
 		dateFormat.setOptions(CommonFormats.dates);
-		numberFormat.setName("Number format mask");
-		numberFormat.setPlaceholder("Inherit from parent group");
+		numberFormat.setName(ValidatorMessages.getString("LanguageSetting.NumberFormatParameterName")); //$NON-NLS-1$
+		numberFormat.setPlaceholder(ValidatorMessages.getString("LanguageSetting.NumberFormatPlaceholder")); //$NON-NLS-1$
 		numberFormat.setOptions(CommonFormats.numbers);
-		locale.setName("Locale");
-		locale.setPlaceholder("Inherit from parent group");
+		locale.setName(ValidatorMessages.getString("LanguageSetting.LocaleParameterName")); //$NON-NLS-1$
+		locale.setPlaceholder(ValidatorMessages.getString("LanguageSetting.LocalePlaceholder")); //$NON-NLS-1$
 		locale.setOptions(CommonFormats.locales);
-		locale.setTooltip("Locale code of record field");
-		timezone.setName("Timezone");
-		timezone.setPlaceholder("Inherit from parent group");
+		locale.setTooltip(ValidatorMessages.getString("LanguageSetting.LocaleTooltip")); //$NON-NLS-1$
+		timezone.setName(ValidatorMessages.getString("LanguageSetting.TimezoneParameterName")); //$NON-NLS-1$
+		timezone.setPlaceholder(ValidatorMessages.getString("LanguageSetting.TimezonePlaceholder")); //$NON-NLS-1$
 		timezone.setOptions(CommonFormats.timezones);
-		timezone.setTooltip("Timezone code of record field");
+		timezone.setTooltip(ValidatorMessages.getString("LanguageSetting.TimezoneTooltip")); //$NON-NLS-1$
 	}
 	
 	public StringEnumValidationParamNode getDateFormat() {

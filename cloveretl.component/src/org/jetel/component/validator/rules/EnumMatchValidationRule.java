@@ -32,6 +32,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -85,11 +86,11 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		values.setName("Accept values");
-		values.setTooltip("For example:\nfirst,second\nfirst,\"second,third\",fourth");
-		values.setPlaceholder("Comma separated list of values");
+		values.setName(ValidatorMessages.getString("EnumMatchValidationRule.AcceptedValuesParameterName")); //$NON-NLS-1$
+		values.setTooltip(ValidatorMessages.getString("EnumMatchValidationRule.AcceptedValuesParameterTooltip")); //$NON-NLS-1$
+		values.setPlaceholder(ValidatorMessages.getString("EnumMatchValidationRule.AcceptedValuesParameterPlaceholder")); //$NON-NLS-1$
 		
-		ignoreCase.setName("Ignore case");
+		ignoreCase.setName(ValidatorMessages.getString("EnumMatchValidationRule.IgnoreCaseParameterName")); //$NON-NLS-1$
 		ignoreCase.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -100,7 +101,7 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 				return false;
 			}
 		});
-		trimInput.setName("Trim input");
+		trimInput.setName(ValidatorMessages.getString("EnumMatchValidationRule.TrimInputParameterName")); //$NON-NLS-1$
 		trimInput.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -133,13 +134,13 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			throw new ComponentNotReadyException("Cannot initialize conversion and comparator tools.");
+			throw new ComponentNotReadyException("Cannot initialize conversion and comparator tools."); //$NON-NLS-1$
 		}
 		
 		try {
 			getParsedValues();
 		} catch (NullPointerException ex) {
-			throw new ComponentNotReadyException("Cannot parse given enum in given type.");
+			throw new ComponentNotReadyException(ValidatorMessages.getString("EnumMatchValidationRule.EnumParseError")); //$NON-NLS-1$
 		}
 
 	}
@@ -147,7 +148,6 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		
@@ -168,7 +168,7 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 			for(String value : values) {
 				T temp = tempConverter.convertFromCloverLiteral(value);
 				if(temp == null) {
-					throw new NullPointerException("Cannot parse values");
+					throw new NullPointerException(ValidatorMessages.getString("EnumMatchValidationRule.ValuesParseError")); //$NON-NLS-1$
 				}
 				out.add(temp);
 			}
@@ -181,7 +181,7 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 		T record = tempConverter.<T>convert(dataField.getValue());
 		if(record == null) {
 			if (ea != null)
-				raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of record field value failed.", resolvedTarget,(dataField.getValue() == null) ?"null" : dataField.getValue().toString());
+				raiseError(ea, ERROR_FIELD_CONVERSION, ValidatorMessages.getString("EnumMatchValidationRule.InputDataConversionError"), resolvedTarget,(dataField.getValue() == null) ?"null" : dataField.getValue().toString()); //$NON-NLS-1$ //$NON-NLS-2$
 			return State.INVALID;
 		}
 		
@@ -202,22 +202,16 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 					stringItem = stringItem.toLowerCase();
 				}
 				if(((StringComparator) comparator).compare(stringRecord, stringItem) == 0) {
-					if (isLoggingEnabled()) {
-						logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' matched item '" + item.toString() + "' as strings.");
-					}
 					return State.VALID;
 				}	
 			} else {
 				if(comparator.compare(item, record) == 0) {
-					if (isLoggingEnabled()) {
-						logSuccess("Field '" + resolvedTarget + "' with value '" + record.toString() + "' matched item '" + item.toString() + "'.");
-					}
 					return State.VALID;
 				}
 			}
 		}
 		if (ea != null)
-			raiseError(ea, ERROR_NO_MATCH, "No match.", resolvedTarget, record.toString());
+			raiseError(ea, ERROR_NO_MATCH, ValidatorMessages.getString("EnumMatchValidationRule.NoMatchErrorMessage"), resolvedTarget, record.toString()); //$NON-NLS-1$
 		return State.INVALID;
 	}
 	
@@ -226,19 +220,18 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("EnumMatchValidationRule.EmptyTargetFieldError")); //$NON-NLS-1$
 			state = false;
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("EnumMatchValidationRule.12")); //$NON-NLS-1$
 			state = false;
 		}
 		if(parseValues(false).isEmpty()) {
-			accumulator.addError(values, this, "No values for matching were provided.");
+			accumulator.addError(values, this, ValidatorMessages.getString("EnumMatchValidationRule.13")); //$NON-NLS-1$
 			state = false;
 		}
 		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
@@ -253,11 +246,11 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 			temp = new TreeSet<String>();
 		}
 		String resolvedValues = resolve(values.getValue());
-		String[] temp2 = StringUtils.split(resolvedValues,",");
+		String[] temp2 = StringUtils.split(resolvedValues,","); //$NON-NLS-1$
 		stripDoubleQuotesAndTrim(temp2);
 		temp.addAll(Arrays.asList(temp2));
 		// Workaround because split ignores "something,else," <-- last comma
-		if(resolvedValues.endsWith(",")) {
+		if(resolvedValues.endsWith(",")) { //$NON-NLS-1$
 			temp.add(new String());
 		}
 		return temp;
@@ -300,12 +293,12 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 
 	@Override
 	public String getCommonName() {
-		return "Enum Match";
+		return ValidatorMessages.getString("EnumMatchValidationRule.18"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether chosen field contains value from enumeration.";
+		return ValidatorMessages.getString("EnumMatchValidationRule.19"); //$NON-NLS-1$
 	}
 
 }

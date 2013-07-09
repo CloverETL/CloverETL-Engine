@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -43,6 +44,7 @@ import org.jetel.data.DecimalDataField;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -94,7 +96,7 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		
 		final DataRecordMetadata inputMetadata = inMetadata;
 		
-		trimInput.setName("Trim input");
+		trimInput.setName(ValidatorMessages.getString("StringValidationRule.TrimInputParameterName")); //$NON-NLS-1$
 		trimInput.setEnabledHandler(new EnabledHandler() {
 			@Override
 			public boolean isEnabled() {
@@ -171,7 +173,7 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		
 		DataFieldMetadata fieldMetadata = metadata.getField(resolvedTarget);
 		if(fieldMetadata == null) {
-			throw new ComponentNotReadyException("Unknown field.");
+			throw new ComponentNotReadyException(ValidatorMessages.getString("StringValidationRule.TargetFieldMissing")); //$NON-NLS-1$
 		}
 		
 		if(fieldMetadata.getDataType() == DataFieldType.DATE) {
@@ -196,14 +198,14 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 		DataField field = record.getField(fieldPosition);
 		
 		if(field.isNull()) {
-			return "";	// string is wanted!
+			return "";	// string is wanted! //$NON-NLS-1$
 		}
 		Object value = field.getValue();
 		if(value instanceof Boolean) {
 			if((Boolean) value) {
-				return "True";
+				return "True"; //$NON-NLS-1$
 			} else {
-				return "False";
+				return "False"; //$NON-NLS-1$
 			}
 			
 		} else if (value instanceof Date) {
@@ -223,7 +225,7 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 			DecimalFormat decimalFormat;
 			if(resolvedFormat.equals(CommonFormats.INTEGER)) {
 				decimalFormat = (DecimalFormat) DecimalFormat.getIntegerInstance(ValidatorUtils.localeFromString(resolvedLocale));
-				decimalFormat.applyPattern("#");
+				decimalFormat.applyPattern("#"); //$NON-NLS-1$
 				decimalFormat.setGroupingUsed(false); // Suppress grouping of thousand by default
 			} else if(resolvedFormat.equals(CommonFormats.NUMBER)) {
 				decimalFormat = (DecimalFormat) DecimalFormat.getInstance(ValidatorUtils.localeFromString(resolvedLocale));
@@ -239,11 +241,9 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 			}
 		} else if (value instanceof byte[]) {
 			try {
-				return new String((byte[]) value, "UTF-8");
+				return new String((byte[]) value, "UTF-8"); //$NON-NLS-1$
 			} catch (UnsupportedEncodingException ex) {
-				// Should not really happen
-				logger.error("Conversion byte[] to String failed due to unsupported encoding");
-				return "";
+				throw new JetelRuntimeException(ex);
 			}
 		} else if (value instanceof String || value instanceof CloverString) {
 			String temp = value.toString();
@@ -258,7 +258,6 @@ public abstract class StringValidationRule extends LanguageSettingsValidationRul
 	
 	@Override
 	public boolean isReady(DataRecordMetadata inputMetadata, ReadynessErrorAcumulator accumulator, GraphWrapper graphWrapper) {
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		LanguageSetting originalLS = getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0);
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(originalLS, parentLanguageSetting);

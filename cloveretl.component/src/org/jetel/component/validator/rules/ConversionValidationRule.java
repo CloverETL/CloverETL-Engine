@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -96,21 +97,21 @@ public abstract class ConversionValidationRule<T> extends LanguageSettingsValida
 		@Override
 		public String toString() {
 			if(this.equals(DEFAULT)) {
-				return "type from metadata";
+				return ValidatorMessages.getString("ConversionValidationRule.DefaultConversionType"); //$NON-NLS-1$
 			}
 			if(this.equals(STRING)) {
-				return "strings";
+				return "strings"; //$NON-NLS-1$
 			}
 			if(this.equals(DATE)) {
-				return "dates";
+				return "dates"; //$NON-NLS-1$
 			}
 			if(this.equals(LONG)) {
-				return "longs";
+				return "longs"; //$NON-NLS-1$
 			}
 			if(this.equals(NUMBER)) {
-				return "numbers";
+				return "numbers"; //$NON-NLS-1$
 			}
-			return "decimals";
+			return "decimals"; //$NON-NLS-1$
 		}
 	}
 	
@@ -134,7 +135,7 @@ public abstract class ConversionValidationRule<T> extends LanguageSettingsValida
 		
 		final DataRecordMetadata inputMetadata = inMetadata;
 		
-		useType.setName("Compare as");
+		useType.setName(ValidatorMessages.getString("ConversionValidationRule.UseTypeParameterName")); //$NON-NLS-1$
 		
 		LanguageSetting languageSetting = getLanguageSettings(0);
 		languageSetting.initialize();
@@ -208,7 +209,7 @@ public abstract class ConversionValidationRule<T> extends LanguageSettingsValida
 			} else if (fieldType == DataFieldType.DECIMAL) {
 				tempComparator = (Comparator<T>) DecimalComparator.getInstance();
 			} else {
-				throw new IllegalArgumentException("Cannot determine comparator for validation.");
+				throw new IllegalArgumentException(ValidatorMessages.getString("ConversionValidationRule.IllegalComparatorError")); //$NON-NLS-1$
 			}
 		}
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
@@ -233,7 +234,7 @@ public abstract class ConversionValidationRule<T> extends LanguageSettingsValida
 			} else if (fieldType == DataFieldType.DECIMAL) {
 				tempConverter = DecimalConverter.newInstance(resolvedNumberFormat, ValidatorUtils.localeFromString(resolvedLocale));
 			} else {
-				throw new IllegalArgumentException("Cannot determine converter for validation.");
+				throw new IllegalArgumentException(ValidatorMessages.getString("ConversionValidationRule.IllegalConverterError")); //$NON-NLS-1$
 			}
 		}
 	}

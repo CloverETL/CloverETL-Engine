@@ -46,7 +46,7 @@ public class StringConverter implements Converter {
 			return null;
 		} else if(o instanceof byte[]) {
 			// On byte arrays take its size into account rather than content
-			return "" + ((byte[]) o).length;
+			return String.valueOf(((byte[]) o).length);
 		}
 		
 		return o.toString();

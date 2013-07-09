@@ -28,13 +28,11 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.validator.AbstractValidationRule;
-import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldFormatType;
-import org.jetel.metadata.DataRecordMetadata;
 import org.joda.time.format.DateTimeFormat;
 
 /**
@@ -102,25 +100,6 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 		}
 	}
 	
-	@Override
-	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
-		super.init(metadata, graphWrapper);
-		
-		if (isLoggingEnabled()) {
-			logLanguageSettings();
-		}
-	}
-	
-	/**
-	 * Log language settings
-	 */
-	private void logLanguageSettings() {
-		int i = 0;
-		for(LanguageSetting temp : languageSettings) {
-			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has language setting #" + i++ + ":\n" + temp);	
-		}
-	}
-	
 	/**
 	 * Checks whether given date formatting mask is correct.
 	 * @param resolvedInput Input where all params are resolved
@@ -134,18 +113,18 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 			try {
 				new SimpleDateFormat(formatType.getFormat(resolvedInput));
 			} catch (Exception ex) {
-				accumulator.addError(originalParamNode, this, "Format mask is not in java format syntax.");
+				accumulator.addError(originalParamNode, this, ValidatorMessages.getString("LanguageSettingsValidationRule.FormatNotInJavaSyntax")); //$NON-NLS-1$
 				return false;
 			}
 		} else if(formatType == DataFieldFormatType.JODA) {
 			try {
 				DateTimeFormat.forPattern(formatType.getFormat(resolvedInput));
 			} catch (Exception ex) {
-				accumulator.addError(originalParamNode, this, "Format mask is not in joda format syntax.");
+				accumulator.addError(originalParamNode, this, ValidatorMessages.getString("LanguageSettingsValidationRule.FormatNotInJodaSyntax")); //$NON-NLS-1$
 				return false;
 			}
 		} else {
-			accumulator.addError(originalParamNode, this, "Unknown format mask prefix.");
+			accumulator.addError(originalParamNode, this, ValidatorMessages.getString("LanguageSettingsValidationRule.UknownMaskPrefix")); //$NON-NLS-1$
 			return false;
 		}
 		return true;
@@ -160,7 +139,7 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 	 */
 	protected boolean isLocaleReady(String resolvedInput, StringEnumValidationParamNode originalParamNode, ReadynessErrorAcumulator accumulator) {
 		if(resolvedInput.isEmpty()) {
-			accumulator.addError(originalParamNode, this, "Locale is empty.");
+			accumulator.addError(originalParamNode, this, ValidatorMessages.getString("LanguageSettingsValidationRule.EmptyLocale")); //$NON-NLS-1$
 			return false;
 		}
 		return true;
@@ -175,7 +154,7 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 	 */
 	protected boolean isTimezoneReady(String resolvedInput, StringEnumValidationParamNode originalParamNode, ReadynessErrorAcumulator accumulator) {
 		if(resolvedInput.isEmpty()) {
-			accumulator.addError(originalParamNode, this, "Timezone is empty.");
+			accumulator.addError(originalParamNode, this, ValidatorMessages.getString("LanguageSettingsValidationRule.EmptyTimezone")); //$NON-NLS-1$
 			return false;
 		}
 		return true;
@@ -195,7 +174,7 @@ public abstract class LanguageSettingsValidationRule extends AbstractValidationR
 				numberFormat.applyLocalizedPattern(resolvedInput);
 			}
 		} catch (Exception ex) {
-			accumulator.addError(originalParamNode, this, "Format mask is not correct.");
+			accumulator.addError(originalParamNode, this, ValidatorMessages.getString("LanguageSettingsValidationRule.FormatNotCorrect")); //$NON-NLS-1$
 			return false;
 		}
 		return true;

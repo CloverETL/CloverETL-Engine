@@ -156,7 +156,6 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		
@@ -165,9 +164,6 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 		// Null values are valid by definition
 		// XXX really? why?
 		if(field.isNull()) {
-			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget + "' is null.");
-			}
 			return State.VALID;
 		}
 		
@@ -205,11 +201,6 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 			state = State.INVALID;
 		}
 		
-		if (state == State.VALID && isLoggingEnabled()) {
-			logSuccess(String.format("Field '%s' with value '%s' is in interval from: '%s', to: '%s' (%s).",
-					resolvedTarget, incomingValue.toString(), fromTyped.toString(), toTyped.toString(), boundaries.toString()));
-		}
-		
 		return state;
 	}
 	
@@ -218,7 +209,6 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedTo = resolve(to.getValue());

@@ -46,7 +46,7 @@ final public class IntegerValidationParamNode extends ValidationParamNode {
 	@Override
 	public String toString() {
 		if(value == null) {
-			return "null"; // Due to usage for logging (where null is not alowed)
+			return "null"; // Due to usage for logging (where null is not alowed) //$NON-NLS-1$
 		}
 		return value.toString();
 	}

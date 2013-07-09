@@ -300,22 +300,22 @@ public class ValidationGroup extends ValidationNode {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Group not enabled.");
+			logNotValidated(ValidatorMessages.getString("ValidationGroup.NotEnabledLogMessage")); //$NON-NLS-1$
 			return State.NOT_VALIDATED;
 		}
 		setPropertyRefResolver(graphWrapper);
 		
 		AbstractValidationRule prelimitaryConditionRule = getPrelimitaryConditionRule();
 		if (isLoggingEnabled()) {
-			logParams("Conjunction: " + conjunction + "\n" +
-							"Lazy: " + lazyEvaluation + "\n" +
-							"Prelimitary condition: " + ((prelimitaryConditionRule == null)? null: prelimitaryConditionRule.getName()) + "\n" +
-							"Language settings: " + languageSetting);
+			logParams("Conjunction: " + conjunction + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+							"Lazy: " + lazyEvaluation + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+							"Prelimitary condition: " + ((prelimitaryConditionRule == null)? null: prelimitaryConditionRule.getName()) + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+							"Language settings: " + languageSetting); //$NON-NLS-1$
 		}
 		
 		if(prelimitaryConditionRule != null) {
 			if(prelimitaryConditionRule.isValid(record, null, graphWrapper) == State.INVALID) {
-				logNotValidated("Prelimitary condition of group was invalid.");
+				logNotValidated(ValidatorMessages.getString("ValidationGroup.LogInvalidPrelimitaryCondition")); //$NON-NLS-1$
 				return State.NOT_VALIDATED;
 			}
 		}
@@ -342,7 +342,7 @@ public class ValidationGroup extends ValidationNode {
 		if(currentState == State.VALID) {
 			return State.VALID;
 		}
-		logNotValidated("Group has no children.");
+		logNotValidated(ValidatorMessages.getString("ValidationGroup.LogNoChildrenGroup")); //$NON-NLS-1$
 		return State.NOT_VALIDATED;
 	}
 	
@@ -361,12 +361,12 @@ public class ValidationGroup extends ValidationNode {
 
 	@Override
 	public String getCommonName() {
-		return "Group";
+		return ValidatorMessages.getString("ValidationGroup.CommonName"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Groups allow creating of complex rules created by joining multiple rules with AND/OR conjunction.";
+		return ValidatorMessages.getString("ValidationGroup.CommonDescription"); //$NON-NLS-1$
 	}
 	
 	/**

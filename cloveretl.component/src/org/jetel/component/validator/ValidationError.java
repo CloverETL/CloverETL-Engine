@@ -90,7 +90,7 @@ public class ValidationError {
 		if(fields == null) {
 			return null;
 		}
-		return StringUtils.stringArraytoString(fields.toArray(new String[]{}),",");
+		return StringUtils.stringArraytoString(fields.toArray(new String[]{}),","); //$NON-NLS-1$
 	}
 
 	/**
@@ -107,7 +107,7 @@ public class ValidationError {
 		if(values == null) {
 			return null;
 		}
-		return StringUtils.mapToString(values, "=", ",");
+		return StringUtils.mapToString(values, "=", ","); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -123,7 +123,7 @@ public class ValidationError {
 		if(params == null) {
 			return null;
 		}
-		return StringUtils.mapToString(params, "=", ",");
+		return StringUtils.mapToString(params, "=", ","); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	/**
@@ -185,16 +185,16 @@ public class ValidationError {
 	@Override
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
-		buffer.append("Validation error\n");
-		buffer.append("----------------\n");
-		buffer.append("Name: " + name + "\n");
-		buffer.append("Path: " + path + "\n");
-		buffer.append("Timestamp: " + timestamp.toString() + "\n");
-		buffer.append("Code: " + code + "\n");
-		buffer.append("Message: " + message + "\n");
-		buffer.append("Fields: " + getFieldsInString() + "\n");
-		buffer.append("Values: " + getValuesInString() + "\n");
-		buffer.append("Params: " + getParamsInString() + "\n");
+		buffer.append("Validation error\n"); //$NON-NLS-1$
+		buffer.append("----------------\n"); //$NON-NLS-1$
+		buffer.append("Name: " + name + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		buffer.append("Path: " + path + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		buffer.append("Timestamp: " + timestamp.toString() + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		buffer.append("Code: " + code + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		buffer.append("Message: " + message + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		buffer.append("Fields: " + getFieldsInString() + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		buffer.append("Values: " + getValuesInString() + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		buffer.append("Params: " + getParamsInString() + "\n"); //$NON-NLS-1$ //$NON-NLS-2$
 		return buffer.toString();
 	}
 	

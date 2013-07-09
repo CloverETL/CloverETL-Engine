@@ -106,14 +106,14 @@ public class DateConverter implements Converter {
 		SimpleDateFormat format = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
 		// FIXME: default itmezone would be in computer timezone, unwanted, not very user
 		// friendly for comparing with incoming fields with different timezone.
-		format.setTimeZone(TimeZone.getTimeZone("UTC"));
+		format.setTimeZone(TimeZone.getTimeZone("UTC")); //$NON-NLS-1$
     	if (!StringUtils.isEmpty(o)) {
     		try {
     			return format.parse(o);
     		} catch (ParseException ex) {
     			format = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
     			// FIXME: dtto
-    			format.setTimeZone(TimeZone.getTimeZone("UTC"));
+    			format.setTimeZone(TimeZone.getTimeZone("UTC")); //$NON-NLS-1$
     			try {
     				return format.parse(o);
     			} catch (ParseException ex2) {

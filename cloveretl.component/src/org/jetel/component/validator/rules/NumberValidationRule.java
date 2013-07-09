@@ -136,15 +136,11 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		
 		DataField field = record.getField(fieldPosition);
 		if(field.isNull()) {
-			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget + "' is null.");
-			}
 			return State.VALID;
 		}
 		String tempString = field.toString();
@@ -156,21 +152,12 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 			ParsePosition pos = new ParsePosition(0);
 			Number parsedNumber = numberFormat.parse(tempString, pos);
 			if(parsedNumber == null || pos.getIndex() != tempString.length()) {
-				if (isLoggingEnabled()) {
-					logError("Field '" + resolvedTarget + "' with value '" + tempString + "' contains leftovers after parsed value.");
-				}
 				if (ea != null)
 					raiseError(ea, ERROR_PARSING, "The target filed could not be parsed.", resolvedTarget, tempString);
 				return State.INVALID;
 			}
-			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget + "' parsed as '" + parsedNumber + "'");
-			}
 			return State.VALID;
 		} catch (Exception ex) {
-			if (isLoggingEnabled()) {
-				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' could not be parsed.");
-			}
 			if (ea != null)
 				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
 			return State.INVALID;
@@ -183,7 +170,6 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 			return true;
 		}
 		boolean state = true;
-		setPropertyRefResolver(graphWrapper);
 		LanguageSetting originalLS = getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0);
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(originalLS, parentLanguageSetting);
 		

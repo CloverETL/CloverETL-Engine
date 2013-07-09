@@ -30,6 +30,7 @@ import java.util.Stack;
 
 import org.jetel.component.validator.ValidationGroup;
 import org.jetel.component.validator.ValidationNode;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.rules.CustomValidationRule;
 import org.jetel.ctl.data.TLType;
@@ -54,7 +55,7 @@ public class ValidatorUtils {
 		if(target == null || target.trim().isEmpty()) {
 			return new String[0];
 		}
-		return target.trim().split(",");
+		return target.trim().split(","); //$NON-NLS-1$
 	}
 	
 	/**
@@ -74,7 +75,7 @@ public class ValidatorUtils {
 		for(String tempRow : rows) {
 			row = tempRow.split(assignChar);
 			if(row == null || row.length != 2) {
-				throw new ParseException("Wrong mapping on part: " + line,-1);
+				throw new ParseException(ValidatorMessages.getString("ValidatorUtils.WrongMappingExceptionMessage") + line,-1); //$NON-NLS-1$
 			}
 			if(trim) {
 				temp.put(row[0], row[1]);
@@ -137,7 +138,7 @@ public class ValidatorUtils {
 	 * @return Parsed locale object
 	 */
 	public static Locale localeFromString(String locale) {
-		String[] temp = locale.split("\\.");
+		String[] temp = locale.split("\\."); //$NON-NLS-1$
 		if(temp.length == 0) {
 			return Locale.ENGLISH;
 		}

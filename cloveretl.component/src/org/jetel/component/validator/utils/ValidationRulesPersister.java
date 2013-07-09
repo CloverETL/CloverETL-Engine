@@ -42,6 +42,7 @@ import javax.xml.validation.SchemaFactory;
 
 import org.jetel.component.Validator;
 import org.jetel.component.validator.ValidationGroup;
+import org.jetel.component.validator.ValidatorMessages;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -76,14 +77,14 @@ public class ValidationRulesPersister {
 			
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-			transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "item");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4"); //$NON-NLS-1$ //$NON-NLS-2$
+			transformer.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, "item"); //$NON-NLS-1$
 			StringWriter sw = new StringWriter();
 			transformer.transform(new DOMSource(document), new StreamResult(sw));
 			return sw.getBuffer().toString();
 		} catch(Exception ex) {
-			throw new ValidationRulesPersisterException("Could not serialize.", ex);
+			throw new ValidationRulesPersisterException(ValidatorMessages.getString("ValidationRulesPersister.SerializationError"), ex); //$NON-NLS-1$
 		}
 	}
 	
@@ -104,7 +105,7 @@ public class ValidationRulesPersister {
 	    	DocumentBuilder builder = factory.newDocumentBuilder();
 	    	Document document = builder.parse(new InputSource(new StringReader(input)));
 		} catch(Exception e) {
-			throw new ValidationRulesPersisterException("Can't validate input string, probably corupted.", e);
+			throw new ValidationRulesPersisterException(ValidatorMessages.getString("ValidationRulesPersister.ValidationError"), e); //$NON-NLS-1$
 		}
 	}
 	
@@ -124,7 +125,7 @@ public class ValidationRulesPersister {
 		    ValidationGroup group = (ValidationGroup) unmarshaller.unmarshal(new StringReader(input));
 		    return group;
 		} catch(JAXBException ex) {
-			throw new ValidationRulesPersisterException("Can't deserialize validation rules.", ex);
+			throw new ValidationRulesPersisterException(ValidatorMessages.getString("ValidationRulesPersister.DeserializationError"), ex); //$NON-NLS-1$
 		}
 	}
 	
@@ -148,7 +149,7 @@ public class ValidationRulesPersister {
 			});
 			return sw.toString();
 		} catch (Exception ex) {
-			throw new ValidationRulesPersisterException("Can't generate validation rules schema.", ex);
+			throw new ValidationRulesPersisterException(ValidatorMessages.getString("ValidationRulesPersister.SchemaGenerateError"), ex); //$NON-NLS-1$
 		}
 	}
 	
@@ -161,7 +162,7 @@ public class ValidationRulesPersister {
 		try {
 			return SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI).newSchema(new StreamSource(new StringReader(generateSchema())));
 		} catch (SAXException ex) {
-			throw new ValidationRulesPersisterException("Can't parse validation rules schema.", ex);
+			throw new ValidationRulesPersisterException(ValidatorMessages.getString("ValidationRulesPersister.SchemaParseError"), ex); //$NON-NLS-1$
 		}
 	}
 	

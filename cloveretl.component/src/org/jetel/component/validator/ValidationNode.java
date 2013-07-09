@@ -18,6 +18,7 @@
  */
 package org.jetel.component.validator;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
@@ -168,7 +169,7 @@ public abstract class ValidationNode {
 	 */
 	public void logSuccess(String message) {
 		if (isLoggingEnabled()) {
-			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.VALID + ": " + message);
+			logger.trace(MessageFormat.format(ValidatorMessages.getString("ValidationNode.SuccessLogMessage"), (getName().isEmpty() ? getCommonName() : getName()), State.VALID, message)); //$NON-NLS-1$
 		}
 	}
 	
@@ -178,7 +179,7 @@ public abstract class ValidationNode {
 	 */
 	public void logNotValidated(String message) {
 		if (isLoggingEnabled()) {
-			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.NOT_VALIDATED + ": " + message);
+			logger.trace(MessageFormat.format(ValidatorMessages.getString("ValidationNode.NotValidatedLogMessage"), (getName().isEmpty() ? getCommonName() : getName()), State.NOT_VALIDATED, message)); //$NON-NLS-1$
 		}
 	}
 	
@@ -188,7 +189,7 @@ public abstract class ValidationNode {
 	 */
 	public void logError(String message) {
 		if (isLoggingEnabled()) {
-			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' is " + State.INVALID + ": " + message);
+			logger.trace(MessageFormat.format(ValidatorMessages.getString("ValidationNode.ErrorLogMessage"), (getName().isEmpty() ? getCommonName() : getName()), State.INVALID, message)); //$NON-NLS-1$
 		}
 	}
 	
@@ -198,7 +199,7 @@ public abstract class ValidationNode {
 	 */
 	protected void logParams(String params) {
 		if (isLoggingEnabled()) {
-			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parameters:\n" + params);
+			logger.trace(MessageFormat.format(ValidatorMessages.getString("ValidationNode.ParametersLogMessage"), (getName().isEmpty() ? getCommonName() : getName()), params)); //$NON-NLS-1$
 		}
 	}
 	
@@ -207,7 +208,7 @@ public abstract class ValidationNode {
 	 */
 	private void logParentLangaugeSetting() {
 		if (isLoggingEnabled()) {
-			logger.trace("Node '" + (getName().isEmpty() ? getCommonName() : getName()) + "' has parent language setting:\n" + parentLanguageSetting);
+			logger.trace(MessageFormat.format(ValidatorMessages.getString("ValidationNode.LanguageSettingsLogMessage"), (getName().isEmpty() ? getCommonName() : getName()), parentLanguageSetting)); //$NON-NLS-1$
 		}
 	}
 	

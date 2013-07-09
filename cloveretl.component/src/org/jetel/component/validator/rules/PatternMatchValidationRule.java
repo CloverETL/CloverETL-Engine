@@ -101,7 +101,6 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		
@@ -109,14 +108,8 @@ public class PatternMatchValidationRule extends StringValidationRule {
 		tempString = prepareInput(record);
 
 		if(regexPattern.matcher(tempString).matches()) {
-			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget +  "' with value '" + tempString + "' has some match.");
-			}
 			return State.VALID;
 		} else {
-			if (isLoggingEnabled()) {
-				logError("Field '" + resolvedTarget +  "' with value '" + tempString + "' has no match.");
-			}
 			if (ea != null)
 				raiseError(ea, ERROR_NO_MATCH, "No match.", resolvedTarget, tempString);
 			return State.INVALID;
@@ -128,7 +121,6 @@ public class PatternMatchValidationRule extends StringValidationRule {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedPattern = resolve(pattern.getValue());

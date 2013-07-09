@@ -18,6 +18,8 @@
  */
 package org.jetel.component.validator.rules;
 
+import org.jetel.component.validator.ValidatorMessages;
+
 /**
  * Simple phone number pattern representation.
  * 
@@ -62,7 +64,7 @@ public class PhoneNumberPattern {
 		private final String pattern;
 		private final int position;
 		
-		private static final String nl = System.getProperty("line.separator");
+		private static final String nl = System.getProperty("line.separator"); //$NON-NLS-1$
 		
 		public PhoneNumberPatternFormatException(String message, String pattern, int position) {
 			this.message = message;
@@ -75,7 +77,7 @@ public class PhoneNumberPattern {
 			StringBuffer sb = new StringBuffer();
 			sb.append(message);
 			if (position >= 0) {
-				sb.append(" near index ");
+				sb.append(" near index "); //$NON-NLS-1$
 				sb.append(position);
 			}
 			sb.append(nl);
@@ -106,7 +108,7 @@ public class PhoneNumberPattern {
 					output.append(c);
 				}
 				else {
-					throw new PhoneNumberPatternFormatException("Invalid range specification, unexpected char " + c, patternString, i); 
+					throw new PhoneNumberPatternFormatException(ValidatorMessages.getString("PhoneNumberPattern.InvalidRangeException") + c, patternString, i);  //$NON-NLS-1$
 				}
 			}
 			else if (c == 'D') {
@@ -120,7 +122,7 @@ public class PhoneNumberPattern {
 				output.append(c);
 			}
 			else if (c == '}' && !inRange) {
-				throw new PhoneNumberPatternFormatException("Unexpected end of range char " + c, patternString, i);
+				throw new PhoneNumberPatternFormatException(ValidatorMessages.getString("PhoneNumberPattern.UnexpectedEndOfRangeChar") + c, patternString, i); //$NON-NLS-1$
 			}
 			else {
 				output.append('\\').append(c);
@@ -128,7 +130,7 @@ public class PhoneNumberPattern {
 		}
 		
 		if (inRange) {
-			throw new PhoneNumberPatternFormatException("Range not closed", patternString, format.length - 1);
+			throw new PhoneNumberPatternFormatException(ValidatorMessages.getString("PhoneNumberPattern.RangeNotClosed"), patternString, format.length - 1); //$NON-NLS-1$
 		}
 		
 		return output.toString();

@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -72,21 +73,21 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 		@Override
 		public String toString() {
 			if(this.equals(LE)) {
-				return "<=";
+				return "<="; //$NON-NLS-1$
 			}
 			if(this.equals(GE)) {
-				return ">=";
+				return ">="; //$NON-NLS-1$
 			}
 			if(this.equals(E)) {
-				return "=";
+				return "="; //$NON-NLS-1$
 			}
 			if(this.equals(NE)) {
-				return "!=";
+				return "!="; //$NON-NLS-1$
 			}
 			if(this.equals(L)) {
-				return "<";
+				return "<"; //$NON-NLS-1$
 			}
-			return ">";
+			return ">"; //$NON-NLS-1$
 		}
 	};
 	
@@ -108,9 +109,9 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		operator.setName("Operator");
-		value.setName("Compare with");
-		value.setPlaceholder("Standard Clover format, for details see documentation.");
+		operator.setName(ValidatorMessages.getString("ComparisonValidationRule.OperatorParameterName")); //$NON-NLS-1$
+		value.setName(ValidatorMessages.getString("ComparisonValidationRule.ComparedValueParameterName")); //$NON-NLS-1$
+		value.setPlaceholder(ValidatorMessages.getString("ComparisonValidationRule.ComparedValueParameterPlaceholder")); //$NON-NLS-1$
 	}
 	
 	@Override
@@ -140,14 +141,13 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 		
 		valueTyped = tempConverter.<T>convertFromCloverLiteral(resolvedValue);
 		if(valueTyped == null) {
-			throw new ComponentNotReadyException("Conversion of value failed for value " + resolvedValue);
+			throw new ComponentNotReadyException(ValidatorMessages.getString("ComparisonValidationRule.ConversionFailedError") + resolvedValue); //$NON-NLS-1$
 		}
 	}
 
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		
@@ -155,9 +155,6 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 		
 		// Null values are valid from definition
 		if(field.isNull()) {
-			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget + "' is null.");
-			}
 			return State.VALID;
 		}
 		
@@ -174,7 +171,7 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 		T incomingValue = converter.<T>convert(dataField.getValue());
 		if(incomingValue == null) {
 			if (ea != null) {
-				raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion failed.", resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
+				raiseError(ea, ERROR_FIELD_CONVERSION, ValidatorMessages.getString("ComparisonValidationRule.ConversionFailedErrorReportMessage"), resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString()); //$NON-NLS-1$ //$NON-NLS-2$
 			}
 			return State.INVALID;
 		}
@@ -194,15 +191,9 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 			state = State.VALID;
 		} else {
 			if (ea != null) {
-				raiseError(ea, ERROR_CONDITION_NOT_MET, "Incoming value did not meet the condition.", resolvedTarget, dataField.getValue().toString());
+				raiseError(ea, ERROR_CONDITION_NOT_MET, ValidatorMessages.getString("ComparisonValidationRule.ConditionMismatchValidationErrorMessage"), resolvedTarget, dataField.getValue().toString()); //$NON-NLS-1$
 			}
 			state = State.INVALID;
-		}
-		
-		if (isLoggingEnabled() && state == State.VALID) {
-			String msg = String.format("Field '%s' with value '%s' %s '%s'.",
-					resolvedTarget, incomingValue.toString(), operatorValue.toString(), value.toString());
-			logSuccess(msg);
 		}
 		
 		return state;
@@ -218,15 +209,15 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedValue = resolve(value.getValue());
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("ComparisonValidationRule.EmptyTargetError")); //$NON-NLS-1$
 			state = false;
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("ComparisonValidationRule.MissingFieldError")); //$NON-NLS-1$
 			state = false;
 		}
 		if(resolvedValue.isEmpty()) {
-			accumulator.addError(value, this, "Value to compare with is empty.");
+			accumulator.addError(value, this, ValidatorMessages.getString("ComparisonValidationRule.ComparedValueEmptyError")); //$NON-NLS-1$
 			state = false;
 		}
 		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
@@ -252,11 +243,11 @@ public class ComparisonValidationRule<T> extends ConversionValidationRule<T> {
 	}
 	@Override
 	public String getCommonName() {
-		return "Comparison";
+		return ValidatorMessages.getString("ComparisonValidationRule.CommonName"); //$NON-NLS-1$
 	}
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether value of chosen field satisfies comparison aganist provided value and operation.";
+		return ValidatorMessages.getString("ComparisonValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 
 }

@@ -46,9 +46,9 @@ final public class BooleanValidationParamNode extends ValidationParamNode {
 	@Override
 	public String toString() {
 		if(b) {
-			return "True";
+			return "True"; //$NON-NLS-1$
 		}
-		return "False";
+		return "False"; //$NON-NLS-1$
 	}
 
 }

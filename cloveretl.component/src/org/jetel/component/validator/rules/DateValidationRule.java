@@ -18,6 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
@@ -29,6 +30,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -82,8 +84,8 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		trimInput.setName("Trim input");
-		trimInput.setTooltip("Trim input before validation.");
+		trimInput.setName(ValidatorMessages.getString("DateValidationRule.TrimInputParameterName")); //$NON-NLS-1$
+		trimInput.setTooltip(ValidatorMessages.getString("DateValidationRule.TrimInputParameterTooltip")); //$NON-NLS-1$
 		
 		LanguageSetting languageSetting = getLanguageSettings(0);
 		languageSetting.initialize();
@@ -116,7 +118,7 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 		fieldPosition = metadata.getFieldPosition(resolvedTarget);
 
 		if(metadata.getField(fieldPosition).getDataType() != DataFieldType.STRING) {
-			throw new ComponentNotReadyException("Field '" + resolvedTarget + "' is not a string.");
+			throw new ComponentNotReadyException(MessageFormat.format(ValidatorMessages.getString("DateValidationRule.NotStringError"), resolvedTarget)); //$NON-NLS-1$
 		}
 		
 		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
@@ -126,14 +128,14 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
+			logNotValidated(ValidatorMessages.getString("DateValidationRule.NotEnabledLogMessage")); //$NON-NLS-1$
 			return State.NOT_VALIDATED;
 		}
 		
 		DataField field = record.getField(fieldPosition);
 		// Null values are valid by definition
 		if(field.isNull()) {
-			logSuccess("Field '" + resolvedTarget + "' is null.");
+			logSuccess(MessageFormat.format(ValidatorMessages.getString("DateValidationRule.NullSuccessLogMessage"), resolvedTarget)); //$NON-NLS-1$
 			return State.VALID;
 		}
 		
@@ -148,15 +150,15 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 		}
 		catch (IllegalArgumentException e) {
 			if (isLoggingEnabled()) {
-				logError("Field '" + resolvedTarget + "' with value '" + tempString + "' cannot be parsed: " + e.getMessage());
+				logError(MessageFormat.format(ValidatorMessages.getString("DateValidationRule.CannotParseRule"), resolvedTarget, tempString, e.getMessage())); //$NON-NLS-1$
 			}
 			if (ea != null)
-				raiseError(ea, ERROR_PARSING, "Cannot parse date: " + e.getMessage(), resolvedTarget, tempString);
+				raiseError(ea, ERROR_PARSING, ValidatorMessages.getString("DateValidationRule.CannotParseDateError") + e.getMessage(), resolvedTarget, tempString); //$NON-NLS-1$
 			return State.INVALID;	
 		}
 		
 		if (isLoggingEnabled()) {
-			logSuccess("Field '" + resolvedTarget + "' with value '" + tempString + "' is date with given settings.");
+			logSuccess(MessageFormat.format(ValidatorMessages.getString("DateValidationRule.LogSuccessMessage"), resolvedTarget, tempString)); //$NON-NLS-1$
 		}
 		return State.VALID;
 	}
@@ -174,16 +176,16 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 		String resolvedTimezone = resolve(computedLS.getTimezone().getValue());
 		String resolvedFormat = resolve(computedLS.getDateFormat().getValue());
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("DateValidationRule.EmptyTargetError")); //$NON-NLS-1$
 			state = false;
 		} else {
 			if(inputMetadata.getField(resolvedTarget) != null && inputMetadata.getField(resolvedTarget).getDataType() != DataFieldType.STRING) {
-				accumulator.addError(target, this, "Target field is not string.");
+				accumulator.addError(target, this, ValidatorMessages.getString("DateValidationRule.TargetFieldNotStringError")); //$NON-NLS-1$
 				state = false;	
 			}
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("DateValidationRule.TargetFieldMissingError")); //$NON-NLS-1$
 			state = false;
 		}
 		state &= isLocaleReady(resolvedLocale, originalLS.getLocale(), accumulator);
@@ -194,12 +196,12 @@ public class DateValidationRule extends LanguageSettingsValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "Date";
+		return ValidatorMessages.getString("DateValidationRule.CommonName"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether chosen field is a date in provided format.";
+		return ValidatorMessages.getString("DateValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 
 }

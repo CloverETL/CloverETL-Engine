@@ -97,7 +97,7 @@ public class CTLCustomRuleUtils {
     		StringBuilder messagesStringBuilder = new StringBuilder();
     		for (ErrorMessage msg : msgs) {
     			messagesStringBuilder.append(msg.getErrorMessage());
-    			messagesStringBuilder.append("; ");
+    			messagesStringBuilder.append("; "); //$NON-NLS-1$
     		}
     		throw new JetelRuntimeException(messagesStringBuilder.toString());
     	}

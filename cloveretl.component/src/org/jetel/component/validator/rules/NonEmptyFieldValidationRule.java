@@ -39,7 +39,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.string.StringUtils;
 
 /**
  * <p>Rule for checking whether given field is null or not null. However when string is on input the rule
@@ -126,11 +125,7 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
-		}
-		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(record.getMetadata(), graphWrapper), "=", "\n"));
 		}
 		
 		DataField field = record.getField(fieldPosition);
@@ -142,22 +137,14 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 				inputString = inputString.trim();
 			}
 			if(goal.getValue() == GOALS.EMPTY && inputString.isEmpty()) {
-				logSuccess("Field '" + resolvedTarget + "' is empty.");
 				return State.VALID;	
 			}
 			if(goal.getValue() == GOALS.NONEMPTY && !inputString.isEmpty()) {
-				logSuccess("Field '" + resolvedTarget + "' with value '" + inputString + "' is nonempty.");
 				return State.VALID;	
 			} 
 		} else if(goal.getValue() == GOALS.EMPTY && field.isNull()) {
-			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget + "' is empty.");
-			}
 			return State.VALID;
 		} else if(goal.getValue() == GOALS.NONEMPTY && !field.isNull()) {
-			if (isLoggingEnabled()) {
-				logSuccess("Field '" + resolvedTarget + "' with value '" + field.getValue() + "' is nonempty.");
-			}
 			return State.VALID;
 		}
 		
@@ -178,7 +165,6 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		if(resolvedTarget.isEmpty()) {

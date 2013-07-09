@@ -96,7 +96,7 @@ public class ReadynessErrorAcumulator {
 		for(List<String> temp : errors.values()) {
 			for(String temp2 : temp) {
 				output.append(temp2);
-				output.append("\n");
+				output.append("\n"); //$NON-NLS-1$
 			}
 		}
 		return output.toString().trim();
