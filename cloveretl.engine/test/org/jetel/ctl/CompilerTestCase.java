@@ -3456,20 +3456,32 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			"string an7;\n" +
 			"string an8;\n" +
 			"string an9;\n" +
+			"string an10;\n" +
+			"string an11;\n" +
+			"string an12;\n" +
+			"string an13;\n" +
+			"string an14;\n" +
+			"string an15;\n" +
 			"function integer transform() {\n" +
 				"an1=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\");\n" +
-				"printErr(an1);\n" +
 				"an2=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",true,true);\n" +
-				"printErr(an2);\n" +
 				"an3=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",true,false);\n" +
-				"printErr(an3);\n" +
 				"an4=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",false,true);\n" +
-				"printErr(an4);\n" +
 				"an5=getAlphanumericChars(\"\");\n" +
 				"an6=getAlphanumericChars(\"\",true,true);\n"+
 				"an7=getAlphanumericChars(\"\",true,false);\n"+
 				"an8=getAlphanumericChars(\"\",false,true);\n"+
-//				"an9=getAlphanumericChars(null,true,true);\n" +
+				"an9=getAlphanumericChars(null);\n" +
+				"an10=getAlphanumericChars(null,false,false);\n" +
+				"an11=getAlphanumericChars(null,true,false);\n" +
+				"an12=getAlphanumericChars(null,false,true);\n" +
+				"an13=getAlphanumericChars('  0  ľeškó11');\n" +
+				"an14=getAlphanumericChars('  0  ľeškó11', false, false);\n" +
+				//CLO-1174
+				"string tmp = \""+StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\";\n"+
+				"printErr('BEFORE DO COMPILE: '+tmp); \n"+
+				"an15=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",false,false);\n" +
+				"printErr('AFTER GET_ALPHA_NUMERIC_CHARS: '+ an15);\n" +
 				"return 0;\n" +
 			"}\n";
 		doCompile(expStr, "test_getAlphanumericChars");
@@ -3482,6 +3494,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("an6", "");
 		check("an7", "");
 		check("an8", "");
+		check("an9", null);
+		check("an10", null);
+		check("an11", null);
+		check("an12", null);
+		check("an13", "0ľeškó11");
+		check("an14","  0  ľeškó11");
+		
+		//CLO-1174
+		String tmp = StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n");
+		System.out.println("FROM JAVA - AFTER DO COMPILE: "+ tmp);
+		//check("an15", tmp);
 	}
 	
 	public void test_stringlib_indexOf(){
