@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="0.0.0.devel" id="1204551079958" licenseType="Commercial" modified="Tue May 28 14:24:09 CEST 2013" modifiedBy="sedlacek" name="graphSystemExecute" revision="1.104" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="3.5.0.M1" id="1204551079958" licenseType="Commercial" modified="Tue Jul 09 17:03:03 CEST 2013" modifiedBy="user" name="graphSystemExecute" revision="1.105" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="strings" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -10,7 +9,6 @@
 <Property fileURL="workspace.prm" id="GraphParameter1"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="436" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="UNIX - Case III: Pass data to stdin and then read the output stdout" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="586" x="25" y="709">
 <attr name="text"><![CDATA[
-PLEASE NOTE: DOES NOT WORK ON MAC OS!
 This case shows how data can be sent
 to command standard input through
 an input edge and then read back to
@@ -80,9 +78,7 @@ the "save file list" writer.]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/pattern.txt" guiName="read file pattern" guiX="287" guiY="772" id="DATA_READER1" type="DATA_READER">
-<attr name="finalRecord"><![CDATA[30]]></attr>
-<attr name="startRecord"><![CDATA[0]]></attr>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/others/pattern.txt" finalRecord="30" guiName="read file pattern" guiX="287" guiY="772" id="DATA_READER1" startRecord="0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[File's paths with wildcards]]></attr>
 </Node>
 <Node enabled="disabled" fileURL="${DATAOUT_DIR}/others/command_win.out" guiName="save file list" guiX="888" guiY="554" id="DATA_WRITER0" type="DATA_WRITER">
@@ -103,7 +99,7 @@ the "save file list" writer.]]></attr>
 <Node deleteBatch="true" enabled="enabled" guiName="execute batch" guiX="365" guiY="906" id="SYS_EXECUTE2" interpreter="sh ${}" type="SYS_EXECUTE">
 <attr name="command"><![CDATA[while read in; do
   echo $in
-  find -name "$in" 
+  find . -name "$in" 
 done]]></attr>
 </Node>
 <Node deleteBatch="true" enabled="disabled" guiName="WINDOWS _ dir" guiX="658" guiY="554" id="SYS_EXECUTE3" interpreter="${}" type="SYS_EXECUTE">
