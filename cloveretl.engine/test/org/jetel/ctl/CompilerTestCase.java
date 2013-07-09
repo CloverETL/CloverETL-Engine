@@ -3079,19 +3079,42 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	public void test_stringlib_editDistance_expect_error(){
-		//test: input - empty string
+		//test: input - empty string - first arg
 		try {
 			doCompile("integer test;function integer transform() {test = editDistance('','mark');return 0;}","test_stringlib_editDistance_expect_error");
 		} catch ( Exception e) {
 			// do nothing
 		}
-		//test: input - null
+		//test: input - null - first arg
 		try {
 			doCompile("integer test;function integer transform() {test = editDistance(null,'mark');return 0;}","test_stringlib_editDistance_expect_error");
 		} catch ( Exception e) {
 			// do nothing
 		}
-		
+		//test: input- empty string - second arg
+		try {
+			doCompile("integer test;function integer transform() {test = editDistance('mark','');return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		//test: input - null - second argument
+		try {
+			doCompile("integer test;function integer transform() {test = editDistance('mark',null);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		//test: input - both empty
+		try {
+			doCompile("integer test;function integer transform() {test = editDistance('','');return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		//test: input - both null
+		try {
+			doCompile("integer test;function integer transform() {test = editDistance(null,null);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_find() {
@@ -3268,7 +3291,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isBlank2", true);
 		check("isAscii1", true);
 		check("isAscii2", false);
-		check("isAscii3", false);
+		check("isAscii3", true);
 		check("isAscii4", true);
 		check("isNumber", false);
 		check("isNumber1", false);
