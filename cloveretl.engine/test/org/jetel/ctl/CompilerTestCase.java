@@ -3514,6 +3514,48 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("index2",0);
 		check("index3",-1);
 		check("index4",6);
+		check("index5",-1);
+		check("index6",0);
+		check("index_empty1", -1);
+		check("index_empty2", 0);
+	}
+	
+	public void test_stringlib_indexOf_expect_error(){
+		//test: second arg is null - test1
+		try {
+			doCompile("integer index;function integer transform() {index = indexOf('hello world',null); return 0;}","test_stringlib_indexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: second arg is null - test2
+		try {
+			doCompile("integer index;function integer transform() {index = indexOf('',null); return 0;}","test_stringlib_indexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: first arg is null - test1
+		try {
+			doCompile("integer index;function integer transform() {index = indexOf(null,'a'); return 0;}","test_stringlib_indexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: first arg is null - test2
+		try {
+			doCompile("integer index;function integer transform() {index = indexOf(null,''); return 0;}","test_stringlib_indexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: both args are null
+		try {
+			doCompile("integer index;function integer transform() {index = indexOf(null,null); return 0;}","test_stringlib_indexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_removeDiacritic(){
