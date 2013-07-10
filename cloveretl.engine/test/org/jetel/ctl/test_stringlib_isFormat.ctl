@@ -52,6 +52,9 @@ boolean isDate20;
 boolean isDate21;
 boolean isDate22;
 boolean isDate23;
+boolean isDate24;
+boolean isDate25;
+
 
 function integer transform() {
 	test='test';
@@ -119,7 +122,15 @@ function integer transform() {
 	
 	isDate20=isDate(nullValue, 'dd/MM/yyyy HH:mm', 'cs.CZ', 'Europe/Prague');
 	isDate21=isDate('', 'dd/MM/yyyy HH:mm', 'cs.CZ', 'Europe/Prague');
-	isDate22=isDate('2013-12-12', '');
-	isDate23=isDate('2013/12/11','');	
+	
+	isDate22=isDate('2013-12-12','');
+	isDate23=isDate('2013/12/11','');
+	
+	//CLO-1190
+//	test for using default pattern from Defaults - assumed pattern yyyy-MM-dd - if different changet the input string
+//	isDate24=isDate('2013-12-12',null); // expected result - true
+
+//  isDate25=isDate(17/11/1990, null); // expected result - false
+		
 	return 0;
 }
