@@ -49,7 +49,9 @@ boolean isDate17;
 boolean isDate18;
 boolean isDate19;
 boolean isDate20;
-
+boolean isDate21;
+boolean isDate22;
+boolean isDate23;
 
 function integer transform() {
 	test='test';
@@ -116,6 +118,8 @@ function integer transform() {
 	isDate19=isDate('31/03/2013 02:30', 'dd/MM/yyyy HH:mm', 'cs.CZ', 'Europe/Prague');
 	
 	isDate20=isDate(nullValue, 'dd/MM/yyyy HH:mm', 'cs.CZ', 'Europe/Prague');
-		
+	isDate21=isDate('', 'dd/MM/yyyy HH:mm', 'cs.CZ', 'Europe/Prague');
+	isDate22=isDate('2013-12-12', '');
+	isDate23=isDate('2013/12/11','');	
 	return 0;
 }
