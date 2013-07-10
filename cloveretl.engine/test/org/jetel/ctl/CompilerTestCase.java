@@ -3370,20 +3370,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate19", false);
 		check("isDate20", false);
 		check("isDate21", false);
-		check("isDate22", true);
+		/* CLO-1190
+		check("isDate22", false);
 		check("isDate23", false);
-	}
-	public void test_stringlig_isFormat_expect_error(){
-		//test: regexp pattern is null
-		try {
-			doCompile("boolean test; function integer transform() {test=isDate('20.11.2007',null);return 0;}","test_stringlig_isFormat_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		
-	}
-	
+		check("isDate24", true);
+		check("isDate25", false);
+		 */
+	}	
 	public void test_stringlib_empty_strings() {
 		String[] expressions = new String[] {
 			"isInteger(?)",
