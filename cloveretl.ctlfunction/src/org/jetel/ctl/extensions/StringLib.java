@@ -726,6 +726,9 @@ public class StringLib extends TLFunctionLibrary {
 	// JOIN
 	@TLFunctionAnnotation("Concatenets list elements into a string using delimiter.")
 	public static final <E> String join(TLFunctionCallContext context, String delimiter, List<E> values) {
+		if (delimiter == null){
+			delimiter ="";
+		}
 		StringBuffer buf = new StringBuffer();
 		for (int i=0; i<values.size(); i++) {
 			buf.append(values.get(i) == null ? CtlExtensionsMessages.getString("StringLib.null") : values.get(i).toString()); //$NON-NLS-1$
