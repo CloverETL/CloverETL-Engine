@@ -742,6 +742,9 @@ public class StringLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Concatenates all mappings into a string using delimiter.")
 	public static final <K,V> String join(TLFunctionCallContext context, String delimiter, Map<K,V> values) {
+		if (delimiter == null){
+			delimiter = "";
+		}
 		StringBuffer buf = new StringBuffer();
 		Set<K> keys = values.keySet();
 		for (Iterator<K> it = keys.iterator(); it.hasNext();) {
