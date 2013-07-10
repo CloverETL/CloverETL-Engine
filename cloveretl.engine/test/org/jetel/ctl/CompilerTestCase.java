@@ -3369,6 +3369,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate18", true);
 		check("isDate19", false);
 		check("isDate20", false);
+		check("isDate21", false);
+		check("isDate22", true);
+		check("isDate23", false);
+	}
+	public void test_stringlig_isFormat_expect_error(){
+		//test: regexp pattern is null
+		try {
+			doCompile("boolean test; function integer transform() {test=isDate('20.11.2007',null);return 0;}","test_stringlig_isFormat_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
 	}
 	
 	public void test_stringlib_empty_strings() {
@@ -3516,8 +3529,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("index4",6);
 		check("index5",-1);
 		check("index6",0);
+		check("index7",4);
+		check("index8",4);
+		check("index9", -1);
+		check("index10", 2);
 		check("index_empty1", -1);
 		check("index_empty2", 0);
+		check("index_empty3", 0);
+		check("index_empty4", -1);
 	}
 	
 	public void test_stringlib_indexOf_expect_error(){
