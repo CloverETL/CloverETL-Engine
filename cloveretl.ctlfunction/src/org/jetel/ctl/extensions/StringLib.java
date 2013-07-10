@@ -299,26 +299,41 @@ public class StringLib extends TLFunctionLibrary {
 	// LENGTH
 	@TLFunctionAnnotation("Returns number of characters in the input string")
 	public static final Integer length(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return 0;
+		}
 		return input.length();
 	}
 
 	@TLFunctionAnnotation("Returns number of elements in the input list")
 	public static final <E> Integer length(TLFunctionCallContext context, List<E> input) {
+		if (input == null){
+			return 0;
+		}
 		return input.size();
 	}
 
 	@TLFunctionAnnotation("Returns number of mappings in the input map")
 	public static final <K,V> Integer length(TLFunctionCallContext context, Map<K, V> input) {
+		if (input == null){
+			return 0;
+		}
 		return input.size();
 	}
 
 	@TLFunctionAnnotation("Returns number of bytes in the input byte array")
 	public static Integer length(TLFunctionCallContext context, byte[] input) {
+		if (input == null){
+			return 0;
+		}
 		return input.length;
 	}
 
 	@TLFunctionAnnotation("Returns number of fields in the input record")
 	public static final Integer length(TLFunctionCallContext context, DataRecord input) {
+		if (input == null){
+			return 0;
+		}
 		return input.getNumFields();
 	}
 
