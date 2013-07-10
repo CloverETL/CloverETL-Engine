@@ -3193,11 +3193,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	public void test_stringlib_left() {
-		doCompile("test_stringlib_left");
-		check("lef", "The q");
-		check("padded", "The q   ");
-		check("notPadded", "The q");
-		check("lef2", "The quick brown fox jumps over the lazy dog");
+		//CLO - 1193
+//		doCompile("test_stringlib_left");
+//		check("test1", "aa");
+//		check("test2", "aaa");
+//		check("test3", "");
+//		check("test4", null);
+//		check("test5", "abc");
+//		check("test6", "ab  ");
+//		check("test7", "   ");
+//		check("test8", "  ");
+//		check("test9", "abc");
+//		check("test10", "abc");
+//		check("test11", "");
+//		check("test12", null);
 	}
 	
 	public void test_stringlib_length() {
