@@ -750,7 +750,8 @@ public class StringLib extends TLFunctionLibrary {
 		for (Iterator<K> it = keys.iterator(); it.hasNext();) {
 			K key = it.next();
 			V value = values.get(key);
-			buf.append(key.toString()).append("=").append( //$NON-NLS-1$
+			
+			buf.append(String.valueOf(key)).append("=").append( //$NON-NLS-1$
 					value == null ? CtlExtensionsMessages.getString("StringLib.null") : value.toString()); //$NON-NLS-1$
 			if (it.hasNext()) {
 				buf.append(delimiter);
