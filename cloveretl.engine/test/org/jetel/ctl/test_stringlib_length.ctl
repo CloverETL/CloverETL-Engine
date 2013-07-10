@@ -8,8 +8,11 @@ integer mapLength;
 integer recordLength;
 
 integer length_empty;
-integer length_null;
-
+integer length_null1;
+integer length_null2;
+integer length_null3;
+integer length_null4;
+integer length_null5;
 function integer transform() {
 	input=' The QUICk !!$  broWn fox juMPS over the lazy DOG ';
 	lenght1=length(input);
@@ -39,7 +42,15 @@ function integer transform() {
 	printErr("record: " + recordLength);
 	
 	length_empty = length('');
-//	length_null = length(null);
-	
+	string str = null;
+	length_null1 = length(str);
+	string[] strArr = null;
+	length_null2 = length(strArr);
+	m = null;
+	length_null3 = length(m);
+	byte b = null;
+	length_null4 = length(b);	
+	myRecord = null;
+	length_null5 = length(myRecord);
 	return 0;
 }
