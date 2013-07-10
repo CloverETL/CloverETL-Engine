@@ -3210,6 +3210,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("mapLength", 3);
 		check("recordLength", 9);
 		check("length_empty", 0);
+		check("length_null1", 0);
+		check("length_null2", 0);
+		check("length_null3", 0);
+		check("length_null4", 0);
+		check("length_null5", 0);
 	}
 	
 	public void test_stringlib_lowerCase() {
