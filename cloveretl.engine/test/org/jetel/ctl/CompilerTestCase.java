@@ -3172,6 +3172,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("joinedString1", "80=5455.987\"-5=5455.987\"3=0.1");
 		check("joinedString2", "5.0♫54.65♫67.0♫231.0");
 		//check("joinedString3", "5☺54☺65☺67☺231☺80=5455.987☺-5=5455.987☺3=0.1☺CTL2☺42");
+		check("test_empty1", "abc");
+		check("test_empty2", "");
+		check("test_empty3","  ");
+		check("test_empty4","anullb");
+		check("test_empty5","80=5455.987-5=5455.9873=0.1");
+		check("test_empty6","80=5455.987 -5=5455.987 3=0.1");
+		check("test_empty7","a=xb=nullc=z");
+		check("test_empty8","a=x b=null c=z");
+		check("test_empty9","null=xeco=storm");
+		check("test_empty10","null=x eco=storm");
+		
+		check("test_null1","abc");
+		check("test_null2","");
+		check("test_null3","anullb");
+		check("test_null4","80=5455.987-5=5455.9873=0.1");
+		check("test_null5","a=xb=nullc=z");
+		check("test_null6","null=xeco=storm");
+		
 	}
 	
 	public void test_stringlib_left() {
