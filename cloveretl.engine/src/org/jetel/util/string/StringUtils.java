@@ -1481,6 +1481,9 @@ public class StringUtils {
 	 * @return string in which diacritic chars are replaced by theirs equivalences without diacritic
 	 */
 	public static String removeDiacritic(String str) {
+		if (str == null){
+			return null;
+		}
 		return Normalizer.decompose(str, false, 0).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
 
