@@ -1857,6 +1857,9 @@ public class StringUtils {
 	}
 
 	public static String removeNonAscii(String str){
+		if (str == null){
+			return null;
+		}
 		return str.replaceAll("[^\\p{ASCII}]+", "");
 	}
 
