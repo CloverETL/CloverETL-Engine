@@ -3333,6 +3333,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("metaphone1", "XRS");
 		check("metaphone2", "KWNTLN");
 		check("metaphone3", "KWNT");
+		check("metaphone4", "");
+		check("metaphone5", "");
+		check("test_empty1", "");
+		check("test_empty2", "");
+		check("test_null1", null);
+		check("test_null2", null);
 	}
 	
 	public void test_stringlib_nysiis() {
