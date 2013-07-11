@@ -961,6 +961,9 @@ public class StringLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Tries to match entire input with specified pattern.")
 	public static final List<String> matchGroups(TLFunctionCallContext context, String input, String pattern) {
+		if(input == null){
+			return null;
+		}
 		final Matcher m = ((TLRegexpCache)context.getCache()).getCachedPattern(context, pattern).matcher(input);
 		if (m.matches()) {
 			return new AbstractList<String>() {
