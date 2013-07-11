@@ -10,7 +10,7 @@ function integer transform() {
 	lower=lowerCase(input + 'BAgr  ');
 	printErr('to lower case:'+lower );
 	lower_empty = lowerCase('');
-//	lower_null = lowerCase(null);
+	lower_null = lowerCase(null);
 	
 	return 0;
 }
