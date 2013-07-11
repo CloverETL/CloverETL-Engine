@@ -46,24 +46,24 @@ function integer transform() {
 	test_empty5 = join('',joinMap);
 	test_empty6 = join(' ',joinMap);
 	test_null4 = join(null, joinMap);
+	//CLO-1210
+//	map[string,string] strMap;
+//	strMap["a"] = "x";
+//	strMap["b"] = null;
+//	strMap["c"] = "z";
 	
-	map[string,string] strMap;
-	strMap["a"] = "x";
-	strMap["b"] = null;
-	strMap["c"] = "z";
+//	test_empty7 = join('',strMap);	
+//	test_empty8 = join(' ',strMap);
+//	test_null5 = join(null,strMap);
 	
-	test_empty7 = join('',strMap);	
-	test_empty8 = join(' ',strMap);
-	test_null5 = join(null,strMap);
-	
-	map[string, string] strMap2;
-	strMap2[null] = "x";
-	strMap2["eco"] = "storm";
+//	map[string, string] strMap2;
+//	strMap2[null] = "x";
+//	strMap2["eco"] = "storm";
 	
 	
-	test_empty9 = join('',strMap2);
-	printErr(test_empty9);
-	test_empty10 = join(' ', strMap2);
-	test_null6 = join(null,strMap2);
+//	test_empty9 = join('',strMap2);
+//	printErr(test_empty9);
+//	test_empty10 = join(' ', strMap2);
+//	test_null6 = join(null,strMap2);
 	return 0;
 }
