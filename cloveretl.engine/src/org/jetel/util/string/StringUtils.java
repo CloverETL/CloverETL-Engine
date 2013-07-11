@@ -480,7 +480,12 @@ public class StringUtils {
 	 * @return NYSIIS code
 	 */
 	public static String NYSIIS(String input){
-		if (isEmpty(input)) return "";
+		if (input == null){
+			return null;
+		}
+		if (input.equals("")){ 
+			return "";
+		}
 		StringBuilder nysiis = new StringBuilder();
 		String tmp = input.trim().toUpperCase();
 		char[] in = new char[tmp.length()]; 
