@@ -3667,7 +3667,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
         check("test","tescik");
     	check("test1","zabicka");
     	check("test_empty", "");
-	}
+    	check("test_null", null);
+    }
 	
 	public void test_stringlib_translate(){
         doCompile("test_stringlib_translate");
