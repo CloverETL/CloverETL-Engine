@@ -3359,9 +3359,67 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		check("rep", format.format(new Date()).replaceAll("[lL]", "t"));
 		check("rep1", "The cat says meow. All cats say meow.");
+		check("rep2", "intruders must die");
 		check("test_empty1", "a");
 		check("test_empty2", "");
+		check("test_null", null);
+		check("test_null2","");
+		check("test_null3","bbb");
+		check("test_null4",null);
 	}
+	public void test_stringlib_replace_expect_error(){
+		//test: regexp null - test1
+		try {
+			doCompile("string test; function integer transform(){test = replace('a b',null,'b'); return 0;}","test_stringlib_replace_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp null - test2
+		try {
+			doCompile("string test; function integer transform(){test = replace('',null,'b'); return 0;}","test_stringlib_replace_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp null - test3
+		try {
+			doCompile("string test; function integer transform(){test = replace(null,null,'b'); return 0;}","test_stringlib_replace_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: arg3 null - test1 
+		try {
+			doCompile("string test; function integer transform(){test = replace('a b','a+',null); return 0;}","test_stringlib_replace_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+//		//test: arg3 null - test2
+//		try {
+//			doCompile("string test; function integer transform(){test = replace('','a+',null); return 0;}","test_stringlib_replace_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+//		//test: arg3 null - test3
+//		try {
+//			doCompile("string test; function integer transform(){test = replace(null,'a+',null); return 0;}","test_stringlib_replace_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+		//test: regexp and arg3 null - test1
+		try {
+			doCompile("string test; function integer transform(){test = replace('a b',null,null); return 0;}","test_stringlib_replace_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+	}
+	
 	
 	public void test_stringlib_right() {
 		doCompile("test_stringlib_right");
