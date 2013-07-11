@@ -3178,17 +3178,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test_empty4","anullb");
 		check("test_empty5","80=5455.987-5=5455.9873=0.1");
 		check("test_empty6","80=5455.987 -5=5455.987 3=0.1");
-		check("test_empty7","a=xb=nullc=z");
-		check("test_empty8","a=x b=null c=z");
-		check("test_empty9","null=xeco=storm");
-		check("test_empty10","null=x eco=storm");
 		
 		check("test_null1","abc");
 		check("test_null2","");
 		check("test_null3","anullb");
 		check("test_null4","80=5455.987-5=5455.9873=0.1");
-		check("test_null5","a=xb=nullc=z");
-		check("test_null6","null=xeco=storm");
+
+		//CLO-1210 
+//		check("test_empty7","a=xb=nullc=z");
+//		check("test_empty8","a=x b=null c=z");
+//		check("test_empty9","null=xeco=storm");
+//		check("test_empty10","null=x eco=storm");
+//		check("test_null5","a=xb=nullc=z");
+//		check("test_null6","null=xeco=storm");
 		
 	}
 	
@@ -3245,6 +3247,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("matches8", false);
 		check("matches9", true);
 		check("matches10", true);
+	}
+	
+	public void test_stringlib_matches_expect_error(){
+		//test: regexp param null - test 1
+		try {
+			doCompile("boolean test; function integer transform(){test = matches('aaa', null); return 0;}","test_stringlib_matches_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp param null - test 2
+		try {
+			doCompile("boolean test; function integer transform(){test = matches('', null); return 0;}","test_stringlib_matches_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp param null - test 3
+		try {
+			doCompile("boolean test; function integer transform(){test = matches(null, null); return 0;}","test_stringlib_matches_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
 	}
 	
 	public void test_stringlib_matchGroups() {
