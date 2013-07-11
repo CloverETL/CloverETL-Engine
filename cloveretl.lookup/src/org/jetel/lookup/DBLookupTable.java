@@ -204,8 +204,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		} finally {
 			activeLookups.clear();
 		}
-			connection.closeConnection(getId(), OperationType.READ);
-		}
+		connection.closeConnection(getId(), OperationType.READ);
+	}
 	
     public static DBLookupTable fromProperties(TypedProperties properties) 
     throws AttributeNotFoundException, GraphConfigurationException{
@@ -272,6 +272,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         }
         
         return lookupTable;
+    }
+    
+    @Override
+    public synchronized void clear() {
+    	for (DBLookup activeLookup : activeLookups) {
+    		activeLookup.clear();
+    	}
     }
 
     @Override

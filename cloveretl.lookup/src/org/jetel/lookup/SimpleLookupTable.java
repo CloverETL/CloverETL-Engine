@@ -357,6 +357,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 
 		return lookupTable;
 	}
+	
+	@Override
+	public void clear() {
+		lookupTable.clear();
+	}
 
 	@Override
 	public synchronized void free() {
