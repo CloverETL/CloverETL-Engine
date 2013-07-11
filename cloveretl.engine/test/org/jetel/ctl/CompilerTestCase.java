@@ -3541,6 +3541,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_stringlib_removeNonPrintable");
 		check("nonPrintableRemoved", "AHOJ");
 		check("test_empty", "");
+		check("test_null", null);
 	}
 	
 	public void test_stringlib_getAlphanumericChars() {
