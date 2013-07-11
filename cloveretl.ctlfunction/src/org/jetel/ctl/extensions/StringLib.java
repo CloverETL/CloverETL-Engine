@@ -387,6 +387,9 @@ public class StringLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Replaces matches of a regular expression")
 	public static final String replace(TLFunctionCallContext context, String input, String regex, String replacement) {
+		if (input == null){
+			return null;
+		}
 		Matcher m; 
 		m = ((TLRegexpCache)context.getCache()).getCachedMatcher(context, regex).reset(input);
 		return m.replaceAll(replacement);
