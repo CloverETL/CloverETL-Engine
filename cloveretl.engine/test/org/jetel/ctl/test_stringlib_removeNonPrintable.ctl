@@ -8,6 +8,6 @@ function integer transform() {
 	nonPrintableRemoved = removeNonPrintable(input);
 	
 	test_empty = removeNonPrintable('');
-//	test_null = removeNonPrintable(null);
+	test_null = removeNonPrintable(null);
 	return 0;
 }
