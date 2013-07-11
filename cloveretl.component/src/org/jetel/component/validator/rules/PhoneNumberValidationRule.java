@@ -31,6 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
 import org.jetel.component.validator.rules.PhoneNumberPattern.PhoneNumberPatternFormatException;
@@ -65,11 +66,11 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 	static {
 		countryCodeToCountryMap = new HashMap<String, String>();
 		
-		countryCodeToCountryMap.put("AC", "Ascension Island");
-		countryCodeToCountryMap.put("SS", "South Sudan");
+		countryCodeToCountryMap.put("AC", "Ascension Island"); //$NON-NLS-1$ //$NON-NLS-2$
+		countryCodeToCountryMap.put("SS", "South Sudan"); //$NON-NLS-1$ //$NON-NLS-2$
 		String[] isoCountries = Locale.getISOCountries();
 		for (String isoCountry : isoCountries) {
-			Locale locale = new Locale("", isoCountry);
+			Locale locale = new Locale("", isoCountry); //$NON-NLS-1$
 			countryCodeToCountryMap.put(isoCountry, locale.getDisplayCountry(Locale.ENGLISH));
 		}
 	}
@@ -96,25 +97,25 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		
 		phoneUtil = PhoneNumberUtil.getInstance();
 		
-		region.setName("Region");
-		region.setPlaceholder("None (international phone number expected)");
-		pattern.setName("Phone number pattern");
-		pattern.setPlaceholder("None (no strict format required)");
+		region.setName(ValidatorMessages.getString("PhoneNumberValidationRule.RegionParameterName")); //$NON-NLS-1$
+		region.setPlaceholder(ValidatorMessages.getString("PhoneNumberValidationRule.RegionParameterPlaceholder")); //$NON-NLS-1$
+		pattern.setName(ValidatorMessages.getString("PhoneNumberValidationRule.PatternParameterName")); //$NON-NLS-1$
+		pattern.setPlaceholder(ValidatorMessages.getString("PhoneNumberValidationRule.PatternParameterPlaceholder")); //$NON-NLS-1$
 		
 		String[] regions = phoneUtil.getSupportedRegions().toArray(new String[0]);
 		
 		Arrays.sort(regions);
 		String[] regionsWithEmptyOption = new String[regions.length + 1];
-		regionsWithEmptyOption[0] = "";
+		regionsWithEmptyOption[0] = ""; //$NON-NLS-1$
 		
 		for (int i = 0; i < regions.length; i++) {
 			String regionCode = regions[i];
 			String formattedRegion = regionCode;
 			String countryName = countryCodeToCountryMap.get(regionCode);
 			if (countryName != null) {
-				formattedRegion = formattedRegion + " - " + countryName;
+				formattedRegion = formattedRegion + " - " + countryName; //$NON-NLS-1$
 			}
-			formattedRegion = formattedRegion + " (+" + phoneUtil.getCountryCodeForRegion(regionCode) + ")";
+			formattedRegion = formattedRegion + " (+" + phoneUtil.getCountryCodeForRegion(regionCode) + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 			
 			regionsWithEmptyOption[i + 1] = formattedRegion;
 		}
@@ -170,7 +171,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		String inputString = prepareInput(record);
 		if (inputString == null || inputString.isEmpty()) {
 			if (ea != null) {
-				raiseError(ea, ERROR_PHONE_NUMBER_EMPTY, "Empty string where phone number was expected", resolvedTarget, inputString);
+				raiseError(ea, ERROR_PHONE_NUMBER_EMPTY, ValidatorMessages.getString("PhoneNumberValidationRule.InvalidRecordMessageEmptyString"), resolvedTarget, inputString); //$NON-NLS-1$
 			}
 			return State.INVALID;
 		}
@@ -181,7 +182,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		} catch (NumberParseException e) {
 			if (ea != null) {
 				if (e.getErrorType() == ErrorType.INVALID_COUNTRY_CODE && (resolvedRegion == null || resolvedRegion.isEmpty())) {
-					raiseError(ea, ERROR_CODE_CANNOT_PARSE, "Phone number starts with invalid country code and no region is specified", resolvedTarget, inputString);
+					raiseError(ea, ERROR_CODE_CANNOT_PARSE, ValidatorMessages.getString("PhoneNumberValidationRule.InvalidRecordMessageInvalidCountryCodeNoRegion"), resolvedTarget, inputString); //$NON-NLS-1$
 				}
 				else {
 					raiseError(ea, ERROR_CODE_CANNOT_PARSE, e.getMessage(), resolvedTarget, inputString);
@@ -191,13 +192,13 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		}
 		if (!phoneUtil.isValidNumber(phoneNumber)) {
 			if (ea != null)
-				raiseError(ea, ERROR_CODE_INVALID_PHONE_NUMBER, "Invalid phone number", resolvedTarget, inputString);
+				raiseError(ea, ERROR_CODE_INVALID_PHONE_NUMBER, ValidatorMessages.getString("PhoneNumberValidationRule.InvalidRecordMessageInvalidPhoneNumber"), resolvedTarget, inputString); //$NON-NLS-1$
 			return State.INVALID;
 		}
 		if (requiredPhoneNumberPattern != null) {
 			if (!requiredPhoneNumberPattern.matches(inputString)) {
 				if (ea != null)
-					raiseError(ea, ERROR_CODE_PATTERN_MISMATCH, "Phone number doesn't match the required pattern", resolvedTarget, inputString);
+					raiseError(ea, ERROR_CODE_PATTERN_MISMATCH, ValidatorMessages.getString("PhoneNumberValidationRule.InvalidRecordMessagePatternMismatch"), resolvedTarget, inputString); //$NON-NLS-1$
 				return State.INVALID;
 			}
 		}
@@ -214,11 +215,11 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		boolean state = true;
 		String resolvedTarget = target.getValue();
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("PhoneNumberValidationRule.ConfigurationErrorEmptyTarget")); //$NON-NLS-1$
 			state = false;
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("PhoneNumberValidationRule.ConfigurationErrorFieldMissing")); //$NON-NLS-1$
 			state = false;
 		}
 		String patternValue = pattern.getValue();
@@ -233,7 +234,7 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 		resolvedRegion = getRegionCode();
 		if (resolvedRegion != null && !resolvedRegion.isEmpty()) {
 			if (!phoneUtil.getSupportedRegions().contains(resolvedRegion)) {
-				accumulator.addError(target, this, "Unknown region " + resolvedRegion);
+				accumulator.addError(target, this, ValidatorMessages.getString("PhoneNumberValidationRule.ConfigurationErrorUnknownRegion") + resolvedRegion); //$NON-NLS-1$
 				state = false;
 			}
 		}
@@ -243,12 +244,12 @@ public class PhoneNumberValidationRule extends StringValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "Phone number";
+		return ValidatorMessages.getString("PhoneNumberValidationRule.CommonName"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether given string is a valid phone number";
+		return ValidatorMessages.getString("PhoneNumberValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 	
 	public StringEnumValidationParamNode getRegion() {

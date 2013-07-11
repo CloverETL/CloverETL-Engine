@@ -18,6 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.text.MessageFormat;
 import java.text.ParseException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringEnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -74,9 +76,9 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 		@Override
 		public String toString() {
 			if(this.equals(REJECT_MISSING)) {
-				return "Reject missing";
+				return ValidatorMessages.getString("LookupValidationRule.PolicyRejectMissing"); //$NON-NLS-1$
 			}
-			return "Reject present";
+			return ValidatorMessages.getString("LookupValidationRule.PolicyRejectPresent"); //$NON-NLS-1$
 		}
 	}
 	
@@ -102,8 +104,8 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 	protected void initializeParameters(final DataRecordMetadata inMetadata, final GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		target.setPlaceholder("Specified by mapping");
-		lookupParam.setName("Lookup name");
+		target.setPlaceholder(ValidatorMessages.getString("LookupValidationRule.TargetParameterPlaceholder")); //$NON-NLS-1$
+		lookupParam.setName(ValidatorMessages.getString("LookupValidationRule.LookupTableParameterName")); //$NON-NLS-1$
 		lookupParam.setOptions(graphWrapper.getLookupTables().toArray(new String[0]));
 		lookupParam.setChangeHandler(new ChangeHandler() {
 			@Override
@@ -115,9 +117,9 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 				}
 			}
 		});
-		mappingParam.setName("Key mapping");
-		mappingParam.setTooltip("Mapping selected target fields to parts of lookup key.\nFor example: key1=field3,key2=field1,key3=field2");
-		policy.setName("Rule policy");
+		mappingParam.setName(ValidatorMessages.getString("LookupValidationRule.MappingParameterName")); //$NON-NLS-1$
+		mappingParam.setTooltip(ValidatorMessages.getString("LookupValidationRule.MappingParameterTooltip")); //$NON-NLS-1$
+		policy.setName(ValidatorMessages.getString("LookupValidationRule.PolicyParameterName")); //$NON-NLS-1$
 		
 		try {
 			initLookupTable(graphWrapper);
@@ -163,7 +165,7 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 		
 		initLookupTable(graphWrapper);
 		if(lookupTable == null) {
-			throw new ComponentNotReadyException("Lookup table " + lookupParam.getValue() + " not found");
+			throw new ComponentNotReadyException(MessageFormat.format(ValidatorMessages.getString("LookupValidationRule.InitErrorLookupTableNotFound"), lookupParam.getValue())); //$NON-NLS-1$
 		}
 		
 		try {
@@ -179,7 +181,7 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 			DataFieldMetadata lookupKeyField = lookupKeyMetadata.getField(i);
 			String inputFieldName = keyMappingMap.get(lookupKeyField.getName());
 			if (inputFieldName == null) {
-				throw new ComponentNotReadyException("Lookup key '" + lookupKeyField.getName() + "' is not mapped.");
+				throw new ComponentNotReadyException(MessageFormat.format(ValidatorMessages.getString("LookupValidationRule.InitErrorLookupKeyNotMapped"), lookupKeyField.getName())); //$NON-NLS-1$
 			}
 			inputDataKeyFields[i] = inputFieldName;
 		}
@@ -192,17 +194,14 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 	@Override
 	public State isValid(DataRecord record, ValidationErrorAccumulator ea, GraphWrapper graphWrapper) {
 		if(!isEnabled()) {
-			logNotValidated("Rule is not enabled.");
 			return State.NOT_VALIDATED;
 		}
 		
 		lookup.seek(record);
 		if(policy.getValue() == POLICY.REJECT_MISSING && lookup.getNumFound() > 0) {
-			logSuccess("Given field(s) values was found in the lookup table.");
 			return State.VALID;
 		}
 		else if(policy.getValue() == POLICY.REJECT_PRESENT && lookup.getNumFound() == 0) {
-			logSuccess("Given field(s) values was not present in the lookup table.");
 			return State.VALID;
 		}
 		else {
@@ -213,9 +212,9 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 					valuesInString.put(field, record.getField(field).toString());
 				}
 				if(policy.getValue() == POLICY.REJECT_MISSING) {
-					raiseError(ea, ERROR_RECORD_MISSING, "Given field(s) values was not present in the lookup table. Missing are invalid.", inputDataKeyFields, valuesInString);
+					raiseError(ea, ERROR_RECORD_MISSING, ValidatorMessages.getString("LookupValidationRule.InvalidRecordMessageValuesNotFound"), inputDataKeyFields, valuesInString); //$NON-NLS-1$
 				} else {
-					raiseError(ea, ERROR_RECORD_PRESENT, "Given field(s) values was found in the lookup table. Present are invalid.", inputDataKeyFields, valuesInString);
+					raiseError(ea, ERROR_RECORD_PRESENT, ValidatorMessages.getString("LookupValidationRule.InvalidRecordMessageValuesFound"), inputDataKeyFields, valuesInString); //$NON-NLS-1$
 				}
 			}
 			return State.INVALID;
@@ -227,10 +226,9 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 		if(!isEnabled()) {
 			return true;
 		}
-		setPropertyRefResolver(graphWrapper);
 		boolean state = true;
-		String resolvedLookup = resolve(lookupParam.getValue());
-		String resolvedKeyMapping = resolve(mappingParam.getValue());
+		String resolvedLookup = (lookupParam.getValue());
+		String resolvedKeyMapping = (mappingParam.getValue());
 		try {
 			parseKeyMapping();
 		} catch (ParseException e) {
@@ -239,22 +237,22 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 			return state;
 		}
 		if(!ValidatorUtils.areValidFields(keyMappingMap.values(), inputMetadata)) { 
-			accumulator.addError(target, this, "Some of target fields are not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("LookupValidationRule.ConfigurationErrorTargetFieldsNotPresent")); //$NON-NLS-1$
 			state = false;
 		}
 		LookupTable lookupTable = null;
 		if(resolvedLookup.isEmpty()) {
-			accumulator.addError(lookupParam, this, "No lookup table provided.");
+			accumulator.addError(lookupParam, this, ValidatorMessages.getString("LookupValidationRule.ConfigurationErrorLookupTableNotSpecified")); //$NON-NLS-1$
 			state = false;
 		} else {
 			lookupTable = graphWrapper.getLookupTable(resolvedLookup);
 			if(lookupTable == null) {
-				accumulator.addError(lookupParam, this, "Unknown lookup table.");
+				accumulator.addError(lookupParam, this, ValidatorMessages.getString("LookupValidationRule.ConfigurationErrorLookupTableNotFound")); //$NON-NLS-1$
 				state = false;
 			}
 		}
 		if(resolvedKeyMapping.isEmpty()) {
-			accumulator.addError(mappingParam, this, "Key mapping is empty.");
+			accumulator.addError(mappingParam, this, ValidatorMessages.getString("LookupValidationRule.ConfigurationErrorKeyMappingEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		try {
@@ -265,20 +263,20 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 					lookupTable.init();
 					Set<String> lookupKeys = lookupTable.getKeyMetadata().getFieldNamesMap().keySet();
 					if (!mappingKeys.containsAll(lookupKeys)) {
-						accumulator.addError(mappingParam, this, "Key mapping is missing a field which is key part of lookup table.");
+						accumulator.addError(mappingParam, this, ValidatorMessages.getString("LookupValidationRule.ConfigurationErrorKeyMappingMissesLookupTableKey")); //$NON-NLS-1$
 						state = false;
 					}
 					if (!lookupKeys.containsAll(mappingKeys)) {
-						accumulator.addError(mappingParam, this, "Key mapping contains field which is not key part of lookup table.");
+						accumulator.addError(mappingParam, this, ValidatorMessages.getString("LookupValidationRule.ConfigurationErrorKeyMappingMapsUnknownField")); //$NON-NLS-1$
 						state = false;
 					}
 				} catch (ComponentNotReadyException e) {
-					accumulator.addError(mappingParam, this, "Key mapping contains field which is not key part of lookup table.");
+					accumulator.addError(mappingParam, this, ValidatorMessages.getString("LookupValidationRule.ConfigurationErrorLookupTableInitError")); //$NON-NLS-1$
 					state = false;
 				}
 			}
 		} catch (ParseException ex) {
-			accumulator.addError(mappingParam, this, "Key mapping is invalid: " + ex.getMessage());
+			accumulator.addError(mappingParam, this, ValidatorMessages.getString("LookupValidationRule.ConfigurationErrorInvalidKeyMapping") + ex.getMessage()); //$NON-NLS-1$
 			state = false;
 		}
 		return state;
@@ -300,27 +298,27 @@ public class LookupValidationRule extends AbstractMappingValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "Lookup";
+		return ValidatorMessages.getString("LookupValidationRule.CommonName"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Checks if there is a record in lookup table which match value of chosen field."; 
+		return ValidatorMessages.getString("LookupValidationRule.CommonDescription");  //$NON-NLS-1$
 	}
 	
 	@Override
 	public String getDetailName() {
-		return String.format("%s ('%s')", getName(), resolve(lookupParam.getValue()));
+		return String.format("%s ('%s')", getName(), (lookupParam.getValue())); //$NON-NLS-1$
 	}
 	
 	@Override
 	public String getMappingName() {
-		return "Lookup keys mapping";
+		return ValidatorMessages.getString("LookupValidationRule.MappingName"); //$NON-NLS-1$
 	}
 	
 	@Override
 	public String getTargetMappedItemName() {
-		return "Lookup key";
+		return ValidatorMessages.getString("LookupValidationRule.TargetMappedItemName"); //$NON-NLS-1$
 	}
 
 }

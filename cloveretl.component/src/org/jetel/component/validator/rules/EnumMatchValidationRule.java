@@ -259,7 +259,7 @@ public class EnumMatchValidationRule<T> extends ConversionValidationRule<T> {
 	private void stripDoubleQuotesAndTrim(String[] input) {
 		for(int i = 0; i < input.length; i++) {
 			input[i] = input[i].trim();
-			if(input[i].startsWith("\"") && input [i].endsWith("\"")) {
+			if(input[i].startsWith("\"") && input [i].endsWith("\"")) { //$NON-NLS-1$ //$NON-NLS-2$
 				input[i] = input[i].substring(1, input[i].length()-1);
 			}
 		}

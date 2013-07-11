@@ -28,6 +28,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -72,15 +73,15 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 		@Override
 		public String toString() {
 			if(this.equals(OPEN_CLOSED)) {
-				return "From exclusive, to inclusive";
+				return ValidatorMessages.getString("IntervalValidationRule.BoundaryOpenClosed"); //$NON-NLS-1$
 			}
 			if(this.equals(CLOSED_OPEN)) {
-				return "From inclusive, to exclusive";
+				return ValidatorMessages.getString("IntervalValidationRule.BoundaryClosedOpen"); //$NON-NLS-1$
 			}
 			if(this.equals(OPEN_OPEN)) {
-				return "From exclusive, to exclusive";
+				return ValidatorMessages.getString("IntervalValidationRule.BoundaryOpenOpen"); //$NON-NLS-1$
 			}
-			return "From inclusive, to inclusive";
+			return ValidatorMessages.getString("IntervalValidationRule.BoundaryClosedClosed"); //$NON-NLS-1$
 		}
 	};
 	
@@ -107,12 +108,12 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		boundaries.setName("Boundaries");
-		from.setName("From");
-		from.setPlaceholder("Standard Clover format, for details see documentation.");
-		to.setName("To");
-		to.setPlaceholder("Not set");
-		to.setPlaceholder("Standard Clover format, for details see documentation.");
+		boundaries.setName(ValidatorMessages.getString("IntervalValidationRule.BoundariesParameterName")); //$NON-NLS-1$
+		from.setName(ValidatorMessages.getString("IntervalValidationRule.FromParameterName")); //$NON-NLS-1$
+		from.setPlaceholder(ValidatorMessages.getString("IntervalValidationRule.FromParameterPlaceholder")); //$NON-NLS-1$
+		to.setName(ValidatorMessages.getString("IntervalValidationRule.ToParameterName")); //$NON-NLS-1$
+		to.setPlaceholder(ValidatorMessages.getString("IntervalValidationRule.ToParameterPlaceholder")); //$NON-NLS-1$
+		to.setPlaceholder(ValidatorMessages.getString("IntervalValidationRule.ToParameterPlaceholder2")); //$NON-NLS-1$
 	}
 	
 	@Override
@@ -136,7 +137,7 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 		try {
 			initConversionUtils(fieldType);
 		} catch (IllegalArgumentException ex) {
-			throw new ComponentNotReadyException("Cannot initialize conversion and comparator tools.", ex);
+			throw new ComponentNotReadyException(ValidatorMessages.getString("IntervalValidationRule.InitErrorInternalConversionUtilsInitFail"), ex); //$NON-NLS-1$
 		}
 		
 		resolvedTo = resolve(to.getValue());
@@ -146,10 +147,10 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 		fromTyped = tempConverter.<T>convertFromCloverLiteral(resolvedFrom);
 		toTyped = tempConverter.<T>convertFromCloverLiteral(resolvedTo);
 		if(fromTyped == null) {
-			throw new ComponentNotReadyException("Conversion of value 'From' failed.");
+			throw new ComponentNotReadyException(ValidatorMessages.getString("IntervalValidationRule.InitErrorFromInvalid")); //$NON-NLS-1$
 		}
 		if(toTyped == null) {
-			throw new ComponentNotReadyException("Conversion of value 'To' failed.");
+			throw new ComponentNotReadyException(ValidatorMessages.getString("IntervalValidationRule.InitErrorToInvalid")); //$NON-NLS-1$
 		}
 	}
 
@@ -181,7 +182,7 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 		if(incomingValue == null) {
 			// FIXME: remove unused check for null
 			if (ea != null)
-				raiseError(ea, ERROR_FIELD_CONVERSION, "Conversion of value from record failed.", resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString());
+				raiseError(ea, ERROR_FIELD_CONVERSION, ValidatorMessages.getString("IntervalValidationRule.InvalidRecordMessageConversionFail"), resolvedTarget,(dataField.getValue() == null) ? "null" : dataField.getValue().toString()); //$NON-NLS-1$ //$NON-NLS-2$
 			return State.INVALID;
 		}
 		
@@ -196,7 +197,7 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 			state = State.VALID;
 		} else {
 			if (ea != null) {
-				raiseError(ea, ERROR_NOT_IN_INTERVAL, "Incoming value not in given interval.", resolvedTarget, incomingValue.toString());
+				raiseError(ea, ERROR_NOT_IN_INTERVAL, ValidatorMessages.getString("IntervalValidationRule.InvalidRecordMessageNotInInterval"), resolvedTarget, incomingValue.toString()); //$NON-NLS-1$
 			}
 			state = State.INVALID;
 		}
@@ -215,19 +216,19 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 		String resolvedFrom = resolve(from.getValue());
 		
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("IntervalValidationRule.ConfigurationErrorTargetEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("IntervalValidationRule.ConfigurationErrorTargetMissing")); //$NON-NLS-1$
 			state = false;
 		}
 		if(resolvedFrom.isEmpty()) {
-			accumulator.addError(from, this, "Value From is empty.");
+			accumulator.addError(from, this, ValidatorMessages.getString("IntervalValidationRule.ConfigurationErrorFromIsEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		if(resolvedTo.isEmpty()) {
-			accumulator.addError(to, this, "Value To is empty.");
+			accumulator.addError(to, this, ValidatorMessages.getString("IntervalValidationRule.ConfigurationErrorToIsEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
@@ -263,11 +264,11 @@ public class IntervalValidationRule<T> extends ConversionValidationRule<T> {
 	}
 	@Override
 	public String getCommonName() {
-		return "Interval";
+		return ValidatorMessages.getString("IntervalValidationRule.CommonName"); //$NON-NLS-1$
 	}
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether value of chosen field is in provided interval.";
+		return ValidatorMessages.getString("IntervalValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 
 }

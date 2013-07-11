@@ -18,6 +18,7 @@
  */
 package org.jetel.component.validator.rules;
 
+import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -29,6 +30,7 @@ import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
@@ -68,9 +70,9 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 		@Override
 		public String toString() {
 			if(this.equals(EMPTY)) {
-				return "Empty fields";
+				return ValidatorMessages.getString("NonEmptySubsetValidationRule.GoalEmptyFields"); //$NON-NLS-1$
 			}
-			return "Nonempty fields";
+			return ValidatorMessages.getString("NonEmptySubsetValidationRule.GoalNonEmptyFields"); //$NON-NLS-1$
 		}
 	}
 	
@@ -94,10 +96,10 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
 		final DataRecordMetadata inputMetadata = inMetadata;
-		goal.setName("Count");
-		count.setName("Minimal count");
-		trimInput.setName("Trim input");
-		trimInput.setTooltip("Trim input before validation.");
+		goal.setName(ValidatorMessages.getString("NonEmptySubsetValidationRule.GoalParameterName")); //$NON-NLS-1$
+		count.setName(ValidatorMessages.getString("NonEmptySubsetValidationRule.CountParameterName")); //$NON-NLS-1$
+		trimInput.setName(ValidatorMessages.getString("NonEmptySubsetValidationRule.TrimInputParameterName")); //$NON-NLS-1$
+		trimInput.setTooltip(ValidatorMessages.getString("NonEmptySubsetValidationRule.TrimInputParameterTooltip")); //$NON-NLS-1$
 		trimInput.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -133,7 +135,7 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 		for (int i = 0; i < targetFields.length; i++) {
 			targetFieldIndicies[i] = metadata.getFieldPosition(targetFields[i]);
 			if (targetFieldIndicies[i] == -1) {
-				throw new ComponentNotReadyException("Field '" + targetFields[i] + "' not found in input metadata.");
+				throw new ComponentNotReadyException(MessageFormat.format(ValidatorMessages.getString("NonEmptySubsetValidationRule.InitErrorFieldNotFound"), targetFields[i])); //$NON-NLS-1$
 			}
 		}
 	}
@@ -177,9 +179,9 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 			}
 			
 			if(goal.getValue() == GOALS.EMPTY) {
-				raiseError(ea, ERROR_NOT_ENOUGH_NONEMPTY, "Only " + ok + " field(s) empty, " + count.getValue() +" empty field(s) required." , targetFields, values);
+				raiseError(ea, ERROR_NOT_ENOUGH_NONEMPTY, MessageFormat.format(ValidatorMessages.getString("NonEmptySubsetValidationRule.InvalidRecordMessageNotEnoughEmptyFields"), ok, count.getValue()) , targetFields, values); //$NON-NLS-1$
 			} else {
-				raiseError(ea, ERROR_NOT_ENOUGH_EMPTY, "Only " + ok + " field(s) nonempty, " + count.getValue() +" nonempty field(s) required.", targetFields, values);
+				raiseError(ea, ERROR_NOT_ENOUGH_EMPTY, MessageFormat.format(ValidatorMessages.getString("NonEmptySubsetValidationRule.InvalidRecordMessageNotEnoughNonEmptyFields"), ok, count.getValue()), targetFields, values); //$NON-NLS-1$
 			}
 		}
 		return State.INVALID;
@@ -193,15 +195,15 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("NonEmptySubsetValidationRule.ConfigurationErrorTargetEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		if(count.getValue() == null || count.getValue().compareTo(Integer.valueOf(0)) <= 0) {
-			accumulator.addError(count, this, "Count of fields must be greater than zero.");
+			accumulator.addError(count, this, ValidatorMessages.getString("NonEmptySubsetValidationRule.ConfigurationErrorInvalidCount")); //$NON-NLS-1$
 			state = false;
 		}
 		if(!ValidatorUtils.areValidFields(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Some of target fields are not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("NonEmptySubsetValidationRule.ConfigurationErrorTargetFieldsMissing")); //$NON-NLS-1$
 			state = false;
 		}
 		return state;
@@ -234,12 +236,12 @@ public class NonEmptySubsetValidationRule extends AbstractValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "Empty/Nonempty subset";
+		return ValidatorMessages.getString("NonEmptySubsetValidationRule.CommonName"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether at least n chosen fields are empty or nonempty depending on user choice.";
+		return ValidatorMessages.getString("NonEmptySubsetValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 
 }

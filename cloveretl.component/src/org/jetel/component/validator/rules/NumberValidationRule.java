@@ -19,6 +19,7 @@
 package org.jetel.component.validator.rules;
 
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.text.ParsePosition;
 import java.util.Collection;
 import java.util.Locale;
@@ -30,6 +31,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.LanguageSetting;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -79,8 +81,8 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 	
 	@Override
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
-		trimInput.setName("Trim input");
-		trimInput.setTooltip("Trim input before validation.");
+		trimInput.setName(ValidatorMessages.getString("NumberValidationRule.TrimInputParameterName")); //$NON-NLS-1$
+		trimInput.setTooltip(ValidatorMessages.getString("NumberValidationRule.TrimInputTooltip")); //$NON-NLS-1$
 		
 		LanguageSetting languageSetting = getLanguageSettings(0);
 		languageSetting.initialize();
@@ -107,27 +109,27 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 		
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0), parentLanguageSetting);
 		
-		resolvedTarget = resolve(target.getValue());
-		String resolvedFormat = resolve(computedLS.getNumberFormat().getValue());
-		String resolvedLocale = resolve(computedLS.getLocale().getValue());
+		resolvedTarget = (target.getValue());
+		String resolvedFormat = (computedLS.getNumberFormat().getValue());
+		String resolvedLocale = (computedLS.getLocale().getValue());
 		
 		fieldPosition = metadata.getFieldPosition(resolvedTarget);
 		if (fieldPosition == -1) {
-			throw new ComponentNotReadyException("Field '" + resolvedTarget + "' is null.");
+			throw new ComponentNotReadyException(MessageFormat.format(ValidatorMessages.getString("NumberValidationRule.InitErrorTargetFieldMissing"), resolvedTarget)); //$NON-NLS-1$
 		}
 		DataFieldMetadata fieldMetadata = metadata.getField(fieldPosition);
 		if(fieldMetadata.getDataType() != DataFieldType.STRING) {
-			throw new ComponentNotReadyException("Field '" + resolvedTarget + "' is not a string.");
+			throw new ComponentNotReadyException(MessageFormat.format(ValidatorMessages.getString("NumberValidationRule.InitErrorTargetNotAString"), resolvedTarget)); //$NON-NLS-1$
 		}
 		
 		Locale realLocale = ValidatorUtils.localeFromString(resolvedLocale);
 		numberFormat = (DecimalFormat) DecimalFormat.getInstance(realLocale);
 		// Special handling with two named formatting masks
 		if(computedLS.getNumberFormat().getValue().equals(CommonFormats.INTEGER)) {
-			numberFormat.applyPattern("#");
+			numberFormat.applyPattern("#"); //$NON-NLS-1$
 			numberFormat.setParseIntegerOnly(true);
 		} else if(computedLS.getNumberFormat().getValue().equals(CommonFormats.NUMBER)) {
-				numberFormat.applyPattern("#");
+				numberFormat.applyPattern("#"); //$NON-NLS-1$
 		} else if(!computedLS.getNumberFormat().getValue().isEmpty()) {
 			numberFormat.applyPattern(resolvedFormat);
 		}
@@ -153,13 +155,13 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 			Number parsedNumber = numberFormat.parse(tempString, pos);
 			if(parsedNumber == null || pos.getIndex() != tempString.length()) {
 				if (ea != null)
-					raiseError(ea, ERROR_PARSING, "The target filed could not be parsed.", resolvedTarget, tempString);
+					raiseError(ea, ERROR_PARSING, ValidatorMessages.getString("NumberValidationRule.InvalidRecordMessageCannotParseAsNumber"), resolvedTarget, tempString); //$NON-NLS-1$
 				return State.INVALID;
 			}
 			return State.VALID;
 		} catch (Exception ex) {
 			if (ea != null)
-				raiseError(ea, ERROR_PARSING, "The target field could not be parsed.", resolvedTarget, tempString);
+				raiseError(ea, ERROR_PARSING, ValidatorMessages.getString("NumberValidationRule.InvalidRecordMessageCannotParseAsNumber"), resolvedTarget, tempString); //$NON-NLS-1$
 			return State.INVALID;
 		}
 	}
@@ -173,21 +175,21 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 		LanguageSetting originalLS = getLanguageSettings(LANGUAGE_SETTING_ACCESSOR_0);
 		LanguageSetting computedLS = LanguageSetting.hierarchicMerge(originalLS, parentLanguageSetting);
 		
-		String resolvedTarget = resolve(target.getValue());
-		String resolvedFormat = resolve(computedLS.getNumberFormat().getValue());
-		String resolvedLocale = resolve(computedLS.getLocale().getValue());
+		String resolvedTarget = (target.getValue());
+		String resolvedFormat = (computedLS.getNumberFormat().getValue());
+		String resolvedLocale = (computedLS.getLocale().getValue());
 		
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("NumberValidationRule.ConfigurationErrorTargetEmpty")); //$NON-NLS-1$
 			state = false;
 		} else {
 			if(inputMetadata.getField(resolvedTarget) != null && inputMetadata.getField(resolvedTarget).getDataType() != DataFieldType.STRING) {
-				accumulator.addError(target, this, "Target field is not string.");
+				accumulator.addError(target, this, ValidatorMessages.getString("NumberValidationRule.ConfigurationErrorTargetNotAString")); //$NON-NLS-1$
 				state = false;	
 			}
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("NumberValidationRule.ConfigurationErrorTargetMissing")); //$NON-NLS-1$
 			state = false;
 		}
 		
@@ -199,11 +201,11 @@ public class NumberValidationRule extends LanguageSettingsValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "Number";
+		return ValidatorMessages.getString("NumberValidationRule.CommonName"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether chosen field is a number in provided format.";
+		return ValidatorMessages.getString("NumberValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 }

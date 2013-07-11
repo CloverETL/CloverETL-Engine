@@ -28,6 +28,7 @@ import org.jetel.component.validator.AbstractValidationRule;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -66,9 +67,9 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 		@Override
 		public String toString() {
 			if(this.equals(EMPTY)) {
-				return "Empty field";
+				return ValidatorMessages.getString("NonEmptyFieldValidationRule.GoalEmptyFieldLabel"); //$NON-NLS-1$
 			}
-			return "Nonempty field";
+			return ValidatorMessages.getString("NonEmptyFieldValidationRule.GoalNonEmptyFieldLabel"); //$NON-NLS-1$
 		}
 	}
 	
@@ -89,9 +90,9 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
 		final DataRecordMetadata inputMetadata = inMetadata;
-		goal.setName("Valid");
-		trimInput.setName("Trim input");
-		trimInput.setTooltip("Trim input before validation.");
+		goal.setName(ValidatorMessages.getString("NonEmptyFieldValidationRule.GoalParameterName")); //$NON-NLS-1$
+		trimInput.setName(ValidatorMessages.getString("NonEmptyFieldValidationRule.TrimInputParameterName")); //$NON-NLS-1$
+		trimInput.setTooltip(ValidatorMessages.getString("NonEmptyFieldValidationRule.TrimInputParameterTooltip")); //$NON-NLS-1$
 		trimInput.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -152,9 +153,9 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 			String inputString = field.toString();
 			// Error reporting
 			if(goal.getValue() == GOALS.NONEMPTY) {
-				raiseError(ea, ERROR_FIELD_EMPTY, "The target field is empty, expected to be nonempty.", resolvedTarget, inputString);
+				raiseError(ea, ERROR_FIELD_EMPTY, ValidatorMessages.getString("NonEmptyFieldValidationRule.InvalidRecordMessageNonEmptyExpected"), resolvedTarget, inputString); //$NON-NLS-1$
 			} else {
-				raiseError(ea, ERROR_FIELD_NONEMPTY, "The target field is nonempty, expected to be empty.", resolvedTarget, inputString);
+				raiseError(ea, ERROR_FIELD_NONEMPTY, ValidatorMessages.getString("NonEmptyFieldValidationRule.InvalidRecordMessageEmptyExpected"), resolvedTarget, inputString); //$NON-NLS-1$
 			}
 		}
 		return State.INVALID;
@@ -168,11 +169,11 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("NonEmptyFieldValidationRule.ConfigurationErrorTargetEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("NonEmptyFieldValidationRule.ConfigurationErrorFieldMissing")); //$NON-NLS-1$
 			state = false;
 		}
 		return state;
@@ -199,11 +200,11 @@ public class NonEmptyFieldValidationRule extends AbstractValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "Empty/Nonempty field";
+		return ValidatorMessages.getString("NonEmptyFieldValidationRule.CommonName"); //$NON-NLS-1$
 	}
 
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether chosen field is empty or nonempty depending on user choice.";
+		return ValidatorMessages.getString("NonEmptyFieldValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 }

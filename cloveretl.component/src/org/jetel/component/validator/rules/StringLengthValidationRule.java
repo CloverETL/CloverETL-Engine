@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.EnumValidationParamNode;
 import org.jetel.component.validator.params.IntegerValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -63,15 +64,15 @@ public class StringLengthValidationRule extends StringValidationRule {
 		@Override
 		public String toString() {
 			if(this.equals(EXACT)) {
-				return "Exact";
+				return ValidatorMessages.getString("StringLengthValidationRule.MatchTypeExact"); //$NON-NLS-1$
 			}
 			if(this.equals(MINIMAL)) {
-				return "Minimal";
+				return ValidatorMessages.getString("StringLengthValidationRule.MatchTypeMinimal"); //$NON-NLS-1$
 			}
 			if(this.equals(MAXIMAL)) {
-				return "Maximal";
+				return ValidatorMessages.getString("StringLengthValidationRule.MatchTypeMaximal"); //$NON-NLS-1$
 			}
-			return "Interval";
+			return ValidatorMessages.getString("StringLengthValidationRule.MatchTypeInterval"); //$NON-NLS-1$
 		}
 	}
 	
@@ -91,8 +92,8 @@ public class StringLengthValidationRule extends StringValidationRule {
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		type.setName("Criterion");
-		from.setPlaceholder("Not set");
+		type.setName(ValidatorMessages.getString("StringLengthValidationRule.CriterionParameterName")); //$NON-NLS-1$
+		from.setPlaceholder(ValidatorMessages.getString("StringLengthValidationRule.CriterionPlaceholder")); //$NON-NLS-1$
 		from.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -103,8 +104,8 @@ public class StringLengthValidationRule extends StringValidationRule {
 				return true;
 			}
 		});
-		from.setName("From");
-		to.setPlaceholder("Not set");
+		from.setName(ValidatorMessages.getString("StringLengthValidationRule.FromParameterName")); //$NON-NLS-1$
+		to.setPlaceholder(ValidatorMessages.getString("StringLengthValidationRule.FromParameterPlaceholder")); //$NON-NLS-1$
 		to.setEnabledHandler(new EnabledHandler() {
 			
 			@Override
@@ -115,7 +116,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 				return true;
 			}
 		});
-		to.setName("To");
+		to.setName(ValidatorMessages.getString("StringLengthValidationRule.ToParameterName")); //$NON-NLS-1$
 	}
 	
 	@Override
@@ -152,7 +153,7 @@ public class StringLengthValidationRule extends StringValidationRule {
 		if(result == State.VALID) {
 		} else {
 			if (ea != null) {
-				raiseError(ea, ERROR_WRONG_LENGTH, "The target has wrong length.", resolvedTarget, tempString);
+				raiseError(ea, ERROR_WRONG_LENGTH, ValidatorMessages.getString("StringLengthValidationRule.InvalidRecordMessageWrongLength"), resolvedTarget, tempString); //$NON-NLS-1$
 			}
 		}
 		
@@ -167,27 +168,27 @@ public class StringLengthValidationRule extends StringValidationRule {
 		boolean state = true;
 		String resolvedTarget = resolve(target.getValue());
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("StringLengthValidationRule.ConfigurationErrorTargetEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		if((type.getValue() == TYPES.EXACT || type.getValue() == TYPES.MINIMAL || type.getValue() == TYPES.INTERVAL) && from.getValue() == null) {
-			accumulator.addError(from, this, "Parameter From is unset.");
+			accumulator.addError(from, this, ValidatorMessages.getString("StringLengthValidationRule.ConfigurationErrorFromIsNotSet")); //$NON-NLS-1$
 			state = false;
 		}
 		if(from.getValue() != null && from.getValue() < 0) {
-			accumulator.addError(from, this, "Parameter From is lower than 0.");
+			accumulator.addError(from, this, ValidatorMessages.getString("StringLengthValidationRule.ConfigurationErrorFromNegative")); //$NON-NLS-1$
 			state = false;
 		}
 		if((type.getValue() == TYPES.MAXIMAL || type.getValue() == TYPES.INTERVAL) && to.getValue() == null) {
-			accumulator.addError(to, this, "Parameter To is unset.");
+			accumulator.addError(to, this, ValidatorMessages.getString("StringLengthValidationRule.ConfigurationErrorToNotSet")); //$NON-NLS-1$
 			state = false;
 		}
 		if(to.getValue() != null && to.getValue() < 0) {
-			accumulator.addError(to, this, "Parameter To is lower than 0.");
+			accumulator.addError(to, this, ValidatorMessages.getString("StringLengthValidationRule.ConfigurationErrorToNegative")); //$NON-NLS-1$
 			state = false;
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("StringLengthValidationRule.ConfigurationErrorTargetMissing")); //$NON-NLS-1$
 			state = false;
 		}
 		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
@@ -219,11 +220,11 @@ public class StringLengthValidationRule extends StringValidationRule {
 	}
 	@Override
 	public String getCommonName() {
-		return "String Length";
+		return ValidatorMessages.getString("StringLengthValidationRule.CommonName"); //$NON-NLS-1$
 	}
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether length of chosen field is of certain length.";
+		return ValidatorMessages.getString("StringLengthValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 
 }

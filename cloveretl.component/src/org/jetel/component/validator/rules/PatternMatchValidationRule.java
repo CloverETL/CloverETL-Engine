@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.jetel.component.validator.GraphWrapper;
 import org.jetel.component.validator.ReadynessErrorAcumulator;
 import org.jetel.component.validator.ValidationErrorAccumulator;
+import org.jetel.component.validator.ValidatorMessages;
 import org.jetel.component.validator.params.BooleanValidationParamNode;
 import org.jetel.component.validator.params.StringValidationParamNode;
 import org.jetel.component.validator.params.ValidationParamNode;
@@ -68,9 +69,9 @@ public class PatternMatchValidationRule extends StringValidationRule {
 	protected void initializeParameters(DataRecordMetadata inMetadata, GraphWrapper graphWrapper) {
 		super.initializeParameters(inMetadata, graphWrapper);
 		
-		pattern.setName("Pattern to match");
-		pattern.setPlaceholder("Regular expression, for syntax see documentation");
-		ignoreCase.setName("Ignore case");
+		pattern.setName(ValidatorMessages.getString("PatternMatchValidationRule.PatternParameterName")); //$NON-NLS-1$
+		pattern.setPlaceholder(ValidatorMessages.getString("PatternMatchValidationRule.PatternParameterPlaceholder")); //$NON-NLS-1$
+		ignoreCase.setName(ValidatorMessages.getString("PatternMatchValidationRule.IgnoreCaseParameterName")); //$NON-NLS-1$
 	}
 	
 	@Override
@@ -94,7 +95,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 				regexPattern = Pattern.compile(resolvedPattern, Pattern.UNICODE_CASE);
 			}
 		} catch (PatternSyntaxException e) {
-			throw new ComponentNotReadyException("Invalid pattern specified", e);
+			throw new ComponentNotReadyException(ValidatorMessages.getString("PatternMatchValidationRule.InitErrorPatternInvalid"), e); //$NON-NLS-1$
 		}
 	}
 
@@ -111,7 +112,7 @@ public class PatternMatchValidationRule extends StringValidationRule {
 			return State.VALID;
 		} else {
 			if (ea != null)
-				raiseError(ea, ERROR_NO_MATCH, "No match.", resolvedTarget, tempString);
+				raiseError(ea, ERROR_NO_MATCH, ValidatorMessages.getString("PatternMatchValidationRule.InvalidRecordMessageNoMatch"), resolvedTarget, tempString); //$NON-NLS-1$
 			return State.INVALID;
 		}
 	}
@@ -125,15 +126,15 @@ public class PatternMatchValidationRule extends StringValidationRule {
 		String resolvedTarget = resolve(target.getValue());
 		String resolvedPattern = resolve(pattern.getValue());
 		if(resolvedTarget.isEmpty()) {
-			accumulator.addError(target, this, "Target is empty.");
+			accumulator.addError(target, this, ValidatorMessages.getString("PatternMatchValidationRule.ConfigurationErrorTargetEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		if(resolvedPattern.isEmpty()) {
-			accumulator.addError(pattern, this, "Match pattern is empty.");
+			accumulator.addError(pattern, this, ValidatorMessages.getString("PatternMatchValidationRule.ConfigurationErrorPatternEmpty")); //$NON-NLS-1$
 			state = false;
 		}
 		if(!ValidatorUtils.isValidField(resolvedTarget, inputMetadata)) { 
-			accumulator.addError(target, this, "Target field is not present in input metadata.");
+			accumulator.addError(target, this, ValidatorMessages.getString("PatternMatchValidationRule.ConfigurationErrorTargetFieldNotFound")); //$NON-NLS-1$
 			state = false;
 		}
 		state &= super.isReady(inputMetadata, accumulator, graphWrapper);
@@ -163,13 +164,13 @@ public class PatternMatchValidationRule extends StringValidationRule {
 
 	@Override
 	public String getCommonName() {
-		return "Pattern Match";
+		return ValidatorMessages.getString("PatternMatchValidationRule.CommonName"); //$NON-NLS-1$
 	}
 
 
 	@Override
 	public String getCommonDescription() {
-		return "Checks whether chosen field matches regular expression provided by user.";
+		return ValidatorMessages.getString("PatternMatchValidationRule.CommonDescription"); //$NON-NLS-1$
 	}
 
 }
