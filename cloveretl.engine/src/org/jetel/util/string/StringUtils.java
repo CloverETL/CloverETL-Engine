@@ -275,6 +275,9 @@ public class StringUtils {
     * @return A metaphone code corresponding to the String supplied
     */
 	public static String metaphone(String input, int maxLength){
+		if(input == null){
+			return null;
+		}
 		String tmp = getOnlyAlphaNumericChars(input.trim(), true, true).toUpperCase();
 		char[] in = new char[tmp.length()]; 
 		tmp.getChars(0, in.length, in, 0);
