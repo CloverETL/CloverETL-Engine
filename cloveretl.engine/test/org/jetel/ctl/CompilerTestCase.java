@@ -3687,6 +3687,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test1", "Sun is shining");
 		check("test2", "");
 		check("test_empty", "");
+		check("test_null", null);
 	}
 
 	
