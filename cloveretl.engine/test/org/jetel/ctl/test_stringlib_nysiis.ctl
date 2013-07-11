@@ -4,7 +4,7 @@ string nysiis3;
 string nysiis4;
 
 string nysiis_empty;
-string sysiis_null;
+string nysiis_null;
 
 function integer transform() {
 	nysiis1 = NYSIIS("Cope");
@@ -13,7 +13,7 @@ function integer transform() {
 	nysiis4 = NYSIIS("K2 Production");
 
 	nysiis_empty = NYSIIS('');
-//	nysiis_null = NYSIIS(null);
+	nysiis_null = NYSIIS(null);
 
 	return 0;
 }
