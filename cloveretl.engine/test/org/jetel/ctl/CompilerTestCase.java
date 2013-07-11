@@ -3230,7 +3230,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_stringlib_lowerCase");
 		check("lower", "the quick !!$  brown fox jumps over the lazy dog bagr  ");
 		check("lower_empty", "");
-//		System.out.println("string: ["+getVariable("lower_empty")+"]");
+		check("lower_null", null);
 	}
 	
 	public void test_stringlib_matches() {
