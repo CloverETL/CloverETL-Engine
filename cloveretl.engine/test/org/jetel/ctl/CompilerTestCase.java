@@ -3293,6 +3293,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				null
 			)
 		);
+		check("result3", null);
+		check("test_empty1", null);
+		check("test_empty2", Arrays.asList(""));
+		check("test_null1", null);
+		check("test_null2", null);
+	}
+	public void test_stringlib_matchGroups_expect_error(){
+		//test: regexp is null - test 1
+		try {
+			doCompile("string[] test; function integer transform(){test = matchGroups('eat all the cookies',null); return 0;}","test_stringlib_matchGroups_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp is null - test 2
+		try {
+			doCompile("string[] test; function integer transform(){test = matchGroups('',null); return 0;}","test_stringlib_matchGroups_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp is null - test 3
+		try {
+			doCompile("string[] test; function integer transform(){test = matchGroups(null,null); return 0;}","test_stringlib_matchGroups_expect_error");
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_matchGroups_unmodifiable() {
