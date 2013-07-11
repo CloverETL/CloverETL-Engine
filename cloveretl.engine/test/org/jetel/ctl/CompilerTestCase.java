@@ -3431,6 +3431,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("short", "Dog");
 		check("shortNotPadded", "Dog");
 		check("shortPadded", "     Dog");
+		check("simple", "milk");
+		check("test_null1", null);
+		check("test_null2", null);
+		check("test_null3", "  ");
+		check("test_empty1", "");
+		check("test_empty2", "");
+		check("test_empty3","   ");
 	}
 	
 	public void test_stringlib_soundex() {
