@@ -1388,6 +1388,9 @@ public class StringUtils {
 	 * @return input string without blank space
 	 */
 	public static String removeBlankSpace(String str) {
+		if (str == null){
+			return null;
+		}
 		int length = str.length();
 		int counter = 0;
 		char[] chars = str.toCharArray();
