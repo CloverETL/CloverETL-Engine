@@ -10,6 +10,6 @@ function integer transform() {
 	test2 = removeNonAscii("\u1695\u1687");
 
 	test_empty = removeNonAscii('');
-//	test_null = removeNonAscii(null);
+	test_null = removeNonAscii(null);
 	return 0;
 }
