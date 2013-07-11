@@ -3348,6 +3348,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nysiis3", "1234");
 		check("nysiis4", "C2 PRADACTAN");
 		check("nysiis_empty", "");
+		check("nysiis_null", null);
 	}
 	
 	public void test_stringlib_replace() {
