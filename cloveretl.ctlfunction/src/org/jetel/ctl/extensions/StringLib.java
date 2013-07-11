@@ -158,6 +158,9 @@ public class StringLib extends TLFunctionLibrary {
 	// LOWERCASE
 	@TLFunctionAnnotation("Returns input string in lowercase")
 	public static final String lowerCase(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		return input.toLowerCase();
 	}
 
