@@ -239,8 +239,8 @@ public class StringLib extends TLFunctionLibrary {
 	// RIGHT
 	@TLFunctionAnnotation("Returns suffix of the specified length")
 	public static final String right(TLFunctionCallContext context, String input, int length) {
-		if (input == null) {
-			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.null_input_or_right_function")); //$NON-NLS-1$
+		if( input == null){
+			return null;
 		}
 		return StringLib.right(context, input, length, false);
 	}
@@ -248,8 +248,11 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Returns suffix of the specified length. If input string is shorter than specified length " +
 			"and 3th argument is true, left side of result is padded with blank spaces so that the result has specified length.")
 	public static final String right(TLFunctionCallContext context, String input, int length, boolean spacePad) {
-		if (input == null) {
-			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.null_input_or_right_function")); //$NON-NLS-1$
+		if (input == null && !spacePad) {
+			return null;
+		}
+		if (input == null && spacePad) {
+			return String.format("%"+length+"s","");
 		}
 		if (input.length() < length) {
 			if (spacePad) {
