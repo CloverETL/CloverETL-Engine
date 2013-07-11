@@ -1488,6 +1488,9 @@ public class StringUtils {
 	}
 
 	public static String removeNonPrintable(String str){
+		if (str == null){
+			return null;
+		}
 		return str.replaceAll("[^\\p{Print}]+", "");
 	}
 	
