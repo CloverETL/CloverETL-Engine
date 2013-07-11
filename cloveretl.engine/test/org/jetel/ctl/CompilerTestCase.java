@@ -4589,6 +4589,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_utillib_random_uuid");
 		assertNotNull(getVariable("uuid"));
 	}
+	public void test_stringlib_randomString(){
+		doCompile("string test; function integer transform(){test = randomString(1,3); return 0;}","test_stringlib_randomString");
+		assertNotNull(getVariable("test"));
+	}
 	
 	public void test_stringlib_validUrl() {
 		doCompile("test_stringlib_url");
