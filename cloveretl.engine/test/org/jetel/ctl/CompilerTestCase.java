@@ -3528,12 +3528,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"r1=removeBlankSpace(\"" + StringUtils.specCharToString(" a	b\nc\rd   e \u000Cf\r\n") +	"\");\n" +
 				"printErr(r1);\n" +
 				"str_empty = removeBlankSpace('');\n" +
-//				"str_null = removeBlankSpace(null);\n" +
+				"str_null = removeBlankSpace(null);\n" +
 				"return 0;\n" +
 			"}\n";
 		doCompile(expStr, "test_removeBlankSpace");
 		check("r1", "abcdef");
 		check("str_empty", "");
+		check("str_null", null);
 	}
 	
 	public void test_stringlib_removeNonPrintable() {
