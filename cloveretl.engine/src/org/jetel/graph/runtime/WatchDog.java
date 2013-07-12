@@ -40,7 +40,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.exception.ObfuscatingException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.GraphElement;
@@ -709,7 +708,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
      * @param e
      */
     protected void setCauseException(Throwable e) {
-    	causeException = new ObfuscatingException(e);
+    	//causeException = new ObfuscatingException(e);
+    	causeException = e;
     }
 
     /**
