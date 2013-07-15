@@ -894,6 +894,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("skip", RecordTransform.SKIP);
 		check("all", RecordTransform.ALL);
 		check("ok", NORMALIZE_RETURN_OK);
+		check("stop", RecordTransform.STOP);
 	}
 
 	public void test_raise_error_terminal() {
@@ -4377,11 +4378,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(Arrays.equals((byte[])getVariable("base64input"), Base64.decode("The quick brown fox jumps over the lazy dog")));
 	}
 	
+	public void test_convertlib_base64byte_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){byte b = base64byte(null); return 0;}","test_convertlib_base64byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_bits2str() {
 		doCompile("test_convertlib_bits2str");
 		check("bitsAsString1", "00000000");
 		check("bitsAsString2", "11111111");
 		check("bitsAsString3", "010100000100110110100000");
+	}
+	
+	public void test_convertlib_bits2str_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){string s = bits2str(null); return 0;}","test_convertlib_bits2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_bool2num() {
@@ -4395,9 +4416,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("inputBase64", Base64.encodeBytes("Abeceda zedla deda".getBytes()));
 	}
 	
+	public void test_convertlib_byte2base64_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){string s = byte2base64(null);return 0;}","test_convertlib_byte2base64_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_byte2hex() {
 		doCompile("test_convertlib_byte2hex");
 		check("hexResult", "41626563656461207a65646c612064656461");
+		check("test_null", null);
 	}
 	
 	public void test_convertlib_date2long() {
