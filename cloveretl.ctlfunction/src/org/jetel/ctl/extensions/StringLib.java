@@ -731,8 +731,13 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Replaces occurences of characters")
 	public static final String translate(TLFunctionCallContext context, String input, String match,
 			String replacement) {
-		return String.valueOf(StringUtils.translateSequentialSearch(input,
-				match, replacement));
+		CharSequence seq = StringUtils.translateSequentialSearch(input,
+				match, replacement);
+		if (seq == null){
+			return null;
+		}else{
+			return seq.toString();
+		}
 	}
 
 	class TranslateFunction implements TLFunctionPrototype {
