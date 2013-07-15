@@ -47,6 +47,8 @@ DEFAULT_DATE_FORMAT = yyyy-MM-dd
 DEFAULT_TIME_FORMAT = HH\:mm\:ss
 #uncomment this property when locale should be independent on underlying platform otherwise system default locale is used
 #DEFAULT_LOCALE = en.US
+#uncomment this property to override the system default time zone
+#DEFAULT_TIME_ZONE = 'java:America/Chicago';'joda:America/Chicago'
 DEFAULT_DATETIME_FORMAT = yyyy-MM-dd HH\:mm\:ss
 DEFAULT_REGEXP_TRUE_STRING = true|T|TRUE|YES|Y|t|1|yes|y
 DEFAULT_REGEXP_FALSE_STRING = false|F|FALSE|NO|N|f|0|no|n
