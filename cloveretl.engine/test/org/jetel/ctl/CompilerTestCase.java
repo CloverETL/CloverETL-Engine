@@ -3438,7 +3438,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
-
+		//test: regexp and arg3 null - test1
+			try {
+				doCompile("string test; function integer transform(){test = replace(null,null,null); return 0;}","test_stringlib_replace_expect_error");
+				fail();
+			} catch (Exception e) {
+				// do nothing
+			}
 	}
 	
 	
