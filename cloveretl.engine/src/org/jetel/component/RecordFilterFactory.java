@@ -25,6 +25,7 @@ import org.jetel.ctl.ErrorMessage;
 import org.jetel.ctl.ITLCompiler;
 import org.jetel.ctl.TLCompilerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.CompoundException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
@@ -59,12 +60,15 @@ public class RecordFilterFactory {
 	    	
 			List<ErrorMessage> msgs = compiler.compileExpression(filterExpression, CTLRecordFilter.class, id, CTLRecordFilterAdapter.ISVALID_FUNCTION_NAME, boolean.class);
 	    	if (compiler.errorCount() > 0) {
-	    		if (logger != null) {
-		    		for (ErrorMessage msg : msgs) {
-		    			logger.error(msg.toString());
+	    		ComponentNotReadyException[] errors = new ComponentNotReadyException[msgs.size()];
+	    		for (int i = 0; i < msgs.size(); i++) {
+	    			errors[i] = new ComponentNotReadyException(msgs.get(i).toString());
+		    		if (logger != null) {
+		    			logger.error(msgs.get(i).toString());
 		    		}
 	    		}
-	    		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors");
+	    		CompoundException compoundException = new CompoundException(errors);
+	    		throw new ComponentNotReadyException("CTL code compilation finished with " + compiler.errorCount() + " errors", compoundException);
 	    	}
 	    	Object ret = compiler.getCompiledCode();
 	    	if (ret instanceof org.jetel.ctl.TransformLangExecutor) {
