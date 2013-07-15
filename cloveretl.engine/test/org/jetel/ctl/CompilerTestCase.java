@@ -3444,6 +3444,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_stringlib_soundex");
 		check("soundex1", "W630");
 		check("soundex2", "W643");
+		check("test_null", null);
+		check("test_empty", "");
 	}
 	
 	public void test_stringlib_split() {
