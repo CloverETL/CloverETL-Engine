@@ -3836,8 +3836,47 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("trans5", "hello");
 		check("test_empty1", "");
 		check("test_empty2", "");
+		check("test_null", null);
 	}
-    
+  
+	public void test_stringlib_translate_expect_error(){
+		try {
+			doCompile("function integer transform(){string test = translate('bla bla',null,'o');return 0;}","test_stringlib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = translate('bla bla','a',null);return 0;}","test_stringlib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = translate('bla bla',null,null);return 0;}","test_stringlib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = translate(null,'a',null);return 0;}","test_stringlib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = translate(null,null,'a');return 0;}","test_stringlib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = translate(null,null,null);return 0;}","test_stringlib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 	public void test_stringlib_removeNonAscii(){
 		doCompile("test_stringlib_removeNonAscii");
 		check("test1", "Sun is shining");
