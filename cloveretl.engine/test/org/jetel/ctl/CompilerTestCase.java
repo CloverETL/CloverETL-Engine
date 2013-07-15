@@ -4812,7 +4812,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("unescaped", "http://example.com/foo bar^");
 	}
 	
-	public void test_stringlib_escapeUrl_expect_error(){
+	public void test_stringlib_escapeUrl_unescapeUrl_expect_error(){
 		//test: escape - empty string
 		try {
 			doCompile("string test; function integer transform() {test = escapeUrl(''); return 0;}","test_stringlib_escapeUrl_expect_error");
