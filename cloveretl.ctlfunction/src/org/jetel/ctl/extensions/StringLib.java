@@ -286,6 +286,9 @@ public class StringLib extends TLFunctionLibrary {
 	// TRIM
 	@TLFunctionAnnotation("Removes leading and trailing whitespaces from a string.")
 	public static final String trim(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		StringBuilder buf = new StringBuilder(input);
 		return StringUtils.trim(buf).toString();
 
