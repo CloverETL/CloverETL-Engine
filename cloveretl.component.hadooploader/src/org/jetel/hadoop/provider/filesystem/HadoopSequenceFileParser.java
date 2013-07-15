@@ -227,7 +227,6 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 					throw new ComponentNotReadyException("Invalid HDFS URI: " + uri + ". Reason: '" + connectionName + "' is not an ID of existing Hadoop");
 				}
 				if (conn != null && conn instanceof HadoopConnection) {
-					conn.init(); // try to init - in case it was not already initialized
 					try {
 						fileSystem = (FileSystem) ((HadoopConnection) conn).getFileSystemService().getDFS();
 					} catch (IOException e) {
