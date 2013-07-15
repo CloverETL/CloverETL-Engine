@@ -9,8 +9,6 @@ function integer transform() {
 	upper=upperCase(input + 'BAgr	');
 	
 	test_empty = upperCase('');
-//	test_null = upperCase(null);
-	
-	printErr('to upper case:'+upper );
+	test_null = upperCase(null);
 	return 0;
 }
