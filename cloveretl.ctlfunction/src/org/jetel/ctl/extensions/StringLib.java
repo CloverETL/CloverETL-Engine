@@ -423,6 +423,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Splits the string around regular expression matches")
 	public static final List<String> split(TLFunctionCallContext context, String input, String regex) {
+		if (input == null){
+			List<String> tmp = new ArrayList<String>();
+			tmp.add(null);
+			return tmp;
+		}
 		final Pattern p = ((TLRegexpCache)context.getCache()).getCachedPattern(context, regex);
 		final String[] strArray = p.split(input);
 		final List<String> list = new ArrayList<String>();
