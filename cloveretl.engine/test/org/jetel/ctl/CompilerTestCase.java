@@ -3485,6 +3485,65 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_substring() {
 		doCompile("test_stringlib_substring");
 		check("subs", "UICk ");
+		check("test1", "");
+		check("test_empty", "");
+	}
+	
+	public void test_stringlib_substring_expect_error(){
+		try {
+			doCompile("function integer transform(){string test = substring('arabela',4,19);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring('arabela',15,3);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring('arabela',2,-3);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring('arabela',-5,7);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring('',0,7);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring('',7,7);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring(null,0,0);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring(null,0,4);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring(null,1,4);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_trim() {
