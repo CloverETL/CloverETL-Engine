@@ -3451,6 +3451,35 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_split() {
 		doCompile("test_stringlib_split");
 		check("split1", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+		check("test_empty", Arrays.asList(""));
+		check("test_empty2", Arrays.asList("","a","a"));
+		List<String> tmp = new ArrayList<String>();
+		tmp.add(null);
+		check("test_null", tmp);
+	}
+	
+	public void test_stringlib_split_expect_error(){
+		//test: regexp null - test1
+		try {
+			doCompile("function integer transform(){string[] s = split('aaa',null); return 0;}","test_stringlib_split_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp null - test2
+		try {
+			doCompile("function integer transform(){string[] s = split('',null); return 0;}","test_stringlib_split_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp null - test3
+		try {
+			doCompile("function integer transform(){string[] s = split(null,null); return 0;}","test_stringlib_split_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_substring() {
