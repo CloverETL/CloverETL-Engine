@@ -3557,6 +3557,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_stringlib_upperCase");
 		check("upper", "THE QUICK !!$  BROWN FOX JUMPS OVER THE LAZY DOG BAGR	");
 		check("test_empty", "");
+		check("test_null", null);
 	}
 
 	public void test_stringlib_isFormat() {
