@@ -140,6 +140,9 @@ public class StringLib extends TLFunctionLibrary {
 	// UPPERCASE
 	@TLFunctionAnnotation("Returns input string in uppercase")
 	public static final String upperCase(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		return input.toUpperCase();
 	}
 
