@@ -20,7 +20,7 @@ function integer transform() {
 	test_empty1 = translate('','abc','opr');
 	test_empty2 = translate('','','r');
 	
-//	test_null = translate(null,'abc','opr');
-	printErr("String: ["+test_empty2+"]");
+	test_null = translate(null,'abc','opr');
+
 	return 0;
 }
