@@ -3550,6 +3550,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_stringlib_trim");
 		check("trim1", "im  The QUICk !!$  broWn fox juMPS over the lazy DOG");
 		check("trim_empty", "");
+		check("trim_null", null);
 	}
 	
 	public void test_stringlib_upperCase() {
