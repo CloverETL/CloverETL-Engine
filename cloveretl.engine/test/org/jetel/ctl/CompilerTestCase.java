@@ -3194,6 +3194,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 	}
 	
+	public void test_stringlib_join_expect_error(){
+		try {
+			doCompile("function integer transform(){string s = join(';',null);return 0;}","test_stringlib_join_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] tmp = null; string s = join(';',tmp);return 0;}","test_stringlib_join_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string,string] a = null; string s = join(';',a);return 0;}","test_stringlib_join_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_stringlib_left() {
 		//CLO - 1193
 //		doCompile("test_stringlib_left");
