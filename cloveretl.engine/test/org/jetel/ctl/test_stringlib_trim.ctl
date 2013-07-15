@@ -9,6 +9,6 @@ function integer transform() {
 	trim1=trim('	  im  '+input);
 	printErr('after trim:'+trim1 );
 	trim_empty = trim('');
-//	trim_null = trim(null);
+	trim_null = trim(null);
 	return 0;
 }
