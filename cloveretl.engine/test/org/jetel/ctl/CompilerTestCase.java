@@ -183,6 +183,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	protected TransformationGraph createDefaultGraph() {
 		TransformationGraph g = createEmptyGraph();
+		// set the context URL, so that imports can be used
+		g.getRuntimeContext().setContextURL(CompilerTestCase.class.getResource("."));
 		final HashMap<String, DataRecordMetadata> metadataMap = new HashMap<String, DataRecordMetadata>();
 		metadataMap.put(INPUT_1, createDefaultMetadata(INPUT_1));
 		metadataMap.put(INPUT_2, createDefaultMetadata(INPUT_2));
@@ -869,6 +871,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("stringVar", "hello");
 		check("dateVar", new Date(5000));
 		
+		// null value
+		Boolean[] someValue = new Boolean[graph.getDataRecordMetadata(INPUT_1).getNumFields()];
+		Arrays.fill(someValue, Boolean.FALSE);
+		check("someValue", Arrays.asList(someValue));
+		
+		Boolean[] nullValue = new Boolean[graph.getDataRecordMetadata(INPUT_1).getNumFields()];
+		Arrays.fill(nullValue, Boolean.TRUE);
+		check("nullValue", Arrays.asList(nullValue));
+
+		String[] asString2 = new String[graph.getDataRecordMetadata(INPUT_1).getNumFields()];
+		check("asString2", Arrays.asList(asString2));
+
+		Boolean[] isNull2 = new Boolean[graph.getDataRecordMetadata(INPUT_1).getNumFields()];
+		Arrays.fill(isNull2, Boolean.TRUE);
+		check("isNull2", Arrays.asList(isNull2));
 	}
 
 	public void test_dynamic_get_set_loop() {

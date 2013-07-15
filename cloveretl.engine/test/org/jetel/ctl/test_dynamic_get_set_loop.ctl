@@ -17,6 +17,11 @@ long longVar;
 number numberVar;
 string stringVar;
 
+boolean[] someValue;
+boolean[] nullValue;
+string[] asString2;
+boolean[] isNull2;
+
 // Transforms input record into output record.
 function integer transform() {
 
@@ -117,6 +122,81 @@ function integer transform() {
 				stringVar = getStringValue($out.0, i);
 				break;
 		}
+	}
+
+	firstInput nullRecord;
+	for(integer i = 0; i < length(nullRecord); i++) {
+		type[i] = getFieldType(nullRecord, i);
+		switch(type[i]) {
+			case "boolean":
+				setBoolValue(nullRecord, i, true);
+				//assertEquals(true, getBoolValue(nullRecord, i));
+				someValue[i] = isnull(getBoolValue(nullRecord, i));
+				setBoolValue(nullRecord, i, null);
+				//assertEquals(null, getBoolValue(nullRecord, i));
+				nullValue[i] = isnull(getBoolValue(nullRecord, i));
+				break;
+			case "byte":
+				setByteValue(nullRecord, i, hex2byte("1234567890abcdef"));
+				//assertEquals(hex2byte("1234567890abcdef"), getByteValue(nullRecord, i));
+				someValue[i] = isnull(getByteValue(nullRecord, i));
+				setByteValue(nullRecord, i, null);
+				//assertEquals(null, getByteValue(nullRecord, i));
+				nullValue[i] = isnull(getByteValue(nullRecord, i));
+				break;
+			case "date":
+				setDateValue(nullRecord, i, 2000-05-05);
+				//assertEquals(2000-05-05, getDateValue(nullRecord, i));
+				someValue[i] = isnull(getDateValue(nullRecord, i));
+				setDateValue(nullRecord, i, null);
+				//assertEquals(null, getDateValue(nullRecord, i));
+				nullValue[i] = isnull(getDateValue(nullRecord, i));
+				break;
+			case "decimal":
+				setDecimalValue(nullRecord, i, 2);
+				//assertEquals(2, getDecimalValue(nullRecord, i));
+				someValue[i] = isnull(getDecimalValue(nullRecord, i));
+				setDecimalValue(nullRecord, i, null);
+				//assertEquals(null, getDecimalValue(nullRecord, i));
+				nullValue[i] = isnull(getDecimalValue(nullRecord, i));
+				break;
+			case "integer":
+				setIntValue(nullRecord, i, 3);
+				//assertEquals(3, getIntValue(nullRecord, i));
+				someValue[i] = isnull(getIntValue(nullRecord, i));
+				setIntValue(nullRecord, i, null);
+				//assertEquals(null, getIntValue(nullRecord, i));
+				nullValue[i] = isnull(getIntValue(nullRecord, i));
+				break;
+			case "long":
+				setLongValue(nullRecord, i, 4);
+				//assertEquals(4, getLongValue(nullRecord, i));
+				someValue[i] = isnull(getLongValue(nullRecord, i));
+				setLongValue(nullRecord, i, null);
+				//assertEquals(null, getLongValue(nullRecord, i));
+				nullValue[i] = isnull(getLongValue(nullRecord, i));
+				break;
+			case "number":
+				setNumValue(nullRecord, i, 5);
+				//assertEquals(5, getNumValue(nullRecord, i), 0.1);
+				someValue[i] = isnull(getNumValue(nullRecord, i));
+				setNumValue(nullRecord, i, null);
+				//assertEquals(null, getNumValue(nullRecord, i), 0.1);
+				nullValue[i] = isnull(getNumValue(nullRecord, i));
+				break;
+			case "string":
+				setStringValue(nullRecord, i, "foo");
+				//assertEquals("foo", getStringValue(nullRecord, i));
+				someValue[i] = isnull(getStringValue(nullRecord, i));
+				setStringValue(nullRecord, i, null);
+				//assertEquals(null, getStringValue(nullRecord, i));
+				nullValue[i] = isnull(getStringValue(nullRecord, i));
+				break;
+		}
+		//assertEquals(null, getValueAsString(nullRecord, i));
+		asString2[i] = getValueAsString(nullRecord, i);
+		//assertEquals(true, isNull(nullRecord, i));
+		isNull2[i] = isNull(nullRecord, i);
 	}
 
 	return ALL;
