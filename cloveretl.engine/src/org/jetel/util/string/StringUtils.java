@@ -2196,6 +2196,12 @@ public class StringUtils {
 
 	public static CharSequence translateSequentialSearch(CharSequence in, CharSequence searchSet,
 			CharSequence replaceSet) {
+		if(searchSet == null || replaceSet == null){
+			throw new NullPointerException("searchSet or replaceSet is null");
+		}
+		if(in == null){
+			return null;
+		}
 		StringBuilder result = new StringBuilder();
 		char[] search = charSequence2char(searchSet);
 		char[] replace = charSequence2char(replaceSet);
