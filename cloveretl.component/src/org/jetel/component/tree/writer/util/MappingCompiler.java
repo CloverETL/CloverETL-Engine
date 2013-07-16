@@ -431,22 +431,24 @@ public class MappingCompiler extends AbstractVisitor {
 			filterExpression = info.getProperty(MappingProperty.FILTER);
 		}
 
-		PortData portData = portDataMap.get(tag.getPortIndex());
-		DataRecordMetadata metadata = portData.getInPort().getMetadata();
+		Integer portIndex = tag.getPortIndex();
+		PortData portData = portDataMap.get(portIndex);
+		DataRecordMetadata[] metadata = new DataRecordMetadata[portIndex + 1];
+		metadata[portIndex] = portData.getInPort().getMetadata();
 
 		int[] keys = null;
 		if (stringKeysList != null) {
 			keys = new int[stringKeysList.size()];
 			for (int i = 0; i < keys.length; i++) {
-				keys[i] = metadata.getFieldPosition(stringKeysList.get(i));
+				keys[i] = metadata[portIndex].getFieldPosition(stringKeysList.get(i));
 			}
 		}
 		int[] parentKeys = null;
 		if (stringParentKeysList != null && currentLoopParent != null) {
 			parentKeys = new int[stringParentKeysList.size()];
-			metadata = currentLoopParent.getPortBinding().getRecord().getMetadata();
+			metadata[portIndex] = currentLoopParent.getPortBinding().getRecord().getMetadata();
 			for (int i = 0; i < parentKeys.length; i++) {
-				parentKeys[i] = metadata.getFieldPosition(stringParentKeysList.get(i));
+				parentKeys[i] = metadata[portIndex].getFieldPosition(stringParentKeysList.get(i));
 			}
 		}
 
