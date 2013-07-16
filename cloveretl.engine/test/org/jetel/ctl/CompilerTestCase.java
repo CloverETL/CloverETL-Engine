@@ -4428,6 +4428,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultFalse", 0);
 	}
 	
+	public void test_convertlib_bool2num_expect_error(){
+//		CLO-1255
+//		//this test should be expected to success in future
+//		try {
+//			doCompile("function integer transform(){integer s = bool2num(null);return 0;}","test_convertlib_bool2num_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+	}
+	
 	public void test_convertlib_byte2base64() {
 		doCompile("test_convertlib_byte2base64");
 		check("inputBase64", Base64.encodeBytes("Abeceda zedla deda".getBytes()));
@@ -4455,6 +4466,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("zeroDate", 0l);
 	}
 	
+	public void test_convertlib_date2long_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){long l = date2long(null);return 0;}","test_convertlib_date2long_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_date2num() {
 		doCompile("test_convertlib_date2num");
 		Calendar cal = Calendar.getInstance();
@@ -4474,6 +4495,30 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("minuteMin", 0);
 		check("secondMin", 0);
 		check("millisecMin", 0);
+	}
+	
+	public void test_convertlib_date2num_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){number num = date2num(null,null); return 0;}","test_convertlib_date2num_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){number num = date2num(1982-09-02,null); return 0;}","test_convertlib_date2num_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}	
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){number num = date2num(null,year); return 0;}","test_convertlib_date2num_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}		
 	}
 	
 	public void test_convertlib_date2str() {
@@ -4507,9 +4552,36 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 	}
 	
+	public void test_convertlib_date2str_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){string s = date2str(null,'yyyy:MMMM:dd', 'cs.CZ', 'GMT+8');return 0;}","test_convertlib_date2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = date2str(1985-11-12,null, 'cs.CZ', 'GMT+8');return 0;}","test_convertlib_date2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_decimal2double() {
 		doCompile("test_convertlib_decimal2double");
 		check("toDouble", 0.007d);
+	}
+	
+	public void test_convertlib_decimal2double_except_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){double d = decimal2double(null); return 0;}","test_convertlib_decimal2double_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
 	}
 	
 	public void test_convertlib_decimal2integer() {
@@ -4519,6 +4591,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("toInteger3", 1000000);
 	}
 	
+	public void test_convertlib_decimal2integer_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){integer i = decimal2integer(null); return 0;}","test_convertlib_decimal2integer_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_decimal2long() {
 		doCompile("test_convertlib_decimal2long");
 		check("toLong", 0l);
@@ -4526,11 +4608,30 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("toLong3", 10000000000l);
 	}
 	
+	public void test_convertlib_decimal2long_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){long i = decimal2long(null); return 0;}","test_convertlib_decimal2long_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_double2integer() {
 		doCompile("test_convertlib_double2integer");
 		check("toInteger", 0);
 		check("toInteger2", -500);
 		check("toInteger3", 1000000);
+	}
+	public void test_convertlib_double2integer_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){integer i = double2integer(null); return 0;}","test_convertlib_doublel2integer_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_double2long() {
@@ -4540,6 +4641,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("toLong3", 10000000000l);
 	}
 
+	public void test_convertlib_double2long_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){long l = double2long(null); return 0;}","test_convertlib_doublel2long_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_getFieldName() {
 		doCompile("test_convertlib_getFieldName");
 		check("fieldNames",Arrays.asList("Name", "Age", "City", "Born", "BornMillisec", "Value", "Flag", "ByteArray", "Currency"));
@@ -4555,6 +4666,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_hex2byte() {
 		doCompile("test_convertlib_hex2byte");
 		assertTrue(Arrays.equals((byte[])getVariable("fromHex"), BYTEARRAY_VALUE));
+		check("test_null", null);
 	}
 	
 	public void test_convertlib_long2date() {
@@ -4564,10 +4676,30 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("fromLong3", new Date(-5000L));
 	}
 	
+	public void test_convertlib_long2date_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){date d = long2date(null); return 0;}","test_convertlib_long2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_long2integer() {
 		doCompile("test_convertlib_long2integer");
 		check("fromLong1", 10);
 		check("fromLong2", -10);
+	}
+	
+	public void test_convertlib_long2integer_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){integer i = long2integer(null); return 0;}","test_convertlib_long2integer_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	
@@ -4576,12 +4708,33 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(Arrays.equals((byte[])getVariable("packedLong"), new byte[] {5, 0, 12}));
 	}
 	
+	public void test_convertlib_long2packDecimal_expect_error(){
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){byte b = long2packDecimal(null); return 0;}","test_convertlib_long2packDecimal_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_md5() {
 		doCompile("test_convertlib_md5");
 		assertTrue(Arrays.equals((byte[])getVariable("md5Hash1"), Digest.digest(DigestType.MD5, "The quick brown fox jumps over the lazy dog")));
 		assertTrue(Arrays.equals((byte[])getVariable("md5Hash2"), Digest.digest(DigestType.MD5, BYTEARRAY_VALUE)));
+		assertTrue(Arrays.equals((byte[])getVariable("test_empty"), Digest.digest(DigestType.MD5, "")));
 	}
-
+	public void test_convertlib_md5_expect_error(){
+//CLO-1254
+//		//this test should be expected to success in future
+//		try {
+//			doCompile("function integer transform(){byte b = md5(null); return 0;}","test_convertlib_md5_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+	}
+	
 	public void test_convertlib_num2bool() {
 		doCompile("test_convertlib_num2bool");
 		check("integerTrue", true);
@@ -4594,6 +4747,41 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimalFalse", false);
 	}
 	
+	public void test_convertlib_num2bool_expect_error(){
+		//this test should be expected to success in future
+		//test: integer
+		try {
+			doCompile("integer input; function integer transform(){input=null; boolean b = num2bool(input); return 0;}","test_convertlib_num2bool_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//this test should be expected to success in future
+		//test: long
+		try {
+			doCompile("long input; function integer transform(){input=null; boolean b = num2bool(input); return 0;}","test_convertlib_num2bool_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}		
+		//this test should be expected to success in future
+		//test: double
+		try {
+			doCompile("double input; function integer transform(){input=null; boolean b = num2bool(input); return 0;}","test_convertlib_num2bool_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//this test should be expected to success in future
+		//test: decimal
+		try {
+			doCompile("decimal input; function integer transform(){input=null; boolean b = num2bool(input); return 0;}","test_convertlib_num2bool_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_num2str() {
 		System.out.println("num2str() test:");
 		doCompile("test_convertlib_num2str");
@@ -4602,8 +4790,44 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("longOutput", Arrays.asList("16", "10000", "20", "10", "1.235E13", "12 350 001 Kcs"));
 		check("doubleOutput", Arrays.asList("16.16", "0x1.028f5c28f5c29p4", "1.23548E3", "12 350 001,1 Kcs"));
 		check("decimalOutput", Arrays.asList("16.16", "1235.44", "12 350 001,1 Kcs"));
+		check("test_null_dec", "NaN");
 	}
 
+	public void test_converlib_num2str_expect_error(){
+		//this test should be expected to success in future
+		//test: integer
+		try {
+			doCompile("integer input; function integer transform(){input=null; string str = num2str(input); return 0;}","test_converlib_num2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//this test should be expected to success in future
+		//test: long
+		try {
+			doCompile("long input; function integer transform(){input=null; string str = num2str(input); return 0;}","test_converlib_num2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//this test should be expected to success in future
+		//test: double
+		try {
+			doCompile("double input; function integer transform(){input=null; string str = num2str(input); return 0;}","test_converlib_num2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+//		//this test should be expected to success in future
+//		//test: decimal
+//		try {
+//			doCompile("decimal input; function integer transform(){input=null; string str = num2str(input); return 0;}","test_converlib_num2str_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+	}
+	
 	public void test_convertlib_packdecimal2long() {
 		doCompile("test_convertlib_packDecimal2long");
 		check("unpackedLong", PackedDecimal.parse(BYTEARRAY_VALUE));
