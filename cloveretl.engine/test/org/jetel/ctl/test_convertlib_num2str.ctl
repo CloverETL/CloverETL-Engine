@@ -2,7 +2,7 @@ string[] intOutput;
 string[] longOutput;
 string[] doubleOutput;
 string[] decimalOutput;
-		
+string test_null_dec;
 function integer transform() {
 
 	// integer conversions
@@ -36,5 +36,7 @@ function integer transform() {
 	decimalOutput[2] = num2str(12350001.1d, '###,###.# Kcs', 'cs.CZ');
 	printErr("decimal output: " + decimalOutput);
 	
+	decimal d = null;
+	test_null_dec = num2str(d);
 	return 0;
 }
