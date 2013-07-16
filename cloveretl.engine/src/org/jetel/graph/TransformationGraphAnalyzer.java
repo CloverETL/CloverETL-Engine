@@ -155,8 +155,11 @@ public class TransformationGraphAnalyzer {
 		toProcess.addAll(findPrecedentNodes(rootComponent, reflectedNodes));
 		while (!toProcess.isEmpty()) {
 			Node component = toProcess.poll();
-			toProcess.addAll(findPrecedentNodes(component, reflectedNodes));
-			result.add(component);
+			if (!result.contains(component) && component != rootComponent) {
+				toProcess.addAll(findPrecedentNodes(component, reflectedNodes));
+				toProcess.addAll(findFollowingNodes(component, reflectedNodes));
+				result.add(component);
+			}
 		}
 		
 		return result;
@@ -192,8 +195,11 @@ public class TransformationGraphAnalyzer {
 		toProcess.addAll(findFollowingNodes(rootComponent, reflectedNodes));
 		while (!toProcess.isEmpty()) {
 			Node component = toProcess.poll();
-			toProcess.addAll(findFollowingNodes(component, reflectedNodes));
-			result.add(component);
+			if (!result.contains(component) && component != rootComponent) {
+				toProcess.addAll(findPrecedentNodes(component, reflectedNodes));
+				toProcess.addAll(findFollowingNodes(component, reflectedNodes));
+				result.add(component);
+			}
 		}
 		
 		return result;
