@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -74,6 +76,8 @@ public class CellValueFormatter {
 	
 	public static class OurDataFormatter extends DataFormatter {
 		
+		private static Log logger = LogFactory.getLog(OurDataFormatter.class);
+		
 	    private static final Pattern FRAC_PATTERN = Pattern.compile("\\?+/[\\d+|\\?+]");
 	    
 	    public OurDataFormatter() {
@@ -86,9 +90,15 @@ public class CellValueFormatter {
 	    
 		@Override
 		public String formatRawCellContents(double value, int formatIndex, String formatString) {  // TODO boolean use1904Windowing
-			Matcher fracMatcher = FRAC_PATTERN.matcher(formatString);
-			if (fracMatcher.find()) {
-				// convert fractions to standard double
+			if (formatString != null) {
+				Matcher fracMatcher = FRAC_PATTERN.matcher(formatString);
+				if (fracMatcher.find()) {
+					// convert fractions to standard double
+					formatString = "0.00";
+				}
+			}
+			else {
+				logger.warn("Null format obtained, using default double 0.00 format instead");
 				formatString = "0.00";
 			}
 			return super.formatRawCellContents(value, formatIndex, formatString).replaceFirst("\\* ", "");
