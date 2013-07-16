@@ -5143,10 +5143,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(fieldByteMapString.contains("key2=value2"));
 		check("byteListString", "[firstElement, secondElement]");
 		check("fieldByteListString", "[firstElement, secondElement]");
-		check("test_null_l", "null");
-		check("test_null_dec", "null");
-		check("test_null_d", "null");
-		check("test_null_i", "null");
+//		CLO-1262
+//		check("test_null_l", "null");
+//		check("test_null_dec", "null");
+//		check("test_null_d", "null");
+//		check("test_null_i", "null");
 	}
 	
 	public void test_convertlib_str2byte() {
@@ -5172,6 +5173,63 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		checkArray("cpHorse", new byte[] { 80, -8, -19, 108, 105, -102, 32, -98, 108, 117, -99, 111, 117, -24, 107, -3, 32, 107, -7, -14, 32, 112, -20, 108, 32, -17, -31, 98, 108, 115, 107, -23, 32, -13, 100, 121 });
 	}
 
+	public void test_convertlib_str2byte_expect_error(){
+		try {
+			doCompile("function integer transform(){byte b = str2byte(null,'utf-8'); return 0;}","test_convertlib_str2byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = str2byte(null,'utf-16'); return 0;}","test_convertlib_str2byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = str2byte(null,'MacCentralEurope'); return 0;}","test_convertlib_str2byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = str2byte(null,'ascii'); return 0;}","test_convertlib_str2byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = str2byte(null,'iso-8859-2'); return 0;}","test_convertlib_str2byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = str2byte(null,'windows-1250'); return 0;}","test_convertlib_str2byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = str2byte('wallace',null); return 0;}","test_convertlib_str2byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = str2byte('wallace','knock'); return 0;}","test_convertlib_str2byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = str2byte('wallace',null); return 0;}","test_convertlib_str2byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_byte2str() {
 		doCompile("test_convertlib_byte2str");
 
