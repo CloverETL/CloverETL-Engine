@@ -2214,12 +2214,25 @@ public class FileUtils {
      * @param closeable an IO object to be closed
      */
 	public static void closeQuietly(Closeable closeable) {
+		try {
+			FileUtils.close(closeable);
+		} catch (IOException ex) {
+			// ignore
+		}
+	}
+	
+	/**
+	 * Closses the passed {@link Closeable}.
+	 * Does nothing if the argument is <code>null</code>.
+	 * 
+	 * For multiple objects use {@link #closeAll(Closeable...)}.
+	 * 
+	 * @param closeable an IO object to be closed
+	 * @throws IOException
+	 */
+	public static void close(Closeable closeable) throws IOException {
 		if (closeable != null) {
-			try {
-				closeable.close();
-			} catch (IOException ex) {
-				// ignore
-			}
+			closeable.close();
 		}
 	}
 

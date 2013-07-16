@@ -2,6 +2,18 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-3-4-1
+---------
+
+- FIXES:
+	- Data_Intersection component drops data silently
+	- NPE occurs when data flows from JSONReader to ExtHashJoin and both components are in the same phase
+	- Checkconfig on DBOutputTable causes JNDI connection not released
+	- SORT_WITHIN_GROUPS output more records then records on input
+	- Lookup table can't read quoted data
+	- XmlReader: when port is not selected NPE is thrown
+	- A graph with DBLookupTable used in a CTL code is not restartable in batch mode
+
 REL-3-4-0
 ---------
 

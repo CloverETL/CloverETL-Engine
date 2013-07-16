@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
@@ -144,6 +146,26 @@ public class TransformationGraphAnalyzer {
 	}
 
 	/**
+	 * Finds all components which precede given root component. Recursive version of {@link #findPrecedentNodes(Node, Collection)} method.
+	 */
+	public static List<Node> findPrecedentNodesRecursive(Node rootComponent, Collection<Node> reflectedNodes) {
+		List<Node> result = new ArrayList<Node>();
+		Queue<Node> toProcess = new LinkedList<Node>();
+		
+		toProcess.addAll(findPrecedentNodes(rootComponent, reflectedNodes));
+		while (!toProcess.isEmpty()) {
+			Node component = toProcess.poll();
+			if (!result.contains(component) && component != rootComponent) {
+				toProcess.addAll(findPrecedentNodes(component, reflectedNodes));
+				toProcess.addAll(findFollowingNodes(component, reflectedNodes));
+				result.add(component);
+			}
+		}
+		
+		return result;
+	}
+	
+	/**
 	 * @param node
 	 * @param reflectedNodes
 	 *            reflected set of nodes, typically nodes in phase; the resulted nodes will be only from this set of
@@ -160,6 +182,26 @@ public class TransformationGraphAnalyzer {
 			}
 		}
 
+		return result;
+	}
+
+	/**
+	 * Finds all components which follow given root component. Recursive version of {@link #findFollowingNodes(Node, Collection)} method.
+	 */
+	public static List<Node> findFollowingNodesRecursive(Node rootComponent, Collection<Node> reflectedNodes) {
+		List<Node> result = new ArrayList<Node>();
+		Queue<Node> toProcess = new LinkedList<Node>();
+		
+		toProcess.addAll(findFollowingNodes(rootComponent, reflectedNodes));
+		while (!toProcess.isEmpty()) {
+			Node component = toProcess.poll();
+			if (!result.contains(component) && component != rootComponent) {
+				toProcess.addAll(findPrecedentNodes(component, reflectedNodes));
+				toProcess.addAll(findFollowingNodes(component, reflectedNodes));
+				result.add(component);
+			}
+		}
+		
 		return result;
 	}
 

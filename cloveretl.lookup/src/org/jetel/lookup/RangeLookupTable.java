@@ -108,7 +108,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     protected DataRecordMetadata metadata;//defines lookup table
     protected String metadataId;
 	protected Parser dataParser;
-	protected SortedSet<DataRecord> lookupTable;//set of intervals
+	protected SortedSet<DataRecord> sortedDataRecordSet;//set of intervals
 	protected RecordKey startKey;
 	protected String[] startFields;
 	protected int[] startField;
@@ -289,7 +289,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		comparator = new IntervalRecordComparator(metadata, startField, endField, getCollator());
 		collators = ((IntervalRecordComparator)comparator).getCollators();
 		
-		lookupTable = Collections.synchronizedSortedSet(new TreeSet<DataRecord>(comparator));
+		sortedDataRecordSet = Collections.synchronizedSortedSet(new TreeSet<DataRecord>(comparator));
 
 
 	    if (dataParser == null && (fileURL != null || data!= null)) {
@@ -328,7 +328,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
 				}
 				while (dataParser.getNext(tmpRecord) != null) {
-					lookupTable.add(tmpRecord.duplicate());
+					sortedDataRecordSet.add(tmpRecord.duplicate());
 				}
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, e);
@@ -345,12 +345,17 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		lookupTable.clear();
+		sortedDataRecordSet.clear();
 	}
 
 	@Override
 	public synchronized void reset() throws ComponentNotReadyException {
 		super.reset();
+	}
+	
+	@Override
+	public synchronized void clear() {
+		sortedDataRecordSet.clear();
 	}
 
     @Override
@@ -382,7 +387,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
             throw new NotInitializedException(this);
         }
 
-		lookupTable.add(dataRecord.duplicate());
+		sortedDataRecordSet.add(dataRecord.duplicate());
 
 		return true;
 	}
@@ -393,7 +398,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
             throw new NotInitializedException(this);
         }
 
-	    return lookupTable.remove(dataRecord);
+	    return sortedDataRecordSet.remove(dataRecord);
 	}
 
 	@Override
@@ -407,7 +412,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
             throw new NotInitializedException(this);
         }
 
-		return lookupTable.iterator();
+		return sortedDataRecordSet.iterator();
 	}
 	
     public static RangeLookupTable fromProperties(TypedProperties properties) throws AttributeNotFoundException,
@@ -677,7 +682,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 class RangeLookup implements Lookup{
 	
-	private SortedSet<DataRecord> lookup;
+	private SortedSet<DataRecord> sortedDataRecordSet;
 	private RangeLookupTable lookupTable;
 	private DataRecord tmpRecord;
 	private int[] startField;
@@ -709,7 +714,7 @@ class RangeLookup implements Lookup{
 	    		break;
 	    	}
 	    }
-	    this.lookup = lookupTable.lookupTable;
+	    this.sortedDataRecordSet = lookupTable.sortedDataRecordSet;
 		this.key = key;
 		this.inRecord = record;
 		this.keyFields = key.getKeyFields();
@@ -744,8 +749,8 @@ class RangeLookup implements Lookup{
 			tmpRecord.getField(startField[i]).setValue(inRecord.getField(keyFields[i]));
 			tmpRecord.getField(endField[i]).setValue(inRecord.getField(keyFields[i]));
 		}
-		synchronized (lookup) {
-			subTable = lookup.tailSet(tmpRecord);
+		synchronized (sortedDataRecordSet) {
+			subTable = sortedDataRecordSet.tailSet(tmpRecord);
 			subTableIterator = subTable.iterator();
 		}
 		numFound = 0;

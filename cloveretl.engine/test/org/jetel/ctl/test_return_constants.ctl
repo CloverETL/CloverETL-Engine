@@ -2,6 +2,11 @@
 integer skip;
 integer ok;
 integer all;
+integer stop;
+
+function integer stop_function(){
+	return STOP;
+}
 
 function integer skip_function() {
 	return SKIP;
@@ -19,7 +24,7 @@ function integer transform() {
 	skip = skip_function();
 	ok = ok_function();
 	all = all_function();
-	
+	stop = stop_function();
 	return SKIP;
 	
 }

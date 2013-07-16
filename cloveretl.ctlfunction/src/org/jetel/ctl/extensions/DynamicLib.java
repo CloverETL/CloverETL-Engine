@@ -561,7 +561,7 @@ public class DynamicLib extends TLFunctionLibrary {
 				field = record.getField(name);
 			}
 			Object value = getFieldValue(field);
-			if (!targetType.isInstance(value)) {
+			if ((value != null) && !targetType.isInstance(value)) {
 				String valueStr = (value instanceof byte[]) ? Arrays.toString((byte[]) value) : String.valueOf(value);
 				throw new ClassCastException("Unable to cast " + valueStr + " to " + targetType.getCanonicalName());
 			}

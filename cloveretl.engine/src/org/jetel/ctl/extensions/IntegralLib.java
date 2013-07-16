@@ -161,8 +161,12 @@ public class IntegralLib extends TLFunctionLibrary {
 	 * The annotated function is in StringLib.
 	 */
 	public static final Boolean matches(TLFunctionCallContext context, String input, String pattern) {
-		Matcher m = ((TLRegexpCache) context.getCache()).getCachedMatcher(context, pattern).reset(input);
-		return m.matches();
+		if (input != null){
+			Matcher m = ((TLRegexpCache) context.getCache()).getCachedMatcher(context, pattern).reset(input);
+			return m.matches();
+		}else{
+			return false;
+		}
 	}
 
 	/**

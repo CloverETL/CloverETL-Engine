@@ -36,6 +36,7 @@ public class TimeZoneProvider implements Serializable {
 	private static final long serialVersionUID = -1794232110904205542L;
 	
 	private static final String JODA_PREFIX = "joda:";
+	private static final String JAVA_PREFIX = "java:";
 
 	private final TimeZone javaTimeZone;
 	
@@ -101,6 +102,9 @@ public class TimeZoneProvider implements Serializable {
 				if (id.startsWith(JODA_PREFIX)) {
 					joda = DateTimeZone.forID(id.substring(JODA_PREFIX.length()));
 				} else {
+					if (id.startsWith(JAVA_PREFIX)) {
+						id = id.substring(JAVA_PREFIX.length());
+					}
 					java = TimeZone.getTimeZone(id);
 				}
 			}
@@ -114,7 +118,7 @@ public class TimeZoneProvider implements Serializable {
 	 */
 	public java.util.TimeZone getJavaTimeZone() {
 		if (javaTimeZone == null) {
-			throw new IllegalStateException("No Java time zone has been set: " + config);
+			throw new TimeZoneUndefinedException("No Java time zone has been set: " + config);
 		}
 		return javaTimeZone;
 	}
@@ -124,7 +128,7 @@ public class TimeZoneProvider implements Serializable {
 	 */
 	public DateTimeZone getJodaTimeZone() {
 		if (jodaTimeZone == null) {
-			throw new IllegalStateException("No \"joda:\" time zone has been set: " + config);
+			throw new TimeZoneUndefinedException("No \"joda:\" time zone has been set: " + config);
 		}
 		return jodaTimeZone;
 	}
@@ -132,6 +136,25 @@ public class TimeZoneProvider implements Serializable {
 	@Override
 	public String toString() {
 		return config;
+	}
+	
+	/**
+	 * A subclass of {@link IllegalArgumentException},
+	 * so that the specific exception can be caught during validation.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Jul 3, 2013
+	 */
+	public static class TimeZoneUndefinedException extends IllegalStateException {
+
+		private static final long serialVersionUID = -177491851163652666L;
+
+		public TimeZoneUndefinedException(String s) {
+			super(s);
+		}
+		
 	}
 
 }

@@ -317,6 +317,9 @@ public class BinaryDataParser extends AbstractParser {
 			backendStream = (InputStream) inputDataSource;
 			reader = Channels.newChannel(backendStream);
 		}
+		
+		eofReached = false;
+		processedBytes = 0;
 	}
 
 	@Override

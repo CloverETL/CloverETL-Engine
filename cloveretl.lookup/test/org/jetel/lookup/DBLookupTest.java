@@ -212,5 +212,57 @@ public class DBLookupTest extends CloverTestCase {
 		log.info("From cache found: " + ((DBLookup) lookup).getCacheNumber());
 		log.info("Timing: " + (System.currentTimeMillis() - start));
 	}
+	
+	public void testClear() throws ComponentNotReadyException, JetelException {
+		lookupTable.setNumCached(1000);
+		lookupTable.setStoreNulls(true);
+		
+		lookupTable.preExecute();
+		lookup = lookupTable.createLookup(recordKey, customer);
+		
+		long start = System.currentTimeMillis();
+		
+		final int readlimit = 10;
+		readFirstN(start, readlimit);
+		
+		int fromCache1 = ((DBLookup) lookup).getCacheNumber();
+		assertTrue("First round found entries in cache while it was not supposed to", fromCache1 == 0);
+		
+		parser.setDataSource(sqlConnection);
+		readFirstN(start, readlimit);
+		
+		int fromCache2 = ((DBLookup) lookup).getCacheNumber();
+		assertTrue("Second run did not found all entries in cache while it was supposed to", fromCache2 == fromCache1 + 10);
+		
+		lookupTable.clear(); // ------ CLEAR ------
+		
+		parser.setDataSource(sqlConnection);
+		readFirstN(start, readlimit);
+		
+		int fromCache3 = ((DBLookup) lookup).getCacheNumber();
+		
+		assertTrue("Third run found entries in cache while it was not supposed to", fromCache3 == fromCache2);
+		
+		
+		lookupTable.postExecute();
+	}
+
+	private void readFirstN(long start, int readlimit) throws JetelException {
+		int record = 0;
+		while ((parser.getNext(customer)) != null) {
+			record++;
+			if (record > readlimit) {
+				break;
+			}
+			lookup.seek();
+			while (lookup.hasNext()) {
+				employee =  lookup.next();
+				assertEquals(customer.getField("lname"), employee.getField("last_name"));
+			}
+		}
+		if (record <= readlimit) {
+			fail("readLimit not reached " + record + "/" + readlimit);
+		}
+	}
 
 }

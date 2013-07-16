@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -572,16 +574,17 @@ public class SystemExecute extends Node{
 				cmdArray = command.split("\\s+");
 			}
 		}
-		StringBuffer msg = new StringBuffer("Command to execute: \"");
+		StringBuffer msg = new StringBuffer(getId() + ": Command to execute: \"");
 		msg.append(cmdArray[0]).append("\" with parameters:\n");
 		for (int idx = 1; idx < cmdArray.length; idx++) {
 			msg.append(idx).append(": ").append(cmdArray[idx]).append("\n");
 		}
 		logger.info(msg.toString());
 		processBuilder = new ProcessBuilder(cmdArray);
-		processBuilder.directory(workingDirectory != null ? 
-				workingDirectory : (getGraph().getRuntimeContext().getContextURL() != null ? new File(getGraph().getRuntimeContext().getContextURL().getFile()) : new File(".")));
-		logger.info("Working directory set to: " + processBuilder.directory().getAbsolutePath());
+		
+		configureProcessWorkingDir();
+		
+		logger.info(getId() + ": Working directory set to: " + processBuilder.directory().getAbsolutePath());
 		if (!environment.isEmpty()){
 			Map<String, String> origEnvironment = processBuilder.environment();
 			String name, value, oldValue;
@@ -606,6 +609,32 @@ public class SystemExecute extends Node{
 		}
 		//wee need separate error stream only if data are sent to output port
 		processBuilder.redirectErrorStream(getOutputPort(OUTPUT_PORT) == null);
+	}
+
+	/* Introduced as fix of CLO-981 - wrong working directory when running on Server */
+	private void configureProcessWorkingDir() throws ComponentNotReadyException {
+		if (workingDirectory != null) {
+			processBuilder.directory(workingDirectory); 
+		} else {
+			URL contextURL = getGraph().getRuntimeContext().getContextURL();
+			if (contextURL == null) {
+				// assuming here we're running in local project
+				processBuilder.directory(new File("."));
+			} else {
+				// running in Server project
+				try {
+					File contextDirectory = FileUtils.convertUrlToFile(contextURL);
+					processBuilder.directory(contextDirectory);
+				} catch (MalformedURLException e) {
+					logger.info(getId() + ": Cannot use context URL \"" + contextURL + "\" as working directory. Reason:", e);
+					try {
+						processBuilder.directory(getGraph().getAuthorityProxy().newTempDir("SysExec", -1));
+					} catch (TempFileCreationException ex) {
+						throw new ComponentNotReadyException("Failed to set temp directory as working directory of the system process", ex);
+					}
+				}
+			}
+		}
 	}
 
 	/* (non-Javadoc)

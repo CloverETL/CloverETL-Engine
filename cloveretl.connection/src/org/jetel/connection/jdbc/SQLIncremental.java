@@ -45,6 +45,7 @@ import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -99,10 +100,9 @@ public class SQLIncremental {
 		keyValue = new Properties();
 		
 		File file = new File(incrementalFile);
-		if (!file.exists()) {
-			file.createNewFile();
+		if (file.exists()) {
+			keyValue.load(FileUtils.getFileURL(incrementalFile).openStream());
 		}
-		keyValue.load(new FileInputStream(incrementalFile));
 		setInitialValues(keyValue, key);
 		
 		firstUpdate = new boolean[keyDefinition.size()];

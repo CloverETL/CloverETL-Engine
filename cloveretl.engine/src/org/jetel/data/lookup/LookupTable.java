@@ -142,6 +142,16 @@ public interface LookupTable extends IGraphElement, Iterable<DataRecord> {
      * @since 23rd October 2008
      */
     public boolean remove(HashKey key); 
+    
+    /**
+     * <p>Attempts to free memory by erasing internal caches of the lookup table.
+     * 
+     * <p>Behavior in different LookupTable implementations can differ and can give different results.
+     * Clearing the caches may result in LookupTable having no entries, for other
+     * implementations it might only result in higher memory available after the
+     * LookupTable is cleared, and worse performance once the LookupTable is used again.
+     */
+    public void clear();
 
 //    public boolean removeKey(RecordKey recKey, DataRecord record);
 

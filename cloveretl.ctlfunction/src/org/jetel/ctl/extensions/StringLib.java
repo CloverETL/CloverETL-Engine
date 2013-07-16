@@ -140,6 +140,9 @@ public class StringLib extends TLFunctionLibrary {
 	// UPPERCASE
 	@TLFunctionAnnotation("Returns input string in uppercase")
 	public static final String upperCase(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		return input.toUpperCase();
 	}
 
@@ -158,6 +161,9 @@ public class StringLib extends TLFunctionLibrary {
 	// LOWERCASE
 	@TLFunctionAnnotation("Returns input string in lowercase")
 	public static final String lowerCase(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		return input.toLowerCase();
 	}
 
@@ -236,8 +242,8 @@ public class StringLib extends TLFunctionLibrary {
 	// RIGHT
 	@TLFunctionAnnotation("Returns suffix of the specified length")
 	public static final String right(TLFunctionCallContext context, String input, int length) {
-		if (input == null) {
-			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.null_input_or_right_function")); //$NON-NLS-1$
+		if( input == null){
+			return null;
 		}
 		return StringLib.right(context, input, length, false);
 	}
@@ -245,8 +251,11 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Returns suffix of the specified length. If input string is shorter than specified length " +
 			"and 3th argument is true, left side of result is padded with blank spaces so that the result has specified length.")
 	public static final String right(TLFunctionCallContext context, String input, int length, boolean spacePad) {
-		if (input == null) {
-			throw new TransformLangExecutorRuntimeException(CtlExtensionsMessages.getString("StringLib.null_input_or_right_function")); //$NON-NLS-1$
+		if (input == null && !spacePad) {
+			return null;
+		}
+		if (input == null && spacePad) {
+			return String.format("%"+length+"s","");
 		}
 		if (input.length() < length) {
 			if (spacePad) {
@@ -280,6 +289,9 @@ public class StringLib extends TLFunctionLibrary {
 	// TRIM
 	@TLFunctionAnnotation("Removes leading and trailing whitespaces from a string.")
 	public static final String trim(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		StringBuilder buf = new StringBuilder(input);
 		return StringUtils.trim(buf).toString();
 
@@ -299,26 +311,41 @@ public class StringLib extends TLFunctionLibrary {
 	// LENGTH
 	@TLFunctionAnnotation("Returns number of characters in the input string")
 	public static final Integer length(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return 0;
+		}
 		return input.length();
 	}
 
 	@TLFunctionAnnotation("Returns number of elements in the input list")
 	public static final <E> Integer length(TLFunctionCallContext context, List<E> input) {
+		if (input == null){
+			return 0;
+		}
 		return input.size();
 	}
 
 	@TLFunctionAnnotation("Returns number of mappings in the input map")
 	public static final <K,V> Integer length(TLFunctionCallContext context, Map<K, V> input) {
+		if (input == null){
+			return 0;
+		}
 		return input.size();
 	}
 
 	@TLFunctionAnnotation("Returns number of bytes in the input byte array")
 	public static Integer length(TLFunctionCallContext context, byte[] input) {
+		if (input == null){
+			return 0;
+		}
 		return input.length;
 	}
 
 	@TLFunctionAnnotation("Returns number of fields in the input record")
 	public static final Integer length(TLFunctionCallContext context, DataRecord input) {
+		if (input == null){
+			return 0;
+		}
 		return input.getNumFields();
 	}
 
@@ -369,6 +396,9 @@ public class StringLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Replaces matches of a regular expression")
 	public static final String replace(TLFunctionCallContext context, String input, String regex, String replacement) {
+		if (input == null){
+			return null;
+		}
 		Matcher m; 
 		m = ((TLRegexpCache)context.getCache()).getCachedMatcher(context, regex).reset(input);
 		return m.replaceAll(replacement);
@@ -399,6 +429,11 @@ public class StringLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Splits the string around regular expression matches")
 	public static final List<String> split(TLFunctionCallContext context, String input, String regex) {
+		if (input == null){
+			List<String> tmp = new ArrayList<String>();
+			tmp.add(null);
+			return tmp;
+		}
 		final Pattern p = ((TLRegexpCache)context.getCache()).getCachedPattern(context, regex);
 		final String[] strArray = p.split(input);
 		final List<String> list = new ArrayList<String>();
@@ -468,7 +503,6 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Checks if the string contains only characters from the US-ASCII encoding")
 	public static final boolean isAscii(TLFunctionCallContext context, String input) {
 		return StringUtils.isAscii(input);
-
 	}
 
 	class IsAsciiFunction implements TLFunctionPrototype {
@@ -703,8 +737,13 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Replaces occurences of characters")
 	public static final String translate(TLFunctionCallContext context, String input, String match,
 			String replacement) {
-		return String.valueOf(StringUtils.translateSequentialSearch(input,
-				match, replacement));
+		CharSequence seq = StringUtils.translateSequentialSearch(input,
+				match, replacement);
+		if (seq == null){
+			return null;
+		}else{
+			return seq.toString();
+		}
 	}
 
 	class TranslateFunction implements TLFunctionPrototype {
@@ -727,6 +766,9 @@ public class StringLib extends TLFunctionLibrary {
 	// JOIN
 	@TLFunctionAnnotation("Concatenets list elements into a string using delimiter.")
 	public static final <E> String join(TLFunctionCallContext context, String delimiter, List<E> values) {
+		if (delimiter == null){
+			delimiter ="";
+		}
 		StringBuffer buf = new StringBuffer();
 		for (int i=0; i<values.size(); i++) {
 			buf.append(values.get(i) == null ? CtlExtensionsMessages.getString("StringLib.null") : values.get(i).toString()); //$NON-NLS-1$
@@ -740,12 +782,16 @@ public class StringLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Concatenates all mappings into a string using delimiter.")
 	public static final <K,V> String join(TLFunctionCallContext context, String delimiter, Map<K,V> values) {
+		if (delimiter == null){
+			delimiter = "";
+		}
 		StringBuffer buf = new StringBuffer();
 		Set<K> keys = values.keySet();
 		for (Iterator<K> it = keys.iterator(); it.hasNext();) {
 			K key = it.next();
 			V value = values.get(key);
-			buf.append(key.toString()).append("=").append( //$NON-NLS-1$
+			
+			buf.append(String.valueOf(key)).append("=").append( //$NON-NLS-1$
 					value == null ? CtlExtensionsMessages.getString("StringLib.null") : value.toString()); //$NON-NLS-1$
 			if (it.hasNext()) {
 				buf.append(delimiter);
@@ -861,6 +907,9 @@ public class StringLib extends TLFunctionLibrary {
 			while (m.find()) {
 				ret.add(m.group(groupNo));
 			}
+		}else{
+			throw new TransformLangExecutorRuntimeException(
+					CtlExtensionsMessages.getString("StringLib.wrong_regexp_group_number")); //$NON-NLS-1$
 		}
 		return ret;
 		
@@ -907,8 +956,7 @@ public class StringLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Tries to match entire input with specified pattern.")
 //	@TLFunctionParametersAnnotation({"input","regex_pattern"})
 	public static final Boolean matches(TLFunctionCallContext context, String input, String pattern) {
-		// moved to IntegralLib, so that it can be called from the interpreter and compiler
-		return IntegralLib.matches(context, input, pattern);
+		return IntegralLib.matches(context, input, pattern);			
 	}
 
 	class MatchesFunction implements TLFunctionPrototype {
@@ -935,6 +983,9 @@ public class StringLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Tries to match entire input with specified pattern.")
 	public static final List<String> matchGroups(TLFunctionCallContext context, String input, String pattern) {
+		if(input == null){
+			return null;
+		}
 		final Matcher m = ((TLRegexpCache)context.getCache()).getCachedPattern(context, pattern).matcher(input);
 		if (m.matches()) {
 			return new AbstractList<String>() {
