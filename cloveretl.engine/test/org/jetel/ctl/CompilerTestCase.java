@@ -5258,6 +5258,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	}
 
+	public void test_convertlib_byte2str_expect_error(){
+		try {
+			doCompile("function integer transform(){string s = byte2str(null,'utf-8'); return 0;}","test_convertlib_byte2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = byte2str(null,null); return 0;}","test_convertlib_byte2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = byte2str(str2byte('hello', 'utf-8'),null); return 0;}","test_convertlib_byte2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_conditional_fail() {
 		doCompile("test_conditional_fail");
 		check("result", 3);
