@@ -868,6 +868,8 @@ public class SQLUtil {
 			MULTILINE_COMMENT
 		}
 		
+		private static final char DEFAULT_DELIMITER = ';';
+		
 		private final String input;
 		
 		private StringBuilder sb = new StringBuilder();
@@ -886,7 +888,9 @@ public class SQLUtil {
 		 */
 		public SQLSplitter(String input, String customDelimiter) {
 			this.input = input;
-			this.customDelimiter = customDelimiter;
+			if (customDelimiter != null && !String.valueOf(DEFAULT_DELIMITER).equals(customDelimiter)) {
+				this.customDelimiter = customDelimiter;
+			}
 		}
 		
 		private void flush() {
@@ -909,7 +913,7 @@ public class SQLUtil {
 				switch (state) {
 				case DEFAULT:
 					if (customDelimiter == null) {
-						if (c == ';') {
+						if (c == DEFAULT_DELIMITER) {
 							flush();
 							continue; // stay in the DEFAULT state, do not append ';' to the StringBuilder
 						}
