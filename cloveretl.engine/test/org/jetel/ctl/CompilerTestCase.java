@@ -5143,6 +5143,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(fieldByteMapString.contains("key2=value2"));
 		check("byteListString", "[firstElement, secondElement]");
 		check("fieldByteListString", "[firstElement, secondElement]");
+		check("test_null_l", "null");
+		check("test_null_dec", "null");
+		check("test_null_d", "null");
+		check("test_null_i", "null");
 	}
 	
 	public void test_convertlib_str2byte() {
