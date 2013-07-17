@@ -47,6 +47,7 @@ public class PortBinding {
 	private final DataRecord record;
 	private final int parentPort;
 	private final PortBinding parentBinding;
+	private final DataRecord[] filterData;
 
 	private final RecordFilter recordFilter;
 	private int[] keys;
@@ -68,6 +69,7 @@ public class PortBinding {
 		record.init();
 
 		portIndex = portData.getInPort().getInputPortNumber();
+		this.filterData = new DataRecord[portIndex + 1];
 	}
 
 	protected void setContainer(WritableContainer container) {
@@ -109,8 +111,11 @@ public class PortBinding {
 	private void writeRecord(TreeFormatter formatter, DataRecord[] currentAvailableData, DataRecord writeRecord)
 			throws JetelException, IOException {
 		try {
-			if (recordFilter != null && !recordFilter.isValid(writeRecord)) {
-				return;
+			if (recordFilter != null) {
+				filterData[portIndex] = writeRecord;
+				if (!recordFilter.isValid(filterData)) {
+					return;
+				}
 			}
 		} catch (TransformException e) {
 			throw new JetelException(e);
