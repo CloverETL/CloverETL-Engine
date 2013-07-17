@@ -28,6 +28,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.jetel.database.IConnection;
@@ -42,6 +43,14 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.file.CustomPathResolver;
 import org.jetel.util.file.FileUtils;
 
+/**
+ * {@link CustomPathResolver} providing access to Hadoop Distributed File System.
+ * 
+ * Note that methods of this class assume that Hadoop connection involved is already initialized.
+ * If someone really has to use methods of this class when the connection is not initialized,
+ * they have to init() and free() the connection themselves! If this class would init() the connection,
+ * it would have no way how to close the connection in the right moment in the future.
+ */
 public class HadoopPathResolver implements CustomPathResolver {
 
 	private static final SafeLog log = SafeLogFactory.getSafeLog(FileUtils.class);
@@ -66,18 +75,13 @@ public class HadoopPathResolver implements CustomPathResolver {
 				if (!(conn instanceof HadoopConnection)) {
 					throw new IOException(String.format("Connection [%s:%s] is not of Hadoop type.", conn.getId(), conn.getName()));
 				} else {
-					try {
-						if(log.isDebugEnabled()) {
-							log.debug(String.format("Connecting to HDFS through [%s:%s] for reading.", conn.getId(), conn.getName()));
-						}
-						conn.init(); //may not be initialized
-						HadoopFileSystemService hconn = ((HadoopConnection) conn).getFileSystemService();
-						HadoopDataInput istream = hconn.open(new URI(inputURI.getPath()));
-						return istream.getDataInputStream();
-					} catch (ComponentNotReadyException e) {
-						log.warn(String.format("Cannot connect to HDFS - [%s:%s] - %s",e.getGraphElement().getId(), e.getGraphElement().getName(), ExceptionUtils.getMessage(e)));
-						throw new IOException("Cannot connect to HDFS", e);
+					if(log.isDebugEnabled()) {
+						log.debug(String.format("Connecting to HDFS through [%s:%s] for reading.", conn.getId(), conn.getName()));
 					}
+					// conn.init(); Don't do this -- there's no way how to close the connection in the right moment in the future
+					HadoopFileSystemService hconn = ((HadoopConnection) conn).getFileSystemService();
+					HadoopDataInput istream = hconn.open(new URI(inputURI.getPath()));
+					return istream.getDataInputStream();
 				}
 			} catch (URISyntaxException e) {
 				throw new IOException(String.format("Invalid file path: \"%s\"", input), e);
@@ -175,7 +179,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 					throw new IOException("Cannot connect to HDFS", e);
 				}
 				// release connection
-				conn.free();
+				conn.free();  // TODO this looks frightening 8-O
 			}
 		}
 		
@@ -215,7 +219,10 @@ public class HadoopPathResolver implements CustomPathResolver {
 				if (!(conn instanceof HadoopConnection)) {
 					throw new MalformedURLException();
 				} else {
-					conn.init();
+					if (!conn.isInitialized()) { // happens in checkConfig (cannot init the connection here, there wouldn't be a way how to close it)
+						return Collections.emptyList();
+					}
+					
 					String uriPath = getPathWithQueryAndFragment(inputURI);
 					String matchPattern = uriPath.replaceAll("\\?", ".").replaceAll("\\*", ".*");
 					
@@ -229,7 +236,7 @@ public class HadoopPathResolver implements CustomPathResolver {
 					}
 					return filenames;
 				}
-			} catch(Exception ex) {
+			} catch (Exception ex) {
 				throw new MalformedURLException();
 			}
 		}
