@@ -854,6 +854,8 @@ public class SQLUtil {
 	 * but unlike query.split(";"), it should
 	 * ignore semicolons within strings and comments.
 	 * 
+	 * TODO There's some JdbcSpecific comments mechanism {@link JdbcSpecific#getCommentsPattern()} which should be probably taken into account.
+	 * 
 	 * @author krivanekm (info@cloveretl.com)
 	 *         (c) Javlin, a.s. (www.cloveretl.com)
 	 *
