@@ -9,6 +9,11 @@
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>
 	
+	<FunctionalTest ident="UniqueVisits-MongoDB" graphFile="jobflow/UniqueVisits-MongoDB.jbf" excludedEtlEnvironment="engine">
+		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
+		<DeleteFile file="data-tmp/unique_visitors.txt"/>
+	</FunctionalTest>
+
 	<!-- this is not a test, it only sets correct parameters to hadoop.prm (the graph is not a part of the examples
 		and thus it is placed in data-tmp -->
 	<FunctionalTest ident="SetHadoopParameters" graphFile="data-tmp/setParameters.grf" excludedEtlEnvironment="engine" />
@@ -19,11 +24,6 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="UniqueVisits-HadoopMapReduce" graphFile="jobflow/UniqueVisits-HadoopMapReduce.jbf" excludedEtlEnvironment="engine">
-		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
-		<DeleteFile file="data-tmp/unique_visitors.txt"/>
-	</FunctionalTest>
-
-	<FunctionalTest ident="UniqueVisits-MongoDB" graphFile="jobflow/UniqueVisits-MongoDB.jbf" excludedEtlEnvironment="engine">
 		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>

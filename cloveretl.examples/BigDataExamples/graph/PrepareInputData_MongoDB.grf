@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="krivanekm" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361358390393" licenseType="Commercial" modified="Thu Jul 18 15:26:12 CEST 2013" modifiedBy="krivanekm" name="PrepareInputData" revision="1.141" showComponentDetails="true">
+<Graph author="krivanekm" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361358390393" licenseType="Commercial" modified="Thu Jul 18 16:35:25 CEST 2013" modifiedBy="krivanekm" name="PrepareInputData" revision="1.142" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata0"/>
@@ -11,7 +11,6 @@
 </Record>
 </Metadata>
 <Connection config="${CONN_DIR}/MongoDB.cfg" id="MONGODB0" type="MONGODB"/>
-<Property fileURL="hadoop.prm" id="GraphParameter0"/>
 <Property fileURL="workspace.prm" id="GraphParameter3"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="302" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Prepare Key/Value Pair Format" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="244" x="331" y="330">
 <attr name="text"><![CDATA[
