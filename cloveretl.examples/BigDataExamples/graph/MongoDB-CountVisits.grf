@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseType="Commercial" modified="Thu Jul 18 13:29:02 CEST 2013" modifiedBy="krivanekm" name="RunJobInHadoopHIVE" revision="1.70" showComponentDetails="true">
+<Graph author="krivanekm" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseType="Commercial" modified="Thu Jul 18 15:49:26 CEST 2013" modifiedBy="krivanekm" name="RunJobInHadoopHIVE" revision="1.82" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
 <Connection config="${CONN_DIR}/MongoDB.cfg" id="MONGODB0" type="MONGODB"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="292" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Unique Visitors using MongoDB Aggregation Framework" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="261" x="153" y="223">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="299" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Unique Visitors using MongoDB Aggregation Framework" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="383" x="133" y="223">
 <attr name="text"><![CDATA[
 
 
@@ -16,12 +16,13 @@
 
 
 
+Calculates the number of unique visitors using the MongoDB aggregation framework's $group operator. The first application of the operator selects distinct <year-month, IP> pairs, the second application groups the result by date and counts the IP addresses.
 
-Calculates the number of unique visitors using a Hive query. 
+The components uses MongoDB Java driver to issue the query and retrieve results.
 
-The components uses Hive JDBC connector to issue the query and retrieve results.]]></attr>
+The results are returned as JSON objects, which are presented as map[string, string] in the Output mapping.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="292" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Temp file with results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="262" x="594" y="223">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="299" id="Note3" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Temp file with results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="262" x="594" y="223">
 <attr name="text"><![CDATA[
 
 
@@ -38,7 +39,7 @@ The components uses Hive JDBC connector to issue the query and retrieve results.
 Writes calculated statistics into a temporary output file which will be converted to Excel report in the next 
 step of processing.]]></attr>
 </Note>
-<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="78" id="Note4" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors):  Hadoop Hive Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="30" y="36">
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="78" id="Note4" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors): MongoDB Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="30" y="36">
 <attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
 (CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </Note>
@@ -46,7 +47,7 @@ step of processing.]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node collection="uniqueVisits" connectionId="MONGODB0" enabled="enabled" guiName="MongoDBReader" guiX="220" guiY="279" id="MONGO_DBREADER" operation="aggregate" type="MONGODB_READER">
+<Node collection="uniqueVisits" connectionId="MONGODB0" enabled="enabled" guiName="MongoDBReader" guiX="261" guiY="279" id="MONGO_DBREADER" operation="aggregate" type="MONGODB_READER">
 <attr name="query"><![CDATA[{ $group : { _id : { key : "$key", ip : "$value" } } },
 { $group : { _id : "$_id.key", count : { $sum : 1 } } }]]></attr>
 <attr name="outputMapping"><![CDATA[//#CTL2

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360543511" licenseType="Commercial" modified="Wed May 15 13:47:44 CEST 2013" modifiedBy="tkramolis" name="ProcessLog_CloverETL" nature="jobflow" revision="1.35" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360543511" licenseType="Commercial" modified="Thu Jul 18 15:52:18 CEST 2013" modifiedBy="krivanekm" name="ProcessLog_CloverETL" nature="jobflow" revision="1.36" showComponentDetails="true">
 <Global>
 <Metadata id="ExecuteGraph_RunStatus">
 <Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
@@ -15,8 +15,8 @@
 <Field name="errComponentType" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="hadoop.prm" id="GraphParameter13"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Property fileURL="hadoop.prm" id="GraphParameter0"/>
+<Property fileURL="workspace.prm" id="GraphParameter3"/>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Configuration Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="716" y="122">
 <attr name="text"><![CDATA[
 If you are using different version of Hadoop distrbution download the JAR files from your installation.
@@ -52,7 +52,7 @@ Step 4: Sorts the output file and generate an Excel report]]></attr>
 <Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="142" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Hive query" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="516" x="241" y="402"/>
 <Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors):  Hadoop Hive Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="19" y="39">
 <attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="254" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="233" x="19" y="122">
 <attr name="text"><![CDATA[
