@@ -61,7 +61,8 @@ public class SafeLogUtils {
 		}
 		
 		//firstly, obfuscate secure parameters using authority proxy
-		if (EngineInitializer.isInitialized()) {
+		// do not use default authority proxy, mostly because we might be in the middle of loading it
+		if (EngineInitializer.isInitialized() && ContextProvider.getGraph() != null) {
 			text = ContextProvider.getAuthorityProxy().obfuscateSecureParameters(text);
 		}
 		
