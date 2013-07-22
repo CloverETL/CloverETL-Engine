@@ -347,6 +347,13 @@ public class runGraph {
         runtimeContext.setDebugMode(debugMode);
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
+        try {
+			runtimeContext.setJobUrl(FileUtils.getFileURL(contextURL, graphFileName).toString());
+		} catch (MalformedURLException e1) {
+			ExceptionUtils.logException(logger, "Given graph path cannot form a valid URL", e1);
+			ExceptionUtils.logHighlightedException(logger, "Given graph path cannot form a valid URL", e1);
+			System.exit(-1);
+		}
         runtimeContext.setLocale(locale);
         runtimeContext.setTimeZone(timeZone);
     	if (classPathString != null) {
