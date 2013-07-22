@@ -115,8 +115,9 @@ public abstract class AbstractValidationRule extends ValidationNode {
 	public void init(DataRecordMetadata metadata, GraphWrapper graphWrapper) throws ComponentNotReadyException {
 		super.init(metadata, graphWrapper);
 		
+		Map<String, String> processedParams = getProcessedParams(metadata, graphWrapper);
 		if (isLoggingEnabled()) {
-			logParams(StringUtils.mapToString(getProcessedParams(metadata, graphWrapper), "=", "\n")); //$NON-NLS-1$ //$NON-NLS-2$
+			logParams(StringUtils.mapToString(processedParams, "=", "\n")); //$NON-NLS-1$ //$NON-NLS-2$
 		}
 	}
 	
