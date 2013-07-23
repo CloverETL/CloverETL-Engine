@@ -626,17 +626,21 @@ public class DBExecute extends Node {
     				int index = 0;
     				//read statements from byte channel
     				while ((statementRecord = parser.getNext(statementRecord)) != null) {
+    					String statement = statementRecord.getField(0).toString();
+    					if (statement.trim().isEmpty()) {
+    						continue;
+    					}
     					if (printStatements) {
-    						logger.info("Executing  statement: " + statementRecord.getField(0).toString());
+							logger.info("Executing  statement: " + statement);
     					}
     					try {
     						if (procedureCall) {
     							callableStatement[0] = new SQLCloverCallableStatement(connection, 
-    									statementRecord.getField(0).toString(), null, outRecord, dbConnection.getResultSetType());
+    									statement, null, outRecord, dbConnection.getResultSetType());
     							callableStatement[0].prepareCall();
     							executeCall(callableStatement[0], index);
     						}else{
-    							sqlStatement.executeUpdate(statementRecord.getField(0).toString());
+    							sqlStatement.executeUpdate(statement);
     						}
     					} catch (SQLException e) {
     						handleException(e, null, index);
