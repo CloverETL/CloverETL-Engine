@@ -4240,6 +4240,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("datum", new Date(BORN_MILLISEC_VALUE + 100));
 	}
 	
+	public void test_datelib_dateAdd_expect_error(){
+		try {
+			doCompile("function integer transform(){date d = dateAdd(null,120,second); return 0;}","test_datelib_dateAdd_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = dateAdd(today(),null,second); return 0;}","test_datelib_dateAdd_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = dateAdd(today(),120,null); return 0;}","test_datelib_dateAdd_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_datelib_extractTime() {
 		doCompile("test_datelib_extractTime");
 		Calendar cal = Calendar.getInstance();
