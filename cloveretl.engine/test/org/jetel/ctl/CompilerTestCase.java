@@ -4422,6 +4422,99 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("second3", cal.get(Calendar.SECOND));
 		check("millisecond3", cal.get(Calendar.MILLISECOND));
 	}
+	public void test_datelib_randomDate() {
+		doCompile("test_datelib_randomDate");
+		
+		final long HOUR = 60L * 60L * 1000L;
+		Date BORN_VALUE_NO_MILLIS = new Date(BORN_VALUE.getTime() / 1000L * 1000L);
+		
+		check("noTimeZone1", BORN_VALUE);
+		check("noTimeZone2", BORN_VALUE_NO_MILLIS);
+		
+		check("withTimeZone1", new Date(BORN_VALUE_NO_MILLIS.getTime() + 2*HOUR)); // timezone changes from GMT+5 to GMT+3
+		check("withTimeZone2", new Date(BORN_VALUE_NO_MILLIS.getTime() - 2*HOUR)); // timezone changes from GMT+3 to GMT+5
+		assertNotNull(getVariable("patt_null"));
+	}
+	
+	
+	public void test_datelib_randomDate_expect_error(){
+		try {
+			doCompile("function integer transform(){date a = null; date b = today(); "
+					+ "date d = randomDate(a,b); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date a = today(); date b = null; "
+					+ "date d = randomDate(a,b); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date a = null; date b = null; "
+					+ "date d = randomDate(a,b); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long a = 843484317231l; long b = null; "
+					+ "date d = randomDate(a,b); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long a = null; long b = 12115641158l; "
+					+ "date d = randomDate(a,b); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long a = null; long b = null; "
+					+ "date d = randomDate(a,b); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "string a = null; string b = '2006-11-12'; string pattern='yyyy-MM-dd';"
+					+ "date d = randomDate(a,b,pattern); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "string a = '2006-11-12'; string b = null; string pattern='yyyy-MM-dd';"
+					+ "date d = randomDate(a,b,pattern); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//wrong format
+		try {
+			doCompile("function integer transform(){"
+					+ "string a = '2006-10-12'; string b = '2006-11-12'; string pattern='yyyy:MM:dd';"
+					+ "date d = randomDate(a,b,pattern); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//start date bigger then end date
+		try {
+			doCompile("function integer transform(){"
+					+ "string a = '2008-10-12'; string b = '2006-11-12'; string pattern='yyyy-MM-dd';"
+					+ "date d = randomDate(a,b,pattern); return 0;}","test_datelib_randomDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 	
 //-----------------Convert Lib tests-----------------------
 	public void test_convertlib_cache() {
@@ -5621,19 +5714,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ref_null", null);
 		check("query_empty", null);
 		
-	}
-	
-	public void test_randomlib_randomDate() {
-		doCompile("test_randomlib_randomDate");
-		
-		final long HOUR = 60L * 60L * 1000L;
-		Date BORN_VALUE_NO_MILLIS = new Date(BORN_VALUE.getTime() / 1000L * 1000L);
-		
-		check("noTimeZone1", BORN_VALUE);
-		check("noTimeZone2", BORN_VALUE_NO_MILLIS);
-		
-		check("withTimeZone1", new Date(BORN_VALUE_NO_MILLIS.getTime() + 2*HOUR)); // timezone changes from GMT+5 to GMT+3
-		check("withTimeZone2", new Date(BORN_VALUE_NO_MILLIS.getTime() - 2*HOUR)); // timezone changes from GMT+3 to GMT+5
 	}
 	
 }
