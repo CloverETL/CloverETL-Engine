@@ -4421,7 +4421,62 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("minute3", cal.get(Calendar.MINUTE));
 		check("second3", cal.get(Calendar.SECOND));
 		check("millisecond3", cal.get(Calendar.MILLISECOND));
+		
+		check("year_null", 2013);
+		check("month_null", 6);
+		check("day_null", 11);
+		check("hour_null", 15);
+		check("minute_null", cal.get(Calendar.MINUTE));
+		check("second_null", cal.get(Calendar.SECOND));
+		check("milli_null", cal.get(Calendar.MILLISECOND));
+		
 	}
+	
+	public void test_datelib_getPart_expect_error(){
+		try {
+			doCompile("function integer transform(){integer i = getYear(null); return 0;}","test_datelib_getPart_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getMonth(null); return 0;}","test_datelib_getPart_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getDay(null); return 0;}","test_datelib_getPart_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getHour(null); return 0;}","test_datelib_getPart_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getMinute(null); return 0;}","test_datelib_getPart_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getSecond(null); return 0;}","test_datelib_getPart_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getMillisecond(null); return 0;}","test_datelib_getPart_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_datelib_randomDate() {
 		doCompile("test_datelib_randomDate");
 		
