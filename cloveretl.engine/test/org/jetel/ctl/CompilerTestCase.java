@@ -4235,6 +4235,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_datelib_dateDiff_epect_error(){
+		try {
+			doCompile("function integer transform(){long i = dateDiff(null,today(),millisec);return 0;}","test_datelib_dateDiff_epect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long i = dateDiff(today(),null,millisec);return 0;}","test_datelib_dateDiff_epect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long i = dateDiff(today(),today(),null);return 0;}","test_datelib_dateDiff_epect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_datelib_dateAdd() {
 		doCompile("test_datelib_dateAdd");
 		check("datum", new Date(BORN_MILLISEC_VALUE + 100));
