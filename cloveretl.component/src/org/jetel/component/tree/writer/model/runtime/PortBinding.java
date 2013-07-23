@@ -47,7 +47,6 @@ public class PortBinding {
 	private final DataRecord record;
 	private final int parentPort;
 	private final PortBinding parentBinding;
-	private final DataRecord[] filterData;
 
 	private final RecordFilter recordFilter;
 	private int[] keys;
@@ -69,7 +68,6 @@ public class PortBinding {
 		record.init();
 
 		portIndex = portData.getInPort().getInputPortNumber();
-		this.filterData = new DataRecord[portIndex + 1];
 	}
 
 	protected void setContainer(WritableContainer container) {
@@ -89,7 +87,6 @@ public class PortBinding {
 		} else if (state == MappingWriteState.ALL || state == MappingWriteState.HEADER) {
 			DataRecord[] currentAvailableData = new DataRecord[availableData.length];
 			System.arraycopy(availableData, 0, currentAvailableData, 0, availableData.length);
-			currentAvailableData[portIndex] = record;
 
 			DataRecord keyDataRecord = null;
 			DataRecord nextKeyDataRecord = null;
@@ -112,8 +109,8 @@ public class PortBinding {
 			throws JetelException, IOException {
 		try {
 			if (recordFilter != null) {
-				filterData[portIndex] = writeRecord;
-				if (!recordFilter.isValid(filterData)) {
+				currentAvailableData[portIndex] = writeRecord;
+				if (!recordFilter.isValid(currentAvailableData)) {
 					return;
 				}
 			}
@@ -121,6 +118,7 @@ public class PortBinding {
 			throw new JetelException(e);
 		}
 		record.copyFrom(writeRecord);
+		currentAvailableData[portIndex] = record;
 
 		container.writeContent(formatter, currentAvailableData);
 	}
