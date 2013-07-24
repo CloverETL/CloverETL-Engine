@@ -4098,6 +4098,53 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("absDecimalMinus", new BigDecimal(5.0));
 	}
 	
+	public void test_mathlib_abs_expect_error(){
+		try {
+			doCompile("function integer transform(){ \n "
+					+ "integer tmp;\n "
+					+ "tmp = null; \n"
+					+ " integer i = abs(tmp); \n "
+					+ "return 0;}",
+					"test_mathlib_abs_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){ \n "
+					+ "long tmp;\n "
+					+ "tmp = null; \n"
+					+ "long i = abs(tmp); \n "
+					+ "return 0;}",
+					"test_mathlib_abs_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){ \n "
+					+ "double tmp;\n "
+					+ "tmp = null; \n"
+					+ "double i = abs(tmp); \n "
+					+ "return 0;}",
+					"test_mathlib_abs_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){ \n "
+					+ "decimal tmp;\n "
+					+ "tmp = null; \n"
+					+ "decimal i = abs(tmp); \n "
+					+ "return 0;}",
+					"test_mathlib_abs_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_mathlib_ceil() {
 		doCompile("test_mathlib_ceil");
 		check("ceil1", -3.0);
