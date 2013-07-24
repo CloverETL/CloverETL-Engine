@@ -10,7 +10,7 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="UniqueVisits-MongoDB" graphFile="jobflow/UniqueVisits-MongoDB.jbf" excludedEtlEnvironment="engine">
-		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
+		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors_mongo.txt"/>
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>
 
