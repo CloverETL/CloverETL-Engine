@@ -4135,12 +4135,41 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultInt2", 4);
 		check("resultInt3", 10);
 		check("resultInt4", 20);
+		check("resultInt5", -2147483648);
 		check("resultLong1", 2l);
 		check("resultLong2", 4l);
 		check("resultLong3", 10l);
 		check("resultLong4", 20l);
+		check("resultLong5",-9223372036854775808l);
 	}
 
+	public void test_bitwise_lshift_expect_error(){
+		try {
+			doCompile("function integer transform(){integer input = null; integer i = bitLShift(input,2); return 0;}","test_bitwise_lshift_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; integer i = bitLShift(44,input); return 0;}","test_bitwise_lshift_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; long i = bitLShift(input,4l); return 0;}","test_bitwise_lshift_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; long i = bitLShift(444l,input); return 0;}","test_bitwise_lshift_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_bitwise_rshift() {
 		doCompile("test_bitwise_rshift");
 		check("resultInt1", 2);
