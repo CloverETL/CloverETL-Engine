@@ -4168,6 +4168,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		
 	}
 	
 	public void test_bitwise_rshift() {
@@ -4186,6 +4187,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_bitwise_negate");
 		check("resultInt", -59081717);
 		check("resultLong", -3321654987654105969L);
+	}
+	
+	public void test_bitwise_negate_expect_error(){
+		try {
+			doCompile("function integer transform(){integer input = null; integer i = bitNegate(input); return 0;}","test_bitwise_negate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; long i = bitNegate(input); return 0;}","test_bitwise_negate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	public void test_set_bit() {
