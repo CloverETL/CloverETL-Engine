@@ -8,6 +8,8 @@ long resultLong2;
 long resultLong3;
 long resultLong4;
 long resultLong5;
+long test_mixed1;
+long test_mixed2;
 
 function integer transform() {
 
@@ -21,5 +23,10 @@ function integer transform() {
 	resultLong3 = bitLShift(5l,1l);
 	resultLong4 = bitLShift(5l,2l);
 	resultLong5 = bitLShift(1l,-1l);
+//	test_mixed1 = bitLShift(22,3l);
+//	test_mixed2 = bitLShift(77l,3);
+//	printErr(test_mixed1);
+//	printErr(test_mixed2);
+	
 	return 0;
 }
