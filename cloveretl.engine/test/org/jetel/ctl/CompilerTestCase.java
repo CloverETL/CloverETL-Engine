@@ -4008,6 +4008,29 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 //-------------------------- MathLib Tests ------------------------
+	public void test_bitwise_bitIsSet(){
+		doCompile("test_bitwise_bitIsSet");
+		check("test1", true);
+		check("test2", false);
+		check("test3", false);
+		check("test4", false);
+	}
+	
+	public void test_bitwise_bitIsSet_expect_error(){
+		try {
+			doCompile("function integer transform(){integer i = null; boolean b = bitIsSet(i,3); return 0;}","test_bitwise_bitIsSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = null; boolean b = bitIsSet(11,i); return 0;}","test_bitwise_bitIsSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_bitwise_or() {
 		doCompile("test_bitwise_or");
 		check("resultInt1", 1);
