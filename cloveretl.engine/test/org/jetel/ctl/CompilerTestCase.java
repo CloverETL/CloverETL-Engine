@@ -4220,6 +4220,54 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 0l);
 		check("resultLong3", 4l);
 		check("resultLong4", 2l);
+		check("test_neg1", 0);
+		check("test_neg2", 0);
+		check("test_neg3", 0l);
+		check("test_neg4", 0l);
+		
+	}
+	
+	public void test_bitwise_rshift_expect_error(){
+		try {
+			doCompile("function integer transform(){"
+					+ "integer var1 = 23;"
+					+ "integer var2 = null;"
+					+ "integer i = bitRShift(var1,var2);"
+					+ "return 0;}","test_bitwise_rshift_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "integer var1 = null;"
+					+ "integer var2 = 78;"
+					+ "integer u = bitRShift(var1,var2);"
+					+ "return 0;}","test_bitwise_rshift_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "long var1 = 23l;"
+					+ "long  var2 = null;"
+					+ "long l =bitRShift(var1,var2);"
+					+ "return 0;}","test_bitwise_rshift_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "long var1 = null;"
+					+ "long  var2 = 84l;"
+					+ "long l = bitRShift(var1,var2);"
+					+ "return 0;}","test_bitwise_rshift_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
 	}
 
 	public void test_bitwise_negate() {
