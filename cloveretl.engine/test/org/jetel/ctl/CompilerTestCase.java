@@ -4030,8 +4030,54 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 1l);
 		check("resultLong3", 0l);
 		check("resultLong4", 1l);
+//CLO-1385
+//		check("test_mixed1", 12l);
+//		check("test_mixed2", 12l);
 	}
 
+	public void test_bitwise_and_expect_error(){
+		try {
+			doCompile("function integer transform(){\n"
+					+ "integer a = null; integer b = 16;\n"
+					+ "integer i = bitAnd(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_end_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "integer a = 16; integer b = null;\n"
+					+ "integer i = bitAnd(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_end_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "long a = 16l; long b = null;\n"
+					+ "long i = bitAnd(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_end_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "long a = null; long b = 10l;\n"
+					+ "long i = bitAnd(a,b);\n"
+					+ "return 0;}",
+					"test_bitwise_end_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_bitwise_xor() {
 		doCompile("test_bitwise_xor");
 		check("resultInt1", 1);
