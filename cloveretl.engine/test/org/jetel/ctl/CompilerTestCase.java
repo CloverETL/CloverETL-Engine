@@ -4058,6 +4058,45 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong3", 3l);
 		check("resultLong4", 3l);
 	}
+	
+	public void test_bitwise_or_expect_error(){
+		try {
+			doCompile("function integer transform(){"
+					+ "integer input1 = 12; "
+					+ "integer input2 = null; "
+					+ "integer i = bitOr(input1, input2); return 0;}","test_bitwise_or_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "integer input1 = null; "
+					+ "integer input2 = 13; "
+					+ "integer i = bitOr(input1, input2); return 0;}","test_bitwise_or_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "long input1 = null; "
+					+ "long input2 = 13l; "
+					+ "long i = bitOr(input1, input2); return 0;}","test_bitwise_or_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "long input1 = 23l; "
+					+ "long input2 = null; "
+					+ "long i = bitOr(input1, input2); return 0;}","test_bitwise_or_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 
 	public void test_bitwise_and() {
 		doCompile("test_bitwise_and");
