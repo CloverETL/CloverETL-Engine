@@ -6,6 +6,8 @@ long resultLong1;
 long resultLong2;
 long resultLong3;
 long resultLong4;
+long test_mixed1;
+long test_mixed2;
 
 function integer transform() {
 
@@ -17,6 +19,9 @@ function integer transform() {
 	resultLong2 = bitAnd(1l,1l);
 	resultLong3 = bitAnd(2l,1l);
 	resultLong4 = bitAnd(3l,1l);
-	
+	test_mixed1 = bitAnd(6,12l);
+	printErr(test_mixed1);	
+	test_mixed2 = bitAnd(6l,12);
+	printErr(test_mixed2);
 	return 0;
 }
