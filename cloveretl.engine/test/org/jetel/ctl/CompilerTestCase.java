@@ -4014,6 +4014,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test2", false);
 		check("test3", false);
 		check("test4", false);
+		check("test5", true);
+		check("test6", false);
+		check("test7", false);
+		check("test8", false);
 	}
 	
 	public void test_bitwise_bitIsSet_expect_error(){
@@ -4025,6 +4029,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){integer i = null; boolean b = bitIsSet(11,i); return 0;}","test_bitwise_bitIsSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long i = null; boolean b = bitIsSet(i,3); return 0;}","test_bitwise_bitIsSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long i = 12l; boolean b = bitIsSet(i,null); return 0;}","test_bitwise_bitIsSet_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
