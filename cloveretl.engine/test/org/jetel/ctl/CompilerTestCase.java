@@ -4187,6 +4187,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_bitwise_negate");
 		check("resultInt", -59081717);
 		check("resultLong", -3321654987654105969L);
+		check("test_zero_int", -1);
+		check("test_zero_long", -1l);
 	}
 	
 	public void test_bitwise_negate_expect_error(){
