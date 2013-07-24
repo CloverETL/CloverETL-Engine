@@ -20,8 +20,6 @@ function integer transform() {
 	resultLong3 = bitAnd(2l,1l);
 	resultLong4 = bitAnd(3l,1l);
 	test_mixed1 = bitAnd(6,12l);
-	printErr(test_mixed1);	
 	test_mixed2 = bitAnd(6l,12);
-	printErr(test_mixed2);
 	return 0;
 }
