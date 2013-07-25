@@ -4240,6 +4240,45 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong3", 3l);
 		check("resultLong4", 2l);
 	}
+	
+	public void test_bitwise_xor_expect_error(){
+		try {
+			doCompile("function integer transform(){"
+					+ "integer var1 = null;"
+					+ "integer var2 = 123;"
+					+ "integer i = bitXor(var1,var2); return 0;}","test_bitwise_xor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "integer var1 = 23;"
+					+ "integer var2 = null;"
+					+ "integer i = bitXor(var1,var2); return 0;}","test_bitwise_xor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "long var1 = null;"
+					+ "long var2 = 123l;"
+					+ "long i = bitXor(var1,var2); return 0;}","test_bitwise_xor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "long var1 = 2135l;"
+					+ "long var2 = null;"
+					+ "long i = bitXor(var1,var2); return 0;}","test_bitwise_xor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 
 	public void test_bitwise_lshift() {
 		doCompile("test_bitwise_lshift");
