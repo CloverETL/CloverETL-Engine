@@ -4008,6 +4008,79 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 //-------------------------- MathLib Tests ------------------------
+	public void test_bitwise_bitSet(){
+		doCompile("test_bitwise_bitSet");
+		check("test1", 3);
+		check("test2", 15);
+		check("test3", 34);
+		check("test4", 3l);
+		check("test5", 15l);
+		check("test6", 34l);
+	}
+	
+	public void test_bitwise_bitSet_expect_error(){
+		try {
+			doCompile("function integer transform(){"
+					+ "integer var1 = null;"
+					+ "integer var2 = 3;"
+					+ "boolean var3 = false;"
+					+ "integer i = bitSet(var1,var2,var3); return 0;}","test_bitwise_bitSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "integer var1 = 512;"
+					+ "integer var2 = null;"
+					+ "boolean var3 = false;"
+					+ "integer i = bitSet(var1,var2,var3); return 0;}","test_bitwise_bitSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "integer var1 = 512;"
+					+ "integer var2 = 3;"
+					+ "boolean var3 = null;"
+					+ "integer i = bitSet(var1,var2,var3); return 0;}","test_bitwise_bitSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "long var1 = 512l;"
+					+ "integer var2 = 3;"
+					+ "boolean var3 = null;"
+					+ "long i = bitSet(var1,var2,var3); return 0;}","test_bitwise_bitSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "long var1 = 512l;"
+					+ "integer var2 = null;"
+					+ "boolean var3 = true;"
+					+ "long i = bitSet(var1,var2,var3); return 0;}","test_bitwise_bitSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "long var1 = null;"
+					+ "integer var2 = 3;"
+					+ "boolean var3 = true;"
+					+ "long i = bitSet(var1,var2,var3); return 0;}","test_bitwise_bitSet_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_bitwise_bitIsSet(){
 		doCompile("test_bitwise_bitIsSet");
 		check("test1", true);
