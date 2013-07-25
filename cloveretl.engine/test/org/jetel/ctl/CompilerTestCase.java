@@ -4489,6 +4489,33 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimalResult", Arrays.asList(3.0, -3.0));
 	}
 	
+	public void test_mathlib_ceil_expect_error(){
+		try {
+			doCompile("function integer transform(){integer var = null; double d = ceil(var); return 0;}","test_mathlib_ceil_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long var = null; double d = ceil(var); return 0;}","test_mathlib_ceil_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){double var = null; double d = ceil(var); return 0;}","test_mathlib_ceil_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal var = null; double d = ceil(var); return 0;}","test_mathlib_ceil_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_mathlib_e() {
 		doCompile("test_mathlib_e");
 		check("varE", Math.E);
