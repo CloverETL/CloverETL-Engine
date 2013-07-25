@@ -4688,6 +4688,57 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimalResult", Arrays.asList(8d, 8d, 8d, 8d));
 	}
 	
+	public void test_mathlib_pow_expect_error(){
+		try {
+			doCompile("function integer transform(){integer var1 = 12; integer var2 = null; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer var1 = null; integer var2 = 2; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long var1 = 12l; long var2 = null; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long var1 = null; long var2 = 12L; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number var1 = 12.2; number var2 = null; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number var1 = null; number var2 = 2.1; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal var1 = 12.2d; decimal var2 = null; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal var1 = null; decimal var2 = 45.3d; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_mathlib_round() {
 		doCompile("test_mathlib_round");
 		check("round1", -4l);
