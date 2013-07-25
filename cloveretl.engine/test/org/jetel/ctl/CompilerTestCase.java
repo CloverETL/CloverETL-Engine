@@ -4603,6 +4603,37 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_mathlib_log() {
 		doCompile("test_mathlib_log");
 		check("ln", Math.log(3));
+		check("test_int", Math.log(32));
+		check("test_long", Math.log(14l));
+		check("test_double", Math.log(12.9));
+		check("test_decimal", Math.log(23.7));
+	}
+	
+	public void test_math_log_expect_error(){
+		try {
+			doCompile("function integer transform(){integer input = null; number n = log(input); return 0;}","test_math_log_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){long input = null; number n = log(input); return 0;}","test_math_log_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; number n = log(input); return 0;}","test_math_log_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){double input = null; number n = log(input); return 0;}","test_math_log_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
 	}
 	
 	public void test_mathlib_log10() {
