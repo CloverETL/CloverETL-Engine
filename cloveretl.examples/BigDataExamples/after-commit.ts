@@ -18,12 +18,12 @@
 		and thus it is placed in data-tmp -->
 	<FunctionalTest ident="SetHadoopParameters" graphFile="data-tmp/setParameters.grf" excludedEtlEnvironment="engine" />
 	
-	<FunctionalTest ident="UniqueVisits-HadoopHive" graphFile="jobflow/UniqueVisits-HadoopHive.jbf" excludedEtlEnvironment="engine">
+	<FunctionalTest ident="UniqueVisits-HadoopHive" graphFile="jobflow/UniqueVisits-HadoopHive.jbf" excludedEtlEnvironment="engine" excludedContainers="websphere7">
 		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="UniqueVisits-HadoopMapReduce" graphFile="jobflow/UniqueVisits-HadoopMapReduce.jbf" excludedEtlEnvironment="engine">
+	<FunctionalTest ident="UniqueVisits-HadoopMapReduce" graphFile="jobflow/UniqueVisits-HadoopMapReduce.jbf" excludedEtlEnvironment="engine" excludedContainers="websphere7">
 		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
 		<DeleteFile file="data-tmp/unique_visitors.txt"/>
 	</FunctionalTest>
