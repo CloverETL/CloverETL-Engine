@@ -4524,6 +4524,37 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_mathlib_exp() {
 		doCompile("test_mathlib_exp");
 		check("ex", Math.exp(1.123));
+		check("test1", Math.exp(2));
+		check("test2", Math.exp(22));
+		check("test3", Math.exp(23));
+		check("test4", Math.exp(94));
+	}
+	
+	public void test_mathlib_exp_expect_error(){
+		try {
+			doCompile("function integer transform(){integer input = null; number n = exp(input); return 0;}","test_mathlib_exp_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; number n = exp(input); return 0;}","test_mathlib_exp_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){double input = null; number n = exp(input); return 0;}","test_mathlib_exp_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number input = null; number n = exp(input); return 0;}","test_mathlib_exp_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_mathlib_floor() {
