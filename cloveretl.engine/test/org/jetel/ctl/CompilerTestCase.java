@@ -4754,6 +4754,39 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("sqrtPi", Math.sqrt(Math.PI));
 		check("sqrt9", Math.sqrt(9));
 	}
+	
+	public void test_mathlib_randomInteger(){
+		doCompile("test_mathlib_randomInteger");
+		assertNotNull(getVariable("test1"));
+		check("test2", 2);
+	}
+	
+	public void test_mathlib_randomInteger_expect_error(){
+		try {
+			doCompile("function integer transform(){integer i = randomInteger(1,null); return 0;}","test_mathlib_randomInteger_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = randomInteger(null,null); return 0;}","test_mathlib_randomInteger_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = randomInteger(null, -3); return 0;}","test_mathlib_randomInteger_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = randomInteger(1,-7); return 0;}","test_mathlib_randomInteger_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 
 //-------------------------DateLib tests----------------------
 	
