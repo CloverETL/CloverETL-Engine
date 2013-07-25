@@ -4224,6 +4224,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test_neg2", 0);
 		check("test_neg3", 0l);
 		check("test_neg4", 0l);
+//		CLO-1399
+//		check("test_mix1", 2);
+//		check("test_mix2", 2);
 		
 	}
 	
