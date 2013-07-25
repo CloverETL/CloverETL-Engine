@@ -21,7 +21,9 @@ package org.jetel.graph;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channels;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,6 +51,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
@@ -58,6 +61,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -172,7 +176,9 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String SEQUENCE_ELEMENT = "Sequence";
 	public final static String LOOKUP_TABLE_ELEMENT = "LookupTable";
 	private final static String METADATA_RECORD_ELEMENT = "Record";
-	private final static String PROPERTY_ELEMENT = "Property";
+	private final static String PROPERTY_ELEMENT = "Property"; //old-fashion graph parameters
+	private final static String GRAPH_PARAMETER_ELEMENT = "GraphParameter"; //new graph parameters
+	private final static String GRAPH_PARAMETERS_ELEMENT = "GraphParameters";
 	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
@@ -267,14 +273,11 @@ public class TransformationGraphXMLReaderWriter {
 			}
 
 		}catch(SAXParseException ex){
-			logger.error("Error when parsing graph's XML definition  --> on line "+ex.getLineNumber()+" row "+ex.getColumnNumber(),ex); 
-			throw new XMLConfigurationException(ex);
+			throw new XMLConfigurationException("Error when parsing graph's XML definition  --> on line "+ex.getLineNumber()+" row "+ex.getColumnNumber(), ex);
         }catch (ParserConfigurationException ex) {
-			logger.error("Error when parsing graph's XML definition",ex);
-            throw new XMLConfigurationException(ex);
+            throw new XMLConfigurationException("Error when parsing graph's XML definition", ex);
 		}catch (Exception ex) {
-            logger.error("Error when parsing graph's XML definition",ex);
-            throw new XMLConfigurationException(ex);
+            throw new XMLConfigurationException("Error when parsing graph's XML definition", ex);
 		}
 		
 		return document;
@@ -366,10 +369,14 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setGuiVersion(grfAttributes.getString(GUI_VERSION_ATTRIBUTE, null));
 	        graph.setJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
 	
-			// handle all defined Properties
+			// handle all defined graph parameters - old-fashion
 			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
 			instantiateProperties(PropertyElements);
-	
+
+			// handle all defined graph parameters - new-fashion
+			List<Element> graphParametersElements = getChildElements(getGlobalElement(document), GRAPH_PARAMETERS_ELEMENT);
+			instantiateGraphParameters(graphParametersElements);
+
 			// handle dictionary
 			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
 			instantiateDictionary(dictionaryElements);
@@ -408,6 +415,21 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
+
+	/**
+	 * Return 'Global' XML element, direct child of 'Graph' element.
+	 */
+	private Element getGlobalElement(Document document) throws XMLConfigurationException {
+		List<Element> global = getChildElements(document.getDocumentElement(), "Global");
+		if (global.size() == 0) {
+			return null;
+		} else if (global.size() == 1) {
+			return global.get(0);
+		} else {
+			throwXMLConfigurationException("Multiple Global XML element.");
+			return global.get(0);
+		}
+	}
 
 	/**
 	 *  Description of the Method
@@ -782,6 +804,102 @@ public class TransformationGraphXMLReaderWriter {
         }
 	}
 
+	/**
+	 * Load single graph parameter.
+	 */
+	private void instantiateGraphParameter(Element graphParameter) {
+    	graph.getGraphProperties().setPropertySafe(graphParameter.getAttribute("name"), graphParameter.getAttribute("value"));
+	}
+
+	/**
+	 * Load parameter file.
+	 */
+	private boolean instantiateGraphParametersFile(Element graphParameterFile) throws XMLConfigurationException {
+		if (!graphParameterFile.hasAttribute("fileURL")) {
+			throwXMLConfigurationException("A graph parameter file does not specify fileURL attribute.");
+			return true;
+		}
+    	String fileURL = graphParameterFile.getAttribute("fileURL");
+    	String resolvedFileURL = graph.getPropertyRefResolver().resolveRef(fileURL);
+    	
+		if (!PropertyRefResolver.containsProperty(resolvedFileURL)) {
+			instantiateGraphParametersFile(resolvedFileURL);
+	    	return true;
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Load parameter file.
+	 */
+	private void instantiateGraphParametersFile(String resolvedFileURL) throws XMLConfigurationException {
+		InputStream is = null;
+        try {
+        	is = Channels.newInputStream(FileUtils.getReadableChannel(ContextProvider.getContextURL(), resolvedFileURL));
+        	Document document = prepareDocument(is);
+        	instantiateGraphParameters(Arrays.asList(document.getDocumentElement()));
+        } catch (Exception e) {
+        	try {
+        		graph.loadGraphPropertiesSafe(resolvedFileURL);
+        	} catch(IOException ex) {
+        		throwXMLConfigurationException("Can't load property definition from " + resolvedFileURL, ex);
+        	}
+        } finally {
+        	if (is != null) {
+        		try {
+        			is.close();
+        		} catch (IOException e) {
+        			//DO NOTHING
+        		}
+        	}
+        }
+	}
+	
+	/**
+	 * Graph parameters loading.
+	 * @throws XMLConfigurationException 
+	 */
+	private void instantiateGraphParameters(List<Element> graphParametersElements) throws XMLConfigurationException {
+		if (graphParametersElements.isEmpty()) {
+			return;
+		}
+		if (graphParametersElements.size() > 1) {
+			throw new JetelRuntimeException("XML element GraphParameters has max occurences 1, but is " + graphParametersElements.size());
+		}
+
+		List<Element> unresolvedGraphParametersFiles = new ArrayList<Element>();
+		List<Element> graphParameterElements = getChildElements(graphParametersElements.get(0), null);
+		for (Element graphParameterElement : graphParameterElements) {
+			if (graphParameterElement.getNodeName().equals(GRAPH_PARAMETER_ELEMENT)) {
+				instantiateGraphParameter(graphParameterElement);
+			} else if (graphParameterElement.getNodeName().equals(GRAPH_PARAMETERS_ELEMENT)) {
+				if (!instantiateGraphParametersFile(graphParameterElement)) {
+					unresolvedGraphParametersFiles.add(graphParameterElement);
+				}
+			} else {
+				throwXMLConfigurationException("Unexpected XML element " + graphParameterElement.getNodeName());
+			}
+		}
+
+	    // now try to resolve parameters from file which have fileURL with property reference
+		boolean progress = true;
+		while (!unresolvedGraphParametersFiles.isEmpty() && progress) {
+			progress = false;
+			for (Element graphParameterFile : unresolvedGraphParametersFiles) {
+				if (instantiateGraphParametersFile(graphParameterFile)) {
+					progress = true;
+				}
+			}
+			if (!progress) {
+		    	throwXMLConfigurationException("Failed to resolve following parameter file URL: " + unresolvedGraphParametersFiles.get(0).getAttribute("fileURL"));
+			}
+		}
+	}
+	
+	/**
+	 * Old-fashion graph parameters loading.
+	 */
 	private void instantiateProperties(NodeList propertyElements) throws  XMLConfigurationException {
 		List<String> unresolvedUrls = new ArrayList<String>();
 	    // loop through all property elements & create appropriate properties
@@ -794,11 +912,7 @@ public class TransformationGraphXMLReaderWriter {
         			unresolvedUrls.add(fileURL);
         			continue;
         		}
-	        	try {
-	        		graph.loadGraphPropertiesSafe(fileURL);
-	        	} catch(IOException ex) {
-	        		throwXMLConfigurationException("Can't load property definition from " + fileURL, ex);
-	        	}
+        		instantiateGraphParametersFile(fileURL);
 	        } else if (propertyElement.hasAttribute("name")) {
 	        	graph.getGraphProperties().setPropertySafe(propertyElement.getAttribute("name"), propertyElement.getAttribute("value"));
 	        } else {
@@ -819,11 +933,7 @@ public class TransformationGraphXMLReaderWriter {
 		    	if (PropertyRefResolver.containsProperty(resolvedUrl)) {
 		    		stillUnresolvedUrls.add(resolvedUrl);
 		    	} else {
-		        	try {
-		        		graph.loadGraphPropertiesSafe(resolvedUrl);
-		        	} catch(IOException ex) {
-		        		throwXMLConfigurationException("Can't load property definition from " + resolvedUrl, ex);
-		        	}
+		    		instantiateGraphParametersFile(resolvedUrl);
 		    	}
 		    }
 		    
@@ -910,6 +1020,25 @@ public class TransformationGraphXMLReaderWriter {
 	    }
 	}
 
+	/**
+	 * @param parent parent element
+	 * @param elementName name of requested child elements, if null, all child elements are returned
+	 * @return list of direct child elements
+	 */
+	private List<Element> getChildElements(Element parent, String elementName) {
+		List<Element> result = new ArrayList<Element>();
+		if (parent != null) {
+			NodeList children = parent.getChildNodes();
+			for (int i = 0; i < children.getLength(); i++) {
+				if (children.item(i) instanceof Element &&
+						(elementName == null || elementName.equals(children.item(i).getNodeName()))) {
+					result.add((Element) children.item(i));
+				}
+			}
+		}
+		return result;
+	}
+	
 	private void throwXMLConfigurationException(String message) throws XMLConfigurationException {
 		throwXMLConfigurationException(message, null);
 	}
