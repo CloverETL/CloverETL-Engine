@@ -4567,6 +4567,39 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimalResult", Arrays.asList(2.0, -4.0));
 	}
 	
+	public void test_math_lib_floor_expect_error(){
+		try {
+			doCompile("function integer transform(){integer input = null; double d = floor(input); return 0;}","test_math_lib_floor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input= null; double d = floor(input); return 0;}","test_math_lib_floor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){double input = null; double d = floor(input); return 0;}","test_math_lib_floor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; double d = floor(input); return 0;}","test_math_lib_floor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number input = null; double d = floor(input); return 0;}","test_math_lib_floor_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_mathlib_log() {
 		doCompile("test_mathlib_log");
 		check("ln", Math.log(3));
