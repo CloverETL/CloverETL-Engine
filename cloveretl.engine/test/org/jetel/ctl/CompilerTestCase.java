@@ -4788,6 +4788,39 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 
+	public void test_mathlib_randomLong(){
+		doCompile("test_mathlib_randomLong");
+		assertNotNull(getVariable("test1"));
+		check("test2", 15L);
+	}
+	
+	public void test_mathlib_randomLong_expect_error(){
+		try {
+			doCompile("function integer transform(){long lo = randomLong(15L, null); return 0;}","test_mathlib_randomLong_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long lo = randomLong(null, null); return 0;}","test_mathlib_randomLong_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long lo = randomLong(null, 15L); return 0;}","test_mathlib_randomLong_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long lo = randomLong(15L, 10L); return 0;}","test_mathlib_randomLong_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 //-------------------------DateLib tests----------------------
 	
 	public void test_datelib_cache() {
