@@ -2757,11 +2757,60 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_containerlib_append() {
 		doCompile("test_containerlib_append");
-		
 		check("appendElem", Integer.valueOf(10));
 		check("appendList", Arrays.asList(1, 2, 3, 4, 5, 10));
+		check("stringList", Arrays.asList("horse","is","pretty","scary"));
+		check("stringList2", Arrays.asList("horse", null));
+		check("stringList3", Arrays.asList("horse", ""));
+		check("integerList1", Arrays.asList(1,2,3,4));
+		check("integerList2", Arrays.asList(1,2,null));
+		check("numberList1", Arrays.asList(0.21,1.1,2.2));
+		check("numberList2", Arrays.asList(1.1,null));
+		check("longList1", Arrays.asList(1l,2l,3L));
+		check("longList2", Arrays.asList(9L,null));
+		check("decList1", Arrays.asList(new BigDecimal("2.3"),new BigDecimal("4.5"),new BigDecimal("6.7")));
+		check("decList2",Arrays.asList(new BigDecimal("1.1"), null));
 	}
 
+	public void test_containerlib_append_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] listInput = null; append(listInput,'aa'); return 0;}","test_containerlib_append_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte[] listInput = null; append(listInput,str2byte('third', 'utf-8')); return 0;}","test_containerlib_append_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long[] listInput = null; append(listInput,15L); return 0;}","test_containerlib_append_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] listInput = null; append(listInput,12); return 0;}","test_containerlib_append_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal[] listInput = null; append(listInput,12.5d); return 0;}","test_containerlib_append_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number[] listInput = null; append(listInput,12.36); return 0;}","test_containerlib_append_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	public void test_containerlib_clear() {
 		doCompile("test_containerlib_clear");
