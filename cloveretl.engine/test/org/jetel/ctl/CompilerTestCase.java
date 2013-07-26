@@ -4768,6 +4768,37 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_mathlib_sqrt");
 		check("sqrtPi", Math.sqrt(Math.PI));
 		check("sqrt9", Math.sqrt(9));
+		check("test_int", 2.0);
+		check("test_long", Math.sqrt(64L));
+		check("test_num", Math.sqrt(86.9));
+		check("test_dec", Math.sqrt(34.5));
+	}
+	
+	public void test_mathlib_sqrt_expect_error(){
+		try {
+			doCompile("function integer transform(){integer input = null; number num = sqrt(input);return 0;}","test_mathlib_sqrt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; number num = sqrt(input);return 0;}","test_mathlib_sqrt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number input = null; number num = sqrt(input);return 0;}","test_mathlib_sqrt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; number num = sqrt(input);return 0;}","test_mathlib_sqrt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_mathlib_randomInteger(){
