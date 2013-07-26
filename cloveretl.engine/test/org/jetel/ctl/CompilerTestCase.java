@@ -4749,6 +4749,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("decimalResult", Arrays.asList(2l, 4l));
 	}
 	
+	public void test_mathlib_round_expect_error(){
+		try {
+			doCompile("function integer transform(){number input = null; long l = round(input);return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; long l = round(input);return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_mathlib_sqrt() {
 		doCompile("test_mathlib_sqrt");
 		check("sqrtPi", Math.sqrt(Math.PI));
