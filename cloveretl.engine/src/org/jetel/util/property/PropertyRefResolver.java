@@ -501,7 +501,7 @@ public class PropertyRefResolver {
 			List<String> result = new ArrayList<String>();
 			Matcher matcher = propertyPattern.matcher(value);
 			while (matcher.find()) {
-				result.add(matcher.group());
+				result.add(matcher.group(1));
 			}
 			return result;
 		} else {
