@@ -19,7 +19,6 @@
 package org.jetel.connection.jdbc;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.PreparedStatement;
@@ -155,7 +154,7 @@ public class SQLIncremental {
 		}
 	}
 	
-	public SQLIncremental(Properties key, String query, Properties keyValue) throws ComponentNotReadyException{
+	public SQLIncremental(Properties key, String query, Properties keyValue, JdbcSpecific jdbcSpecific) throws ComponentNotReadyException{
 		this.keyDefinition = key;
 		for (Object keyName : keyDefinition.keySet()) {
 			if (!StringUtils.isValidObjectName((String)keyName)) {
@@ -165,6 +164,7 @@ public class SQLIncremental {
 		}
 		this.sqlQuery = query;
 		this.keyValue = keyValue; 
+		this.jdbcSpecific = jdbcSpecific;
 		firstUpdate = new boolean[keyDefinition.size()];
 		Arrays.fill(firstUpdate, true);
 	}
@@ -436,5 +436,9 @@ public class SQLIncremental {
 	private Pattern getKeyFieldPattern() {
 		return Pattern.compile("(" + IncrementalKeyType.getKeyTypePattern() + ")" + "\\((" + 
 				 jdbcSpecific.getDbFieldPattern() + ")\\)" + "(\\!.+)?", Pattern.CASE_INSENSITIVE);//eg. max(dbField)!0
+	}
+	
+	public JdbcSpecific getJdbcSpecific() {
+		return jdbcSpecific;
 	}
 }

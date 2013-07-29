@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360543511" licenseType="Commercial" modified="Mon Mar 18 13:53:36 CET 2013" modifiedBy="Pavel" name="ProcessLog_CloverETL" nature="jobflow" revision="1.26" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360543511" licenseType="Commercial" modified="Thu Jul 18 15:54:26 CEST 2013" modifiedBy="krivanekm" name="ProcessLog_CloverETL" nature="jobflow" revision="1.28" showComponentDetails="true">
 <Global>
 <Metadata id="ExecuteGraph_RunStatus">
 <Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" type="delimited">
@@ -40,13 +41,13 @@ In this example we demonstrate how to produce a simple "uniques per month" repor
 </Note>
 <Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="84" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors):  Pure CloverETL Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="20" y="36">
 <attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="228" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Possible optimization" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="465" x="484" y="119">
 <attr name="text"><![CDATA[
 It is not necessary to split the processing into two steps; the processing could be completely streamlined into a single ETL graph.
 
-However, we wanted to reuse the "Generate Report" step for all three example implementations.
+However, we wanted to reuse the "Generate Report" step for all the example implementations.
 ]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="228" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Pure CloverETL approach" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="252" y="119">

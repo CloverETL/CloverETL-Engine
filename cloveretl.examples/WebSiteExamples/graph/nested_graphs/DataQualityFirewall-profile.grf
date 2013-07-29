@@ -1,15 +1,15 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Jaro" created="Fri Jul 20 16:07:43 CEST 2012" guiVersion="3.4.0.M2" id="1342794061574" licenseType="Commercial" modified="Wed Mar 06 15:08:51 CET 2013" modifiedBy="Pavel" name="profile_incoming" revision="1.33" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?><Graph author="Jaro" created="Fri Jul 20 16:07:43 CEST 2012" guiVersion="3.5.0.M1" id="1342794061574" licenseType="Commercial" modified="Thu Jul 18 11:44:30 CEST 2013" modifiedBy="Raszyk" name="profile_incoming" revision="1.34" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/employees.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="profiling_results" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field delimiter=";" eofAsDelimiter="false" name="inputRecordCount" nullable="true" shift="0" type="long"/>
-<Field delimiter=";" eofAsDelimiter="false" name="firstName__null_cnt" nullable="true" shift="0" type="integer"/>
-<Field delimiter=";" eofAsDelimiter="false" name="lastName__null_cnt" nullable="true" shift="0" type="integer"/>
-<Field delimiter=";" eofAsDelimiter="false" name="sex__null_cnt" nullable="true" shift="0" type="integer"/>
-<Field delimiter=";" eofAsDelimiter="false" name="birthDate__null_cnt" nullable="true" shift="0" type="integer"/>
-<Field delimiter=";" eofAsDelimiter="false" name="hireDate__null_cnt" nullable="true" shift="0" type="integer"/>
-<Field delimiter=";" eofAsDelimiter="false" name="salary__null_cnt" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" eofAsDelimiter="false" name="firstName__null_cnt" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" eofAsDelimiter="false" name="lastName__null_cnt" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" eofAsDelimiter="false" name="sex__null_cnt" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" eofAsDelimiter="false" name="birthDate__null_cnt" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" eofAsDelimiter="false" name="hireDate__null_cnt" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" eofAsDelimiter="false" name="salary__null_cnt" nullable="true" shift="0" type="long"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata2">

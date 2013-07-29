@@ -71,6 +71,6 @@ done;
 
 LOCAL_CLASSPATH="$LOCAL_CLASSPATH:$CLOVER_HOME/plugins/org.jetel.connection/cloveretl.connection.jar"
 
-clover_exec_command="exec \"$JAVACMD\" -classpath \"$LOCAL_CLASSPATH\" org.jetel.connection.jdbc.AnalyzeDB $cmd_line_arguments -plugins $CLOVER_HOME/plugins"
+clover_exec_command="exec \"$JAVACMD\" -classpath \"$LOCAL_CLASSPATH\" org.jetel.connection.jdbc.AnalyzeDB $cmd_line_arguments -plugins \"$CLOVER_HOME/plugins\""
 echo "$clover_exec_command"
 eval "$clover_exec_command"

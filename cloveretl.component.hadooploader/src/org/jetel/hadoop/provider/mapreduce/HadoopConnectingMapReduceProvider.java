@@ -22,16 +22,20 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileOutputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.jetel.hadoop.provider.HadoopConfigurationUtils;
+import org.jetel.hadoop.provider.filesystem.FileSystemRegistry;
 import org.jetel.hadoop.service.mapreduce.HadoopConnectingMapReduceService;
 import org.jetel.hadoop.service.mapreduce.HadoopJobReporter;
 import org.jetel.hadoop.service.mapreduce.HadoopMapReduceConnectionData;
@@ -109,6 +113,8 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 	}
 	
 	private JobClient client;
+	
+	private List<FileSystem> involvedFileSystems; // Part of FileSystem.CACHE workaround, see sendJob(..) method
 
 	@Override
 	public final void connect(HadoopMapReduceConnectionData connData, Properties additionalSettings) throws IOException {
@@ -153,6 +159,12 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 		} finally {
 			client = null;
 		}
+		if (involvedFileSystems != null) {
+			for (FileSystem fs : involvedFileSystems) {
+				releaseFS(fs);
+			}
+			involvedFileSystems = null;
+		}
 	}
 
 	@Override
@@ -174,6 +186,17 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 		String jarFileURL = getJarFileURL(jobDetails.getJobJarFile());
 		job.setJar(jarFileURL);
 		LOGGER.debug(String.format(JOB_CONF_METHOD_USED_MESSAGE, "Job jar file", jarFileURL, jobName));
+		
+		
+		// Workaround for FileSystem.CACHE issues (CLO-730, CLO-728, CLO-1160, ...):
+		// Some Hadoop methods called below will internally create FileSystem instances which will be stored in FileSystem.CACHE.
+		// The aim of the 3 lines below is to retrieve all file systems which the Hadoop methods also retrieve (in the same way) 
+		// so that they can later be closed (in close() method) and not remain stuck unclosed in the cache.
+		involvedFileSystems = new ArrayList<FileSystem>(3);
+		addJobConfFS(job);
+		addJobClientFS();
+		addJobJarFS(job);
+		
 		
 		// Don't use classloader, at least for now; Potential memory leak - loaded classes may sustain in memory
 		// ClassLoader loader = new URLClassLoader(new URL[] { jobDetails.getJobJarFile() }, getClass().getClassLoader());
@@ -275,6 +298,48 @@ public class HadoopConnectingMapReduceProvider implements HadoopConnectingMapRed
 		}
 		
 		return new HadoopRunningJobReporter(client.submitJob(job));
+	}
+
+	private void addJobConfFS(JobConf job) throws IOException {
+		try {
+			FileSystem fs = FileSystem.get(job); // uses e.g. "hdfs://virt-hotel" in FileSystem.CACHE key
+			registerFS(fs);
+		} catch (Exception e) {
+			LOGGER.debug("Failed to get JobConf FS", e);
+		}
+	}
+
+	private void addJobClientFS() throws IOException {
+		try {
+			FileSystem fs = client.getFs(); // uses e.g. "hdfs://virt-hotel.javlin.eu" in FileSystem.CACHE key
+			registerFS(fs);
+		} catch (Exception e) {
+			LOGGER.debug("Failed to get JobClient FS", e);
+		}
+	}
+
+	private void addJobJarFS(JobConf job) throws IOException {
+		try {
+			FileSystem fs = new Path(job.getJar()).getFileSystem(job); // uses "file://" in FileSystem.CACHE key if job .jar file is on local FS
+			registerFS(fs);
+		} catch (Exception e) {
+			LOGGER.debug("Failed to get map/reduce job .jar file FS", e);
+		}
+	}
+
+	private void registerFS(FileSystem fs) {
+		if (fs != null) {
+			FileSystemRegistry.registerFileSystem(fs, this);
+			involvedFileSystems.add(fs);
+		}
+	}
+	
+	private void releaseFS(FileSystem fs) {
+		try {
+			FileSystemRegistry.release(fs, this);
+		} catch (IOException e) {
+			LOGGER.debug("Failed to release FS '" + fs + "'", e);
+		}
 	}
 	
 	private static void setJobConfParam(JobConf jobConf, String paramName, String paramValue, String jobName) {
