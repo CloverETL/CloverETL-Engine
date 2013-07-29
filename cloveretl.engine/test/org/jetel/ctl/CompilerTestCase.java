@@ -2979,6 +2979,41 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_containerlib_containsValue");
 
 		check("results", Arrays.asList(true, false, false, true, false, false, true, false));
+		check("test1", true);
+		check("test2", true);
+		check("test3", false);
+		check("test4", true);
+		check("test5", true);
+		check("test6", false);
+		check("test7", false);
+		check("test8", true);
+		check("test9", true);
+		check("test10", false);
+		check("test11", true);
+		check("test12", true);
+		check("test13", false);
+		check("test14", true);
+		check("test15", true);
+		check("test16", false);
+		check("test17", true);
+		check("test18", true);
+		check("test19", false);
+		check("test20", true);
+		check("test21", true);
+		check("test22", false);
+		check("test23", true);
+		check("test24", true);
+		check("test25", false);
+		check("test26", false);
+	}
+	
+	public void test_convertlib_containsValue_expect_error(){
+		try {
+			doCompile("function integer transform(){map[integer, long] nullMap = null; boolean b = nullMap.containsValue(18L); return 0;}","test_convertlib_containsValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	public void test_containerlib_getKeys() {
