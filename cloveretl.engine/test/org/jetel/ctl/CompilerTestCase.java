@@ -2913,6 +2913,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_containerlib_containsAll");
 
 		check("results", Arrays.asList(true, false, true, false, true, true, true, false, true, true, false));
+		check("test1", true);
+		check("test2", true);
+		check("test3", true);
+		check("test4", false);
+		check("test5", true);
+		check("test6", false);
+		check("test7", true);
+		check("test8", false);
+		check("test9", true);
+		check("test10", false);
+		check("test11", true);
+		check("test12", false);
+		check("test13", false);
+	}
+	
+	public void test_containerlib_containsAll_expect_error(){
+		try {
+			doCompile("function integer transform(){integer[] intList = null; boolean b =intList.containsAll([1]); return 0;}","test_containerlib_containsAll_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	public void test_containerlib_containsKey() {
