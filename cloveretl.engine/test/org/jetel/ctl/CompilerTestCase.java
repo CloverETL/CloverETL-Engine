@@ -2815,7 +2815,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_containerlib_clear() {
 		doCompile("test_containerlib_clear");
 
-		assertTrue(((List<Integer>) getVariable("clearList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("integerList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("strList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("longList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("decList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("numList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("byteList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("dateList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("boolList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("emptyList")).isEmpty());
+	}
+	
+	public void test_container_clear_expect_error(){
+		try {
+			doCompile("function integer transform(){boolean[] nullList = null; clear(nullList); return 0;}","test_container_clear_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_containerlib_copy() {
