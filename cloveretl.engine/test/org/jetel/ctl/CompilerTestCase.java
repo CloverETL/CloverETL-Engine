@@ -2824,11 +2824,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(((List<Integer>) getVariable("dateList")).isEmpty());
 		assertTrue(((List<Integer>) getVariable("boolList")).isEmpty());
 		assertTrue(((List<Integer>) getVariable("emptyList")).isEmpty());
+		assertTrue(((Map<String,Integer>) getVariable("myMap")).isEmpty());
 	}
 	
 	public void test_container_clear_expect_error(){
 		try {
 			doCompile("function integer transform(){boolean[] nullList = null; clear(nullList); return 0;}","test_container_clear_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[integer,string] myMap = null; clear(myMap); return 0;}","test_container_clear_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
