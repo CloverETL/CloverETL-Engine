@@ -76,7 +76,7 @@ public class HadoopConnectingFileSystemProvider implements HadoopConnectingFileS
 		connectionTest(FileSystem.getDefaultUri(config), config);
 		
 		try {
-			dfs = FileSystem.get(FileSystem.getDefaultUri(config), config, connData.getUser());
+			dfs = FileSystemRegistry.getAndRegister(FileSystem.getDefaultUri(config), config, connData.getUser(), this);
 		} catch (InterruptedException ex) {
 			throw new RuntimeException("Hadoop client API internal exception occured.", ex);
 		}
@@ -120,7 +120,7 @@ public class HadoopConnectingFileSystemProvider implements HadoopConnectingFileS
 	public void close() throws IOException {
 		try {
 			if (dfs != null) {
-				dfs.close();
+				FileSystemRegistry.release(dfs, this);
 			}
 		} finally {
 			dfs = null;

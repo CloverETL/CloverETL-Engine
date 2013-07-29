@@ -75,8 +75,8 @@ GOTO :eof
 set "CLOVER_CONNECTION_JAR=%DERIVED_CLOVER_HOME%\plugins\org.jetel.connection\cloveretl.connection.jar"
 set "CLOVER_PLUGINS_DIR=%DERIVED_CLOVER_HOME%\plugins"
 
-echo "%JAVA_CMD%" -classpath "%ENGINE_CLASSPATH%;%CLOVER_CONNECTION_JAR%" org.jetel.connection.jdbc.AnalyzeDB %CMD_LINE_ARGS% -plugins %CLOVER_PLUGINS_DIR%
-"%JAVA_CMD%" -classpath "%ENGINE_CLASSPATH%;%CLOVER_CONNECTION_JAR%" org.jetel.connection.jdbc.AnalyzeDB %CMD_LINE_ARGS% -plugins %CLOVER_PLUGINS_DIR%
+echo "%JAVA_CMD%" -classpath "%ENGINE_CLASSPATH%;%CLOVER_CONNECTION_JAR%" org.jetel.connection.jdbc.AnalyzeDB %CMD_LINE_ARGS% -plugins "%CLOVER_PLUGINS_DIR%"
+"%JAVA_CMD%" -classpath "%ENGINE_CLASSPATH%;%CLOVER_CONNECTION_JAR%" org.jetel.connection.jdbc.AnalyzeDB %CMD_LINE_ARGS% -plugins "%CLOVER_PLUGINS_DIR%"
 set RETURN_CODE=%ERRORLEVEL%
 
 set JAVA_CMD=

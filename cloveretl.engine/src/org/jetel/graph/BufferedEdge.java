@@ -41,6 +41,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @see OutputPort
  *
  */
+//TODO refactor this edge implementation using PersistentBufferQueue
 public class BufferedEdge extends EdgeBase {
 
     private long outputRecordCounter;

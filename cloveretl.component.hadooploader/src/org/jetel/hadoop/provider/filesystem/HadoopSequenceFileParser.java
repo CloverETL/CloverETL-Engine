@@ -44,7 +44,6 @@ import org.jetel.hadoop.component.IHadoopSequenceFileParser;
 import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.hadoop.connection.HadoopURLUtils;
 import org.jetel.hadoop.provider.filesystem.HadoopCloverConvert.Hadoop2Clover;
-import org.jetel.hadoop.service.filesystem.HadoopFileSystemService;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -71,7 +70,7 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 	
 	private IParserExceptionHandler exceptionHandler;
 	
-	private static Logger logger = Logger.getLogger(HadoopSequenceFileParser.class);
+	private static final Logger logger = Logger.getLogger(HadoopSequenceFileParser.class);
 	
 	
 	public HadoopSequenceFileParser(DataRecordMetadata metadata, String keyFieldName, String valueFieldName, String user, Configuration config) {
@@ -176,8 +175,10 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 			ClassLoader formerContextClassloader = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 			try {
-				FileSystem fileSystem = fs != null ? fs : getFileSystem(uri, graph, user, config);
-				reader = new SequenceFile.Reader(fileSystem, new Path(uri.getPath()), config);
+				if (fs == null) {
+					fs = getFileSystem(uri, graph, user, config, this);
+				}
+				reader = new SequenceFile.Reader(fs, new Path(uri.getPath()), config);
 			} catch (IOException e) {
 				throw new ComponentNotReadyException("Failed to create Hadoop sequence file reader", e);
 			} finally {
@@ -209,10 +210,10 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 	/**
 	 * Provides Hadoop FileSystem based on specified URI:
 	 *  - if the URI has "hdfs" scheme and its authority part is a connection ID of a Hadoop connection present in specified graph,
-	 *    returned FileSystem if HDFS {@link DistributedFileSystem} of NameNode defined in that connection.
-	 *  - otherwise Hadoop factory method FileSystem.get(uri, configuration) gets the job done.
+	 *    returned FileSystem is HDFS {@link DistributedFileSystem} of NameNode defined in that connection.
+	 *  - otherwise Hadoop factory method {@link FileSystemRegistry#getAndRegister(URI, Configuration, String, Object)} gets the job done.
 	 */
-	static FileSystem getFileSystem(URI uri, TransformationGraph graph, String user, Configuration configuration) throws ComponentNotReadyException, IOException {
+	static FileSystem getFileSystem(URI uri, TransformationGraph graph, String user, Configuration configuration, Object owner) throws ComponentNotReadyException, IOException {
 		FileSystem fileSystem = null;
 		if (HadoopURLUtils.isHDFSUri(uri)) {
 			final String connectionName = uri.getAuthority();
@@ -226,7 +227,6 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 					throw new ComponentNotReadyException("Invalid HDFS URI: " + uri + ". Reason: '" + connectionName + "' is not an ID of existing Hadoop");
 				}
 				if (conn != null && conn instanceof HadoopConnection) {
-					conn.init(); // try to init - in case it was not already initialized
 					try {
 						fileSystem = (FileSystem) ((HadoopConnection) conn).getFileSystemService().getDFS();
 					} catch (IOException e) {
@@ -242,7 +242,7 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 			// Here it's assumed that if MultiFileReader detects that a local file is to be read, it always
 			// provides to this method an absolute URI (resolved in context of contextURL) with scheme "file" (never null).
 			try {
-				fileSystem = FileSystem.get(uri, configuration, user);
+				fileSystem = FileSystemRegistry.getAndRegister(uri, configuration, user, owner);
 			} catch (InterruptedException e) {
 				throw new IOException("Internal error: failed to retrieve file system", e);
 			}
@@ -261,6 +261,7 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 
 	@Override
 	public void close() throws IOException {
+		releaseFileSystem();
 		if (reader != null) {
 			reader.close();
 		}
@@ -330,7 +331,19 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
-		fs = null;
+		releaseFileSystem();
+	}
+
+
+	private void releaseFileSystem() {
+		if (fs != null) {
+			try {
+				FileSystemRegistry.release(fs, this);
+			} catch (IOException e) {
+				logger.warn("Failed to release file system ", e);
+			}
+			fs = null;
+		}
 	}
 
 	@Override
@@ -359,15 +372,6 @@ public class HadoopSequenceFileParser extends AbstractParser implements IHadoopS
 		this.metadata = metadata;
 	}
 	
-	public void setDFS(FileSystem dfs){
-		this.fs = dfs;
-	}
-
-	@Override
-	public void setHadoopConnection(HadoopFileSystemService conn) {
-		this.fs = (FileSystem)conn.getDFS();
-	}
-
 	@Override
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;

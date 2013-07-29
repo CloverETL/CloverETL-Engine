@@ -11,5 +11,5 @@ REM split command-line arguments to two sets - clover and jvm arguments
 REM and define DERIVED_CLOVER_HOME variable
 call "%~dp0"\commonlib.bat %*
 
-echo %DERIVED_CLOVER_HOME%\bin\clover.bat -noJMX %CLOVER_CMD_LINE_ARGS% - -server -Xmx1024M -XX:+UseParallelGC -classpath %USER_CLASSPATH% %JAVA_CMD_LINE_ARGS%
-%DERIVED_CLOVER_HOME%\bin\clover.bat -noJMX %CLOVER_CMD_LINE_ARGS% - -server -Xmx1024M -XX:+UseParallelGC -classpath %USER_CLASSPATH% %JAVA_CMD_LINE_ARGS%
+echo "%DERIVED_CLOVER_HOME%\bin\clover.bat" -noJMX %CLOVER_CMD_LINE_ARGS% - -server -Xmx1024M -XX:+UseParallelGC -classpath %USER_CLASSPATH% %JAVA_CMD_LINE_ARGS%
+"%DERIVED_CLOVER_HOME%\bin\clover.bat" -noJMX %CLOVER_CMD_LINE_ARGS% - -server -Xmx1024M -XX:+UseParallelGC -classpath %USER_CLASSPATH% %JAVA_CMD_LINE_ARGS%
