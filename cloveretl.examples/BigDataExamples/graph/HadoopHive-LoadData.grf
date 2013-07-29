@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseType="Commercial" modified="Tue Apr 16 14:52:10 CEST 2013" modifiedBy="Raszyk" name="RunJobInHadoopHIVE" revision="1.42" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseType="Commercial" modified="Thu Jul 18 16:10:27 CEST 2013" modifiedBy="krivanekm" name="RunJobInHadoopHIVE" revision="1.43" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
@@ -50,7 +50,7 @@ Loads data from HDFS filesystem into a Hive table. The LOAD DATA command uses ab
 </Note>
 <Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="78" id="Note4" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Big Data - Processing Web Access Log (Unique Visitors):  Hadoop Hive Solution" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="20" y="26">
 <attr name="text"><![CDATA[Report the number of unique visitors per month from a potentially huge web access log using different methods.
-(CloverETL, Hadoop HIVE, and Hadoop MapReduce)]]></attr>
+(CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="38" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This graph is part of the &quot;UniqueVisits-HadoopHive.jbf&quot; jobflow." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="929" x="20" y="103"/>
 <Dictionary/>

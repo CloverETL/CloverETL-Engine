@@ -1,6 +1,13 @@
 *******************************************************************************
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
+REL-3-5-0-M1
+------------
+
+* Windows Share support
+* Improved timezones support
+* JSch library upgraded to 0.1.50
+* Graph bottleneck detection
 
 REL-3-4-1
 ---------

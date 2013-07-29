@@ -35,6 +35,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @see        org.jetel.graph.InputPort
  * @see        org.jetel.graph.OutputPort
  */
+//TODO refactor this edge implementation using CircularBufferQueue
 public class DirectEdgeFastPropagate extends EdgeBase {
     
     protected EdgeRecordBufferPool recordsBuffer;

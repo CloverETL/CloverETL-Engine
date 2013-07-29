@@ -22,7 +22,6 @@ import java.util.Arrays;
 
 import junit.framework.TestCase;
 
-import org.jetel.connection.jdbc.SQLUtil;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -50,17 +49,37 @@ public class SQLSplitterTest extends TestCase {
 		";"
 	};
 	
+	private static final String[] SQL2 = {
+		"-- this completely artificial test;;;of multichar separator ;;;",
+		"THIS IS THE 1st STATEMENT;;;",
+		"ANOTHER STATEMENT HERE",
+		";;;",
+		"/* Let's have a multiline comment ", 
+		" * which is going", 
+		" * to have a separator ;;; inside",
+		" */",
+		"SELECT /* ;;; */ ';;;', count(*) FROM TableOf3thStatement ;;;",
+		"HERE COMES THE LAST (4th) STATEMENT -- followed by a comment ;;; hmmm....", 
+	};
+	
 	private static final String join(String[] input) {
 		return StringUtils.join(Arrays.asList(input), System.getProperty("line.separator"));
 	}
 	
 	private void doTestSplit(String query, int expected) {
-		String[] result = SQLUtil.split(query);
+		doTestSplit(query, ";", expected);
+	}
+	
+	private void doTestSplit(String query, String delimiter, int expected) {
+		String[] result = SQLUtil.split(query, delimiter);
+		if (";".equals(delimiter)) {
+			assertTrue(Arrays.equals(result, SQLUtil.split(query, null)));
+		}
 		System.out.println(Arrays.toString(result));
 		assertEquals(expected, result.length);
-		String joined = StringUtils.join(Arrays.asList(result), ";");
-		if (query.endsWith(";")) {
-			joined = joined + ";";
+		String joined = StringUtils.join(Arrays.asList(result), delimiter);
+		if (query.endsWith(delimiter)) {
+			joined = joined + delimiter;
 		}
 		assertEquals(query, joined);
 	}
@@ -84,4 +103,11 @@ public class SQLSplitterTest extends TestCase {
 		doTestSplit("insert into table_name (column_name) values ('This is a test; ignore this entry');", 1);
 	}
 
+	/**
+	 * Test method for {@link org.jetel.connection.jdbc.SQLUtil#split(String, String)}.
+	 */
+	public void testSplitWithCustomSeparator() {
+		doTestSplit(join(SQL2), ";;;", 4);
+		doTestSplit(join(SQL1), "active", 1);
+	}
 }

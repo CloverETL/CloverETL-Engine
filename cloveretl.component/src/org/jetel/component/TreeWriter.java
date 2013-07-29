@@ -23,13 +23,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -323,7 +323,7 @@ public abstract class TreeWriter extends Node {
 	}
 
 	private Map<Integer, DataRecordMetadata> prepareConnectedData() {
-		Map<Integer, DataRecordMetadata> connectedData = new HashMap<Integer, DataRecordMetadata>();
+		Map<Integer, DataRecordMetadata> connectedData = new TreeMap<Integer, DataRecordMetadata>();
 		for (Entry<Integer, InputPort> entry : inPorts.entrySet()) {
 			connectedData.put(entry.getKey(), entry.getValue().getMetadata());
 		}

@@ -80,7 +80,7 @@ public class SpeedLimiter extends Node {
 	private static final String XML_INPUT_MAPPING_ATTRIBUTE = "inputMapping";
     private static final String DELAY_RECORD_NAME = "Delay";
 
-	public final static String COMPONENT_TYPE = "SPEED_LIMITER";
+	public final static String COMPONENT_TYPE = "SLEEP";
 	private final static int READ_FROM_PORT = 0;
 
 	/** Input record identifier for CTL mappings */

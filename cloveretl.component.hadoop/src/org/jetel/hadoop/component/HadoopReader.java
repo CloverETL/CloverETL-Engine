@@ -390,9 +390,9 @@ public class HadoopReader extends Node {
 	}
 
 	static void checkConnectionIDs(String hadConnId, HadoopConnection usedHadConn, IGraphElement graphElement, ConfigurationStatus status) {
-		if (!StringUtils.isEmpty(hadConnId) && !hadConnId.equalsIgnoreCase(usedHadConn.getId())) {
-			status.add(new ConfigurationProblem("Hadoop connecion with ID '" + usedHadConn.getId() + "' specified in 'File URL' property, ignoring connection with ID '" + hadConnId +
-					"' form 'Hadoop connection' property", ConfigurationStatus.Severity.INFO, graphElement, ConfigurationStatus.Priority.LOW, XML_CONNECTION_ID_ATTRIBUTE));
+		if (!StringUtils.isEmpty(hadConnId) && !hadConnId.equalsIgnoreCase(usedHadConn.getId())) { 
+			status.add(new ConfigurationProblem("Hadoop connecion with ID '" + usedHadConn.getId() + "' is specified in the 'File URL' component property, therefore connection with ID '" + hadConnId +
+					"' form 'Hadoop connection' property will be ignored", ConfigurationStatus.Severity.INFO, graphElement, ConfigurationStatus.Priority.LOW, XML_CONNECTION_ID_ATTRIBUTE));
 		}
 	}
 
