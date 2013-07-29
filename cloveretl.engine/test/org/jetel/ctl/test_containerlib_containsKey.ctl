@@ -20,6 +20,7 @@ boolean test16;
 boolean test17;
 boolean test18;
 boolean test19; 
+boolean test20;
 function integer transform() {
 	for (integer i = 0; i < keys.length(); i++) {
 		results[i] = $in.multivalueInput.stringMapField.containsKey(keys[i]);
@@ -86,5 +87,7 @@ function integer transform() {
 	test18 = longMap.containsKey(12L);
 	test19 = longMap.containsKey(15l);
 	
+	map[string,integer] emptyMap;
+	test20 = emptyMap.containsKey('a');
 	return 0;
 }
