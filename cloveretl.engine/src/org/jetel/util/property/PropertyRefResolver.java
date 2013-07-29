@@ -19,6 +19,7 @@
 package org.jetel.util.property;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -485,7 +486,28 @@ public class PropertyRefResolver {
 	 * @return <code>true</code> if value contains reference to at least one property.
 	 */
 	public static boolean containsProperty(String value){
-		return propertyPattern.matcher(value).find();
+		if (!StringUtils.isEmpty(value)) {
+			return propertyPattern.matcher(value).find();
+		} else {
+			return false;
+		}
 	}
+	
+	/**
+	 * @return list of unresolved parameter references in the given string
+	 */
+	public static List<String> getUnresolvedProperties(String value){
+		if (!StringUtils.isEmpty(value)) {
+			List<String> result = new ArrayList<String>();
+			Matcher matcher = propertyPattern.matcher(value);
+			while (matcher.find()) {
+				result.add(matcher.group());
+			}
+			return result;
+		} else {
+			return Collections.emptyList();
+		}
+	}
+
 }
 
