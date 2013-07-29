@@ -13,6 +13,10 @@ boolean test10;
 boolean test11;
 boolean test12;
 boolean test13;
+boolean test14;
+boolean test15;
+boolean test16;
+
 function integer transform() {
 	results[0] = $in.multivalueInput.stringListField.containsAll(["John", "Doe", "John"]);
 	results[1] = $in.multivalueInput.stringListField.containsAll(["John", "Doe", null]);
@@ -45,6 +49,7 @@ function integer transform() {
 	byte[] byteList =[str2byte('chester','utf-8'),byteTest, null];
 	test7 = byteList.containsAll([null,byteTest]);
 	test8 = byteList.containsAll([str2byte('smile','utf-16')]);
+	test16 = byteList.containsAll([str2byte('chester','utf-8')]);
 
 	number[] numberList = [2.36,null,56.98];
 	test9 = numberList.containsAll([2.36,null]);
@@ -55,6 +60,10 @@ function integer transform() {
 	test12 = decList.containsAll([12.3d]);
 	
 	test13 = emptyList.containsAll([12, 32]);
+	
+	date[] dateList = [null, str2date('12-11-1987','dd-MM-yyyy')];
+	test14 = dateList.containsAll([str2date('12-11-1987','dd-MM-yyyy'), null]);
+	test15 = dateList.containsAll([str2date('10-19-2000','MM-dd-yyyy')]);
 	
 	return 0;
 }
