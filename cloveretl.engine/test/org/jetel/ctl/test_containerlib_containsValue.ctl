@@ -26,6 +26,7 @@ boolean test22;
 boolean test23;
 boolean test24;
 boolean test25;
+boolean test26;
 function integer transform() {
 	for (integer i = 0; i < values.length(); i++) {
 		results[i] = $in.multivalueInput.stringMapField.containsValue(values[i]);
@@ -97,5 +98,7 @@ function integer transform() {
 	test24 = decMap.containsValue(23.34d);
 	test25 = decMap.containsValue(89.354d);
 	
+	map[integer, integer] emptyMap;
+	test26 = emptyMap.containsValue(15);
 	return 0;
 }
