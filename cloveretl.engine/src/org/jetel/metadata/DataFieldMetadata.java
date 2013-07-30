@@ -105,7 +105,7 @@ public class DataFieldMetadata implements Serializable {
 	/** Relative shift of the beginning of the field. */
 	private short shift = 0;
 	/** Indicates if when reading from file try to trim string value to obtain value */
-	private boolean trim = false;
+	private Boolean trim;
 	/** Fields can assume null value by default. */
 	private boolean nullable = true;
 	/** String value that is considered as null (in addition to null itself). */
@@ -231,10 +231,6 @@ public class DataFieldMetadata implements Serializable {
 
 		this.type = fieldType;
 		this.size = size;
-
-		if (isTrimType()) {
-			this.trim = true;
-		}
 
 		setFieldProperties(new Properties());
 	}
@@ -766,9 +762,37 @@ public class DataFieldMetadata implements Serializable {
 	 * @return the value of the trim flag
 	 */
 	public boolean isTrim() {
-		return trim;
+		if (trim == null) {
+			if (getDataType().isTrimType()) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return trim;
+		}
 	}
 
+	/**
+	 * @return true if leading blank characters should be skipped
+	 */
+	public boolean isSkipLeadingBlanks() {
+		return isTrim();
+	}
+	
+	/**
+	 * @return true if trailing blank characters should be skipped
+	 */
+	public boolean isSkipTrailingBlanks() {
+		if (trim == null) {
+			//trailing characters in fixlen metadata are skipped by default
+			if (getDataRecordMetadata().getParsingType() == DataRecordParsingType.FIXEDLEN) {
+				return true;
+			}
+		}
+		return isTrim();
+	}
+	
 	/**
 	 * Sets the nullable flag.
 	 * 
