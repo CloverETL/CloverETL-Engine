@@ -2845,17 +2845,71 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_containerlib_copy() {
 		doCompile("test_containerlib_copy");
 
-		check("copyList", Arrays.asList(1, 2, 3, 4, 5));
-		check("returnedList", Arrays.asList(1, 2, 3, 4, 5));
+		check("copyIntList", Arrays.asList(1, 2, 3, 4, 5));
+		check("returnedIntList", Arrays.asList(1, 2, 3, 4, 5));
+		check("copyLongList", Arrays.asList(21L,15L, null, 10L));
+		check("returnedLongList", Arrays.asList(21l, 15l, null, 10L));
+		check("copyBoolList", Arrays.asList(false,false,null,true));
+		check("returnedBoolList", Arrays.asList(false,false,null,true));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2006, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2002, 03, 12, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("copyDateList",Arrays.asList(cal2.getTime(), null, cal.getTime()));
+		check("returnedDateList",Arrays.asList(cal2.getTime(), null, cal.getTime()));
+		check("copyStrList", Arrays.asList("Ashe", "Jax", null, "Rengar"));
+		check("returnedStrList", Arrays.asList("Ashe", "Jax", null, "Rengar"));
+		check("copyNumList", Arrays.asList(12.65d, 458.3d, null, 15.65d));
+		check("returnedNumList", Arrays.asList(12.65d, 458.3d, null, 15.65d));
+		check("copyDecList", Arrays.asList(new BigDecimal("2.3"),new BigDecimal("5.9"), null, new BigDecimal("15.3")));
+		check("returnedDecList", Arrays.asList(new BigDecimal("2.3"),new BigDecimal("5.9"), null, new BigDecimal("15.3")));
 		
 		Map<String, String> expectedMap = new HashMap<String, String>();
 		expectedMap.put("a", "a");
 		expectedMap.put("b", "b");
 		expectedMap.put("c", "c");
 		expectedMap.put("d", "d");
+		check("copyStrMap", expectedMap);
+		check("returnedStrMap", expectedMap);
 		
-		check("copyMap", expectedMap);
-		check("returnedMap", expectedMap);
+		Map<Integer, Integer> intMap = new HashMap<Integer, Integer>();
+		intMap.put(1,12);
+		intMap.put(2,null);
+		intMap.put(3,15);
+		check("copyIntMap", intMap);
+		check("returnedIntMap", intMap);
+		
+		Map<Long, Long> longMap = new HashMap<Long, Long>();
+		longMap.put(10L, 453L);
+		longMap.put(11L, null);
+		longMap.put(12L, 54755L);
+		check("copyLongMap", longMap);
+		check("returnedLongMap", longMap);
+
+		Map<BigDecimal, BigDecimal> decMap = new HashMap<BigDecimal, BigDecimal>();
+		decMap.put(new BigDecimal("2.2"), new BigDecimal("12.3"));
+		decMap.put(new BigDecimal("2.3"), new BigDecimal("45.6"));
+		check("copyDecMap", decMap);
+		check("returnedDecMap", decMap);
+		
+		Map<Double, Double> doubleMap = new HashMap<Double, Double>();
+		doubleMap.put(new Double(12.3d), new Double(11.2d));
+		doubleMap.put(new Double(13.4d), new Double(78.9d));
+		check("copyNumMap",doubleMap);	
+		check("returnedNumMap", doubleMap);
+		
+		List<String> myList = new ArrayList<String>();
+		check("copyEmptyList", myList);
+		check("returnedEmptyList", myList);
+		assertTrue(((List<String>)(getVariable("copyEmptyList"))).isEmpty());
+		assertTrue(((List<String>)(getVariable("returnedEmptyList"))).isEmpty());
+		Map<String, String> emptyMap = new HashMap<String, String>();
+		check("copyEmptyMap", emptyMap);
+		check("returnedEmptyMap", emptyMap);
+		assertTrue(((HashMap<String,String>)(getVariable("copyEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<String,String>)(getVariable("returnedEmptyMap"))).isEmpty());
 	}
 
 	public void test_containerlib_insert() {
