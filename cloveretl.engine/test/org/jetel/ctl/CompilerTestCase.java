@@ -3009,13 +3009,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_containerlib_isEmpty() {
 		doCompile("test_containerlib_isEmpty");
-		
 		check("emptyMap", true);
+		check("emptyMap1", true);
 		check("fullMap", false);
+		check("fullMap1", false);
 		check("emptyList", true);
+		check("emptyList1", true);
 		check("fullList", false);
+		check("fullList1", false);
 	}
 
+	public void test_containerlib_isEmpty_expect_error(){
+		try {
+			doCompile("function integer transform(){integer[] i = null; boolean boo = i.isEmpty(); return 0;}","test_containerlib_isEmpty_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string, string] m = null; boolean boo = m.isEmpty(); return 0;}","test_containerlib_isEmpty_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_poll() {
 		doCompile("test_containerlib_poll");
 
