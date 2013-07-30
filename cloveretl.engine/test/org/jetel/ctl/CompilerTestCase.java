@@ -2912,6 +2912,33 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(((HashMap<String,String>)(getVariable("returnedEmptyMap"))).isEmpty());
 	}
 
+	public void test_containerlib_copy_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] origList = null; string[] copyList; string[] ret = copy(copyList, origList); return 0;}","test_containerlib_copy_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] origList; string[] copyList = null; string[] ret = copy(copyList, origList); return 0;}","test_containerlib_copy_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string, string] orig = null; map[string, string] copy; map[string, string] ret = copy(copy, orig); return 0;}","test_containerlib_copy_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string, string] orig; map[string, string] copy = null; map[string, string] ret = copy(copy, orig); return 0;}","test_containerlib_copy_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_insert() {
 		doCompile("test_containerlib_insert");
 
