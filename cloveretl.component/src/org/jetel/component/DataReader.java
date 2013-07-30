@@ -686,7 +686,11 @@ public class DataReader extends Node {
 	}
 
 	public void setParserClassName(String parserClassName) {
-		this.parserClassName = parserClassName;
+		if (!StringUtils.isEmpty(parserClassName)) {
+			this.parserClassName = parserClassName;
+		} else {
+			this.parserClassName = null;
+		}
 	}
 
 	public void setParserClass(String parserClassName, ClassLoader parserClassLoader){
