@@ -2941,12 +2941,70 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_containerlib_insert() {
 		doCompile("test_containerlib_insert");
+		check("copyStrList",Arrays.asList("Elise","Volibear","Garen","Jarvan IV"));
+		check("retStrList",Arrays.asList("Elise","Volibear","Garen","Jarvan IV"));
+		check("copyStrList2", Arrays.asList("Jax", "Aatrox", "Lisandra", "Ashe"));
+		check("retStrList2", Arrays.asList("Jax", "Aatrox", "Lisandra", "Ashe"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2009, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal1 = Calendar.getInstance();
+		cal1.set(2008, 2, 7, 0, 0, 0);
+		cal1.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2003, 01, 1, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("copyDateList", Arrays.asList(cal1.getTime(),cal.getTime()));
+		check("retDateList", Arrays.asList(cal1.getTime(),cal.getTime()));
+		check("copyDateList2", Arrays.asList(cal2.getTime(),cal1.getTime(),cal.getTime()));
+		check("retDateList2", Arrays.asList(cal2.getTime(),cal1.getTime(),cal.getTime()));
+		check("copyIntList", Arrays.asList(1,2,3,12,4,5,6,7));
+		check("retIntList", Arrays.asList(1,2,3,12,4,5,6,7));
+		check("copyLongList", Arrays.asList(14L,15l,16l,17l));
+		check("retLongList", Arrays.asList(14L,15l,16l,17l));
+		check("copyLongList2", Arrays.asList(20L,21L,22L,23l));
+		check("retLongList2", Arrays.asList(20L,21L,22L,23l));
+		check("copyNumList", Arrays.asList(12.3d,11.1d,15.4d));
+		check("retNumList", Arrays.asList(12.3d,11.1d,15.4d));
+		check("copyNumList2", Arrays.asList(22.2d,44.4d,55.5d,33.3d));
+		check("retNumList2", Arrays.asList(22.2d,44.4d,55.5d,33.3d));
+		check("copyDecList", Arrays.asList(new BigDecimal("11.1"), new BigDecimal("22.2"), new BigDecimal("33.3")));
+		check("retDecList", Arrays.asList(new BigDecimal("11.1"), new BigDecimal("22.2"), new BigDecimal("33.3")));
+		check("copyDecList2",Arrays.asList(new BigDecimal("3.3"), new BigDecimal("4.4"), new BigDecimal("1.1"), new BigDecimal("2.2")));
+		check("retDecList2",Arrays.asList(new BigDecimal("3.3"), new BigDecimal("4.4"), new BigDecimal("1.1"), new BigDecimal("2.2")));
+		check("copyEmpty", Arrays.asList(11));
+		check("retEmpty", Arrays.asList(11));
+		check("copyEmpty2", Arrays.asList(12,13));
+		check("retEmpty2", Arrays.asList(12,13));
+		check("copyEmpty3", Arrays.asList());
+		check("retEmpty3", Arrays.asList());
+	}
 
-		check("insertElem", Integer.valueOf(7));
-		check("insertIndex", Integer.valueOf(3));
-		check("insertList", Arrays.asList(1, 2, 3, 7, 4, 5));
-		check("insertList1", Arrays.asList(7, 8, 11, 10, 11));
-		check("insertList2", Arrays.asList(7, 8, 10, 9, 11));
+	public void test_containerlib_insert_expect_error(){
+		try {
+			doCompile("function integer transform(){integer[] tmp = null; integer[] ret = insert(tmp,0,12); return 0;}","test_containerlib_insert_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] tmp; integer[] toAdd = null; integer[] ret = insert(tmp,0,toAdd); return 0;}","test_containerlib_insert_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] tmp = [11,12]; integer[] ret = insert(tmp,-1,12); return 0;}","test_containerlib_insert_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] tmp = [11,12]; integer[] ret = insert(tmp,10,12); return 0;}","test_containerlib_insert_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_containerlib_isEmpty() {
