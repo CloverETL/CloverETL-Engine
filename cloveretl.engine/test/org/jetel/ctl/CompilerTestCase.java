@@ -3131,6 +3131,30 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(integerStringMap.keySet().size(), integerList.size());
 		assertEquals(stringIntegerMap.keySet(), new HashSet<Object>(stringList));
 		assertEquals(integerStringMap.keySet(), new HashSet<Object>(integerList));
+		List<Date> list = new ArrayList<Date>();
+		Calendar cal = Calendar.getInstance();
+		cal.set(2008, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2001, 5, 28, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		list.add(cal.getTime());
+		list.add(cal2.getTime());
+		check("dateList", list);
+		check("longList", Arrays.asList(14L, 45L));
+		check("numList", Arrays.asList(12.3d, 13.4d));
+		check("decList", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("emptyList", Arrays.asList());
+		
+	}
+	
+	public void test_containerlib_getKeys_expect_error(){
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = strMap.getKeys(); return 0;}","test_containerlib_getKeys_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 //---------------------- StringLib Tests ------------------------	
 	
