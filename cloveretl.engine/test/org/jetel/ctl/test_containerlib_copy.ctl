@@ -1,3 +1,7 @@
+string[] origEmptyList;
+string[] copyEmptyList;
+string[] returnedEmptyList;
+
 integer[] origIntList;
 integer[] copyIntList;
 integer[] returnedIntList;
@@ -26,6 +30,10 @@ decimal[] origDecList;
 decimal[] copyDecList;
 decimal[] returnedDecList;
 
+map[string, string] origEmptyMap;
+map[string, string] copyEmptyMap;
+map[string, string] returnedEmptyMap;
+
 map[string, string] origStrMap;
 map[string, string] copyStrMap;
 map[string, string] returnedStrMap;
@@ -47,6 +55,9 @@ map[decimal, decimal] copyDecMap;
 map[decimal, decimal] returnedDecMap;
 
 function integer transform() {
+	returnedEmptyMap = copy(copyEmptyMap, origEmptyMap);
+	returnedEmptyList = copy(copyEmptyList, origEmptyList);
+	
 	origIntList = [1,2,3,4,5];
 	returnedIntList = copy(copyIntList,origIntList);
 	
