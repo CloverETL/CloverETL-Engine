@@ -3123,14 +3123,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_containerlib_getKeys() {
 		doCompile("test_containerlib_getKeys");
-		Map<?, ?> stringIntegerMap = (Map<?, ?>) inputRecords[3].getField("integerMapField").getValue();
-		Map<?, ?> integerStringMap = (Map<?, ?>) getVariable("integerStringMap");
-		List<?> stringList = (List<?>) getVariable("stringList");
-		List<?> integerList = (List<?>) getVariable("integerList");
-		assertEquals(stringIntegerMap.keySet().size(), stringList.size());
-		assertEquals(integerStringMap.keySet().size(), integerList.size());
-		assertEquals(stringIntegerMap.keySet(), new HashSet<Object>(stringList));
-		assertEquals(integerStringMap.keySet(), new HashSet<Object>(integerList));
+		check("stringList", Arrays.asList("a","b"));
+		check("stringList2", Arrays.asList("a","b"));
+		check("integerList", Arrays.asList(5,7,2));
+		check("integerList2", Arrays.asList(5,7,2));
 		List<Date> list = new ArrayList<Date>();
 		Calendar cal = Calendar.getInstance();
 		cal.set(2008, 10, 12, 0, 0, 0);
@@ -3141,16 +3137,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		list.add(cal.getTime());
 		list.add(cal2.getTime());
 		check("dateList", list);
+		check("dateList2", list);
 		check("longList", Arrays.asList(14L, 45L));
+		check("longList2", Arrays.asList(14L, 45L));
 		check("numList", Arrays.asList(12.3d, 13.4d));
+		check("numList2", Arrays.asList(12.3d, 13.4d));
 		check("decList", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("decList2", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
 		check("emptyList", Arrays.asList());
-		
+		check("emptyList2", Arrays.asList());
 	}
 	
 	public void test_containerlib_getKeys_expect_error(){
 		try {
 			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = strMap.getKeys(); return 0;}","test_containerlib_getKeys_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = getKeys(strMap); return 0;}","test_containerlib_getKeys_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
