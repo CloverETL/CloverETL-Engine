@@ -3,6 +3,7 @@ package org.jetel.ctl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -3054,13 +3055,58 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullLength6", 0);
 	}
 	
-	public void test_containerlib_poll() {
+	public void test_containerlib_poll() throws UnsupportedEncodingException {
 		doCompile("test_containerlib_poll");
 
-		check("pollElem", Integer.valueOf(1));
-		check("pollList", Arrays.asList(2, 3, 4, 5));
+		check("intElem", Integer.valueOf(1));
+		check("intElem1", 2);
+		check("intList", Arrays.asList(3, 4, 5));
+		check("strElem", "Zyra");
+		check("strElem2", "Tresh");
+		check("strList", Arrays.asList("Janna", "Wu Kong"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2002, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem", cal.getTime());
+		cal.clear();
+		cal.set(2003,5,12,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem2", cal.getTime());
+		cal.clear();
+		cal.set(2006,9,15,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal.getTime()));
+		checkArray("byteElem", "Maoki".getBytes("UTF-8"));
+		checkArray("byteElem2", "Nasus".getBytes("UTF-8"));
+		check("longElem", 12L);
+		check("longElem2", 15L);
+		check("longList", Arrays.asList(16L,23L));
+		check("numElem", 23.6d);
+		check("numElem2", 15.9d);
+		check("numList", Arrays.asList(78.8d, 57.2d));
+		check("decElem", new BigDecimal("12.3"));
+		check("decElem2", new BigDecimal("23.4"));
+		check("decList", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("emptyElem", null);
+		check("emptyElem2", null);
+		check("emptyList", Arrays.asList());
 	}
 
+	public void test_containerlib_poll_expect_error(){
+		try {
+			doCompile("function integer transform(){integer[] arr = null; integer i = poll(arr); return 0;}","test_containerlib_poll_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] arr = null; integer i = arr.poll(); return 0;}","test_containerlib_poll_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_pop() {
 		doCompile("test_containerlib_pop");
 
