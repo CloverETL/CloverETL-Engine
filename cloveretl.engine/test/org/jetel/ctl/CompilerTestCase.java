@@ -3110,8 +3110,53 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_containerlib_pop() {
 		doCompile("test_containerlib_pop");
 
-		check("popElem", Integer.valueOf(5));
-		check("popList", Arrays.asList(1, 2, 3, 4));
+		check("intElem", 5);
+		check("intElem2", 4);
+		check("intList", Arrays.asList(1, 2, 3));
+		check("longElem", 14L);
+		check("longElem2", 13L);
+		check("longList", Arrays.asList(11L,12L));
+		check("numElem", 11.5d);
+		check("numElem2", 11.4d);
+		check("numList", Arrays.asList(11.2d,11.3d));
+		check("decElem", new BigDecimal("22.5"));
+		check("decElem2", new BigDecimal("22.4"));
+		check("decList", Arrays.asList(new BigDecimal("22.2"), new BigDecimal("22.3")));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2005, 8, 24, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem",cal.getTime());
+		cal.clear();
+		cal.set(2001, 6, 13, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem2", cal.getTime());
+		cal.clear();
+		cal.set(2010, 5, 11, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2011,3,3,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal.getTime(),cal2.getTime()));
+		check("strElem", "Ezrael");
+		check("strElem2", null);
+		check("strList", Arrays.asList("Kha-Zix", "Xerath"));
+		check("emptyElem", null);
+		check("emptyElem2", null);
+	}
+	
+	public void test_containerlib_pop_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] arr = null; string str = pop(arr); return 0;}","test_containerlib_pop_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] arr = null; string str = arr.pop(); return 0;}","test_containerlib_pop_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	@SuppressWarnings("unchecked")
