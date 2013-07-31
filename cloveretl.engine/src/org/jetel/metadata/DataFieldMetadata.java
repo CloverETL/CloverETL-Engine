@@ -754,7 +754,7 @@ public class DataFieldMetadata implements Serializable {
 	 *
 	 * @param trim the new value of the trim flag
 	 */
-	public void setTrim(boolean trim) {
+	public void setTrim(Boolean trim) {
 		this.trim = trim;
 	}
 
