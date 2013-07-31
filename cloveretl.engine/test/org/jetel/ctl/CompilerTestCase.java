@@ -3163,9 +3163,30 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_containerlib_push() {
 		doCompile("test_containerlib_push");
 
-		check("pushElem", Integer.valueOf(6));
-		check("pushList", Arrays.asList(1, 2, 3, 4, 5, 6));
-		
+		check("intCopy", Arrays.asList(1, 2, 3));
+		check("intRet", Arrays.asList(1, 2, 3));
+		check("longCopy", Arrays.asList(12l,13l,14l));
+		check("longRet", Arrays.asList(12l,13l,14l));
+		check("numCopy", Arrays.asList(11.1d,11.2d,11.3d));
+		check("numRet", Arrays.asList(11.1d,11.2d,11.3d));
+		check("decCopy", Arrays.asList(new BigDecimal("12.2"), new BigDecimal("12.3"), new BigDecimal("12.4")));
+		check("decRet", Arrays.asList(new BigDecimal("12.2"), new BigDecimal("12.3"), new BigDecimal("12.4")));
+		check("strCopy", Arrays.asList("Fiora", "Nunu", "Amumu"));
+		check("strRet", Arrays.asList("Fiora", "Nunu", "Amumu"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2001, 5, 9, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal1 = Calendar.getInstance();
+		cal1.set(2005, 5, 9, 0, 0, 0);
+		cal1.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2011, 5, 9, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("dateCopy", Arrays.asList(cal.getTime(),cal1.getTime(),cal2.getTime()));
+		check("dateRet", Arrays.asList(cal.getTime(),cal1.getTime(),cal2.getTime()));
+		String str = null;
+		check("emptyCopy", Arrays.asList(str));
+		check("emptyRet", Arrays.asList(str));
 		// there is hardly any way to get an instance of DataRecord
 		// hence we just check if the list has correct size
 		// and if its elements have correct metadata
@@ -3181,6 +3202,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 
+	public void test_containerlib_push_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] str = null; str.push('a'); return 0;}","test_containerlib_push_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] str = null; push(str, 'a'); return 0;}","test_containerlib_push_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_remove() {
 		doCompile("test_containerlib_remove");
 
