@@ -1129,7 +1129,7 @@ public class DataFieldMetadata implements Serializable {
 		dataFieldMetadata.setFormatStr(formatStr);
 		dataFieldMetadata.setSize(size);
 		dataFieldMetadata.setShift(shift);
-		dataFieldMetadata.setTrim(trim);
+		dataFieldMetadata.setTrim(isTrim());
 		dataFieldMetadata.setNullable(nullable);
 		dataFieldMetadata.setDefaultValueStr(defaultValueStr);
 		dataFieldMetadata.setAutoFilling(autoFilling);
