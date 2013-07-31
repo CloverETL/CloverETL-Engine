@@ -3034,6 +3034,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_containerlib_length(){
+		doCompile("test_containerlib_length");
+		check("lengthByte", 18);
+		check("lengthByte2", 18);
+		check("recordLength", 9);
+		check("recordLength2", 9);
+		check("listLength", 3);
+		check("listLength2", 3);
+		check("emptyListLength", 0);
+		check("emptyListLength2", 0);
+		check("emptyMapLength", 0);
+		check("emptyMapLength2", 0);
+		check("nullLength1", 0);
+		check("nullLength2", 0);
+		check("nullLength3", 0);
+		check("nullLength4", 0);
+		check("nullLength5", 0);
+		check("nullLength6", 0);
+	}
+	
 	public void test_containerlib_poll() {
 		doCompile("test_containerlib_poll");
 
@@ -3602,18 +3622,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_length() {
 		doCompile("test_stringlib_length");
 		check("lenght1", new BigDecimal(50));
-		check("lenghtByte", 18);
 		
 		check("stringLength", 8);
-		check("listLength", 8);
-		check("mapLength", 3);
-		check("recordLength", 9);
 		check("length_empty", 0);
 		check("length_null1", 0);
-		check("length_null2", 0);
-		check("length_null3", 0);
-		check("length_null4", 0);
-		check("length_null5", 0);
 	}
 	
 	public void test_stringlib_lowerCase() {
