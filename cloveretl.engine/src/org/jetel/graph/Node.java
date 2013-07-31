@@ -498,7 +498,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		Result result = execute();
         	
     		//broadcast all output ports with EOF information
-        	broadcastEOF();
+    		if (result == Result.FINISHED_OK) {
+        		broadcastEOF();
+       		}
     		
         	//set the result of execution to the component (broadcastEOF needs to be done before this set, see CLO-1364)
         	setResultCode(result);
