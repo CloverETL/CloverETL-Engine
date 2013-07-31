@@ -60,6 +60,8 @@ import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
 
+import sun.misc.Cleaner;
+
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -3220,11 +3222,62 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_containerlib_remove() {
 		doCompile("test_containerlib_remove");
 
-		check("removeElem", Integer.valueOf(3));
-		check("removeIndex", Integer.valueOf(2));
-		check("removeList", Arrays.asList(1, 2, 4, 5));
+		check("intElem", 2);
+		check("intList", Arrays.asList(1, 3, 4, 5));
+		check("longElem", 13L);
+		check("longList", Arrays.asList(11l,12l,14l));
+		check("numElem", 11.3d);
+		check("numList", Arrays.asList(11.1d,11.2d,11.4d));
+		check("decElem", new BigDecimal("11.3"));
+		check("decList", Arrays.asList(new BigDecimal("11.1"),new BigDecimal("11.2"),new BigDecimal("11.4")));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2002,10,13,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem", cal.getTime());
+		cal.clear();
+		cal.set(2001,10,13,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2003,10,13,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal.getTime(), cal2.getTime()));
+		check("strElem", "Shivana");
+		check("strList", Arrays.asList("Annie","Lux"));
 	}
 
+	public void test_containerlib_remove_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] strList; string str = remove(strList,0); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList; string str = strList.remove(0); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList = ['Teemo']; string str = remove(strList,5); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList = ['Teemo']; string str = remove(strList,-1); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList = null; string str = remove(strList,0); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_reverse() {
 		doCompile("test_containerlib_reverse");
 
