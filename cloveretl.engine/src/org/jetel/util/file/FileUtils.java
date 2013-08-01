@@ -292,11 +292,6 @@ public class FileUtils {
     		fileURL = fileURL.substring((FILE_PROTOCOL+":").length());
     	}
 
-        String protocol = getProtocol(fileURL);
-        if (DICTIONARY_PROTOCOL.equalsIgnoreCase(protocol) || PORT_PROTOCOL.equalsIgnoreCase(protocol)) {
-            return new URL(contextURL, fileURL, GENERIC_HANDLER);
-        }
-
     	 //first we try the custom path resolvers
     	for (CustomPathResolver customPathResolver : customPathResolvers) {
     		try{
@@ -340,12 +335,15 @@ public class FileUtils {
 			return new URL(null, type.getId() + ":(" + archiveFileUrl.toString() + ")#" + anchor, new ArchiveURLStreamHandler(contextURL));
 		}
 		
-		if (!StringUtils.isEmpty(protocol)) {
-            // unknown protocol will throw an exception,
-            // standard Java protocols will be ignored;
-            // all Clover-specific protocols must be checked before this call
-            new URL(fileURL);
-        }
+		String protocol = getProtocol(fileURL);
+		if (DICTIONARY_PROTOCOL.equalsIgnoreCase(protocol) || PORT_PROTOCOL.equalsIgnoreCase(protocol)) {
+			return new URL(contextURL, fileURL, GENERIC_HANDLER);
+		} else if (!StringUtils.isEmpty(protocol)) {
+			// unknown protocol will throw an exception,
+			// standard Java protocols will be ignored;
+			// all Clover-specific protocols must be checked before this call
+			new URL(fileURL);
+		}
 		
 		if (StringUtils.isEmpty(protocol)) {
 			// file url
@@ -2282,14 +2280,15 @@ public class FileUtils {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException("Interrupted");
 		}
-		if (root != null && root.isDirectory()) {
+		if (root != null && root.exists()) {
+			if (root.isDirectory()) {
 				File[] children = root.listFiles();
 				if (children != null) {
 					for (int i = 0; i < children.length; i++) {
 						deleteRecursively(children[i]);
 					}
 				}
-
+			}
 			return root.delete();
 		}
 		return false;

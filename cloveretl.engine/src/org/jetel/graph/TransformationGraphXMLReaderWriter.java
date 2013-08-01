@@ -265,13 +265,13 @@ public class TransformationGraphXMLReaderWriter {
 				document = db.newDocument();
 			}
 
-		} catch(SAXParseException ex) {
+		}catch(SAXParseException ex){
 			logger.error("Error when parsing graph's XML definition  --> on line "+ex.getLineNumber()+" row "+ex.getColumnNumber(),ex); 
 			throw new XMLConfigurationException(ex);
-        } catch (ParserConfigurationException ex) {
+        }catch (ParserConfigurationException ex) {
 			logger.error("Error when parsing graph's XML definition",ex);
             throw new XMLConfigurationException(ex);
-		} catch (Exception ex) {
+		}catch (Exception ex) {
             logger.error("Error when parsing graph's XML definition",ex);
             throw new XMLConfigurationException(ex);
 		}
