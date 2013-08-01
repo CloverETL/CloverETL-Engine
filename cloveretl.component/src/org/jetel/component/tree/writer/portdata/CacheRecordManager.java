@@ -230,7 +230,8 @@ public class CacheRecordManager extends RecordManagerImpl {
 	public synchronized void close() throws IOException {
 		checkIfClosed();
 
-		recman.close();
+		//recman.close();
+		((BaseRecordManager)recman).forceClose();
 		recman = null;
 		hash = null;
 	}
