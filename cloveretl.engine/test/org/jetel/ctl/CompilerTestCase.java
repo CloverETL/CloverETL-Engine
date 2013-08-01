@@ -3278,10 +3278,42 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_containerlib_reverse_expect_error(){
+		try {
+			doCompile("function integer transform(){long[] longList = null; reverse(longList); return 0;}","test_containerlib_reverse_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long[] longList = null; long[] reversed = longList.reverse(); return 0;}","test_containerlib_reverse_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_reverse() {
 		doCompile("test_containerlib_reverse");
 
-		check("reverseList", Arrays.asList(5, 4, 3, 2, 1));
+		check("intList", Arrays.asList(5, 4, 3, 2, 1));
+		check("intList2", Arrays.asList(5, 4, 3, 2, 1));
+		check("longList", Arrays.asList(14l,13l,12l,11l));
+		check("longList2", Arrays.asList(14l,13l,12l,11l));
+		check("numList", Arrays.asList(1.3d,1.2d,1.1d));
+		check("numList2", Arrays.asList(1.3d,1.2d,1.1d));
+		check("decList", Arrays.asList(new BigDecimal("1.3"),new BigDecimal("1.2"),new BigDecimal("1.1")));
+		check("decList2", Arrays.asList(new BigDecimal("1.3"),new BigDecimal("1.2"),new BigDecimal("1.1")));
+		check("strList", Arrays.asList(null,"Lulu","Kog Maw"));
+		check("strList2", Arrays.asList(null,"Lulu","Kog Maw"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2001,2,1,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2002,2,1,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal2.getTime(),cal.getTime()));
+		check("dateList2", Arrays.asList(cal2.getTime(),cal.getTime()));
 	}
 
 	public void test_containerlib_sort() {
