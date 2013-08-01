@@ -3319,9 +3319,46 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_containerlib_sort() {
 		doCompile("test_containerlib_sort");
 
-		check("sortList", Arrays.asList(1, 1, 2, 3, 5));
+		check("intList", Arrays.asList(1, 1, 2, 3, 5));
+		check("intList2", Arrays.asList(1, 1, 2, 3, 5));
+		check("longList", Arrays.asList(21l,22l,23l,24l));
+		check("longList2", Arrays.asList(21l,22l,23l,24l));
+		check("decList", Arrays.asList(new BigDecimal("1.1"),new BigDecimal("1.2"),new BigDecimal("1.3"),new BigDecimal("1.4")));
+		check("decList2", Arrays.asList(new BigDecimal("1.1"),new BigDecimal("1.2"),new BigDecimal("1.3"),new BigDecimal("1.4")));
+		check("numList", Arrays.asList(1.1d,1.2d,1.3d,1.4d));
+		check("numList2", Arrays.asList(1.1d,1.2d,1.3d,1.4d));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2002,5,12,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2003,5,12,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		Calendar cal3 = Calendar.getInstance();
+		cal3.set(2004,5,12,0,0,0);
+		cal3.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal.getTime(),cal2.getTime(),cal3.getTime()));
+		check("dateList2", Arrays.asList(cal.getTime(),cal2.getTime(),cal3.getTime()));
+		check("strList", Arrays.asList("","Alistar", "Nocturne", "Soraka"));
+		check("strList2", Arrays.asList("","Alistar", "Nocturne", "Soraka"));
+		check("emptyList", Arrays.asList());
+		check("emptyList2", Arrays.asList());
 	}
 
+	public void test_containerlib_sort_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] strList = ['Renektor', null, 'Jayce']; sort(strList); return 0;}","test_containerlib_sort_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList = null; sort(strList); return 0;}","test_containerlib_sort_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_containsAll() {
 		doCompile("test_containerlib_containsAll");
 
