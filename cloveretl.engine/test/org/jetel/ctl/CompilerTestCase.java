@@ -1018,7 +1018,40 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_getByteValue(){
+		doCompile("test_dynamiclib_getByteValue");
+		checkArray("ret1",CompilerTestCase.BYTEARRAY_VALUE);
+		checkArray("ret2",CompilerTestCase.BYTEARRAY_VALUE);
+		check("ret3", null);
+		check("ret4", null);
+	}
 	
+	public void test_dynamiclib_getByteValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; byte b = getByteValue(fi,7); return 0;}","test_dynamiclib_getByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; byte b = fi.getByteValue('ByteArray'); return 0;}","test_dynamiclib_getByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = $in.0.getByteValue('Age'); return 0;}","test_dynamiclib_getByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = getByteValue($in.0, 0); return 0;}","test_dynamiclib_getByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 	
 	public void test_return_constants() {
 		// test case for issue 2257
