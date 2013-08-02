@@ -1053,6 +1053,41 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_getDateValue(){
+		doCompile("test_dynamiclib_getDateValue");
+		check("ret1", CompilerTestCase.BORN_VALUE);
+		check("ret2", CompilerTestCase.BORN_VALUE);
+		check("ret3", null);
+		check("ret4", null);
+	}
+	
+	public void test_dynamiclib_getDateValue_expect_error(){
+		try {
+			doCompile("function integer transform(){date d = getDateValue($in.0,1); return 0;}","test_dynamiclib_getDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = getDateValue($in.0,'Age'); return 0;}","test_dynamiclib_getDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; date d = getDateValue(null,'Born'); return 0;}","test_dynamiclib_getDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; date d = getDateValue(null,3); return 0;}","test_dynamiclib_getDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
