@@ -1193,6 +1193,33 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_getFieldType(){
+		doCompile("test_dynamiclib_getFieldType");
+		check("ret1", "string");
+		check("ret2", "number");
+	}
+	
+	public void test_dynamiclib_getFieldType_expect_error(){
+		try {
+			doCompile("function integer transform(){string str = getFieldType($in.0, -5); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = getFieldType($in.0, 12); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldType(5); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
