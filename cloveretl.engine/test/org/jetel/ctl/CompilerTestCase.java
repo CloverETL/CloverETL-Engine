@@ -1123,6 +1123,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_getFieldIndex(){
+		doCompile("test_dynamiclib_getFieldIndex");
+		check("ret1", 1);
+		check("ret2", 1);
+		check("ret3", -1);
+	}
+	
+	public void test_dynamiclib_getFieldIndex_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; integer int = fi.getFieldIndex('Age'); return 0;}","test_dynamiclib_getFieldIndex_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
