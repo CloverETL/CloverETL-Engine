@@ -1166,6 +1166,33 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_getFieldName(){
+		doCompile("test_dynamiclib_getFieldName");
+		check("ret1", "Age");
+		check("ret2", "Name");
+	}
+	
+	public void test_dynamiclib_getFieldName_expect_error(){
+		try {
+			doCompile("function integer transform(){string str = getFieldName($in.0, -5); return 0;}","test_dynamiclib_getFieldName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = getFieldName($in.0, 15); return 0;}","test_dynamiclib_getFieldName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldName(2); return 0;}","test_dynamiclib_getFieldName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
