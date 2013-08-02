@@ -984,8 +984,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_dynamiclib_getBoolValue(){
 		doCompile("test_dynamiclib_getBoolValue");
 		check("ret1", true);
-		check("ret2", false);
-		check("ret3", null);
+		check("ret2", true);
+		check("ret3", false);
+		check("ret4", false);
+		check("ret5", null);
+		check("ret6", null);
 	}
 	
 	public void test_dynamiclib_getBoolValue_expect_error(){
@@ -996,13 +999,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
+			doCompile("function integer transform(){boolean b = getBoolValue($in.0, 'Age');return 0;}","test_dynamiclib_getBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
 			doCompile("function integer transform(){firstInput fi; fi = null; boolean b = getBoolValue(fi, 6); return 0;}","test_dynamiclib_getBoolValue_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
-	
+		try {
+			doCompile("function integer transform(){firstInput fi; fi = null; boolean b = getBoolValue(fi, 'Flag'); return 0;}","test_dynamiclib_getBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
+	
+	
 	
 	public void test_return_constants() {
 		// test case for issue 2257
