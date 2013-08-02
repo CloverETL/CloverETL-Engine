@@ -1088,6 +1088,41 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_getDecimalValue(){
+		doCompile("test_dynamiclib_getDecimalValue");
+		check("ret1", CompilerTestCase.CURRENCY_VALUE);
+		check("ret2", CompilerTestCase.CURRENCY_VALUE);
+		check("ret3", null);
+		check("ret4", null);
+	}
+	
+	public void test_dynamiclib_getDecimalValue_expect_error(){
+		try {
+			doCompile("function integer transform(){decimal d = getDecimalValue($in.0, 1); return 0;}","test_dynamiclib_getDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal d = getDecimalValue($in.0, 'Age'); return 0;}","test_dynamiclib_getDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; decimal d = getDecimalValue(fi,8); return 0;}","test_dynamiclib_getDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; decimal d = getDecimalValue(fi,'Currency'); return 0;}","test_dynamiclib_getDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
