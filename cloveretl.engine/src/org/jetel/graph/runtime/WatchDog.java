@@ -40,7 +40,6 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.exception.ObfuscatingException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.GraphElement;
@@ -365,7 +364,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
        		}
        	}
 		
-		//if the graph was aborted, now the aborting thread is waiting for final notification - this is the way how to send him word about the graph finished right now
+		//if the graph was aborted, now the aborting thread is waiting for final notification - this is the way how to send him notice about the graph finished right now
 		synchronized (ABORT_MONITOR) {
 			abortFinished = true;
 			ABORT_MONITOR.notifyAll();
@@ -709,7 +708,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
      * @param e
      */
     protected void setCauseException(Throwable e) {
-    	causeException = new ObfuscatingException(e);
+    	//causeException = new ObfuscatingException(e);
+    	causeException = e;
     }
 
     /**

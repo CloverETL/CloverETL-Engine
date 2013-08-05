@@ -496,8 +496,16 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		
     		//execute() invocation
     		Result result = execute();
-    		setResultCode(result);
-            if (result == Result.ERROR) {
+        	
+    		//broadcast all output ports with EOF information
+    		if (result == Result.FINISHED_OK) {
+        		broadcastEOF();
+       		}
+    		
+        	//set the result of execution to the component (broadcastEOF needs to be done before this set, see CLO-1364)
+        	setResultCode(result);
+
+    		if (result == Result.ERROR) {
                 Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
                         new ErrorMsgBody(Result.ERROR.code(), 
                                 resultMessage != null ? resultMessage : Result.ERROR.message(), null));
@@ -519,8 +527,6 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	            		}
 	            	}
             	}
-            	//broadcast all output ports with EOF information
-            	broadcastEOF();
             }
         } catch (InterruptedException ex) {
             setResultCode(Result.ABORTED);

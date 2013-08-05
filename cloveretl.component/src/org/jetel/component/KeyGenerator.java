@@ -207,6 +207,9 @@ import org.w3c.dom.Element;
 		for (int i=0;i<keys.length;i++){
 			try{ //get field value from inRcord
 				fieldString=inRecord.getField(keys[i].getName()).getValue().toString();
+				if (fieldString == null){
+					fieldString ="";
+				}
 				fieldString = StringUtils.getOnlyAlphaNumericChars(fieldString,onlyAlpfaNumeric[i][ALPHA],onlyAlpfaNumeric[i][NUMERIC]);
 				if (removeBlankSpace[i]) {
 					fieldString = StringUtils.removeBlankSpace(fieldString);

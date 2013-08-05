@@ -64,6 +64,11 @@ public class MySQLSpecific extends AbstractJdbcSpecific {
 	public Pattern getCommentsPattern() {
 		return COMMENTS_PATTERN;
 	}
+	
+	@Override
+	public boolean isBackslashEscaping() {
+		return true;
+	}
 
 	@Override
 	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {

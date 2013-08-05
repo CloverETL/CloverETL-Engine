@@ -25,12 +25,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
 import org.jetel.hadoop.provider.filesystem.HadoopCloverConvert.Clover2Hadoop;
-import org.jetel.hadoop.service.filesystem.HadoopFileSystemService;
 import org.jetel.metadata.DataRecordMetadata;
 
 public class HadoopSequenceFileFormatter implements IHadoopSequenceFileFormatter {
@@ -46,7 +46,10 @@ public class HadoopSequenceFileFormatter implements IHadoopSequenceFileFormatter
 	private Clover2Hadoop keyCopy;
 	private Clover2Hadoop valCopy;
 	private TransformationGraph graph;
-
+	
+	private static final Logger logger = Logger.getLogger(HadoopSequenceFileFormatter.class);
+	
+	
 	public HadoopSequenceFileFormatter(String keyFieldName, String valueFieldName, String user, Configuration config) {
 		this.keyFieldName = keyFieldName;
 		this.valueFieldName = valueFieldName;
@@ -86,7 +89,18 @@ public class HadoopSequenceFileFormatter implements IHadoopSequenceFileFormatter
 
 	@Override
 	public void reset() {
-		fs = null; // causes DFS to be recreated from fresh connection
+		releaseFileSystem();
+	}
+
+	private void releaseFileSystem() {
+		if (fs != null) {
+			try {
+				FileSystemRegistry.release(fs, this);
+			} catch (IOException e) {
+				logger.warn("Failed to release file system " + fs, e);
+			}
+			fs = null; // causes DFS to be recreated from fresh connection
+		}
 	}
 
 	@Override
@@ -104,9 +118,10 @@ public class HadoopSequenceFileFormatter implements IHadoopSequenceFileFormatter
 			ClassLoader formerContextClassloader = Thread.currentThread().getContextClassLoader();
 			Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
 			try {
-				FileSystem fileSystem = fs != null ? fs : HadoopSequenceFileParser.getFileSystem(targetURI, graph, user, config);
-				
-				writer = SequenceFile.createWriter(fileSystem, config,
+				if (fs == null) {
+					fs = HadoopSequenceFileParser.getFileSystem(targetURI, graph, user, config, this);
+				}
+				writer = SequenceFile.createWriter(fs, config,
 						new Path(targetURI.getPath()), // Path to new file on fileSystem
 						keyCopy.getValueClass(), // Key Data Type
 						valCopy.getValueClass(), // Value Data Type
@@ -125,6 +140,7 @@ public class HadoopSequenceFileFormatter implements IHadoopSequenceFileFormatter
 
 	@Override
 	public void close() throws IOException {
+		releaseFileSystem();
 		if (writer != null) {
 			writer.close();
 		}
@@ -175,11 +191,6 @@ public class HadoopSequenceFileFormatter implements IHadoopSequenceFileFormatter
 		this.keyFieldName = keyFieldName;
 		this.valueFieldName = valueFieldName;
 
-	}
-
-	@Override
-	public void setHadoopConnection(HadoopFileSystemService conn) {
-		this.fs = (FileSystem) conn.getDFS();
 	}
 
 	@Override

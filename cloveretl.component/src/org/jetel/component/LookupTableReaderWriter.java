@@ -171,7 +171,10 @@ public class LookupTableReaderWriter extends Node {
 				writeRecordBroadcast(record);
 				SynchronizeUtils.cloverYield();
 			}
-		}		
+		}
+		if (freeLookupTable && lookupTable != null){
+			lookupTable.clear();
+		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -180,10 +183,6 @@ public class LookupTableReaderWriter extends Node {
 	public void free() {
         if(!isInitialized()) return;
 		super.free();
-		
-		if (freeLookupTable && lookupTable != null){
-			lookupTable.free();
-		}
 	}
 	
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {

@@ -435,7 +435,7 @@ public class LookupJoin extends Node {
 		}
 
 		if (freeLookupTable) {
-			lookup.getLookupTable().free();
+			lookup.getLookupTable().clear();
 		}
 		if (errorLog != null){
 			errorLog.flush();

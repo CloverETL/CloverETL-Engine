@@ -20,6 +20,7 @@ package org.jetel.util.crypto;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.util.file.FileUtils;
 
 /**
  * Encodes and decodes to and from Base64 notation.
@@ -367,10 +368,10 @@ public class Base64
         }   // end catch
         finally
         {
-            try{ oos.close();   } catch( Exception e ){log.error("error close oos",e);}
-            try{ gzos.close();  } catch( Exception e ){log.error("error close gzos",e);}
-            try{ b64os.close(); } catch( Exception e ){log.error("error close b64os",e);}
-            try{ baos.close();  } catch( Exception e ){log.error("error close baos",e);}
+            try{ FileUtils.close(oos);   } catch( Exception e ){log.error("error close oos",e);}
+            try{ FileUtils.close(gzos);  } catch( Exception e ){log.error("error close gzos",e);}
+            try{ FileUtils.close(b64os); } catch( Exception e ){log.error("error close b64os",e);}
+            try{ FileUtils.close(baos);  } catch( Exception e ){log.error("error close baos",e);}
         }   // end finally
         
         // Return value according to relevant encoding.
@@ -496,9 +497,9 @@ public class Base64
             }   // end catch
             finally
             {
-                try{ gzos.close();  } catch( Exception e ){log.error("error close gzos",e);}
-                try{ b64os.close(); } catch( Exception e ){log.error("error close b64os",e);}
-                try{ baos.close();  } catch( Exception e ){log.error("error close baos",e);}
+                try{ FileUtils.close(gzos);  } catch( Exception e ){log.error("error close gzos",e);}
+                try{ FileUtils.close(b64os); } catch( Exception e ){log.error("error close b64os",e);}
+                try{ FileUtils.close(baos);  } catch( Exception e ){log.error("error close baos",e);}
             }   // end finally
 
             // Return value according to relevant encoding.
@@ -626,9 +627,9 @@ public class Base64
             }   // end catch
             finally
             {
-                try{ gzos.close();  } catch( Exception e ){log.error("error close gzos",e);}
-                try{ b64os.close(); } catch( Exception e ){log.error("error close b64os",e);}
-                try{ baos.close();  } catch( Exception e ){log.error("error close baos",e);}
+                try{ FileUtils.close(gzos);  } catch( Exception e ){log.error("error close gzos",e);}
+                try{ FileUtils.close(b64os); } catch( Exception e ){log.error("error close b64os",e);}
+                try{ FileUtils.close(baos);  } catch( Exception e ){log.error("error close baos",e);}
             }   // end finally
 
             return baos.toByteArray();
@@ -817,8 +818,9 @@ public class Base64
     
     
     /**
-     * Decodes data from Base64 notation, automatically
-     * detecting gzip-compressed data and decompressing it.
+     * Decodes data from Base64 notation.
+     * 
+     * CLO-884: GZIP decompression has been disabled.
      *
      * @param s the string to decode
      * @return the decoded data
@@ -841,48 +843,48 @@ public class Base64
         bytes = decode( bytes, 0, bytes.length );
         
         
-        // Check to see if it's gzip-compressed
-        // GZIP Magic Two-Byte Number: 0x8b1f (35615)
-        if( bytes != null && bytes.length >= 4 )
-        {
-            
-            int head = ((int)bytes[0] & 0xff) | ((bytes[1] << 8) & 0xff00);       
-            if( java.util.zip.GZIPInputStream.GZIP_MAGIC == head ) 
-            {
-                java.io.ByteArrayInputStream  bais = null;
-                java.util.zip.GZIPInputStream gzis = null;
-                java.io.ByteArrayOutputStream baos = null;
-                byte[] buffer = new byte[2048];
-                int    length = 0;
-
-                try
-                {
-                    baos = new java.io.ByteArrayOutputStream();
-                    bais = new java.io.ByteArrayInputStream( bytes );
-                    gzis = new java.util.zip.GZIPInputStream( bais );
-
-                    while( ( length = gzis.read( buffer ) ) >= 0 )
-                    {
-                        baos.write(buffer,0,length);
-                    }   // end while: reading input
-
-                    // No error? Get new bytes.
-                    bytes = baos.toByteArray();
-
-                }   // end try
-                catch( java.io.IOException e )
-                {
-                    // Just return originally-decoded bytes
-                }   // end catch
-                finally
-                {
-                    try{ baos.close(); } catch( Exception e ){log.error("error close baos",e);}
-                    try{ gzis.close(); } catch( Exception e ){log.error("error close gzis",e);}
-                    try{ bais.close(); } catch( Exception e ){log.error("error close bais",e);}
-                }   // end finally
-
-            }   // end if: gzipped
-        }   // end if: bytes.length >= 2
+//        // Check to see if it's gzip-compressed
+//        // GZIP Magic Two-Byte Number: 0x8b1f (35615)
+//        if( bytes != null && bytes.length >= 4 )
+//        {
+//            
+//            int head = ((int)bytes[0] & 0xff) | ((bytes[1] << 8) & 0xff00);       
+//            if( java.util.zip.GZIPInputStream.GZIP_MAGIC == head ) 
+//            {
+//                java.io.ByteArrayInputStream  bais = null;
+//                java.util.zip.GZIPInputStream gzis = null;
+//                java.io.ByteArrayOutputStream baos = null;
+//                byte[] buffer = new byte[2048];
+//                int    length = 0;
+//
+//                try
+//                {
+//                    baos = new java.io.ByteArrayOutputStream();
+//                    bais = new java.io.ByteArrayInputStream( bytes );
+//                    gzis = new java.util.zip.GZIPInputStream( bais );
+//
+//                    while( ( length = gzis.read( buffer ) ) >= 0 )
+//                    {
+//                        baos.write(buffer,0,length);
+//                    }   // end while: reading input
+//
+//                    // No error? Get new bytes.
+//                    bytes = baos.toByteArray();
+//
+//                }   // end try
+//                catch( java.io.IOException e )
+//                {
+//                    // Just return originally-decoded bytes
+//                }   // end catch
+//                finally
+//                {
+//                    try{ FileUtils.close(baos); } catch( Exception e ){log.error("error close baos",e);}
+//                    try{ FileUtils.close(gzis); } catch( Exception e ){log.error("error close gzis",e);}
+//                    try{ FileUtils.close(bais); } catch( Exception e ){log.error("error close bais",e);}
+//                }   // end finally
+//
+//            }   // end if: gzipped
+//        }   // end if: bytes.length >= 2
         
         return bytes;
     }   // end decode
@@ -926,8 +928,8 @@ public class Base64
         }   // end catch
         finally
         {
-            try{ bais.close(); } catch( Exception e ){}
-            try{ ois.close();  } catch( Exception e ){}
+        	FileUtils.closeQuietly(bais);
+        	FileUtils.closeQuietly(ois);
         }   // end finally
         
         return obj;
@@ -962,7 +964,7 @@ public class Base64
         }   // end catch: IOException
         finally
         {
-            try{ bos.close(); } catch( Exception e ){}
+            FileUtils.closeQuietly(bos);
         }   // end finally
         
         return success;
@@ -995,7 +997,7 @@ public class Base64
         }   // end catch: IOException
         finally
         {
-                try{ bos.close(); } catch( Exception e ){}
+                FileUtils.closeQuietly(bos);
         }   // end finally
         
         return success;
@@ -1102,7 +1104,7 @@ public class Base64
         }   // end catch: IOException
         finally
         {
-            try{ bis.close(); } catch( Exception e) {}
+        	FileUtils.closeQuietly(bis);
         }   // end finally
         
         return encodedData;

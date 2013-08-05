@@ -854,11 +854,15 @@ public class SQLUtil {
 	 * but unlike query.split(";"), it should
 	 * ignore semicolons within strings and comments.
 	 * 
+	 * TODO There's some JdbcSpecific comments mechanism {@link JdbcSpecific#getCommentsPattern()} which should be probably taken into account.
+	 * 
 	 * @author krivanekm (info@cloveretl.com)
 	 *         (c) Javlin, a.s. (www.cloveretl.com)
 	 *
 	 * @created Sep 18, 2012
+	 * @deprecated Use {@link SQLScriptParser} instead
 	 */
+	@Deprecated
 	private static class SQLSplitter {
 		
 		private enum State {
@@ -867,6 +871,8 @@ public class SQLUtil {
 			ONELINE_COMMENT,
 			MULTILINE_COMMENT
 		}
+		
+		private static final char DEFAULT_DELIMITER = ';';
 		
 		private final String input;
 		
@@ -878,14 +884,27 @@ public class SQLUtil {
 		
 		private char previous = 0;
 		
-		public SQLSplitter(String input) {
+		private String customDelimiter;
+		
+		/**
+		 * @param input
+		 * @param customDelimiter if <code>null</code>, default ";" will be used.
+		 * @deprecated Use {@link SQLScriptParser} instead
+		 */
+		@Deprecated
+		public SQLSplitter(String input, String customDelimiter) {
 			this.input = input;
+			if (customDelimiter != null && !String.valueOf(DEFAULT_DELIMITER).equals(customDelimiter)) {
+				this.customDelimiter = customDelimiter;
+			}
 		}
 		
 		private void flush() {
 			if (sb.length() > 0) {
 				result.add(sb.toString());
 			}
+			sb.setLength(0);
+			previous = 0;
 		}
 		
 		private void setState(State state) {
@@ -899,12 +918,19 @@ public class SQLUtil {
 				char c = input.charAt(i);
 				switch (state) {
 				case DEFAULT:
+					if (customDelimiter == null) {
+						if (c == DEFAULT_DELIMITER) {
+							flush();
+							continue; // stay in the DEFAULT state, do not append ';' to the StringBuilder
+						}
+					} else {
+						if (input.startsWith(customDelimiter, i)) {
+							flush();
+							i += customDelimiter.length() - 1;
+							continue; // stay in the DEFAULT state, do not append whole customDelimiter to the StringBuilder
+						}
+					}
 					switch (c) {
-					case ';':
-						flush();
-						sb.setLength(0);
-						previous = 0;
-						continue; // stay in the DEFAULT state, do not append ';' to the StringBuilder
 					case '-':
 						if (previous == '-') {
 							setState(State.ONELINE_COMMENT);
@@ -954,13 +980,29 @@ public class SQLUtil {
 
 	 * @param sql
 	 * @return individual queries
+	 * @deprecated Use {@link SQLScriptParser} instead
 	 */
+	@Deprecated
 	public static String[] split(String sql) {
-		SQLSplitter splitter = new SQLSplitter(sql);
+		return split(sql, null);
+	}
+	
+	/**
+	 * Splits a string into individual queries,
+	 * ignores SQL statements separator within strings and comments.
+	 * 
+	 * @param sql
+	 * @param delimiter string separating individual SQL statements in the input <code>sql<code>.
+	 *                  If <code>null</code>, default ";" separator will be used.
+	 * @return individual SQL statements
+	 * @deprecated Use {@link SQLScriptParser} instead
+	 */
+	@Deprecated
+	public static String[] split(String sql, String delimiter) {
+		SQLSplitter splitter = new SQLSplitter(sql, delimiter);
 		splitter.run();
 		return splitter.getResult();
 	}
-	
 	
 }
 

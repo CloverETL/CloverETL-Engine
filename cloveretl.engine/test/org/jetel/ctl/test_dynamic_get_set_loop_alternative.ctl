@@ -17,6 +17,11 @@ long longVar;
 number numberVar;
 string stringVar;
 
+boolean[] someValue;
+boolean[] nullValue;
+string[] asString2;
+boolean[] isNull2;
+
 // Transforms input record into output record.
 function integer transform() {
 
@@ -117,6 +122,81 @@ function integer transform() {
 				stringVar = $out.0.getStringValue(i);
 				break;
 		}
+	}
+	
+	firstInput nullRecord;
+	for(integer i = 0; i < nullRecord.length(); i++) {
+		type[i] = nullRecord.getFieldType(i);
+		switch(type[i]) {
+			case "boolean":
+				nullRecord.setBoolValue(i, true);
+				//assertEquals(true, nullRecord.getBoolValue(i));
+				someValue[i] = isnull(nullRecord.getBoolValue(i));
+				nullRecord.setBoolValue(i, null);
+				//assertEquals(null, nullRecord.getBoolValue(i));
+				nullValue[i] = isnull(nullRecord.getBoolValue(i));
+				break;
+			case "byte":
+				nullRecord.setByteValue(i, hex2byte("1234567890abcdef"));
+				//assertEquals(hex2byte("1234567890abcdef"), nullRecord.getByteValue(i));
+				someValue[i] = isnull(nullRecord.getByteValue(i));
+				nullRecord.setByteValue(i, null);
+				//assertEquals(null, nullRecord.getByteValue(i));
+				nullValue[i] = isnull(nullRecord.getByteValue(i));
+				break;
+			case "date":
+				nullRecord.setDateValue(i, 2000-05-05);
+				//assertEquals(2000-05-05, nullRecord.getDateValue(i));
+				someValue[i] = isnull(nullRecord.getDateValue(i));
+				nullRecord.setDateValue(i, null);
+				//assertEquals(null, nullRecord.getDateValue(i));
+				nullValue[i] = isnull(nullRecord.getDateValue(i));
+				break;
+			case "decimal":
+				nullRecord.setDecimalValue(i, 2);
+				//assertEquals(2, nullRecord.getDecimalValue(i));
+				someValue[i] = isnull(nullRecord.getDecimalValue(i));
+				nullRecord.setDecimalValue(i, null);
+				//assertEquals(null, nullRecord.getDecimalValue(i));
+				nullValue[i] = isnull(nullRecord.getDecimalValue(i));
+				break;
+			case "integer":
+				nullRecord.setIntValue(i, 3);
+				//assertEquals(3, nullRecord.getIntValue(i));
+				someValue[i] = isnull(nullRecord.getIntValue(i));
+				nullRecord.setIntValue(i, null);
+				//assertEquals(null, nullRecord.getIntValue(i));
+				nullValue[i] = isnull(nullRecord.getIntValue(i));
+				break;
+			case "long":
+				nullRecord.setLongValue(i, 4);
+				//assertEquals(4, nullRecord.getLongValue(i));
+				someValue[i] = isnull(nullRecord.getLongValue(i));
+				nullRecord.setLongValue(i, null);
+				//assertEquals(null, nullRecord.getLongValue(i));
+				nullValue[i] = isnull(nullRecord.getLongValue(i));
+				break;
+			case "number":
+				nullRecord.setNumValue(i, 5);
+				//assertEquals(5, nullRecord.getNumValue(i), 0.1);
+				someValue[i] = isnull(nullRecord.getNumValue(i));
+				nullRecord.setNumValue(i, null);
+				//assertEquals(null, nullRecord.getNumValue(i), 0.1);
+				nullValue[i] = isnull(nullRecord.getNumValue(i));
+				break;
+			case "string":
+				nullRecord.setStringValue(i, "foo");
+				//assertEquals("foo", nullRecord.getStringValue(i));
+				someValue[i] = isnull(nullRecord.getStringValue(i));
+				nullRecord.setStringValue(i, null);
+				//assertEquals(null, nullRecord.getStringValue(i));
+				nullValue[i] = isnull(nullRecord.getStringValue(i));
+				break;
+		}
+		//assertEquals(null, nullRecord.getValueAsString(i));
+		asString2[i] = nullRecord.getValueAsString(i);
+		//assertEquals(true, nullRecord.isNull(i));
+		isNull2[i] = nullRecord.isNull(i);
 	}
 
 	return ALL;

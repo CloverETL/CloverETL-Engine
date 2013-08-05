@@ -9,6 +9,10 @@ string fieldByteMapString;
 string byteListString;
 string fieldByteListString;
 
+string test_null_l;
+string test_null_i;
+string test_null_dec;
+string test_null_d;
 function integer transform() {
 	integer integerToString = 10; 
 	long longToString = 110654321874L; 
@@ -44,6 +48,14 @@ function integer transform() {
 	fieldByteMapString = $out.firstMultivalueOutput.byteMapField.toString();
 	byteListString = byteList.toString();
 	fieldByteListString = $out.firstMultivalueOutput.byteListField.toString();
-	
+//	CLO-1262
+//	long l = null;
+//	test_null_l = toString(l);
+//	integer i = null;
+//	test_null_i = toString(i);
+//	decimal dec = null;
+//	test_null_dec = toString(dec);
+//	double d = null;
+//	test_null_d = toString(d);
 	return 0;
 }

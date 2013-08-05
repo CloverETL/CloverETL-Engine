@@ -275,6 +275,9 @@ public class StringUtils {
     * @return A metaphone code corresponding to the String supplied
     */
 	public static String metaphone(String input, int maxLength){
+		if(input == null){
+			return null;
+		}
 		String tmp = getOnlyAlphaNumericChars(input.trim(), true, true).toUpperCase();
 		char[] in = new char[tmp.length()]; 
 		tmp.getChars(0, in.length, in, 0);
@@ -477,7 +480,12 @@ public class StringUtils {
 	 * @return NYSIIS code
 	 */
 	public static String NYSIIS(String input){
-		if (isEmpty(input)) return "";
+		if (input == null){
+			return null;
+		}
+		if (input.equals("")){ 
+			return "";
+		}
 		StringBuilder nysiis = new StringBuilder();
 		String tmp = input.trim().toUpperCase();
 		char[] in = new char[tmp.length()]; 
@@ -1352,6 +1360,9 @@ public class StringUtils {
 	 * @return String where are only letters and (or) digits from input String
 	 */
 	public static String getOnlyAlphaNumericChars(String str, boolean takeAlpha, boolean takeNumeric) {
+		if (str == null){
+			return null;
+		}
 		if (!takeAlpha && !takeNumeric) {
 			return str;
 		}
@@ -1377,6 +1388,9 @@ public class StringUtils {
 	 * @return input string without blank space
 	 */
 	public static String removeBlankSpace(String str) {
+		if (str == null){
+			return null;
+		}
 		int length = str.length();
 		int counter = 0;
 		char[] chars = str.toCharArray();
@@ -1467,10 +1481,16 @@ public class StringUtils {
 	 * @return string in which diacritic chars are replaced by theirs equivalences without diacritic
 	 */
 	public static String removeDiacritic(String str) {
+		if (str == null){
+			return null;
+		}
 		return Normalizer.decompose(str, false, 0).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
 
 	public static String removeNonPrintable(String str){
+		if (str == null){
+			return null;
+		}
 		return str.replaceAll("[^\\p{Print}]+", "");
 	}
 	
@@ -1747,7 +1767,7 @@ public class StringUtils {
 	 *         3 if str is integer but has more than 18 digits
 	 */
 	public static short isInteger(CharSequence str) {
-		if (str.length() == 0) {
+		if (str == null || str.length() == 0) {
 			return -1;
 		}
 		int start = 0;
@@ -1783,7 +1803,7 @@ public class StringUtils {
 	 * @return
 	 */
 	public static boolean isNumber(CharSequence str) {
-		if (str.length() == 0) {
+		if (str == null || str.length() == 0) {
 			return false;
 		}
 		int start = 0;
@@ -1832,10 +1852,17 @@ public class StringUtils {
 	}
 
 	public static boolean isAscii(CharSequence str) {
-		return Pattern.matches("\\p{ASCII}*", str);
+		if (str != null) {
+			return Pattern.matches("\\p{ASCII}*", str);
+		} else {
+			return true;
+		}
 	}
 
 	public static String removeNonAscii(String str){
+		if (str == null){
+			return null;
+		}
 		return str.replaceAll("[^\\p{ASCII}]+", "");
 	}
 
@@ -2169,6 +2196,12 @@ public class StringUtils {
 
 	public static CharSequence translateSequentialSearch(CharSequence in, CharSequence searchSet,
 			CharSequence replaceSet) {
+		if(searchSet == null || replaceSet == null){
+			throw new NullPointerException("searchSet or replaceSet is null");
+		}
+		if(in == null){
+			return null;
+		}
 		StringBuilder result = new StringBuilder();
 		char[] search = charSequence2char(searchSet);
 		char[] replace = charSequence2char(replaceSet);

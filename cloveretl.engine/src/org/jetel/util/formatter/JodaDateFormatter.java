@@ -103,12 +103,16 @@ class JodaDateFormatter implements DateFormatter {
 	
 	@Override
 	public boolean tryParse(String value) {
-		try{
-			dateTimeFormatter.parseMillis(value);
-		}catch(IllegalArgumentException ex){
+		if (value != null){
+			try{
+				dateTimeFormatter.parseMillis(value);
+			}catch(IllegalArgumentException ex){
+				return false;
+			}
+			return true;
+		} else {
 			return false;
 		}
-		return true;
 	}
 
 	@Override

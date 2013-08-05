@@ -264,6 +264,12 @@ public final class DBLookup implements Lookup {
 		}
 	}
 	
+	public void clear() {
+		if (isCached() && recordCache != null) {
+			recordCache.clear();
+		}
+	}
+	
 	public void close() throws SQLException {
 	}
 	

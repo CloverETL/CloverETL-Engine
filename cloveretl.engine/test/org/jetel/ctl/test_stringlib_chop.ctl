@@ -19,6 +19,9 @@ string s18;
 string s19;
 string s20;
 
+string s21;
+string s22;
+
 function integer transform() {
 	s1=chop("hello\n");
 	s6=chop("hello\r");
@@ -44,5 +47,9 @@ function integer transform() {
 	s18=chop("",'aaa');
 	s19=chop("word",'');
 	s20=chop("",'');
+	s21=chop('');
+	
+	s22=chop("mark.twain@javlin.eu@javlin.eu", '@[a-z]*.[a-z]*');
+	
 	return 0;
 }
