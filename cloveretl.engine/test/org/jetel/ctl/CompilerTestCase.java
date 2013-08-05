@@ -1464,6 +1464,42 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_setDateValue(){
+		doCompile("test_dynamiclib_setDateValue");
+		Calendar cal = Calendar.getInstance();
+		cal.set(2006,10,12,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret1", cal.getTime());
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setDateValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setDateValue(fi,'Born', null);return 0;}","test_dynamiclib_setDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setDateValue($out.0,1, null);return 0;}","test_dynamiclib_setDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setDateValue($out.0,-2, null);return 0;}","test_dynamiclib_setDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setDateValue(12, null);return 0;}","test_dynamiclib_setDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
