@@ -1369,6 +1369,34 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_isNull(){
+		doCompile("test_dynamiclib_isNull");
+		check("ret1", false);
+		check("ret2", false);
+		check("ret3", true);
+	}
+	
+	public void test_dynamiclib_isNull_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; boolean b = fi.isNull(1); return 0;}","test_dynamiclib_isNull_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){boolean b = $in.0.isNull(-5); return 0;}","test_dynamiclib_isNull_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){boolean b = isNull($in.0,12); return 0;}","test_dynamiclib_isNull_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
