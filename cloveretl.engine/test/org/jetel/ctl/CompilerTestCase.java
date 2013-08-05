@@ -1533,6 +1533,39 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_setIntValue(){
+		doCompile("test_dynamiclib_setIntValue");
+		check("ret1", 90);
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setIntValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi =null; setIntValue(fi,5,null);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setIntValue($out.0,4,90);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setIntValue($out.0,-2,90);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setIntValue(15,90);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
