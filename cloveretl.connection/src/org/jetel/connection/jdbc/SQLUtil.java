@@ -860,7 +860,9 @@ public class SQLUtil {
 	 *         (c) Javlin, a.s. (www.cloveretl.com)
 	 *
 	 * @created Sep 18, 2012
+	 * @deprecated Use {@link SQLScriptParser} instead
 	 */
+	@Deprecated
 	private static class SQLSplitter {
 		
 		private enum State {
@@ -887,7 +889,9 @@ public class SQLUtil {
 		/**
 		 * @param input
 		 * @param customDelimiter if <code>null</code>, default ";" will be used.
+		 * @deprecated Use {@link SQLScriptParser} instead
 		 */
+		@Deprecated
 		public SQLSplitter(String input, String customDelimiter) {
 			this.input = input;
 			if (customDelimiter != null && !String.valueOf(DEFAULT_DELIMITER).equals(customDelimiter)) {
@@ -976,7 +980,9 @@ public class SQLUtil {
 
 	 * @param sql
 	 * @return individual queries
+	 * @deprecated Use {@link SQLScriptParser} instead
 	 */
+	@Deprecated
 	public static String[] split(String sql) {
 		return split(sql, null);
 	}
@@ -989,7 +995,9 @@ public class SQLUtil {
 	 * @param delimiter string separating individual SQL statements in the input <code>sql<code>.
 	 *                  If <code>null</code>, default ";" separator will be used.
 	 * @return individual SQL statements
+	 * @deprecated Use {@link SQLScriptParser} instead
 	 */
+	@Deprecated
 	public static String[] split(String sql, String delimiter) {
 		SQLSplitter splitter = new SQLSplitter(sql, delimiter);
 		splitter.run();

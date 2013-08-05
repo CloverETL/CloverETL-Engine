@@ -101,6 +101,9 @@ public class SQLSplitterTest extends TestCase {
 		doTestSplit("insert into table; /* this is a comment; */ delete from table; drop table", 3);
 		
 		doTestSplit("insert into table_name (column_name) values ('This is a test; ignore this entry');", 1);
+		
+		// Fails even though it is a valid MySQL query:
+		// doTestSplit("insert into table values('hello \\' ; \\' semicolon in string in quotes');", 1);
 	}
 
 	/**
