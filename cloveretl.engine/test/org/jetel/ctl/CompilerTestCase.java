@@ -1306,6 +1306,34 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_getStringValue(){
+		doCompile("test_dynamiclib_getStringValue");
+		check("ret1", CompilerTestCase.NAME_VALUE);
+		check("ret2", CompilerTestCase.NAME_VALUE);
+		check("ret3", null);
+	}
+	
+	public void test_dynamiclib_getStringValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = getStringValue(fi, 0); return 0;}","test_dynamiclib_getStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = getStringValue($in.0, 5); return 0;}","test_dynamiclib_getStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = $in.0.getStringValue('Age'); return 0;}","test_dynamiclib_getStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
