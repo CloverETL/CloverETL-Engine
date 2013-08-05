@@ -1334,6 +1334,41 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_getValueAsString(){
+		doCompile("test_dynamiclib_getValueAsString");
+		check("ret1", "  HELLO  ");
+		check("ret2", "20.25");
+		check("ret3", "Chong'La");
+		check("ret4", "Sun Jan 25 13:25:55 CET 2009");
+		check("ret5", "1232886355333");
+		check("ret6", "2147483637");
+		check("ret7", "true");
+		check("ret8", "41626563656461207a65646c612064656461");
+		check("ret9", "133.525");
+		check("ret10", null);
+	}
+	
+	public void test_dynamiclib_getValueAsString_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = getValueAsString(fi, 1); return 0;}","test_dynamiclib_getValueAsString_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = getValueAsString($in.0, -1); return 0;}","test_dynamiclib_getValueAsString_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = $in.0.getValueAsString(10); return 0;}","test_dynamiclib_getValueAsString_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
