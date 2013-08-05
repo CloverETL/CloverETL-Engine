@@ -1431,6 +1431,39 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_setByteValue() throws UnsupportedEncodingException{
+		doCompile("test_dynamiclib_setByteValue");
+		checkArray("ret1", "Urgot".getBytes("UTF-8"));
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setByteValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi =null; setByteValue(fi,7,str2byte('Sion', 'utf-8')); return 0;}","test_dynamiclib_setByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setByteValue($out.0, 1, str2byte('Sion', 'utf-8')); return 0;}","test_dynamiclib_setByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setByteValue($out.0, 12, str2byte('Sion', 'utf-8')); return 0;}","test_dynamiclib_setByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setByteValue(-2, str2byte('Sion', 'utf-8')); return 0;}","test_dynamiclib_setByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
