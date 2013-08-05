@@ -1145,7 +1145,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret2","Name");
 	}
 	
-	public void test_dynamiclib_expect_error(){
+	public void test_dynamiclib_getFieldLable_expect_error(){
 		try {
 			doCompile("function integer transform(){string name = getFieldLabel($in.0, -5);return 0;}","test_dynamiclib_expect_error");
 			fail();
@@ -1214,6 +1214,36 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldType(5); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getIntValue(){
+		doCompile("test_dynamiclib_getIntValue");
+		check("ret1", CompilerTestCase.VALUE_VALUE);
+		check("ret2", CompilerTestCase.VALUE_VALUE);
+		check("ret3", CompilerTestCase.VALUE_VALUE);
+		check("ret4", CompilerTestCase.VALUE_VALUE);
+		check("ret5", null);
+	}
+	
+	public void test_dynamiclib_getIntValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; integer i = fi.getIntValue(5); return 0;}","test_dynamiclib_getIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getIntValue($in.0, 1); return 0;}","test_dynamiclib_getIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getIntValue($in.0, 'Born'); return 0;}","test_dynamiclib_getIntValue_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
