@@ -25,17 +25,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.SQLCloverCallableStatement;
+import org.jetel.connection.jdbc.SQLScriptParser;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
-import org.jetel.data.parser.TextParser;
-import org.jetel.data.parser.TextParserFactory;
 import org.jetel.database.IConnection;
 import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.JdbcSpecific.OperationType;
@@ -53,8 +52,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
-import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.ReadableChannelIterator;
@@ -233,8 +230,7 @@ public class DBExecute extends Node {
 	private OutputPort errPort;
 	private ReadableChannelIterator channelIterator;
 	private OutputPort outPort;
-	private TextParser parser;
-	private DataRecordMetadata statementMetadata;
+	private SQLScriptParser sqlScriptParser;
 
 	/**
 	 *  Constructor for the DBExecute object
@@ -306,79 +302,30 @@ public class DBExecute extends Node {
 		}        
 		if (dbSQL==null){
             String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
+            sqlScriptParser = new SQLScriptParser();
+            sqlScriptParser.setDelimiter(delimiter);
+            sqlScriptParser.setBackslashQuoteEscaping(dbConnection.getJdbcSpecific().isBackslashEscaping());
+            sqlScriptParser.setRequireLastDelimiter(false);
             if (sqlQuery != null) {
-            	// temporary fix for issue 3472, if match contains odd count of single or double qoutes,
-            	// it is not removed from string - lkrejci
-            	// TODO: create sql parser which will detect all comments correctly.
-            	Matcher matcher = dbConnection.getJdbcSpecific().getCommentsPattern().matcher(sqlQuery);
-            	boolean result = matcher.find();            	
-            	String sqlQueryWithouComments;
-            	if (result) {
-            		boolean replace;
-    				int countSingleQoute;
-    				int countDoubleQoute;
-    				StringBuffer sb = new StringBuffer();
-    				do {
-    					replace = true;
-    					if (sqlQuery.charAt(matcher.start()) == '-') {
-    						int lastSingleQuote = sqlQuery.lastIndexOf("'", matcher.start());
-    						int lastDoubleQuote = sqlQuery.lastIndexOf("\"", matcher.start());
-    						if (lastSingleQuote != -1 || lastDoubleQuote != -1) {							
-    							char[] chars = sqlQuery.substring(matcher.start(), matcher.end()).toCharArray();
-    							countSingleQoute = 0;
-    							countDoubleQoute = 0;
-    							for (int i = 0; i < chars.length; i++) {
-    								if (chars[i] == '\'') {
-    									countSingleQoute++;
-    								} else if (chars[i] == '"') {
-    									countDoubleQoute++;
-    								}
-    							}
-    							replace = ((countSingleQoute % 2 == 1) || (countDoubleQoute % 2 == 1)) ? false : true;
-    						}
-    					}					
-    					if (replace) {
-    						matcher.appendReplacement(sb, "");
-    					}
-    					result=matcher.find();
-    				} while (result);
-					matcher.appendTail(sb);
-					sqlQueryWithouComments = sb.toString();
-            	} else {
-            		sqlQueryWithouComments = sqlQuery;
-            	}
-            	// end of issue 3472 temporary fix
-            	
-            	String[] parts = StringUtils.split(sqlQueryWithouComments,delimiter);
-            	ArrayList<String> tmp = new ArrayList<String>();
-            	for(String part: parts) {
-            		if (part.trim().length() > 0) {
-            			tmp.add(part);
-            		}
-            	}
-				dbSQL = tmp.toArray(new String[tmp.size()]); 
+            	sqlScriptParser.setStringInput(sqlQuery);
+            	List<String> dbSQLList = new ArrayList<String>();
+            	String sqlQuery;
+            	try {
+					while ((sqlQuery = sqlScriptParser.getNextStatement()) != null) {
+						dbSQLList.add(sqlQuery);
+					}
+				} catch (IOException e) {
+					throw new ComponentNotReadyException("Cannot parse SQL statements", e);
+				}
+            	dbSQL = dbSQLList.toArray(new String[dbSQLList.size()]);
 			}else{//read statements from file or input port
 				channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), getGraph().getRuntimeContext().getContextURL(),
 						fileUrl);
 				channelIterator.setCharset(charset);
 				channelIterator.setDictionary(getGraph().getDictionary());
 				channelIterator.init();
-				//statements are single strings delimited by delimiter (see above)
-				statementMetadata = new DataRecordMetadata("_statement_metadata_", DataRecordMetadata.DELIMITED_RECORD);
-				statementMetadata.setFieldDelimiter(delimiter);
-				DataFieldMetadata statementField = new DataFieldMetadata("_statement_field_", DataFieldMetadata.STRING_FIELD, null);
-				statementField.setEofAsDelimiter(true);
-				statementField.setTrim(true);
-				statementMetadata.addField(statementField);
-				parser = TextParserFactory.getParser(statementMetadata, charset);
-				parser.init();
 			}
         }
-		if (printStatements && dbSQL != null){
-			for (int i = 0; i < dbSQL.length; i++) {
-				logger.info(dbSQL[i]);
-			}
-		}
 		if ((outPort = getOutputPort(WRITE_TO_PORT)) != null) {
 			outRecord = DataRecordFactory.newRecord(outPort.getMetadata());
 			outRecord.init();
@@ -615,28 +562,26 @@ public class DBExecute extends Node {
 	public Result execute() throws Exception {
 		try {
     		if (channelIterator != null) {
-    			DataRecord statementRecord;
-    			Object tmp;//TODO remove it !!!!!!
+    			Object readableByteChannel;
+    			Charset nioCharset = this.charset != null ? Charset.forName(this.charset) : Charset.defaultCharset();
     			while (channelIterator.hasNext()) {
-    				tmp = channelIterator.next();
-    				if (tmp == null) break;
-    				parser.setDataSource(tmp);
-    				statementRecord = DataRecordFactory.newRecord(statementMetadata);
-    				statementRecord.init();
+    				readableByteChannel = channelIterator.next();
+    				if (readableByteChannel == null) break;
+    				sqlScriptParser.setInput(readableByteChannel, nioCharset);
+    				String statement;
     				int index = 0;
-    				//read statements from byte channel
-    				while ((statementRecord = parser.getNext(statementRecord)) != null) {
+    				while ((statement = sqlScriptParser.getNextStatement()) != null) {
     					if (printStatements) {
-    						logger.info("Executing  statement: " + statementRecord.getField(0).toString());
+							logger.info("Executing statement: " + statement);
     					}
     					try {
     						if (procedureCall) {
     							callableStatement[0] = new SQLCloverCallableStatement(connection, 
-    									statementRecord.getField(0).toString(), null, outRecord, dbConnection.getResultSetType());
+    									statement, null, outRecord, dbConnection.getResultSetType());
     							callableStatement[0].prepareCall();
     							executeCall(callableStatement[0], index);
     						}else{
-    							sqlStatement.executeUpdate(statementRecord.getField(0).toString());
+    							sqlStatement.executeUpdate(statement);
     						}
     					} catch (SQLException e) {
     						handleException(e, null, index);
@@ -657,6 +602,9 @@ public class DBExecute extends Node {
     			}
     			if (inPort == null || inRecord != null) do {
     				for (int i = 0; i < dbSQL.length; i++){
+    					if (printStatements) {
+    						logger.info("Executing statement: " + dbSQL[i]);
+    					}
     					try {
     						if (procedureCall) {
     							executeCall(callableStatement[i], i);
