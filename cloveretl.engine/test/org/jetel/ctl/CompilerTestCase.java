@@ -7834,7 +7834,29 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("userInfo_null", null);
 		check("ref_null", null);
 		check("query_empty", null);
-		
+	}
+
+	public void test_utillib_iif() throws UnsupportedEncodingException{
+		doCompile("test_utillib_iif");
+		check("ret1", "Renektor");
+		Calendar cal = Calendar.getInstance();
+		cal.set(2005,10,12,0,0,0);
+		cal.set(Calendar.MILLISECOND,0);
+		check("ret2", cal.getTime());
+		checkArray("ret3", "Akali".getBytes("UTF-8"));
+		check("ret4", 236);
+		check("ret5", 78L);
+		check("ret6", 78.2d);
+		check("ret7", new BigDecimal("87.69"));
+		check("ret8", true);
 	}
 	
+	public void test_utillib_iif_expect_error(){
+		try {
+			doCompile("function integer transform(){string str = iif(null, 'Rammus', 'Sion'); return 0;}","test_utillib_iif_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 }
