@@ -299,11 +299,6 @@
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Validator"/>
-	    <parameter id="type" value="VALIDATOR"/>
-	</extension>
-	
-	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.SpeedLimiter"/>
 	    <parameter id="type" value="SPEED_LIMITER"/>
 	</extension>
