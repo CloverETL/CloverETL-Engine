@@ -19,14 +19,6 @@ function integer transform(){
 	ret6 = iif(b2, 15.98, 78.2);
 	ret7 = iif(b1, 87.69d, 578.32d);
 	ret8 = iif(b2, b2, b1);
-	printErr(ret1);
-	printErr(ret2);
-	printErr(ret3);
-	printErr(ret4);
-	printErr(ret5);
-	printErr(ret6);
-	printErr(ret7);
-	printErr(ret8);
 	
 	return 0;
 }
