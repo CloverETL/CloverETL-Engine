@@ -7859,4 +7859,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+	
+	public void test_utillib_isnull(){
+		doCompile("test_utillib_isnull");
+		check("ret1", false);
+		check("ret2", true);
+		check("ret3", false);
+		check("ret4", true);
+		check("ret5", false);
+		check("ret6", true);
+		check("ret7", false);
+		check("ret8", true);
+		check("ret9", false);
+		check("ret10", true);
+		check("ret11", false);
+		check("ret12", true);
+		check("ret13", false);
+		check("ret14", true);
+		check("ret15", false);
+		check("ret16", true);
+		check("ret17", false);
+		check("ret18", true);
+	}
+	
 }
