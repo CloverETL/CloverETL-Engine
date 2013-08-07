@@ -7880,6 +7880,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret16", true);
 		check("ret17", false);
 		check("ret18", true);
+		check("ret19", true);
 	}
 	
+	public void test_utillib_nvl() throws UnsupportedEncodingException{
+		doCompile("test_utillib_nvl");
+		check("ret1", "Fiora");
+		check("ret2", "Olaf");
+		checkArray("ret3", "Elise".getBytes("UTF-8"));
+		checkArray("ret4", "Diana".getBytes("UTF-8"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2005,4,13,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret5", cal.getTime());
+		cal.clear();
+		cal.set(2004,2,14,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret6", cal.getTime());
+		check("ret7", 7);
+		check("ret8", 8);
+		check("ret9", 111l);
+		check("ret10", 112l);
+		check("ret11", 10.1d);
+		check("ret12", 10.2d);
+		check("ret13", new BigDecimal("12.2"));
+		check("ret14", new BigDecimal("12.3"));
+		check("ret15", null);
+	}
 }
