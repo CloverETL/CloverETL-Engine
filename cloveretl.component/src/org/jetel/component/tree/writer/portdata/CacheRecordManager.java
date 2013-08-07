@@ -231,7 +231,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 		checkIfClosed();
 
 		//recman.close();
-		((BaseRecordManager)recman).forceClose();
+		((BaseRecordManager)recman).forceClose(false);
 		recman = null;
 		hash = null;
 	}
