@@ -7853,7 +7853,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_utillib_iif_expect_error(){
 		try {
-			doCompile("function integer transform(){string str = iif(null, 'Rammus', 'Sion'); return 0;}","test_utillib_iif_expect_error");
+			doCompile("function integer transform(){boolean b = null; string str = iif(b, 'Rammus', 'Sion'); return 0;}","test_utillib_iif_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
