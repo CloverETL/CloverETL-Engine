@@ -6704,13 +6704,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_convertlib_bool2num_expect_error(){
 //		CLO-1255
-//		//this test should be expected to success in future
-//		try {
-//			doCompile("function integer transform(){integer s = bool2num(null);return 0;}","test_convertlib_bool2num_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){boolean b = null; integer s = bool2num(b);return 0;}","test_convertlib_bool2num_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_byte2base64() {
@@ -7905,7 +7905,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret12", 10.2d);
 		check("ret13", new BigDecimal("12.2"));
 		check("ret14", new BigDecimal("12.3"));
-		check("ret15", null);
+//		check("ret15", null);
 	}
 	
 	public void test_utillib_nvl2() throws UnsupportedEncodingException{
@@ -7930,7 +7930,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret12", 89.3d);
 		check("ret13", new BigDecimal("22.2"));
 		check("ret14", new BigDecimal("55.5"));
-		check("ret15", null);
-		check("ret16", null);
+//		check("ret15", null);
+//		check("ret16", null);
 	}
 }
