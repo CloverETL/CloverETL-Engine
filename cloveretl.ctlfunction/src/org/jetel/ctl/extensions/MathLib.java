@@ -450,17 +450,23 @@ public class MathLib extends TLFunctionLibrary {
 		}
 
 		@Override
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bitAnd(context, stack.popInt(), stack.popInt()));
-				return;
-			}
-
-			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bitAnd(context, stack.popLong(), stack.popLong()));
-				return;
-			}
-		}
+		  public void execute(Stack stack, TLFunctionCallContext context) {
+		   
+		   /*
+		    * The variant bitAnd(int,int) can only be called when both arguments are int
+		    */
+		   if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
+		    stack.push(bitAnd(context,stack.popInt(), stack.popInt()));
+		   } else {
+		    
+		    /*
+		     * In all other cases, i.e. bitAnd(int,long), bitAnd(long, int), bitAnd(long,long)
+		     * the compiler will automatically cast int to long so we have to always call bitAnd(long,long)
+		     */
+		    stack.push(bitAnd(context, stack.popLong(), stack.popLong()));
+		   }
+		   
+		  } 
 	}
 
     @TLFunctionAnnotation("Computes bitwise XOR of two operands.")
