@@ -5499,6 +5499,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 1l);
 		check("resultLong3", 3l);
 		check("resultLong4", 3l);
+		check("resultMix1", 15L);
+		check("resultMix2", 15L);
 	}
 	
 	public void test_bitwise_or_expect_error(){
