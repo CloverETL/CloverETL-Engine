@@ -413,18 +413,23 @@ public class MathLib extends TLFunctionLibrary {
 		}
 
 		@Override
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bitOr(context, stack.popInt(), stack.popInt()));
-				return;
-			} 
-			
-			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bitOr(context, stack.popLong(), stack.popLong()));
-				return;
-			} 
-			
-		} 
+		  public void execute(Stack stack, TLFunctionCallContext context) {
+		   
+		   /*
+		    * The variant bitOr(int,int) can only be called when both arguments are int
+		    */
+		   if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
+		    stack.push(bitOr(context,stack.popInt(), stack.popInt()));
+		   } else {
+		    
+		    /*
+		     * In all other cases, i.e. bitOr(int,long), bitOr(long, int), bitOr(long,long)
+		     * the compiler will automatically cast int to long so we have to always call bitOr(long,long)
+		     */
+		    stack.push(bitOr(context, stack.popLong(), stack.popLong()));
+		   }
+		   
+		  } 
 
     }
 
