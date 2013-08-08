@@ -292,6 +292,11 @@
 	</extension>
 	
 	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.JsonExtract"/>
+	    <parameter id="type" value="JSON_EXTRACT"/>
+	</extension>
+	
+	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XmlReader"/>
 	    <parameter id="type" value="XML_READER"/>
 	</extension>
