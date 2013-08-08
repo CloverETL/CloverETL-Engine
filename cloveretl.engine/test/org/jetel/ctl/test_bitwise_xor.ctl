@@ -20,10 +20,8 @@ function integer transform() {
 	resultLong2 = bitXor(1l,1l);
 	resultLong3 = bitXor(2l,1l);
 	resultLong4 = bitXor(3l,1l);
-//	CLO-1415
-//	test_mixed1 = bitXor(31L,16);
-//	printErr(test_mixed1);
-//	test_mixed2 = bitXor(48,12L);
-//	printErr(test_mixed2);
+
+	test_mixed1 = bitXor(31L,16);
+	test_mixed2 = bitXor(48,12L);
 	return 0;
 }
