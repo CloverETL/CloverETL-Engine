@@ -5552,9 +5552,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 1l);
 		check("resultLong3", 0l);
 		check("resultLong4", 1l);
-//CLO-1385
-//		check("test_mixed1", 12l);
-//		check("test_mixed2", 12l);
+		check("test_mixed1", 4l);
+		check("test_mixed2", 4l);
 	}
 
 	public void test_bitwise_and_expect_error(){
