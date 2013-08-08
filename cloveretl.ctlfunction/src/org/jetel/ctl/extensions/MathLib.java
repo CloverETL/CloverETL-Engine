@@ -486,17 +486,23 @@ public class MathLib extends TLFunctionLibrary {
 		}
 
 		@Override
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-				stack.push(bitXor(context, stack.popInt(), stack.popInt()));
-				return;
-			} 
-			
-			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-				stack.push(bitXor(context, stack.popLong(), stack.popLong()));
-				return;
-			} 
-		} 
+		  public void execute(Stack stack, TLFunctionCallContext context) {
+		   
+		   /*
+		    * The variant bitXor(int,int) can only be called when both arguments are int
+		    */
+		   if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
+		    stack.push(bitXor(context,stack.popInt(), stack.popInt()));
+		   } else {
+		    
+		    /*
+		     * In all other cases, i.e. bitXor(int,long), bitXor(long, int), bitXor(long,long)
+		     * the compiler will automatically cast int to long so we have to always call bitXor(long,long)
+		     */
+		    stack.push(bitXor(context, stack.popLong(), stack.popLong()));
+		   }
+		   
+		  } 
     }
     
     @TLFunctionAnnotation("Shifts the first operand to the left by bits specified in the second operand.")
