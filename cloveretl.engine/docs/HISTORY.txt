@@ -1,6 +1,7 @@
 *******************************************************************************
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
+
 REL-3-5-0-M1
 ------------
 
@@ -8,6 +9,12 @@ REL-3-5-0-M1
 * Improved timezones support
 * JSch library upgraded to 0.1.50
 * Graph bottleneck detection
+- FIXES:
+  - String functions (e.g. isNumber) fail on empty or null strings
+  - NullPointerException from base64byte function
+  - Readers fail with NPE when port is connected and valid file URL is specified
+  - HTTPConnector could have also "Access Token" and "Access Token Secret" properties and it could be able to create Authorization Header
+  
 
 REL-3-4-1
 ---------

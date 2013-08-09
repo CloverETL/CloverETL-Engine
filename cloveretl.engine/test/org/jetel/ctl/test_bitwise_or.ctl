@@ -6,6 +6,8 @@ long resultLong1;
 long resultLong2;
 long resultLong3;
 long resultLong4;
+long resultMix1;
+long resultMix2;
 
 function integer transform() {
 
@@ -17,6 +19,8 @@ function integer transform() {
 	resultLong2 = bitOr(1l,1l);
 	resultLong3 = bitOr(2l,1l);
 	resultLong4 = bitOr(3l,1l);
+	resultMix1 = bitOr(13,2L);
+	resultMix2 = bitOr(13L,2);
 	
 	return 0;
 }

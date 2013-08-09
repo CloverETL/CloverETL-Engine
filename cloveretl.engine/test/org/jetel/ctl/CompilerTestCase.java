@@ -1500,6 +1500,171 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_dynamiclib_setDecimalValue(){
+		doCompile("test_dynamiclib_setDecimalValue");
+		check("ret1", new BigDecimal("12.300"));
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setDecimalValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setDecimalValue(fi, 'Currency', 12.8d);return 0;}","test_dynamiclib_setDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setDecimalValue($out.0, 'Name', 12.8d);return 0;}","test_dynamiclib_setDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setDecimalValue(-1, 12.8d);return 0;}","test_dynamiclib_setDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setDecimalValue(15, 12.8d);return 0;}","test_dynamiclib_setDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setIntValue(){
+		doCompile("test_dynamiclib_setIntValue");
+		check("ret1", 90);
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setIntValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi =null; setIntValue(fi,5,null);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setIntValue($out.0,4,90);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setIntValue($out.0,-2,90);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setIntValue(15,90);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setLongValue(){
+		doCompile("test_dynamiclib_setLongValue");
+		check("ret1", 1565486L);
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setLongValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setLongValue(fi, 4, 51231L); return 0;}","test_dynamiclib_setLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setLongValue($out.0, 0, 51231L); return 0;}","test_dynamiclib_setLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setLongValue($out.0, -1, 51231L); return 0;}","test_dynamiclib_setLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setLongValue(12, 51231L); return 0;}","test_dynamiclib_setLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setNumValue(){
+		doCompile("test_dynamiclib_setNumValue");
+		check("ret1", 12.5d);
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setNumValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setNumValue(fi, 'Age', 15.3); return 0;}","test_dynamiclib_setNumValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setNumValue($out.0, 'Name', 15.3); return 0;}","test_dynamiclib_setNumValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setNumValue($out.0, -1, 15.3); return 0;}","test_dynamiclib_setNumValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setNumValue(11, 15.3); return 0;}","test_dynamiclib_setNumValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setStringValue(){
+		doCompile("test_dynamiclib_setStringValue");
+		check("ret1", "Zac");
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setStringValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setStringValue(fi, 'Name', 'Draven'); return 0;}","test_dynamiclib_setStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setStringValue($out.0, 'Age', 'Soraka'); return 0;}","test_dynamiclib_setStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setStringValue($out.0, -1, 'Rengar'); return 0;}","test_dynamiclib_setStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setStringValue(11, 'Vaigar'); return 0;}","test_dynamiclib_setStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
@@ -5334,6 +5499,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 1l);
 		check("resultLong3", 3l);
 		check("resultLong4", 3l);
+		check("resultMix1", 15L);
+		check("resultMix2", 15L);
 	}
 	
 	public void test_bitwise_or_expect_error(){
@@ -5385,9 +5552,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 1l);
 		check("resultLong3", 0l);
 		check("resultLong4", 1l);
-//CLO-1385
-//		check("test_mixed1", 12l);
-//		check("test_mixed2", 12l);
+		check("test_mixed1", 4l);
+		check("test_mixed2", 4l);
 	}
 
 	public void test_bitwise_and_expect_error(){
@@ -5443,6 +5609,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 0l);
 		check("resultLong3", 3l);
 		check("resultLong4", 2l);
+		check("test_mixed1", 15L);
+		check("test_mixed2", 60L);
 	}
 	
 	public void test_bitwise_xor_expect_error(){
@@ -6539,13 +6707,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_convertlib_bool2num_expect_error(){
 //		CLO-1255
-//		//this test should be expected to success in future
-//		try {
-//			doCompile("function integer transform(){integer s = bool2num(null);return 0;}","test_convertlib_bool2num_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){boolean b = null; integer s = bool2num(b);return 0;}","test_convertlib_bool2num_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_byte2base64() {
@@ -7669,7 +7837,103 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("userInfo_null", null);
 		check("ref_null", null);
 		check("query_empty", null);
-		
+	}
+
+	public void test_utillib_iif() throws UnsupportedEncodingException{
+		doCompile("test_utillib_iif");
+		check("ret1", "Renektor");
+		Calendar cal = Calendar.getInstance();
+		cal.set(2005,10,12,0,0,0);
+		cal.set(Calendar.MILLISECOND,0);
+		check("ret2", cal.getTime());
+		checkArray("ret3", "Akali".getBytes("UTF-8"));
+		check("ret4", 236);
+		check("ret5", 78L);
+		check("ret6", 78.2d);
+		check("ret7", new BigDecimal("87.69"));
+		check("ret8", true);
 	}
 	
+	public void test_utillib_iif_expect_error(){
+		try {
+			doCompile("function integer transform(){boolean b = null; string str = iif(b, 'Rammus', 'Sion'); return 0;}","test_utillib_iif_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_utillib_isnull(){
+		doCompile("test_utillib_isnull");
+		check("ret1", false);
+		check("ret2", true);
+		check("ret3", false);
+		check("ret4", true);
+		check("ret5", false);
+		check("ret6", true);
+		check("ret7", false);
+		check("ret8", true);
+		check("ret9", false);
+		check("ret10", true);
+		check("ret11", false);
+		check("ret12", true);
+		check("ret13", false);
+		check("ret14", true);
+		check("ret15", false);
+		check("ret16", true);
+		check("ret17", false);
+		check("ret18", true);
+		check("ret19", true);
+	}
+	
+	public void test_utillib_nvl() throws UnsupportedEncodingException{
+		doCompile("test_utillib_nvl");
+		check("ret1", "Fiora");
+		check("ret2", "Olaf");
+		checkArray("ret3", "Elise".getBytes("UTF-8"));
+		checkArray("ret4", "Diana".getBytes("UTF-8"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2005,4,13,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret5", cal.getTime());
+		cal.clear();
+		cal.set(2004,2,14,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret6", cal.getTime());
+		check("ret7", 7);
+		check("ret8", 8);
+		check("ret9", 111l);
+		check("ret10", 112l);
+		check("ret11", 10.1d);
+		check("ret12", 10.2d);
+		check("ret13", new BigDecimal("12.2"));
+		check("ret14", new BigDecimal("12.3"));
+//		check("ret15", null);
+	}
+	
+	public void test_utillib_nvl2() throws UnsupportedEncodingException{
+		doCompile("test_utillib_nvl2");
+		check("ret1", "Ahri");
+		check("ret2", "Galio");
+		checkArray("ret3", "Mordekaiser".getBytes("UTF-8"));
+		checkArray("ret4", "Zed".getBytes("UTF-8"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2010,4,18,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret5", cal.getTime());
+		cal.clear();
+		cal.set(2008,7,9,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret6", cal.getTime());
+		check("ret7", 11);
+		check("ret8", 18);
+		check("ret9", 20L);
+		check("ret10", 23L);
+		check("ret11", 15.2d);
+		check("ret12", 89.3d);
+		check("ret13", new BigDecimal("22.2"));
+		check("ret14", new BigDecimal("55.5"));
+//		check("ret15", null);
+//		check("ret16", null);
+	}
 }

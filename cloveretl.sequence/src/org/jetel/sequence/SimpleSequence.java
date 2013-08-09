@@ -208,32 +208,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
         if(isInitialized()) return;
 		super.init();
 		
-        if (!StringUtils.isEmpty(configFileName)) {
-            try {
-            	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
-            	InputStream stream = null;
-            	try {
-	                stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
-	
-	                Properties tempProperties = new Properties();
-	                tempProperties.load(stream);
-	        		TypedProperties typedProperties = new TypedProperties(tempProperties, getGraph());
-	
-	        		setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
-	        		setFilename(typedProperties.getStringProperty(XML_FILE_URL_ATTRIBUTE, null));
-	        		start = typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0);
-	        		step = typedProperties.getIntProperty(XML_STEP_ATTRIBUTE, 0);
-	        		numCachedValues = typedProperties.getIntProperty(XML_CACHED_ATTRIBUTE, 0);                
-	        		this.sequenceValue = start;
-            	} finally {
-            		if (stream != null) {
-            			stream.close();
-            		}
-            	}
-            } catch (Exception ex) {
-				throw new ComponentNotReadyException("Loading of external definition of SimpleSequence failed.", ex);
-            }
-        }
+		loadExternalSequence();
 		
         buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
@@ -269,6 +244,35 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		}
     }
 
+    private void loadExternalSequence() throws ComponentNotReadyException {
+        if (!StringUtils.isEmpty(configFileName)) {
+            try {
+            	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
+            	InputStream stream = null;
+            	try {
+	                stream = FileUtils.getFileURL(projectURL, configFileName).openStream();
+	
+	                Properties tempProperties = new Properties();
+	                tempProperties.load(stream);
+	        		TypedProperties typedProperties = new TypedProperties(tempProperties, getGraph());
+	
+	        		setName(typedProperties.getStringProperty(XML_NAME_ATTRIBUTE));
+	        		setFilename(typedProperties.getStringProperty(XML_FILE_URL_ATTRIBUTE, null));
+	        		start = typedProperties.getLongProperty(XML_START_ATTRIBUTE, 0);
+	        		step = typedProperties.getIntProperty(XML_STEP_ATTRIBUTE, 0);
+	        		numCachedValues = typedProperties.getIntProperty(XML_CACHED_ATTRIBUTE, 0);                
+	        		this.sequenceValue = start;
+            	} finally {
+            		if (stream != null) {
+            			stream.close();
+            		}
+            	}
+            } catch (Exception ex) {
+				throw new ComponentNotReadyException("Loading of external definition of SimpleSequence failed.", ex);
+            }
+        }
+    }
+    
     @Override
     public synchronized void reset() throws ComponentNotReadyException {
     	super.reset();
@@ -338,9 +342,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
 	}
 
 	public void setFilename(String filename) {
-		if(isInitialized()) {
-			throw new RuntimeException("Attempt to set file name for initialized sequence '" + toString() + "'.");
-		}
 		this.filename = filename;
 	}
 	
@@ -366,16 +367,15 @@ public class SimpleSequence extends GraphElement implements Sequence {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
-        if (!StringUtils.isEmpty(configFileName)) {
-        	//cache file is checked only for internal sequences, since filename variable is not still initialise for external sequences
-	        try {
-				if (!FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), filename)) {
-		            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, "Can't write to " + filename);
-				}
-			} catch (ComponentNotReadyException e) {
-				status.add(e, Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
+        try {
+            loadExternalSequence();
+
+            if (!FileUtils.canWrite(getGraph().getRuntimeContext().getContextURL(), filename)) {
+	            throw new ComponentNotReadyException(this, XML_FILE_URL_ATTRIBUTE, "Can't write to " + filename);
 			}
-        }
+		} catch (ComponentNotReadyException e) {
+			status.add(e, Severity.ERROR, this, Priority.NORMAL, e.getAttributeName());
+		}
         
         return status;
     }
