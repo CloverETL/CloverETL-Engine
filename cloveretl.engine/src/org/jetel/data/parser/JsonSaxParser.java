@@ -38,8 +38,6 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.sun.org.apache.xml.internal.serializer.utils.AttList;
-
 /**
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
