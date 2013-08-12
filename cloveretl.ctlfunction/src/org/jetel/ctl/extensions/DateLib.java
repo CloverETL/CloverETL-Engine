@@ -230,6 +230,9 @@ public class DateLib extends TLFunctionLibrary {
 	public static final Date extractDate(TLFunctionCallContext context, Date d) {
     	// this hardcore code is necessary, subtracting milliseconds 
     	// or using Calendar.clear() does not seem to handle light-saving correctly
+    	if (d == null){
+    		return null;
+    	}
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
     	cal.setTime(d);
     	int[] portion = new int[]{cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR)};
