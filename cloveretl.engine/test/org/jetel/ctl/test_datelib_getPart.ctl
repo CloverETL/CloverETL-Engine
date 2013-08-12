@@ -33,6 +33,23 @@ integer hour_null;
 integer minute_null;
 integer second_null;
 integer milli_null;
+
+integer year_null2;
+integer month_null2;
+integer day_null2;
+integer hour_null2;
+integer minute_null2;
+integer second_null2;
+integer milli_null2;
+
+integer year_null3;
+integer month_null3;
+integer day_null3;
+integer hour_null3;
+integer minute_null3;
+integer second_null3;
+integer milli_null3;
+
 function integer transform() {
 	date myDate = str2date("2013-06-11 14:46:34 GMT+1:00", "yyyy-MM-dd HH:mm:ss z");
 	myDate = dateAdd(myDate, 123, millisec);
@@ -74,5 +91,24 @@ function integer transform() {
 	minute_null = getMinute(myDate, timeZone);
 	second_null = getSecond(myDate, timeZone);
 	milli_null = getMillisecond(myDate, timeZone);
+	
+	date d = null;
+	timeZone = "GMT+5";
+	year_null2 = getYear(d, timeZone);
+	month_null2 = getMonth(d, timeZone);
+	day_null2 = getDay(d, timeZone);
+	hour_null2 = getHour(d, timeZone);
+	minute_null2 = getMinute(d, timeZone);
+	second_null2 = getSecond(d, timeZone);
+	milli_null2 = getMillisecond(d, timeZone);
+	
+	year_null3 = getYear(null);
+	month_null3 = getMonth(null);
+	day_null3 = getDay(null);
+	hour_null3 = getHour(null);
+	minute_null3 = getMinute(null);
+	second_null3 = getSecond(null);
+	milli_null3 = getMillisecond(null);
+	
 	return 0;
 }
