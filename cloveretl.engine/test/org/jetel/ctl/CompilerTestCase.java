@@ -3513,6 +3513,33 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("charlieUpdatedCount", 5);
 		check("charlieUpdatedResult", Arrays.asList("Chamonix", "Cheb", "Chodov", "Chomutov", "Chrudim"));
 		check("putResult", true);
+		check("meta", null);
+		check("meta2", null);
+		check("meta3", null);
+		check("meta4", null);
+		check("strRet", "Bratislava");
+	}
+	
+	public void test_lookup_expect_error(){
+		//CLO-1582
+//		try {
+//			doCompile("function integer transform(){string str = lookup(TestLookup).get('Alpha',2).City; return 0;}","test_lookup_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+		try {
+			doCompile("function integer transform(){lookupMetadata meta = null; lookup(TestLookup).put(meta); return 0;}","test_lookup_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){lookup(TestLookup).put(null); return 0;}","test_lookup_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 //------------------------- ContainerLib Tests---------------------
