@@ -19,6 +19,7 @@
 package org.jetel.component.fileoperation.pool;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,7 +30,7 @@ public abstract class AbstractPoolableConnection implements PoolableConnection {
 
 	protected final Authority authority;
 	
-	private boolean borrowed = false;
+	private AtomicBoolean borrowed = new AtomicBoolean(false);
 	
 	public AbstractPoolableConnection(Authority authority) {
 		this.authority = authority;
@@ -50,25 +51,23 @@ public abstract class AbstractPoolableConnection implements PoolableConnection {
 
 	@Override
 	public boolean isBorrowed() {
-		return borrowed;
+		return borrowed.get();
 	}
 
 	@Override
-	public void setBorrowed(boolean borrowed) {
-		this.borrowed = borrowed;
+	public boolean setBorrowed(boolean borrowed) {
+		return this.borrowed.getAndSet(borrowed);
 	}
 
 	@Override
 	public boolean returnToPool() {
-		if (isBorrowed()) {
-			try {
-				ConnectionPool.getInstance().returnObject(getAuthority(), this);
-				return true;
-			} catch (Exception e) {
-				log.debug("Failed to return connection to the pool", e);
-			}
+		try {
+			ConnectionPool.getInstance().returnObject(getAuthority(), this);
+			return true;
+		} catch (Exception e) {
+			log.debug("Failed to return connection to the pool", e);
+			return false;
 		}
-		return false;
 	}
 
 	@Override
@@ -87,8 +86,10 @@ public abstract class AbstractPoolableConnection implements PoolableConnection {
 	protected void finalize() throws Throwable {
 		if (isBorrowed()) {
 			log.debug("Garbage collection of a borrowed connection, a possible leak");
-		}
-		if (!returnToPool()) {
+			if (!returnToPool()) {
+				super.finalize();
+			}
+		} else {
 			super.finalize();
 		}
 	}

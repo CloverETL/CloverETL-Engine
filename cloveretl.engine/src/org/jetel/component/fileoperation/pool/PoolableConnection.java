@@ -33,11 +33,12 @@ public interface PoolableConnection extends Closeable {
 	public void reset();
 	
 	/**
+	 * Sets the borrowed state of a connection and returns the previous state.
 	 * This method should only be called by the {@link ConnectionPool}.
 	 * 
 	 * It is not a part of the public interface.
 	 */
-	public void setBorrowed(boolean borrowed);
+	boolean setBorrowed(boolean borrowed);
 	
 	/**
 	 * Returns <code>true</code> if the object is borrowed.
@@ -47,14 +48,13 @@ public interface PoolableConnection extends Closeable {
 	public boolean isBorrowed();
 	
 	/**
-	 * Returns the object to the pool, 
-	 * but only if it has not been returned before.
-	 * It is the object's responsibility to ensure that.
+	 * Returns the object to the pool.
+	 * 
+	 * Returns <code>false</code> if an exception occurs,
+	 * otherwise returns <code>true</code>.
 	 * 
 	 * Whenever the object is borrowed or returned, {@link #setBorrowed()} 
 	 * is called automatically.
-	 * 
-	 * Returns <code>true</code> if the object is successfully returned.
 	 */
 	public boolean returnToPool();
 	
