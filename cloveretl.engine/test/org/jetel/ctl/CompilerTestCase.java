@@ -3518,12 +3518,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("meta3", null);
 		check("meta4", null);
 		check("strRet", "Bratislava");
+		check("strRet2","Andorra la Vella");
+		check("intRet", 0);
+		check("intRet2", 1);
+		check("meta7", null);
 	}
 	
 	public void test_lookup_expect_error(){
 		//CLO-1582
 //		try {
 //			doCompile("function integer transform(){string str = lookup(TestLookup).get('Alpha',2).City; return 0;}","test_lookup_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+//		try {
+//			doCompile("function integer transform(){lookup(TestLookup).count('Alpha',1); lookup(TestLookup).next(); lookup(TestLookup).next().City; return 0;}","test_lookup_expect_error");
 //			fail();
 //		} catch (Exception e) {
 //			// do nothing
