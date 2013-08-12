@@ -364,7 +364,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
        		}
        	}
 		
-		//if the graph was aborted, now the aborting thread is waiting for final notification - this is the way how to send him word about the graph finished right now
+		//if the graph was aborted, now the aborting thread is waiting for final notification - this is the way how to send him notice about the graph finished right now
 		synchronized (ABORT_MONITOR) {
 			abortFinished = true;
 			ABORT_MONITOR.notifyAll();

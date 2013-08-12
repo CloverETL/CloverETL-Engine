@@ -3,6 +3,7 @@ package org.jetel.ctl;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -58,6 +59,8 @@ import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
+
+import sun.misc.Cleaner;
 
 public abstract class CompilerTestCase extends CloverTestCase {
 
@@ -845,6 +848,81 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals(varName + "[3]", Integer.valueOf(0), compareResult.get(3));
 	}
 	
+	public void test_dynamiclib_compare_expect_error(){
+		try {
+			doCompile("function integer transform(){"
+					+ "firstInput myRec; myRec = $out.0; "
+					+ "firstOutput myRec2; myRec2 = $out.1;"
+					+ "integer i = compare(myRec, 'Flagxx', myRec2, 'Flag'); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "firstInput myRec; myRec = $out.0; "
+					+ "firstOutput myRec2; myRec2 = $out.1;"
+					+ "integer i = compare(myRec, 'Flag', myRec2, 'Flagxx'); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "firstInput myRec; myRec = null; "
+					+ "firstOutput myRec2; myRec2 = $out.1;"
+					+ "integer i = compare(myRec, 'Flag', myRec2, 'Flag'); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "$out.0.Flag = true; "
+					+ "$out.1.Age = 11;"
+					+ "integer i = compare($out.0, 'Flag', $out.1, 'Age'); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "firstInput myRec; myRec = $out.0; "
+					+ "firstOutput myRec2; myRec2 = $out.1;"
+					+ "integer i = compare(myRec, -1, myRec2, -1 ); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "firstInput myRec; myRec = $out.0; "
+					+ "firstOutput myRec2; myRec2 = $out.1;"
+					+ "integer i = compare(myRec, 2, myRec2, 2 ); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "$out.0.8 = 12.4d; "
+					+ "$out.1.8 = 12.5d;"
+					+ "integer i = compare($out.0, 9, $out.1, 9 ); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "$out.0.0 = null; "
+					+ "$out.1.0 = null;"
+					+ "integer i = compare($out.0, 0, $out.1, 0 ); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	private void test_dynamic_get_set_loop(String testIdentifier) {
 		doCompile(testIdentifier);
 		
@@ -902,7 +980,691 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"Input record cannot be assigned to"
 		));
 	}
+	
+	public void test_dynamiclib_getBoolValue(){
+		doCompile("test_dynamiclib_getBoolValue");
+		check("ret1", true);
+		check("ret2", true);
+		check("ret3", false);
+		check("ret4", false);
+		check("ret5", null);
+		check("ret6", null);
+	}
+	
+	public void test_dynamiclib_getBoolValue_expect_error(){
+		try {
+			doCompile("function integer transform(){boolean b = getBoolValue($in.0, 2);return 0;}","test_dynamiclib_getBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){boolean b = getBoolValue($in.0, 'Age');return 0;}","test_dynamiclib_getBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi; fi = null; boolean b = getBoolValue(fi, 6); return 0;}","test_dynamiclib_getBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi; fi = null; boolean b = getBoolValue(fi, 'Flag'); return 0;}","test_dynamiclib_getBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getByteValue(){
+		doCompile("test_dynamiclib_getByteValue");
+		checkArray("ret1",CompilerTestCase.BYTEARRAY_VALUE);
+		checkArray("ret2",CompilerTestCase.BYTEARRAY_VALUE);
+		check("ret3", null);
+		check("ret4", null);
+	}
+	
+	public void test_dynamiclib_getByteValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; byte b = getByteValue(fi,7); return 0;}","test_dynamiclib_getByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; byte b = fi.getByteValue('ByteArray'); return 0;}","test_dynamiclib_getByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = $in.0.getByteValue('Age'); return 0;}","test_dynamiclib_getByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = getByteValue($in.0, 0); return 0;}","test_dynamiclib_getByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getDateValue(){
+		doCompile("test_dynamiclib_getDateValue");
+		check("ret1", CompilerTestCase.BORN_VALUE);
+		check("ret2", CompilerTestCase.BORN_VALUE);
+		check("ret3", null);
+		check("ret4", null);
+	}
+	
+	public void test_dynamiclib_getDateValue_expect_error(){
+		try {
+			doCompile("function integer transform(){date d = getDateValue($in.0,1); return 0;}","test_dynamiclib_getDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = getDateValue($in.0,'Age'); return 0;}","test_dynamiclib_getDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; date d = getDateValue(null,'Born'); return 0;}","test_dynamiclib_getDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; date d = getDateValue(null,3); return 0;}","test_dynamiclib_getDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getDecimalValue(){
+		doCompile("test_dynamiclib_getDecimalValue");
+		check("ret1", CompilerTestCase.CURRENCY_VALUE);
+		check("ret2", CompilerTestCase.CURRENCY_VALUE);
+		check("ret3", null);
+		check("ret4", null);
+	}
+	
+	public void test_dynamiclib_getDecimalValue_expect_error(){
+		try {
+			doCompile("function integer transform(){decimal d = getDecimalValue($in.0, 1); return 0;}","test_dynamiclib_getDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal d = getDecimalValue($in.0, 'Age'); return 0;}","test_dynamiclib_getDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; decimal d = getDecimalValue(fi,8); return 0;}","test_dynamiclib_getDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; decimal d = getDecimalValue(fi,'Currency'); return 0;}","test_dynamiclib_getDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getFieldIndex(){
+		doCompile("test_dynamiclib_getFieldIndex");
+		check("ret1", 1);
+		check("ret2", 1);
+		check("ret3", -1);
+	}
+	
+	public void test_dynamiclib_getFieldIndex_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; integer int = fi.getFieldIndex('Age'); return 0;}","test_dynamiclib_getFieldIndex_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getFieldLabel(){
+		doCompile("test_dynamiclib_getFieldLabel");		
+		check("ret1", "Age");
+		check("ret2","Name");
+	}
+	
+	public void test_dynamiclib_getFieldLable_expect_error(){
+		try {
+			doCompile("function integer transform(){string name = getFieldLabel($in.0, -5);return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string name = getFieldLabel($in.0, 12);return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string name = fi.getFieldLabel(2);return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getFieldName(){
+		doCompile("test_dynamiclib_getFieldName");
+		check("ret1", "Age");
+		check("ret2", "Name");
+	}
+	
+	public void test_dynamiclib_getFieldName_expect_error(){
+		try {
+			doCompile("function integer transform(){string str = getFieldName($in.0, -5); return 0;}","test_dynamiclib_getFieldName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = getFieldName($in.0, 15); return 0;}","test_dynamiclib_getFieldName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldName(2); return 0;}","test_dynamiclib_getFieldName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getFieldType(){
+		doCompile("test_dynamiclib_getFieldType");
+		check("ret1", "string");
+		check("ret2", "number");
+	}
+	
+	public void test_dynamiclib_getFieldType_expect_error(){
+		try {
+			doCompile("function integer transform(){string str = getFieldType($in.0, -5); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = getFieldType($in.0, 12); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldType(5); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getIntValue(){
+		doCompile("test_dynamiclib_getIntValue");
+		check("ret1", CompilerTestCase.VALUE_VALUE);
+		check("ret2", CompilerTestCase.VALUE_VALUE);
+		check("ret3", CompilerTestCase.VALUE_VALUE);
+		check("ret4", CompilerTestCase.VALUE_VALUE);
+		check("ret5", null);
+	}
+	
+	public void test_dynamiclib_getIntValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; integer i = fi.getIntValue(5); return 0;}","test_dynamiclib_getIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getIntValue($in.0, 1); return 0;}","test_dynamiclib_getIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = getIntValue($in.0, 'Born'); return 0;}","test_dynamiclib_getIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getLongValue(){
+		doCompile("test_dynamiclib_getLongValue");
+		check("ret1", CompilerTestCase.BORN_MILLISEC_VALUE);
+		check("ret2", CompilerTestCase.BORN_MILLISEC_VALUE);
+		check("ret3", null);
+	}
+	
+	public void test_dynamiclib_getLongValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; long l = getLongValue(fi, 4);return 0;} ","test_dynamiclib_getLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long l = getLongValue($in.0, 7);return 0;} ","test_dynamiclib_getLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long l = getLongValue($in.0, 'Age');return 0;} ","test_dynamiclib_getLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getNumValue(){
+		doCompile("test_dynamiclib_getNumValue");
+		check("ret1", CompilerTestCase.AGE_VALUE);
+		check("ret2", CompilerTestCase.AGE_VALUE);
+		check("ret3", null);
+	}	
 
+	public void test_dynamiclib_getNumValue_expectValue(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; number n = getNumValue(fi, 1); return 0;}","test_dynamiclib_getNumValue_expectValue");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number n = getNumValue($in.0, 4); return 0;}","test_dynamiclib_getNumValue_expectValue");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number n = $in.0.getNumValue('Name'); return 0;}","test_dynamiclib_getNumValue_expectValue");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getStringValue(){
+		doCompile("test_dynamiclib_getStringValue");
+		check("ret1", CompilerTestCase.NAME_VALUE);
+		check("ret2", CompilerTestCase.NAME_VALUE);
+		check("ret3", null);
+	}
+	
+	public void test_dynamiclib_getStringValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = getStringValue(fi, 0); return 0;}","test_dynamiclib_getStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = getStringValue($in.0, 5); return 0;}","test_dynamiclib_getStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = $in.0.getStringValue('Age'); return 0;}","test_dynamiclib_getStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getValueAsString(){
+		doCompile("test_dynamiclib_getValueAsString");
+		check("ret1", "  HELLO  ");
+		check("ret2", "20.25");
+		check("ret3", "Chong'La");
+		check("ret4", "Sun Jan 25 13:25:55 CET 2009");
+		check("ret5", "1232886355333");
+		check("ret6", "2147483637");
+		check("ret7", "true");
+		check("ret8", "41626563656461207a65646c612064656461");
+		check("ret9", "133.525");
+		check("ret10", null);
+	}
+	
+	public void test_dynamiclib_getValueAsString_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string str = getValueAsString(fi, 1); return 0;}","test_dynamiclib_getValueAsString_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = getValueAsString($in.0, -1); return 0;}","test_dynamiclib_getValueAsString_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = $in.0.getValueAsString(10); return 0;}","test_dynamiclib_getValueAsString_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_isNull(){
+		doCompile("test_dynamiclib_isNull");
+		check("ret1", false);
+		check("ret2", false);
+		check("ret3", true);
+	}
+	
+	public void test_dynamiclib_isNull_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; boolean b = fi.isNull(1); return 0;}","test_dynamiclib_isNull_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){boolean b = $in.0.isNull(-5); return 0;}","test_dynamiclib_isNull_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){boolean b = isNull($in.0,12); return 0;}","test_dynamiclib_isNull_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setBoolValue(){
+		doCompile("test_dynamiclib_setBoolValue");
+		check("ret1", null);
+		check("ret2", true);
+		check("ret3", false);
+	}
+	
+	public void test_dynamiclib_setBoolValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setBoolValue(fi,6,true); return 0;}","test_dynamiclib_setBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setBoolValue($out.0,1,true); return 0;}","test_dynamiclib_setBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setBoolValue(15,true); return 0;}","test_dynamiclib_setBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setBoolValue(-1,true); return 0;}","test_dynamiclib_setBoolValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setByteValue() throws UnsupportedEncodingException{
+		doCompile("test_dynamiclib_setByteValue");
+		checkArray("ret1", "Urgot".getBytes("UTF-8"));
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setByteValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi =null; setByteValue(fi,7,str2byte('Sion', 'utf-8')); return 0;}","test_dynamiclib_setByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setByteValue($out.0, 1, str2byte('Sion', 'utf-8')); return 0;}","test_dynamiclib_setByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setByteValue($out.0, 12, str2byte('Sion', 'utf-8')); return 0;}","test_dynamiclib_setByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setByteValue(-2, str2byte('Sion', 'utf-8')); return 0;}","test_dynamiclib_setByteValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setDateValue(){
+		doCompile("test_dynamiclib_setDateValue");
+		Calendar cal = Calendar.getInstance();
+		cal.set(2006,10,12,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret1", cal.getTime());
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setDateValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setDateValue(fi,'Born', null);return 0;}","test_dynamiclib_setDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setDateValue($out.0,1, null);return 0;}","test_dynamiclib_setDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setDateValue($out.0,-2, null);return 0;}","test_dynamiclib_setDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setDateValue(12, null);return 0;}","test_dynamiclib_setDateValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setDecimalValue(){
+		doCompile("test_dynamiclib_setDecimalValue");
+		check("ret1", new BigDecimal("12.300"));
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setDecimalValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setDecimalValue(fi, 'Currency', 12.8d);return 0;}","test_dynamiclib_setDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setDecimalValue($out.0, 'Name', 12.8d);return 0;}","test_dynamiclib_setDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setDecimalValue(-1, 12.8d);return 0;}","test_dynamiclib_setDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setDecimalValue(15, 12.8d);return 0;}","test_dynamiclib_setDecimalValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setIntValue(){
+		doCompile("test_dynamiclib_setIntValue");
+		check("ret1", 90);
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setIntValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi =null; setIntValue(fi,5,null);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setIntValue($out.0,4,90);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setIntValue($out.0,-2,90);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setIntValue(15,90);return 0;}","test_dynamiclib_setIntValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setLongValue(){
+		doCompile("test_dynamiclib_setLongValue");
+		check("ret1", 1565486L);
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setLongValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setLongValue(fi, 4, 51231L); return 0;}","test_dynamiclib_setLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setLongValue($out.0, 0, 51231L); return 0;}","test_dynamiclib_setLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setLongValue($out.0, -1, 51231L); return 0;}","test_dynamiclib_setLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setLongValue(12, 51231L); return 0;}","test_dynamiclib_setLongValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setNumValue(){
+		doCompile("test_dynamiclib_setNumValue");
+		check("ret1", 12.5d);
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setNumValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setNumValue(fi, 'Age', 15.3); return 0;}","test_dynamiclib_setNumValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setNumValue($out.0, 'Name', 15.3); return 0;}","test_dynamiclib_setNumValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setNumValue($out.0, -1, 15.3); return 0;}","test_dynamiclib_setNumValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setNumValue(11, 15.3); return 0;}","test_dynamiclib_setNumValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_setStringValue(){
+		doCompile("test_dynamiclib_setStringValue");
+		check("ret1", "Zac");
+		check("ret2", null);
+	}
+	
+	public void test_dynamiclib_setStringValue_expect_error(){
+		try {
+			doCompile("function integer transform(){firstInput fi = null; setStringValue(fi, 'Name', 'Draven'); return 0;}","test_dynamiclib_setStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setStringValue($out.0, 'Age', 'Soraka'); return 0;}","test_dynamiclib_setStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){setStringValue($out.0, -1, 'Rengar'); return 0;}","test_dynamiclib_setStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){$out.0.setStringValue(11, 'Vaigar'); return 0;}","test_dynamiclib_setStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_return_constants() {
 		// test case for issue 2257
 		System.out.println("Return constants test:");
@@ -2815,65 +3577,377 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_containerlib_clear() {
 		doCompile("test_containerlib_clear");
 
-		assertTrue(((List<Integer>) getVariable("clearList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("integerList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("strList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("longList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("decList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("numList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("byteList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("dateList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("boolList")).isEmpty());
+		assertTrue(((List<Integer>) getVariable("emptyList")).isEmpty());
+		assertTrue(((Map<String,Integer>) getVariable("myMap")).isEmpty());
+	}
+	
+	public void test_container_clear_expect_error(){
+		try {
+			doCompile("function integer transform(){boolean[] nullList = null; clear(nullList); return 0;}","test_container_clear_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[integer,string] myMap = null; clear(myMap); return 0;}","test_container_clear_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_containerlib_copy() {
 		doCompile("test_containerlib_copy");
 
-		check("copyList", Arrays.asList(1, 2, 3, 4, 5));
-		check("returnedList", Arrays.asList(1, 2, 3, 4, 5));
+		check("copyIntList", Arrays.asList(1, 2, 3, 4, 5));
+		check("returnedIntList", Arrays.asList(1, 2, 3, 4, 5));
+		check("copyLongList", Arrays.asList(21L,15L, null, 10L));
+		check("returnedLongList", Arrays.asList(21l, 15l, null, 10L));
+		check("copyBoolList", Arrays.asList(false,false,null,true));
+		check("returnedBoolList", Arrays.asList(false,false,null,true));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2006, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2002, 03, 12, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("copyDateList",Arrays.asList(cal2.getTime(), null, cal.getTime()));
+		check("returnedDateList",Arrays.asList(cal2.getTime(), null, cal.getTime()));
+		check("copyStrList", Arrays.asList("Ashe", "Jax", null, "Rengar"));
+		check("returnedStrList", Arrays.asList("Ashe", "Jax", null, "Rengar"));
+		check("copyNumList", Arrays.asList(12.65d, 458.3d, null, 15.65d));
+		check("returnedNumList", Arrays.asList(12.65d, 458.3d, null, 15.65d));
+		check("copyDecList", Arrays.asList(new BigDecimal("2.3"),new BigDecimal("5.9"), null, new BigDecimal("15.3")));
+		check("returnedDecList", Arrays.asList(new BigDecimal("2.3"),new BigDecimal("5.9"), null, new BigDecimal("15.3")));
 		
 		Map<String, String> expectedMap = new HashMap<String, String>();
 		expectedMap.put("a", "a");
 		expectedMap.put("b", "b");
 		expectedMap.put("c", "c");
 		expectedMap.put("d", "d");
+		check("copyStrMap", expectedMap);
+		check("returnedStrMap", expectedMap);
 		
-		check("copyMap", expectedMap);
-		check("returnedMap", expectedMap);
+		Map<Integer, Integer> intMap = new HashMap<Integer, Integer>();
+		intMap.put(1,12);
+		intMap.put(2,null);
+		intMap.put(3,15);
+		check("copyIntMap", intMap);
+		check("returnedIntMap", intMap);
+		
+		Map<Long, Long> longMap = new HashMap<Long, Long>();
+		longMap.put(10L, 453L);
+		longMap.put(11L, null);
+		longMap.put(12L, 54755L);
+		check("copyLongMap", longMap);
+		check("returnedLongMap", longMap);
+
+		Map<BigDecimal, BigDecimal> decMap = new HashMap<BigDecimal, BigDecimal>();
+		decMap.put(new BigDecimal("2.2"), new BigDecimal("12.3"));
+		decMap.put(new BigDecimal("2.3"), new BigDecimal("45.6"));
+		check("copyDecMap", decMap);
+		check("returnedDecMap", decMap);
+		
+		Map<Double, Double> doubleMap = new HashMap<Double, Double>();
+		doubleMap.put(new Double(12.3d), new Double(11.2d));
+		doubleMap.put(new Double(13.4d), new Double(78.9d));
+		check("copyNumMap",doubleMap);	
+		check("returnedNumMap", doubleMap);
+		
+		List<String> myList = new ArrayList<String>();
+		check("copyEmptyList", myList);
+		check("returnedEmptyList", myList);
+		assertTrue(((List<String>)(getVariable("copyEmptyList"))).isEmpty());
+		assertTrue(((List<String>)(getVariable("returnedEmptyList"))).isEmpty());
+		Map<String, String> emptyMap = new HashMap<String, String>();
+		check("copyEmptyMap", emptyMap);
+		check("returnedEmptyMap", emptyMap);
+		assertTrue(((HashMap<String,String>)(getVariable("copyEmptyMap"))).isEmpty());
+		assertTrue(((HashMap<String,String>)(getVariable("returnedEmptyMap"))).isEmpty());
 	}
 
+	public void test_containerlib_copy_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] origList = null; string[] copyList; string[] ret = copy(copyList, origList); return 0;}","test_containerlib_copy_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] origList; string[] copyList = null; string[] ret = copy(copyList, origList); return 0;}","test_containerlib_copy_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string, string] orig = null; map[string, string] copy; map[string, string] ret = copy(copy, orig); return 0;}","test_containerlib_copy_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string, string] orig; map[string, string] copy = null; map[string, string] ret = copy(copy, orig); return 0;}","test_containerlib_copy_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_insert() {
 		doCompile("test_containerlib_insert");
+		check("copyStrList",Arrays.asList("Elise","Volibear","Garen","Jarvan IV"));
+		check("retStrList",Arrays.asList("Elise","Volibear","Garen","Jarvan IV"));
+		check("copyStrList2", Arrays.asList("Jax", "Aatrox", "Lisandra", "Ashe"));
+		check("retStrList2", Arrays.asList("Jax", "Aatrox", "Lisandra", "Ashe"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2009, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal1 = Calendar.getInstance();
+		cal1.set(2008, 2, 7, 0, 0, 0);
+		cal1.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2003, 01, 1, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("copyDateList", Arrays.asList(cal1.getTime(),cal.getTime()));
+		check("retDateList", Arrays.asList(cal1.getTime(),cal.getTime()));
+		check("copyDateList2", Arrays.asList(cal2.getTime(),cal1.getTime(),cal.getTime()));
+		check("retDateList2", Arrays.asList(cal2.getTime(),cal1.getTime(),cal.getTime()));
+		check("copyIntList", Arrays.asList(1,2,3,12,4,5,6,7));
+		check("retIntList", Arrays.asList(1,2,3,12,4,5,6,7));
+		check("copyLongList", Arrays.asList(14L,15l,16l,17l));
+		check("retLongList", Arrays.asList(14L,15l,16l,17l));
+		check("copyLongList2", Arrays.asList(20L,21L,22L,23l));
+		check("retLongList2", Arrays.asList(20L,21L,22L,23l));
+		check("copyNumList", Arrays.asList(12.3d,11.1d,15.4d));
+		check("retNumList", Arrays.asList(12.3d,11.1d,15.4d));
+		check("copyNumList2", Arrays.asList(22.2d,44.4d,55.5d,33.3d));
+		check("retNumList2", Arrays.asList(22.2d,44.4d,55.5d,33.3d));
+		check("copyDecList", Arrays.asList(new BigDecimal("11.1"), new BigDecimal("22.2"), new BigDecimal("33.3")));
+		check("retDecList", Arrays.asList(new BigDecimal("11.1"), new BigDecimal("22.2"), new BigDecimal("33.3")));
+		check("copyDecList2",Arrays.asList(new BigDecimal("3.3"), new BigDecimal("4.4"), new BigDecimal("1.1"), new BigDecimal("2.2")));
+		check("retDecList2",Arrays.asList(new BigDecimal("3.3"), new BigDecimal("4.4"), new BigDecimal("1.1"), new BigDecimal("2.2")));
+		check("copyEmpty", Arrays.asList(11));
+		check("retEmpty", Arrays.asList(11));
+		check("copyEmpty2", Arrays.asList(12,13));
+		check("retEmpty2", Arrays.asList(12,13));
+		check("copyEmpty3", Arrays.asList());
+		check("retEmpty3", Arrays.asList());
+	}
 
-		check("insertElem", Integer.valueOf(7));
-		check("insertIndex", Integer.valueOf(3));
-		check("insertList", Arrays.asList(1, 2, 3, 7, 4, 5));
-		check("insertList1", Arrays.asList(7, 8, 11, 10, 11));
-		check("insertList2", Arrays.asList(7, 8, 10, 9, 11));
+	public void test_containerlib_insert_expect_error(){
+		try {
+			doCompile("function integer transform(){integer[] tmp = null; integer[] ret = insert(tmp,0,12); return 0;}","test_containerlib_insert_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] tmp; integer[] toAdd = null; integer[] ret = insert(tmp,0,toAdd); return 0;}","test_containerlib_insert_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] tmp = [11,12]; integer[] ret = insert(tmp,-1,12); return 0;}","test_containerlib_insert_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] tmp = [11,12]; integer[] ret = insert(tmp,10,12); return 0;}","test_containerlib_insert_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_containerlib_isEmpty() {
 		doCompile("test_containerlib_isEmpty");
-		
 		check("emptyMap", true);
+		check("emptyMap1", true);
 		check("fullMap", false);
+		check("fullMap1", false);
 		check("emptyList", true);
+		check("emptyList1", true);
 		check("fullList", false);
+		check("fullList1", false);
 	}
 
-	public void test_containerlib_poll() {
+	public void test_containerlib_isEmpty_expect_error(){
+		try {
+			doCompile("function integer transform(){integer[] i = null; boolean boo = i.isEmpty(); return 0;}","test_containerlib_isEmpty_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string, string] m = null; boolean boo = m.isEmpty(); return 0;}","test_containerlib_isEmpty_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_containerlib_length(){
+		doCompile("test_containerlib_length");
+		check("lengthByte", 18);
+		check("lengthByte2", 18);
+		check("recordLength", 9);
+		check("recordLength2", 9);
+		check("listLength", 3);
+		check("listLength2", 3);
+		check("emptyListLength", 0);
+		check("emptyListLength2", 0);
+		check("emptyMapLength", 0);
+		check("emptyMapLength2", 0);
+		check("nullLength1", 0);
+		check("nullLength2", 0);
+		check("nullLength3", 0);
+		check("nullLength4", 0);
+		check("nullLength5", 0);
+		check("nullLength6", 0);
+	}
+	
+	public void test_containerlib_poll() throws UnsupportedEncodingException {
 		doCompile("test_containerlib_poll");
 
-		check("pollElem", Integer.valueOf(1));
-		check("pollList", Arrays.asList(2, 3, 4, 5));
+		check("intElem", Integer.valueOf(1));
+		check("intElem1", 2);
+		check("intList", Arrays.asList(3, 4, 5));
+		check("strElem", "Zyra");
+		check("strElem2", "Tresh");
+		check("strList", Arrays.asList("Janna", "Wu Kong"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2002, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem", cal.getTime());
+		cal.clear();
+		cal.set(2003,5,12,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem2", cal.getTime());
+		cal.clear();
+		cal.set(2006,9,15,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal.getTime()));
+		checkArray("byteElem", "Maoki".getBytes("UTF-8"));
+		checkArray("byteElem2", "Nasus".getBytes("UTF-8"));
+		check("longElem", 12L);
+		check("longElem2", 15L);
+		check("longList", Arrays.asList(16L,23L));
+		check("numElem", 23.6d);
+		check("numElem2", 15.9d);
+		check("numList", Arrays.asList(78.8d, 57.2d));
+		check("decElem", new BigDecimal("12.3"));
+		check("decElem2", new BigDecimal("23.4"));
+		check("decList", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("emptyElem", null);
+		check("emptyElem2", null);
+		check("emptyList", Arrays.asList());
 	}
 
+	public void test_containerlib_poll_expect_error(){
+		try {
+			doCompile("function integer transform(){integer[] arr = null; integer i = poll(arr); return 0;}","test_containerlib_poll_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] arr = null; integer i = arr.poll(); return 0;}","test_containerlib_poll_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_pop() {
 		doCompile("test_containerlib_pop");
 
-		check("popElem", Integer.valueOf(5));
-		check("popList", Arrays.asList(1, 2, 3, 4));
+		check("intElem", 5);
+		check("intElem2", 4);
+		check("intList", Arrays.asList(1, 2, 3));
+		check("longElem", 14L);
+		check("longElem2", 13L);
+		check("longList", Arrays.asList(11L,12L));
+		check("numElem", 11.5d);
+		check("numElem2", 11.4d);
+		check("numList", Arrays.asList(11.2d,11.3d));
+		check("decElem", new BigDecimal("22.5"));
+		check("decElem2", new BigDecimal("22.4"));
+		check("decList", Arrays.asList(new BigDecimal("22.2"), new BigDecimal("22.3")));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2005, 8, 24, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem",cal.getTime());
+		cal.clear();
+		cal.set(2001, 6, 13, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem2", cal.getTime());
+		cal.clear();
+		cal.set(2010, 5, 11, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2011,3,3,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal.getTime(),cal2.getTime()));
+		check("strElem", "Ezrael");
+		check("strElem2", null);
+		check("strList", Arrays.asList("Kha-Zix", "Xerath"));
+		check("emptyElem", null);
+		check("emptyElem2", null);
+	}
+	
+	public void test_containerlib_pop_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] arr = null; string str = pop(arr); return 0;}","test_containerlib_pop_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] arr = null; string str = arr.pop(); return 0;}","test_containerlib_pop_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public void test_containerlib_push() {
 		doCompile("test_containerlib_push");
 
-		check("pushElem", Integer.valueOf(6));
-		check("pushList", Arrays.asList(1, 2, 3, 4, 5, 6));
-		
+		check("intCopy", Arrays.asList(1, 2, 3));
+		check("intRet", Arrays.asList(1, 2, 3));
+		check("longCopy", Arrays.asList(12l,13l,14l));
+		check("longRet", Arrays.asList(12l,13l,14l));
+		check("numCopy", Arrays.asList(11.1d,11.2d,11.3d));
+		check("numRet", Arrays.asList(11.1d,11.2d,11.3d));
+		check("decCopy", Arrays.asList(new BigDecimal("12.2"), new BigDecimal("12.3"), new BigDecimal("12.4")));
+		check("decRet", Arrays.asList(new BigDecimal("12.2"), new BigDecimal("12.3"), new BigDecimal("12.4")));
+		check("strCopy", Arrays.asList("Fiora", "Nunu", "Amumu"));
+		check("strRet", Arrays.asList("Fiora", "Nunu", "Amumu"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2001, 5, 9, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal1 = Calendar.getInstance();
+		cal1.set(2005, 5, 9, 0, 0, 0);
+		cal1.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2011, 5, 9, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("dateCopy", Arrays.asList(cal.getTime(),cal1.getTime(),cal2.getTime()));
+		check("dateRet", Arrays.asList(cal.getTime(),cal1.getTime(),cal2.getTime()));
+		String str = null;
+		check("emptyCopy", Arrays.asList(str));
+		check("emptyRet", Arrays.asList(str));
 		// there is hardly any way to get an instance of DataRecord
 		// hence we just check if the list has correct size
 		// and if its elements have correct metadata
@@ -2889,26 +3963,161 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 
+	public void test_containerlib_push_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] str = null; str.push('a'); return 0;}","test_containerlib_push_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] str = null; push(str, 'a'); return 0;}","test_containerlib_push_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_remove() {
 		doCompile("test_containerlib_remove");
 
-		check("removeElem", Integer.valueOf(3));
-		check("removeIndex", Integer.valueOf(2));
-		check("removeList", Arrays.asList(1, 2, 4, 5));
+		check("intElem", 2);
+		check("intList", Arrays.asList(1, 3, 4, 5));
+		check("longElem", 13L);
+		check("longList", Arrays.asList(11l,12l,14l));
+		check("numElem", 11.3d);
+		check("numList", Arrays.asList(11.1d,11.2d,11.4d));
+		check("decElem", new BigDecimal("11.3"));
+		check("decList", Arrays.asList(new BigDecimal("11.1"),new BigDecimal("11.2"),new BigDecimal("11.4")));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2002,10,13,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("dateElem", cal.getTime());
+		cal.clear();
+		cal.set(2001,10,13,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2003,10,13,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal.getTime(), cal2.getTime()));
+		check("strElem", "Shivana");
+		check("strList", Arrays.asList("Annie","Lux"));
 	}
 
+	public void test_containerlib_remove_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] strList; string str = remove(strList,0); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList; string str = strList.remove(0); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList = ['Teemo']; string str = remove(strList,5); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList = ['Teemo']; string str = remove(strList,-1); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList = null; string str = remove(strList,0); return 0;}","test_containerlib_remove_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_containerlib_reverse_expect_error(){
+		try {
+			doCompile("function integer transform(){long[] longList = null; reverse(longList); return 0;}","test_containerlib_reverse_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long[] longList = null; long[] reversed = longList.reverse(); return 0;}","test_containerlib_reverse_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_reverse() {
 		doCompile("test_containerlib_reverse");
 
-		check("reverseList", Arrays.asList(5, 4, 3, 2, 1));
+		check("intList", Arrays.asList(5, 4, 3, 2, 1));
+		check("intList2", Arrays.asList(5, 4, 3, 2, 1));
+		check("longList", Arrays.asList(14l,13l,12l,11l));
+		check("longList2", Arrays.asList(14l,13l,12l,11l));
+		check("numList", Arrays.asList(1.3d,1.2d,1.1d));
+		check("numList2", Arrays.asList(1.3d,1.2d,1.1d));
+		check("decList", Arrays.asList(new BigDecimal("1.3"),new BigDecimal("1.2"),new BigDecimal("1.1")));
+		check("decList2", Arrays.asList(new BigDecimal("1.3"),new BigDecimal("1.2"),new BigDecimal("1.1")));
+		check("strList", Arrays.asList(null,"Lulu","Kog Maw"));
+		check("strList2", Arrays.asList(null,"Lulu","Kog Maw"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2001,2,1,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2002,2,1,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal2.getTime(),cal.getTime()));
+		check("dateList2", Arrays.asList(cal2.getTime(),cal.getTime()));
 	}
 
 	public void test_containerlib_sort() {
 		doCompile("test_containerlib_sort");
 
-		check("sortList", Arrays.asList(1, 1, 2, 3, 5));
+		check("intList", Arrays.asList(1, 1, 2, 3, 5));
+		check("intList2", Arrays.asList(1, 1, 2, 3, 5));
+		check("longList", Arrays.asList(21l,22l,23l,24l));
+		check("longList2", Arrays.asList(21l,22l,23l,24l));
+		check("decList", Arrays.asList(new BigDecimal("1.1"),new BigDecimal("1.2"),new BigDecimal("1.3"),new BigDecimal("1.4")));
+		check("decList2", Arrays.asList(new BigDecimal("1.1"),new BigDecimal("1.2"),new BigDecimal("1.3"),new BigDecimal("1.4")));
+		check("numList", Arrays.asList(1.1d,1.2d,1.3d,1.4d));
+		check("numList2", Arrays.asList(1.1d,1.2d,1.3d,1.4d));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2002,5,12,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2003,5,12,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		Calendar cal3 = Calendar.getInstance();
+		cal3.set(2004,5,12,0,0,0);
+		cal3.set(Calendar.MILLISECOND, 0);
+		check("dateList", Arrays.asList(cal.getTime(),cal2.getTime(),cal3.getTime()));
+		check("dateList2", Arrays.asList(cal.getTime(),cal2.getTime(),cal3.getTime()));
+		check("strList", Arrays.asList("","Alistar", "Nocturne", "Soraka"));
+		check("strList2", Arrays.asList("","Alistar", "Nocturne", "Soraka"));
+		check("emptyList", Arrays.asList());
+		check("emptyList2", Arrays.asList());
 	}
 
+	public void test_containerlib_sort_expect_error(){
+		try {
+			doCompile("function integer transform(){string[] strList = ['Renektor', null, 'Jayce']; sort(strList); return 0;}","test_containerlib_sort_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string[] strList = null; sort(strList); return 0;}","test_containerlib_sort_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_containerlib_containsAll() {
 		doCompile("test_containerlib_containsAll");
 
@@ -3018,14 +4227,44 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_containerlib_getKeys() {
 		doCompile("test_containerlib_getKeys");
-		Map<?, ?> stringIntegerMap = (Map<?, ?>) inputRecords[3].getField("integerMapField").getValue();
-		Map<?, ?> integerStringMap = (Map<?, ?>) getVariable("integerStringMap");
-		List<?> stringList = (List<?>) getVariable("stringList");
-		List<?> integerList = (List<?>) getVariable("integerList");
-		assertEquals(stringIntegerMap.keySet().size(), stringList.size());
-		assertEquals(integerStringMap.keySet().size(), integerList.size());
-		assertEquals(stringIntegerMap.keySet(), new HashSet<Object>(stringList));
-		assertEquals(integerStringMap.keySet(), new HashSet<Object>(integerList));
+		check("stringList", Arrays.asList("a","b"));
+		check("stringList2", Arrays.asList("a","b"));
+		check("integerList", Arrays.asList(5,7,2));
+		check("integerList2", Arrays.asList(5,7,2));
+		List<Date> list = new ArrayList<Date>();
+		Calendar cal = Calendar.getInstance();
+		cal.set(2008, 10, 12, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Calendar cal2 = Calendar.getInstance();
+		cal2.set(2001, 5, 28, 0, 0, 0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		list.add(cal.getTime());
+		list.add(cal2.getTime());
+		check("dateList", list);
+		check("dateList2", list);
+		check("longList", Arrays.asList(14L, 45L));
+		check("longList2", Arrays.asList(14L, 45L));
+		check("numList", Arrays.asList(12.3d, 13.4d));
+		check("numList2", Arrays.asList(12.3d, 13.4d));
+		check("decList", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("decList2", Arrays.asList(new BigDecimal("34.5"), new BigDecimal("45.6")));
+		check("emptyList", Arrays.asList());
+		check("emptyList2", Arrays.asList());
+	}
+	
+	public void test_containerlib_getKeys_expect_error(){
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = strMap.getKeys(); return 0;}","test_containerlib_getKeys_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[string,string] strMap = null; string[] str = getKeys(strMap); return 0;}","test_containerlib_getKeys_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 //---------------------- StringLib Tests ------------------------	
 	
@@ -3391,18 +4630,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_length() {
 		doCompile("test_stringlib_length");
 		check("lenght1", new BigDecimal(50));
-		check("lenghtByte", 18);
 		
 		check("stringLength", 8);
-		check("listLength", 8);
-		check("mapLength", 3);
-		check("recordLength", 9);
 		check("length_empty", 0);
 		check("length_null1", 0);
-		check("length_null2", 0);
-		check("length_null3", 0);
-		check("length_null4", 0);
-		check("length_null5", 0);
 	}
 	
 	public void test_stringlib_lowerCase() {
@@ -4268,6 +5499,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 1l);
 		check("resultLong3", 3l);
 		check("resultLong4", 3l);
+		check("resultMix1", 15L);
+		check("resultMix2", 15L);
 	}
 	
 	public void test_bitwise_or_expect_error(){
@@ -4319,9 +5552,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 1l);
 		check("resultLong3", 0l);
 		check("resultLong4", 1l);
-//CLO-1385
-//		check("test_mixed1", 12l);
-//		check("test_mixed2", 12l);
+		check("test_mixed1", 4l);
+		check("test_mixed2", 4l);
 	}
 
 	public void test_bitwise_and_expect_error(){
@@ -4377,6 +5609,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong2", 0l);
 		check("resultLong3", 3l);
 		check("resultLong4", 2l);
+		check("test_mixed1", 15L);
+		check("test_mixed2", 60L);
 	}
 	
 	public void test_bitwise_xor_expect_error(){
@@ -5473,13 +6707,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_convertlib_bool2num_expect_error(){
 //		CLO-1255
-//		//this test should be expected to success in future
-//		try {
-//			doCompile("function integer transform(){integer s = bool2num(null);return 0;}","test_convertlib_bool2num_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
+		//this test should be expected to success in future
+		try {
+			doCompile("function integer transform(){boolean b = null; integer s = bool2num(b);return 0;}","test_convertlib_bool2num_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_byte2base64() {
@@ -6603,7 +7837,103 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("userInfo_null", null);
 		check("ref_null", null);
 		check("query_empty", null);
-		
+	}
+
+	public void test_utillib_iif() throws UnsupportedEncodingException{
+		doCompile("test_utillib_iif");
+		check("ret1", "Renektor");
+		Calendar cal = Calendar.getInstance();
+		cal.set(2005,10,12,0,0,0);
+		cal.set(Calendar.MILLISECOND,0);
+		check("ret2", cal.getTime());
+		checkArray("ret3", "Akali".getBytes("UTF-8"));
+		check("ret4", 236);
+		check("ret5", 78L);
+		check("ret6", 78.2d);
+		check("ret7", new BigDecimal("87.69"));
+		check("ret8", true);
 	}
 	
+	public void test_utillib_iif_expect_error(){
+		try {
+			doCompile("function integer transform(){boolean b = null; string str = iif(b, 'Rammus', 'Sion'); return 0;}","test_utillib_iif_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_utillib_isnull(){
+		doCompile("test_utillib_isnull");
+		check("ret1", false);
+		check("ret2", true);
+		check("ret3", false);
+		check("ret4", true);
+		check("ret5", false);
+		check("ret6", true);
+		check("ret7", false);
+		check("ret8", true);
+		check("ret9", false);
+		check("ret10", true);
+		check("ret11", false);
+		check("ret12", true);
+		check("ret13", false);
+		check("ret14", true);
+		check("ret15", false);
+		check("ret16", true);
+		check("ret17", false);
+		check("ret18", true);
+		check("ret19", true);
+	}
+	
+	public void test_utillib_nvl() throws UnsupportedEncodingException{
+		doCompile("test_utillib_nvl");
+		check("ret1", "Fiora");
+		check("ret2", "Olaf");
+		checkArray("ret3", "Elise".getBytes("UTF-8"));
+		checkArray("ret4", "Diana".getBytes("UTF-8"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2005,4,13,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret5", cal.getTime());
+		cal.clear();
+		cal.set(2004,2,14,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret6", cal.getTime());
+		check("ret7", 7);
+		check("ret8", 8);
+		check("ret9", 111l);
+		check("ret10", 112l);
+		check("ret11", 10.1d);
+		check("ret12", 10.2d);
+		check("ret13", new BigDecimal("12.2"));
+		check("ret14", new BigDecimal("12.3"));
+//		check("ret15", null);
+	}
+	
+	public void test_utillib_nvl2() throws UnsupportedEncodingException{
+		doCompile("test_utillib_nvl2");
+		check("ret1", "Ahri");
+		check("ret2", "Galio");
+		checkArray("ret3", "Mordekaiser".getBytes("UTF-8"));
+		checkArray("ret4", "Zed".getBytes("UTF-8"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2010,4,18,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret5", cal.getTime());
+		cal.clear();
+		cal.set(2008,7,9,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret6", cal.getTime());
+		check("ret7", 11);
+		check("ret8", 18);
+		check("ret9", 20L);
+		check("ret10", 23L);
+		check("ret11", 15.2d);
+		check("ret12", 89.3d);
+		check("ret13", new BigDecimal("22.2"));
+		check("ret14", new BigDecimal("55.5"));
+//		check("ret15", null);
+//		check("ret16", null);
+	}
 }

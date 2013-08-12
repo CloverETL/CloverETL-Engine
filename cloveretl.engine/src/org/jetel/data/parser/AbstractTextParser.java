@@ -146,16 +146,23 @@ public abstract class AbstractTextParser extends AbstractParser implements TextP
 	}
 	
 	protected boolean isSkipFieldTrailingBlanks(int fieldIndex) {
-		return(cfg.getSkipTrailingBlanks() != null && cfg.getSkipTrailingBlanks())
-			|| (cfg.getTrim() != null && cfg.getTrim())
-			|| cfg.getMetadata().getField(fieldIndex).isTrim();
+		if (cfg.getSkipTrailingBlanks() != null) {
+			return cfg.getSkipTrailingBlanks();
+		} else if (cfg.getTrim() != null) {
+			return cfg.getTrim();
+		} else {
+			return cfg.getMetadata().getField(fieldIndex).isSkipTrailingBlanks();
+		}
 	}
 
 	protected boolean isSkipFieldLeadingBlanks(int fieldIndex) {
-		return (cfg.getSkipLeadingBlanks() != null && cfg.getSkipLeadingBlanks())
-		 || (cfg.getTrim() != null && cfg.getTrim())
-		 || cfg.getMetadata().getField(fieldIndex).isTrim();
+		if (cfg.getSkipLeadingBlanks() != null) {
+			return cfg.getSkipLeadingBlanks();
+		} else if (cfg.getTrim() != null) {
+			return cfg.getTrim();
+		} else {
+			return cfg.getMetadata().getField(fieldIndex).isSkipLeadingBlanks();
+		}
 	}
-
 	
 }

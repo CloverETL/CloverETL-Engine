@@ -505,7 +505,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			} else {
 				if (!field.isDelimited()) { // fixlen char field consumer
 					assert !field.isByteBased() : "Unexpected execution flow";
-					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize(), isSkipFieldLeadingBlanks(idx), field.getShift());
+					fieldConsumers[numConsumers] = new FixlenCharFieldConsumer(inputReader, idx, field.getSize(), isSkipFieldLeadingBlanks(idx), isSkipFieldTrailingBlanks(idx), field.getShift());
 				} else { // delimited
 					boolean acceptDefaultFieldDelimiter = (policyType == PolicyType.LENIENT && idx == lastNonAutoFilledField); 
 					if (field.isByteBased()) { // delimited byte field consumer
@@ -776,6 +776,7 @@ public class CharByteDataParser extends AbstractTextParser {
 		protected int fieldNumber;
 		private int fieldLength;
 		private boolean lTrim;
+		private boolean rTrim;
 		private int shift;
 
 		/** 
@@ -787,13 +788,14 @@ public class CharByteDataParser extends AbstractTextParser {
 		 * @param rTrim
 		 * @param shift
 		 */
-		FixlenCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, int fieldLength, boolean lTrim,
+		FixlenCharFieldConsumer(ICharByteInputReader inputReader, int fieldNumber, int fieldLength, boolean lTrim, boolean rTrim,
 				int shift) {
 			super(inputReader);
 			this.fieldNumber = fieldNumber;
 			this.inputReader = inputReader;
 			this.fieldLength = fieldLength;
 			this.lTrim = lTrim;
+			this.rTrim = rTrim;
 			this.shift = shift;
 		}
 
@@ -828,16 +830,24 @@ public class CharByteDataParser extends AbstractTextParser {
 				}
 			}
 			CharSequence seq = inputReader.getCharSequence(-tailingWhitespaces);
-			if (lTrim) {
-				StringBuilder sb = new StringBuilder(seq);
-				StringUtils.trimLeading(sb);
-				record.getField(fieldNumber).fromString(sb);
-			} else {
-				record.getField(fieldNumber).fromString(seq);
-			}
+			record.getField(fieldNumber).fromString(trimOutput(seq));
 			return true;
 		}
 
+		private CharSequence trimOutput(CharSequence seq) {
+			if (lTrim || rTrim) {
+				StringBuilder sb = new StringBuilder(seq);
+				if (lTrim) {
+					StringUtils.trimLeading(sb);
+				}
+				if (rTrim) {
+					StringUtils.trimTrailing(sb);
+				}
+				return sb;
+			} else {
+				return seq;
+			}
+		}
 	}
 
 	/**

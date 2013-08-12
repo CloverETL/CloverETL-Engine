@@ -1,0 +1,35 @@
+string ret1;
+string ret2;
+byte ret3;
+byte ret4;
+date ret5;
+date ret6;
+integer ret7;
+integer ret8;
+long ret9;
+long ret10;
+number ret11;
+number ret12;
+decimal ret13;
+decimal ret14;
+string ret15;
+string ret16;
+function integer transform(){
+	ret1 = nvl2('Yorick', 'Ahri', 'Orianna');
+	ret2 = nvl2(null, 'Gregas', 'Galio');
+	ret3 = nvl2(str2byte('Lux','utf-8'), str2byte('Mordekaiser','utf-8'),str2byte('Shen','utf-8'));
+	ret4 = nvl2(null, str2byte('Poppy','utf-8'), str2byte('Zed','utf-8'));
+	ret5 = nvl2(str2date('2003-06-12','yyyy-MM-dd'), str2date('2010-05-18','yyyy-MM-dd'), str2date('2011-06-19','yyyy-MM-dd'));
+	ret6 = nvl2(null, str2date('2009-02-03','yyyy-MM-dd'), str2date('2008-08-09','yyyy-MM-dd'));
+	ret7 = nvl2(10, 11, 12);
+	ret8 = nvl2(null, 15, 18);
+	ret9 = nvl2(19L, 20L, 21l);
+	ret10 = nvl2(null, 22L, 23l);
+	ret11 = nvl2(12.3, 15.2, 19.6);
+	ret12 = nvl2(null, 12.6, 89.3);
+	ret13 = nvl2(11.1d, 22.2d, 33.3d);
+	ret14 = nvl2(null, 44.4d, 55.5d);
+//	ret15 = nvl2('Talon', null, null);
+//	ret16 = nvl2(null, null, null);
+	return 0;
+}

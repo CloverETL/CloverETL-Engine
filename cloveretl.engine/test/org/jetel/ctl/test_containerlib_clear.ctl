@@ -7,6 +7,7 @@ date[] dateList;
 number[] numList;
 decimal[] decList;
 integer[] emptyList;
+map[string,integer] myMap;
 function integer transform() {
 	integerList = [1,2,3,4,5];
 	clear(integerList);
@@ -25,5 +26,8 @@ function integer transform() {
 	decList = [452.5d, 9212,879d];
 	clear(decList);
 	clear(emptyList);
+	myMap['s'] = 1565;
+	myMap['a'] = 1234;
+	clear(myMap);
 	return 0;
 }
