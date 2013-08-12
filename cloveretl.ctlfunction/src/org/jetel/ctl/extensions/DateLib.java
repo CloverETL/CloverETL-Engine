@@ -267,6 +267,9 @@ public class DateLib extends TLFunctionLibrary {
     	// this hardcore code is necessary, subtracting milliseconds 
     	// or using Calendar.clear() does not seem to handle light-saving correctly
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
+    	if (d == null){
+    		return null;
+    	}
     	cal.setTime(d);
     	int[] portion = new int[]{cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND),cal.get(Calendar.MILLISECOND)};
     	cal.clear();
