@@ -415,6 +415,11 @@ public abstract class IAuthorityProxy {
 	 */
 	public abstract RemoteEdgeDataTarget getRemoteEdgeDataTarget(String edgeId) throws InterruptedException;
 
+	/**
+	 * @param edgeId id of remote edge (edge from RemoteEdgeDataReceiver or edge to RemoteEdgeDataTransmitter) 
+	 * @return runId of the opposite side of given remote edge 
+	 */
+	public abstract long getRemoteEdgeRunId(String edgeId);
 
 	/**
 	 * Returns {@link OutputStream} where the parent graph can sent data records to a sub-graph.
