@@ -492,7 +492,7 @@ public class RunGraph extends Node{
 	 */
 	private Result runGraphThisInstance(String graphFileName, OutputRecordData outputRecordData) throws InterruptedException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
-		runtimeContext.setAdditionalProperties(extractNeededGraphProperties(this.getGraph().getGraphProperties()));
+		runtimeContext.setAdditionalProperties(extractNeededGraphProperties(this.getGraph().getGraphParameters().asProperties()));
 		runtimeContext.setContextURL(this.getGraph().getRuntimeContext().getContextURL());
 		runtimeContext.setLogLocation(outputFileName);
 		runtimeContext.setUseJMX(this.getGraph().getRuntimeContext().useJMX());

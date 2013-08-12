@@ -21,6 +21,7 @@ package org.jetel.graph;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +63,7 @@ import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -344,7 +346,7 @@ public class TransformationGraphXMLReaderWriter {
 			c = ContextProvider.registerGraph(graph);
 			
 			graph.setInitialRuntimeContext(runtimeContext);
-			graph.loadGraphProperties(runtimeContext.getAdditionalProperties());
+			graph.getGraphParameters().addProperties(runtimeContext.getAdditionalProperties());
 			// get graph name
 			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
 			try {
@@ -806,9 +808,18 @@ public class TransformationGraphXMLReaderWriter {
 
 	/**
 	 * Load single graph parameter.
+	 * @throws XMLConfigurationException 
 	 */
-	private void instantiateGraphParameter(Element graphParameter) {
-    	graph.getGraphProperties().setPropertySafe(graphParameter.getAttribute("name"), graphParameter.getAttribute("value"));
+	private void instantiateGraphParameter(Element graphParameter) throws XMLConfigurationException {
+    	GraphParameter gp = graph.getGraphParameters().addGraphParameter(graphParameter.getAttribute("name"), graphParameter.getAttribute("value"));
+    	if (graphParameter.hasAttribute("secure")) {
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(graphParameter);
+			try {
+				gp.setSecure(attributes.getBoolean("secure", false));
+			} catch (Exception e) {
+				throwXMLConfigurationException("Secure attribute of a graph parameter is not valid boolean value.", e);
+			}
+    	}
 	}
 
 	/**
@@ -841,7 +852,7 @@ public class TransformationGraphXMLReaderWriter {
         	instantiateGraphParameters(Arrays.asList(document.getDocumentElement()));
         } catch (Exception e) {
         	try {
-        		graph.loadGraphPropertiesSafe(resolvedFileURL);
+        		graph.getGraphParameters().addProperties(loadGraphProperties(resolvedFileURL));
         	} catch(IOException ex) {
         		throwXMLConfigurationException("Can't load property definition from " + resolvedFileURL, ex);
         	}
@@ -914,7 +925,7 @@ public class TransformationGraphXMLReaderWriter {
         		}
         		instantiateGraphParametersFile(fileURL);
 	        } else if (propertyElement.hasAttribute("name")) {
-	        	graph.getGraphProperties().setPropertySafe(propertyElement.getAttribute("name"), propertyElement.getAttribute("value"));
+	        	graph.getGraphParameters().addGraphParameter(propertyElement.getAttribute("name"), propertyElement.getAttribute("value"));
 	        } else {
 	        	throwXMLConfigurationException("Invalid property definition :" + propertyElement);
 	        }
@@ -926,7 +937,7 @@ public class TransformationGraphXMLReaderWriter {
 	    
 	    // now try to resolve properties from file which have fileURL with property reference
 	    while (!unresolvedUrls.isEmpty()) {
-	    	PropertyRefResolver propertiesRefResolver = new PropertyRefResolver(graph.getGraphProperties());
+	    	PropertyRefResolver propertiesRefResolver = new PropertyRefResolver(graph.getGraphParameters());
 	    	List<String> stillUnresolvedUrls = new ArrayList<String>();
 		    for (String url : unresolvedUrls) {
 		    	String resolvedUrl = propertiesRefResolver.resolveRef(url);
@@ -944,6 +955,28 @@ public class TransformationGraphXMLReaderWriter {
 		    unresolvedUrls = stillUnresolvedUrls;
 	    }
 	}
+	
+    private TypedProperties loadGraphProperties(String fileURL) throws IOException, XMLConfigurationException {
+		TypedProperties graphProperties = new TypedProperties();
+        InputStream inStream = null;
+        try {
+        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(runtimeContext.getContextURL(), fileURL));
+            graphProperties.load(inStream);
+            return graphProperties;
+        } catch(MalformedURLException e) {
+        	throwXMLConfigurationException("Wrong URL/filename of file specified: " + fileURL, e);
+        } finally {
+        	if (inStream != null) {
+        		try {
+        			inStream.close();
+        		} catch (IOException e) {
+        			//DO NOTHING
+        		}
+        	}
+        }
+    	return null;
+    }
+
 
 	private void instantiateDictionary(NodeList dictionaryElements) throws  XMLConfigurationException {
 		final Dictionary dictionary = graph.getDictionary();

@@ -37,6 +37,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecordNature;
+import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.KeyFieldNamesUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -186,7 +187,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
      * @param graph
      */
     public DataRecordMetadataXMLReaderWriter() {
-        this((Properties) null);
+        this((GraphParameters) null);
     }
 
     /**
@@ -194,15 +195,15 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
      * @param graph
      */
     public DataRecordMetadataXMLReaderWriter(TransformationGraph graph) {
-        this(graph.getGraphProperties());
+        this(graph.getGraphParameters());
     }
     
     /**
      * Constructor with properties for resolving.
      * @param properties
      */
-    public DataRecordMetadataXMLReaderWriter(Properties properties) {
-        refResolver = new PropertyRefResolver(properties);
+    public DataRecordMetadataXMLReaderWriter(GraphParameters graphParameters) {
+        refResolver = new PropertyRefResolver(graphParameters);
     }
     
 	// Associations

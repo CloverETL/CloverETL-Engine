@@ -2357,7 +2357,7 @@ class ParameterRule extends Rule {
 		// get parameter value
 		String paramValue;
 		if (source.startsWith("${")) {// get graph parameter
-			paramValue = graph.getGraphProperties().getProperty(source.substring(2, source.lastIndexOf('}')));
+			paramValue = graph.getGraphParameters().getGraphParameter(source.substring(2, source.lastIndexOf('}'))).getValue();
 		} else if (source.startsWith(String.valueOf(CustomizedRecordTransform.PARAMETER_CHAR))) {
 			// get parameter from node properties
 			paramValue = parameters.getProperty((source));
@@ -2366,7 +2366,7 @@ class ParameterRule extends Rule {
 			paramValue = parameters.getProperty(CustomizedRecordTransform.PARAMETER_CHAR + source);
 			if (paramValue == null) {
 				// try to find parameter with given name among graph parameters
-				paramValue = graph.getGraphProperties().getProperty(source);
+				paramValue = graph.getGraphParameters().getGraphParameter(source).getValue();
 			}
 			if (paramValue == null) {
 				if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || targetMetadata[recNo].getField(fieldNo)

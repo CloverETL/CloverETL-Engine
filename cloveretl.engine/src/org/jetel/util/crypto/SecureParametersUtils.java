@@ -18,6 +18,7 @@
  */
 package org.jetel.util.crypto;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.exception.JetelRuntimeException;
@@ -43,14 +44,18 @@ public class SecureParametersUtils {
 	 * @return true if input text is encrypted value
 	 */
 	public static boolean isEncryptedText(String text) {
-		return ENCRYPTED_TEXT_PATTERN.matcher(text).matches();
+		if (text != null) {
+			return ENCRYPTED_TEXT_PATTERN.matcher(text).matches();
+		} else {
+			return false;
+		}
 	}
 	
 	/**
 	 * An encrypted text is prefixed by 'enc#' prefix to be possible detected by {@link #isEncryptedText(String)} method.
 	 */
 	public static String wrapEncryptedText(String encryptedText) {
-		return ENCRYPTED_TEXT_PREFIX + encryptedText;
+		return ENCRYPTED_TEXT_PREFIX + (encryptedText != null ? encryptedText : "");
 	}
 
 	/**
@@ -58,7 +63,9 @@ public class SecureParametersUtils {
 	 */
 	public static String unwrapEncryptedText(String encryptedText) {
 		if (isEncryptedText(encryptedText)) {
-			return ENCRYPTED_TEXT_PATTERN.matcher(encryptedText).group(1);
+			Matcher matcher = ENCRYPTED_TEXT_PATTERN.matcher(encryptedText);
+			matcher.matches();
+			return matcher.group(1);
 		} else {
 			throw new JetelRuntimeException("Given text '" + encryptedText + "' does not have valid format.");
 		}

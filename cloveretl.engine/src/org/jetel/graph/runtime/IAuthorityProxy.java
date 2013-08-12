@@ -555,7 +555,7 @@ public abstract class IAuthorityProxy {
 	 * An exception can be thrown in case the authority decides the parameter should be resolved
 	 * but the requested value is not available or no enough permission for this operation is granted.
 	 */
-	public String getSecureParamater(String parameterName) {
+	public String getSecureParamater(String parameterName, String parameterValue) {
 		//no secure storage is implemented in default authority proxy
 		return null;
 	}

@@ -111,7 +111,7 @@ public final class TransformationGraph extends GraphElement {
 	
 	private WatchDog watchDog;
 
-	private TypedProperties graphProperties;
+	private GraphParameters graphParameters;
 
 	/**
 	 * Memory tracker associated with this graph.
@@ -165,7 +165,7 @@ public final class TransformationGraph extends GraphElement {
 		sequences = new HashMap<String,Sequence> ();
 		lookupTables = new HashMap<String,LookupTable> ();
 		dataRecordMetadata = new HashMap<String,Object> ();
-		graphProperties = new TypedProperties();
+		graphParameters = new GraphParameters();
 		dictionary = new Dictionary(this);
 		memoryTracker = new MemoryTracker();
 		initialRuntimeContext = new GraphRuntimeContext();
@@ -209,7 +209,7 @@ public final class TransformationGraph extends GraphElement {
      */
     public boolean isDebugMode() {
         if(!isDebugModeResolved) {
-            PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
+            PropertyRefResolver prr = new PropertyRefResolver(getGraphParameters());
             debugMode = Boolean.valueOf(prr.resolveRef(debugModeStr)).booleanValue();
             isDebugModeResolved = true;
         }
@@ -858,12 +858,21 @@ public final class TransformationGraph extends GraphElement {
 
 
 	/**
+	 * @return graph parameters container for this transformation graph
+	 */
+	public GraphParameters getGraphParameters() {
+		return graphParameters;
+	}
+	
+	/**
 	 *  Gets the graphProperties attribute of the TransformationGraph object
 	 *
 	 * @return    The graphProperties value
+	 * @deprecated use getGraphParameters().asProperties() instead
 	 */
+	@Deprecated
 	public TypedProperties getGraphProperties() {
-		return graphProperties;
+		return getGraphParameters().asProperties();
 	}
 
 
@@ -871,9 +880,11 @@ public final class TransformationGraph extends GraphElement {
 	 *  Sets the graphProperties attribute of the TransformationGraph object
 	 *
 	 * @param  properties  The new graphProperties value
+	 * @deprecated use getGraphParameters().addProperties(properties) instead
 	 */
+	@Deprecated
 	public void setGraphProperties(Properties properties) {
-		this.graphProperties = new TypedProperties(properties);
+		getGraphParameters().setProperties(properties);
 	}
 
 
@@ -882,11 +893,11 @@ public final class TransformationGraph extends GraphElement {
 	 *  can later be used throughout graph elements (Nodes, Edges, etc).
 	 *
 	 * @param  filename  Description of the Parameter
+	 * @deprecated simple {@link Properties} format is no more supported by clover engine
 	 */
+	@Deprecated
 	public void loadGraphProperties(String fileURL) throws IOException {
-		if (graphProperties == null) {
-			graphProperties = new TypedProperties();
-		}
+		TypedProperties graphProperties = new TypedProperties();
 		InputStream inStream = null;
         try {
         	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeContext().getContextURL(), fileURL));
@@ -903,6 +914,8 @@ public final class TransformationGraph extends GraphElement {
         	}
         }
 		graphProperties.load(inStream);
+		
+		getGraphParameters().addProperties(graphProperties);
 	}
 
     /**
@@ -910,15 +923,17 @@ public final class TransformationGraph extends GraphElement {
      * Existing properties are not overwritten.
      * @param fileURL
      * @throws IOException
+	 * @deprecated simple {@link Properties} format is no more supported by clover engine
      */
+	@Deprecated
     public void loadGraphPropertiesSafe(String fileURL) throws IOException {
-        if (graphProperties == null) {
-            graphProperties = new TypedProperties();
-        }
-        InputStream inStream = null;
+		TypedProperties graphProperties = new TypedProperties();
+
+		InputStream inStream = null;
         try {
         	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeContext().getContextURL(), fileURL));
             graphProperties.loadSafe(inStream);
+    		getGraphParameters().addProperties(graphProperties);
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
@@ -938,12 +953,11 @@ public final class TransformationGraph extends GraphElement {
 	 *  object. <br> Can be used for "loading-in" system properties, etc.
 	 *
 	 * @param  properties  Description of the Parameter
+	 * @deprecated use getGraphParameters().addProperties(properties) instead
 	 */
+	@Deprecated
 	public void loadGraphProperties(Properties properties) {
-		if (graphProperties == null) {
-			graphProperties = new TypedProperties();
-		}
-		graphProperties.putAll(properties);
+		getGraphParameters().addProperties(properties);
 	}
 
 	/**

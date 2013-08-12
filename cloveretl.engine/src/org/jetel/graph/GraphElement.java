@@ -256,7 +256,7 @@ public abstract class GraphElement implements IGraphElement {
     public PropertyRefResolver getPropertyRefResolver() {
     	TransformationGraph graph = getGraph();
     	if (graph != null) {
-    		return new PropertyRefResolver(graph.getGraphProperties());
+    		return new PropertyRefResolver(graph.getGraphParameters());
     	} else {
     		return new PropertyRefResolver();
     	}

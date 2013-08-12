@@ -271,7 +271,7 @@ public class RecordTransformFactory {
         
         //resolve references at given transformation string 
         if (transform != null) {
-        	PropertyRefResolver refResolver= new PropertyRefResolver(node.getGraph().getGraphProperties());
+        	PropertyRefResolver refResolver = node.getPropertyRefResolver();
         	transform = refResolver.resolveRef(transform, RefResFlag.SPEC_CHARACTERS_OFF);
         }
         
@@ -280,7 +280,7 @@ public class RecordTransformFactory {
             transformation = (RecordTransform)loadClassInstance(transformClass, classLoader);
         }else if (transform == null && transformURL != null){
         	transform = FileUtils.getStringFromURL(node.getGraph().getRuntimeContext().getContextURL(), transformURL, charset);
-        	PropertyRefResolver refResolver= new PropertyRefResolver(node.getGraph().getGraphProperties());
+        	PropertyRefResolver refResolver = node.getPropertyRefResolver();
         	transform = refResolver.resolveRef(transform, RefResFlag.SPEC_CHARACTERS_OFF);
         }
         if (transformClass == null) {
