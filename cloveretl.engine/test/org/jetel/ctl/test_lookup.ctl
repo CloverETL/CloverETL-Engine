@@ -9,6 +9,11 @@ boolean putResult;
  
 integer idx;
 
+lookupMetadata meta;
+lookupMetadata meta2;
+lookupMetadata meta3;
+lookupMetadata meta4;
+string strRet;
 function integer transform() {
 	lookupMetadata tmpRecord;
 	tmpRecord.Name = "Charlie";
@@ -38,5 +43,14 @@ function integer transform() {
 	}
 	sort(charlieUpdatedResult);
 	
+	meta = lookup(TestLookup).get('Bravo',1);
+	meta2 = lookup(TestLookup).get('Bravo',1).*;
+	meta3 = lookup(TestLookup).get(null,1);
+	meta4 = lookup(TestLookup).get(null,null);
+	lookupMetadata meta5;
+	meta5.City = 'Bratislava';
+	lookup(TestLookup).put(meta5);
+	lookupMetadata meta6 = lookup(TestLookup).get(null,null);
+	strRet = meta6.City;
 	return 0;
 }
