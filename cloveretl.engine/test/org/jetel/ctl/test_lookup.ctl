@@ -13,7 +13,11 @@ lookupMetadata meta;
 lookupMetadata meta2;
 lookupMetadata meta3;
 lookupMetadata meta4;
+lookupMetadata meta7;
 string strRet;
+string strRet2; 
+integer intRet;
+integer intRet2;
 function integer transform() {
 	lookupMetadata tmpRecord;
 	tmpRecord.Name = "Charlie";
@@ -52,5 +56,10 @@ function integer transform() {
 	lookup(TestLookup).put(meta5);
 	lookupMetadata meta6 = lookup(TestLookup).get(null,null);
 	strRet = meta6.City;
+	intRet = lookup(TestLookup).count('Alpha',2);
+	intRet2 = lookup(TestLookup).count(null, null);
+	integer myIndex = lookup(TestLookup).count('Alpha',1);
+	strRet2 = lookup(TestLookup).next().City;
+	meta7 = lookup(TestLookup).next();	
 	return 0;
 }
