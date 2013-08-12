@@ -6522,51 +6522,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("second_null", cal.get(Calendar.SECOND));
 		check("milli_null", cal.get(Calendar.MILLISECOND));
 		
-	}
-	
-	public void test_datelib_getPart_expect_error(){
-		try {
-			doCompile("function integer transform(){integer i = getYear(null); return 0;}","test_datelib_getPart_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){integer i = getMonth(null); return 0;}","test_datelib_getPart_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){integer i = getDay(null); return 0;}","test_datelib_getPart_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){integer i = getHour(null); return 0;}","test_datelib_getPart_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){integer i = getMinute(null); return 0;}","test_datelib_getPart_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){integer i = getSecond(null); return 0;}","test_datelib_getPart_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){integer i = getMillisecond(null); return 0;}","test_datelib_getPart_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		check("year_null2", null);
+		check("month_null2", null);
+		check("day_null2", null);
+		check("hour_null2", null);
+		check("minute_null2", null);
+		check("second_null2", null);
+		check("milli_null2", null);
+		
+		check("year_null3", null);
+		check("month_null3", null);
+		check("day_null3", null);
+		check("hour_null3", null);
+		check("minute_null3", null);
+		check("second_null3", null);
+		check("milli_null3", null);
+		
 	}
 	
 	public void test_datelib_randomDate() {
