@@ -6400,15 +6400,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
     	cal.set(Calendar.MILLISECOND, portion[3]);
     	check("bornExtractTime", cal.getTime());
     	check("originalDate", BORN_VALUE);
-	}
-	
-	public void test_datelib_extractTime_expect_error(){
-		try {
-			doCompile("function integer transform(){date d = extractTime(null); return 0;}","test_datelib_extractTime_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+    	check("nullDate", null);
+    	check("nullDate2", null);
 	}
 	
 	public void test_datelib_extractDate() {
