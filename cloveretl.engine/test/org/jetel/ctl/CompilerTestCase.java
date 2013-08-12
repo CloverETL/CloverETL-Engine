@@ -7064,7 +7064,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test_null_dec", "NaN");
 	}
 
-	public void test_converlib_num2str_expect_error(){
+	public void test_convertlib_num2str_expect_error(){
 		//this test should be expected to success in future
 		//test: integer
 		try {
