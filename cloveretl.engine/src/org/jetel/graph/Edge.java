@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.RemoteEdgeComponent;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
@@ -255,7 +256,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		return reader;
 	}
 
-
 	/**
 	 *  Gets the Writer attribute of the Edge object
 	 *
@@ -267,7 +267,41 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		return writer;
 	}
 
+	/**
+	 * @return true if this edge is remote; either reader of this edge
+	 * is RemoteEdgeDataTransmitter or writer of this edge is RemoteEdgeDataReceiver;
+	 * {@link #getReaderRunId()} differs from {@link #getWriterRunId()}
+	 */
+	public boolean isRemote() {
+		return getReaderRunId() != getWriterRunId();
+	}
+	
+	/**
+	 * @return runId of reader component;
+	 * {@link RemoteEdgeComponent} is considered as component
+	 * which is running on different worker
+	 */
+	public long getReaderRunId() {
+		if (reader instanceof RemoteEdgeComponent) {
+			return ((RemoteEdgeComponent) reader).getRemoteRunId();
+		} else {
+			return reader.getGraph().getRuntimeContext().getRunId();
+		}
+	}
 
+	/**
+	 * @return runId of writer component
+	 * {@link RemoteEdgeComponent} is considered as component
+	 * which is running on different worker
+	 */
+	public long getWriterRunId() {
+		if (writer instanceof RemoteEdgeComponent) {
+			return ((RemoteEdgeComponent) writer).getRemoteRunId();
+		} else {
+			return writer.getGraph().getRuntimeContext().getRunId();
+		}
+	}
+	
 	/**
 	 *  Gets the Open attribute of the Edge object
 	 *
@@ -376,7 +410,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         if(!tmpFile.endsWith(System.getProperty("file.separator"))) {
             tmpFile += System.getProperty("file.separator");
         }
-        tmpFile += EdgeDebugUtils.getDebugFileName(runtimeContext.getRunId(), getId());
+        tmpFile += EdgeDebugUtils.getDebugFileName(getWriterRunId(), getReaderRunId(), getId());
 
         return tmpFile;
     }
