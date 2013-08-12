@@ -96,8 +96,10 @@ public class ConnectionPool extends GenericKeyedObjectPool<Authority, PoolableCo
 
 	@Override
 	public void returnObject(Authority authority, PoolableConnection connection) throws Exception {
-		connection.setBorrowed(false);
-		super.returnObject(authority, connection);
+		boolean wasBorrowed = connection.setBorrowed(false);
+		if (wasBorrowed) {
+			super.returnObject(authority, connection);
+		}
 	}
 	
 }
