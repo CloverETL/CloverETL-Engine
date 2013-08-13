@@ -6635,6 +6635,77 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 //-----------------Convert Lib tests-----------------------
+	public void test_convertlib_json2xml(){
+		doCompile("test_convertlib_json2xml");
+		String xmlChunk =""
+				+ "<lastName>Smith</lastName>"
+				+ "<phoneNumber>"
+					+ "<number>212 555-1234</number>"
+					+ "<type>home</type>"
+				+ "</phoneNumber>"
+				+ "<phoneNumber>"
+					+ "<number>646 555-4567</number>"
+					+ "<type>fax</type>"
+				+ "</phoneNumber>"
+				+ "<address>"
+					+ "<streetAddress>21 2nd Street</streetAddress>"
+					+ "<postalCode>10021</postalCode>"
+					+ "<state>NY</state>"
+					+ "<city>New York</city>"
+				+ "</address>"
+				+ "<age>25</age>"
+				+ "<firstName>John</firstName>";
+		check("ret", xmlChunk);
+		check("ret2", "<name/>");
+		check("ret3", "<address></address>");
+		check("ret4", "</>");
+		check("ret5", "<#/>");
+		check("ret6", "</>/<//>");
+		check("ret7","");
+		check("ret8", "<>Urgot</>");
+	}
+	
+	public void test_convertlib_json2xml_expect_error(){
+		try {
+			doCompile("function integer transform(){string str = json2xml(''); return 0;}","test_convertlib_json2xml_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){string str = json2xml(null); return 0;}","test_convertlib_json2xml_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){string str = json2xml('{\"name\"}'); return 0;}","test_convertlib_json2xml_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){string str = json2xml('{\"name\":}'); return 0;}","test_convertlib_json2xml_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){string str = json2xml('{:\"name\"}'); return 0;}","test_convertlib_json2xml_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+	}
+	
+
+	public void test_convertlib_xml2json(){
+		//TODO
+	}
+	public void test_convertlib_xml2json_expect_error(){
+		//TODO
+	}
+	
 	public void test_convertlib_cache() {
 		// set default locale to en.US so the date is formatted uniformly on all systems
 		Locale.setDefault(Locale.US);
