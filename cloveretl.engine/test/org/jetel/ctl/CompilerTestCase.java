@@ -6950,16 +6950,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("toLong", 0l);
 		check("toLong2", -500l);
 		check("toLong3", 10000000000l);
-	}
-	
-	public void test_convertlib_decimal2long_expect_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){long i = decimal2long(null); return 0;}","test_convertlib_decimal2long_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		check("nullRet1", null);
+		check("nullRet2", null);
 	}
 	
 	public void test_convertlib_double2integer() {
