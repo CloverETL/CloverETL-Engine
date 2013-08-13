@@ -42,6 +42,7 @@ import jdbm.helper.LongHashMap;
 import jdbm.helper.RecordManagerImpl;
 import jdbm.recman.BaseRecordManager;
 
+import org.jetel.component.tree.writer.util.JdbmCloser;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.MemoryUtils;
 
@@ -231,7 +232,7 @@ public class CacheRecordManager extends RecordManagerImpl {
 		checkIfClosed();
 
 		//recman.close();
-		((BaseRecordManager)recman).forceClose(false);
+		JdbmCloser.fastCloseUsingReflection((BaseRecordManager)recman);
 		recman = null;
 		hash = null;
 	}
