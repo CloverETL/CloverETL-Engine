@@ -15,6 +15,8 @@ integer hourMin;
 integer minuteMin;
 integer secondMin;
 integer millisecMin;
+integer nullRet1;
+integer nullRet2;
 
 function integer transform() {
 	inputDate = 1987-05-12;
@@ -34,7 +36,8 @@ function integer transform() {
 	minuteMin = date2num(minDate, minute);
 	secondMin = date2num(minDate, second);
 	millisecMin = date2num(minDate, millisec);
-	
+	nullRet1 = date2num(null,second);
+	nullRet2 = date2num(null,minute, "sk");
 	return 0;
 }
 
