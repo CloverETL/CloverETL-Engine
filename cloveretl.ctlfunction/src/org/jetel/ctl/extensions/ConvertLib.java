@@ -777,6 +777,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Narrowing conversion from decimal to double value.")
 	public static final Double decimal2double(TLFunctionCallContext context, BigDecimal d) {
+		if (d == null){
+			return null;
+		}
 		if (d.compareTo(maxDoubleDecimal) > 0 || d.compareTo(minDoubleDecimal) < 0) {
 			throw new TransformLangExecutorRuntimeException("decimal2double: " + d + " - out of range of double");
 		}
