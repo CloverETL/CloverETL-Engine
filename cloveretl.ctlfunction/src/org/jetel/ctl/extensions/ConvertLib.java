@@ -953,6 +953,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns long that represents milliseconds from epoch to a date")
 	public static final Long date2long(TLFunctionCallContext context, Date d) {
+		if (d == null){
+			return null;
+		}
 		return d.getTime();
 	}
 	
