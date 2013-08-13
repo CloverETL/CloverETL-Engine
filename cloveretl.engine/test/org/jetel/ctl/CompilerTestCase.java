@@ -6923,17 +6923,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		SimpleDateFormat sdfGMT8 = new SimpleDateFormat("yyyy:MMMM:dd z", MiscUtils.createLocale("en"));
 		sdfGMT8.setTimeZone(TimeZone.getTimeZone("GMT+8"));
 		check("timeZone", sdfGMT8.format(BORN_VALUE));
-		
+		check("nullRet", null);
+		check("nullRet2", null);
 	}
 	
 	public void test_convertlib_date2str_expect_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){string s = date2str(null,'yyyy:MMMM:dd', 'cs.CZ', 'GMT+8');return 0;}","test_convertlib_date2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){string s = date2str(1985-11-12,null, 'cs.CZ', 'GMT+8');return 0;}","test_convertlib_date2str_expect_error");
 			fail();
