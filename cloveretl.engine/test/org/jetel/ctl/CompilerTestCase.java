@@ -6863,30 +6863,36 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("minuteMin", 0);
 		check("secondMin", 0);
 		check("millisecMin", 0);
+		check("nullRet1", null);
+		check("nullRet2", null);
 	}
 	
 	public void test_convertlib_date2num_expect_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){number num = date2num(null,null); return 0;}","test_convertlib_date2num_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing;
-		}
-		//this test should be expected to success in future
 		try {
 			doCompile("function integer transform(){number num = date2num(1982-09-02,null); return 0;}","test_convertlib_date2num_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing;
 		}	
-		//this test should be expected to success in future
 		try {
-			doCompile("function integer transform(){number num = date2num(null,year); return 0;}","test_convertlib_date2num_expect_error");
+			doCompile("function integer transform(){number num = date2num(1982-09-02,null,null); return 0;}","test_convertlib_date2num_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing;
-		}		
+		}	
+		try {
+			doCompile("function integer transform(){string s = null; number num = date2num(1982-09-02,null,s); return 0;}","test_convertlib_date2num_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){string s = null; number num = date2num(1982-09-02,year,s); return 0;}","test_convertlib_date2num_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}	
+
 	}
 	
 	public void test_convertlib_date2str() {
