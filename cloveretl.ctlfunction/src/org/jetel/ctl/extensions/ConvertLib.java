@@ -711,6 +711,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from decimal to integer value.")
 	public static final Integer decimal2integer(TLFunctionCallContext context, BigDecimal l) {
+		if (l == null){
+			return null;
+		}
 		if (l.compareTo(maxIntDecimal) > 0 || l.compareTo(minIntDecimal) <= 0) {
 			throw new TransformLangExecutorRuntimeException("decimal2integer: " + l + " - out of range of integer");
 		}
