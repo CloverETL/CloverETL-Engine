@@ -363,7 +363,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length > 2 && context.getParams()[2].isString()) {
+			if (context.getParams().length > 2) {
 				final String locale = stack.popString();
 				final DateFieldEnum field = (DateFieldEnum)stack.pop();
 				final Date input = stack.popDate();
@@ -394,6 +394,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	private static final Integer date2numInternal(Date input, DateFieldEnum field, Calendar c){
+		if (input == null){
+			return null;
+		}
 		c.setTime(input);
 		switch (field) {
 		case YEAR:
