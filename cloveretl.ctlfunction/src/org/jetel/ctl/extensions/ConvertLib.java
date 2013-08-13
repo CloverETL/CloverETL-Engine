@@ -299,6 +299,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts date to string according to the specified pattern, locale and time zone.")
 	public static final String date2str(TLFunctionCallContext context, Date date, String pattern, String locale, String timeZone) {
+		if (date == null){
+			return null;
+		}
 		final DateFormatter formatter = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
 		return formatter.format(date);
 	}
