@@ -529,6 +529,7 @@
 			<keep name="com.opensys.cloveretl.validator.rules.*"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.validator.utils.*"><field access="public"/><method access="public"/></keep>
 			<keep name="com.opensys.cloveretl.validator.component.*"><field access="public"/><method access="public"/></keep>
+			<keepclassmembernames name="com.opensys.cloveretl.validator.**"><field annotation="javax.xml.bind.annotation.*"/></keepclassmembernames>
 
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
