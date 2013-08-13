@@ -6832,17 +6832,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_convertlib_date2long");
 		check("bornDate", BORN_MILLISEC_VALUE);
 		check("zeroDate", 0l);
+		check("nullRet1", null);
+		check("nullRet2", null);
 	}
 	
-	public void test_convertlib_date2long_expect_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){long l = date2long(null);return 0;}","test_convertlib_date2long_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-	}
 	
 	public void test_convertlib_date2num() {
 		doCompile("test_convertlib_date2num");
