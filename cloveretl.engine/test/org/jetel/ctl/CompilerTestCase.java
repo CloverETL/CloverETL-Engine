@@ -6700,10 +6700,36 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 
 	public void test_convertlib_xml2json(){
-		//TODO
+		doCompile("test_convertlib_xml2json");
+		String json = "{\"lastName\":\"Smith\",\"phoneNumber\":[{\"number\":\"212 555-1234\",\"type\":\"home\"},{\"number\":\"646 555-4567\",\"type\":\"fax\"}],\"address\":{\"streetAddress\":\"21 2nd Street\",\"postalCode\":10021,\"state\":\"NY\",\"city\":\"New York\"},\"age\":25,\"firstName\":\"John\"}";
+		check("ret1", json);
+		check("ret2", "{\"name\":\"Renektor\"}");
+		check("ret3", "{}");
+		check("ret4", "{\"address\":\"\"}");
+		check("ret5", "{\"age\":32}");
+		check("ret6", "{\"b\":\"\"}");
+		check("ret7", "{\"char\":{\"name\":\"Anivia\",\"lane\":\"mid\"}}");
+		check("ret8", "{\"#\":\"/\"}");
 	}
 	public void test_convertlib_xml2json_expect_error(){
-		//TODO
+		try {
+			doCompile("function integer transform(){string json = xml2json(null); return 0;}","test_convertlib_xml2json_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string json = xml2json('<></>'); return 0;}","test_convertlib_xml2json_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string json = xml2json('<#>/</>'); return 0;}","test_convertlib_xml2json_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_cache() {
