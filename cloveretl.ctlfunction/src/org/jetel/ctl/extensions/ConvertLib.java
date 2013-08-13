@@ -756,6 +756,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from decimal to long value.")
 	public static final Long decimal2long(TLFunctionCallContext context, BigDecimal d) {
+		if (d == null){
+			return null;
+		}
 		if (d.compareTo(maxLongDecimal) > 0 || d.compareTo(minLongDecimal) <= 0) {
 			throw new TransformLangExecutorRuntimeException("decimal2long: " + d + " - out of range of long");
 		}
