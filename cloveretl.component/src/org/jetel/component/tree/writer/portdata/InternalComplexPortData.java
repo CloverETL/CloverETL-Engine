@@ -72,7 +72,7 @@ class InternalComplexPortData extends InternalPortData {
 		static DataRecordKey forDataRecord(DataRecord record, int keyIndices[]) {
 			
 			if (keyIndices == null || keyIndices.length == 0) {
-				return NULL_KEY;
+				throw new IllegalArgumentException("Null or empty key.");
 			}
 			
 			DataRecordKey key = new DataRecordKey();

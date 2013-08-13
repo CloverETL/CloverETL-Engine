@@ -36,11 +36,10 @@ import org.jetel.graph.InputPort;
  *
  * @created 13.8.2013
  */
-public class InternalSimplePortData extends InternalPortData {
+class InternalSimplePortData extends InternalPortData {
 	
 	InternalSimplePortData(InputPort inPort, Set<List<String>> keys) {
 		super(inPort, keys);
-		
 	}
 
 	@Override
