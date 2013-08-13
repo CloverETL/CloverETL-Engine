@@ -6932,17 +6932,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_decimal2double() {
 		doCompile("test_convertlib_decimal2double");
 		check("toDouble", 0.007d);
-	}
-	
-	public void test_convertlib_decimal2double_except_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){double d = decimal2double(null); return 0;}","test_convertlib_decimal2double_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		
+		check("nullRet1", null);
+		check("nullRet2", null);
 	}
 	
 	public void test_convertlib_decimal2integer() {
