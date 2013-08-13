@@ -20,11 +20,15 @@ package org.jetel.component.tree.writer.portdata;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.collections.map.MultiValueMap;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 
 /**
@@ -40,6 +44,18 @@ class InternalSimplePortData extends InternalPortData {
 	
 	InternalSimplePortData(InputPort inPort, Set<List<String>> keys) {
 		super(inPort, keys);
+	}
+	
+	@Override
+	public void init() throws ComponentNotReadyException {
+		super.init();
+		if (nullKey) {
+			/*
+			 * lookup with null key should return elements in insertion
+			 * order - so replacing default HashMap with LinkedHashMap
+			 */
+			records = MultiValueMap.decorate(new LinkedHashMap<Object, Object>(), LinkedList.class);
+		}
 	}
 
 	@Override
