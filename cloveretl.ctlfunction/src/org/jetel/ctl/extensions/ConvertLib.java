@@ -689,6 +689,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from double to integer value.")
 	public static final Integer double2integer(TLFunctionCallContext context, Double l) {
+		if (l == null){
+			return null;
+		}
 		if (l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE) {
 			throw new TransformLangExecutorRuntimeException("double2integer: " + l + " - out of range of integer");
 		}
