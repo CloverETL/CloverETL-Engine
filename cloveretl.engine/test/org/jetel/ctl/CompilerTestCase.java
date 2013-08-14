@@ -7010,12 +7010,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_convertlib_long2integer");
 		check("fromLong1", 10);
 		check("fromLong2", -10);
+		check("nullRet1", null);
+		check("nullRet2", null);
 	}
 	
 	public void test_convertlib_long2integer_expect_error(){
 		//this test should be expected to success in future
 		try {
-			doCompile("function integer transform(){integer i = long2integer(null); return 0;}","test_convertlib_long2integer_expect_error");
+			doCompile("function integer transform(){integer i = long2integer(200032132463123L); return 0;}","test_convertlib_long2integer_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
