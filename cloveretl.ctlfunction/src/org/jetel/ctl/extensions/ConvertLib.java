@@ -908,17 +908,17 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String toString(TLFunctionCallContext context, int i) {
+	public static final String toString(TLFunctionCallContext context, Integer i) {
 		return toStringInternal(i);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String toString(TLFunctionCallContext context, long l) {
+	public static final String toString(TLFunctionCallContext context, Long l) {
 		return toStringInternal(l);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String toString(TLFunctionCallContext context, double d) {
+	public static final String toString(TLFunctionCallContext context, Double d) {
 		return toStringInternal(d);
 	}
 	

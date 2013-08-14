@@ -7466,10 +7466,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("byteListString", "[firstElement, secondElement]");
 		check("fieldByteListString", "[firstElement, secondElement]");
 //		CLO-1262
-//		check("test_null_l", "null");
-//		check("test_null_dec", "null");
-//		check("test_null_d", "null");
-//		check("test_null_i", "null");
+		check("test_null_l", "null");
+		check("test_null_dec", "null");
+		check("test_null_d", "null");
+		check("test_null_i", "null");
 	}
 	
 	public void test_convertlib_str2byte() {
