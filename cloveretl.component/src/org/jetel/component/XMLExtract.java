@@ -144,7 +144,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * &nbsp;&nbsp;//name of output port for this mapped XML element<br>
  * &nbsp;parentKey NMTOKEN #IMPLIED<br>     
  * &nbsp;&nbsp;//field name of parent record, which is copied into field of the current record<br>
- * &nbsp;&nbsp;//passed in generatedKey atrribute<br> 
+ * &nbsp;&nbsp;//passed in generatedKey attribute<br> 
  * &nbsp;generatedKey NMTOKEN #IMPLIED<br>  
  * &nbsp;&nbsp;//see parentKey comment<br>
  * &nbsp;sequenceField NMTOKEN #IMPLIED<br> 
@@ -152,22 +152,22 @@ import org.xml.sax.helpers.DefaultHandler;
  * &nbsp;&nbsp;//(can be used to generate new key field for relative records)<br> 
  * &nbsp;sequenceId NMTOKEN #IMPLIED<br>    
  * &nbsp;&nbsp;//we can supply sequence id used to fill a field defined in a sequenceField attribute<br>
- * &nbsp;&nbsp;//(if this attribute is omited, non-persistent PrimitiveSequence will be used)<br>
+ * &nbsp;&nbsp;//(if this attribute is omitted, non-persistent PrimitiveSequence will be used)<br>
  * &nbsp;xmlFields NMTOKEN #IMPLIED<br>     
- * &nbsp;&nbsp;//comma separeted xml element names, which will be mapped on appropriate record fields<br>
+ * &nbsp;&nbsp;//comma separated xml element names, which will be mapped on appropriate record fields<br>
  * &nbsp;&nbsp;//defined in cloverFields attribute<br>
  * &nbsp;cloverFields NMTOKEN #IMPLIED<br>  
  * &nbsp;&nbsp;//see xmlFields comment<br>
  * &gt;<br>
  * </code> All nested XML elements will be recognized as record fields and mapped by name (except elements serviced by
- * other nested Mapping elements), if you prefere other mapping xml fields and clover fields than 'by name', use
+ * other nested Mapping elements), if you prefer other mapping xml fields and clover fields than 'by name', use
  * xmlFields and cloveFields attributes to setup custom fields mapping. 'useNestedNodes' component attribute defines if
  * also child of nested xml elements will be mapped on the current clover record. Record from nested Mapping element
  * could be connected via key fields with parent record produced by parent Mapping element (see parentKey and
  * generatedKey attribute notes). In case that fields are unsuitable for key composing, extractor could fill one or more
- * fields with values comming from sequence (see sequenceField and sequenceId attribute).
+ * fields with values coming from sequence (see sequenceField and sequenceId attribute).
  * 
- * For example: given an xml file:<br>
+ * For example: given a xml file:<br>
  * <code>
  * &lt;myXML&gt; <br>
  * &nbsp;&lt;phrase&gt; <br>
