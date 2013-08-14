@@ -209,7 +209,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		properties.put("DATAIN_DIR", "${PROJECT}/data-in");
 		properties.put("COUNT", "`1+2`");
 		properties.put("NEWLINE", "\\n");
-		g.setGraphProperties(properties);
+		g.getGraphParameters().setProperties(properties);
 		initDefaultDictionary(g);
 		return g;
 	}

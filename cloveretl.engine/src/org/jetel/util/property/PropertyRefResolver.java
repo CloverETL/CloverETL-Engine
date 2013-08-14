@@ -19,11 +19,11 @@
 package org.jetel.util.property;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -35,6 +35,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.GraphParameter;
+import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.CTLExpressionEvaluator;
 import org.jetel.interpreter.ParseException;
@@ -75,7 +77,7 @@ public class PropertyRefResolver {
 	private static final Log logger = LogFactory.getLog(PropertyRefResolver.class);
 
 	/** properties used for resolving property references */
-	private final Properties properties;
+	private final GraphParameters parameters;
 
 	/** the regex pattern used to find CTL expressions */
 	private final Pattern expressionPattern = Pattern.compile(Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX);
@@ -100,7 +102,7 @@ public class PropertyRefResolver {
 	 * to <code>false</code>.
 	 */
 	public PropertyRefResolver() {
-		this.properties = new Properties();
+		this.parameters = new GraphParameters();
 	}
 
 	/**
@@ -111,7 +113,16 @@ public class PropertyRefResolver {
 	 * @param properties properties to be used for resolving references
 	 */
 	public PropertyRefResolver(Properties properties) {
-		this.properties = (properties != null) ? properties : new Properties();
+		parameters = new GraphParameters();
+		parameters.addProperties(properties);
+	}
+
+	public PropertyRefResolver(GraphParameters graphParameters) {
+		if (graphParameters != null) {
+			this.parameters = graphParameters;
+		} else {
+			this.parameters = new GraphParameters();
+		}
 	}
 
 	/**
@@ -124,40 +135,31 @@ public class PropertyRefResolver {
 	 */
 	@Deprecated
 	public PropertyRefResolver(TransformationGraph graph) {
-		this.properties = (graph != null) ? graph.getGraphProperties() : new Properties();
+		this(graph.getGraphParameters());
 	}
 	
 	/**
 	 * @return properties used for resolving property references
 	 */
 	public Properties getProperties() {
-		return properties;
+		return parameters.asProperties();
 	}
 
+	public GraphParameters getGraphParameters() {
+		return parameters;
+	}
+	
 	/**
 	 * Adds the given properties (key=value pairs) to the internal set of properties.
 	 *
 	 * @param properties properties to be added
 	 */
 	public void addProperties(Properties properties) {
-		this.properties.putAll(properties);
+		this.parameters.addProperties(properties);
 	}
 
-    /**
-	 * Adds the given map of properties (key=value pairs) to the internal set of properties.
-	 *
-	 * @param properties a map of properties to be added
-     */
-    public void addProperties(Map<Object, Object> properties){
-        this.properties.putAll(properties);
-    }
-    
     public void addProperty(String propertyName, String propertyValue) {
-    	String valueTmp = this.properties.getProperty(propertyName);
-    	if(valueTmp == null) {
-    		this.properties.setProperty(propertyName, propertyValue);
-    	}
-    	
+    	this.parameters.addGraphParameter(propertyName, propertyValue);
     }
 
 	/**
@@ -371,9 +373,14 @@ public class PropertyRefResolver {
 			//should be secure parameters resolved?
 			if (flag.resolveSecureParameters()) {
 				//try to load parameter from secure storage
-				resolvedReference = ContextProvider.getAuthorityProxy().getSecureParamater(reference);
+				if (parameters.hasGraphParameter(reference)) {
+					GraphParameter param = parameters.getGraphParameter(reference);
+					if (param.isSecure()) {
+						resolvedReference = ContextProvider.getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
+					}
+				}
 			} else {
-//this behaviour is turned off for now, wo we really want this?
+//this behaviour is turned off for now, do we really want this?
 //				if (flag.forceSecureParameters()) {
 //					//in case the parameter is secured, but the secure parameters should not be resolved by the flag
 //					//an exception is thrown to inform user about this situation ASAP
@@ -384,7 +391,7 @@ public class PropertyRefResolver {
 			}
 			
 			if (resolvedReference == null) {
-				resolvedReference = properties.getProperty(reference);
+				resolvedReference = parameters.getGraphParameter(reference).getValue();
 			}
 			
 			if (resolvedReference == null) {
@@ -485,7 +492,28 @@ public class PropertyRefResolver {
 	 * @return <code>true</code> if value contains reference to at least one property.
 	 */
 	public static boolean containsProperty(String value){
-		return propertyPattern.matcher(value).find();
+		if (!StringUtils.isEmpty(value)) {
+			return propertyPattern.matcher(value).find();
+		} else {
+			return false;
+		}
 	}
+	
+	/**
+	 * @return list of unresolved parameter references in the given string
+	 */
+	public static List<String> getUnresolvedProperties(String value){
+		if (!StringUtils.isEmpty(value)) {
+			List<String> result = new ArrayList<String>();
+			Matcher matcher = propertyPattern.matcher(value);
+			while (matcher.find()) {
+				result.add(matcher.group(1));
+			}
+			return result;
+		} else {
+			return Collections.emptyList();
+		}
+	}
+
 }
 

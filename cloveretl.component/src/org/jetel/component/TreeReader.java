@@ -95,7 +95,6 @@ import org.jetel.util.SourceIterator;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -350,7 +349,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 		SourceIterator iterator = new SourceIterator(getInputPort(INPUT_PORT_INDEX), projectURL, fileURL);
 		iterator.setCharset(charset);
-		iterator.setPropertyRefResolver(graph != null ? new PropertyRefResolver(graph.getGraphProperties()) : null);
+		iterator.setPropertyRefResolver(getPropertyRefResolver());
 		iterator.setDictionary(graph.getDictionary());
 		return iterator;
 	}

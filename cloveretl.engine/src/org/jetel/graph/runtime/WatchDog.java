@@ -191,7 +191,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     		long startTimestamp = System.currentTimeMillis();
     		
     		//print graph properties
-    		graph.getGraphProperties().print(logger, "Graph parameters:");
+    		graph.getGraphParameters().asProperties().print(logger, "Graph parameters:");
     		
     		//print out runtime context
     		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());

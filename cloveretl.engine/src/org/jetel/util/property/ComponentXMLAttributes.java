@@ -30,6 +30,7 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 
 import org.jetel.exception.AttributeNotFoundException;
+import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.formatter.TimeIntervalUtils;
 import org.jetel.util.string.StringUtils;
@@ -101,7 +102,7 @@ public class ComponentXMLAttributes {
      * @param  nodeXML  Description of the Parameter
      */
     public ComponentXMLAttributes(Element nodeXML) {
-        this(nodeXML, (Properties) null);
+        this(nodeXML, (GraphParameters) null);
     }
 
     /**
@@ -110,7 +111,7 @@ public class ComponentXMLAttributes {
 	 * @param  nodeXML  Description of the Parameter
 	 */
 	public ComponentXMLAttributes(Element nodeXML, TransformationGraph graph) {
-	    this(nodeXML, graph != null ? graph.getGraphProperties() : null);
+	    this(nodeXML, graph != null ? graph.getGraphParameters() : null);
 	}
 
 
@@ -120,10 +121,10 @@ public class ComponentXMLAttributes {
 	 * @param  nodeXML     Description of the Parameter
 	 * @param  properties  Description of the Parameter
 	 */
-	public ComponentXMLAttributes(Element nodeXML, Properties properties) {
+	public ComponentXMLAttributes(Element nodeXML, GraphParameters graphParameters) {
 	   
 		this.nodeXML = nodeXML;
-		refResolver= new PropertyRefResolver(properties);
+		refResolver= new PropertyRefResolver(graphParameters);
 		instantiateInlinedNodeAttributes(nodeXML);
 		this.attributes = nodeXML.getAttributes();
 	}
