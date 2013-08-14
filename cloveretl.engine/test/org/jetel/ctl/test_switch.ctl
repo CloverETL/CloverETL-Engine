@@ -24,6 +24,10 @@ boolean res61;
 boolean res62; 
 boolean res63;
 boolean res64; 
+string res71;
+string res72;
+string res73;
+string res74;
 
 
 function integer transform() {
@@ -40,6 +44,38 @@ function integer transform() {
 	default: res13 = true;
 		break; 
 	} 
+
+	// empty integer switch
+	switch (cond1) {
+	}
+
+	// integer switch with empty case
+	switch (cond1) {
+	case 0:
+	}
+
+	// integer switch with one case and a break
+	switch (cond1) {
+	case 0:
+		break;
+	}
+	
+	string stringCond = "a";
+	// empty string switch
+	switch (stringCond) {
+	}
+
+	// string switch with empty case
+	switch (stringCond) {
+	case "b":
+	}
+
+	// string switch with one case and a break
+	switch (stringCond) {
+	case "b":
+		break;
+	}
+
 	// simple switch, no break
 	cond2 = 1;
 	res21 = false; 
@@ -126,6 +162,47 @@ function integer transform() {
 	}
 	
 	s = "something";
+	
+	
+	// null cases
+	switch (s) {
+		case null:
+			res71 = "null case";
+			break;
+		default:
+			res71 = "default case";
+			break;
+	}
 
+	string cond7 = null;
+	switch (cond7) {
+		case null:
+			res72 = "null case";
+			break;
+		default:
+			res72 = "default case";
+			break;
+	}
+	
+	integer cond8 = null;
+	switch (cond8) {
+		case null:
+			res73 = "null case";
+			break;
+		default:
+			res73 = "default case";
+			break;
+	}
+
+	cond8 = 1;
+	switch (cond8) {
+		case null:
+			res74 = "null case";
+			break;
+		default:
+			res74 = "default case";
+			break;
+	}
+	
 	return 0;
 }
