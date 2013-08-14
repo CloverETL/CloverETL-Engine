@@ -6810,17 +6810,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_convertlib_bool2num");
 		check("resultTrue", 1);
 		check("resultFalse", 0);
-	}
-	
-	public void test_convertlib_bool2num_expect_error(){
-//		CLO-1255
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){boolean b = null; integer s = bool2num(b);return 0;}","test_convertlib_bool2num_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		check("nullRet1", null);
+		check("nullRet2", null);
 	}
 	
 	public void test_convertlib_byte2base64() {
