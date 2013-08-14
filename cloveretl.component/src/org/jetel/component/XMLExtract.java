@@ -59,7 +59,6 @@ import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
@@ -412,7 +411,7 @@ public class XMLExtract extends Node {
 
 		this.readableChannelIterator = new ReadableChannelIterator(getInputPort(INPUT_PORT), projectURL, inputFile);
 		this.readableChannelIterator.setCharset(charset);
-		this.readableChannelIterator.setPropertyRefResolver(graph != null ? new PropertyRefResolver(graph.getGraphProperties()) : null);
+		this.readableChannelIterator.setPropertyRefResolver(getPropertyRefResolver());
 		this.readableChannelIterator.setDictionary(graph.getDictionary());
 	}
 

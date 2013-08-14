@@ -301,7 +301,7 @@ public class DBInputTable extends Node {
 				parser = processSqlQuery(sqlQuery);
 			} else {
 				// process queries from file or input port
-				PropertyRefResolver propertyResolver = new PropertyRefResolver(getGraph().getGraphProperties());
+				PropertyRefResolver propertyResolver = getPropertyRefResolver();
 				while (channelIterator.hasNext()) {
 					Object source = channelIterator.next();
 					if (source == null) break; // no more data in input port
