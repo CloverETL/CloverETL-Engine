@@ -230,6 +230,9 @@ public class DateLib extends TLFunctionLibrary {
 	public static final Date extractDate(TLFunctionCallContext context, Date d) {
     	// this hardcore code is necessary, subtracting milliseconds 
     	// or using Calendar.clear() does not seem to handle light-saving correctly
+    	if (d == null){
+    		return null;
+    	}
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
     	cal.setTime(d);
     	int[] portion = new int[]{cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.MONTH), cal.get(Calendar.YEAR)};
@@ -264,6 +267,9 @@ public class DateLib extends TLFunctionLibrary {
     	// this hardcore code is necessary, subtracting milliseconds 
     	// or using Calendar.clear() does not seem to handle light-saving correctly
     	Calendar cal = ((TLCalendarCache)context.getCache()).getCalendar();
+    	if (d == null){
+    		return null;
+    	}
     	cal.setTime(d);
     	int[] portion = new int[]{cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND),cal.get(Calendar.MILLISECOND)};
     	cal.clear();
@@ -372,6 +378,9 @@ public class DateLib extends TLFunctionLibrary {
     @TLFunctionAnnotation("Returns the day of the month using the specified time zone. The first day of the month has the value 1.")
     public static final Integer getDay(TLFunctionCallContext context, Date date, String timeZone) {
     	Calendar cal = ((TLCalendarCache) context.getCache()).getCachedCalendarWithTimeZone(context, timeZone, 1);
+    	if (date == null){
+    		return null;
+    	}
     	cal.setTime(date);
     	return cal.get(Calendar.DAY_OF_MONTH);
     }
@@ -407,6 +416,9 @@ public class DateLib extends TLFunctionLibrary {
     @TLFunctionAnnotation("Returns the month using the specified time zone. The first month of the year has the value 1.")
     public static final Integer getMonth(TLFunctionCallContext context, Date date, String timeZone) {
     	Calendar cal = ((TLCalendarCache) context.getCache()).getCachedCalendarWithTimeZone(context, timeZone, 1);
+    	if(date == null){
+    		return null;
+    	}
     	cal.setTime(date);
     	return cal.get(Calendar.MONTH) + 1;
     }
@@ -442,6 +454,9 @@ public class DateLib extends TLFunctionLibrary {
     @TLFunctionAnnotation("Returns the year using the specified time zone.")
     public static final Integer getYear(TLFunctionCallContext context, Date date, String timeZone) {
     	Calendar cal = ((TLCalendarCache) context.getCache()).getCachedCalendarWithTimeZone(context, timeZone, 1);
+    	if (date == null){
+    		return null;
+    	}
     	cal.setTime(date);
     	return cal.get(Calendar.YEAR);
     }
@@ -477,6 +492,9 @@ public class DateLib extends TLFunctionLibrary {
     @TLFunctionAnnotation("Returns the hour of the day (24-hour clock) using the specified time zone.")
     public static final Integer getHour(TLFunctionCallContext context, Date date, String timeZone) {
     	Calendar cal = ((TLCalendarCache) context.getCache()).getCachedCalendarWithTimeZone(context, timeZone, 1);
+    	if (date == null){
+    		return null;
+    	}
     	cal.setTime(date);
     	return cal.get(Calendar.HOUR_OF_DAY);
     }
@@ -512,6 +530,9 @@ public class DateLib extends TLFunctionLibrary {
     @TLFunctionAnnotation("Returns the minute within the hour using the specified time zone.")
     public static final Integer getMinute(TLFunctionCallContext context, Date date, String timeZone) {
     	Calendar cal = ((TLCalendarCache) context.getCache()).getCachedCalendarWithTimeZone(context, timeZone, 1);
+    	if (date == null){
+    		return null;
+    	}
     	cal.setTime(date);
     	return cal.get(Calendar.MINUTE);
     }
@@ -547,6 +568,9 @@ public class DateLib extends TLFunctionLibrary {
     @TLFunctionAnnotation("Returns the second within the minute using the specified time zone.")
     public static final Integer getSecond(TLFunctionCallContext context, Date date, String timeZone) {
     	Calendar cal = ((TLCalendarCache) context.getCache()).getCachedCalendarWithTimeZone(context, timeZone, 1);
+    	if (date == null){
+    		return null;
+    	}
     	cal.setTime(date);
     	return cal.get(Calendar.SECOND);
     }
@@ -582,6 +606,9 @@ public class DateLib extends TLFunctionLibrary {
     @TLFunctionAnnotation("Returns the millisecond within the second using the specified time zone.")
     public static final Integer getMillisecond(TLFunctionCallContext context, Date date, String timeZone) {
     	Calendar cal = ((TLCalendarCache) context.getCache()).getCachedCalendarWithTimeZone(context, timeZone, 1);
+    	if (date == null){
+    		return null;
+    	}
     	cal.setTime(date);
     	return cal.get(Calendar.MILLISECOND);
     }

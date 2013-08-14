@@ -49,13 +49,13 @@ function integer transform() {
 	byteListString = byteList.toString();
 	fieldByteListString = $out.firstMultivalueOutput.byteListField.toString();
 //	CLO-1262
-//	long l = null;
-//	test_null_l = toString(l);
-//	integer i = null;
-//	test_null_i = toString(i);
-//	decimal dec = null;
-//	test_null_dec = toString(dec);
-//	double d = null;
-//	test_null_d = toString(d);
+	long l = null;
+	test_null_l = toString(l);
+	integer i = null;
+	test_null_i = toString(i);
+	decimal dec = null;
+	test_null_dec = toString(dec);
+	double d = null;
+	test_null_d = toString(d);
 	return 0;
 }

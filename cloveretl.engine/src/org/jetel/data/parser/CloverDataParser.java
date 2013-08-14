@@ -38,6 +38,8 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
+import org.jetel.graph.ContextProvider;
+import org.jetel.graph.JobType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -79,6 +81,13 @@ public class CloverDataParser extends AbstractParser {
     private DataInputStream indexFile;
     private long currentIndexPosition;
     private long sourceRecordCounter;
+	
+	/** Clover version which has been used to create the input data file. */
+	private Version version;
+
+    /** In case the input file has been created by clover 3.4 and current job type is jobflow
+     * special de-serialisation needs to be used, see CLO-1382 */
+	private boolean useParsingFromJobflow_3_4 = false;
 	
 	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
@@ -243,10 +252,16 @@ public class CloverDataParser extends AbstractParser {
 			throw new ComponentNotReadyException(e);
 		}
         //read and check header of clover binary data format to check out the compatibility issues
-        checkCompatibilityHeader(recordBuffer, metadata);
+        version = checkCompatibilityHeader(recordBuffer, metadata);
+        
+        //in case the input file has been created by clover 3.4 and current job type is jobflow
+        //special de-serialisation needs to be used, see CLO-1382
+        if (version.majorVersion == 3 && version.minorVersion == 4 && ContextProvider.getRuntimeContext().getJobType() == JobType.JOBFLOW) {
+        	useParsingFromJobflow_3_4 = true;
+        }
     }
 
-    public static void checkCompatibilityHeader(ReadableByteChannel recordFile, DataRecordMetadata metadata) throws ComponentNotReadyException {
+    public static Version checkCompatibilityHeader(ReadableByteChannel recordFile, DataRecordMetadata metadata) throws ComponentNotReadyException {
         CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
     	buffer.clear();
 		try {
@@ -255,10 +270,10 @@ public class CloverDataParser extends AbstractParser {
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
-    	checkCompatibilityHeader(buffer, metadata);
+    	return checkCompatibilityHeader(buffer, metadata);
     }
 
-    public static void checkCompatibilityHeader(CloverBuffer buffer, DataRecordMetadata metadata) throws ComponentNotReadyException {
+    public static Version checkCompatibilityHeader(CloverBuffer buffer, DataRecordMetadata metadata) throws ComponentNotReadyException {
     	try {
 	        //read clover binary data header and check backward compatibility
 	        //better header description is at CloverDataFormatter.setDataTarget() method
@@ -267,17 +282,18 @@ public class CloverDataParser extends AbstractParser {
 	        	throw new ComponentNotReadyException("Source clover data file is obsolete. Data cannot be read.");
 	        }
 	        long cloverDataCompatibilityHash = buffer.getLong();
-	    	byte majorVersion = buffer.get();
-	    	byte minorVersion = buffer.get();
-	    	byte revisionVersion = buffer.get();
+	        Version version = new Version();
+	    	version.majorVersion = buffer.get();
+	    	version.minorVersion = buffer.get();
+	    	version.revisionVersion = buffer.get();
 	    	if (cloverDataCompatibilityHash != CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_2_9
 	    			&& cloverDataCompatibilityHash != CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_3_5) {
 	        	//clover binary data format is incompatible with current version - unknown compatibility hash
-	        	throw new ComponentNotReadyException("Source clover data file is not supported (version " + majorVersion + "." + minorVersion + "." + revisionVersion + "). Data cannot be read.");
+	        	throw new ComponentNotReadyException("Source clover data file is not supported (version " + version.majorVersion + "." + version.minorVersion + "." + version.revisionVersion + "). Data cannot be read.");
 	    	}
 	        
-	    	if (majorVersion != JetelVersion.getMajorVersion() || minorVersion != JetelVersion.getMinorVersion()) {
-	    		logger.warn("Source clover data file was produced by incompatible clover engine version " + majorVersion + "." + minorVersion + "." + revisionVersion + ". It is not encouraged usage of clover binary format.");
+	    	if (version.majorVersion != JetelVersion.getMajorVersion() || version.minorVersion != JetelVersion.getMinorVersion()) {
+	    		logger.warn("Source clover data file was produced by incompatible clover engine version " + version.majorVersion + "." + version.minorVersion + "." + version.revisionVersion + ". It is not encouraged usage of clover binary format.");
 	    	}
 	    	byte[] extraBytes = new byte[4];
 	    	buffer.get(extraBytes);
@@ -292,6 +308,7 @@ public class CloverDataParser extends AbstractParser {
 	    			throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
 	    		}
 	    	}
+	    	return version;
     	} catch (ComponentNotReadyException e) {
     		throw e;
     	} catch (Exception e) {
@@ -361,7 +378,11 @@ public class CloverDataParser extends AbstractParser {
 			}
 			recordBuffer.flip();
 		}
-		record.deserializeUnitary(recordBuffer);
+		if (!useParsingFromJobflow_3_4) {
+			record.deserializeUnitary(recordBuffer);
+		} else {
+			record.deserialize(recordBuffer);
+		}
 		sourceRecordCounter++;
 		return record;
 	}
@@ -431,6 +452,12 @@ public class CloverDataParser extends AbstractParser {
 	@Override
 	public boolean nextL3Source() {
 		return false;
+	}
+	
+	public static class Version {
+    	public byte majorVersion;
+    	public byte minorVersion;
+    	public byte revisionVersion;
 	}
 	
 }

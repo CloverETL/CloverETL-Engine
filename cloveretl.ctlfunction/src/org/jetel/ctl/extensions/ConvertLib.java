@@ -125,6 +125,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
 	public static final String num2str(TLFunctionCallContext context, Integer num, String format, String locale) {
 		//we have to do this for COMPILE mode - see note in num2strInit() method
+		if (num == null){
+			return null;
+		}
 		((TLNumericFormatLocaleCache)context.getCache()).setIsDecimal(false);
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 		return formatter.formatInt(num);
@@ -137,15 +140,24 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Integer num, int radix) {
+		if (num == null){
+			return null;
+		}
 		return Integer.toString(num, radix);
 	}
 	@TLFunctionAnnotation("Returns string representation in decimal radix")
 	public static final String num2str(TLFunctionCallContext context, Integer num) {
+		if (num == null){
+			return null;
+		}
 		return NumericFormatterFactory.getPlainFormatterInstance().formatInt(num);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
 	public static final String num2str(TLFunctionCallContext context, Long num, String format, String locale) {
+		if (num == null){
+			return null;
+		}
 		//we have to do this for COMPILE mode - see note in num2strInit() method
 		((TLNumericFormatLocaleCache)context.getCache()).setIsDecimal(false);
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
@@ -159,15 +171,24 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Long num, int radix) {
+		if (num == null){
+			return null;
+		}
 		return Long.toString(num, radix);
 	}
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Long num) {
+		if (num == null){
+			return null;
+		}
 		return NumericFormatterFactory.getPlainFormatterInstance().formatLong(num);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
 	public static final String num2str(TLFunctionCallContext context, Double num, String format, String locale) {
+		if (num == null){
+			return null;
+		}
 		//we have to do this for COMPILE mode - see note in num2strInit() method
 		((TLNumericFormatLocaleCache)context.getCache()).setIsDecimal(false);
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
@@ -181,6 +202,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Double num, int radix) {
+		if (num == null){
+			return null;
+		}
 		switch (radix) {
 		case 10:
 			return Double.toString(num);
@@ -192,11 +216,17 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Double num) {
+		if (num == null){
+			return null;
+		}
 		return NumericFormatterFactory.getPlainFormatterInstance().formatDouble(num);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num, String format, String locale) {
+		if (num == null){
+			return null;
+		}
 		//we have to do this for COMPILE mode - see note in num2strInit() method
 		((TLNumericFormatLocaleCache)context.getCache()).setIsDecimal(true);
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
@@ -210,6 +240,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num) {
+		if (num == null){
+			return null;
+		}
 		return NumericFormatterFactory.getPlainFormatterInstance().formatBigDecimal(num);
 	}
 	class Num2StrFunction implements TLFunctionPrototype {
@@ -299,6 +332,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts date to string according to the specified pattern, locale and time zone.")
 	public static final String date2str(TLFunctionCallContext context, Date date, String pattern, String locale, String timeZone) {
+		if (date == null){
+			return null;
+		}
 		final DateFormatter formatter = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
 		return formatter.format(date);
 	}
@@ -363,7 +399,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length > 2 && context.getParams()[2].isString()) {
+			if (context.getParams().length > 2) {
 				final String locale = stack.popString();
 				final DateFieldEnum field = (DateFieldEnum)stack.pop();
 				final Date input = stack.popDate();
@@ -394,6 +430,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	private static final Integer date2numInternal(Date input, DateFieldEnum field, Calendar c){
+		if (input == null){
+			return null;
+		}
 		c.setTime(input);
 		switch (field) {
 		case YEAR:
@@ -662,6 +701,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Narrowing conversion from long to integer value.")
 	public static final Integer long2integer(TLFunctionCallContext context, Long l) {
+		if (l == null){
+			return null;
+		}
 		if (l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE) {
 			throw new TransformLangExecutorRuntimeException("long2integer: " + l + " - out of range of integer");
 		}
@@ -683,6 +725,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from double to integer value.")
 	public static final Integer double2integer(TLFunctionCallContext context, Double l) {
+		if (l == null){
+			return null;
+		}
 		if (l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE) {
 			throw new TransformLangExecutorRuntimeException("double2integer: " + l + " - out of range of integer");
 		}
@@ -705,6 +750,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from decimal to integer value.")
 	public static final Integer decimal2integer(TLFunctionCallContext context, BigDecimal l) {
+		if (l == null){
+			return null;
+		}
 		if (l.compareTo(maxIntDecimal) > 0 || l.compareTo(minIntDecimal) <= 0) {
 			throw new TransformLangExecutorRuntimeException("decimal2integer: " + l + " - out of range of integer");
 		}
@@ -724,6 +772,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from double to long value.")
 	public static final Long double2long(TLFunctionCallContext context, Double d) {
+		if (d ==null){
+			return null;
+		}
 		if (d > Long.MAX_VALUE || d <= Long.MIN_VALUE) {
 			throw new TransformLangExecutorRuntimeException("double2long: " + d + " - out of range of long");
 		}
@@ -747,6 +798,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from decimal to long value.")
 	public static final Long decimal2long(TLFunctionCallContext context, BigDecimal d) {
+		if (d == null){
+			return null;
+		}
 		if (d.compareTo(maxLongDecimal) > 0 || d.compareTo(minLongDecimal) <= 0) {
 			throw new TransformLangExecutorRuntimeException("decimal2long: " + d + " - out of range of long");
 		}
@@ -771,6 +825,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Narrowing conversion from decimal to double value.")
 	public static final Double decimal2double(TLFunctionCallContext context, BigDecimal d) {
+		if (d == null){
+			return null;
+		}
 		if (d.compareTo(maxDoubleDecimal) > 0 || d.compareTo(minDoubleDecimal) < 0) {
 			throw new TransformLangExecutorRuntimeException("decimal2double: " + d + " - out of range of double");
 		}
@@ -833,7 +890,10 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	
 	@TLFunctionAnnotation("Converts true to 1 and false to 0.")
-	public static final Integer bool2num(TLFunctionCallContext context, boolean b) {
+	public static final Integer bool2num(TLFunctionCallContext context, Boolean b) {
+		if (b ==null){
+			return null;
+		}
 		return b ? 1 : 0;
 	}
 	
@@ -881,17 +941,17 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String toString(TLFunctionCallContext context, int i) {
+	public static final String toString(TLFunctionCallContext context, Integer i) {
 		return toStringInternal(i);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String toString(TLFunctionCallContext context, long l) {
+	public static final String toString(TLFunctionCallContext context, Long l) {
 		return toStringInternal(l);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
-	public static final String toString(TLFunctionCallContext context, double d) {
+	public static final String toString(TLFunctionCallContext context, Double d) {
 		return toStringInternal(d);
 	}
 	
@@ -927,6 +987,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns date from long that represents milliseconds from epoch")
 	public static final Date long2date(TLFunctionCallContext context, Long l) {
+		if (l == null){
+			return null;
+		}
 		return new Date(l);
 	}
 	
@@ -947,6 +1010,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns long that represents milliseconds from epoch to a date")
 	public static final Long date2long(TLFunctionCallContext context, Date d) {
+		if (d == null){
+			return null;
+		}
 		return d.getTime();
 	}
 	

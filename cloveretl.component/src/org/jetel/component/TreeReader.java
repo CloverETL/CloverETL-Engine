@@ -58,6 +58,7 @@ import org.jetel.component.tree.reader.XPathEvaluator;
 import org.jetel.component.tree.reader.XPathPushParser;
 import org.jetel.component.tree.reader.XPathSequenceProvider;
 import org.jetel.component.tree.reader.mappping.FieldMapping;
+import org.jetel.component.tree.reader.mappping.FieldNameEncoder;
 import org.jetel.component.tree.reader.mappping.ImplicitMappingAddingVisitor;
 import org.jetel.component.tree.reader.mappping.MalformedMappingException;
 import org.jetel.component.tree.reader.mappping.MappingContext;
@@ -203,6 +204,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	}
 
 	protected abstract TreeReaderParserProvider getTreeReaderParserProvider();
+	
+	protected FieldNameEncoder getFieldNameEncoder() {
+		// no encoding by default
+		return null;
+	}
 
 	protected ConfigurationStatus disallowEmptyCharsetOnDictionaryAndPort(ConfigurationStatus status) {
 		ConfigurationStatus configStatus = super.checkConfig(status);
@@ -258,7 +264,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		MappingContext rootContext = createMapping();
 		
 		if (implicitMapping) {
-			MappingVisitor implicitMappingVisitor = new ImplicitMappingAddingVisitor(getOutMetadata());
+			MappingVisitor implicitMappingVisitor = new ImplicitMappingAddingVisitor(getOutMetadata(), getFieldNameEncoder());
 			rootContext.acceptVisitor(implicitMappingVisitor);
 		}
 		

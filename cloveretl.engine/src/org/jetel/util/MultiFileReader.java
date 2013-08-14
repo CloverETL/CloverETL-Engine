@@ -175,8 +175,9 @@ public class MultiFileReader {
 				if (FileURLParser.isArchiveURL(fName)) {
 					// test if the archive file exists
 					// getReadableChannel is too long for archives
-					String path = url.getRef() != null ? url.getFile() + "#" + url.getRef() : url.getFile();
-					if (new File(path).exists()) continue;
+					// CLO-702 - replaced manual file creation with FileUtils.convertUrlToFile()
+					File file = FileUtils.convertUrlToFile(url);
+					if (file.exists()) continue;
 					throw new ComponentNotReadyException(UNREACHABLE_FILE + fName);
 				}
 				

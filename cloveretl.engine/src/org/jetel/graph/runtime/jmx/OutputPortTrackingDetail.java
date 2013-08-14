@@ -20,8 +20,6 @@ package org.jetel.graph.runtime.jmx;
 
 import java.io.Serializable;
 
-import org.jetel.component.RemoteEdgeComponent;
-import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 
 /**
@@ -94,9 +92,8 @@ public class OutputPortTrackingDetail extends PortTrackingDetail implements Outp
 		setWriterWaitingTime(outputPort.getWriterWaitingTime());
 		
 		//define remote runId for remote edges
-		Node dataConsumer = outputPort.getReader();
-		if (dataConsumer instanceof RemoteEdgeComponent) {
-			remoteRunId = ((RemoteEdgeComponent) dataConsumer).getRemoteRunId();
+		if (outputPort.getEdge().isRemote()) {
+			remoteRunId = outputPort.getEdge().getReaderRunId();
 		}
 	}
 
