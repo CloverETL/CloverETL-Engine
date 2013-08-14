@@ -913,6 +913,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts string to a boolean based on a pattern (i.e. \"true\")")
 	public static final Boolean str2bool(TLFunctionCallContext context, String s) {
+		if (s == null){
+			return null;
+		}
 		if (trueFormat.matches(s)) 
 			return Boolean.TRUE;
 		
