@@ -951,6 +951,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns date from long that represents milliseconds from epoch")
 	public static final Date long2date(TLFunctionCallContext context, Long l) {
+		if (l == null){
+			return null;
+		}
 		return new Date(l);
 	}
 	
