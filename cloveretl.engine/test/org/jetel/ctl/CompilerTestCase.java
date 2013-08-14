@@ -3470,6 +3470,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("iifRes2", Integer.valueOf(1));
 	}
 	
+	public void test_local_functions() {
+		// CLO-1246
+		doCompile("test_local_functions");
+	}
+	
 	public void test_mapping(){
 		doCompile("test_mapping");
 		// simple mappings
