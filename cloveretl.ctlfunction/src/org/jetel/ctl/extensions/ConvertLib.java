@@ -374,13 +374,16 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts string to date using the specified pattern, locale and time zone")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale, String timeZone) {
+		if (input == null){
+			return null;
+		}
 		DateFormatter formatter = ((TLDateFormatLocaleCache) context.getCache()).getCachedLocaleFormatter(context, pattern, locale, timeZone, 1, 2, 3);
 		return formatter.parseDate(input);
 	}
 
 	@TLFunctionAnnotation("Converts string to date using the specified pattern and locale")
 	public static final Date str2date(TLFunctionCallContext context, String input, String pattern, String locale) {
-		return str2date(context, input, pattern, null, null);
+		return str2date(context, input, pattern, locale, null);
 	}
 
 	@TLFunctionAnnotation("Converts string to date using the specified pattern")
@@ -913,6 +916,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts string to a boolean based on a pattern (i.e. \"true\")")
 	public static final Boolean str2bool(TLFunctionCallContext context, String s) {
+		if (s == null){
+			return null;
+		}
 		if (trueFormat.matches(s)) 
 			return Boolean.TRUE;
 		
