@@ -29,7 +29,7 @@ function integer transform(){
 	ret12 = nvl2(null, 12.6, 89.3);
 	ret13 = nvl2(11.1d, 22.2d, 33.3d);
 	ret14 = nvl2(null, 44.4d, 55.5d);
-//	ret15 = nvl2('Talon', null, null);
-//	ret16 = nvl2(null, null, null);
+	ret15 = nvl2('Talon', null, null);
+	ret16 = nvl2(null, null, null);
 	return 0;
 }
