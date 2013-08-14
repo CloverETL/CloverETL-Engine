@@ -7209,6 +7209,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_convertlib_str2bool");
 		check("fromTrueString", true);
 		check("fromFalseString", false);
+		check("nullRet1", null);
+		check("nullRet2", null);
 	}
 	
 	public void test_convertlib_str2bool_expect_error(){
@@ -7220,12 +7222,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){boolean b = str2bool(''); return 0;}","test_convertlib_str2bool_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing;
-		}
-		try {
-			doCompile("function integer transform(){boolean b = str2bool(null); return 0;}","test_convertlib_str2bool_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing;
