@@ -7002,16 +7002,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("fromLong1", new Date(0));
 		check("fromLong2", new Date(50000000000L));
 		check("fromLong3", new Date(-5000L));
-	}
-	
-	public void test_convertlib_long2date_expect_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){date d = long2date(null); return 0;}","test_convertlib_long2date_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		check("nullRet1", null);
+		check("nullRet2", null);
 	}
 	
 	public void test_convertlib_long2integer() {
