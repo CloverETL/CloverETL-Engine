@@ -7978,7 +7978,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret12", 89.3d);
 		check("ret13", new BigDecimal("22.2"));
 		check("ret14", new BigDecimal("55.5"));
-//		check("ret15", null);
-//		check("ret16", null);
+		check("ret15", null);
+		check("ret16", null);
 	}
 }
