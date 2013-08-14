@@ -125,6 +125,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
 	public static final String num2str(TLFunctionCallContext context, Integer num, String format, String locale) {
 		//we have to do this for COMPILE mode - see note in num2strInit() method
+		if (num == null){
+			return null;
+		}
 		((TLNumericFormatLocaleCache)context.getCache()).setIsDecimal(false);
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 		return formatter.formatInt(num);
@@ -137,15 +140,24 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Integer num, int radix) {
+		if (num == null){
+			return null;
+		}
 		return Integer.toString(num, radix);
 	}
 	@TLFunctionAnnotation("Returns string representation in decimal radix")
 	public static final String num2str(TLFunctionCallContext context, Integer num) {
+		if (num == null){
+			return null;
+		}
 		return NumericFormatterFactory.getPlainFormatterInstance().formatInt(num);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
 	public static final String num2str(TLFunctionCallContext context, Long num, String format, String locale) {
+		if (num == null){
+			return null;
+		}
 		//we have to do this for COMPILE mode - see note in num2strInit() method
 		((TLNumericFormatLocaleCache)context.getCache()).setIsDecimal(false);
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
@@ -159,15 +171,24 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Long num, int radix) {
+		if (num == null){
+			return null;
+		}
 		return Long.toString(num, radix);
 	}
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Long num) {
+		if (num == null){
+			return null;
+		}
 		return NumericFormatterFactory.getPlainFormatterInstance().formatLong(num);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
 	public static final String num2str(TLFunctionCallContext context, Double num, String format, String locale) {
+		if (num == null){
+			return null;
+		}
 		//we have to do this for COMPILE mode - see note in num2strInit() method
 		((TLNumericFormatLocaleCache)context.getCache()).setIsDecimal(false);
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
@@ -181,6 +202,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Double num, int radix) {
+		if (num == null){
+			return null;
+		}
 		switch (radix) {
 		case 10:
 			return Double.toString(num);
@@ -192,11 +216,17 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, Double num) {
+		if (num == null){
+			return null;
+		}
 		return NumericFormatterFactory.getPlainFormatterInstance().formatDouble(num);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given format and locale")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num, String format, String locale) {
+		if (num == null){
+			return null;
+		}
 		//we have to do this for COMPILE mode - see note in num2strInit() method
 		((TLNumericFormatLocaleCache)context.getCache()).setIsDecimal(true);
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
@@ -210,6 +240,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Returns string representation of a number in a given numeral system")
 	public static final String num2str(TLFunctionCallContext context, BigDecimal num) {
+		if (num == null){
+			return null;
+		}
 		return NumericFormatterFactory.getPlainFormatterInstance().formatBigDecimal(num);
 	}
 	class Num2StrFunction implements TLFunctionPrototype {
