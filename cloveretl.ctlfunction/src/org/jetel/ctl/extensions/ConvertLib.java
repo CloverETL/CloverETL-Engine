@@ -668,6 +668,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Narrowing conversion from long to integer value.")
 	public static final Integer long2integer(TLFunctionCallContext context, Long l) {
+		if (l == null){
+			return null;
+		}
 		if (l > Integer.MAX_VALUE || l <= Integer.MIN_VALUE) {
 			throw new TransformLangExecutorRuntimeException("long2integer: " + l + " - out of range of integer");
 		}
