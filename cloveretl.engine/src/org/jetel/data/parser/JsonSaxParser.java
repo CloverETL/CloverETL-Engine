@@ -20,16 +20,18 @@ package org.jetel.data.parser;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.Writer;
+import java.net.URLEncoder;
 import java.util.ArrayDeque;
 import java.util.Deque;
-
 import javax.xml.parsers.SAXParser;
 
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
-import org.jetel.data.parser.XmlSaxParser.SAXHandler;
+import org.dom4j.io.SAXContentHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -46,12 +48,17 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class JsonSaxParser extends SAXParser {
 	
-	private static final JsonFactory JSON_FACTORY = new JsonFactory();
-	private static final String NAMESPACE_URI = "";//"{}";
+	
+	private static final String NAMESPACE_URI = "";
+	
+	private static final String XML_NAME_OBJECT = "json_object";
+	private static final String XML_NAME_ARRAY = "json_array";
+	
 	private static final Attributes ATTRIBUTES = new InternalAttributes();
+	private static final JsonFactory JSON_FACTORY = new JsonFactory();
 	
-	
-	SAXHandler handler;
+	DefaultHandler handler;
+	boolean xmlEscapeChars=false;
 	
 	public JsonSaxParser(){
 	}
@@ -59,50 +66,68 @@ public class JsonSaxParser extends SAXParser {
 	
 	@Override
 	public org.xml.sax.Parser getParser() throws SAXException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public XMLReader getXMLReader() throws SAXException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean isNamespaceAware() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isValidating() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public void setProperty(String name, Object value) throws SAXNotRecognizedException, SAXNotSupportedException {
-		// TODO Auto-generated method stub
-
+		//do nothing - no properties supported
 	}
 
 	@Override
 	public Object getProperty(String name) throws SAXNotRecognizedException, SAXNotSupportedException {
-		// TODO Auto-generated method stub
 		return null;
-	}
-
-	public void parse(InputSource is,SAXHandler handler) throws IOException, SAXException{
-		this.handler=handler;
-		doParse(is.getCharacterStream());
 	}
 
 	@Override
 	public void parse(InputSource is,DefaultHandler handler) throws IOException, SAXException{
-		parse(is,(SAXHandler)handler);
+		this.handler=handler;
+		xmlEscapeChars=false;
+		doParse(is.getCharacterStream());
 	}
 
+	
+	public void convertJSON2XML(Reader in,Writer out,boolean firstObjectOnly,boolean suppresNodeValues)throws IOException, SAXException{
+		this.handler=new JSON2XMLHandler(out,suppresNodeValues);
+		JsonParser parser;
+		try {
+			parser = JSON_FACTORY.createJsonParser(in);
+		} catch (JsonParseException e) {
+			throw new IOException(e);
+		}
+		Deque<JsonToken> tokens = new ArrayDeque<JsonToken>();
+		Deque<String> names = new ArrayDeque<String>();
+		JsonToken currentToken = null;
+		
+		xmlEscapeChars=true;
+		
+		handler.startDocument();
+		boolean go=true;
+		while (go && (currentToken = parser.nextToken()) != null) {
+			if (firstObjectOnly && currentToken == JsonToken.END_OBJECT && names.size()==1 ){
+				go=false;
+			}
+			processToken(currentToken, parser, tokens, names);
+		}
+		
+		handler.endDocument();
+	}
+	
 	
 	protected void doParse(Reader reader)throws IOException, SAXException{
 		JsonParser parser;
@@ -118,7 +143,6 @@ public class JsonSaxParser extends SAXParser {
 		handler.startDocument();
 		
 		while ((currentToken = parser.nextToken()) != null) {
-			//ensureRootStart();
 			processToken(currentToken, parser, tokens, names);
 		}
 		
@@ -142,7 +166,7 @@ public class JsonSaxParser extends SAXParser {
 		case START_ARRAY: {
 			if (names.isEmpty()) {
 				// top level array
-				names.add("array");
+				names.add(XML_NAME_ARRAY);
 			} else if (tokens.peekLast() == JsonToken.FIELD_NAME) {
 				// named array - remove field token
 				tokens.removeLast();
@@ -151,15 +175,13 @@ public class JsonSaxParser extends SAXParser {
 				
 				String name = names.getLast();
 				handler.startElement(NAMESPACE_URI, name, name, ATTRIBUTES);
-				//DEBUG
-				//System.out.println("<"+name+">");
 			}
 			tokens.add(token);
 			break;
 		}
 		case START_OBJECT: {
 			if (names.isEmpty()) {
-				names.add("object");
+				names.add(XML_NAME_OBJECT);
 			} else if (tokens.peekLast() == JsonToken.FIELD_NAME) {
 				// named object - remove field token
 				tokens.removeLast();
@@ -167,8 +189,6 @@ public class JsonSaxParser extends SAXParser {
 			tokens.add(token);
 			String name = names.getLast();
 			handler.startElement(NAMESPACE_URI, name,name, ATTRIBUTES);
-			//DEBUG
-			//System.out.println("<"+name+">");
 			break;
 		}
 		case END_ARRAY: {
@@ -178,8 +198,6 @@ public class JsonSaxParser extends SAXParser {
 				// end nested array
 				String name = names.getLast();
 				handler.endElement(NAMESPACE_URI,name, name);
-				//DEBUG
-				//System.out.println("</"+name+">");
 			} else {
 				// remove name if not inside array
 				names.removeLast();
@@ -192,8 +210,6 @@ public class JsonSaxParser extends SAXParser {
 			// end current object
 			String name = names.getLast();
 			handler.endElement(NAMESPACE_URI, name, name);
-			//DEBUG
-			//System.out.println("</"+name+">");
 			if (tokens.isEmpty() || tokens.peekLast() != JsonToken.START_ARRAY) {
 				// remove name if not inside array
 				names.removeLast();
@@ -207,12 +223,8 @@ public class JsonSaxParser extends SAXParser {
 			case FIELD_NAME: {
 				// simple property
 				handler.startElement(NAMESPACE_URI, valueName, valueName, ATTRIBUTES);
-				//DEBUG
-				//System.out.print("<"+valueName+">");
 				processScalarValue(parser);
 				handler.endElement(NAMESPACE_URI, valueName, valueName);
-				//DEBUG
-				//System.out.println("</"+valueName+">");
 				tokens.removeLast();
 				names.removeLast();
 				break;
@@ -220,12 +232,8 @@ public class JsonSaxParser extends SAXParser {
 			case START_ARRAY: {
 				// array item
 				handler.startElement(NAMESPACE_URI, valueName, valueName, ATTRIBUTES);
-				//DEBUG
-				//System.out.print("<"+valueName+">");
 				processScalarValue(parser);
 				handler.endElement(NAMESPACE_URI, valueName, valueName);
-				//DEBUG
-				//System.out.println("</"+valueName+">");
 			}
 			}
 		}
@@ -234,102 +242,126 @@ public class JsonSaxParser extends SAXParser {
 	protected void processScalarValue(JsonParser parser) throws JsonParseException, IOException, SAXException {
 		
 		if (parser.getCurrentToken() != JsonToken.VALUE_NULL) {
-			char[] chars= parser.getText().toCharArray();
-			handler.characters(chars, 0, chars.length);
-			//DEBUG
-			//System.out.print(str.toString());
-		}
-	}
-
-
-	/**
-	 * JsonParser.getText() decodes escape sequences, such as "\b".
-	 * This results in invalid XML characters, which need to be
-	 * replaced with &#nnnn; entities.
-	 * 
-	 * See <a href="http://www.w3.org/TR/REC-xml/#NT-Char">http://www.w3.org/TR/REC-xml/#NT-Char</a>.
-	 * 
-	 * @param text
-	 * @return
-	 */
-	/* This is not needed for direct JSON -> Clover
-	private static StringBuilder xmlEscape(String text) {
-		StringBuilder sb = new StringBuilder(text.length());
-		for (int i = 0; i < text.length(); ) {
-			int c = text.codePointAt(i);
-			switch (c) {
-			case 0x9:
-			case 0xA:
-			case 0xD:
-				sb.appendCodePoint(c);
-				break;
-			default:
-				if (c == '&') {
-					sb.append("&amp;");
-				} else if ((c >= 0x20 && c <= 0xD7FF) || (c >= 0xE000 && c <= 0xFFFD) || (c >= 0x10000 && c <= 0x10FFFF)) {
-					sb.appendCodePoint(c);
-				} else {
-					sb.append("&#x").append(Integer.toHexString(c)).append(';');
-				}
+			char[] chars;
+			if (xmlEscapeChars){
+				chars=URLEncoder.encode(parser.getText()).toCharArray(); //may be too conservative
+			}else{
+				chars= parser.getText().toCharArray();
 			}
-			i += Character.charCount(c);
+			handler.characters(chars, 0, chars.length);
 		}
-		return sb;
 	}
-	*/
+
+	protected static class JSON2XMLHandler extends DefaultHandler{
+		Writer out;
+		boolean suppressNodeValues; 
+		
+		JSON2XMLHandler(Writer out, boolean suppresNodeValues){
+			this.out=out;
+			this.suppressNodeValues=suppresNodeValues;
+		}
+		
+
+		/*	
+		@Override
+		public void startDocument ()
+				throws SAXException{
+			try{
+				out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			} catch (IOException e) {
+				new SAXException(e);
+			}
+		}
+		*/
+		
+		@Override
+		public void startElement (String uri, String localName,
+			      String qName, Attributes attributes)	throws SAXException	{
+			try {
+				out.append("<").append(localName).append(">");
+			} catch (IOException e) {
+				new SAXException(e);
+			}
+			
+		}
+		
+		@Override
+		 public void endElement (String uri, String localName, String qName)
+					throws SAXException{
+			try {
+				out.append("</").append(localName).append(">");
+			} catch (IOException e) {
+				new SAXException(e);
+			}
+			
+		}
+		
+		@Override
+		public void characters (char ch[], int start, int length)
+				throws SAXException{
+			if (suppressNodeValues) return;
+			try {
+				out.write(ch,start,length);
+			} catch (IOException e) {
+				new SAXException(e);
+			}
+		}
+	}
+	
+	
+	
+	/**
+	 * Dummy class - a placeholder.
+	 * 
+	 * @author dpavlis (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Aug 12, 2013
+	 */
 	private static class InternalAttributes implements Attributes{
 
 		@Override
 		public int getLength() {
-			// TODO Auto-generated method stub
 			return 0;
 		}
 
 		@Override
 		public String getURI(int index) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public String getLocalName(int index) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public String getQName(int index) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public String getType(int index) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public String getValue(int index) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public int getIndex(String uri, String localName) {
-			// TODO Auto-generated method stub
 			return 0;
 		}
 
 		@Override
 		public int getIndex(String qName) {
-			// TODO Auto-generated method stub
 			return 0;
 		}
 
 		@Override
 		public String getType(String uri, String localName) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
