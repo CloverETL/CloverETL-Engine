@@ -736,6 +736,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Narrowing conversion from double to long value.")
 	public static final Long double2long(TLFunctionCallContext context, Double d) {
+		if (d ==null){
+			return null;
+		}
 		if (d > Long.MAX_VALUE || d <= Long.MIN_VALUE) {
 			throw new TransformLangExecutorRuntimeException("double2long: " + d + " - out of range of long");
 		}
