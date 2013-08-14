@@ -1676,6 +1676,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("stop", RecordTransform.STOP);
 	}
 
+	public void test_ambiguous() {
+		// built-in toString function
+		doCompileExpectError("test_ambiguous_toString", "Function 'toString' is ambiguous");
+		// built-in join function
+		doCompileExpectError("test_ambiguous_join", "Function 'join' is ambiguous");
+		// locally defined functions
+		doCompileExpectError("test_ambiguous_localFunctions", "Function 'local' is ambiguous");
+		// locally overloaded built-in getUrlPath() function 
+		doCompileExpectError("test_ambiguous_combined", "Function 'getUrlPath' is ambiguous");
+		// swapped arguments - non null ambiguity
+		doCompileExpectError("test_ambiguous_swapped", "Function 'swapped' is ambiguous");
+		// primitive type widening; the test depends on specific values of the type distance function, can be removed
+		doCompileExpectError("test_ambiguous_widening", "Function 'widening' is ambiguous");
+	}
+	
 	public void test_raise_error_terminal() {
 		// test case for issue 2337
 		doCompile("test_raise_error_terminal");
@@ -4627,12 +4642,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	public void test_stringlib_join_expect_error(){
-		try {
-			doCompile("function integer transform(){string s = join(';',null);return 0;}","test_stringlib_join_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		// CLO-1567 - join("", null) is ambiguous
+//		try {
+//			doCompile("function integer transform(){string s = join(';',null);return 0;}","test_stringlib_join_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
 		try {
 			doCompile("function integer transform(){string[] tmp = null; string s = join(';',tmp);return 0;}","test_stringlib_join_expect_error");
 			fail();
