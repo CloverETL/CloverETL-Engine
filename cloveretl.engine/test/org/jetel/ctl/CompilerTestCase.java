@@ -7112,42 +7112,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("longOutput", Arrays.asList("16", "10000", "20", "10", "1.235E13", "12 350 001 Kcs"));
 		check("doubleOutput", Arrays.asList("16.16", "0x1.028f5c28f5c29p4", "1.23548E3", "12 350 001,1 Kcs"));
 		check("decimalOutput", Arrays.asList("16.16", "1235.44", "12 350 001,1 Kcs"));
-		check("test_null_dec", "NaN");
+		check("nullIntRet", Arrays.asList(null,null,null,null,"12","12",null,null));
+		check("nullLongRet", Arrays.asList(null,null,null,null,"12","12",null,null));
+		check("nullDoubleRet", Arrays.asList(null,null,null,null,"12.2","12.2",null,null));
+		check("nullDecRet", Arrays.asList(null,null,null,"12.2","12.2",null,null));
 	}
 
 	public void test_convertlib_num2str_expect_error(){
-		//this test should be expected to success in future
-		//test: integer
 		try {
-			doCompile("integer input; function integer transform(){input=null; string str = num2str(input); return 0;}","test_converlib_num2str_expect_error");
+			doCompile("function integer transform(){integer var = null; string ret = num2str(12, var); return 0;}","test_convertlib_num2str_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
-		//this test should be expected to success in future
-		//test: long
 		try {
-			doCompile("long input; function integer transform(){input=null; string str = num2str(input); return 0;}","test_converlib_num2str_expect_error");
+			doCompile("function integer transform(){integer var = null; string ret = num2str(12L, var); return 0;}","test_convertlib_num2str_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
-		//this test should be expected to success in future
-		//test: double
 		try {
-			doCompile("double input; function integer transform(){input=null; string str = num2str(input); return 0;}","test_converlib_num2str_expect_error");
+			doCompile("function integer transform(){integer var = null; string ret = num2str(12.3, var); return 0;}","test_convertlib_num2str_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
-//		//this test should be expected to success in future
-//		//test: decimal
-//		try {
-//			doCompile("decimal input; function integer transform(){input=null; string str = num2str(input); return 0;}","test_converlib_num2str_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
 	}
 	
 	public void test_convertlib_packdecimal2long() {
