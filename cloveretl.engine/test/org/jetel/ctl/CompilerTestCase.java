@@ -60,8 +60,6 @@ import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
 
-import sun.misc.Cleaner;
-
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -3208,6 +3206,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("res62", true);
 		check("res63", true);
 		check("res64", false);
+		
+		check("res71", "default case");
+		check("res72", "null case");
+		check("res73", "null case");
+		check("res74", "default case");
 	}
 	
 	public void test_int_switch(){

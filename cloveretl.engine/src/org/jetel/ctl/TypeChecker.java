@@ -343,7 +343,8 @@ public class TypeChecker extends NavigatingVisitor {
 			return data;
 		}
 		
-		if (!caseExp.getType().isPrimitive()) {
+		// CLO-737 - null type added
+		if (!caseExp.getType().isPrimitive() && !caseExp.getType().isNull()) {
 			error(caseExp, "Illegal type of case expression '" + caseExp.getType().name() + "'");
 			node.setType(TLType.ERROR);
 		}
