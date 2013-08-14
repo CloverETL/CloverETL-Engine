@@ -7232,13 +7232,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_convertlib_str2date");
 		
 		Calendar cal = Calendar.getInstance();
+		cal.set(2005,10,19,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("date1", cal.getTime());
+		cal.clear();
 		cal.set(2050, 4, 19, 0, 0, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		
 		Date checkDate = cal.getTime();
 		
-		check("date1", checkDate);
 		check("date2", checkDate);
+		check("date3", checkDate);
 		
 		cal.clear();
 		cal.setTimeZone(TimeZone.getTimeZone("GMT+8"));
@@ -7251,23 +7255,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("withTimeZone2", cal.getTime());
 		
 		assertFalse(getVariable("withTimeZone1").equals(getVariable("withTimeZone2")));
+		check("nullRet1", null);
+		check("nullRet2", null);
+		check("nullRet3", null);
+		check("nullRet4", null);
+		check("nullRet5", null);
+		check("nullRet6", null);
 	}
 
 	public void test_convertlib_str2date_expect_error(){
 		try {
 			doCompile("function integer transform(){date d = str2date('1987-11-17', null); return 0;}","test_convertlib_str2date_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){date d = str2date(null, 'dd.MM.yyyy'); return 0;}","test_convertlib_str2date_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){date d = str2date(null, null); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -7286,6 +7284,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){date d = str2date('17.11.1987', null, 'cs.CZ'); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', null); return 0;}","test_convertlib_str2date_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = str2date('17.11.1987', 'yyyy-MM-dd', 'cs.CZ', null); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
