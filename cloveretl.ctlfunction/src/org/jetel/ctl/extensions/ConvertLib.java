@@ -854,7 +854,10 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	
 	@TLFunctionAnnotation("Converts true to 1 and false to 0.")
-	public static final Integer bool2num(TLFunctionCallContext context, boolean b) {
+	public static final Integer bool2num(TLFunctionCallContext context, Boolean b) {
+		if (b ==null){
+			return null;
+		}
 		return b ? 1 : 0;
 	}
 	
