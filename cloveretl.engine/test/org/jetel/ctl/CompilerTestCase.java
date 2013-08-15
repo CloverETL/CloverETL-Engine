@@ -7056,13 +7056,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	public void test_convertlib_md5_expect_error(){
 //CLO-1254
-//		//this test should be expected to success in future
-//		try {
-//			doCompile("function integer transform(){byte b = md5(null); return 0;}","test_convertlib_md5_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
+		try {
+			doCompile("function integer transform(){string s = null; byte b = md5(s); return 0;}","test_convertlib_md5_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte s = null; byte b = md5(s); return 0;}","test_convertlib_md5_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_num2bool() {
