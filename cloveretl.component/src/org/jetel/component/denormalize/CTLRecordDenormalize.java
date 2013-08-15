@@ -66,7 +66,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 * @throws ComponentNotReadyException if the initialization fails
 	 */
 	@CTLEntryPoint(name = RecordDenormalizeTL.INIT_FUNCTION_NAME, required = false)
-	protected boolean initDelegate() throws ComponentNotReadyException {
+	protected Boolean initDelegate() throws ComponentNotReadyException {
 		// does nothing and succeeds by default, may be overridden by generated transform classes
 		return true;
 	}
@@ -99,7 +99,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 * @throws TransformException if an error occurred
 	 */
 	@CTLEntryPoint(name = RecordDenormalizeTL.APPEND_FUNCTION_NAME, required = true)
-	protected abstract int appendDelegate() throws ComponentNotReadyException, TransformException;
+	protected abstract Integer appendDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
 	public final int appendOnError(Exception exception, DataRecord inRecord) throws TransformException {
@@ -137,7 +137,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 */
 	@CTLEntryPoint(name = RecordDenormalizeTL.APPEND_ON_ERROR_FUNCTION_NAME, parameterNames = {
 			RecordDenormalizeTL.ERROR_MESSAGE_PARAM_NAME, RecordDenormalizeTL.STACK_TRACE_PARAM_NAME }, required = false)
-	protected int appendOnErrorDelegate(String errorMessage, String stackTrace)
+	protected Integer appendOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
 	}
@@ -170,7 +170,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 * @throws TransformException if an error occurred
 	 */
 	@CTLEntryPoint(name = RecordDenormalizeTL.TRANSFORM_FUNCTION_NAME, required = true)
-	protected abstract int transformDelegate() throws ComponentNotReadyException, TransformException;
+	protected abstract Integer transformDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
 	public final int transformOnError(Exception exception, DataRecord outRecord) throws TransformException {
@@ -208,7 +208,7 @@ public abstract class CTLRecordDenormalize extends CTLAbstractTransform implemen
 	 */
 	@CTLEntryPoint(name = RecordDenormalizeTL.TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
 			RecordDenormalizeTL.ERROR_MESSAGE_PARAM_NAME, RecordDenormalizeTL.STACK_TRACE_PARAM_NAME }, required = false)
-	protected int transformOnErrorDelegate(String errorMessage, String stackTrace)
+	protected Integer transformOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
 	}
