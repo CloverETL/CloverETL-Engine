@@ -12,6 +12,12 @@ decimal nullRet4;
 decimal nullRet5;
 decimal nullRet6;
 decimal nullRet7;
+decimal nullRet8;
+decimal nullRet9;
+decimal nullRet10;
+decimal nullRet11;
+decimal nullRet12;
+decimal nullRet13;
 
 function integer transform() {
 	parsedDecimal1 = str2decimal("100.13");
@@ -35,7 +41,13 @@ function integer transform() {
 	nullRet5 = str2decimal(s, '###.#', 'cs.CZ');
 	nullRet6 = str2decimal(null, '##,##', 'en.US');
 	nullRet7 = str2decimal('5.05 h', '#.## h', null);
-	
+	//CLO-1614
+//	nullRet8 = str2decimal('5.05', null, null);
+//	nullRet9 = str2deimcal('5.05', null);
+//	nullRet10 = str2decimal('5.05', s);
+//	nullRet11 = str2decimal('5.05', s, s);
+//	nullRet12 = str2decimal('5.05', null, s);
+//	nullRet13 = str2decimal('5.05', s, null);
 	printErr(nullRet7);
 	return 0;
 }
