@@ -7319,6 +7319,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("parsedDecimal5", new BigDecimal("1000000.99"));
 		check("parsedDecimal6", new BigDecimal("123123123.123"));
 		check("parsedDecimal7", new BigDecimal("5.01"));
+		check("nullRet1", null);
+		check("nullRet2", null);
+		check("nullRet3", null);
+		check("nullRet4", null);
+		check("nullRet5", null);
+		check("nullRet6", null);
+		check("nullRet7", new BigDecimal("5.05"));
 	}
 	
 	public void test_convertlib_str2decimal_expect_result(){
@@ -7329,29 +7336,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal d = str2decimal(null); return 0;}","test_convertlib_str2decimal_expect_result");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
 			doCompile("function integer transform(){decimal d = str2decimal('5.05 CZK','#.#CZ'); return 0;}","test_convertlib_str2decimal_expect_result");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
-		try {
-			doCompile("function integer transform(){decimal d = str2decimal('5.05 CZK',null); return 0;}","test_convertlib_str2decimal_expect_result");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){decimal d = str2decimal(null,'#.# US'); return 0;}","test_convertlib_str2decimal_expect_result");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+//		CLO-1614
+//		try {
+//			doCompile("function integer transform(){decimal d = str2decimal('5.05 CZK',null); return 0;}","test_convertlib_str2decimal_expect_result");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
 	}
 
 	public void test_convertlib_str2double() {
