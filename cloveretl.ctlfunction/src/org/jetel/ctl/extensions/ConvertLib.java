@@ -597,6 +597,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string in given format and locale to double.")
 	public static final Double str2double(TLFunctionCallContext context, String input, String format, String locale) {
+		if(input == null){
+			return null;
+		}
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 
 		try {
@@ -614,6 +617,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Parses string to double using specific numeral system.")
 	public static final Double str2double(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseDouble(input);
 		} catch (ParseException e) {
