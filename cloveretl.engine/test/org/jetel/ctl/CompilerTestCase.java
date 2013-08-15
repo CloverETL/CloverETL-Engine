@@ -7326,6 +7326,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet5", null);
 		check("nullRet6", null);
 		check("nullRet7", new BigDecimal("5.05"));
+//		check("nullRet8", new BigDecimal("5.05"));
+//		check("nullRet9", new BigDecimal("5.05"));
+//		check("nullRet10", new BigDecimal("5.05"));
+//		check("nullRet11", new BigDecimal("5.05"));
+//		check("nullRet12", new BigDecimal("5.05"));
+//		check("nullRet13", new BigDecimal("5.05"));
+//		check("nullRet14", new BigDecimal("5.05"));
+//		check("nullRet15", new BigDecimal("5.05"));
 	}
 	
 	public void test_convertlib_str2decimal_expect_result(){
@@ -7348,6 +7356,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 //		} catch (Exception e) {
 //			// do nothing
 //		}
+//		try {
+//			doCompile("function integer transform(){decimal d = str2decimal('5.05 CZK',null, null); return 0;}","test_convertlib_str2decimal_expect_result");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
 	}
 
 	public void test_convertlib_str2double() {
@@ -7355,17 +7369,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("parsedDouble1", 100.13);
 		check("parsedDouble2", 123123123.123);
 		check("parsedDouble3", -350000.01);
+		check("nullRet1", null);
+		check("nullRet2", null);
+		check("nullRet3", null);
+		check("nullRet4", null);
+		check("nullRet5", null);
+		check("nullRet6", null);
+		check("nullRet7", 12.34d);
+//		check("nullRet8", 12.34d);
+//		check("nullRet9", 12.34d);
+//		check("nullRet10", 12.34d);
+//		check("nullRet11", 12.34d);
+//		check("nullRet12", 12.34d);
+//		check("nullRet13", 12.34d);
+//		check("nullRet14", 12.34d);
+//		check("nullRet15", 12.34d);
 	}
 	
 	public void test_convertlib_str2double_expect_error(){
 		try {
 			doCompile("function integer transform(){double d = str2double(''); return 0;}","test_convertlib_str2double_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){double d = str2double(null); return 0;}","test_convertlib_str2double_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -7377,17 +7400,30 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){double d = str2double('0.90c',null); return 0;}","test_convertlib_str2double_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
 			doCompile("function integer transform(){double d = str2double('0.90c','#.# c'); return 0;}","test_convertlib_str2double_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
+//		CLO-1614
+//		try {
+//			doCompile("function integer transform(){double d = str2double('0.90c',null); return 0;}","test_convertlib_str2double_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+//		try {
+//			doCompile("function integer transform(){double d = str2double('0.90c', null); return 0;}","test_convertlib_str2double_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+//		try {
+//			doCompile("function integer transform(){double d = str2double('0.90c', null, null); return 0;}","test_convertlib_str2double_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
 	}
 
 	public void test_convertlib_str2integer() {
