@@ -468,6 +468,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string in given format and locale to integer.")
 	public static final Integer str2integer(TLFunctionCallContext context, String input, String format, String locale) {
+		if (input == null){
+			return null;
+		}
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 
 		try {
@@ -485,11 +488,17 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string to integer using specific numeral system.")
 	public static final Integer str2integer(TLFunctionCallContext context, String input, Integer radix) {
+		if (input == null){
+			return null;
+		}
 		return Integer.valueOf(input,radix);
 	}
 	
 	@TLFunctionAnnotation("Parses string to integer.")
 	public static final Integer str2integer(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseInt(input);
 		} catch (ParseException e) {
