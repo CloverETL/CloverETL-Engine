@@ -542,6 +542,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string in given format and locale to long.")
 	public static final Long str2long(TLFunctionCallContext context, String input, String format, String locale) {
+		if (input == null){
+			return null;
+		}
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 
 		try {
@@ -559,10 +562,16 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string to long using specific numeral system.")
 	public static final Long str2long(TLFunctionCallContext context, String input, Integer radix) {
+		if (input == null){
+			return null;
+		}
 		return Long.valueOf(input,radix);
 	}
 	@TLFunctionAnnotation("Parses string to long using specific numeral system.")
 	public static final Long str2long(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseLong(input);
 		} catch (ParseException e) {
