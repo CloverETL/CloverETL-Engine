@@ -134,6 +134,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
     public static final String XML_NAME_ATTRIBUTE = "name";
 
     private String configFileName;
+    private Properties initialSettings;
     
     private String dbUrl;
     private boolean threadSafeConnections;
@@ -176,7 +177,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
     public DBConnectionImpl(String id, Properties properties) {
         super(id);
         
-        fromProperties(properties);
+        this.initialSettings = properties;
     }
 
     /**
@@ -265,7 +266,9 @@ public class DBConnectionImpl extends AbstractDBConnection {
         if(isInitialized()) return;
         super.init();
         
-        if(!StringUtils.isEmpty(configFileName)) {
+        if (initialSettings != null) {
+            fromProperties(initialSettings);
+        } else if(!StringUtils.isEmpty(configFileName)) {
             try {
             	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
                 InputStream stream = FileUtils.getInputStream(projectURL, configFileName);
@@ -485,6 +488,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
             if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
                 return new DBConnectionImpl(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
             } else {
+            	xattribs.setResolveReferences(false);
                 Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE}, RefResFlag.ALL_OFF.forceSecureParameters(false));
                 
                 return new DBConnectionImpl(id, connectionProps);
