@@ -39,7 +39,7 @@ function integer transform() {
 	nullRet8 = str2integer(null,'##','cs.CZ');
 	nullRet9 = str2integer(s, '##', 'en.US');
 	nullRet18 = str2integer(null, 21);
-//	nullRet19 = str2integer(null, i); //somehow doesn't work - try after change
+	nullRet19 = str2integer(null, i); 
 	//CLO-1614
 //	nullRet10 = str2integer('123', null);
 //	nullRet11 = str2integer('123', s);
