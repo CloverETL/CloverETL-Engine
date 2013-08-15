@@ -5,6 +5,14 @@ decimal parsedDecimal4;
 decimal parsedDecimal5;
 decimal parsedDecimal6;
 decimal parsedDecimal7;
+decimal nullRet1;
+decimal nullRet2;
+decimal nullRet3;
+decimal nullRet4;
+decimal nullRet5;
+decimal nullRet6;
+decimal nullRet7;
+
 function integer transform() {
 	parsedDecimal1 = str2decimal("100.13");
 	parsedDecimal2 = str2decimal("$123,123,123.123 Millions", "$###,###.# Millions");
@@ -18,5 +26,16 @@ function integer transform() {
 	parsedDecimal6 = str2decimal("$123 123 123,123 Millions", "$###,###.# Millions", "cs.CZ");
 	parsedDecimal7 = str2decimal("5.01 CZK", '#.# CZ');
 	printErr(parsedDecimal7);
+	
+	string s = null;
+	nullRet1 = str2decimal(s);
+	nullRet2 = str2decimal(null);
+	nullRet3 = str2decimal(s, '###.#');
+	nullRet4 = str2decimal(null, '##,##');
+	nullRet5 = str2decimal(s, '###.#', 'cs.CZ');
+	nullRet6 = str2decimal(null, '##,##', 'en.US');
+	nullRet7 = str2decimal('5.05 h', '#.## h', null);
+	
+	printErr(nullRet7);
 	return 0;
 }
