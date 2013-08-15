@@ -181,6 +181,7 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String PROPERTY_ELEMENT = "Property"; //old-fashion graph parameters
 	private final static String GRAPH_PARAMETER_ELEMENT = "GraphParameter"; //new graph parameters
 	private final static String GRAPH_PARAMETERS_ELEMENT = "GraphParameters";
+	private final static String GRAPH_PARAMETER_FILE_ELEMENT = "GraphParameterFile";
 	
 	private final static String DICTIONARY_ELEMENT = "Dictionary";
 	private final static String DICTIONARY_ENTRY_ELEMENT = "Entry";
@@ -884,7 +885,7 @@ public class TransformationGraphXMLReaderWriter {
 		for (Element graphParameterElement : graphParameterElements) {
 			if (graphParameterElement.getNodeName().equals(GRAPH_PARAMETER_ELEMENT)) {
 				instantiateGraphParameter(graphParameterElement);
-			} else if (graphParameterElement.getNodeName().equals(GRAPH_PARAMETERS_ELEMENT)) {
+			} else if (graphParameterElement.getNodeName().equals(GRAPH_PARAMETER_FILE_ELEMENT)) {
 				if (!instantiateGraphParametersFile(graphParameterElement)) {
 					unresolvedGraphParametersFiles.add(graphParameterElement);
 				}

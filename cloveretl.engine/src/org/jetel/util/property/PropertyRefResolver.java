@@ -370,47 +370,44 @@ public class PropertyRefResolver {
 			String reference = propertyMatcher.group(1);
 			String resolvedReference = null;
 			
-			//should be secure parameters resolved?
-			if (flag.resolveSecureParameters()) {
-				//try to load parameter from secure storage
-				if (parameters.hasGraphParameter(reference)) {
-					GraphParameter param = parameters.getGraphParameter(reference);
-					if (param.isSecure()) {
+			if (parameters.hasGraphParameter(reference)) {
+				GraphParameter param = parameters.getGraphParameter(reference);
+				if (param.isSecure()) {
+					if (flag.resolveSecureParameters()) {
 						resolvedReference = ContextProvider.getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
 					}
+				} else {
+					resolvedReference = parameters.getGraphParameter(reference).getValue();
 				}
-			} else {
+
 //this behaviour is turned off for now, do we really want this?
-//				if (flag.forceSecureParameters()) {
-//					//in case the parameter is secured, but the secure parameters should not be resolved by the flag
-//					//an exception is thrown to inform user about this situation ASAP
-//					if (ContextProvider.getAuthorityProxy().getSecureParamater(reference) != null) {
-//						throw new JetelRuntimeException("Secure parameter '" + reference + "' cannot be resolved in this attribute.");
+//					if (flag.forceSecureParameters()) {
+//						//in case the parameter is secured, but the secure parameters should not be resolved by the flag
+//						//an exception is thrown to inform user about this situation ASAP
+//						if (ContextProvider.getAuthorityProxy().getSecureParamater(reference) != null) {
+//							throw new JetelRuntimeException("Secure parameter '" + reference + "' cannot be resolved in this attribute.");
+//						}
 //					}
 //				}
-			}
-			
-			if (resolvedReference == null) {
-				resolvedReference = parameters.getGraphParameter(reference).getValue();
-			}
-			
-			if (resolvedReference == null) {
-				resolvedReference = MiscUtils.getEnvSafe(reference);
-			}
-			
-			// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
-			if (resolvedReference == null) {
-				String preferredReference = reference.replace('_', '.');
-				resolvedReference = System.getProperty(preferredReference);
+			} else {
 				if (resolvedReference == null) {
-					resolvedReference = System.getProperty(reference);
-				} else {
-					if (!reference.equals(preferredReference) && System.getProperty(reference) != null) {
-						logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+					resolvedReference = MiscUtils.getEnvSafe(reference);
+				}
+				
+				// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
+				if (resolvedReference == null) {
+					String preferredReference = reference.replace('_', '.');
+					resolvedReference = System.getProperty(preferredReference);
+					if (resolvedReference == null) {
+						resolvedReference = System.getProperty(reference);
+					} else {
+						if (!reference.equals(preferredReference) && System.getProperty(reference) != null) {
+							logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+						}
 					}
 				}
 			}
-
+			
 			if (resolvedReference != null) {
 				// evaluate the CTL expression that might be present in the property
 				StringBuilder evaluatedReference = new StringBuilder(resolvedReference);
