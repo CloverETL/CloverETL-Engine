@@ -514,7 +514,8 @@ public class ConvertLib extends TLFunctionLibrary {
 		
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
+			if ((context.getParams().length == 3) 
+					|| ((context.getParams().length == 2) && context.getParams()[1].isString())) {
 				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
@@ -587,7 +588,8 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
+			if ((context.getParams().length == 3) 
+					|| ((context.getParams().length == 2) && context.getParams()[1].isString())) {
 				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
