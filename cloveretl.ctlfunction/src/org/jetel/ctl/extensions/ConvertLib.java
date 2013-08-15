@@ -468,6 +468,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string in given format and locale to integer.")
 	public static final Integer str2integer(TLFunctionCallContext context, String input, String format, String locale) {
+		if (input == null){
+			return null;
+		}
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 
 		try {
@@ -485,11 +488,17 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string to integer using specific numeral system.")
 	public static final Integer str2integer(TLFunctionCallContext context, String input, Integer radix) {
+		if (input == null){
+			return null;
+		}
 		return Integer.valueOf(input,radix);
 	}
 	
 	@TLFunctionAnnotation("Parses string to integer.")
 	public static final Integer str2integer(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseInt(input);
 		} catch (ParseException e) {
@@ -505,7 +514,8 @@ public class ConvertLib extends TLFunctionLibrary {
 		
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
+			if ((context.getParams().length == 3) 
+					|| ((context.getParams().length == 2) && context.getParams()[1].isString())) {
 				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
@@ -514,7 +524,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				final String input = stack.popString();
 				stack.push(str2integer(context, input, format, locale));
 			} else {
-				int radix = 10;
+				Integer radix = 10;
 				if (context.getParams().length == 2) {
 					radix = stack.popInt();
 				}
@@ -533,6 +543,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string in given format and locale to long.")
 	public static final Long str2long(TLFunctionCallContext context, String input, String format, String locale) {
+		if (input == null){
+			return null;
+		}
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 
 		try {
@@ -550,10 +563,16 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string to long using specific numeral system.")
 	public static final Long str2long(TLFunctionCallContext context, String input, Integer radix) {
+		if (input == null){
+			return null;
+		}
 		return Long.valueOf(input,radix);
 	}
 	@TLFunctionAnnotation("Parses string to long using specific numeral system.")
 	public static final Long str2long(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseLong(input);
 		} catch (ParseException e) {
@@ -569,7 +588,8 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
+			if ((context.getParams().length == 3) 
+					|| ((context.getParams().length == 2) && context.getParams()[1].isString())) {
 				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
@@ -578,7 +598,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				final String input = stack.popString();
 				stack.push(str2long(context, input, format, locale));
 			} else {
-				int radix = 10;
+				Integer radix = 10;
 				if (context.getParams().length == 2) {
 					radix = stack.popInt();
 				}
@@ -597,6 +617,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Parses string in given format and locale to double.")
 	public static final Double str2double(TLFunctionCallContext context, String input, String format, String locale) {
+		if(input == null){
+			return null;
+		}
 		NumericFormatter formatter = ((TLNumericFormatLocaleCache)context.getCache()).getCachedLocaleFormat(context, format, locale, 1, 2);
 
 		try {
@@ -614,6 +637,9 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Parses string to double using specific numeral system.")
 	public static final Double str2double(TLFunctionCallContext context, String input) {
+		if (input == null){
+			return null;
+		}
 		try {
 			return NumericFormatterFactory.getPlainFormatterInstance().parseDouble(input);
 		} catch (ParseException e) {
@@ -629,7 +655,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
+			if (context.getParams().length > 1) {
 				String locale = null;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
@@ -691,7 +717,7 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams().length > 1 && context.getParams()[1].isString()) {
+			if (context.getParams().length > 1) {
 				String locale;
 				if (context.getParams().length == 3) {
 					locale = stack.popString(); 
