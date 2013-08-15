@@ -21,7 +21,7 @@ function integer transform() {
 	parsedDouble1 = str2double("100.13");
 	parsedDouble2 = str2double("$123,123,123.123 Millions", "$###,###.# Millions");
 	parsedDouble3 = str2double("-350000,01 Kc", "#.# Kc", "cs.CZ");
-	double num = null;
+	string num = null;
 	string s = null;
 	nullRet1 = str2double(num);
 	nullRet2 = str2double(null);
