@@ -7326,14 +7326,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet5", null);
 		check("nullRet6", null);
 		check("nullRet7", new BigDecimal("5.05"));
-//		check("nullRet8", new BigDecimal("5.05"));
-//		check("nullRet9", new BigDecimal("5.05"));
-//		check("nullRet10", new BigDecimal("5.05"));
-//		check("nullRet11", new BigDecimal("5.05"));
-//		check("nullRet12", new BigDecimal("5.05"));
-//		check("nullRet13", new BigDecimal("5.05"));
-//		check("nullRet14", new BigDecimal("5.05"));
-//		check("nullRet15", new BigDecimal("5.05"));
+		check("nullRet8", new BigDecimal("5.05"));
+		check("nullRet9", new BigDecimal("5.05"));
+		check("nullRet10", new BigDecimal("5.05"));
+		check("nullRet11", new BigDecimal("5.05"));
+		check("nullRet12", new BigDecimal("5.05"));
+		check("nullRet13", new BigDecimal("5.05"));
+		check("nullRet14", new BigDecimal("5.05"));
+		check("nullRet15", new BigDecimal("5.05"));
+		check("nullRet16", new BigDecimal("5.05"));
 	}
 	
 	public void test_convertlib_str2decimal_expect_result(){
@@ -7350,18 +7351,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 //		CLO-1614
-//		try {
-//			doCompile("function integer transform(){decimal d = str2decimal('5.05 CZK',null); return 0;}","test_convertlib_str2decimal_expect_result");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
-//		try {
-//			doCompile("function integer transform(){decimal d = str2decimal('5.05 CZK',null, null); return 0;}","test_convertlib_str2decimal_expect_result");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
+		try {
+			doCompile("function integer transform(){decimal d = str2decimal('5.05 CZK',null); return 0;}","test_convertlib_str2decimal_expect_result");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal d = str2decimal('5.05 CZK',null, null); return 0;}","test_convertlib_str2decimal_expect_result");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	public void test_convertlib_str2double() {
