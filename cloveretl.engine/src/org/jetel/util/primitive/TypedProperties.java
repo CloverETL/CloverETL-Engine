@@ -52,7 +52,6 @@ public class TypedProperties extends Properties {
 	private static final long serialVersionUID = -3251111555515215464L;
 	
 	private PropertyRefResolver propertyRefResolver;
-	private PropertyRefResolver localPropertyRefResolver;
 	
     public TypedProperties() {
         this(null, (GraphParameters) null);
@@ -91,8 +90,6 @@ public class TypedProperties extends Properties {
         if (refParameters != null) {
         	propertyRefResolver = new PropertyRefResolver(refParameters);
         }
-        
-        localPropertyRefResolver = new PropertyRefResolver(this); 
     }
 
     /**
@@ -202,7 +199,7 @@ public class TypedProperties extends Properties {
 
     private String resolvePropertyReferences(String s, RefResFlag refResFlag) {
     	if (s != null) {
-    		s = localPropertyRefResolver.resolveRef(s, refResFlag);
+    		s = getLocalPropertyRefResolver().resolveRef(s, refResFlag);
     	}
     	
     	if(propertyRefResolver != null && s != null) {
@@ -212,6 +209,10 @@ public class TypedProperties extends Properties {
     	}
     }
 
+    private PropertyRefResolver getLocalPropertyRefResolver() {
+    	return new PropertyRefResolver(this);
+    }
+    
     private String resolvePropertyReferences(String s) {
     	return resolvePropertyReferences(s, null);
     }
