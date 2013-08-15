@@ -7409,24 +7409,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 //		CLO-1614
-//		try {
-//			doCompile("function integer transform(){double d = str2double('0.90c',null); return 0;}","test_convertlib_str2double_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
-//		try {
-//			doCompile("function integer transform(){double d = str2double('0.90c', null); return 0;}","test_convertlib_str2double_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
-//		try {
-//			doCompile("function integer transform(){double d = str2double('0.90c', null, null); return 0;}","test_convertlib_str2double_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
+		try {
+			doCompile("function integer transform(){double d = str2double('0.90c',null); return 0;}","test_convertlib_str2double_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){double d = str2double('0.90c', null); return 0;}","test_convertlib_str2double_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){double d = str2double('0.90c', null, null); return 0;}","test_convertlib_str2double_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	public void test_convertlib_str2integer() {
@@ -7445,14 +7445,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet8", null);
 		check("nullRet9", null);
 //		CLO-1614
-//		check("nullRet10", 123);
-//		check("nullRet11", 123);
-//		check("nullRet12", 123);
-//		check("nullRet13", 123);
-//		check("nullRet14", 123);
-//		check("nullRet15", 123);
-//		check("nullRet16", 123);
-//		check("nullRet17", 123);
+//		check("nullRet10", 123); // ambiguous
+		check("nullRet11", 123);
+		check("nullRet12", 123);
+		check("nullRet13", 123);
+		check("nullRet14", 123);
+		check("nullRet15", 123);
+		check("nullRet16", 123);
+		check("nullRet17", 123);
 	}
 	
 	public void test_convertlib_str2integer_expect_error(){
@@ -7504,14 +7504,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet8", null);
 		check("nullRet9", null);
 //		CLO-1614
-//		check("nullRet10", 123l);
-//		check("nullRet11", 123l);
-//		check("nullRet12", 123l);
-//		check("nullRet13", 123l);
-//		check("nullRet14", 123l);
-//		check("nullRet15", 123l);
-//		check("nullRet16", 123l);
-//		check("nullRet17", 123l);
+//		check("nullRet10", 123l); // ambiguous
+		check("nullRet11", 123l);
+		check("nullRet12", 123l);
+		check("nullRet13", 123l);
+		check("nullRet14", 123l);
+		check("nullRet15", 123l);
+		check("nullRet16", 123l);
+		check("nullRet17", 123l);
 	}
 	
 	public void test_convertlib_str2long_expect_error(){
