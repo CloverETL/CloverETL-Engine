@@ -107,7 +107,7 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		TransformationGraph graph = new TransformationGraph();
 		graph.getRuntimeContext().setAuthorityProxy(new PrimitiveAuthorityProxy() {
 			@Override
-			public String getSecureParamater(String parameterName) {
+			public String getSecureParamater(String parameterName, String parameterValue) {
 				if (parameterName.equals("secureParameter")) {
 					return "secureValue";
 				} else if (parameterName.equals("password")) {

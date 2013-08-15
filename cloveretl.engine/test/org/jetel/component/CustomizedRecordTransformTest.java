@@ -116,8 +116,8 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
         Sequence seq = SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", new Object[]{"ID",graph,"name"}, new Class[]{String.class,TransformationGraph.class,String.class});
         graph.addSequence(seq);
 		
-        graph.getGraphProperties().setProperty("WORKSPACE", "/home/avackova/workspace");
-        graph.getGraphProperties().setProperty("YourCity", "London");
+        graph.getGraphParameters().addGraphParameter("WORKSPACE", "/home/avackova/workspace");
+        graph.getGraphParameters().addGraphParameter("YourCity", "London");
 	}
 	
 	@Override
@@ -476,9 +476,9 @@ public class CustomizedRecordTransformTest extends CloverTestCase {
 		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
 		assertEquals((Double)out.getField(1).getValue(), DecimalFactory.getDecimal(properties.getProperty("$ADULT")).getDouble());
 //		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(Integer.valueOf(properties.getProperty("$ADULT")),DataFieldMetadata.INTEGER_LENGTH +1,1));
-		assertEquals(out1.getField(0).getValue().toString(), graph.getGraphProperties().getStringProperty("WORKSPACE"));
+		assertEquals(out1.getField(0).getValue().toString(), graph.getGraphParameters().getGraphParameter("WORKSPACE").getValue());
 		assertEquals(out.getField(2).getValue().toString(), properties.getProperty("$MyCity"));
-		assertEquals(out1.getField(2).getValue().toString(), graph.getGraphProperties().getStringProperty("YourCity"));
+		assertEquals(out1.getField(2).getValue().toString(), graph.getGraphParameters().getGraphParameter("YourCity").getValue());
 		assertEquals(out.getField(4).getValue(), DecimalFactory.getDecimal(Integer.valueOf(properties.getProperty("$ADULT")),4,1));
 	}
 	

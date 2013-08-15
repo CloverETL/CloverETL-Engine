@@ -343,14 +343,14 @@ public class TextParserConfiguration implements Cloneable {
 			this.metadata = cfg.metadata.duplicate();
 		}
 		
-		this.charset = new String(cfg.charset);
+		this.charset = cfg.charset;
 		this.verbose = cfg.verbose;
 		this.treatMultipleDelimitersAsOne = cfg.treatMultipleDelimitersAsOne;
 		this.quotedStrings = cfg.quotedStrings;
 		this.quoteChar = cfg.quoteChar;
 		this.trim = cfg.trim;
-		this.skipLeadingBlanks = new Boolean(cfg.skipLeadingBlanks);
-		this.skipTrailingBlanks = new Boolean(cfg.skipTrailingBlanks);
+		this.skipLeadingBlanks = cfg.skipLeadingBlanks;
+		this.skipTrailingBlanks = cfg.skipTrailingBlanks;
 		this.skipRows = cfg.skipRows;
 		this.setPolicyType(cfg.policyType);
 	}

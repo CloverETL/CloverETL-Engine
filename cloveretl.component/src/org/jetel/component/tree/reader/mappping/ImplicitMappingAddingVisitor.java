@@ -42,9 +42,15 @@ public class ImplicitMappingAddingVisitor implements MappingVisitor {
 	
 	private List<DataRecordMetadata> outPortsMetadata;
 	private Stack<FieldUsage> contextFieldUsageStack = new Stack<FieldUsage>();
+	private FieldNameEncoder fieldNameEncoder;
 	
 	public ImplicitMappingAddingVisitor(List<DataRecordMetadata> outPortsMetadata) {
+		this(outPortsMetadata, null);
+	}
+	
+	public ImplicitMappingAddingVisitor(List<DataRecordMetadata> outPortsMetadata, FieldNameEncoder nameEncoder) {
 		this.outPortsMetadata = outPortsMetadata;
+		this.fieldNameEncoder = nameEncoder;
 	}
 	
 	@Override
@@ -94,7 +100,12 @@ public class ImplicitMappingAddingVisitor implements MappingVisitor {
 			
 			for (int i = usageFields.nextSetBit(0); i >= 0; i = usageFields.nextSetBit(i+1)) {
 				String fieldName = metadata.getField(i).getName();
-				String xpath = fieldName;
+				String xpath;
+				if (fieldNameEncoder != null) {
+					xpath = fieldNameEncoder.encodeFieldName(fieldName);
+				} else {
+					xpath = fieldName;
+				}
 				if (metadata.getField(i).getContainerType() == DataFieldContainerType.SINGLE) {
 					xpath += "[1]";
 				}

@@ -823,10 +823,12 @@ public class CharByteDataParser extends AbstractTextParser {
 						throw new BadDataFormatException("End of input encountered while reading fixed-length field");
 					}
 				}
-				if (Character.isWhitespace(ichr)) {
-					tailingWhitespaces++;
-				} else {
-					tailingWhitespaces = 0;
+				if (rTrim) {
+					if (Character.isWhitespace(ichr)) {
+						tailingWhitespaces++;
+					} else {
+						tailingWhitespaces = 0;
+					}
 				}
 			}
 			CharSequence seq = inputReader.getCharSequence(-tailingWhitespaces);
@@ -835,14 +837,10 @@ public class CharByteDataParser extends AbstractTextParser {
 		}
 
 		private CharSequence trimOutput(CharSequence seq) {
-			if (lTrim || rTrim) {
+			//just lTrim is performed, since rTrim is solved already by parsing
+			if (lTrim) {
 				StringBuilder sb = new StringBuilder(seq);
-				if (lTrim) {
-					StringUtils.trimLeading(sb);
-				}
-				if (rTrim) {
-					StringUtils.trimTrailing(sb);
-				}
+				StringUtils.trimLeading(sb);
 				return sb;
 			} else {
 				return seq;
