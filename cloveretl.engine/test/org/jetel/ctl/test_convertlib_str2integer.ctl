@@ -41,13 +41,13 @@ function integer transform() {
 	nullRet18 = str2integer(null, 21);
 	nullRet19 = str2integer(null, i); 
 	//CLO-1614
-//	nullRet10 = str2integer('123', null);
-//	nullRet11 = str2integer('123', s);
-//	nullRet12 = str2integer('123', null, 'cs.CZ');
-//	nullRet13 = str2integer('123', s, 'en.US');
-//	nullRet14 = str2integer('123', null, null);
-//	nullRet15 = str2integer('123', null, s);
-//	nullRet16 = str2integer('123', s, null);
-//	nullRet17 = str2integer('123', s, s);
+	//nullRet10 = str2integer('123', null); // disabled - the call is ambiguous
+	nullRet11 = str2integer('123', s);
+	nullRet12 = str2integer('123', null, 'cs.CZ');
+	nullRet13 = str2integer('123', s, 'en.US');
+	nullRet14 = str2integer('123', null, null);
+	nullRet15 = str2integer('123', null, s);
+	nullRet16 = str2integer('123', s, null);
+	nullRet17 = str2integer('123', s, s);
 	return 0;
 }

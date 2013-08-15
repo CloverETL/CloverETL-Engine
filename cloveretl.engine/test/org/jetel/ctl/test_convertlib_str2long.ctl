@@ -41,13 +41,13 @@ function integer transform() {
 	nullRet18 = str2long(null, 21);
 	nullRet19 = str2long(null, i); 
 	//CLO-1614
-//	nullRet10 = str2long('123', null);
-//	nullRet11 = str2long('123', s);
-//	nullRet12 = str2long('123', null, 'cs.CZ');
-//	nullRet13 = str2long('123', s, 'en.US');
-//	nullRet14 = str2long('123', null, null);
-//	nullRet15 = str2long('123', null, s);
-//	nullRet16 = str2long('123', s, null);
-//	nullRet17 = str2long('123', s, s);
+	//nullRet10 = str2long('123', null); // disabled - ambiguous
+	nullRet11 = str2long('123', s);
+	nullRet12 = str2long('123', null, 'cs.CZ');
+	nullRet13 = str2long('123', s, 'en.US');
+	nullRet14 = str2long('123', null, null);
+	nullRet15 = str2long('123', null, s);
+	nullRet16 = str2long('123', s, null);
+	nullRet17 = str2long('123', s, s);
 	return 0;
 }
