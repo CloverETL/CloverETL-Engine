@@ -7379,14 +7379,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet6", null);
 		check("nullRet7", 12.34d);
 // 		CLO-1614
-//		check("nullRet8", 12.34d);
-//		check("nullRet9", 12.34d);
-//		check("nullRet10", 12.34d);
-//		check("nullRet11", 12.34d);
-//		check("nullRet12", 12.34d);
-//		check("nullRet13", 12.34d);
-//		check("nullRet14", 12.34d);
-//		check("nullRet15", 12.34d);
+		check("nullRet8", 12.34d);
+		check("nullRet9", 12.34d);
+		check("nullRet10", 12.34d);
+		check("nullRet11", 12.34d);
+		check("nullRet12", 12.34d);
+		check("nullRet13", 12.34d);
+		check("nullRet14", 12.34d);
+		check("nullRet15", 12.34d);
 	}
 	
 	public void test_convertlib_str2double_expect_error(){
