@@ -524,7 +524,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				final String input = stack.popString();
 				stack.push(str2integer(context, input, format, locale));
 			} else {
-				int radix = 10;
+				Integer radix = 10;
 				if (context.getParams().length == 2) {
 					radix = stack.popInt();
 				}
@@ -598,7 +598,7 @@ public class ConvertLib extends TLFunctionLibrary {
 				final String input = stack.popString();
 				stack.push(str2long(context, input, format, locale));
 			} else {
-				int radix = 10;
+				Integer radix = 10;
 				if (context.getParams().length == 2) {
 					radix = stack.popInt();
 				}
