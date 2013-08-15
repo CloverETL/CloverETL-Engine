@@ -7175,12 +7175,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_convertlib_sha_expect_error(){
 //		CLO-1258
-//		try {
-//			doCompile("function integer transform(){byte b = sha(null); return 0;}","test_convertlib_sha_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
+		try {
+			doCompile("function integer transform(){string s = null; byte b = sha(s); return 0;}","test_convertlib_sha_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte s = null; byte b = sha(s); return 0;}","test_convertlib_sha_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	public void test_convertlib_sha256() {
@@ -7192,12 +7198,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_convertlib_sha256_expect_error(){
 //		CLO-1258
-//		try {
-//			doCompile("function integer transform(){byte b = sha256(null); return 0;}","test_convertlib_sha256_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
+		try {
+			doCompile("function integer transform(){string a = null; byte b = sha256(a); return 0;}","test_convertlib_sha256_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte a = null; byte b = sha256(a); return 0;}","test_convertlib_sha256_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	public void test_convertlib_str2bits() {
