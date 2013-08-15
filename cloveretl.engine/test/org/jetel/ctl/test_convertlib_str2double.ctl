@@ -31,13 +31,13 @@ function integer transform() {
 	nullRet6 = str2double(null, '###,# CZK', 'cs.CZ');
 	nullRet7 = str2double('12.34', '##.##', null);
 	//CLO-1614
-//	nullRet8 = str2double('12.34', null);
-//	nullRet9 = str2double('12.34', s);
-//	nullRet10 = str2double('12.34', null, null);
-//	nullRet11 = str2double('12.34', s, null);
-//	nullRet12 = str2double('12.34', null, s);
-//	nullRet13 = str2double('12.34', s, s);
-//	nullRet14 = str2double('12.34', s, 'cs.CZ');
-//	nullRet15 = str2double('12.34', null, 'en.US');	
+	nullRet8 = str2double('12.34', null);
+	nullRet9 = str2double('12.34', s);
+	nullRet10 = str2double('12.34', null, null);
+	nullRet11 = str2double('12.34', s, null);
+	nullRet12 = str2double('12.34', null, s);
+	nullRet13 = str2double('12.34', s, s);
+	nullRet14 = str2double('12,34', s, 'cs.CZ');
+	nullRet15 = str2double('12.34', null, 'en.US');	
 	return 0;
 }
