@@ -3553,22 +3553,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("intRet", 0);
 		check("intRet2", 1);
 		check("meta7", null);
+		
+		// CLO-1582
+		check("nonExistingKeyRecord", null);
+		check("nullKeyRecord", null);
+		check("unusedNext", getVariable("unusedNextExpected"));
 	}
 	
 	public void test_lookup_expect_error(){
 		//CLO-1582
-//		try {
-//			doCompile("function integer transform(){string str = lookup(TestLookup).get('Alpha',2).City; return 0;}","test_lookup_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
-//		try {
-//			doCompile("function integer transform(){lookup(TestLookup).count('Alpha',1); lookup(TestLookup).next(); lookup(TestLookup).next().City; return 0;}","test_lookup_expect_error");
-//			fail();
-//		} catch (Exception e) {
-//			// do nothing
-//		}
+		try {
+			doCompile("function integer transform(){string str = lookup(TestLookup).get('Alpha',2).City; return 0;}","test_lookup_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer count = lookup(TestLookup).count('Alpha',1); printErr(count); lookup(TestLookup).next(); string city = lookup(TestLookup).next().City; return 0;}","test_lookup_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 		try {
 			doCompile("function integer transform(){lookupMetadata meta = null; lookup(TestLookup).put(meta); return 0;}","test_lookup_expect_error");
 			fail();
