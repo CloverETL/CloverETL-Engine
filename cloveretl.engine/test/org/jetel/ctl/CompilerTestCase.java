@@ -5178,7 +5178,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_getAlphanumericChars() {
 		String expStr = 
-			"string an1;\n " +
+			"string an1;\n" +
 			"string an2;\n" +
 			"string an3;\n" +
 			"string an4;\n" +
