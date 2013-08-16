@@ -2319,6 +2319,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			assertDeepCopy(testArrayAccessFunctionCall, function_call_copied_list.get(1));
 			assertDeepCopy(testArrayAccessFunctionCall, function_call_copied_list.get(2));
 		}
+		
+		// CLO-1210
+		{
+			check("stringListNull", Arrays.asList((Object) null));
+			Map<String, String> stringMapNull = new HashMap<String, String>();
+			stringMapNull.put("a", null);
+			check("stringMapNull", stringMapNull);
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -4640,12 +4648,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test_null4","80=5455.987-5=5455.9873=0.1");
 
 		//CLO-1210 
-//		check("test_empty7","a=xb=nullc=z");
-//		check("test_empty8","a=x b=null c=z");
-//		check("test_empty9","null=xeco=storm");
-//		check("test_empty10","null=x eco=storm");
-//		check("test_null5","a=xb=nullc=z");
-//		check("test_null6","null=xeco=storm");
+		check("test_empty7","a=xb=nullc=z");
+		check("test_empty8","a=x b=null c=z");
+		check("test_empty9","null=xeco=storm");
+		check("test_empty10","null=x eco=storm");
+		check("test_null5","a=xb=nullc=z");
+		check("test_null6","null=xeco=storm");
 		
 	}
 	
@@ -5178,7 +5186,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_getAlphanumericChars() {
 		String expStr = 
-			"string an1;\n" +
+			"string an1;\n " +
 			"string an2;\n" +
 			"string an3;\n" +
 			"string an4;\n" +
