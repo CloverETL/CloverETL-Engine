@@ -5178,7 +5178,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_getAlphanumericChars() {
 		String expStr = 
-			"string an1;\n" +
+			"string an1;\n " +
 			"string an2;\n" +
 			"string an3;\n" +
 			"string an4;\n" +
@@ -5209,10 +5209,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				"an13=getAlphanumericChars('  0  ľeškó11');\n" +
 				"an14=getAlphanumericChars('  0  ľeškó11', false, false);\n" +
 				//CLO-1174
-				"string tmp = \""+StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\";\n"+
-				"printErr('BEFORE DO COMPILE: '+tmp); \n"+
-				"an15=getAlphanumericChars(\"" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "\",false,false);\n" +
-				"printErr('AFTER GET_ALPHA_NUMERIC_CHARS: '+ an15);\n" +
+				"an15=getAlphanumericChars('" + StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + "',false,false);\n" +
 				"return 0;\n" +
 			"}\n";
 		doCompile(expStr, "test_getAlphanumericChars");
@@ -5234,8 +5231,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		//CLO-1174
 		String tmp = StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n");
-		System.out.println("FROM JAVA - AFTER DO COMPILE: "+ tmp);
-		//check("an15", tmp);
+		check("an15", tmp);
 	}
 	
 	public void test_stringlib_indexOf(){
