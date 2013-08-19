@@ -5106,12 +5106,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate19", false);
 		check("isDate20", false);
 		check("isDate21", false);
-		/* CLO-1190
-		check("isDate22", false);
-		check("isDate23", false);
+		
+		// CLO-1190
+//		check("isDate22", false);
+//		check("isDate23", false);
 		check("isDate24", true);
 		check("isDate25", false);
-		 */
 	}	
 	public void test_stringlib_empty_strings() {
 		String[] expressions = new String[] {
@@ -6944,15 +6944,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet2", null);
 	}
 	
-	public void test_convertlib_date2str_expect_error(){
-		try {
-			doCompile("function integer transform(){string s = date2str(1985-11-12,null, 'cs.CZ', 'GMT+8');return 0;}","test_convertlib_date2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-	}
-	
 	public void test_convertlib_decimal2double() {
 		doCompile("test_convertlib_decimal2double");
 		check("toDouble", 0.007d);
@@ -7298,12 +7289,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	public void test_convertlib_str2date_expect_error(){
-		try {
-			doCompile("function integer transform(){date d = str2date('1987-11-17', null); return 0;}","test_convertlib_str2date_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){date d = str2date('1987-11-17', 'dd.MM.yyyy'); return 0;}","test_convertlib_str2date_expect_error");
 			fail();
