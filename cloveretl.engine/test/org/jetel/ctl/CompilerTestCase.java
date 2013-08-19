@@ -1140,7 +1140,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_dynamiclib_getFieldLabel(){
 		doCompile("test_dynamiclib_getFieldLabel");		
 		check("ret1", "Age");
-		check("ret2","Name");
+		check("ret2", "Name");
+		check("ret3", "Age");
+		check("ret4", "Value");
 	}
 	
 	public void test_dynamiclib_getFieldLable_expect_error(){
@@ -1158,6 +1160,54 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){firstInput fi = null; string name = fi.getFieldLabel(2);return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string name = fi.getFieldLabel('Age');return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput fi = null; string name = fi.getFieldLabel('');return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = null; firstInput fi = null; string name = fi.getFieldLabel(s);return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer s = null; firstInput fi = null; string name = fi.getFieldLabel(s);return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string name = getFieldLabel($in.0, 'Tristana');return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = null; string name = getFieldLabel($in.0, s);return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer s = null; string name = getFieldLabel($in.0, s);return 0;}","test_dynamiclib_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string name = getFieldLabel($in.0, '');return 0;}","test_dynamiclib_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
