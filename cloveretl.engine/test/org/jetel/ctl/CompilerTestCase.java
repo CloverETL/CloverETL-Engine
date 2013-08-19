@@ -1145,7 +1145,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret4", "Value");
 	}
 	
-	public void test_dynamiclib_getFieldLable_expect_error(){
+	public void test_dynamiclib_getFieldLabel_expect_error(){
 		try {
 			doCompile("function integer transform(){string name = getFieldLabel($in.0, -5);return 0;}","test_dynamiclib_expect_error");
 			fail();
@@ -6893,9 +6893,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet2", null);
 	}
 	
-	public void test_convertlib_byte2base64() {
+	public void test_convertlib_byte2base64() throws UnsupportedEncodingException {
 		doCompile("test_convertlib_byte2base64");
 		check("inputBase64", Base64.encodeBytes("Abeceda zedla deda".getBytes()));
+		
+		String longText = (String) getVariable("longText");
+		byte[] longTextBytes = longText.getBytes("UTF-8");
+		String inputBase64wrapped = Base64.encodeBytes(longTextBytes, Base64.NO_OPTIONS);
+		String inputBase64nowrap = Base64.encodeBytes(longTextBytes, Base64.DONT_BREAK_LINES);
+		
+		check("inputBase64wrapped", inputBase64wrapped);
+		assertTrue(((String) getVariable("inputBase64wrapped")).indexOf('\n') >= 0);
+		check("inputBase64nowrap", inputBase64nowrap);
+		assertTrue(((String) getVariable("inputBase64nowrap")).indexOf('\n') < 0);
 	}
 	
 	public void test_convertlib_byte2base64_expect_error(){
@@ -6907,6 +6917,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){byte b = null; string s = byte2base64(b);return 0;}","test_convertlib_byte2base64_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = byte2base64(str2byte('a', 'UTF-8'), null);return 0;}","test_convertlib_byte2base64_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
