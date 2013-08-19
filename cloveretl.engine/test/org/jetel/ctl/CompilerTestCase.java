@@ -6921,12 +6921,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
-		try {
-			doCompile("function integer transform(){string s = byte2base64(str2byte('a', 'UTF-8'), null);return 0;}","test_convertlib_byte2base64_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 	}
 	
 	public void test_convertlib_byte2hex() {
