@@ -7033,19 +7033,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_convertlib_date2str_expect_error(){
 		try {
-			doCompile("function integer transform(){string s = null; string str = date2str(2001/12/15, s); printErr(str); return 0;}","test_convertlib_date2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){string str = date2str(2001-12-15, 'yyyy.MM.dd', 'en.CZ'); printErr(str); return 0;}","test_convertlib_date2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){string str = date2str(2001-12-15, 'yyyy.MM.dd', 'en.US', 'TROLOLO'); printErr(str); return 0;}","test_convertlib_date2str_expect_error");
+			doCompile("function integer transform(){string str = date2str(2001-12-15, 'xxx.MM.dd'); printErr(str); return 0;}","test_convertlib_date2str_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
