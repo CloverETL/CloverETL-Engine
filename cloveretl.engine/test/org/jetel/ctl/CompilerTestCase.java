@@ -6854,6 +6854,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){string s = null; byte b = base64byte(s); return 0;}","test_convertlib_base64byte_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_bits2str() {
@@ -6867,6 +6873,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		//this test should be expected to success in future
 		try {
 			doCompile("function integer transform(){string s = bits2str(null); return 0;}","test_convertlib_bits2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = null; string s = bits2str(b); return 0;}","test_convertlib_bits2str_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6887,9 +6899,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	public void test_convertlib_byte2base64_expect_error(){
-		//this test should be expected to success in future
 		try {
 			doCompile("function integer transform(){string s = byte2base64(null);return 0;}","test_convertlib_byte2base64_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte b = null; string s = byte2base64(b);return 0;}","test_convertlib_byte2base64_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6899,7 +6916,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_byte2hex() {
 		doCompile("test_convertlib_byte2hex");
 		check("hexResult", "41626563656461207a65646c612064656461");
-		check("test_null", null);
+		check("test_null1", null);
+		check("test_null2", null);
 	}
 	
 	public void test_convertlib_date2long() {
