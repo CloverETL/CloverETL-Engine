@@ -7053,19 +7053,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet2", null);
 	}
 	
-	public void test_convertlib_decimal2double_expect_error(){
-		try {
-			String str ="function integer transform(){"
-					+ "decimal dec = 9"+ Double.MAX_VALUE +";"
-					+ "double dou = decimal2double(dec);"
-					+ "return 0;}" ;
-			doCompile(str,"test_convertlib_decimal2double_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-	}
-	
 	public void test_convertlib_decimal2integer() {
 		doCompile("test_convertlib_decimal2integer");
 		check("toInteger", 0);
@@ -7073,6 +7060,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("toInteger3", 1000000);
 		check("nullRet1", null);
 		check("nullRet2", null);
+	}
+	public void test_convertlib_decimal2integer_expect_error(){
+		try {
+			doCompile("function integer transform(){integer int = decimal2integer(352147483647.23);return 0;}","test_convertlib_decimal2integer_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_decimal2long() {
@@ -7084,6 +7079,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet2", null);
 	}
 	
+	public void test_convertlib_decimal2long_expect_error(){
+		try {
+			doCompile("function integer transform(){long l = decimal2long(9759223372036854775807.25); return 0;}","test_convertlib_decimal2long_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_double2integer() {
 		doCompile("test_convertlib_double2integer");
 		check("toInteger", 0);
@@ -7091,6 +7095,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("toInteger3", 1000000);
 		check("nullRet1", null);
 		check("nullRet2", null);
+	}
+	
+	public void test_convertlib_double2integer_expect_error(){
+		try {
+			doCompile("function integer transform(){integer int = double2integer(352147483647.1); return 0;}","test_convertlib_double2integer_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_double2long() {
@@ -7102,6 +7115,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet2", null);
 	}
 
+	public void test_convertlib_double2long_expect_error(){
+		try {
+			doCompile("function integer transform(){long l = double2long(1.3759739E23); return 0;}","test_convertlib_double2long_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_getFieldName() {
 		doCompile("test_convertlib_getFieldName");
 		check("fieldNames",Arrays.asList("Name", "Age", "City", "Born", "BornMillisec", "Value", "Flag", "ByteArray", "Currency"));
