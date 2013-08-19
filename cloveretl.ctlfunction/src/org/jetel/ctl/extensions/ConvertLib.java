@@ -1092,7 +1092,7 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Converts binary data into their base64 representation. Optionally breaks lines after 76 characters.")
-	public static final String byte2base64(TLFunctionCallContext context, byte[] src, boolean wrap) {
+	public static final String byte2base64(TLFunctionCallContext context, byte[] src, Boolean wrap) {
 		return Base64.encodeBytes(src, wrap ? Base64.NO_OPTIONS : Base64.DONT_BREAK_LINES);
 	}
 	
