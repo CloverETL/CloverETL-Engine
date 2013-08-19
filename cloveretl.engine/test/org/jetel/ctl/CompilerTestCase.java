@@ -7053,6 +7053,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullRet2", null);
 	}
 	
+	public void test_convertlib_decimal2double_expect_error(){
+		try {
+			String str ="function integer transform(){"
+					+ "decimal dec = 9"+ Double.MAX_VALUE +";"
+					+ "double dou = decimal2double(dec);"
+					+ "return 0;}" ;
+			doCompile(str,"test_convertlib_decimal2double_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_convertlib_decimal2integer() {
 		doCompile("test_convertlib_decimal2integer");
 		check("toInteger", 0);
