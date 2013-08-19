@@ -7010,6 +7010,42 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("timeZone", sdfGMT8.format(BORN_VALUE));
 		check("nullRet", null);
 		check("nullRet2", null);
+		check("nullRet3", "2011-04-15");
+		check("nullRet4", "2011-04-15");
+		check("nullRet5", "2011-04-15");
+	}
+	
+	public void test_convertlib_date2str_expect_error(){
+		try {
+			doCompile("function integer transform(){string s = null; string str = date2str(2001/12/15, s); printErr(str); return 0;}","test_convertlib_date2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = date2str(2001/12/15, null); printErr(str); return 0;}","test_convertlib_date2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = date2str(2001/12/15, 'yyyy.MM.dd'); printErr(str); return 0;}","test_convertlib_date2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = date2str(2001.12.15, 'yyyy.MM.dd', 'en.CZ'); printErr(str); return 0;}","test_convertlib_date2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string str = date2str(2001.12.15, 'yyyy.MM.dd', 'en.US', 'TROLOLO'); printErr(str); return 0;}","test_convertlib_date2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_decimal2double() {
@@ -7760,6 +7796,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_byte2str_expect_error(){
 		try {
 			doCompile("function integer transform(){string s = byte2str(null,'utf-8'); return 0;}","test_convertlib_byte2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte input = null; string s = byte2str(input,'utf-8'); return 0;}","test_convertlib_byte2str_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
