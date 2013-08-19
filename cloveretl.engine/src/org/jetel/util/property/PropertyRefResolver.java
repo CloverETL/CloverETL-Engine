@@ -38,6 +38,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.interpreter.CTLExpressionEvaluator;
 import org.jetel.interpreter.ParseException;
 import org.jetel.util.MiscUtils;
@@ -96,6 +97,9 @@ public class PropertyRefResolver {
 	/** the flag specifying whether the CTL expressions should be evaluated and the property references resolved */
 	private boolean resolve = true;
 
+	/** AuthorityProxy is used to resolve secure parameters. If proxy is null, one is taken from context. */
+	private IAuthorityProxy authorityProxy;
+	
 	/**
 	 * Constructs a <code>PropertyRefResolver</code> with empty properties. By default, the CTL expressions will
 	 * be evaluated and the property references will be resolved. This may be changed by setting the resolve flag
@@ -136,6 +140,19 @@ public class PropertyRefResolver {
 	@Deprecated
 	public PropertyRefResolver(TransformationGraph graph) {
 		this(graph.getGraphParameters());
+	}
+	
+	/**
+	 * Sets authority proxy, which will be used to decrypt secure parameters.
+	 * If no proxy is set, {@link ContextProvider#getAuthorityProxy()} is used instead.
+	 * @param authorityProxy
+	 */
+	public void setAuthorityProxy(IAuthorityProxy authorityProxy) {
+		this.authorityProxy = authorityProxy;
+	}
+	
+	private IAuthorityProxy getAuthorityProxy() {
+		return (authorityProxy != null) ? authorityProxy : ContextProvider.getAuthorityProxy();
 	}
 	
 	/**
@@ -374,7 +391,9 @@ public class PropertyRefResolver {
 				GraphParameter param = parameters.getGraphParameter(reference);
 				if (param.isSecure()) {
 					if (flag.resolveSecureParameters()) {
-						resolvedReference = ContextProvider.getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
+						resolvedReference = getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
+					} else {
+						throw new JetelRuntimeException("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used in dedicated locations.");
 					}
 				} else {
 					resolvedReference = parameters.getGraphParameter(reference).getValue();
