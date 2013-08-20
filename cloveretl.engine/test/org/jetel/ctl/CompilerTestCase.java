@@ -3092,6 +3092,40 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("h3", Arrays.asList("memento", "mori", "memento mori"));
 		check("n3", "memento mori");
 		check("b4", true);
+		check("ret1", false);
+		check("ret2", true);
+		check("ret3", false);
+		check("ret4", true);
+		check("ret5", false);
+		check("ret6", true);
+		check("ret7", false);
+		check("ret8", true);
+		check("ret9", false);
+		check("ret10", true);
+		check("ret11", false);
+		check("ret12", true);
+		check("ret13", false);
+		check("ret14", true);
+		check("ret15", false);
+		check("ret16", true);
+		check("ret17", false);
+		check("ret18", false);
+		check("ret19", true);
+	}
+	
+	public void test_operator_in_expect_error(){
+		try {
+			doCompile("function integer transform(){long[] lList = null; long l = 15l; boolean b = in(l, lList); return 0;}","test_operator_in_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){map[long, long] lMap = null; long l = 15l; boolean b = in(l, lMap); return 0;}","test_operator_in_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_operator_greater_less() {
