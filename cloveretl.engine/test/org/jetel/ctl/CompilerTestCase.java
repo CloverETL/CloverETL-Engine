@@ -7284,7 +7284,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_convertlib_packdecimal2long_expect_error(){
 		try {
-			doCompile("function integer transform(){long l =packDecimal2long(null); return 0;}","test_convertlib_packdecimal2long_expect_error");
+			doCompile("function integer transform(){long l = packDecimal2long(null); return 0;}","test_convertlib_packdecimal2long_expect_error");
+			fail();		
+		} catch (Exception e) {
+			// do nothing;
+		}
+		try {
+			doCompile("function integer transform(){byte b = null; long l = packDecimal2long(b); return 0;}","test_convertlib_packdecimal2long_expect_error");
 			fail();		
 		} catch (Exception e) {
 			// do nothing;
