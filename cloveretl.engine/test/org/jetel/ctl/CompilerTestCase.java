@@ -7371,6 +7371,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){string s = null; byte b = str2bits(s); return 0;}","test_convertlib_str2bits_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 
 	public void test_convertlib_str2bool() {
