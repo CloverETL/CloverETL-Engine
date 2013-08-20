@@ -27,6 +27,8 @@ boolean ret16;
 boolean ret17;
 boolean ret18;
 boolean ret19;
+boolean ret20;
+boolean ret21;
 
 function integer transform() {
 	a = 1;
@@ -83,5 +85,8 @@ function integer transform() {
 	ret18 = in(l, myMap);
 	myMap[l] = 'Yorick';
 	ret19 = in(l, myMap);
+	
+	ret20 = in('aaa', $in.multivalueInput.stringListField);
+	ret21 = in('aaa', $in.multivalueInput.integerMapField);
 	return 0;
 }
