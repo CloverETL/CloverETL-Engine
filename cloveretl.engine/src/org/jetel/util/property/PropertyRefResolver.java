@@ -247,12 +247,7 @@ public class PropertyRefResolver {
 		}
 
 		StringBuilder valueBuffer = new StringBuilder(value);
-		try {
-			resolveRef(valueBuffer, flag);
-		} catch (JetelRuntimeException e) {
-			errorMessages.add(e.getMessage() + " " + value); //$NON-NLS-1$
-			logger.warn(e.getMessage() + " " + value); //$NON-NLS-1$
-		}
+		resolveRef(valueBuffer, flag);
 		
 		return valueBuffer.toString();
 	}
@@ -393,7 +388,7 @@ public class PropertyRefResolver {
 					if (flag.resolveSecureParameters()) {
 						resolvedReference = getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
 					} else {
-						logger.warn("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used in dedicated locations.");
+						throw new JetelRuntimeException("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used only in dedicated locations.");
 					}
 				} else {
 					resolvedReference = parameters.getGraphParameter(reference).getValue();
