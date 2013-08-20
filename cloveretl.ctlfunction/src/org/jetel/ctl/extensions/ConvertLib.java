@@ -883,22 +883,34 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	// NUM2BOOL
 	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
-	public static final Boolean num2bool(TLFunctionCallContext context, int b) {
+	public static final Boolean num2bool(TLFunctionCallContext context, Integer b) {
+		if (b == null){
+			return null;
+		}
 		return b != 0;
 	}
 	
 	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
-	public static final Boolean num2bool(TLFunctionCallContext context, long b) {
+	public static final Boolean num2bool(TLFunctionCallContext context, Long b) {
+		if (b == null){
+			return null;
+		}
 		return b != 0;
 	}
 	
 	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
-	public static final Boolean num2bool(TLFunctionCallContext context, double b) {
+	public static final Boolean num2bool(TLFunctionCallContext context, Double b) {
+		if (b == null){
+			return null;
+		}
 		return b != 0;
 	}
 	
 	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
 	public static final Boolean num2bool(TLFunctionCallContext context, BigDecimal b) {
+		if (b == null){
+			return null;
+		}
 		return BigDecimal.ZERO.compareTo(b) != 0;
 	}
 
