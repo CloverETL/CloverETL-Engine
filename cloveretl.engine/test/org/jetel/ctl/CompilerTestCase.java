@@ -3111,6 +3111,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret17", false);
 		check("ret18", false);
 		check("ret19", true);
+		check("ret20", false);
+		check("ret21", false);
 	}
 	
 	public void test_operator_in_expect_error(){
