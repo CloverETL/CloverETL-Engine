@@ -7275,6 +7275,18 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){string ret = num2str(12.3, 2); return 0;}","test_convertlib_num2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string ret = num2str(12.3, 8); return 0;}","test_convertlib_num2str_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_convertlib_packdecimal2long() {
