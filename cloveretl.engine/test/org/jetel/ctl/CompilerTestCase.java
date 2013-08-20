@@ -7236,41 +7236,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("doubleFalse", false);
 		check("decimalTrue", true);
 		check("decimalFalse", false);
-	}
-	
-	public void test_convertlib_num2bool_expect_error(){
-		//this test should be expected to success in future
-		//test: integer
-		try {
-			doCompile("integer input; function integer transform(){input=null; boolean b = num2bool(input); return 0;}","test_convertlib_num2bool_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		//this test should be expected to success in future
-		//test: long
-		try {
-			doCompile("long input; function integer transform(){input=null; boolean b = num2bool(input); return 0;}","test_convertlib_num2bool_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}		
-		//this test should be expected to success in future
-		//test: double
-		try {
-			doCompile("double input; function integer transform(){input=null; boolean b = num2bool(input); return 0;}","test_convertlib_num2bool_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		//this test should be expected to success in future
-		//test: decimal
-		try {
-			doCompile("decimal input; function integer transform(){input=null; boolean b = num2bool(input); return 0;}","test_convertlib_num2bool_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		check("nullInt", null);
+		check("nullLong", null);
+		check("nullDouble", null);
+		check("nullDecimal", null);
 	}
 	
 	public void test_convertlib_num2str() {
