@@ -393,7 +393,7 @@ public class PropertyRefResolver {
 					if (flag.resolveSecureParameters()) {
 						resolvedReference = getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
 					} else {
-						throw new JetelRuntimeException("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used in dedicated locations.");
+						logger.warn("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used in dedicated locations.");
 					}
 				} else {
 					resolvedReference = parameters.getGraphParameter(reference).getValue();
