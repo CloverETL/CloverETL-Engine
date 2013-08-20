@@ -7711,6 +7711,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("function integer transform(){long i = str2long('1A', 2); return 0;}","test_convertlib_str2long_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}	
 
 	public void test_convertlib_toString() {
