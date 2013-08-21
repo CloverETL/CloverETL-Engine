@@ -4253,6 +4253,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
+			doCompile("function integer transform(){reverse(null); return 0;}","test_containerlib_reverse_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
 			doCompile("function integer transform(){long[] longList = null; long[] reversed = longList.reverse(); return 0;}","test_containerlib_reverse_expect_error");
 			fail();
 		} catch (Exception e) {
