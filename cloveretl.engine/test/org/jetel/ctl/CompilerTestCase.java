@@ -3596,6 +3596,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("City", CITY_VALUE, outputRecords[3].getField("City").getValue().toString());
 	}
 
+	public void test_copyByName_expect_error(){
+		try {
+			doCompile("function integer transform(){\n"
+					+ "firstInput fi1 = null; firstInput fi2;\n"
+					+ "copyByName(fi1, fi2); \n"
+					+ "return 0;}","test_copyByName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "firstInput fi1 = null; firstInput fi2 = null;\n"
+					+ "copyByName(fi1, fi2); \n"
+					+ "return 0;}","test_copyByName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_copyByName_assignment() {
 		doCompile("test_copyByName_assignment");
 		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
