@@ -823,7 +823,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void test_dynamic_compare() {
+	public void test_dynamiclib_compare() {
 		doCompile("test_dynamic_compare");
 		
 		String varName = "compare";
