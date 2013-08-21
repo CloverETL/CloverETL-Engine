@@ -3630,7 +3630,35 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("Age", null, outputRecords[3].getField("Age").getValue());
 		assertEquals("City", null, outputRecords[3].getField("City").getValue());
 	}
+	
+	public void test_containerlib_copyByPosition(){
+		doCompile("test_containerlib_copyByPosition");
+		assertEquals("Field1", NAME_VALUE, outputRecords[3].getField("Field1").getValue().toString());
+		assertEquals("Age", AGE_VALUE, outputRecords[3].getField("Age").getValue());
+		assertEquals("City", CITY_VALUE, outputRecords[3].getField("City").getValue().toString());
+	}
 
+	public void test_containerlib_copyByPosition_expect_error(){
+		try {
+			doCompile("function integer transform(){\n"
+					+ "firstInput fi1 = null; firstInput fi2; \n"
+					+ "copyByPosition(fi1, fi2);\n"
+					+ "return 0;}","test_containerlib_copyByPosition_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){\n"
+					+ "firstInput fi1 = null; firstInput fi2 = null; \n"
+					+ "copyByPosition(fi1, fi2);\n"
+					+ "return 0;}","test_containerlib_copyByPosition_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_sequence(){
 		doCompile("test_sequence");
 		check("intRes", Arrays.asList(0,1,2));
