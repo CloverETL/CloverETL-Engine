@@ -876,6 +876,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){"
+					+ "firstInput myRec; myRec = null; "
+					+ "firstOutput myRec2; myRec2 = null;"
+					+ "integer i = compare(myRec, 'Flag', myRec2, 'Flag'); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
+					+ "firstInput myRec; myRec = $out.1; "
+					+ "firstOutput myRec2; myRec2 = null;"
+					+ "integer i = compare(myRec, 'Flag', myRec2, 'Flag'); return 0;}","test_dynamiclib_compare_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){"
 					+ "$out.0.Flag = true; "
 					+ "$out.1.Age = 11;"
 					+ "integer i = compare($out.0, 'Flag', $out.1, 'Age'); return 0;}","test_dynamiclib_compare_expect_error");
