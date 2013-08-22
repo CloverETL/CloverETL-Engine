@@ -6543,6 +6543,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
         check("truncBornDate", cal.getTime());
 	}
 	
+	public void test_datelib_truncDate_except_error(){
+		try {
+			doCompile("function integer transform(){truncDate(null); return 0;}","test_datelib_truncDate_except_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = null; truncDate(d); return 0;}","test_datelib_truncDate_except_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_datelib_today() {
 		doCompile("test_datelib_today");
 		Date expectedDate = new Date();
