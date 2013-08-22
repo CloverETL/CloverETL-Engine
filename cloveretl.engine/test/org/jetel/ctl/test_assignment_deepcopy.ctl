@@ -63,6 +63,9 @@ map[string, firstMultivalueOutput] function_call_copied_map;
 firstMultivalueOutput[] function_call_original_list;
 firstMultivalueOutput[] function_call_copied_list;
 
+string[] stringListNull;
+map[string, string] stringMapNull;
+
 // stupid implementation - poor performance
 function string listToString(string[] input) {
 	string result = "[";
@@ -234,6 +237,10 @@ function integer transform() {
 	testReturnValue5[0] = tmpReturnValueRecord1;
 	testReturnValue5[0].stringField = "unmodified";
 	(testReturnValue5[1] = testReturnValue5[0]).modifyRecord(); 
+	
+	// CLO-1210
+	stringListNull[0] = null; 
+	stringMapNull["a"] = null;
 	
 	return 0;
 }

@@ -883,22 +883,34 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	// NUM2BOOL
 	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
-	public static final Boolean num2bool(TLFunctionCallContext context, int b) {
+	public static final Boolean num2bool(TLFunctionCallContext context, Integer b) {
+		if (b == null){
+			return null;
+		}
 		return b != 0;
 	}
 	
 	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
-	public static final Boolean num2bool(TLFunctionCallContext context, long b) {
+	public static final Boolean num2bool(TLFunctionCallContext context, Long b) {
+		if (b == null){
+			return null;
+		}
 		return b != 0;
 	}
 	
 	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
-	public static final Boolean num2bool(TLFunctionCallContext context, double b) {
+	public static final Boolean num2bool(TLFunctionCallContext context, Double b) {
+		if (b == null){
+			return null;
+		}
 		return b != 0;
 	}
 	
 	@TLFunctionAnnotation("Converts 0 to false and any other numeric value to true.")
 	public static final Boolean num2bool(TLFunctionCallContext context, BigDecimal b) {
+		if (b == null){
+			return null;
+		}
 		return BigDecimal.ZERO.compareTo(b) != 0;
 	}
 
@@ -1086,9 +1098,14 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 	}
 	
-	@TLFunctionAnnotation("Converts binary data into their base64 representation.")
+	@TLFunctionAnnotation("Converts binary data into their base64 representation. Breaks lines after 76 characters.")
 	public static final String byte2base64(TLFunctionCallContext context, byte[] src) {
-		return Base64.encodeBytes(src);
+		return byte2base64(context, src, true);
+	}
+	
+	@TLFunctionAnnotation("Converts binary data into their base64 representation. Optionally breaks lines after 76 characters.")
+	public static final String byte2base64(TLFunctionCallContext context, byte[] src, Boolean wrap) {
+		return Base64.encodeBytes(src, wrap ? Base64.NO_OPTIONS : Base64.DONT_BREAK_LINES);
 	}
 	
 	// BYTE2BASE64
@@ -1100,7 +1117,11 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(byte2base64(context, stack.popByteArray()));
+			boolean wrap = true;
+			if (context.getParams().length > 1) {
+				wrap = stack.popBoolean();
+			}
+			stack.push(byte2base64(context, stack.popByteArray(), wrap));
 		}
 	}
 	
