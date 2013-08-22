@@ -21,7 +21,7 @@ function integer transform() {
 	withTimeZone2 = randomDate(withTimeZone2Str, withTimeZone2Str, pattern, 'en', 'GMT-3');
 	pattern = null; //if null engine uses pattern 'yyyy-MM-dd' - is that correct?
 	patt_null = randomDate('2006-10-12','2010-11-12',pattern);
-	ret1 = randomDate('2006-10-12','2010-11-12, null, null);
-	ret2 = randomDate('2006-10-12','2010-11-12, null, null, null);
+	ret1 = randomDate('2006-10-12','2010-11-12', null, null);
+	ret2 = randomDate('2006-10-12','2010-11-12', null, null, null);
 	return 0;
 }
