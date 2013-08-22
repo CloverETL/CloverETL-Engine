@@ -6833,6 +6833,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("withTimeZone1", new Date(BORN_VALUE_NO_MILLIS.getTime() + 2*HOUR)); // timezone changes from GMT+5 to GMT+3
 		check("withTimeZone2", new Date(BORN_VALUE_NO_MILLIS.getTime() - 2*HOUR)); // timezone changes from GMT+3 to GMT+5
 		assertNotNull(getVariable("patt_null"));
+		assertNotNull(getVariable("ret1"));
+		assertNotNull(getVariable("ret2"));
 	}
 	
 	
