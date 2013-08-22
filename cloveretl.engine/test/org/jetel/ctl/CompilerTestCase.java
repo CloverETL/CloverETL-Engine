@@ -6682,6 +6682,73 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		cal.set(2013, 5, 11, 14, 27, 53);
 		cal.set(Calendar.MILLISECOND, 123);
 		check("dateTimeMillis3", cal.getTime());
+		
+		Calendar cal1 = Calendar.getInstance();
+		cal1.set(2011, 10, 20, 0, 0, 0);
+		cal1.set(Calendar.MILLISECOND, 0);
+		Date d = cal1.getTime();
+//		CLO-1674
+//		check("ret1", d);
+		check("ret2", d);
+		
+		cal1.clear();
+		cal1.set(2011, 10, 20, 4, 20, 11);
+		cal1.set(Calendar.MILLISECOND, 0);
+		check("ret3", cal1.getTime());
+		
+		cal1.clear();
+		cal1.set(2011, 10, 20, 4, 20, 11);
+		cal1.set(Calendar.MILLISECOND, 123);
+		d = cal1.getTime();
+		check("ret4", d);
+//		CLO-1674
+//		check("ret5", d);
+		
+	}
+	
+	public void test_datelib_createDate_expect_error(){
+		try {
+			doCompile("function integer transform(){date d = createDate(null, null, null); return 0;}","test_datelib_createDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = createDate(1970, null, null); return 0;}","test_datelib_createDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = createDate(1970, 10, null); return 0;}","test_datelib_createDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = createDate(1970, 11, 20, null, 5, 45); return 0;}","test_datelib_createDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = createDate(1970, 11, 20, 12, null, 45); return 0;}","test_datelib_createDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = createDate(1970, 11, 20, 12, 5, null); return 0;}","test_datelib_createDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer str = null; date d = createDate(1970, 11, 20, 12, 5, 45, str); return 0;}","test_datelib_createDate_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_datelib_getPart() {
