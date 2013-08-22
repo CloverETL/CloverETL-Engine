@@ -20,6 +20,8 @@ package org.jetel.component.fileoperation.pool;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,9 +50,12 @@ import com.jcraft.jsch.UserInfo;
 
 public class PooledSFTPConnection extends AbstractPoolableConnection {
 	
-	private static final int DEFAULT_PORT = 22;
+	/**
+	 * The name of the directory where to look for private keys. 
+	 */
+	private static final String SSH_KEYS_DIR = "ssh-keys";
 
-	private static final JSch jsch = new JSch();
+	private static final int DEFAULT_PORT = 22;
 
 	private static final Log log = LogFactory.getLog(PooledSFTPConnection.class);
 
@@ -60,6 +65,15 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 
 	private Session session = null;
 	private ChannelSftp channel = null;
+	
+	private static final FileFilter KEY_FILE_FILTER = new FileFilter() {
+
+		@Override
+		public boolean accept(File pathname) {
+			return pathname.getName().toLowerCase().endsWith(".key");
+		}
+		
+	};
 	
 	public PooledSFTPConnection(Authority authority) {
 		super(authority);
@@ -138,6 +152,20 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	}
 	
 	private Session getSession() throws IOException {
+		JSch jsch = new JSch();
+		File file = FileUtils.getJavaFile(null, SSH_KEYS_DIR);
+		if ((file != null) && file.isDirectory()) {
+			File[] keys = file.listFiles(KEY_FILE_FILTER);
+			if (keys != null) {
+				for (File key: keys) {
+					try {
+						jsch.addIdentity(key.getAbsolutePath());
+					} catch (Exception e) {
+						log.warn("Failed to read private key", e);
+					}
+				}
+			}
+		}
 		String[] user = getUserInfo();
 		String username = user[0];
 		String password = user.length == 2 ? user[1] : null;
@@ -145,15 +173,16 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		Proxy[] proxies = getProxies();
 		try {
 			log.trace("Connecting with password authentication");
-			return getSession(username, new URLUserInfo(password), proxies);
+			return getSession(jsch, username, new URLUserInfo(password), proxies);
 		} catch (Exception e) {
 			log.trace("Connecting with keyboard-interactive authentication");
-			return getSession(username, new URLUserInfoIteractive(password), proxies);
+			return getSession(jsch, username, new URLUserInfoIteractive(password), proxies);
 		}
 	}
 	
 	public void connect() throws IOException {
 		session = getSession();
+		session.setConfig("StrictHostKeyChecking", "no");
 		try {
 			getChannelSftp();
 		} catch (JSchException e) {
@@ -161,7 +190,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		}
 	}
 
-	private Session getSession(String username, UserInfo password, Proxy[] proxies) throws IOException {
+	private Session getSession(JSch jsch, String username, UserInfo password, Proxy[] proxies) throws IOException {
 		assert (proxies != null) && (proxies.length > 0);
 		
 		Session session;
