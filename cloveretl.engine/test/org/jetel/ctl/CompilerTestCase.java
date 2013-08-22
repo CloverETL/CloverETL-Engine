@@ -6515,6 +6515,21 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("truncDate", new GregorianCalendar(2004, 00, 02).getTime());
 	}
 	
+	public void test_datelib_trunc_except_error(){
+		try {
+			doCompile("function integer transform(){trunc(null); return 0;}","test_datelib_trunc_except_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){date d = null; trunc(d); return 0;}","test_datelib_trunc_except_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_datelib_truncDate() {
 		doCompile("test_datelib_truncDate");
 		Calendar cal = Calendar.getInstance();
