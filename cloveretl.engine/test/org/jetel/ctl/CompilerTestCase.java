@@ -6492,6 +6492,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_mathlib_setRandomSeed_expect_error(){
+		try {
+			doCompile("function integer transform(){setRandomSeed(null); return 0;}","test_mathlib_setRandomSeed_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long l = null; setRandomSeed(l); return 0;}","test_mathlib_setRandomSeed_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer i = null; setRandomSeed(i); return 0;}","test_mathlib_setRandomSeed_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 //-------------------------DateLib tests----------------------
 	
 	public void test_datelib_cache() {
