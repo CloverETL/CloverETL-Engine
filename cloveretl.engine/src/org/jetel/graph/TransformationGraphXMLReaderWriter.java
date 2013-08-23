@@ -21,6 +21,7 @@ package org.jetel.graph;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.nio.channels.Channels;
 import java.util.ArrayList;
@@ -33,6 +34,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -1163,6 +1167,17 @@ public class TransformationGraphXMLReaderWriter {
 		return(null);
 	}
 	
+	public void writeGraphParameters(GraphParameters graphParameters, OutputStream os) {
+		try {
+		    JAXBContext context = JAXBContext.newInstance(GraphParameters.class);
+		    Marshaller m = context.createMarshaller();
+		    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		    
+		    m.marshal(graphParameters, os);
+		} catch (JAXBException e) {
+			throw new JetelRuntimeException("Serialisation of graph parameters failed.", e);
+		}
+	}
 	
 	@SuppressWarnings("deprecation")
 	private boolean write() {
