@@ -8238,6 +8238,28 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertNotNull(getVariable("test"));
 	}
 	
+	public void test_stringlib_randomString_expect_error(){
+		try {
+			doCompile("function integer transform(){randomString(null, null); return 0;}","test_stringlib_randomString_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){randomString(-5, 1); return 0;}","test_stringlib_randomString_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){randomString(15, 2); return 0;}","test_stringlib_randomString_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	
 	public void test_stringlib_validUrl() {
 		doCompile("test_stringlib_url");
 		check("urlValid", Arrays.asList(true, true, false, true, false, true));
