@@ -21,7 +21,6 @@ package org.jetel.component.fileoperation.pool;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -30,6 +29,7 @@ import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,11 +50,6 @@ import com.jcraft.jsch.UserInfo;
 
 public class PooledSFTPConnection extends AbstractPoolableConnection {
 	
-	/**
-	 * The name of the directory where to look for private keys. 
-	 */
-	private static final String SSH_KEYS_DIR = "ssh-keys";
-
 	private static final int DEFAULT_PORT = 22;
 
 	private static final Log log = LogFactory.getLog(PooledSFTPConnection.class);
@@ -65,15 +60,6 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 
 	private Session session = null;
 	private ChannelSftp channel = null;
-	
-	private static final FileFilter KEY_FILE_FILTER = new FileFilter() {
-
-		@Override
-		public boolean accept(File pathname) {
-			return pathname.getName().toLowerCase().endsWith(".key");
-		}
-		
-	};
 	
 	public PooledSFTPConnection(Authority authority) {
 		super(authority);
@@ -132,6 +118,10 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		if (userInfo == null) return new String[] {""};
 		return decodeString(userInfo).split(":");
 	}
+	
+	private Set<String> getPrivateKeys() {
+		return ((SFTPAuthority) authority).getPrivateKeys();
+	}
 
 	public ChannelSftp getChannelSftp() throws JSchException {
 		if ((channel == null) || !channel.isConnected()) {
@@ -153,16 +143,13 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	
 	private Session getSession() throws IOException {
 		JSch jsch = new JSch();
-		File file = FileUtils.getJavaFile(null, SSH_KEYS_DIR);
-		if ((file != null) && file.isDirectory()) {
-			File[] keys = file.listFiles(KEY_FILE_FILTER);
-			if (keys != null) {
-				for (File key: keys) {
-					try {
-						jsch.addIdentity(key.getAbsolutePath());
-					} catch (Exception e) {
-						log.warn("Failed to read private key", e);
-					}
+		Set<String> keys = getPrivateKeys();
+		if (keys != null) {
+			for (String key: keys) {
+				try {
+					jsch.addIdentity(key);
+				} catch (Exception e) {
+					log.warn("Failed to read private key", e);
 				}
 			}
 		}
