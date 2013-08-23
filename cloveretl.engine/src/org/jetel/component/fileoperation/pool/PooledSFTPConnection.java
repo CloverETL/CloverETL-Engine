@@ -20,7 +20,6 @@ package org.jetel.component.fileoperation.pool;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -144,6 +143,9 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	private Session getSession() throws IOException {
 		JSch jsch = new JSch();
 		Set<String> keys = getPrivateKeys();
+		if (log.isDebugEnabled()) {
+			log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys);
+		}
 		if (keys != null) {
 			for (String key: keys) {
 				try {
