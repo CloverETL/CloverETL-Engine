@@ -5915,6 +5915,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("resultLong3", 10l);
 		check("resultLong4", 20l);
 		check("resultLong5",-9223372036854775808l);
+		check("test_mixed1", 176l);
+		check("test_mixed2", 616l);
 	}
 
 	public void test_bitwise_lshift_expect_error(){
