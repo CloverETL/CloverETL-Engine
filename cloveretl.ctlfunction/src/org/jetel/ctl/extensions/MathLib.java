@@ -523,17 +523,6 @@ public class MathLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-//			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
-//				Integer second = stack.popInt();
-//				stack.push(bitLShift(context, stack.popInt(), second));
-//				return;
-//			} 
-//			
-//			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
-//				Long second = stack.popLong();
-//				stack.push(bitLShift(context, stack.popLong(), second));
-//				return;
-//			} 
 			 /*
 			  * The variant bitLShift(int,int) can only be called when both arguments are int
 			  */
