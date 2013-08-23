@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jetel.graph.ContextProvider;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.proxy.ProxyProtocolEnum;
@@ -75,7 +76,7 @@ public class SFTPAuthority extends AbstractAuthority implements Authority {
 	}
 	
 	private void loadPrivateKeys() {
-		File file = FileUtils.getJavaFile(null, SSH_KEYS_DIR);
+		File file = FileUtils.getJavaFile(ContextProvider.getContextURL(), SSH_KEYS_DIR);
 		if ((file != null) && file.isDirectory()) {
 			File[] keys = file.listFiles(KEY_FILE_FILTER);
 			if ((keys != null) && (keys.length > 0)) {
