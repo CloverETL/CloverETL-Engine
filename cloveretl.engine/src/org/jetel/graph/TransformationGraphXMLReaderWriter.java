@@ -273,6 +273,7 @@ public class TransformationGraphXMLReaderWriter {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			
 			if (in != null) {
+				db.setErrorHandler(null); // this avoid to print out to standard error output message "[Fatal Error] :1:1: Content is not allowed in prolog.", see CLO-1652
 				document = db.parse(new BufferedInputStream(in));
 				document.normalize();
 			}else{
