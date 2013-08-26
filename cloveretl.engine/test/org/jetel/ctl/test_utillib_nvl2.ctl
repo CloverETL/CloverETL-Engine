@@ -14,6 +14,7 @@ decimal ret13;
 decimal ret14;
 string ret15;
 string ret16;
+string ret17;
 function integer transform(){
 	ret1 = nvl2('Yorick', 'Ahri', 'Orianna');
 	ret2 = nvl2(null, 'Gregas', 'Galio');
@@ -31,5 +32,7 @@ function integer transform(){
 	ret14 = nvl2(null, 44.4d, 55.5d);
 	ret15 = nvl2('Talon', null, null);
 	ret16 = nvl2(null, null, null);
+	ret17 = nvl2(14, 'Shaco', 'Maoki');
+	printErr(ret17);
 	return 0;
 }
