@@ -6494,12 +6494,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_mathlib_setRandomSeed_expect_error(){
 		try {
-			doCompile("function integer transform(){setRandomSeed(null); return 0;}","test_mathlib_setRandomSeed_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
 			doCompile("function integer transform(){long l = null; setRandomSeed(l); return 0;}","test_mathlib_setRandomSeed_expect_error");
 			fail();
 		} catch (Exception e) {
@@ -8240,12 +8234,6 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_randomString_expect_error(){
 		try {
-			doCompile("function integer transform(){randomString(null, null); return 0;}","test_stringlib_randomString_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
 			doCompile("function integer transform(){randomString(-5, 1); return 0;}","test_stringlib_randomString_expect_error");
 			fail();
 		} catch (Exception e) {
@@ -8335,6 +8323,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_utillib_getEnvironmentVariables() {
 		doCompile("test_utillib_getEnvironmentVariables");
 		check("empty", false);
+		check("ret1", null);
+//		CLO-1700
+//		check("ret2", null);
+//		check("ret3", null);
 	}
 
 	public void test_utillib_getJavaProperties() {
@@ -8357,6 +8349,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("java_specification_name", "Java Platform API Specification");
 		check("my_testing_property", value);
 		assertEquals("my value 2", value2);
+		check("ret1", null);
+//		CLO-1700
+//		check("ret2", null);
+//		check("ret3", null);
 	}
 
 	public void test_utillib_getParamValues() {
@@ -8367,6 +8363,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		params.put("COUNT", "3");
 		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
 		check("params", params);
+		check("ret1", null);
+		check("ret2", null);
+		check("ret3", null);
 	}
 
 	public void test_utillib_getParamValue() {
@@ -8378,6 +8377,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
 		params.put("NONEXISTING", null);
 		check("params", params);
+		check("ret1", null);
+		check("ret2", null);
+	
 	}
 
 	public void test_stringlib_getUrlParts() {
