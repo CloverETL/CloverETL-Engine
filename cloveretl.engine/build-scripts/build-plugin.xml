@@ -533,6 +533,10 @@
 				<field annotation="javax.xml.bind.annotation.*"/>
 				<method annotation="javax.xml.bind.annotation.*"/>
 			</keepclassmembernames>
+			<keepclassmembernames name="com.opensys.cloveretl.validator.**">
+				<method name="get*JAXB"/>
+				<method name="set*JAXB"/>
+			</keepclassmembernames>
 
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
