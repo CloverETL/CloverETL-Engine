@@ -8513,7 +8513,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret12", 10.2d);
 		check("ret13", new BigDecimal("12.2"));
 		check("ret14", new BigDecimal("12.3"));
-//		check("ret15", null);
+		check("ret15", null);
 	}
 	
 	public void test_utillib_nvl2() throws UnsupportedEncodingException{
