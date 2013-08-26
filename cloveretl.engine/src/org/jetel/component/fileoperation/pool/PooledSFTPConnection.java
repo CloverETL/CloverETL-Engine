@@ -149,6 +149,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		if (keys != null) {
 			for (String key: keys) {
 				try {
+					log.debug("Adding new identity from " + key);
 					jsch.addIdentity(key);
 				} catch (Exception e) {
 					log.warn("Failed to read private key", e);
@@ -158,13 +159,23 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		String[] user = getUserInfo();
 		String username = user[0];
 		String password = user.length == 2 ? user[1] : null;
+		
+		if (log.isWarnEnabled()) {
+			if (!StringUtils.isEmpty(username) && StringUtils.isEmpty(password) && (keys == null || keys.isEmpty())) {
+				log.warn("No password or private key specified for user " + username);
+			}
+		}
 
 		Proxy[] proxies = getProxies();
 		try {
-			log.trace("Connecting with password authentication");
+			if (log.isDebugEnabled()) {
+				log.debug("Connecting to " + authority.getHost() + " with password authentication");
+			}
 			return getSession(jsch, username, new URLUserInfo(password), proxies);
 		} catch (Exception e) {
-			log.trace("Connecting with keyboard-interactive authentication");
+			if (log.isDebugEnabled()) {
+				log.debug("Connecting to " + authority.getHost() + " with keyboard-interactive authentication");
+			}
 			return getSession(jsch, username, new URLUserInfoIteractive(password), proxies);
 		}
 	}
