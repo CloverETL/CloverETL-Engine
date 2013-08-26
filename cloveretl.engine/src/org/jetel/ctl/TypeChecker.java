@@ -343,7 +343,8 @@ public class TypeChecker extends NavigatingVisitor {
 			return data;
 		}
 		
-		if (!caseExp.getType().isPrimitive()) {
+		// CLO-737 - null type added
+		if (!caseExp.getType().isPrimitive() && !caseExp.getType().isNull()) {
 			error(caseExp, "Illegal type of case expression '" + caseExp.getType().name() + "'");
 			node.setType(TLType.ERROR);
 		}
@@ -712,33 +713,28 @@ public class TypeChecker extends NavigatingVisitor {
 		
 		minTypeVarMapping = new HashMap<String, TLType>();
 		
+		boolean ambiguous = false;
+		
 		// scan local function declarations for (best) match
+		// CLO-1567 - continue scanning even if distance==0 to perform ambiguity check
 		final List<CLVFFunctionDeclaration> local = declaredFunctions.get(node.getName());
 		if (local != null) {
 			// local function with such name exists
 			for (CLVFFunctionDeclaration fd : local) {
 				final int distance = functionDistance(actual, fd.getFormalParameters(), false);
 				if (distance < minResult) {
+					ambiguous = false; // strictly better function found, not ambiguous
 					minResult = distance;
 					minTypeVarMapping = new HashMap<String, TLType>(typeVarMapping);
 					localCandidate = fd;
-					if (distance == 0) {
-						// best possible match
-						break;
-					}
+				} else if ((distance == minResult) && (distance < Integer.MAX_VALUE)) {
+					ambiguous = true; // equally good function, ambiguous
 				}
 			}
 			
 		}
 		
-		// if minResult==0 and we found a match we have the best possible match
-		// thus we do not need to scan the external functions...
-		if (localCandidate != null && minResult == 0) {
-			node.setCallTarget(localCandidate);
-			node.setType(localCandidate.getType());
-			return;
-		}
-
+		// even if minResult==0, we still need to scan the external functions to perform ambiguity check
 				
 		/*
 		 * None or not-the-best match with local functions yet - scan external
@@ -750,15 +746,21 @@ public class TypeChecker extends NavigatingVisitor {
 				int distance = functionDistance(actual, fd.getFormalParameters(), fd.isVarArg());
 				
 				if (distance < minResult) {
+					ambiguous = false; // strictly better function found, not ambiguous
 					minResult = distance;
 					minTypeVarMapping = new HashMap<String, TLType>(typeVarMapping);
 					extCandidate = fd;
-					if (distance == 0) {
-						// best possible match
-						break;
-					}
+				} else if ((distance == minResult) && (distance < Integer.MAX_VALUE)) {
+					ambiguous = true; // equally good function, ambiguous
 				}
 			}
+		}
+		
+		// CLO-1567
+		if (ambiguous) {
+			node.setType(TLType.ERROR);
+			error(node, "Function '" + node.getName() + "' is ambiguous");
+			return;
 		}
 		
 		// if extCandidate != null we found even better match in external functions
@@ -2004,6 +2006,9 @@ public class TypeChecker extends NavigatingVisitor {
 	
 	private boolean isBindingValid(TLType formal, TLType actual) {
 		if (!formal.isParameterized()) {
+			return true;
+		}
+		if (actual.isNull()) { // perform no binding for null type; also prevents ClassCastExceptions
 			return true;
 		}
 		

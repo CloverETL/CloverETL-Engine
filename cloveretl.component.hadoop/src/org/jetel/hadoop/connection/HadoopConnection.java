@@ -41,6 +41,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.GraphParameters;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.component.HadoopReader;
@@ -202,8 +203,8 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 * @param graphProperties Properties used to resolve CTL expressions in connection configuration.
 	 * @see #init()
 	 */
-	public HadoopConnection(String id, Properties initProperties, Properties graphProperties) {
-		this(id, resolveInitProperties(initProperties, graphProperties), (TransformationGraph) null);
+	public HadoopConnection(String id, Properties initProperties, GraphParameters graphParameters) {
+		this(id, resolveInitProperties(initProperties, new PropertyRefResolver(graphParameters)), (TransformationGraph) null);
 	}
 
 	/**
@@ -215,13 +216,13 @@ public class HadoopConnection extends GraphElement implements IConnection {
 	 * @param graphProperties Graph properties used to resolve CTL expressions in connection configuration.
 	 * @return A copy of connection properties that is resolved based on graph properties.
 	 */
-	private static Properties resolveInitProperties(Properties initProperties, Properties graphProperties) {
+	private static Properties resolveInitProperties(Properties initProperties, PropertyRefResolver resolver) {
 		if (initProperties == null) {
 			throw new NullPointerException("initProperties");
 		}
 		Properties localPropCopy = new Properties();
 		localPropCopy.putAll(initProperties);
-		new PropertyRefResolver(graphProperties).resolveAll(localPropCopy);
+		resolver.resolveAll(localPropCopy);
 		return localPropCopy;
 	}
 
@@ -275,7 +276,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 
 	protected void loadConfigFileIfNeeded(Properties prop) throws ComponentNotReadyException {
 		if (prop.getProperty(XML_CONFIG_KEY) != null) {
-			prop.putAll(resolveInitProperties(readFileToProperties(prop.getProperty(XML_CONFIG_KEY)), getGraph().getGraphProperties()));
+			prop.putAll(resolveInitProperties(readFileToProperties(prop.getProperty(XML_CONFIG_KEY)), getPropertyRefResolver()));
 		}
 	}
 

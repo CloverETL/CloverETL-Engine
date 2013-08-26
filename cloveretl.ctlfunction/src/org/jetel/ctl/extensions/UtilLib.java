@@ -26,11 +26,11 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.jetel.ctl.Stack;
-import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypeEnum;
 import org.jetel.data.DataRecord;
+import org.jetel.graph.GraphParameter;
+import org.jetel.graph.GraphParameters;
 import org.jetel.util.HashCodeUtil;
-import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 
@@ -106,13 +106,13 @@ public class UtilLib extends TLFunctionLibrary {
     // GET PARAM VALUE
 	@TLFunctionAnnotation("Returns the resolved value of a graph parameter")
     public static String getParamValue(TLFunctionCallContext context, String paramName) {
-		return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().resolveRef(context.getGraph().getGraphProperties().getProperty(paramName), RefResFlag.SPEC_CHARACTERS_OFF);
+		return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().resolveRef(context.getGraph().getGraphParameters().getGraphParameter(paramName).getValue(), RefResFlag.SPEC_CHARACTERS_OFF);
     }
     
     @TLFunctionInitAnnotation()
     public static final void getParamValueInit(TLFunctionCallContext context) {
-		TypedProperties props = context.getGraph() != null ? context.getGraph().getGraphProperties() : null;
-		PropertyRefResolver refResolver = new PropertyRefResolver(props);
+		PropertyRefResolver refResolver
+			= context.getGraph() != null ? context.getGraph().getPropertyRefResolver() : new PropertyRefResolver();
 		
 		context.setCache(new TLPropertyRefResolverCache(refResolver));
     }
@@ -140,14 +140,13 @@ public class UtilLib extends TLFunctionLibrary {
     
     @TLFunctionInitAnnotation()
     public static final void getParamValuesInit(TLFunctionCallContext context) {
-		TypedProperties props = context.getGraph() != null ? context.getGraph().getGraphProperties() : null;
-		PropertyRefResolver refResolver = new PropertyRefResolver(props);
+    	PropertyRefResolver refResolver
+    		= context.getGraph() != null ? context.getGraph().getPropertyRefResolver() : new PropertyRefResolver();
+    	GraphParameters parameters = refResolver.getGraphParameters();
 		
 		Map<String, String> map = new HashMap<String, String>();
-		if (props != null) {
-			for (String key: props.stringPropertyNames()) {
-				map.put(key, refResolver.resolveRef(props.getProperty(key), RefResFlag.SPEC_CHARACTERS_OFF));
-			}
+		for (GraphParameter param : parameters.getAllGraphParameters()) {
+			map.put(param.getName(), refResolver.resolveRef(param.getValue(), RefResFlag.SPEC_CHARACTERS_OFF));
 		}
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
     }

@@ -95,7 +95,7 @@ public abstract class CTLRecordFilter extends CTLAbstractTransform implements Re
 	 * @throws TransformException if an error occurred
 	 */
 	@CTLEntryPoint(name = "isValid", required = true)
-	protected abstract boolean isValidDelegate() throws ComponentNotReadyException, TransformException;
+	protected abstract Boolean isValidDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
 	protected final DataRecord getInputRecord(int index) {

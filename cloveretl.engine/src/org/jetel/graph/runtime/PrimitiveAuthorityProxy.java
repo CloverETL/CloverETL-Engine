@@ -459,6 +459,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
+	public long getRemoteEdgeRunId(String edgeId) {
+		throw new UnsupportedOperationException("remote edges are not available for local graphs");
+	}
+	
+	@Override
 	public RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout) {
 		throw new UnsupportedOperationException("Profiler job execution is available only in CloverETL Server environment");
 	}

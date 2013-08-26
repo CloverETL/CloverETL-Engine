@@ -42,7 +42,7 @@ public class GraphElementTest extends CloverTestCase {
 		Node component = ComponentFactory.createComponent(graph, "SIMPLE_COPY", componentProperties);
 		phase.addNode(component);
 		
-		graph.getGraphProperties().setProperty("PROPERTY_KEY", "PropertyValue");
+		graph.getGraphParameters().addGraphParameter("PROPERTY_KEY", "PropertyValue");
 		
 		assertEquals("PropertyValue", graph.getPropertyRefResolver().resolveRef("${PROPERTY_KEY}"));
 		assertEquals("PropertyValue", component.getPropertyRefResolver().resolveRef("${PROPERTY_KEY}"));

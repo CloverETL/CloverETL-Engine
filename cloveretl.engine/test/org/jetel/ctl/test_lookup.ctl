@@ -9,12 +9,31 @@ boolean putResult;
  
 integer idx;
 
+lookupMetadata meta;
+lookupMetadata meta2;
+lookupMetadata meta3;
+lookupMetadata meta4;
+lookupMetadata meta7;
+lookupMetadata nonExistingKeyRecord;
+lookupMetadata nullKeyRecord;
+string strRet;
+string strRet2; 
+integer intRet;
+integer intRet2;
+
+string unusedNext;
+string unusedNextExpected;
+
 function integer transform() {
 	lookupMetadata tmpRecord;
 	tmpRecord.Name = "Charlie";
 	tmpRecord.Value = 3;
 	tmpRecord.City = "Chodov";
 	lookup(TestLookup).put(tmpRecord);
+	
+	// CLO-1582
+	nonExistingKeyRecord = lookup(TestLookup).get("nonExistingKey", 123);
+	nullKeyRecord = lookup(TestLookup).get(null, null);
 
 	idx = 0;
 	for (integer i=0; i<2; i++) {
@@ -35,8 +54,31 @@ function integer transform() {
 	charlieUpdatedCount = lookup(TestLookup).count('Charlie',3);
 	for (integer count = 0; count < charlieUpdatedCount; count++) {
 		charlieUpdatedResult[count] = lookup(TestLookup).next().City;
+		if (count == 2) {
+			unusedNextExpected = charlieUpdatedResult[count];
+		}
 	}
 	sort(charlieUpdatedResult);
+	
+	meta = lookup(TestLookup).get('Bravo',1);
+	meta2 = lookup(TestLookup).get('Bravo',1).*;
+	meta3 = lookup(TestLookup).get(null,1);
+	meta4 = lookup(TestLookup).get(null,null);
+	lookupMetadata meta5;
+	meta5.City = 'Bratislava';
+	lookup(TestLookup).put(meta5);
+	lookupMetadata meta6 = lookup(TestLookup).get(null,null);
+	strRet = meta6.City;
+	intRet = lookup(TestLookup).count('Alpha',2);
+	intRet2 = lookup(TestLookup).count(null, null);
+	integer myIndex = lookup(TestLookup).count('Alpha',1);
+	strRet2 = lookup(TestLookup).next().City;
+	meta7 = lookup(TestLookup).next();	
+	
+	lookup(TestLookup).count('Charlie',3);
+	lookup(TestLookup).next();
+	lookup(TestLookup).next();
+	unusedNext = lookup(TestLookup).next().City;
 	
 	return 0;
 }

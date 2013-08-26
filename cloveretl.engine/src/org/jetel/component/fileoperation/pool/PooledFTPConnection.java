@@ -121,8 +121,7 @@ public class PooledFTPConnection extends AbstractPoolableConnection {
 			return false;
 		}
 		try {
-			ftp.noop();
-			return true;
+			return ftp.sendNoOp();
 		} catch (Exception ex) {
 			return false;
 		}

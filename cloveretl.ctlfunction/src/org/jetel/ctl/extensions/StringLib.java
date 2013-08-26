@@ -39,7 +39,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.formatter.DateFormatter;
-import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -1445,8 +1444,7 @@ public class StringLib extends TLFunctionLibrary {
 	
 	@TLFunctionInitAnnotation()
 	public static final void resolveParamsInit(TLFunctionCallContext context) {
-		TypedProperties props = context.getGraph() != null ? context.getGraph().getGraphProperties() : null;
-		PropertyRefResolver refResolver = new PropertyRefResolver(props);
+		PropertyRefResolver refResolver = context.getGraph().getPropertyRefResolver();
 		context.setCache(new TLPropertyRefResolverCache(refResolver));
 	}
 	

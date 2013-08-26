@@ -4,6 +4,11 @@ string czechBornDate;
 string englishBornDate;
 string[] loopTest;
 string timeZone;
+string nullRet;
+string nullRet2;
+string nullRet3;
+string nullRet4;
+string nullRet5;
 
 function integer transform() {
 	date input = 1987-05-12;
@@ -19,6 +24,13 @@ function integer transform() {
 	} 
 	
 	timeZone = date2str($firstInput.Born, 'yyyy:MMMM:dd z', 'en', 'GMT+8');
+	nullRet = date2str(null,'yyyy:MM:dd', 'en', 'GMT+8');
+	date d = null;
+	nullRet2 = date2str(d,'yyyy:MM:dd', 'en', 'GMT+8');
+	nullRet3 = date2str(2011-4-15, null);
+	nullRet4 = date2str(2011-4-15, null, null);
+	nullRet5 = date2str(2011-4-15, null, null, null);
+	printErr(nullRet3);
 	
 	return 0;	
 }

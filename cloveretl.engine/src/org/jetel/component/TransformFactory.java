@@ -201,7 +201,7 @@ public class TransformFactory<T> {
         		charset = Defaults.DEFAULT_SOURCE_CODE_CHARSET;
         	}
         	String transformCode = FileUtils.getStringFromURL(component.getGraph().getRuntimeContext().getContextURL(), transformUrl, charset);
-        	PropertyRefResolver refResolver= new PropertyRefResolver(component.getGraph().getGraphProperties());
+        	PropertyRefResolver refResolver = component.getPropertyRefResolver();
         	transformCode = refResolver.resolveRef(transformCode, RefResFlag.SPEC_CHARACTERS_OFF);
     		transformation = createTransformFromCode(transformCode);
     	} else if (!StringUtils.isEmpty(transformClass)) {

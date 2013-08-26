@@ -48,34 +48,39 @@ public class TLDateFormatLocaleCache extends TLCache {
 	
 	public void createCachedLocaleFormat(TLFunctionCallContext context, int patternPos, int localePos, int timeZonePos) {
 		
-		if (context.getLiteralsSize() <= patternPos)
+		if (context.getLiteralsSize() <= patternPos) {
 			return;
+		}
+		
+		Object paramPattern = context.getParamValue(patternPos);
 
-		if (!(context.getParamValue(patternPos) instanceof String))
+		// CLO-1190 - null check added
+		if ((paramPattern != null) && !(paramPattern instanceof String)) {
 			return;
+		}
 		
 		// this construction which allows overloading, where you can use the parameter on the same position as 'format' but 
 		// in different meaning with overloaded functions (as long as it is not 'String')
 		if (context.getLiteralsSize() <= localePos || !(context.getParamValue(localePos) instanceof String)) {
-			String paramPattern = (String)context.getParamValue(patternPos);
+			String pattern = (String) paramPattern;
 			if (context.isLiteral(patternPos)) {
-				cachedFormatter = DateFormatterFactory.getFormatter(paramPattern);
+				cachedFormatter = DateFormatterFactory.getFormatter(pattern);
 			}
 			return;
 		}
 		
 		if (context.getLiteralsSize() > timeZonePos) {
 			if (context.isLiteral(patternPos) && context.isLiteral(localePos) && context.isLiteral(timeZonePos)) {
-				String paramPattern = (String) context.getParamValue(patternPos);
+				String pattern = (String) paramPattern;
 				String paramLocale = (String) context.getParamValue(localePos);
 				String paramTimeZone = (String) context.getParamValue(timeZonePos);
-				cachedFormatter = DateFormatterFactory.getFormatter(paramPattern, paramLocale, paramTimeZone);
+				cachedFormatter = DateFormatterFactory.getFormatter(pattern, paramLocale, paramTimeZone);
 			}
 		} else {
 			if (context.isLiteral(patternPos) && context.isLiteral(localePos)) {
-				String paramPattern = (String) context.getParamValue(patternPos);
+				String pattern = (String) paramPattern;
 				String paramLocale = (String) context.getParamValue(localePos);
-				cachedFormatter = DateFormatterFactory.getFormatter(paramPattern, paramLocale);
+				cachedFormatter = DateFormatterFactory.getFormatter(pattern, paramLocale);
 			}
 		}
 		

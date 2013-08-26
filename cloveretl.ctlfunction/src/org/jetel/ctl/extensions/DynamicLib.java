@@ -19,6 +19,7 @@
 package org.jetel.ctl.extensions;
 
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -26,6 +27,8 @@ import org.jetel.ctl.Stack;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.Decimal;
+import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 
 public class DynamicLib extends TLFunctionLibrary {
@@ -533,6 +536,10 @@ public class DynamicLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Returns the label of a field")
 	public static final String getFieldLabel(TLFunctionCallContext context, DataRecord record, String fieldName) {
+		DataFieldMetadata field = record.getMetadata().getField(fieldName);
+		if (field == null) {
+			throw new JetelRuntimeException(MessageFormat.format("No such field: ''{0}''", fieldName));
+		}
 		return record.getMetadata().getField(fieldName).getLabelOrName();
 	}
 

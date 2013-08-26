@@ -29,10 +29,10 @@ function integer transform() {
 	test_neg3 = bitRShift(12L,-5L);
 	test_neg4 = bitRShift(55L,-1L);
 //CLO - 1399	
-//	test_mix1 = bitRShift(122L,2);
-//	test_mix2 = bitRShift(158,2L);
-//	printErr(test_mix1);
-//	printErr(test_mix2);
+	test_mix1 = bitRShift(122L,2);
+	test_mix2 = bitRShift(158,2L);
+	printErr(test_mix1);
+	printErr(test_mix2);
 	
 	return 0;
 }

@@ -58,6 +58,7 @@ import org.jetel.component.tree.reader.XPathEvaluator;
 import org.jetel.component.tree.reader.XPathPushParser;
 import org.jetel.component.tree.reader.XPathSequenceProvider;
 import org.jetel.component.tree.reader.mappping.FieldMapping;
+import org.jetel.component.tree.reader.mappping.FieldNameEncoder;
 import org.jetel.component.tree.reader.mappping.ImplicitMappingAddingVisitor;
 import org.jetel.component.tree.reader.mappping.MalformedMappingException;
 import org.jetel.component.tree.reader.mappping.MappingContext;
@@ -94,7 +95,6 @@ import org.jetel.util.SourceIterator;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -204,6 +204,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	}
 
 	protected abstract TreeReaderParserProvider getTreeReaderParserProvider();
+	
+	protected FieldNameEncoder getFieldNameEncoder() {
+		// no encoding by default
+		return null;
+	}
 
 	protected ConfigurationStatus disallowEmptyCharsetOnDictionaryAndPort(ConfigurationStatus status) {
 		ConfigurationStatus configStatus = super.checkConfig(status);
@@ -259,7 +264,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		MappingContext rootContext = createMapping();
 		
 		if (implicitMapping) {
-			MappingVisitor implicitMappingVisitor = new ImplicitMappingAddingVisitor(getOutMetadata());
+			MappingVisitor implicitMappingVisitor = new ImplicitMappingAddingVisitor(getOutMetadata(), getFieldNameEncoder());
 			rootContext.acceptVisitor(implicitMappingVisitor);
 		}
 		
@@ -344,7 +349,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 		SourceIterator iterator = new SourceIterator(getInputPort(INPUT_PORT_INDEX), projectURL, fileURL);
 		iterator.setCharset(charset);
-		iterator.setPropertyRefResolver(graph != null ? new PropertyRefResolver(graph.getGraphProperties()) : null);
+		iterator.setPropertyRefResolver(getPropertyRefResolver());
 		iterator.setDictionary(graph.getDictionary());
 		return iterator;
 	}

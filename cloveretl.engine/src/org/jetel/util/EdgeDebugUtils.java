@@ -27,9 +27,12 @@ import org.jetel.util.string.StringUtils;
 /**
  * Collection of small utilities for file name manipulation for edge debug files.
  * 
- * Edge debug file name has following pattern: ${runId}-${edgeId}[-${index}].dbg
+ * Edge debug file name has following pattern: ${writerRunId}-${readerRunId}-${edgeId}[-${index}].dbg
  * 
- * Where "index" is used to distinguish multiplied edges connected to cluster components. 
+ * Where "index" is used to distinguish multiplied edges connected to cluster components.
+ * ${writerRunId} and ${readerRunId} differ only for remote edges - edge from RemoteEdgeDataReceiver
+ * to a component.
+ * (Note: edge from a component to a RemoteEdgeDataTransmitter never store debug data records.)
  * 
  * Naming convention: "unique edge id" is unambiguous identification of all edges even
  * for multiplied edges connected with cluster partitioners and cluster gathers. For example
@@ -47,20 +50,28 @@ import org.jetel.util.string.StringUtils;
 public class EdgeDebugUtils {
 
 	/**
-	 * Pattern for debug file name "${runId}-${edgeId}[-${index}].dbg"
+	 * Pattern for debug file name "${writerRunId}-${readerRunId}-${edgeId}[-${index}].dbg"
 	 */
-	private static final String DEBUG_FILE_NAME_PATTERN = "(\\d*)-(" + StringUtils.OBJECT_NAME_PATTERN + ")(-(\\d+))?\\.dbg";
+	private static final String DEBUG_FILE_NAME_PATTERN = "(\\d*)-(\\d*)-(" + StringUtils.OBJECT_NAME_PATTERN + ")(-(\\d+))?\\.dbg";
 	
 	private static final Pattern PATTERN = Pattern.compile(DEBUG_FILE_NAME_PATTERN);
+
+	/**
+	 * Obsolete pattern for debug file name "${runId}-${edgeId}[-${index}].dbg"
+	 */
+	private static final String OLD_DEBUG_FILE_NAME_PATTERN = "(\\d*)-(" + StringUtils.OBJECT_NAME_PATTERN + ")(-(\\d+))?\\.dbg";
+	
+	private static final Pattern OLD_PATTERN = Pattern.compile(OLD_DEBUG_FILE_NAME_PATTERN);
 	
 	/** Delimiter between edge id and index of cluster usage */
 	private static final String UNIQUE_EDGE_ID_DELIMITER = "__";
 	
 	/**
-	 * Returns edge debug file name for given runId and edgeId. EdgeId can be unique edge identifier.
+	 * Returns edge debug file name for given readerRunId, writerRunId and edgeId.
+	 * EdgeId can be unique edge identifier.
 	 */
-	public static String getDebugFileName(long runId, String edgeId) {
-		if (runId < 0 || !StringUtils.isValidObjectId(edgeId)) {
+	public static String getDebugFileName(long writerRunId, long readerRunId, String edgeId) {
+		if (writerRunId < 0 || readerRunId < 0 || !StringUtils.isValidObjectId(edgeId)) {
 			throw new JetelRuntimeException("invalid arguments");
 		}
 		if (edgeId.contains(UNIQUE_EDGE_ID_DELIMITER)) {
@@ -68,13 +79,13 @@ public class EdgeDebugUtils {
 			if (parts.length == 2) {
 				try {
 					int index = Integer.parseInt(parts[1]);
-					return runId + "-" + parts[0] + "-" + index + ".dbg";
+					return writerRunId + "-" + readerRunId + "-" + parts[0] + "-" + index + ".dbg";
 				} catch (NumberFormatException e) {
 					//DO NOTHING
 				}
 			}
 		}
-		return runId + "-" + edgeId + ".dbg";
+		return writerRunId + "-" + readerRunId + "-" + edgeId + ".dbg";
 	}
 	
 	/**
@@ -99,19 +110,19 @@ public class EdgeDebugUtils {
 	
 	/**
 	 * @return true if the given fileName is correct edge debug file name and moreover
-	 * if the given runId and edgeId is encoded in the given fileName, cluster index is ignored
+	 * if the given readerRunId and edgeId is encoded in the given fileName, cluster index is ignored
 	 */
-	public static boolean isDebugFileName(String fileName, long runId, String edgeId) {
+	public static boolean isDebugFileName(String fileName, long readerRunId, String edgeId) {
 		try {
 			ParsingResult parsingResult = parseDebugFileName(fileName);
-			return parsingResult.runtId == runId && parsingResult.edgeId.equals(edgeId);
+			return parsingResult.readerRunId == readerRunId && parsingResult.edgeId.equals(edgeId);
 		} catch (JetelRuntimeException e) {
 			return false;
 		}
 	}
 
 	/**
-	 * @return unique edgeId encoded in the given fileName (so for "1270-Edge1__2" returns "Edge1__2")
+	 * @return unique edgeId encoded in the given fileName (so for "1270-1271-Edge1-2" returns "Edge1__2")
 	 */
 	public static String extractUniqueEdgeId(String fileName) {
 		ParsingResult parsingResult = parseDebugFileName(fileName);
@@ -119,10 +130,17 @@ public class EdgeDebugUtils {
 	}
 	
 	/**
-	 * @return runId encoded in the given fileName (so for "1270-Edge1__2" returns 1270)
+	 * @return reader runId encoded in the given fileName (so for "1270-1271-Edge1-2" returns 1271)
 	 */
-	public static long extractRunId(String fileName) {
-		return parseDebugFileName(fileName).runtId;
+	public static long extractReaderRunId(String fileName) {
+		return parseDebugFileName(fileName).readerRunId;
+	}
+
+	/**
+	 * @return writer runId encoded in the given fileName (so for "1270-1271-Edge1-2" returns 1270)
+	 */
+	public static long extractWriterRunId(String fileName) {
+		return parseDebugFileName(fileName).writerRunId;
 	}
 
 	/**
@@ -139,9 +157,80 @@ public class EdgeDebugUtils {
 	}
 
 	private static ParsingResult parseDebugFileName(String fileName) {
+		try {
+			return parseDebugFileNameNew(fileName);
+		} catch (RuntimeException e) {
+			try {
+				return parseDebugFileNameObsolete(fileName);
+			} catch (RuntimeException e1) {
+				throw e;
+			}
+		}
+	}
+
+	private static ParsingResult parseDebugFileNameNew(String fileName) {
 		ParsingResult result = new ParsingResult();
 		
 		Matcher m = PATTERN.matcher(fileName);
+		if (!m.matches()) {
+			throw new JetelRuntimeException("Given filename '" + fileName + "' does not match edge debug file name pattern (${writerRunId}-${readerRunId}-${edgeId}[-${index}].dbg)");
+		}			
+
+		//parse writerRunId
+		String writerRunIdStr = m.group(1);
+		try {
+			long writerRunId = Long.parseLong(writerRunIdStr);
+			if (writerRunId < 0) {
+				throw new JetelRuntimeException("Debug filename '" + fileName + "' is illegal. Detected writerRunId '" + writerRunIdStr + "' is not valid run identifier.");
+			}
+			result.writerRunId = writerRunId;
+		} catch (NumberFormatException e) {
+			throw new JetelRuntimeException("Debug filename '" + fileName + "' is illegal. Detected writerRunId '" + writerRunIdStr + "' is not valid run identifier.", e);
+		}
+
+		//parse readerRunId
+		String readerRunIdStr = m.group(2);
+		try {
+			long readerRunId = Long.parseLong(readerRunIdStr);
+			if (readerRunId < 0) {
+				throw new JetelRuntimeException("Debug filename '" + fileName + "' is illegal. Detected readerRunId '" + readerRunIdStr + "' is not valid run identifier.");
+			}
+			result.readerRunId = readerRunId;
+		} catch (NumberFormatException e) {
+			throw new JetelRuntimeException("Debug filename '" + fileName + "' is illegal. Detected readerRunId '" + readerRunIdStr + "' is not valid run identifier.", e);
+		}
+
+		//parse edgeId
+		String edgeId = m.group(3);
+		if (StringUtils.isEmpty(edgeId)) {
+			throw new JetelRuntimeException("Given debug filename has empty edgeId.");
+		}
+		if (!StringUtils.isValidObjectId(edgeId)) {
+			throw new JetelRuntimeException("Given debug filename has edgeId '" + edgeId + "', which is not valid graph element identifier.");
+		}
+		result.edgeId = edgeId;
+		
+		//parse index
+		String indexStr = m.group(5);
+		if (indexStr != null) {
+			try {
+				int index = Integer.parseInt(indexStr);
+				if (index < 0) {
+					throw new JetelRuntimeException("Debug filename '" + fileName + "' is illegal. Detected index '" + indexStr + "' is not valid.");
+				}
+				result.index = index;
+			} catch (NumberFormatException e) {
+				throw new JetelRuntimeException("Debug filename '" + fileName + "' is illegal. Detected index '" + indexStr + "' is not valid number.", e);
+			}
+		}
+		
+		return result;
+	}
+
+	private static ParsingResult parseDebugFileNameObsolete(String fileName) {
+		ParsingResult result = new ParsingResult();
+		
+		Matcher m = OLD_PATTERN.matcher(fileName);
 		if (!m.matches()) {
 			throw new JetelRuntimeException("Given filename '" + fileName + "' does not match edge debug file name pattern (${runId}-${edgeId}[-${index}].dbg)");
 		}			
@@ -153,7 +242,8 @@ public class EdgeDebugUtils {
 			if (runId < 0) {
 				throw new JetelRuntimeException("Debug filename '" + fileName + "' is illegal. Detected runId '" + runIdStr + "' is not valid run identifier.");
 			}
-			result.runtId = runId;
+			result.writerRunId = runId;
+			result.readerRunId = runId;
 		} catch (NumberFormatException e) {
 			throw new JetelRuntimeException("Debug filename '" + fileName + "' is illegal. Detected runId '" + runIdStr + "' is not valid run identifier.", e);
 		}
@@ -182,12 +272,12 @@ public class EdgeDebugUtils {
 			}
 		}
 		
-		
 		return result;
 	}
 	
 	private static class ParsingResult {
-		public long runtId;
+		public long writerRunId;
+		public long readerRunId;
 		public String edgeId;
 		public Integer index; //can be null
 	}

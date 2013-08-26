@@ -185,9 +185,22 @@ public interface JdbcSpecific {
 	 * @return a regex pattern matching all specific SQL comments
 	 *
 	 * @version 7th October 2009
-	 * @since 7th October 2009
+	 * @deprecated Use {@link org.jetel.connection.jdbc.SQLScriptParser} to parse comments
 	 */
+	@Deprecated
 	public Pattern getCommentsPattern();
+
+	/**
+	 * Quote in string can be escaped in two ways:
+	 * 
+	 * <ul>
+	 * <li>'hello '' foobar '' world' <- standard way
+	 * <li>'hello \' foobar \' world' <- MySQL way
+	 * </ul>
+	 * 
+	 * @return true when quote character can also be escaped with backslash.
+	 */
+	public boolean isBackslashEscaping();
 
 	/**
 	 * Determines sql type by the type name. Intended to be used when the driver recognize the type as Types.CLOB (2005)

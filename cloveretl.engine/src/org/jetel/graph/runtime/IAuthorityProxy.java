@@ -415,6 +415,11 @@ public abstract class IAuthorityProxy {
 	 */
 	public abstract RemoteEdgeDataTarget getRemoteEdgeDataTarget(String edgeId) throws InterruptedException;
 
+	/**
+	 * @param edgeId id of remote edge (edge from RemoteEdgeDataReceiver or edge to RemoteEdgeDataTransmitter) 
+	 * @return runId of the opposite side of given remote edge 
+	 */
+	public abstract long getRemoteEdgeRunId(String edgeId);
 
 	/**
 	 * Returns {@link OutputStream} where the parent graph can sent data records to a sub-graph.
@@ -555,7 +560,7 @@ public abstract class IAuthorityProxy {
 	 * An exception can be thrown in case the authority decides the parameter should be resolved
 	 * but the requested value is not available or no enough permission for this operation is granted.
 	 */
-	public String getSecureParamater(String parameterName) {
+	public String getSecureParamater(String parameterName, String parameterValue) {
 		//no secure storage is implemented in default authority proxy
 		return null;
 	}

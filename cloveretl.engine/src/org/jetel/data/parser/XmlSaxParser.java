@@ -156,13 +156,18 @@ public class XmlSaxParser {
 	private NodeList mappingNodes;
 
 	public XmlSaxParser(TransformationGraph graph, Node parentComponent) {
-		this(graph, parentComponent, null);
+		this(graph, parentComponent,(String)null);
 	}
 
 	public XmlSaxParser(TransformationGraph graph, Node parentComponent, String mapping) {
 		this.graph = graph;
 		this.parentComponent = parentComponent;
 		this.mapping = mapping;
+	}
+	
+	public XmlSaxParser(TransformationGraph graph, Node parentComponent, SAXParser saxParser){
+		this(graph, parentComponent,(String)null);
+		this.parser = saxParser;
 	}
 
 	public void init() throws ComponentNotReadyException {
@@ -205,15 +210,17 @@ public class XmlSaxParser {
 			throw new ComponentNotReadyException(parentComponent.getId() + ": At least one mapping has to be defined. Absence of mapping can be caused by invalid mapping definition. Check for warnings in log above. Mapping example: <Mapping element=\"elementToMatch\" outPort=\"123\" [parentKey=\"key in parent\" generatedKey=\"new foreign key in target\"]/>");
 		}
 
-		// create new sax factory
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		factory.setNamespaceAware(true);
-		factory.setValidating(validate);
-		initXmlFeatures(factory, xmlFeatures); // TODO:
-		try {
-			parser = factory.newSAXParser();
-		} catch (Exception ex) {
-			throw new ComponentNotReadyException(ex);
+		// create new sax factory & parser (if not already passed in)
+		if (parser == null) {
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setNamespaceAware(true);
+			factory.setValidating(validate);
+			initXmlFeatures(factory, xmlFeatures); // TODO:
+			try {
+				parser = factory.newSAXParser();
+			} catch (Exception ex) {
+				throw new ComponentNotReadyException(ex);
+			}
 		}
 		saxHandler = new SAXHandler(getXmlElementMappingValues());
 		try {
@@ -228,6 +235,15 @@ public class XmlSaxParser {
 
 	public void reset() {
 
+	}
+	
+	/**
+	 * Set external SAX parser to be used for parsing XML data instead of the defaul one.
+	 * 
+	 * @param parser a SAX parser
+	 */
+	public void setParser(SAXParser parser){
+		this.parser=parser;
 	}
 
 	public void parse(InputSource inputSource) throws JetelException, SAXException {

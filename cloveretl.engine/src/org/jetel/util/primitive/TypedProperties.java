@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -51,10 +52,9 @@ public class TypedProperties extends Properties {
 	private static final long serialVersionUID = -3251111555515215464L;
 	
 	private PropertyRefResolver propertyRefResolver;
-	private PropertyRefResolver localPropertyRefResolver;
 	
     public TypedProperties() {
-        this(null, (Properties) null);
+        this(null, (GraphParameters) null);
     }
     
     /**
@@ -63,7 +63,7 @@ public class TypedProperties extends Properties {
      * @param properties
      */
     public TypedProperties(Properties properties) {
-    	this(properties, (Properties) null);
+    	this(properties, (GraphParameters) null);
     }
 
     /**
@@ -71,14 +71,14 @@ public class TypedProperties extends Properties {
      * @param graph graph is used to property reference resolving
      */
     public TypedProperties(Properties properties, TransformationGraph graph) {
-    	this(properties, graph != null ? graph.getGraphProperties() : null);
+    	this(properties, graph != null ? graph.getGraphParameters() : null);
     }
 
     /**
      * @param properties
      * @param refProperties properties to reference resolving
      */
-    public TypedProperties(Properties properties, Properties refProperties) {
+    public TypedProperties(Properties properties, GraphParameters refParameters) {
         super();
         
         //preset given properties
@@ -87,11 +87,9 @@ public class TypedProperties extends Properties {
         }
         
         //initialize propertyRefResolver
-        if(refProperties != null) {
-        	propertyRefResolver = new PropertyRefResolver(refProperties);
+        if (refParameters != null) {
+        	propertyRefResolver = new PropertyRefResolver(refParameters);
         }
-        
-        localPropertyRefResolver = new PropertyRefResolver(this); 
     }
 
     /**
@@ -196,12 +194,12 @@ public class TypedProperties extends Properties {
             }
         }
         
-        return new TypedProperties(ret, propertyRefResolver != null ? propertyRefResolver.getProperties() : null);
+        return new TypedProperties(ret, propertyRefResolver != null ? propertyRefResolver.getGraphParameters() : null);
     }
 
     private String resolvePropertyReferences(String s, RefResFlag refResFlag) {
     	if (s != null) {
-    		s = localPropertyRefResolver.resolveRef(s, refResFlag);
+    		s = getLocalPropertyRefResolver().resolveRef(s, refResFlag);
     	}
     	
     	if(propertyRefResolver != null && s != null) {
@@ -211,6 +209,10 @@ public class TypedProperties extends Properties {
     	}
     }
 
+    private PropertyRefResolver getLocalPropertyRefResolver() {
+    	return new PropertyRefResolver(this);
+    }
+    
     private String resolvePropertyReferences(String s) {
     	return resolvePropertyReferences(s, null);
     }

@@ -422,6 +422,11 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	public Pattern getCommentsPattern() {
 		return COMMENTS_PATTERN;
 	}
+	
+	@Override
+	public boolean isBackslashEscaping() {
+		return false;
+	}
 
 	@Override
 	public String sqlType2str(int sqlType) {

@@ -29,32 +29,38 @@ import org.jetel.test.CloverTestCase;
 public class EdgeDebugUtilsTest extends CloverTestCase {
 	
 	public void testGetDebugFileName() {
-		assertEquals("0-edge.dbg", EdgeDebugUtils.getDebugFileName(0, "edge"));
-		assertEquals("1234-eee.dbg", EdgeDebugUtils.getDebugFileName(1234, "eee"));
-		assertEquals("1234-eee-1.dbg", EdgeDebugUtils.getDebugFileName(1234, "eee__1"));
-		assertEquals("12-edsaee-1435.dbg", EdgeDebugUtils.getDebugFileName(12, "edsaee__1435"));
-		assertEquals("1234-eee__.dbg", EdgeDebugUtils.getDebugFileName(1234, "eee__"));
+		assertEquals("0-0-edge.dbg", EdgeDebugUtils.getDebugFileName(0, 0, "edge"));
+		assertEquals("1234-0-eee.dbg", EdgeDebugUtils.getDebugFileName(1234, 0, "eee"));
+		assertEquals("1234-32-eee-1.dbg", EdgeDebugUtils.getDebugFileName(1234, 32, "eee__1"));
+		assertEquals("12-1234-edsaee-1435.dbg", EdgeDebugUtils.getDebugFileName(12, 1234, "edsaee__1435"));
+		assertEquals("0-456-eee__.dbg", EdgeDebugUtils.getDebugFileName(0, 456, "eee__"));
 
 		try {
-			assertEquals("1234-e.e-e.dbg", EdgeDebugUtils.getDebugFileName(1234, "e.e-e"));
+			assertEquals("1234-e.e-e.dbg", EdgeDebugUtils.getDebugFileName(1234, 34, "e.e-e"));
 			assertTrue(false);
 		} catch (Exception e) {
 			
 		}
 		try {
-			assertEquals("-1-.dbg", EdgeDebugUtils.getDebugFileName(-1, ""));
+			assertEquals("", EdgeDebugUtils.getDebugFileName(-1, 123, ""));
 			assertTrue(false);
 		} catch (Exception e) {
 			
 		}
 		try {
-			assertEquals("1234-null.dbg", EdgeDebugUtils.getDebugFileName(1234, null));
+			assertEquals("", EdgeDebugUtils.getDebugFileName(23, -456, ""));
 			assertTrue(false);
 		} catch (Exception e) {
 			
 		}
 		try {
-			assertEquals("1234-eee--1.dbg", EdgeDebugUtils.getDebugFileName(1234, "eee__-1"));
+			assertEquals("", EdgeDebugUtils.getDebugFileName(1234, 23, null));
+			assertTrue(false);
+		} catch (Exception e) {
+			
+		}
+		try {
+			assertEquals("", EdgeDebugUtils.getDebugFileName(23, 1234, "eee__-1"));
 			assertTrue(false);
 		} catch (Exception e) {
 			
@@ -150,32 +156,74 @@ public class EdgeDebugUtilsTest extends CloverTestCase {
 		}
 	}
 
-	public void testExtractRunId() {
-		assertEquals(0, EdgeDebugUtils.extractRunId("0-edge.dbg"));
-		assertEquals(123, EdgeDebugUtils.extractRunId("123-eee.dbg"));
-		assertEquals(123, EdgeDebugUtils.extractRunId("123-eee-0.dbg"));
-		assertEquals(123, EdgeDebugUtils.extractRunId("123-eee-123.dbg"));
+	public void testExtractWriterRunId() {
+		assertEquals(0, EdgeDebugUtils.extractWriterRunId("0-edge.dbg"));
+		assertEquals(123, EdgeDebugUtils.extractWriterRunId("123-eee.dbg"));
+		assertEquals(123, EdgeDebugUtils.extractWriterRunId("123-eee-0.dbg"));
+		assertEquals(123, EdgeDebugUtils.extractWriterRunId("123-eee-123.dbg"));
+
+		assertEquals(0, EdgeDebugUtils.extractWriterRunId("0-0-edge.dbg"));
+		assertEquals(123, EdgeDebugUtils.extractWriterRunId("123-0-eee.dbg"));
+		assertEquals(123, EdgeDebugUtils.extractWriterRunId("123-456-eee-0.dbg"));
+		assertEquals(123, EdgeDebugUtils.extractWriterRunId("123-1-eee-123.dbg"));
 
 		try {
-			EdgeDebugUtils.extractRunId("abc");
+			EdgeDebugUtils.extractWriterRunId("abc");
 			assertTrue(false);
 		} catch (Exception e) {
 			
 		}
 		try {
-			EdgeDebugUtils.extractRunId("-abc.dbg");
+			EdgeDebugUtils.extractWriterRunId("-abc.dbg");
 			assertTrue(false);
 		} catch (Exception e) {
 			
 		}
 		try {
-			EdgeDebugUtils.extractRunId("-1-abc.dbg");
+			EdgeDebugUtils.extractWriterRunId("-1-abc.dbg");
 			assertTrue(false);
 		} catch (Exception e) {
 			
 		}
 		try {
-			EdgeDebugUtils.extractRunId("1-ab-c.dbg");
+			EdgeDebugUtils.extractWriterRunId("1-ab-c.dbg");
+			assertTrue(false);
+		} catch (Exception e) {
+			
+		}
+	}
+
+	public void testExtractReaderRunId() {
+		assertEquals(0, EdgeDebugUtils.extractReaderRunId("0-edge.dbg"));
+		assertEquals(123, EdgeDebugUtils.extractReaderRunId("123-eee.dbg"));
+		assertEquals(123, EdgeDebugUtils.extractReaderRunId("123-eee-0.dbg"));
+		assertEquals(123, EdgeDebugUtils.extractReaderRunId("123-eee-123.dbg"));
+
+		assertEquals(0, EdgeDebugUtils.extractReaderRunId("0-0-edge.dbg"));
+		assertEquals(0, EdgeDebugUtils.extractReaderRunId("123-0-eee.dbg"));
+		assertEquals(456, EdgeDebugUtils.extractReaderRunId("123-456-eee-0.dbg"));
+		assertEquals(1, EdgeDebugUtils.extractReaderRunId("123-1-eee-123.dbg"));
+
+		try {
+			EdgeDebugUtils.extractReaderRunId("abc");
+			assertTrue(false);
+		} catch (Exception e) {
+			
+		}
+		try {
+			EdgeDebugUtils.extractReaderRunId("-abc.dbg");
+			assertTrue(false);
+		} catch (Exception e) {
+			
+		}
+		try {
+			EdgeDebugUtils.extractReaderRunId("-1-abc.dbg");
+			assertTrue(false);
+		} catch (Exception e) {
+			
+		}
+		try {
+			EdgeDebugUtils.extractReaderRunId("1-ab-c.dbg");
 			assertTrue(false);
 		} catch (Exception e) {
 			

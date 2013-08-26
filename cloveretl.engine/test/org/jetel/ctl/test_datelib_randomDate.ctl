@@ -3,6 +3,9 @@ date noTimeZone2;
 date withTimeZone1;
 date withTimeZone2;
 date patt_null;
+date ret1;
+date ret2;
+
 function integer transform() {
 	setRandomSeed(0);
 	
@@ -18,5 +21,7 @@ function integer transform() {
 	withTimeZone2 = randomDate(withTimeZone2Str, withTimeZone2Str, pattern, 'en', 'GMT-3');
 	pattern = null; //if null engine uses pattern 'yyyy-MM-dd' - is that correct?
 	patt_null = randomDate('2006-10-12','2010-11-12',pattern);
+	ret1 = randomDate('2006-10-12','2010-11-12', null, null);
+	ret2 = randomDate('2006-10-12','2010-11-12', null, null, null);
 	return 0;
 }
