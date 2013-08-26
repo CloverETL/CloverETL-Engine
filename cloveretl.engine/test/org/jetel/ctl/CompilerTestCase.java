@@ -6741,7 +6741,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		cal1.set(Calendar.MILLISECOND, 0);
 		Date d = cal1.getTime();
 //		CLO-1674
-//		check("ret1", d);
+		check("ret1", d);
 		check("ret2", d);
 		
 		cal1.clear();
@@ -6755,7 +6755,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		d = cal1.getTime();
 		check("ret4", d);
 //		CLO-1674
-//		check("ret5", d);
+		check("ret5", d);
 		
 	}
 	

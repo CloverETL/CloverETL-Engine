@@ -635,7 +635,8 @@ public class DateLib extends TLFunctionLibrary {
 			int paramCount = context.getParams().length;
 			
 			// first deal with time zone, always the last parameter
-			if (context.getParams()[paramCount-1].isString()) {
+			if (context.getParams()[paramCount-1].isString()
+					|| (paramCount == 8) || (paramCount == 4)) { // not ambiguous even for null literal
 				timeZone = stack.popString();
 				paramCount--; // decrease the number of params
 			}
