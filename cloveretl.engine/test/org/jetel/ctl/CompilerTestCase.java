@@ -8543,6 +8543,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret17", "Shaco");
 	}
 	
+	public void test_utillib_toAbsolutePath(){
+		doCompile("test_utillib_toAbsolutePath");
+		assertNotNull(getVariable("ret1"));
+		assertNotNull(getVariable("ret2"));
+		check("ret3", null);
+	}
+	
 	public void test_utillib_toAbsolutePath_expect_error(){
 		try {
 			doCompile("function integer transform(){string str = toAbsolutePath(null); return 0;}","test_utillib_toAbsolutePath_expect_error");
