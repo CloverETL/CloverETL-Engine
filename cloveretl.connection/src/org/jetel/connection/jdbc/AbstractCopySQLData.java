@@ -765,6 +765,38 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		}
 	}
 
+	/**
+	 * Only used in Exasol so far.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created Aug 21, 2013
+	 */
+	public static class CopyDouble extends CopyNumeric {
+
+		/**
+		 * @param record
+		 * @param fieldSQL
+		 * @param fieldJetel
+		 */
+		public CopyDouble(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+		}
+
+		/*
+		 * Use Double SQL type instead of Numeric for null value.
+		 */
+		@Override
+		public void setSQL(PreparedStatement pStatement) throws SQLException {
+			if (!field.isNull()) {
+				pStatement.setDouble(fieldSQL, ((NumericDataField) field).getDouble());
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.DOUBLE);
+			}
+		}
+		
+	}
 
 	/**
 	 *  Description of the Class
