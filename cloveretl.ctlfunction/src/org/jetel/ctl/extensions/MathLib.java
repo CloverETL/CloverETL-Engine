@@ -523,17 +523,20 @@ public class MathLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
+			 /*
+			  * The variant bitLShift(int,int) can only be called when both arguments are int
+			  */
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 				Integer second = stack.popInt();
-				stack.push(bitLShift(context, stack.popInt(), second));
-				return;
-			} 
-			
-			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
+				stack.push(bitLShift(context,stack.popInt(), second));
+			} else {
+			    /*
+			     * In all other cases, i.e. bitLShift(int,long), bitLShift(long, int), bitLShift(long,long)
+			     * the compiler will automatically cast int to long so we have to always call bitLShift(long,long)
+			     */
 				Long second = stack.popLong();
 				stack.push(bitLShift(context, stack.popLong(), second));
-				return;
-			} 
+			}
 		} 
     }
 
@@ -555,17 +558,20 @@ public class MathLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
+			 /*
+			  * The variant bitRShift(int,int) can only be called when both arguments are int
+			  */
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 				Integer second = stack.popInt();
-				stack.push(bitRShift(context, stack.popInt(), second));
-				return;
-			} 
-			
-			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
+				stack.push(bitRShift(context,stack.popInt(), second));
+			} else {
+			    /*
+			     * In all other cases, i.e. bitRShift(int,long), bitRShift(long, int), bitRShift(long,long)
+			     * the compiler will automatically cast int to long so we have to always call bitRShift(long,long)
+			     */
 				Long second = stack.popLong();
 				stack.push(bitRShift(context, stack.popLong(), second));
-				return;
-			} 
+			}
 		} 
     }
     

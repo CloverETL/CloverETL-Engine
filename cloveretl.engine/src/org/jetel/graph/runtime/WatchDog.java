@@ -100,7 +100,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
     private boolean finishJMX = true; //whether the JMX mbean should be unregistered on the graph finish 
     private final GraphRuntimeContext runtimeContext;
     
-    static private MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+    //lazy initialised in getMBeanServer() method
+    private static MBeanServer mbs;
+    
     private ObjectName jmxObjectName;
 
     private TokenTracker tokenTracker;
@@ -156,7 +158,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	private void finishJMX() {
 		if(provideJMX) {
 			try {
-				mbs.unregisterMBean(jmxObjectName);
+				getMBeanServer().unregisterMBean(jmxObjectName);
 			} catch (Exception e) {
 				ExceptionUtils.logException(logger, "JMX error - ObjectName cannot be unregistered.", e);
 			}
@@ -191,7 +193,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     		long startTimestamp = System.currentTimeMillis();
     		
     		//print graph properties
-    		graph.getGraphProperties().print(logger, "Graph parameters:");
+    		graph.getGraphParameters().asProperties().print(logger, "Graph parameters:");
     		
     		//print out runtime context
     		logger.debug("Graph runtime context: " + graph.getRuntimeContext().getAllProperties());
@@ -399,7 +401,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
             jmxObjectName = new ObjectName( name );
             logger.debug("register MBean with name:"+name);
             // Register the  MBean
-            mbs.registerMBean(cloverJMX, jmxObjectName);
+            getMBeanServer().registerMBean(cloverJMX, jmxObjectName);
         } catch (Exception e) {
         	ExceptionUtils.logException(logger, null, e);
         }
@@ -775,5 +777,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
     	return tokenTracker;
     }
     
+    private static MBeanServer getMBeanServer() {
+    	if (mbs == null) {
+    		mbs = ManagementFactory.getPlatformMBeanServer();
+    	}
+    	return mbs;
+    }
+
 }
 

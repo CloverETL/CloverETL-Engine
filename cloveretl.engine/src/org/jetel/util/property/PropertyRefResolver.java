@@ -19,11 +19,11 @@
 package org.jetel.util.property;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -35,7 +35,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.GraphParameter;
+import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.interpreter.CTLExpressionEvaluator;
 import org.jetel.interpreter.ParseException;
 import org.jetel.util.MiscUtils;
@@ -75,7 +78,7 @@ public class PropertyRefResolver {
 	private static final Log logger = LogFactory.getLog(PropertyRefResolver.class);
 
 	/** properties used for resolving property references */
-	private final Properties properties;
+	private final GraphParameters parameters;
 
 	/** the regex pattern used to find CTL expressions */
 	private final Pattern expressionPattern = Pattern.compile(Defaults.GraphProperties.EXPRESSION_PLACEHOLDER_REGEX);
@@ -94,13 +97,16 @@ public class PropertyRefResolver {
 	/** the flag specifying whether the CTL expressions should be evaluated and the property references resolved */
 	private boolean resolve = true;
 
+	/** AuthorityProxy is used to resolve secure parameters. If proxy is null, one is taken from context. */
+	private IAuthorityProxy authorityProxy;
+	
 	/**
 	 * Constructs a <code>PropertyRefResolver</code> with empty properties. By default, the CTL expressions will
 	 * be evaluated and the property references will be resolved. This may be changed by setting the resolve flag
 	 * to <code>false</code>.
 	 */
 	public PropertyRefResolver() {
-		this.properties = new Properties();
+		this.parameters = new GraphParameters();
 	}
 
 	/**
@@ -111,7 +117,16 @@ public class PropertyRefResolver {
 	 * @param properties properties to be used for resolving references
 	 */
 	public PropertyRefResolver(Properties properties) {
-		this.properties = (properties != null) ? properties : new Properties();
+		parameters = new GraphParameters();
+		parameters.addProperties(properties);
+	}
+
+	public PropertyRefResolver(GraphParameters graphParameters) {
+		if (graphParameters != null) {
+			this.parameters = graphParameters;
+		} else {
+			this.parameters = new GraphParameters();
+		}
 	}
 
 	/**
@@ -124,40 +139,44 @@ public class PropertyRefResolver {
 	 */
 	@Deprecated
 	public PropertyRefResolver(TransformationGraph graph) {
-		this.properties = (graph != null) ? graph.getGraphProperties() : new Properties();
+		this(graph.getGraphParameters());
+	}
+	
+	/**
+	 * Sets authority proxy, which will be used to decrypt secure parameters.
+	 * If no proxy is set, {@link ContextProvider#getAuthorityProxy()} is used instead.
+	 * @param authorityProxy
+	 */
+	public void setAuthorityProxy(IAuthorityProxy authorityProxy) {
+		this.authorityProxy = authorityProxy;
+	}
+	
+	private IAuthorityProxy getAuthorityProxy() {
+		return (authorityProxy != null) ? authorityProxy : ContextProvider.getAuthorityProxy();
 	}
 	
 	/**
 	 * @return properties used for resolving property references
 	 */
 	public Properties getProperties() {
-		return properties;
+		return parameters.asProperties();
 	}
 
+	public GraphParameters getGraphParameters() {
+		return parameters;
+	}
+	
 	/**
 	 * Adds the given properties (key=value pairs) to the internal set of properties.
 	 *
 	 * @param properties properties to be added
 	 */
 	public void addProperties(Properties properties) {
-		this.properties.putAll(properties);
+		this.parameters.addProperties(properties);
 	}
 
-    /**
-	 * Adds the given map of properties (key=value pairs) to the internal set of properties.
-	 *
-	 * @param properties a map of properties to be added
-     */
-    public void addProperties(Map<Object, Object> properties){
-        this.properties.putAll(properties);
-    }
-    
     public void addProperty(String propertyName, String propertyValue) {
-    	String valueTmp = this.properties.getProperty(propertyName);
-    	if(valueTmp == null) {
-    		this.properties.setProperty(propertyName, propertyValue);
-    	}
-    	
+    	this.parameters.addGraphParameter(propertyName, propertyValue);
     }
 
 	/**
@@ -228,12 +247,7 @@ public class PropertyRefResolver {
 		}
 
 		StringBuilder valueBuffer = new StringBuilder(value);
-		try {
-			resolveRef(valueBuffer, flag);
-		} catch (JetelRuntimeException e) {
-			errorMessages.add(e.getMessage() + " " + value); //$NON-NLS-1$
-			logger.warn(e.getMessage() + " " + value); //$NON-NLS-1$
-		}
+		resolveRef(valueBuffer, flag);
 		
 		return valueBuffer.toString();
 	}
@@ -368,42 +382,46 @@ public class PropertyRefResolver {
 			String reference = propertyMatcher.group(1);
 			String resolvedReference = null;
 			
-			//should be secure parameters resolved?
-			if (flag.resolveSecureParameters()) {
-				//try to load parameter from secure storage
-				resolvedReference = ContextProvider.getAuthorityProxy().getSecureParamater(reference);
-			} else {
-//this behaviour is turned off for now, wo we really want this?
-//				if (flag.forceSecureParameters()) {
-//					//in case the parameter is secured, but the secure parameters should not be resolved by the flag
-//					//an exception is thrown to inform user about this situation ASAP
-//					if (ContextProvider.getAuthorityProxy().getSecureParamater(reference) != null) {
-//						throw new JetelRuntimeException("Secure parameter '" + reference + "' cannot be resolved in this attribute.");
+			if (parameters.hasGraphParameter(reference)) {
+				GraphParameter param = parameters.getGraphParameter(reference);
+				if (param.isSecure()) {
+					if (flag.resolveSecureParameters()) {
+						resolvedReference = getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
+					} else {
+						throw new JetelRuntimeException("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used only in dedicated locations.");
+					}
+				} else {
+					resolvedReference = parameters.getGraphParameter(reference).getValue();
+				}
+
+//this behaviour is turned off for now, do we really want this?
+//					if (flag.forceSecureParameters()) {
+//						//in case the parameter is secured, but the secure parameters should not be resolved by the flag
+//						//an exception is thrown to inform user about this situation ASAP
+//						if (ContextProvider.getAuthorityProxy().getSecureParamater(reference) != null) {
+//							throw new JetelRuntimeException("Secure parameter '" + reference + "' cannot be resolved in this attribute.");
+//						}
 //					}
 //				}
-			}
-			
-			if (resolvedReference == null) {
-				resolvedReference = properties.getProperty(reference);
-			}
-			
-			if (resolvedReference == null) {
-				resolvedReference = MiscUtils.getEnvSafe(reference);
-			}
-			
-			// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
-			if (resolvedReference == null) {
-				String preferredReference = reference.replace('_', '.');
-				resolvedReference = System.getProperty(preferredReference);
+			} else {
 				if (resolvedReference == null) {
-					resolvedReference = System.getProperty(reference);
-				} else {
-					if (!reference.equals(preferredReference) && System.getProperty(reference) != null) {
-						logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+					resolvedReference = MiscUtils.getEnvSafe(reference);
+				}
+				
+				// find properties with '.' and '_' among system properties. If both found, use '.' for backwards compatibility
+				if (resolvedReference == null) {
+					String preferredReference = reference.replace('_', '.');
+					resolvedReference = System.getProperty(preferredReference);
+					if (resolvedReference == null) {
+						resolvedReference = System.getProperty(reference);
+					} else {
+						if (!reference.equals(preferredReference) && System.getProperty(reference) != null) {
+							logger.warn(new String(MessageFormat.format(PropertyMessages.getString("PropertyRefResolver_preferred_substitution_warning"), reference))); //$NON-NLS-1$
+						}
 					}
 				}
 			}
-
+			
 			if (resolvedReference != null) {
 				// evaluate the CTL expression that might be present in the property
 				StringBuilder evaluatedReference = new StringBuilder(resolvedReference);
@@ -485,7 +503,28 @@ public class PropertyRefResolver {
 	 * @return <code>true</code> if value contains reference to at least one property.
 	 */
 	public static boolean containsProperty(String value){
-		return propertyPattern.matcher(value).find();
+		if (!StringUtils.isEmpty(value)) {
+			return propertyPattern.matcher(value).find();
+		} else {
+			return false;
+		}
 	}
+	
+	/**
+	 * @return list of unresolved parameter references in the given string
+	 */
+	public static List<String> getUnresolvedProperties(String value){
+		if (!StringUtils.isEmpty(value)) {
+			List<String> result = new ArrayList<String>();
+			Matcher matcher = propertyPattern.matcher(value);
+			while (matcher.find()) {
+				result.add(matcher.group(1));
+			}
+			return result;
+		} else {
+			return Collections.emptyList();
+		}
+	}
+
 }
 

@@ -66,7 +66,7 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 	 * @throws ComponentNotReadyException if the initialization fails
 	 */
 	@CTLEntryPoint(name = RecordTransformTL.INIT_FUNCTION_NAME, required = false)
-	protected boolean initDelegate() throws ComponentNotReadyException {
+	protected Boolean initDelegate() throws ComponentNotReadyException {
 		// does nothing and succeeds by default, may be overridden by generated transform classes
 		return true;
 	}
@@ -101,7 +101,7 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 	 * @throws TransformException if an error occurred
 	 */
 	@CTLEntryPoint(name = "transform", required = true)
-	protected abstract int transformDelegate() throws ComponentNotReadyException, TransformException;
+	protected abstract Integer transformDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
 	public int transformOnError(Exception exception, DataRecord[] sources, DataRecord[] targets)
@@ -142,7 +142,7 @@ public abstract class CTLRecordTransform extends CTLAbstractTransform implements
 	 */
 	@CTLEntryPoint(name = RecordTransformTL.TRANSFORM_ON_ERROR_FUNCTION_NAME, parameterNames = {
 			RecordTransformTL.ERROR_MESSAGE_PARAM_NAME, RecordTransformTL.STACK_TRACE_PARAM_NAME }, required = false)
-	protected int transformOnErrorDelegate(String errorMessage, String stackTrace)
+	protected Integer transformOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
 	}

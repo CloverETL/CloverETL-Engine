@@ -32,6 +32,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -135,11 +136,20 @@ public interface JdbcSpecific {
 	
 	/**
 	 * This method defines a conversion table from a sql type to a clover field type.	 * 
+	 * @param dbMetadata
+	 * @param sqlIndex
+	 * @return
+	 * @throws SQLException
+	 */
+	public DataFieldType sqlType2jetel(DbMetadata dbMetadata, int sqlIndex) throws SQLException;
+	
+	/**
+	 * This method defines a conversion table from a sql type to a clover field type.	 * 
 	 * @param sqlType
 	 * @param sqlPrecision
 	 * @return
 	 */
-	public char sqlType2jetel(int sqlType, int sqlPrecision);
+	public DataFieldType sqlType2jetel(int sqlType, int sqlPrecision);
 	
 	/**
 	 * This method defines a conversion table from a sql type to a clover field type.	 * 

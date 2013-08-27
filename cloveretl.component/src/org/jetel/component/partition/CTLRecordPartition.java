@@ -70,7 +70,7 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 	 */
 	@CTLEntryPoint(name = PartitionTL.INIT_FUNCTION_NAME, parameterNames = {
 			PartitionTL.PARTITION_COUNT_PARAM_NAME }, required = false)
-	protected void initDelegate(int partitionCount) throws ComponentNotReadyException {
+	protected void initDelegate(Integer partitionCount) throws ComponentNotReadyException {
 		// does nothing by default, may be overridden by generated transform classes
 	}
 
@@ -107,7 +107,7 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 	 * @throws TransformException if an error occurred
 	 */
 	@CTLEntryPoint(name = PartitionTL.GET_OUTPUT_PORT_FUNCTION_NAME, required = true)
-	protected abstract int getOutputPortDelegate() throws ComponentNotReadyException, TransformException;
+	protected abstract Integer getOutputPortDelegate() throws ComponentNotReadyException, TransformException;
 
 	@Override
 	public final int getOutputPortOnError(Exception exception, DataRecord record) throws TransformException {
@@ -151,7 +151,7 @@ public abstract class CTLRecordPartition extends CTLAbstractTransform implements
 	 */
 	@CTLEntryPoint(name = PartitionTL.GET_OUTPUT_PORT_ON_ERROR_FUNCTION_NAME, parameterNames = {
 			PartitionTL.ERROR_MESSAGE_PARAM_NAME, PartitionTL.STACK_TRACE_PARAM_NAME }, required = false)
-	protected int getOutputPortOnErrorDelegate(String errorMessage, String stackTrace)
+	protected Integer getOutputPortOnErrorDelegate(String errorMessage, String stackTrace)
 			throws ComponentNotReadyException, TransformException {
 		throw new UnsupportedOperationException();
 	}

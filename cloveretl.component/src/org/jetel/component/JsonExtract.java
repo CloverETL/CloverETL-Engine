@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.xml.parsers.SAXParser;
@@ -73,8 +72,9 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * <h3>JSONExtract Component</h3>
  * 
- * <!-- Provides the logic to parse a xml file and filter to different ports based on a matching element. The element
- * and all children will be turned into a Data record -->
+ * <!-- Provides the logic to parse a JSON file and filter to different ports based on a matching element. The element
+ * and all children will be turned into a Data record. JSONExtract is heavily based on XMLExtract as JSON data are essentially converted to XML and
+ * then processed-->
  * 
  * <table border="1">
  * <th>Component:</th>
@@ -91,8 +91,9 @@ import org.xml.sax.helpers.DefaultHandler;
  * <tr>
  * <td>
  * <h4><i>Description:</i></h4></td>
- * <td>Provides the logic to parse a xml file and filter to different ports based on a matching element. The element and
- * all children will be turned into a Data record.</td>
+ * <td>Provides the logic to parse a JSON file and filter to different ports based on a matching element. The element and
+ * all children will be turned into a Data record. This component is heavily basedon XMLExtract component as JSON data are esentially converted
+ * to XML first and then parsed.</td>
  * </tr>
  * <tr>
  * <td>
@@ -122,31 +123,31 @@ import org.xml.sax.helpers.DefaultHandler;
  * <td>component identification</td>
  * <tr>
  * <td><b>sourceUri</b></td>
- * <td>location of source XML data to process</td>
+ * <td>location of source JSON data to process</td>
  * <tr>
  * <td><b>useNestedNodes</b></td>
- * <td><b>true</b> if nested unmapped XML elements will be used as data source; <b>false</b> if will be ignored</td>
+ * <td><b>true</b> if nested unmapped JSON elements will be used as data source; <b>false</b> if will be ignored</td>
  * <tr>
  * <td><b>mapping</b></td>
  * <td>&lt;mapping&gt;</td>
  * </tr>
  * </table>
- * 
- * Provides the logic to parse a xml file and filter to different ports based on a matching element. The element and all
+ * <br>
+ * Provides the logic to parse a JSON file and filter to different ports based on a matching element. The element and all
  * children will be turned into a Data record.<br>
  * Mapping attribute contains mapping hierarchy in XML form. DTD of mapping:<br>
- * <code>
+ * <code><pre>
  * &lt;!ELEMENT Mappings (Mapping*)&gt;<br>
  * 
  * &lt;!ELEMENT Mapping (Mapping*)&gt;<br>
  * &lt;!ATTLIST Mapping<br>
  * &nbsp;element NMTOKEN #REQUIRED<br>      
- * &nbsp;&nbsp;//name of binded XML element<br>  
+ * &nbsp;&nbsp;//name of binded JSON element<br>  
  * &nbsp;outPort NMTOKEN #IMPLIED<br>      
- * &nbsp;&nbsp;//name of output port for this mapped XML element<br>
+ * &nbsp;&nbsp;//name of output port for this mapped JSON element<br>
  * &nbsp;parentKey NMTOKEN #IMPLIED<br>     
  * &nbsp;&nbsp;//field name of parent record, which is copied into field of the current record<br>
- * &nbsp;&nbsp;//passed in generatedKey atrribute<br> 
+ * &nbsp;&nbsp;//passed in generatedKey attribute<br> 
  * &nbsp;generatedKey NMTOKEN #IMPLIED<br>  
  * &nbsp;&nbsp;//see parentKey comment<br>
  * &nbsp;sequenceField NMTOKEN #IMPLIED<br> 
@@ -154,89 +155,72 @@ import org.xml.sax.helpers.DefaultHandler;
  * &nbsp;&nbsp;//(can be used to generate new key field for relative records)<br> 
  * &nbsp;sequenceId NMTOKEN #IMPLIED<br>    
  * &nbsp;&nbsp;//we can supply sequence id used to fill a field defined in a sequenceField attribute<br>
- * &nbsp;&nbsp;//(if this attribute is omited, non-persistent PrimitiveSequence will be used)<br>
+ * &nbsp;&nbsp;//(if this attribute is omitted, non-persistent PrimitiveSequence will be used)<br>
  * &nbsp;xmlFields NMTOKEN #IMPLIED<br>     
- * &nbsp;&nbsp;//comma separeted xml element names, which will be mapped on appropriate record fields<br>
+ * &nbsp;&nbsp;//comma separated JSON element names, which will be mapped on appropriate record fields<br>
  * &nbsp;&nbsp;//defined in cloverFields attribute<br>
  * &nbsp;cloverFields NMTOKEN #IMPLIED<br>  
  * &nbsp;&nbsp;//see xmlFields comment<br>
- * &gt;<br>
- * </code> All nested XML elements will be recognized as record fields and mapped by name (except elements serviced by
- * other nested Mapping elements), if you prefere other mapping xml fields and clover fields than 'by name', use
+ * &gt;</pre>
+ * </code><p>All nested JSON elements will be recognized as record fields and mapped by name (except elements serviced by
+ * other nested Mapping elements), if you prefer other mapping JSON fields and clover fields than 'by name', use
  * xmlFields and cloveFields attributes to setup custom fields mapping. 'useNestedNodes' component attribute defines if
- * also child of nested xml elements will be mapped on the current clover record. Record from nested Mapping element
+ * also child of nested JSON elements will be mapped on the current clover record. Record from nested Mapping element
  * could be connected via key fields with parent record produced by parent Mapping element (see parentKey and
  * generatedKey attribute notes). In case that fields are unsuitable for key composing, extractor could fill one or more
- * fields with values comming from sequence (see sequenceField and sequenceId attribute).
+ * fields with values coming from sequence (see sequenceField and sequenceId attribute).</p>
  * 
- * For example: given an xml file:<br>
- * <code>
- * &lt;myXML&gt; <br>
- * &nbsp;&lt;phrase&gt; <br>
- * &nbsp;&nbsp;&lt;text&gt;hello&lt;/text&gt; <br>
- * &nbsp;&nbsp;&lt;localization&gt; <br>
- * &nbsp;&nbsp;&nbsp;&lt;chinese&gt;how allo yee dew ying&lt;/chinese&gt; <br>
- * &nbsp;&nbsp;&nbsp;&lt;german&gt;wie gehts&lt;/german&gt; <br>
- * &nbsp;&nbsp;&lt;/localization&gt; <br>
- * &nbsp;&lt;/phrase&gt; <br>
- * &nbsp;&lt;locations&gt; <br>
- * &nbsp;&nbsp;&lt;location&gt; <br>
- * &nbsp;&nbsp;&nbsp;&lt;name&gt;Stormwind&lt;/name&gt; <br>
- * &nbsp;&nbsp;&nbsp;&lt;description&gt;Beautiful European architecture with a scenic canal system.&lt;/description&gt; <br>
- * &nbsp;&nbsp;&lt;/location&gt; <br>
- * &nbsp;&nbsp;&lt;location&gt; <br>
- * &nbsp;&nbsp;&nbsp;&lt;name&gt;Ironforge&lt;/name&gt; <br>
- * &nbsp;&nbsp;&nbsp;&lt;description&gt;Economic capital of the region with a high population density.&lt;/description&gt; <br>
- * &nbsp;&nbsp;&lt;/location&gt; <br>
- * &nbsp;&lt;/locations&gt; <br>
- * &nbsp;&lt;someUselessElement&gt;...&lt;/someUselessElement&gt; <br>
- * &nbsp;&lt;someOtherUselessElement/&gt; <br>
- * &nbsp;&lt;phrase&gt; <br>
- * &nbsp;&nbsp;&lt;text&gt;bye&lt;/text&gt; <br>
- * &nbsp;&nbsp;&lt;localization&gt; <br>
- * &nbsp;&nbsp;&nbsp;&lt;chinese&gt;she yee lai ta&lt;/chinese&gt; <br>
- * &nbsp;&nbsp;&nbsp;&lt;german&gt;aufweidersehen&lt;/german&gt; <br>
- * &nbsp;&nbsp;&lt;/localization&gt; <br>
- * &nbsp;&lt;/phrase&gt; <br>
- * &lt;/myXML&gt; <br>
- * </code> Suppose we want to pull out "phrase" as one datarecord, "localization" as another datarecord, and "location"
- * as the final datarecord and ignore the useless elements. First we define the metadata for the records. Then create
- * the following mapping in the graph: <br>
- * <code>
- * &lt;node id="myId" type="com.lrn.etl.job.component.XMLExtract"&gt; <br>
- * &nbsp;&lt;attr name="mapping"&gt;<br>
- * &nbsp;&nbsp;&lt;Mapping element="phrase" outPort="0" sequenceField="id"&gt;<br>
- * &nbsp;&nbsp;&nbsp;&lt;Mapping element="localization" outPort="1" parentKey="id" generatedKey="parent_id"/&gt;<br>
- * &nbsp;&nbsp;&lt;/Mapping&gt; <br>
- * &nbsp;&nbsp;&lt;Mapping element="location" outPort="2"/&gt;<br>
- * &nbsp;&lt;/attr&gt;<br>
- * &lt;/node&gt;<br>
- * </code> Port 0 will get the DataRecords:<br>
- * 1) id=1, text=hello<br>
- * 2) id=2, text=bye<br>
+ * For example: given a JSON file:<br>
+ * <code><pre>
+ * {
+ *   "firstName": "John",
+ *   "lastName": "Smith",
+ *   "age": 25,
+ *   "address": {
+ *       "streetAddress": "21 2nd Street",
+ *       "city": "New York",
+ *       "state": "NY",
+ *       "postalCode": 10021
+ *   },
+ *   "phoneNumbers": [
+ *       {
+ *           "type": "home",
+ *           "number": "212 555-1234"
+ *       },
+ *       {
+ *           "type": "fax",
+ *           "number": "646 555-4567"
+ *       }
+ *   ]
+ * }
+ * </pre></code> <p>Suppose we want to pull out a person data (first name, last name, age, address) as one datarecord, "phoneNumbers" as another datarecord(s) with
+ * relation to parent - the primary record carrying person's identity.<br>
+ * First we define metadata for the records. Then create
+ * the following mapping in the graph:</p> <br>
+ * <code><pre>
+ * &lt;Mappings&gt;<br>
+ *	&lt;Mapping element=&quot;json_object&quot; outPort=&quot;0&quot;<br>
+ *			xmlFields=&quot;{}age;{}firstName;{}lastName&quot;<br>
+ *			cloverFields=&quot;age;firstName;lastName&quot;&gt;<br>
+ *		&lt;Mapping element=&quot;address&quot; useParentRecord=&quot;true&quot;<br>
+ *				xmlFields=&quot;{}city;{}postalCode;{}state;{}streetAddress&quot;<br>
+ *				cloverFields=&quot;city;postalCode;state;streetAddress&quot;&gt;<br>
+ *		&lt;/Mapping&gt;<br>
+ *		&lt;Mapping element=&quot;phoneNumbers&quot; outPort=&quot;1&quot; parentKey=&quot;firstName;lastName&quot; generatedKey=&quot;firstName;lastName&quot;<br>
+ * 				xmlFields=&quot;{}number;{}type&quot;<br>
+ *				cloverFields=&quot;number;type&quot;&gt;<br>
+ *		&lt;/Mapping&gt;<br>
+ *	&lt;/Mapping&gt;<br>
+ * &lt;/Mappings&gt;<br>
+ *
+ * </pre></code> Port 0 will get the DataRecords:<br>
+ * <code><pre>John;Smith;25;21 2nd Street;New York;NY;10021</pre></code>
  * Port 1 will get:<br>
- * 1) parent_id=1, chinese=how allo yee dew ying, german=wie gehts<br>
- * 2) parent_id=2, chinese=she yee lai ta, german=aufwiedersehen<br>
- * Port 2 will get:<br>
- * 1) name=Stormwind, description=Beautiful European architecture with a scenic canal system.<br>
- * 2) name=Ironforge, description=Economic capital of the region with a high population density.<br>
+ * <code><pre>home;212 555-1234;John;Smith;
+ *fax;646 555-4567;John;Smith;</pre></code>
  * <hr>
- * Issue: Enclosing elements having values are not supported.<br>
- * i.e. <br>
- * <code>
- *   &lt;x&gt; <br>
- *     &lt;y&gt;z&lt;/y&gt;<br>
- *     xValue<br>
- *   &lt;/x&gt;<br>
- * </code> there will be no column x with value xValue.<br>
- * Issue: Namespaces are not considered.<br>
- * i.e. <br>
- * <code>
- *   &lt;ns1:x&gt;xValue&lt;/ns1:x&gt;<br>
- *   &lt;ns2:x&gt;xValue2&lt;/ns2:x&gt;<br>
- * </code> will be considered the same x.
- * 
- * @author KKou
+ * @author dpavlis (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
  */
 public class JsonExtract extends Node {
 
@@ -253,10 +237,7 @@ public class JsonExtract extends Node {
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
 	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 	private static final String XML_TRIM_ATTRIBUTE = "trim";
-	private static final String XML_VALIDATE_ATTRIBUTE = "validate";
-	private static final String XML_XML_FEATURES_ATTRIBUTE = "xmlFeatures";
-	public static final String XML_NAMESPACE_BINDINGS_ATTRIBUTE = "namespaceBindings";
-
+	
 	// from which input port to read
 	private final static int INPUT_PORT = 0;
 
@@ -323,27 +304,6 @@ public class JsonExtract extends Node {
 																								// exception
 		}
 
-		// set namespace bindings attribute
-		if (xattribs.exists(XML_NAMESPACE_BINDINGS_ATTRIBUTE)) {
-			Properties props = null;
-			try {
-				props = new Properties();
-				final String content = xattribs.getString(XML_NAMESPACE_BINDINGS_ATTRIBUTE, null);
-				if (content != null) {
-					props.load(new StringReader(content));
-				}
-			} catch (IOException e) {
-				throw new XMLConfigurationException("Unable to initialize namespace bindings", e);
-			}
-
-			final HashMap<String, String> namespaceBindings = new HashMap<String, String>();
-			for (String name : props.stringPropertyNames()) {
-				namespaceBindings.put(name, props.getProperty(name));
-			}
-
-			extract.setNamespaceBindings(namespaceBindings);
-		}
-
 		// set a skip row attribute
 		if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)) {
 			extract.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
@@ -354,12 +314,6 @@ public class JsonExtract extends Node {
 			extract.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
 		}
 
-		if (xattribs.exists(XML_XML_FEATURES_ATTRIBUTE)) {
-			extract.setXmlFeatures(xattribs.getString(XML_XML_FEATURES_ATTRIBUTE));
-		}
-		if (xattribs.exists(XML_VALIDATE_ATTRIBUTE)) {
-			extract.setValidate(xattribs.getBoolean(XML_VALIDATE_ATTRIBUTE));
-		}
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			extract.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}
@@ -406,7 +360,6 @@ public class JsonExtract extends Node {
 				throw new ComponentNotReadyException(e);
 			}
 		}
-		parser.setParser(new JsonSaxParser());
 	}
 
 	private void createReadableChannelIterator() throws ComponentNotReadyException {
@@ -538,7 +491,7 @@ public class JsonExtract extends Node {
 				}
 			}
 		} catch (Exception e) {
-			status.add(new ConfigurationProblem("Can't parse XML mapping schema. Reason: " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL));
+			status.add(new ConfigurationProblem("Can't parse JSON mapping schema. Reason: " + ExceptionUtils.getMessage(e), Severity.ERROR, this, Priority.NORMAL));
 		} finally {
 			parser.reset();
 		}
@@ -605,7 +558,7 @@ public class JsonExtract extends Node {
 	}
 
 	private boolean isXMLAttribute(String attribute) {
-		return attribute.equals(XmlSaxParser.XML_ELEMENT) || attribute.equals(XmlSaxParser.XML_OUTPORT) || attribute.equals(XmlSaxParser.XML_PARENTKEY) || attribute.equals(XmlSaxParser.XML_GENERATEDKEY) || attribute.equals(XmlSaxParser.XML_XMLFIELDS) || attribute.equals(XmlSaxParser.XML_CLOVERFIELDS) || attribute.equals(XmlSaxParser.XML_SEQUENCEFIELD) || attribute.equals(XmlSaxParser.XML_SEQUENCEID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_ID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_REF) || attribute.equals(XmlSaxParser.XML_TEMPLATE_DEPTH) || attribute.equals(XML_SKIP_ROWS_ATTRIBUTE) || attribute.equals(XML_NUMRECORDS_ATTRIBUTE) || attribute.equals(XML_TRIM_ATTRIBUTE) || attribute.equals(XML_VALIDATE_ATTRIBUTE) || attribute.equals(XML_XML_FEATURES_ATTRIBUTE) || attribute.equals(XmlSaxParser.XML_USE_PARENT_RECORD) 
+		return attribute.equals(XmlSaxParser.XML_ELEMENT) || attribute.equals(XmlSaxParser.XML_OUTPORT) || attribute.equals(XmlSaxParser.XML_PARENTKEY) || attribute.equals(XmlSaxParser.XML_GENERATEDKEY) || attribute.equals(XmlSaxParser.XML_XMLFIELDS) || attribute.equals(XmlSaxParser.XML_CLOVERFIELDS) || attribute.equals(XmlSaxParser.XML_SEQUENCEFIELD) || attribute.equals(XmlSaxParser.XML_SEQUENCEID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_ID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_REF) || attribute.equals(XmlSaxParser.XML_TEMPLATE_DEPTH) || attribute.equals(XML_SKIP_ROWS_ATTRIBUTE) || attribute.equals(XML_NUMRECORDS_ATTRIBUTE) || attribute.equals(XML_TRIM_ATTRIBUTE) || attribute.equals(XmlSaxParser.XML_USE_PARENT_RECORD) 
 				|| attribute.equals(XmlSaxParser.XML_IMPLICIT)|| attribute.equals(XmlSaxParser.XML_INPUTFIELD)|| attribute.equals(XmlSaxParser.XML_OUTPUTFIELD);
 	}
 

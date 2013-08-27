@@ -224,7 +224,7 @@ public class RandomLib extends TLFunctionLibrary {
     }	
 
 	@TLFunctionAnnotation("Generates a random string.")
-	public static String randomString(TLFunctionCallContext context, int minLength, int maxLength) {
+	public static String randomString(TLFunctionCallContext context, Integer minLength, Integer maxLength) {
 		return ((TLDataGeneratorCache) context.getCache()).getDataGenerator().nextString(minLength, maxLength);
 	}
 
@@ -338,7 +338,7 @@ public class RandomLib extends TLFunctionLibrary {
     }	
 
 	@TLFunctionAnnotation("Changes seed of random.")
-	public static void setRandomSeed(TLFunctionCallContext context, long randomSeed) {
+	public static void setRandomSeed(TLFunctionCallContext context, Long randomSeed) {
 		((TLDataGeneratorCache) context.getCache()).getDataGenerator().setSeed(randomSeed);
 	}
 

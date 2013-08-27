@@ -237,6 +237,11 @@ public class XmlSaxParser {
 
 	}
 	
+	/**
+	 * Set external SAX parser to be used for parsing XML data instead of the defaul one.
+	 * 
+	 * @param parser a SAX parser
+	 */
 	public void setParser(SAXParser parser){
 		this.parser=parser;
 	}

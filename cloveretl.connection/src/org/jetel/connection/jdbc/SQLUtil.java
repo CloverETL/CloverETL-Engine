@@ -37,8 +37,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.jdbc.specific.impl.DefaultJdbcSpecific;
 import org.jetel.data.Defaults;
+import org.jetel.database.sql.DbMetadata;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -164,47 +166,45 @@ public class SQLUtil {
 		DataFieldMetadata fieldMetadata = new DataFieldMetadata(name, null);
 		fieldMetadata.setLabel(name);
 		
-		int type = dbMetadata.getType(sqlIndex);
-		char cloverType;
-		int precision = dbMetadata.getPrecision(sqlIndex);
+		DataFieldType cloverType = DataFieldType.UNKNOWN;
 		try {
-			cloverType = jdbcSpecific.sqlType2jetel(type, precision);
+			cloverType = jdbcSpecific.sqlType2jetel(dbMetadata, sqlIndex);
 		} catch (IllegalArgumentException e) {
 			if (failIfUnknownType) throw e;
-			cloverType = DataFieldMetadata.UNKNOWN_FIELD;
 		}
 		
 		//set length and scale for decimal field
-		if (cloverType == DataFieldMetadata.DECIMAL_FIELD) {
+		if (cloverType == DataFieldType.DECIMAL) {
 			int scale = 0;
 			int length = 0;
 			try {
 				scale = dbMetadata.getScale(sqlIndex);
 				if (scale < 0) {
-					cloverType = DataFieldMetadata.NUMERIC_FIELD;
-				}else{
+					cloverType = DataFieldType.NUMBER;
+				} else {
 					fieldMetadata.setProperty(DataFieldMetadata.SCALE_ATTR, Integer.toString(scale));
 				}
 			} catch (SQLException e) {
-				cloverType = DataFieldMetadata.NUMERIC_FIELD;
+				cloverType = DataFieldType.NUMBER;
 			}
 			try {
 				length = dbMetadata.getPrecision(sqlIndex);
 				if (length <= scale) {
-					cloverType = DataFieldMetadata.NUMERIC_FIELD;
-				}else{
+					cloverType = DataFieldType.NUMBER;
+				} else {
 					fieldMetadata.setProperty(DataFieldMetadata.LENGTH_ATTR, Integer.toString(length));				
 				}
 			} catch (SQLException e) {
-				cloverType = DataFieldMetadata.NUMERIC_FIELD;
+				cloverType = DataFieldType.NUMBER;
 			}
 			
 		}
 		
-		fieldMetadata.setType(cloverType);
+		fieldMetadata.setDataType(cloverType);
 		
 		//for Date Data Field set proper format
-		switch (type) {
+		int sqlType = dbMetadata.getType(sqlIndex);
+		switch (sqlType) {
 		case Types.DATE:
 			fieldMetadata.setFormatStr(Defaults.DEFAULT_DATE_FORMAT);
 			break;
@@ -235,7 +235,7 @@ public class SQLUtil {
 		for (int i = 0; i < recordMetadata.getFields().length; i++) {
 			boolean limitedField = true;
 			int precision = 0;
-			char cloverType = 0;
+			DataFieldType cloverType = null;
 			try {
 				limitedField = true;
 				int type = rsMetaData.getColumnType(i + 1);
@@ -243,7 +243,7 @@ public class SQLUtil {
 				try {
 					cloverType = jdbcSpecific.sqlType2jetel(type, precision);
 				} catch (IllegalArgumentException e) {
-					cloverType = DataFieldMetadata.UNKNOWN_FIELD;
+					cloverType = DataFieldType.UNKNOWN;
 				}
 				rsColumns.next();
 				if (isUnlimitedType(rsColumns.getString("TYPE_NAME"))) {
@@ -251,7 +251,7 @@ public class SQLUtil {
 				}
 			} catch (Exception e) {
 			} finally {
-				if (limitedField && cloverType != DataFieldMetadata.DECIMAL_FIELD) {
+				if (limitedField && cloverType != DataFieldType.DECIMAL) {
 					// Serves as default size in case user decides to switch field to fixed size (see issue #3938)
 					if (precision > 0) {
 						recordMetadata.getFields()[i].setProperty(DataFieldMetadata.SIZE_ATTR, Integer.toString(precision));
@@ -773,21 +773,6 @@ public class SQLUtil {
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * The aim of this interface together with delegating classes {@link ResultSetMetaData} and
-	 * {@link ParameterDbMetadata} is to have common interface for ResultSetMetaData and ParameterMetaData classes.
-	 */
-	private interface DbMetadata {
-		/** Retrieves the designated SQL type of column/parameter */
-		public int getType(int index) throws SQLException;
-		/** Gets the designated column/parameter's number of digits to right of the decimal point */
-		public int getScale(int index) throws SQLException;
-		/** Get the designated column/parameter's specified column size. */
-		public int getPrecision(int index) throws SQLException;
-		/** Indicates the nullability of values in the designated column/parameter */
-		public int isNullable(int index) throws SQLException;
 	}
 	
 	/** Delegates methods to ResultSetMetaData instance. */
