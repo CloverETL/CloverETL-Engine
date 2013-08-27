@@ -29,6 +29,7 @@ import org.jetel.database.sql.DBConnection;
 import org.jetel.database.sql.SqlConnection;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 
 /**
  * @author "Jan Kucera" (info@cloveretl.com)
@@ -93,13 +94,13 @@ public class FirebirdSpecific extends AbstractJdbcSpecific {
 	}
 	
 	@Override
-	public char sqlType2jetel(int sqlType, int sqlPrecision) {
+	public DataFieldType sqlType2jetel(int sqlType, int sqlPrecision) {
 		switch(sqlType) {
 			case Types.CHAR:
 				return (sqlPrecision > 1) ? 
-							DataFieldMetadata.STRING_FIELD : DataFieldMetadata.BOOLEAN_FIELD;
+							DataFieldType.STRING : DataFieldType.BOOLEAN;
 			default :
-				return sqlType2jetel(sqlType);
+				return super.sqlType2jetel(sqlType, sqlPrecision);
 		}
 	
 	}

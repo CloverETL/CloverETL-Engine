@@ -120,6 +120,12 @@
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.SQLiteSpecific"/>
 	</extension>
 
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="EXASOL"/>
+		<parameter id="name" value="EXASOL"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.ExasolSpecific"/>
+	</extension>
+
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
@@ -220,4 +226,14 @@
 		<parameter id="urlHint" value="jdbc:firebirdsql:localhost/3050:/firebird/test.gdb"/>
 		<parameter id="jdbcSpecific" value="FIREBIRD"/>
 	</extension>
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="EXASOL"/>
+		<parameter id="name" value="EXASOL"/>
+		<parameter id="dbDriver" value="com.exasol.jdbc.EXADriver"/>
+		<parameter id="driverLibrary" value="lib/exasol/exajdbc-4.2.1.jar"/>
+		<parameter id="urlHint" value="jdbc:exa:localhost:8563;schema=sys"/>
+		<parameter id="jdbcSpecific" value="EXASOL"/>
+	</extension>
+
 </plugin>

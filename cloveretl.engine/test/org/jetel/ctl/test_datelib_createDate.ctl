@@ -33,8 +33,8 @@ function integer transform() {
 
 	string str = null;
 	//CLO-1674
-//	ret1 = createDate(2011, 11, 20, null);
-//	ret5 = createDate(2011, 11, 20, 4, 20, 11, 12, null);
+	ret1 = createDate(2011, 11, 20, null);
+	ret5 = createDate(2011, 11, 20, 4, 20, 11, 123, null);
 	ret2 = createDate(2011, 11, 20, str);
 	ret3 = createDate(2011, 11, 20, 4, 20, 11, str);
 	ret4 = createDate(2011, 11, 20, 4, 20, 11, 123, str);
