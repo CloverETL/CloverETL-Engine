@@ -619,4 +619,10 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	public String getCreateTableSuffix(DataRecordMetadata metadata) {
 		return "";
 	}
+
+	@Override
+	public boolean isParameterMetadataSupported() {
+		return true;
+	}
+	
 }
