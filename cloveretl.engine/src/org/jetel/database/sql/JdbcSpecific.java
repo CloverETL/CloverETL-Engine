@@ -353,11 +353,4 @@ public interface JdbcSpecific {
 	 */
 	public String getCreateTableSuffix(DataRecordMetadata metadata);
 	
-	/**
-	 * Returns <code>true</code> if the driver supports 
-	 * {@link PreparedStatement#getParameterMetaData()}.
-	 * @return
-	 */
-	public boolean isParameterMetadataSupported();
-	
 }
