@@ -75,8 +75,13 @@ public class MappingTagger extends AbstractVisitor {
 	private Map<Integer, PortTag> portTagMap = new HashMap<Integer, PortTag>();
 	private boolean resolvePartition = false;
 	private boolean singleTopLevelRecord;
+	private boolean inMemoryCache;
 
 	public MappingTagger(Map<Integer, DataRecordMetadata> inPorts, String sortHintsString, boolean singleTopLevelRecord) {
+		this(inPorts, sortHintsString, singleTopLevelRecord, false);
+	}
+	
+	public MappingTagger(Map<Integer, DataRecordMetadata> inPorts, String sortHintsString, boolean singleTopLevelRecord, boolean inMemoryCache) {
 		this.inPorts = inPorts;
 		try {
 			this.sortHints = resolveSortHints(sortHintsString, inPorts);
@@ -84,6 +89,7 @@ public class MappingTagger extends AbstractVisitor {
 			throw new SortHintException("Sort order hint error: " + e.getMessage(), e);
 		}
 		this.singleTopLevelRecord = singleTopLevelRecord;
+		this.inMemoryCache = inMemoryCache;
 	}
 
 	public void tag() {
@@ -114,7 +120,7 @@ public class MappingTagger extends AbstractVisitor {
 
 			PortTag portTag = portTagMap.get(inPortIndex);
 			if (portTag != null) {
-				PortData portData = PortData.getInstance(portTag.isCached(), entry.getValue(), portTag.getKeys(), sortHints.get(inPortIndex));
+				PortData portData = PortData.getInstance(portTag.isCached(), inMemoryCache, entry.getValue(), portTag.getKeys(), sortHints.get(inPortIndex));
 				portDataMap.put(inPortIndex, portData);
 			}
 		}

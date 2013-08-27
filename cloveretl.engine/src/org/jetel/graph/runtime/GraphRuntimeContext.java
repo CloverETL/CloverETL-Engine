@@ -66,6 +66,11 @@ public class GraphRuntimeContext {
 	private boolean debugMode;
 	private String debugDirectory;
 	private boolean tokenTracking;
+	/**
+	 * Default multi-thread execution is managed by {@link WatchDog}.
+	 * Single thread execution is managed by {@link SingleThreadWatchDog}. 
+	 */
+	private ExecutionType executionType;
 	
 	/**
 	 * This classpath is extension of 'current' classpath used for loading extra classes specified inside the graph.
@@ -106,6 +111,7 @@ public class GraphRuntimeContext {
 		clusterNodeId = null;
 		jobType = JobType.DEFAULT;
 		authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
+		executionType = ExecutionType.MULTI_THREAD_EXECUTION;
 	}
 	
 	/* (non-Javadoc)
@@ -138,6 +144,7 @@ public class GraphRuntimeContext {
 		ret.jobType = getJobType();
 		ret.jobUrl = getJobUrl();
 		ret.authorityProxy = getAuthorityProxy();
+		ret.executionType = getExecutionType();
 		
 		return ret;
 	}
@@ -166,6 +173,7 @@ public class GraphRuntimeContext {
 		prop.setProperty("clusterNodeId", String.valueOf(getClusterNodeId()));
 		prop.setProperty("jobType", String.valueOf(getJobType()));
 		prop.setProperty("jobUrl", String.valueOf(getJobUrl()));
+		prop.setProperty("executionType", String.valueOf(getExecutionType()));
 		
 		return prop;
 	}
@@ -616,6 +624,24 @@ public class GraphRuntimeContext {
 	public void setAuthorityProxy(IAuthorityProxy authorityProxy) {
 		this.authorityProxy = authorityProxy;
 		authorityProxy.setGraphRuntimeContext(this);
+	}
+
+	/**
+	 * @return type of execution - single or multi-thread execution
+	 * @see SingleThreadWatchDog
+	 */
+	public ExecutionType getExecutionType() {
+		return executionType;
+	}
+
+	/**
+	 * @param executionType type of execution - single or multi-thread execution
+	 */
+	public void setExecutionType(ExecutionType executionType) {
+		if (executionType == null) {
+			throw new NullPointerException();
+		}
+		this.executionType = executionType;
 	}
 
 	/**

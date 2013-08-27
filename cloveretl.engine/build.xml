@@ -442,8 +442,8 @@ defined.version.suffix=release
 			<keep name="org.jetel.graph.runtime.jmx.*Tracking"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.*TrackingDetail"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.TrackingUtils"><field access="public"/><method access="public"/></keep>
-
 			<keep name="org.jetel.graph.runtime.WatchDog"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.SingleThreadWatchDog"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="org.jetel.plugin.PluginRepositoryLocation"><field access="public"/><method access="public"/></keep>
 
