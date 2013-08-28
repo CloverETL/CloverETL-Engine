@@ -60,12 +60,49 @@ public class TreeXmlContentHandlerAdapter implements TreeContentHandler {
 
 	@Override
 	public void leaf(Object value) {
-		char[] stringCharArray = value.toString().toCharArray();
-		try {
-			contentHandler.characters(stringCharArray, 0, stringCharArray.length);
-		} catch (SAXException e) {
-			throw new JetelRuntimeException("transformation to XML failed", e);
+		if (value instanceof String) {
+			String escaped = xmlEscape((String)value);
+			char[] stringCharArray = escaped.toCharArray();
+			try {
+				contentHandler.characters(stringCharArray, 0, stringCharArray.length);
+			} catch (SAXException e) {
+				throw new JetelRuntimeException("transformation to XML failed", e);
+			}
 		}
+	}
+	
+	/**
+	 * JsonParser.getText() decodes escape sequences, such as "\b".
+	 * This results in invalid XML characters, which need to be
+	 * replaced with &#nnnn; entities.
+	 * 
+	 * See <a href="http://www.w3.org/TR/REC-xml/#NT-Char">http://www.w3.org/TR/REC-xml/#NT-Char</a>.
+	 * 
+	 * @param text
+	 * @return
+	 */
+	private String xmlEscape(String text) {
+		StringBuilder sb = new StringBuilder(text.length());
+		for (int i = 0; i < text.length(); ) {
+			int c = text.codePointAt(i);
+			switch (c) {
+			case 0x9:
+			case 0xA:
+			case 0xD:
+				sb.appendCodePoint(c);
+				break;
+			default:
+				if (c == '&') {
+					sb.append("&amp;");
+				} else if ((c >= 0x20 && c <= 0xD7FF) || (c >= 0xE000 && c <= 0xFFFD) || (c >= 0x10000 && c <= 0x10FFFF)) {
+					sb.appendCodePoint(c);
+				} else {
+					sb.append("&#x").append(Integer.toHexString(c)).append(';');
+				}
+			}
+			i += Character.charCount(c);
+		}
+		return sb.toString();
 	}
 
 	@Override
