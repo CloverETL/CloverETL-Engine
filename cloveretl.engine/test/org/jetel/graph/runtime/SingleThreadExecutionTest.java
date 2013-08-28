@@ -21,6 +21,7 @@ package org.jetel.graph.runtime;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import org.jetel.exception.ComponentNotReadyException;
@@ -115,10 +116,18 @@ public class SingleThreadExecutionTest extends CloverTestCase {
 
 		//validate results
 		assertEquals(Result.FINISHED_OK, result);
-		assertEquals(FileUtils.getStringFromURL(null, "../cloveretl.test.scenarios/supposed-out/jsonWriter_AllTypes.json", "UTF-8"),
-				FileUtils.getStringFromURL(null, "../cloveretl.test.scenarios/data-out/jsonWriter_AllTypes.json", "UTF-8"));
-		assertEquals(FileUtils.getStringFromURL(null, "../cloveretl.test.scenarios/supposed-out/jsonWriter_AllTypesInArray.json", "UTF-8"),
-				FileUtils.getStringFromURL(null, "../cloveretl.test.scenarios/data-out/jsonWriter_AllTypesInArray.json", "UTF-8"));
+		compareFiles("../cloveretl.test.scenarios/supposed-out/jsonWriter_AllTypes.json", "../cloveretl.test.scenarios/data-out/jsonWriter_AllTypes.json");
+		compareFiles("../cloveretl.test.scenarios/supposed-out/jsonWriter_AllTypesInArray.json", "../cloveretl.test.scenarios/data-out/jsonWriter_AllTypesInArray.json");
+	}
+	
+	private void compareFiles(String fileName1, String fileName2) {
+		String fileContent1 = FileUtils.getStringFromURL(null, fileName1, "UTF-8");
+		String fileContent2 = FileUtils.getStringFromURL(null, fileName2, "UTF-8");
+		
+		String[] arrayFileContent1 = fileContent1.split("\\r?\\n");
+		String[] arrayFileContent2 = fileContent2.split("\\r?\\n");
+
+		assertTrue(Arrays.equals(arrayFileContent1, arrayFileContent2));
 	}
 	
 }
