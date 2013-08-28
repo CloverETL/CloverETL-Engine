@@ -4866,20 +4866,23 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	public void test_stringlib_left() {
-		//CLO - 1193
-//		doCompile("test_stringlib_left");
-//		check("test1", "aa");
-//		check("test2", "aaa");
-//		check("test3", "");
-//		check("test4", null);
-//		check("test5", "abc");
-//		check("test6", "ab  ");
-//		check("test7", "   ");
-//		check("test8", "  ");
-//		check("test9", "abc");
-//		check("test10", "abc");
-//		check("test11", "");
-//		check("test12", null);
+		// CLO-1193
+		doCompile("test_stringlib_left");
+		check("test1", "aa");
+		check("test2", "aaa");
+		check("test3", "");
+		check("test4", null);
+		check("test5", "abc");
+		check("test6", "ab  ");
+		check("test7", "   ");
+		check("test8", null);
+		check("test9", "abc");
+		check("test10", "abc");
+		check("test11", "");
+		check("test12", null);
+		check("test13", null);
+		check("test14", "");
+		check("test15", "");
 	}
 	
 	public void test_stringlib_length() {
