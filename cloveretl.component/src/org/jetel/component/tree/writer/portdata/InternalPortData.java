@@ -57,7 +57,11 @@ abstract class InternalPortData extends PortData {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		records = MultiValueMap.decorate(new HashMap<Object, Object>(), LinkedList.class);
+		records = createRecordMap();
+	}
+	
+	protected MultiValueMap createRecordMap() {
+		return MultiValueMap.decorate(new HashMap<Object, Object>(), LinkedList.class);
 	}
 	
 	@Override

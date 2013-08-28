@@ -28,7 +28,6 @@ import java.util.Set;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 
 /**
@@ -47,14 +46,14 @@ class InternalSimplePortData extends InternalPortData {
 	}
 	
 	@Override
-	public void init() throws ComponentNotReadyException {
-		super.init();
+	protected MultiValueMap createRecordMap() {
 		if (nullKey) {
 			/*
-			 * lookup with null key should return elements in insertion
-			 * order - so replacing default HashMap with LinkedHashMap
+			 * linked map to preserve data record insertion order
 			 */
-			records = MultiValueMap.decorate(new LinkedHashMap<Object, Object>(), LinkedList.class);
+			return MultiValueMap.decorate(new LinkedHashMap<Object, Object>(), LinkedList.class);
+		} else {
+			return super.createRecordMap();
 		}
 	}
 
