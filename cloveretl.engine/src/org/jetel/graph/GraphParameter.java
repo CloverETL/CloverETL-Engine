@@ -34,7 +34,7 @@ import org.jetel.graph.runtime.IAuthorityProxy;
  * @created 2.8.2013
  */
 @XmlRootElement(name = "GraphParameter")
-@XmlType(propOrder = { "secure", "value", "name" })
+@XmlType(propOrder = { "description", "secure", "value", "name" })
 public class GraphParameter {
 
 	private String name;
@@ -42,6 +42,8 @@ public class GraphParameter {
 	private String value;
 	
 	private boolean secure;
+	
+	private String description;
 	
 	public GraphParameter() {
 		
@@ -94,5 +96,22 @@ public class GraphParameter {
 	public void setSecure(boolean secure) {
 		this.secure = secure;
 	}
-	
+
+	/**
+	 * @return description of this graph parameter
+	 * @note this attribute is not de-serialize from xml now by TransformationGraphXMLReaderWriter
+	 */
+	@XmlAttribute(name="description")
+	public String getDescription() {
+		return description;
+	}
+
+	/**
+	 * Sets description of this graph parameter
+	 * @param description new description of this graph parameter
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 }
