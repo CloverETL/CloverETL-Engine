@@ -33,6 +33,12 @@
 	</extension>
 	
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="EXASOLUTION"/>
+		<parameter id="name" value="EXASolution"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.ExasolSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="FIREBIRD"/>
 		<parameter id="name" value="Firebird"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.FirebirdSpecific"/>
@@ -118,12 +124,6 @@
 		<parameter id="database" value="SQLITE"/>
 		<parameter id="name" value="SQLite"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.SQLiteSpecific"/>
-	</extension>
-
-	<extension point-id="jdbcSpecific">
-		<parameter id="database" value="EXASOLUTION"/>
-		<parameter id="name" value="EXASolution"/>
-		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.ExasolSpecific"/>
 	</extension>
 
 	<extension point-id="jdbcDriver">
