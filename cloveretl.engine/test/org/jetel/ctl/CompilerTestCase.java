@@ -7094,22 +7094,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_base64byte() {
 		doCompile("test_convertlib_base64byte");
 		assertTrue(Arrays.equals((byte[])getVariable("base64input"), Base64.decode("The quick brown fox jumps over the lazy dog")));
-	}
-	
-	public void test_convertlib_base64byte_expect_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){byte b = base64byte(null); return 0;}","test_convertlib_base64byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){string s = null; byte b = base64byte(s); return 0;}","test_convertlib_base64byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 	
 	public void test_convertlib_bits2str() {
@@ -7117,22 +7103,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("bitsAsString1", "00000000");
 		check("bitsAsString2", "11111111");
 		check("bitsAsString3", "010100000100110110100000");
-	}
-	
-	public void test_convertlib_bits2str_expect_error(){
-		//this test should be expected to success in future
-		try {
-			doCompile("function integer transform(){string s = bits2str(null); return 0;}","test_convertlib_bits2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = null; string s = bits2str(b); return 0;}","test_convertlib_bits2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 	
 	public void test_convertlib_bool2num() {
@@ -7156,21 +7128,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(((String) getVariable("inputBase64wrapped")).indexOf('\n') >= 0);
 		check("inputBase64nowrap", inputBase64nowrap);
 		assertTrue(((String) getVariable("inputBase64nowrap")).indexOf('\n') < 0);
+		
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
+		check("nullLiteralOutputWrapped", null);
+		check("nullVariableOutputWrapped", null);
+		check("nullLiteralOutputNowrap", null);
+		check("nullVariableOutputNowrap", null);
 	}
 	
 	public void test_convertlib_byte2base64_expect_error(){
-		try {
-			doCompile("function integer transform(){string s = byte2base64(null);return 0;}","test_convertlib_byte2base64_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = null; string s = byte2base64(b);return 0;}","test_convertlib_byte2base64_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){boolean b = null; string s = byte2base64(str2byte('Rengar', 'utf-8'), b);return 0;}","test_convertlib_byte2base64_expect_error");
 			fail();
@@ -7436,22 +7403,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_long2packDecimal() {
 		doCompile("test_convertlib_long2packDecimal");
 		assertTrue(Arrays.equals((byte[])getVariable("packedLong"), new byte[] {5, 0, 12}));
-	}
-	
-	public void test_convertlib_long2packDecimal_expect_error(){
-		try {
-			doCompile("function integer transform(){byte b = long2packDecimal(null); return 0;}","test_convertlib_long2packDecimal_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){long l = null; byte b = long2packDecimal(l); return 0;}","test_convertlib_long2packDecimal_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 	
 	public void test_convertlib_md5() {
@@ -7542,23 +7495,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_convertlib_packdecimal2long() {
 		doCompile("test_convertlib_packDecimal2long");
 		check("unpackedLong", PackedDecimal.parse(BYTEARRAY_VALUE));
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 
-	public void test_convertlib_packdecimal2long_expect_error(){
-		try {
-			doCompile("function integer transform(){long l = packDecimal2long(null); return 0;}","test_convertlib_packdecimal2long_expect_error");
-			fail();		
-		} catch (Exception e) {
-			// do nothing;
-		}
-		try {
-			doCompile("function integer transform(){byte b = null; long l = packDecimal2long(b); return 0;}","test_convertlib_packdecimal2long_expect_error");
-			fail();		
-		} catch (Exception e) {
-			// do nothing;
-		}
-	}
-	
 	public void test_convertlib_sha() {
 		doCompile("test_convertlib_sha");
 		assertTrue(Arrays.equals((byte[])getVariable("shaHash1"), Digest.digest(DigestType.SHA, "The quick brown fox jumps over the lazy dog")));
@@ -7612,23 +7552,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits2"), new byte[] {-1/*, 0, 0, 0, 0, 0, 0, 0*/}));
 		assertTrue(Arrays.equals((byte[]) getVariable("textAsBits3"), new byte[] {10, -78, 5/*, 0, 0, 0, 0, 0*/}));
 		assertTrue(Arrays.equals((byte[]) getVariable("test_empty"), new byte[] {}));
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 	
-	public void test_convertlib_str2bits_expect_error(){
-		try {
-			doCompile("function integer transform(){byte b = str2bits(null); return 0;}","test_convertlib_str2bits_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){string s = null; byte b = str2bits(s); return 0;}","test_convertlib_str2bits_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-	}
-
 	public void test_convertlib_str2bool() {
 		doCompile("test_convertlib_str2bool");
 		check("fromTrueString", true);
@@ -8013,45 +7940,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		checkArray("cpHello", new byte[] { 72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33 });
 		checkArray("cpHorse", new byte[] { 80, -8, -19, 108, 105, -102, 32, -98, 108, 117, -99, 111, 117, -24, 107, -3, 32, 107, -7, -14, 32, 112, -20, 108, 32, -17, -31, 98, 108, 115, 107, -23, 32, -13, 100, 121 });
+		
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 
 	public void test_convertlib_str2byte_expect_error(){
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'utf-8'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'utf-16'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'MacCentralEurope'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'ascii'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'iso-8859-2'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte b = str2byte(null,'windows-1250'); return 0;}","test_convertlib_str2byte_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){byte b = str2byte('wallace',null); return 0;}","test_convertlib_str2byte_expect_error");
 			fail();
@@ -8098,21 +7992,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("cpHello", hello);
 		check("cpHorse", horse);
 
+		check("nullLiteralOutput", null);
+		check("nullVariableOutput", null);
 	}
 
 	public void test_convertlib_byte2str_expect_error(){
-		try {
-			doCompile("function integer transform(){string s = byte2str(null,'utf-8'); return 0;}","test_convertlib_byte2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){byte input = null; string s = byte2str(input,'utf-8'); return 0;}","test_convertlib_byte2str_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){string s = byte2str(null,null); return 0;}","test_convertlib_byte2str_expect_error");
 			fail();

@@ -12,6 +12,9 @@ byte isoHorse;
 byte cpHello;
 byte cpHorse;
 
+byte nullLiteralOutput;
+byte nullVariableOutput;
+
 function integer transform() {
 
     string hello = "Hello World!";
@@ -36,6 +39,10 @@ function integer transform() {
 
 	cpHello = str2byte(hello, "windows-1250");
 	cpHorse = str2byte(horse, "windows-1250");
+	
+	nullLiteralOutput = str2byte(null, "utf-8");
+	string nullVariable = null;
+	nullVariableOutput = str2byte(nullVariable, "utf-8");
 	
 	return 0;
 }
