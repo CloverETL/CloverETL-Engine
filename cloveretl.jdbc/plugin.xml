@@ -121,8 +121,8 @@
 	</extension>
 
 	<extension point-id="jdbcSpecific">
-		<parameter id="database" value="EXASOL"/>
-		<parameter id="name" value="EXASOL"/>
+		<parameter id="database" value="EXASOLUTION"/>
+		<parameter id="name" value="EXASolution"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.ExasolSpecific"/>
 	</extension>
 
@@ -228,12 +228,12 @@
 	</extension>
 
 	<extension point-id="jdbcDriver">
-		<parameter id="database" value="EXASOL"/>
-		<parameter id="name" value="EXASOL"/>
+		<parameter id="database" value="EXASOLUTION"/>
+		<parameter id="name" value="EXASolution"/>
 		<parameter id="dbDriver" value="com.exasol.jdbc.EXADriver"/>
 		<parameter id="driverLibrary" value="lib/exasol/exajdbc-4.2.1.jar"/>
 		<parameter id="urlHint" value="jdbc:exa:localhost:8563;schema=sys"/>
-		<parameter id="jdbcSpecific" value="EXASOL"/>
+		<parameter id="jdbcSpecific" value="EXASOLUTION"/>
 	</extension>
 
 </plugin>
