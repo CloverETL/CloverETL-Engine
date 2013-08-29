@@ -5292,8 +5292,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate21", false);
 		
 		// CLO-1190
-//		check("isDate22", false);
-//		check("isDate23", false);
+		check("isDate22", true);
+		check("isDate23", false);
 		check("isDate24", true);
 		check("isDate25", false);
 	}	
