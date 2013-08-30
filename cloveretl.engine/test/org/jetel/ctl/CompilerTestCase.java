@@ -4333,15 +4333,22 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("strList2", Arrays.asList("","Alistar", "Nocturne", "Soraka"));
 		check("emptyList", Arrays.asList());
 		check("emptyList2", Arrays.asList());
+		check("retNull1", Arrays.asList("Kennen", "Renector", null, null));
+		check("retNull2", Arrays.asList(false, true, true, null, null, null));
+		cal.clear();
+		cal.set(2001,0,20,0,0,0);
+		cal.set(Calendar.MILLISECOND, 0);
+		cal2.clear();
+		cal2.set(2003,4,12,0,0,0);
+		cal2.set(Calendar.MILLISECOND, 0);
+		check("retNull3", Arrays.asList(cal.getTime(), cal2.getTime(), null, null));
+		check("retNull4", Arrays.asList(1,8,10,12,null,null,null));
+		check("retNull5", Arrays.asList(1l, 12l, 15l, null, null, null));
+		check("retNull6", Arrays.asList(12.1d, 12.3d, 12.4d, null, null));
+		check("retNull7", Arrays.asList(new BigDecimal("11"), new BigDecimal("11.1"), new BigDecimal("11.2"), null, null, null));
 	}
 
 	public void test_containerlib_sort_expect_error(){
-		try {
-			doCompile("function integer transform(){string[] strList = ['Renektor', null, 'Jayce']; sort(strList); return 0;}","test_containerlib_sort_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){string[] strList = null; sort(strList); return 0;}","test_containerlib_sort_expect_error");
 			fail();
