@@ -8428,6 +8428,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("ret15", null);
 		check("ret16", null);
 		check("ret17", "Shaco");
+		check("ret18", 12);
+		check("ret19", 18.1d);
+		check("ret20", 15L);
+		check("ret21", new BigDecimal("18.1"));
 	}
 	
 	public void test_utillib_toAbsolutePath(){
