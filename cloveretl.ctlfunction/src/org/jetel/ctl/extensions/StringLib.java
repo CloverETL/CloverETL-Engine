@@ -202,13 +202,13 @@ public class StringLib extends TLFunctionLibrary {
 
 	// LEFT
 	@TLFunctionAnnotation("Returns prefix of the specified length")
-	public static final String left(TLFunctionCallContext context, String input, int length) {
+	public static final String left(TLFunctionCallContext context, String input, Integer length) {
 		return left(context, input, length, false);
 	}
 
 	@TLFunctionAnnotation("Returns prefix of the specified length. If input string is shorter than specified length " +
 		"and 3th argument is true, right side of result is padded with blank spaces so that the result has specified length.")
-	public static final String left(TLFunctionCallContext context, String input, int length, boolean spacePad) {
+	public static final String left(TLFunctionCallContext context, String input, Integer length, Boolean spacePad) {
 		if (input == null) {
 			return null;
 		}
