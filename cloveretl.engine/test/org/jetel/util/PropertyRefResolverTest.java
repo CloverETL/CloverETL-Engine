@@ -148,4 +148,22 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		}
 	}
 	
+	public void testIsPropertyReference() {
+		assertFalse(PropertyRefResolver.isPropertyReference(null));
+		assertFalse(PropertyRefResolver.isPropertyReference(""));
+		assertFalse(PropertyRefResolver.isPropertyReference("a"));
+		assertFalse(PropertyRefResolver.isPropertyReference("$"));
+		assertFalse(PropertyRefResolver.isPropertyReference("${}"));
+		assertFalse(PropertyRefResolver.isPropertyReference("${a"));
+		assertFalse(PropertyRefResolver.isPropertyReference("$a}"));
+		assertFalse(PropertyRefResolver.isPropertyReference("$a"));
+		assertTrue(PropertyRefResolver.isPropertyReference("${a}"));
+		assertTrue(PropertyRefResolver.isPropertyReference("${abc}"));
+		assertFalse(PropertyRefResolver.isPropertyReference("b${a}"));
+		assertFalse(PropertyRefResolver.isPropertyReference("${{}"));
+		assertTrue(PropertyRefResolver.isPropertyReference("${a_b}"));
+		assertFalse(PropertyRefResolver.isPropertyReference("${aa.cc}"));
+		assertFalse(PropertyRefResolver.isPropertyReference("${aa.cc}asd"));
+	}
+	
 }

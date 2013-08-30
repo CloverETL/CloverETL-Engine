@@ -500,6 +500,18 @@ public class PropertyRefResolver {
 			return false;
 		}
 	}
+
+	/**
+	 * @param value tested string
+	 * @return true if the given string is represents reference to property, for example "${abc}"; false otherwise 
+	 */
+	public static boolean isPropertyReference(String value){
+		if (!StringUtils.isEmpty(value)) {
+			return propertyPattern.matcher(value).matches();
+		} else {
+			return false;
+		}
+	}
 	
 	/**
 	 * @return list of unresolved parameter references in the given string
