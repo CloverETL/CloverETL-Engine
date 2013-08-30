@@ -4885,6 +4885,45 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("test15", "");
 	}
 	
+	public void test_stringlib_left_expect_error(){
+		try {
+			doCompile("function integer transform(){string s = left('Lux', -7, false); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = left('Darius', -7, true); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = left('Darius', null, true); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer int = null; string s = left('Darius', int, true); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){boolean b = null; string s = left('Darius', 9, b); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string s = left('Darius', 7, null); return 0;}","test_stringlib_left_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 	public void test_stringlib_length() {
 		doCompile("test_stringlib_length");
 		check("lenght1", new BigDecimal(50));
