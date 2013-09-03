@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jetel.util.string.StringUtils;
+
 /**
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
@@ -150,7 +152,7 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         
         if(offendingValue != null) {
             ret.append("; value: '");
-            ret.append(offendingValue);
+            ret.append(StringUtils.specCharToString(offendingValue));
             ret.append("'");
         }
         

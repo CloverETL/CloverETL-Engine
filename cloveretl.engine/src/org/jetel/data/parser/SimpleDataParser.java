@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.CharacterCodingException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,6 +37,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -388,14 +390,18 @@ public class SimpleDataParser extends AbstractTextParser {
 	}
 
 	private void fill() throws IOException {
-		int dst = 0;
-		int n;
-		do {
-			n = reader.read(cb, dst, cb.length - dst);
-		} while (n == 0);
-		if (n > 0) {
-			nChars = dst + n;
-			nextChar = dst;
+		try {
+			int dst = 0;
+			int n;
+			do {
+				n = reader.read(cb, dst, cb.length - dst);
+			} while (n == 0);
+			if (n > 0) {
+				nChars = dst + n;
+				nextChar = dst;
+			}
+		} catch (CharacterCodingException e) {
+			throw new JetelRuntimeException("Character decoding error occurs. Set correct charset." + (!StringUtils.isEmpty(cfg.getCharset()) ? " Current charset is " + cfg.getCharset() : ""), e);
 		}
 	}
 
