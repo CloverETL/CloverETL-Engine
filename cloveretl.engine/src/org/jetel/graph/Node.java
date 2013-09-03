@@ -45,6 +45,7 @@ import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.CloverWorkerListener;
 import org.jetel.graph.runtime.ErrorMsgBody;
+import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.graph.runtime.Message;
 import org.jetel.graph.runtime.tracker.ComplexComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
@@ -646,7 +647,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * Sets actual thread in which this node current running.
      * @param nodeThread
      */
-    private void setNodeThread(Thread nodeThread) {
+    public void setNodeThread(Thread nodeThread) {
     	synchronized (nodeThreadMonitor) {
 			if(nodeThread != null) {
 				if (this.nodeThread != nodeThread) {
@@ -662,7 +663,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 					MDC.put("runId", getGraph().getRuntimeContext().getRunId());
 				
 					if (logger.isTraceEnabled()) {
-						logger.trace("set thread name; old:"+oldName+" new:"+ nodeThread.getName());
+						logger.trace("set thread name; old:"+formerThreadName+" new:"+ nodeThread.getName());
 						logger.trace("set thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
 					}
 				}
