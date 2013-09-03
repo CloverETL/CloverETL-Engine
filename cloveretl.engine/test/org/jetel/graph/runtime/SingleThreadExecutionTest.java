@@ -73,7 +73,7 @@ public class SingleThreadExecutionTest extends CloverTestCase {
         IThreadManager threadManager = new SimpleThreadManager();
         WatchDog watchDog = new WatchDog(graph, runtimeContext);
         threadManager.initWatchDog(watchDog);
-		CloverFuture future = threadManager.executeWatchDog(watchDog);
+		WatchDogFuture future = threadManager.executeWatchDog(watchDog);
 		Result result = future.get();
 
 		System.out.println("Result: " + result);
