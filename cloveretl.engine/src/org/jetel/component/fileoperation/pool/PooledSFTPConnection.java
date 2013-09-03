@@ -28,6 +28,7 @@ import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,8 +50,6 @@ import com.jcraft.jsch.UserInfo;
 public class PooledSFTPConnection extends AbstractPoolableConnection {
 	
 	private static final int DEFAULT_PORT = 22;
-
-	private static final JSch jsch = new JSch();
 
 	private static final Log log = LogFactory.getLog(PooledSFTPConnection.class);
 
@@ -118,6 +117,10 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		if (userInfo == null) return new String[] {""};
 		return decodeString(userInfo).split(":");
 	}
+	
+	private Set<String> getPrivateKeys() {
+		return ((SFTPAuthority) authority).getPrivateKeys();
+	}
 
 	public ChannelSftp getChannelSftp() throws JSchException {
 		if ((channel == null) || !channel.isConnected()) {
@@ -138,22 +141,48 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	}
 	
 	private Session getSession() throws IOException {
+		JSch jsch = new JSch();
+		Set<String> keys = getPrivateKeys();
+		if (log.isDebugEnabled()) {
+			log.debug("SFTP connecting to " + authority.getHost() + " using the following private keys: " + keys);
+		}
+		if (keys != null) {
+			for (String key: keys) {
+				try {
+					log.debug("Adding new identity from " + key);
+					jsch.addIdentity(key);
+				} catch (Exception e) {
+					log.warn("Failed to read private key", e);
+				}
+			}
+		}
 		String[] user = getUserInfo();
 		String username = user[0];
 		String password = user.length == 2 ? user[1] : null;
+		
+		if (log.isWarnEnabled()) {
+			if (!StringUtils.isEmpty(username) && StringUtils.isEmpty(password) && (keys == null || keys.isEmpty())) {
+				log.warn("No password or private key specified for user " + username);
+			}
+		}
 
 		Proxy[] proxies = getProxies();
 		try {
-			log.trace("Connecting with password authentication");
-			return getSession(username, new URLUserInfo(password), proxies);
+			if (log.isDebugEnabled()) {
+				log.debug("Connecting to " + authority.getHost() + " with password authentication");
+			}
+			return getSession(jsch, username, new URLUserInfo(password), proxies);
 		} catch (Exception e) {
-			log.trace("Connecting with keyboard-interactive authentication");
-			return getSession(username, new URLUserInfoIteractive(password), proxies);
+			if (log.isDebugEnabled()) {
+				log.debug("Connecting to " + authority.getHost() + " with keyboard-interactive authentication");
+			}
+			return getSession(jsch, username, new URLUserInfoIteractive(password), proxies);
 		}
 	}
 	
 	public void connect() throws IOException {
 		session = getSession();
+		session.setConfig("StrictHostKeyChecking", "no");
 		try {
 			getChannelSftp();
 		} catch (JSchException e) {
@@ -161,7 +190,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 		}
 	}
 
-	private Session getSession(String username, UserInfo password, Proxy[] proxies) throws IOException {
+	private Session getSession(JSch jsch, String username, UserInfo password, Proxy[] proxies) throws IOException {
 		assert (proxies != null) && (proxies.length > 0);
 		
 		Session session;

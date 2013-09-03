@@ -635,12 +635,12 @@ public class DataParser extends AbstractTextParser {
 	//            decoder.decode(byteBuffer, charBuffer, isEof);
 	//        } else 
 	        if (result.isError()) {
-	            throw new IOException(result.toString()+" when converting from "+decoder.charset());
+	        	throw new IOException("Character decoding error occurs. Set correct charset. Current charset is " + decoder.charset());
 	        }
 	        if (isEof) {
 	            result = decoder.flush(charBuffer);
 	            if (result.isError()) {
-	                throw new IOException(result.toString()+" when converting from "+decoder.charset());
+		        	throw new IOException("Character decoding error occurs. Set correct charset. Current charset is " + decoder.charset());
 	            }
 	        }
 	        charBuffer.flip();
