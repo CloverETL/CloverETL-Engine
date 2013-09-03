@@ -401,7 +401,7 @@ public class SimpleDataParser extends AbstractTextParser {
 				nextChar = dst;
 			}
 		} catch (CharacterCodingException e) {
-			throw new JetelRuntimeException("Character decoding error occurs. Set correct charset." + (!StringUtils.isEmpty(cfg.getCharset()) ? " Current charset is " + cfg.getCharset() : ""), e);
+			throw new JetelRuntimeException("Character decoding error occurred. Set correct charset." + (!StringUtils.isEmpty(cfg.getCharset()) ? " Current charset is " + cfg.getCharset() : ""), e);
 		}
 	}
 

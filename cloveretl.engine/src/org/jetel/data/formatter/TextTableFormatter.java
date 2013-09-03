@@ -444,13 +444,9 @@ public class TextTableFormatter extends AbstractFormatter {
 		Object o;
 		for (DataRecord dataRecord : dataRecords) {
 			for (int i=0; i<maskAnalize.length; i++) {
-				try {
-					o = dataRecord.getField(maskAnalize[i].index);
-					if (o != null) {
-						lenght = new String(o.toString().getBytes(charSet)).length(); // encoding
-					}
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
+				o = dataRecord.getField(maskAnalize[i].index);
+				if (o != null) {
+					lenght = o.toString().length(); // encoding
 				}
 				maskAnalize[i].length = maskAnalize[i].length < lenght ? lenght : maskAnalize[i].length;
 			}
