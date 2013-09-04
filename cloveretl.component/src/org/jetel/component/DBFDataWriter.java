@@ -130,6 +130,7 @@ public class DBFDataWriter extends Node {
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	
 	private static final byte[] TYPES = new byte[] {0x02, 0x03, 0x30, 0x31, 0x32, 0x43, (byte) 0xFB};
 
@@ -151,6 +152,7 @@ public class DBFDataWriter extends Node {
 	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String partitionUnassignedFileName;
+	private boolean sortedInput = false;
 
 	private DBFDataFormatterProvider formatterProvider;
 	private MultiFileWriter writer;
@@ -358,6 +360,7 @@ public class DBFDataWriter extends Node {
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
             writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+            writer.setSortedInput(sortedInput);
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
@@ -432,6 +435,9 @@ public class DBFDataWriter extends Node {
         }
 		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
 			aDataWriter.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
+        }
+		if(xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
+			aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
         }
 		
 		return aDataWriter;
@@ -562,4 +568,19 @@ public class DBFDataWriter extends Node {
     public void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
     	this.partitionUnassignedFileName = partitionUnassignedFileName;
 	}
+
+	/**
+	 * @return the sortedInput
+	 */
+	public boolean isSortedInput() {
+		return sortedInput;
+	}
+
+	/**
+	 * @param sortedInput the sortedInput to set
+	 */
+	public void setSortedInput(boolean sortedInput) {
+		this.sortedInput = sortedInput;
+	}
+    
 }
