@@ -118,6 +118,7 @@ public class DataWriter extends Node {
     private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
 	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
 	private static final String XML_QUOTECHAR_ATTRIBUTE = "quoteCharacter";
+	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	
 	private String fileURL;
 	private boolean appendData;
@@ -141,6 +142,7 @@ public class DataWriter extends Node {
 	private String partitionUnassignedFileName;
 	private boolean mkDir;
 	private boolean quotedStringsHasDefaultValue = true;
+	private boolean sortedInput = false;
 
     private String excludeFields;
 
@@ -244,7 +246,8 @@ public class DataWriter extends Node {
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
         	writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
-        	
+            writer.setSortedInput(sortedInput);
+	
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
         	}
@@ -380,6 +383,9 @@ public class DataWriter extends Node {
         }
         if (xattribs.exists(XML_QUOTECHAR_ATTRIBUTE)) {
         	aDataWriter.setQuoteChar(QuotingDecoder.quoteCharFromString(xattribs.getString(XML_QUOTECHAR_ATTRIBUTE)));
+        }
+        if (xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
+        	aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
         }
 		
 		return aDataWriter;
@@ -602,6 +608,14 @@ public class DataWriter extends Node {
     
     public void setFileURL(String fileURL){
     	this.fileURL = fileURL;
+    }
+    
+    public void setSortedInput(boolean sortedInput) {
+    	this.sortedInput = sortedInput;
+    }
+    
+    public boolean isSortedInput() {
+    	return sortedInput;
     }
     
 	@Override

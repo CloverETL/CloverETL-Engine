@@ -97,6 +97,7 @@ public abstract class TreeWriter extends Node {
 	public static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	public static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	public static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	public static final String XML_PARTITION_KEY_SORTED_ATTRIBUTE = "partitionKeySorted";
 	
 	private static final long DEFAULT_CACHE_SIZE = 1024 * 1024;
 	private static final int MAX_ERRORS_OR_WARNINGS = 20;
@@ -148,6 +149,9 @@ public abstract class TreeWriter extends Node {
 		if (xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
 			writer.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
 		}
+		if (xattribs.exists(XML_PARTITION_KEY_SORTED_ATTRIBUTE)) {
+			writer.setPartitionKeySorted(xattribs.getBoolean(XML_PARTITION_KEY_SORTED_ATTRIBUTE));
+		}
 
 		return writer;
 	}
@@ -177,6 +181,7 @@ public abstract class TreeWriter extends Node {
 	private PartitionFileTagType partitionFileTag = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String partitionUnassignedFileName;
 	private LookupTable lookupTable;
+	private boolean partitionKeySorted = false;
 	
 	private Throwable throwableException = null;
 	
@@ -412,6 +417,7 @@ public abstract class TreeWriter extends Node {
 				writer.setPartitionOutFields(partitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
 			writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+			writer.setSortedInput(partitionKeySorted);
 		}
 	}
 
@@ -624,6 +630,20 @@ public abstract class TreeWriter extends Node {
 
 	public void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
 		this.partitionUnassignedFileName = partitionUnassignedFileName;
+	}
+
+	/**
+	 * @return the partitionKeySorted
+	 */
+	public boolean isPartitionKeySorted() {
+		return partitionKeySorted;
+	}
+
+	/**
+	 * @param partitionKeySorted the partitionKeySorted to set
+	 */
+	public void setPartitionKeySorted(boolean partitionKeySorted) {
+		this.partitionKeySorted = partitionKeySorted;
 	}
 
 	protected class InputReader extends Thread {
