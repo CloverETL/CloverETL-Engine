@@ -109,6 +109,16 @@ public class MultiFileWriter {
 
 	private boolean storeRawData = true;
 	
+	/**
+	 * This switch is used to say to partitioning algorithm, that
+	 * the incoming data records are sorted according partition key.
+	 * So output data files does not need to be kept open all the time.
+	 * Output files are generated after the each other.
+	 */
+	private boolean sortedInput = false;
+	private String lastKeyForSortedInput;
+	
+	
     /**
      * Constructor.
      * @param formatter formatter is used for incoming records formatting
@@ -331,6 +341,16 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException
      */
     private final void writeRecord2MultiTarget(DataRecord keyRecord, DataRecord record) throws IOException, ComponentNotReadyException {
+    	if (!sortedInput) {
+    		//all output files are kept open
+    		writeRecord2MultiTargetUnsortedInput(keyRecord, record);
+    	} else {
+    		//output files are generated after each other
+    		writeRecord2MultiTargetSortedInput(keyRecord, record);
+    	}
+    }
+
+    private final void writeRecord2MultiTargetUnsortedInput(DataRecord keyRecord, DataRecord record) throws IOException, ComponentNotReadyException {
     	String keyString = getKeyString(keyRecord);
     	if ((currentTarget = multiTarget.get(keyString)) == null) {
     		currentTarget = createNewTarget();
@@ -342,7 +362,28 @@ public class MultiFileWriter {
 		currentFormatter = currentTarget.getFormatter();
 		writeRecord2CurrentTarget(record);
     }
-    
+
+    private final void writeRecord2MultiTargetSortedInput(DataRecord keyRecord, DataRecord record) throws IOException, ComponentNotReadyException {
+    	String keyString = getKeyString(keyRecord);
+    	if (lastKeyForSortedInput == null || !lastKeyForSortedInput.equals(keyString)) {
+    		//the key has been changed
+    		lastKeyForSortedInput = keyString;
+    		
+    		//close the previous file if necessary
+    		if (currentTarget != null) {
+	    		currentTarget.finish();
+	    		currentTarget.close();
+    		}
+    		
+    		currentTarget = createNewTarget();
+    		currentTarget.setFileTag(useNumberFileTag ? numberFileTag++ : keyString);
+    		currentTarget.setDictionary(dictionary);
+    		currentTarget.init();
+    	}
+		currentFormatter = currentTarget.getFormatter();
+		writeRecord2CurrentTarget(record);
+    }
+
     private String getKeyString(DataRecord record) throws ComponentNotReadyException {
     	if (iPartitionOutFields == null) preparePartitionOutFields();    	
     	StringBuffer sb = new StringBuffer();
@@ -460,7 +501,7 @@ public class MultiFileWriter {
 			}
     		reset = false;
     	}
-    	if (multiTarget != null) {
+    	if (multiTarget != null && !sortedInput) {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
         		entry.getValue().close();
         	}
@@ -483,7 +524,7 @@ public class MultiFileWriter {
 			}
     		reset = false;
     	}
-    	if (multiTarget != null) {
+    	if (multiTarget != null && !sortedInput) {
         	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
         		entry.getValue().finish();
         	}
@@ -507,7 +548,7 @@ public class MultiFileWriter {
     }
 
     /**
-     * Sets number of records written into seprate file.
+     * Sets number of records written into separate file.
      * @param recordsPerFile
      */
     public void setRecordsPerFile(int recordsPerFile) {
@@ -678,6 +719,10 @@ public class MultiFileWriter {
 
 	public void setStoreRawData(boolean storeRawData) {
 		this.storeRawData = storeRawData; 
+	}
+	
+	public void setSortedInput(boolean sortedInput) {
+		this.sortedInput = sortedInput;
 	}
 	
 	/**

@@ -443,8 +443,8 @@ defined.version.suffix=release
 			<keep name="org.jetel.graph.runtime.jmx.*Tracking"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.*TrackingDetail"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.TrackingUtils"><field access="public"/><method access="public"/></keep>
-
 			<keep name="org.jetel.graph.runtime.WatchDog"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.SingleThreadWatchDog"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="org.jetel.plugin.PluginRepositoryLocation"><field access="public"/><method access="public"/></keep>
 
@@ -606,6 +606,11 @@ defined.version.suffix=release
 		<replace file="${dir.package}/readme.txt" encoding="UTF-8" >
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 		</replace>
+		
+		
+		<!-- copy license -->
+		<copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
+			     		
 
 	</target>
 

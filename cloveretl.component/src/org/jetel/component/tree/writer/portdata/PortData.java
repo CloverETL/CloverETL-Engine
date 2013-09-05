@@ -55,17 +55,36 @@ public abstract class PortData {
 	 * @param cacheSize
 	 * @return
 	 */
-	public static PortData getInstance(boolean cached, InputPort inPort, Set<List<String>> keys,
+	public static PortData getInstance(boolean cached, boolean inMemory, InputPort inPort, Set<List<String>> keys,
 			SortHint hint) {
 		if (cached) {
-			if (keys.size() > 1) {
-				return new ExternalComplexPortData(inPort, keys);
+			if (inMemory) {
+				if (isSingleFieldKey(keys)) {
+					return new InternalSimplePortData(inPort, keys);
+				} else {
+					return new InternalComplexPortData(inPort, keys);
+				}
 			} else {
-				return new ExternalSimplePortData(inPort, keys);
+				if (keys.size() > 1) {
+					return new ExternalComplexPortData(inPort, keys);
+				} else {
+					return new ExternalSimplePortData(inPort, keys);
+				}
 			}
 		} else {
 			return new StreamedPortData(inPort, keys, hint);
 		}
+	}
+	
+	private static boolean isSingleFieldKey(Set<List<String>> keys) {
+		
+		if (keys.size() == 1) {
+			List<String> fieldList = keys.iterator().next();
+			if (fieldList != null && fieldList.size() == 1) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	PortData(InputPort inPort, Set<List<String>> keys) {

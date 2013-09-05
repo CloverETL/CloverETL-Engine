@@ -148,6 +148,7 @@ public class XLSWriter extends Node {
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
     private static final String XML_EXCLUDE_FIELDS_ATTRIBUTE = "excludeFields";
     private static final String XML_IN_MEMORY_ATTRIBUTE = "inMemory";
@@ -218,6 +219,10 @@ public class XLSWriter extends Node {
             xlsWriter.setInMemory(xattribs.getBoolean(XML_IN_MEMORY_ATTRIBUTE));
         }
 
+        if(xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
+            xlsWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
+        }
+
         return xlsWriter;
     }
 
@@ -227,6 +232,7 @@ public class XLSWriter extends Node {
 	private String attrPartitionOutFields;
 	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String partitionUnassignedFileName;
+	private boolean sortedInput = false;
 
 	private static Log logger = LogFactory.getLog(XLSWriter.class);
 
@@ -405,6 +411,20 @@ public class XLSWriter extends Node {
     }
 
 	/**
+	 * @return the sortedInput
+	 */
+	public boolean isSortedInput() {
+		return sortedInput;
+	}
+
+	/**
+	 * @param sortedInput the sortedInput to set
+	 */
+	public void setSortedInput(boolean sortedInput) {
+		this.sortedInput = sortedInput;
+	}
+
+	/**
 	 * Sets make directory.
 	 * @param mkDir - true - creates output directories for output file
 	 */
@@ -532,6 +552,7 @@ public class XLSWriter extends Node {
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
         	writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+        	writer.setSortedInput(sortedInput);
         	
             if (attrPartitionOutFields != null) {
                 writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));

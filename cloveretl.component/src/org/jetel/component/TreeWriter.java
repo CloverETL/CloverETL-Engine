@@ -87,6 +87,7 @@ public abstract class TreeWriter extends Node {
 	public static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	public static final String XML_MAPPING_URL_ATTRIBUTE = "mappingURL";
 	public static final String XML_CACHE_SIZE = "cacheSize";
+	public static final String XML_CACHE_IN_MEMORY = "cacheInMemory";
 	public static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	public static final String XML_SORTKEYS_ATTRIBUTE = "sortKeys";
 	public static final String XML_RECORDS_PER_FILE = "recordsPerFile";
@@ -96,7 +97,8 @@ public abstract class TreeWriter extends Node {
 	public static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	public static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	public static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
-
+	public static final String XML_PARTITION_KEY_SORTED_ATTRIBUTE = "partitionKeySorted";
+	
 	private static final long DEFAULT_CACHE_SIZE = 1024 * 1024;
 	private static final int MAX_ERRORS_OR_WARNINGS = 20;
 
@@ -116,6 +118,9 @@ public abstract class TreeWriter extends Node {
 		}
 		if (xattribs.exists(XML_CACHE_SIZE)) {
 			writer.setCacheSize(StringUtils.parseMemory(xattribs.getString(XML_CACHE_SIZE)));
+		}
+		if (xattribs.exists(XML_CACHE_IN_MEMORY)) {
+			writer.setCacheInMemory(xattribs.getBoolean(XML_CACHE_IN_MEMORY, false));
 		}
 		if (xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
 			writer.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE, false));
@@ -144,6 +149,9 @@ public abstract class TreeWriter extends Node {
 		if (xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
 			writer.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
 		}
+		if (xattribs.exists(XML_PARTITION_KEY_SORTED_ATTRIBUTE)) {
+			writer.setPartitionKeySorted(xattribs.getBoolean(XML_PARTITION_KEY_SORTED_ATTRIBUTE));
+		}
 
 		return writer;
 	}
@@ -156,6 +164,7 @@ public abstract class TreeWriter extends Node {
 	private String mappingURL;
 	private File tempDirectory;
 	private long cacheSize = DEFAULT_CACHE_SIZE;
+	private boolean cacheInMemory;
 
 	private boolean sortedInput;
 	private String sortHintsString;
@@ -172,6 +181,7 @@ public abstract class TreeWriter extends Node {
 	private PartitionFileTagType partitionFileTag = PartitionFileTagType.NUMBER_FILE_TAG;
 	private String partitionUnassignedFileName;
 	private LookupTable lookupTable;
+	private boolean partitionKeySorted = false;
 	
 	private Throwable throwableException = null;
 	
@@ -264,7 +274,7 @@ public abstract class TreeWriter extends Node {
 		} else {
 			MappingTagger tagger = null;
 			try {
-				tagger = new MappingTagger(connectedPorts, sortedInput ? sortHintsString : null, recordsCount == 1);
+				tagger = new MappingTagger(connectedPorts, sortedInput ? sortHintsString : null, recordsCount == 1, cacheInMemory);
 			} catch (MappingTagger.SortHintException e) {
 				status.add(e, Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL, XML_SORTKEYS_ATTRIBUTE);
 			}
@@ -360,7 +370,7 @@ public abstract class TreeWriter extends Node {
 			}
 		}
 
-		MappingCompiler compiler = new MappingCompiler(prepareConnectedData(), sortedInput ? sortHintsString : null, recordsCount == 1);
+		MappingCompiler compiler = new MappingCompiler(prepareConnectedData(), sortedInput ? sortHintsString : null, recordsCount == 1, cacheInMemory);
 		compiler.setGraph(getGraph());
 		compiler.setComponentId(getType());
 		compiler.setLogger(LOGGER);
@@ -407,6 +417,7 @@ public abstract class TreeWriter extends Node {
 				writer.setPartitionOutFields(partitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
 			writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+			writer.setSortedInput(partitionKeySorted);
 		}
 	}
 
@@ -425,18 +436,19 @@ public abstract class TreeWriter extends Node {
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-
-		try {
-			// Init new cache record manager
-			tempDirectory = getGraph().getAuthorityProxy().newTempDir("tree-writer-cache-", -1);
-			File file = new File(tempDirectory, "jdbm-cache");
-			sharedCache = CacheRecordManager.createInstance(file.getAbsolutePath(), cacheSize);
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		} catch (TempFileCreationException e) {
-			throw new ComponentNotReadyException(e);
+		if (!cacheInMemory) {
+			try {
+				// Init new cache record manager
+				tempDirectory = getGraph().getAuthorityProxy().newTempDir("tree-writer-cache-", -1);
+				File file = new File(tempDirectory, "jdbm-cache");
+				sharedCache = CacheRecordManager.createInstance(file.getAbsolutePath(), cacheSize);
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			} catch (TempFileCreationException e) {
+				throw new ComponentNotReadyException(e);
+			}
 		}
-
+		
 		for (PortData portData : portDataMap.values()) {
 			portData.setSharedCache(sharedCache);
 			portData.preExecute();
@@ -532,12 +544,19 @@ public abstract class TreeWriter extends Node {
 		for (PortData portData : portDataMap.values()) {
 			portData.postExecute();
 		}
-		try {
-			sharedCache.close();
-			writer.close();
-			if (tempDirectory != null) {
-				FileUtils.deleteRecursively(tempDirectory);
+		
+		if (!cacheInMemory) {
+			try {
+				sharedCache.close();
+				if (tempDirectory != null) {
+					FileUtils.deleteRecursively(tempDirectory);
+				}
+			} catch (IOException e) {
+				LOGGER.error("Error while closing record cache.", e);
 			}
+		}
+		try {
+			writer.close();
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
@@ -571,6 +590,10 @@ public abstract class TreeWriter extends Node {
 
 	public void setCacheSize(long cacheSize) {
 		this.cacheSize = cacheSize;
+	}
+	
+	public void setCacheInMemory(boolean cacheInMemory) {
+		this.cacheInMemory = cacheInMemory;
 	}
 
 	public void setSortedInput(boolean sortedInput) {
@@ -607,6 +630,20 @@ public abstract class TreeWriter extends Node {
 
 	public void setPartitionUnassignedFileName(String partitionUnassignedFileName) {
 		this.partitionUnassignedFileName = partitionUnassignedFileName;
+	}
+
+	/**
+	 * @return the partitionKeySorted
+	 */
+	public boolean isPartitionKeySorted() {
+		return partitionKeySorted;
+	}
+
+	/**
+	 * @param partitionKeySorted the partitionKeySorted to set
+	 */
+	public void setPartitionKeySorted(boolean partitionKeySorted) {
+		this.partitionKeySorted = partitionKeySorted;
 	}
 
 	protected class InputReader extends Thread {
