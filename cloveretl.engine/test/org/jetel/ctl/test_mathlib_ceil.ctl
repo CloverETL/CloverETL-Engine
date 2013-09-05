@@ -3,7 +3,7 @@ double ceil1;
 double[] intResult;
 double[] longResult;
 double[] doubleResult;
-double[] decimalResult;
+decimal[] decimalResult;
 
 function integer transform() {
 	ceil1=ceil(-pow(3,1.2));
@@ -32,6 +32,10 @@ function integer transform() {
 	decimalResult[0] = ceil(decimalArgs[0]);
 	decimalResult[1] = ceil(decimalArgs[1]);
 	printErr(decimalResult);
+	
+	//testing of precision autocast
+	decimal testVal = ceil(decimalArgs[0]) + 12.123D;
+	printErr(testVal);
 	
 	return 0;
 }
