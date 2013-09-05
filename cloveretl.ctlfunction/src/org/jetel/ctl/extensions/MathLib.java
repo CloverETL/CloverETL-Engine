@@ -19,9 +19,8 @@
 package org.jetel.ctl.extensions;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
-import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jetel.ctl.Stack;
@@ -801,10 +800,20 @@ public class MathLib extends TLFunctionLibrary {
     	return a.min(b);
     }
     
-    @TLFunctionAnnotation("Returns min value of of the array.")
-    public static final <T extends Object & Comparable<? super T>> T min(TLFunctionCallContext context, List<? extends T> vals) {
-    	return Collections.min(vals);
-    }
+    
+	@TLFunctionAnnotation("Returns min value of of the array.")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static final Object min(TLFunctionCallContext context, List vals) {
+		Iterator i = vals.iterator();
+		Comparable candidate = (Comparable) i.next();
+
+		while (i.hasNext()) {
+			Comparable next = (Comparable) i.next();
+			if (next.compareTo(candidate) < 0)
+				candidate = next;
+		}
+		return candidate;
+	}
     
     class MinFunction implements TLFunctionPrototype {
 
@@ -812,7 +821,6 @@ public class MathLib extends TLFunctionLibrary {
 		public void init(TLFunctionCallContext context) {
 		}
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger()) {
@@ -835,7 +843,7 @@ public class MathLib extends TLFunctionLibrary {
 				return;
 			}
 			if (context.getParams()[0].isList()) {
-				stack.push(min(context, (List<? extends Comparable>)stack.popList()));
+				stack.push(min(context, stack.popList()));
 				return;
 			}
 		} 
@@ -865,8 +873,17 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     @TLFunctionAnnotation("Returns max value of of the array.")
-    public static final <T extends Object & Comparable<? super T>> T max(TLFunctionCallContext context, List<? extends T> vals) {
-    	return Collections.max(vals);
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static final Object max(TLFunctionCallContext context, List vals) {
+    	Iterator i = vals.iterator();
+		Comparable candidate = (Comparable) i.next();
+
+		while (i.hasNext()) {
+			Comparable next = (Comparable) i.next();
+			if (next.compareTo(candidate) > 0)
+				candidate = next;
+		}
+		return candidate;
     }
     
     class MaxFunction implements TLFunctionPrototype {
@@ -875,7 +892,6 @@ public class MathLib extends TLFunctionLibrary {
 		public void init(TLFunctionCallContext context) {
 		}
 
-		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			if (context.getParams()[0].isInteger()) {
@@ -898,7 +914,7 @@ public class MathLib extends TLFunctionLibrary {
 				return;
 			}
 			if (context.getParams()[0].isList()) {
-				stack.push(max(context, (List<? extends Comparable>)stack.popList()));
+				stack.push(max(context, stack.popList()));
 				return;
 			}
 		} 
