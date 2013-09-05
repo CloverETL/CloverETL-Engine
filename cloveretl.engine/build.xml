@@ -606,6 +606,11 @@ defined.version.suffix=release
 		<replace file="${dir.package}/readme.txt" encoding="UTF-8" >
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 		</replace>
+		
+		
+		<!-- copy license -->
+		<copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
+			     		
 
 	</target>
 
