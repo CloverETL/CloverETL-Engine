@@ -2282,14 +2282,15 @@ public class FileUtils {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException("Interrupted");
 		}
-		if (root != null && root.isDirectory()) {
+		if (root != null) {
+			if (root.isDirectory()) {
 				File[] children = root.listFiles();
 				if (children != null) {
-					for (int i = 0; i < children.length; i++) {
-						deleteRecursively(children[i]);
+					for (File child: children) {
+						deleteRecursively(child);
 					}
 				}
-
+			}
 			return root.delete();
 		}
 		return false;
