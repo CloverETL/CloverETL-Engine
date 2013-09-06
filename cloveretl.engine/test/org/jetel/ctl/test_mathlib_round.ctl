@@ -37,14 +37,14 @@ function integer transform() {
 	decimalResult[0] = round(decimalArgs[0]);
 	decimalResult[1] = round(decimalArgs[1]);
 	printErr(decimalResult);
-	
 	// rounding decimals with precision
-	for (integer i = -7; i < 8; i++) {
-		decimal2Result.push(round(decimal2Arg, i));
-	}
-	
-	intWithPrecisionResult = round(1234, 2);
-	longWithPrecisionResult = round(123456L, 2);
+	//CLO-1835
+//	for (integer i = -7; i < 8; i++) {
+//		decimal2Result.push(round(decimal2Arg, i));
+//	}
+	//CLO-1832
+//	intWithPrecisionResult = round(1234, 2);
+//	longWithPrecisionResult = round(123456L, 2);
 	
 	return 0;
 }
