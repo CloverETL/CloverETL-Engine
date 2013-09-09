@@ -272,13 +272,22 @@ defined.version.suffix=release
 
 		<!-- binary distribution -->
 		<mkdir dir="${dir.distprepare.bin}/cloverETL"/>
-
 		<copy todir="${dir.distprepare.bin}/cloverETL">
 			<fileset dir="${dir.package}" />
 		</copy>
+		<if>
+		     <equals arg1="${dir.distribution}" arg2="${basedir}/dist"/>
+			    <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
+			    <echo file="${dir.package}/readme.txt" append="true">
+Licensing
+---------
+This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
+			    </echo>
+		</if>
 
 		<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
+		
 		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.rel-${version.major}-${version.minor}-${version.revision}.zip" >
 			<fileset dir="${dir.distprepare.bin}">
 				<include name="cloverETL/**/*"/>
@@ -344,7 +353,7 @@ defined.version.suffix=release
 			</filtermapper>
 		</copy>
 	</target>
-
+	
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean-engine">
 		<delete dir="${dir.build}"/>
@@ -607,11 +616,6 @@ defined.version.suffix=release
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 		</replace>
 		
-		
-		<!-- copy license -->
-		<copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
-			     		
-
 	</target>
 
 	<!-- make a temp copy of source - necessary to substitute release number constants in the source code -->
