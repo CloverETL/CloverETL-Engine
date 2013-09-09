@@ -272,12 +272,14 @@ public class MathLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 
 			if (context.getParams().length == 2) {
+				//Precision has to be popped from stack before the argument to round
+				Integer precision = stack.popInt();
 				if (context.getParams()[0].isDecimal()) {
-					stack.push(round(context, stack.popDecimal(), stack.popInt()));
+					stack.push(round(context, stack.popDecimal(), precision));
 					return;
 				}
 
-				stack.push(round(context, stack.popDouble(), stack.popInt()));
+				stack.push(round(context, stack.popDouble(), precision));
 
 			} else {
 				if (context.getParams()[0].isDecimal()) {
