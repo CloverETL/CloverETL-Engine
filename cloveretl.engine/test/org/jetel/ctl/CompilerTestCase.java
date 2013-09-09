@@ -6445,27 +6445,29 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// negative precision means the number of places after the decimal point
 		// positive precision before the decimal point
 		List<BigDecimal> expected = Arrays.asList(
-				new BigDecimal("1234567.1234567"),
-				new BigDecimal("1234567.123457"), // rounded up
-				new BigDecimal("1234567.12346"), // rounded up
-				new BigDecimal("1234567.1235"), // rounded up
-				new BigDecimal("1234567.123"),
-				new BigDecimal("1234567.12"),
-				new BigDecimal("1234567.1"),
-				new BigDecimal("1234567"),
-				new BigDecimal("1234570"), // rounded up
-				new BigDecimal("1234600"), // rounded up
-				new BigDecimal("1235000"), // rounded up
-				new BigDecimal("1230000"),
-				new BigDecimal("1200000"),
+				new BigDecimal("0"),
 				new BigDecimal("1000000"),
-				new BigDecimal("0")
+				new BigDecimal("1200000"),
+				new BigDecimal("1230000"),
+				new BigDecimal("1235000"), // rounded up
+				new BigDecimal("1234600"), // rounded up
+				new BigDecimal("1234570"), // rounded up
+				new BigDecimal("1234567"),
+				new BigDecimal("1234567.1"),
+				new BigDecimal("1234567.12"),
+				new BigDecimal("1234567.123"),
+				new BigDecimal("1234567.1235"), // rounded up
+				new BigDecimal("1234567.12346"), // rounded up
+				new BigDecimal("1234567.123457"), // rounded up
+				new BigDecimal("1234567.1234567")
 		);
 		//CLO-1835
-//		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal2Result"));
+		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal2Result"));
 		//CLO-1832
-//		check("intWithPrecisionResult", 1200);
-//		check("longWithPrecisionResult", 123500L);
+		check("intWithPrecisionResult", 1234d);
+		check("longWithPrecisionResult", 123456d);
+		check("ret1", 1234d);
+		check("ret2", 13565d);
 	}
 	
 	public void test_mathlib_round_expect_error(){
