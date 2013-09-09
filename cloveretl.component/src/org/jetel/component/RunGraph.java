@@ -25,6 +25,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -150,6 +151,7 @@ public class RunGraph extends Node{
 	private static final String XML_CLOVER_CMD_LINE = "cloverCmdLineArgs";
 	private static final String XML_IGNORE_GRAPH_FAIL = "ignoreGraphFail";
 	private static final String XML_PARAMS_TO_PASS = "paramsToPass";
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 
 	private final static String DEFAULT_JAVA_CMD_LINE = "java -cp";
 	private final static String DEFAULT_CLOVER_CMD_LINE = "";
@@ -190,6 +192,7 @@ public class RunGraph extends Node{
 	private boolean sameInstance;
 	
 	private boolean append;
+	private boolean mkDir;
 	private int exitValue;		
 	private String outputFileName;
 	private static Log logger = LogFactory.getLog(RunGraph.class);
@@ -787,6 +790,7 @@ public class RunGraph extends Node{
 		if (xattribs.exists(XML_IGNORE_GRAPH_FAIL)) {
 			runG.setIgnoreGraphFail(xattribs.getBoolean(XML_IGNORE_GRAPH_FAIL));
 		}
+		runG.setMkDir(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE, false));
 									
 		return runG;
 	}
@@ -804,6 +808,10 @@ public class RunGraph extends Node{
 		this.graphName = graphName;
 	}
 
+	private void setMkDir(boolean mkDir) {
+		this.mkDir = mkDir;
+	}
+
 	/**
 	 * Prepares file for log output of executed graph.
 	 * @throws ComponentNotReadyException
@@ -811,7 +819,12 @@ public class RunGraph extends Node{
 	private void initGraphOutputFile() throws ComponentNotReadyException {
 		if (outputFileName != null){
 			try {
-				File outFile = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), outputFileName));
+				URL contextURL = getGraph().getRuntimeContext().getContextURL();
+				// CLO-1085
+				if (mkDir) {
+					FileUtils.createParentDirs(contextURL, outputFileName);
+				}
+				File outFile = FileUtils.getJavaFile(contextURL, outputFileName);
 				outFile.createNewFile();
 				outputFile = new FileWriter(outFile, append);
 			} catch (IOException ex) {
