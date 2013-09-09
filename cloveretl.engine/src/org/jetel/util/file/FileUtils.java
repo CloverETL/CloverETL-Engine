@@ -299,9 +299,10 @@ public class FileUtils {
 
     	 //first we try the custom path resolvers
     	for (CustomPathResolver customPathResolver : customPathResolvers) {
-    		try{
+    		// CLO-978 - call handlesURL(), don't catch any MalformedURLExceptions
+    		if (customPathResolver.handlesURL(contextURL, fileURL)) {
     			return customPathResolver.getURL(contextURL, fileURL);
-    		}catch(MalformedURLException ex) {}
+    		}
     	}
     	
     	// standard url
