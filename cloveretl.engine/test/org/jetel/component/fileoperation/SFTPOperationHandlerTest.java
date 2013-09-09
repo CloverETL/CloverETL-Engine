@@ -201,6 +201,11 @@ public class SFTPOperationHandlerTest extends OperationHandlerTestTemplate {
 	public URI getUnreachableUri() {
 		return URI.create("sftp://badUser:badPassword@badserver/");
 	}
+
+	@Override
+	protected long getTolerance() {
+		return 1000;
+	}
 	
 	
 }
