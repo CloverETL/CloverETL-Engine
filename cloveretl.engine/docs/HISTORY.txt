@@ -2,6 +2,16 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-3-4-2
+---------
+
+* improved performance of TreeWriter caches (in-memory caching)
+* upgraded JSch library to 0.1.50
+* upgraded slf4j-api to 1.7.2
+- FIXES:
+	- CLO-1216 Hadoop is missing in opensource engine build
+	- CLO-1335 Problems with DBExecute component
+
 REL-3-4-1
 ---------
 
