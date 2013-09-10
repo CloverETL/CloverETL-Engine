@@ -6639,6 +6639,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	public void test_mathlib_max_min() {
+		doCompile("test_mathlib_max_min");
+		
+//		check("intResult", Arrays.asList(2l, 3l));
+//		check("longResult", Arrays.asList(2l, 3l));
+//		check("doubleResult", Arrays.asList(2l, 4l));
+		
+	}
+	
 //-------------------------DateLib tests----------------------
 	
 	public void test_datelib_cache() {
