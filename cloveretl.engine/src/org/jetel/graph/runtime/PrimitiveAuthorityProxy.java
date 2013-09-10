@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
@@ -201,7 +200,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		rr.startTime = new Date(startTime);
 		
 		try {
-            in = Channels.newInputStream(FileUtils.getReadableChannel(givenRuntimeContext.getContextURL(), graphFileName));
+            in = FileUtils.getInputStream(givenRuntimeContext.getContextURL(), graphFileName);
         } catch (IOException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
