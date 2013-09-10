@@ -275,15 +275,17 @@ defined.version.suffix=release
 		<copy todir="${dir.distprepare.bin}/cloverETL">
 			<fileset dir="${dir.package}" />
 		</copy>
-		<if>
-		     <equals arg1="${dir.distribution}" arg2="${basedir}/dist"/>
-			    <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
-			    <echo file="${dir.package}/readme.txt" append="true">
+		
+	    <condition property="${dir.distribution}" value="${basedir}/dist">
+		
+	    <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
+			<echo file="${dir.package}/readme.txt" append="true">
 Licensing
 ---------
 This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
-			    </echo>
-		</if>
+			</echo>
+	    	
+		</condition>
 
 		<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
