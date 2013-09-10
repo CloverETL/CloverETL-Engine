@@ -275,20 +275,14 @@ defined.version.suffix=release
 		<copy todir="${dir.distprepare.bin}/cloverETL">
 			<fileset dir="${dir.package}" />
 		</copy>
+		<if>
+		    <isset property="distro.type"/>
+		    <then>
+		        <antcall target="copy-license-LGPL"/>
+		    </then>
+		</if>
 		
-	    <condition property="${distro.type}" value="open.source">
-	    	  <antcall target="copy-license-LGPL"/>    
-	    </condition>
-	    	
-	    <target name="copy-license-LGPL">
-	    	<copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
-	    	            <echo file="${dir.package}/readme.txt" append="true">
-Licensing
-This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
-	    	            </echo>
-	    </target>
-
-		<!-- create zip distribution package -->
+	   	<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
 		
 		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.rel-${version.major}-${version.minor}-${version.revision}.zip" >
@@ -298,6 +292,16 @@ This software is licensed under the terms you may find in the file named "LICENS
 		</zip>
 
 	</target>
+	
+	 <target name="copy-license-LGPL">
+	            <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
+	                        <echo file="${dir.package}/readme.txt" append="true">
+Licensing
+----------	                        	
+This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
+	       </echo>
+	 </target>
+
 
 	<target name="dist.javadoc" depends="javadoc" description="Creates javadoc distribution">
 		<!-- create zip package for javadoc -->
