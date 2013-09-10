@@ -262,7 +262,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     // ROUND
-    class RoundFunction implements TLFunctionPrototype { 
+	class RoundFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
@@ -272,22 +272,19 @@ public class MathLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 
 			if (context.getParams().length == 2) {
-				//Precision has to be popped from stack before the argument to round
-				Integer precision = stack.popInt();
+				// Precision has to be popped from stack before the argument to round
+				final Integer precision = stack.popInt();
 				if (context.getParams()[0].isDecimal()) {
 					stack.push(round(context, stack.popDecimal(), precision));
-					return;
+				} else {
+					stack.push(round(context, stack.popDecimal(), precision));
 				}
-
-				stack.push(round(context, stack.popDouble(), precision));
-
 			} else {
 				if (context.getParams()[0].isDecimal()) {
 					stack.push(round(context, stack.popDecimal()));
-					return;
+				} else {
+					stack.push(round(context, stack.popDouble()));
 				}
-
-				stack.push(round(context, stack.popDouble()));
 			}
 		}
 	}
@@ -803,9 +800,9 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     
-	@TLFunctionAnnotation("Returns min value of of the array.")
+	@TLFunctionAnnotation("Returns min value of the array.")
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static final Object min(TLFunctionCallContext context, List vals) {
+	public static final <E> E min(TLFunctionCallContext context, List <E> vals) {
 		Iterator i = vals.iterator();
 		Comparable candidate = (Comparable) i.next();
 
@@ -814,7 +811,7 @@ public class MathLib extends TLFunctionLibrary {
 			if (next.compareTo(candidate) < 0)
 				candidate = next;
 		}
-		return candidate;
+		return (E)candidate;
 	}
     
     class MinFunction implements TLFunctionPrototype {
@@ -874,9 +871,9 @@ public class MathLib extends TLFunctionLibrary {
     	return a.max(b);
     }
     
-    @TLFunctionAnnotation("Returns max value of of the array.")
+    @TLFunctionAnnotation("Returns max value of the array.")
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static final Object max(TLFunctionCallContext context, List vals) {
+    public static final <E> E max(TLFunctionCallContext context, List <E> vals) {
     	Iterator i = vals.iterator();
 		Comparable candidate = (Comparable) i.next();
 
@@ -885,7 +882,7 @@ public class MathLib extends TLFunctionLibrary {
 			if (next.compareTo(candidate) > 0)
 				candidate = next;
 		}
-		return candidate;
+		return (E)candidate;
     }
     
     class MaxFunction implements TLFunctionPrototype {
