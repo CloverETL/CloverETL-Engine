@@ -276,16 +276,17 @@ defined.version.suffix=release
 			<fileset dir="${dir.package}" />
 		</copy>
 		
-	    <condition property="${dir.distribution}" value="${basedir}/dist">
-		
-	    <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
-			<echo file="${dir.package}/readme.txt" append="true">
-Licensing
----------
-This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
-			</echo>
+	    <condition property="${distro.type}" value="open.source">
+	    	  <antcall target="copy-license-LGPL"/>    
+	    </condition>
 	    	
-		</condition>
+	    <target name="copy-license-LGPL">
+	    	<copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
+	    	            <echo file="${dir.package}/readme.txt" append="true">
+Licensing
+This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
+	    	            </echo>
+	    </target>
 
 		<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
