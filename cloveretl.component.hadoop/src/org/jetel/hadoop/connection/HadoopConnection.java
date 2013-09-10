@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -290,7 +289,7 @@ public class HadoopConnection extends GraphElement implements IConnection {
 		Properties config = new Properties();
 		InputStream stream = null;
 		try {
-			stream = Channels.newInputStream(FileUtils.getReadableChannel(getContextURL(null), configFileLocation));
+			stream = FileUtils.getInputStream(getContextURL(null), configFileLocation);
 			config.load(stream);
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException("Configuration file for Hadoop connection not found ("

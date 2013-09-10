@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -859,7 +858,7 @@ public class TransformationGraphXMLReaderWriter {
 	public void instantiateGraphParametersFile(GraphParameters graphParameters, String resolvedFileURL) throws XMLConfigurationException {
 		InputStream is = null;
         try {
-        	is = Channels.newInputStream(FileUtils.getReadableChannel(runtimeContext.getContextURL(), resolvedFileURL));
+        	is = FileUtils.getInputStream(runtimeContext.getContextURL(), resolvedFileURL);
         	Document document = prepareDocument(is);
         	instantiateGraphParameters(graphParameters, Arrays.asList(document.getDocumentElement()));
         } catch (Exception e) {
@@ -972,7 +971,7 @@ public class TransformationGraphXMLReaderWriter {
 		TypedProperties graphProperties = new TypedProperties();
         InputStream inStream = null;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(runtimeContext.getContextURL(), fileURL));
+        	inStream = FileUtils.getInputStream(runtimeContext.getContextURL(), fileURL);
             graphProperties.load(inStream);
             return graphProperties;
         } catch(MalformedURLException e) {

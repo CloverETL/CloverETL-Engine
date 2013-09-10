@@ -109,7 +109,7 @@ public class IncrementalReading {
     	IncrementalData incremental;
     	Properties prop = new Properties();
     	try {
-    		prop.load(Channels.newInputStream(FileUtils.getReadableChannel(contextURL, incrementalFile)));
+    		prop.load(FileUtils.getInputStream(contextURL, incrementalFile));
 		} catch (IOException e) {
 			logger.warn("The incremental file not found or it is corrupted!", e);
 		}
