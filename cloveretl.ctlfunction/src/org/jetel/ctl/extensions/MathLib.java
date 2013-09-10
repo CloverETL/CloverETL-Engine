@@ -277,7 +277,7 @@ public class MathLib extends TLFunctionLibrary {
 				if (context.getParams()[0].isDecimal()) {
 					stack.push(round(context, stack.popDecimal(), precision));
 				} else {
-					stack.push(round(context, stack.popDecimal(), precision));
+					stack.push(round(context, stack.popDouble(), precision));
 				}
 			} else {
 				if (context.getParams()[0].isDecimal()) {
