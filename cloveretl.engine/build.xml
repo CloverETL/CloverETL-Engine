@@ -71,7 +71,6 @@
 	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="dir.licenses" value="${basedir}/licenses" />
 	<property name="test.license.version" value="3.5"/>
-	<property name="dist.type" value="${dist.type}"/>
 	
 	<!--load external properties-->
 	<property file="build-local.properties"/>
@@ -276,13 +275,13 @@ defined.version.suffix=release
 		<copy todir="${dir.distprepare.bin}/cloverETL">
 			<fileset dir="${dir.package}" />
 		</copy>
-		<if>
-		    <isset property="dist.type"/>
-		    <then>
-		        <antcall target="copy-license-LGPL"/>
-		    </then>
-		</if>
-		
+			 <if>
+		        <equals arg1="${dist.type}" arg2="opensource"/>
+		           <then>
+		             <antcall target="copy-license-LGPL"/>
+		           </then>
+		      </if>
+			
 	   	<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
 		
@@ -296,11 +295,11 @@ defined.version.suffix=release
 	
 	 <target name="copy-license-LGPL">
 	            <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
-	                        <echo file="${dir.package}/readme.txt" append="true">
+	            <echo file="${dir.package}/readme.txt" append="true">
 Licensing
 ----------	                        	
 This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
-	       </echo>
+	            </echo>
 	 </target>
 
 
