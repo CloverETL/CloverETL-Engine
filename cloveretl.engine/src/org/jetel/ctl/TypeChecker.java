@@ -296,6 +296,21 @@ public class TypeChecker extends NavigatingVisitor {
 			getFunctionCalls().add(context);
 			node.setCopyByNameCallContext(context);
 			node.setType(lhs);
+			
+			// CLO-1084
+			DataRecordMetadata inMetadata = ((TLTypeRecord) rhs).getMetadata();
+			DataRecordMetadata outMetadata = ((TLTypeRecord) lhs).getMetadata();
+			List<String> warnings = new ArrayList<String>(); 
+			for (DataFieldMetadata inField: inMetadata) {
+				for (DataFieldMetadata outField: outMetadata) {
+					if (TLUtils.equalsIgnoreCase(inField, outField, warnings)) {
+						break;
+					}
+				}
+			}
+			if (!warnings.isEmpty()) {
+				warn(node, warnings.get(0));
+			}
 		} else {
 			error(node, "Type mismatch: cannot convert from " + "'" + rhs.name() + "' to '" + lhs.name() + "'");
 			node.setType(TLType.ERROR);
