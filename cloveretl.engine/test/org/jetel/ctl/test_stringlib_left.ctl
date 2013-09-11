@@ -10,6 +10,9 @@ string test9;
 string test10;
 string test11;
 string test12;
+string test13;
+string test14;
+string test15;
 function integer transform() {
 	test1 = left('aaa',2);
 	test2 = left('aaa',7);
@@ -25,5 +28,8 @@ function integer transform() {
 	test10 = left('abc',6,false);
 	test11 = left('',5,false);
 	test12 = left(null,4,false);
+	test13 = left(null,0,true);
+	test14 = left("abc", 0, false);
+	test15 = left("abc", 0, true);
 	return 0;
 }

@@ -45,6 +45,7 @@ import org.jetel.graph.distribution.EngineComponentAllocation;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.CloverWorkerListener;
 import org.jetel.graph.runtime.ErrorMsgBody;
+import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.graph.runtime.Message;
 import org.jetel.graph.runtime.tracker.ComplexComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
@@ -71,6 +72,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
     private Thread nodeThread;
     private final Object nodeThreadMonitor = new Object(); // nodeThread variable is guarded by this monitor
+    
+    private String formerThreadName;
     
     /**
      * List of all threads under this component.
@@ -480,19 +483,24 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		//store the current thread like a node executor
             setNodeThread(Thread.currentThread());
             
-        	//we need a synchronization point for all components in a phase
-        	//watchdog starts all components in phase and wait on this barrier for real startup
-    		preExecuteBarrier.await();
-        	
-        	//preExecute() invocation
-    		try {
-    			preExecute();
-    		} catch (Throwable e) {
-    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
-    		}
-
-    		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
-    		executeBarrier.await();
+            //Node.preExecute() is not performed for single thread execution
+            //SingleThreadWatchDog executes preExecution itself
+        	if (getGraph().getRuntimeContext().getExecutionType() != ExecutionType.SINGLE_THREAD_EXECUTION) {
+	            
+	        	//we need a synchronization point for all components in a phase
+	        	//watchdog starts all components in phase and wait on this barrier for real startup
+	    		preExecuteBarrier.await();
+	        	
+	        	//preExecute() invocation
+	    		try {
+	    			preExecute();
+	    		} catch (Throwable e) {
+	    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
+	    		}
+	
+	    		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
+	    		executeBarrier.await();
+        	}
     		
     		//execute() invocation
     		Result result = execute();
@@ -639,32 +647,37 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * Sets actual thread in which this node current running.
      * @param nodeThread
      */
-    private void setNodeThread(Thread nodeThread) {
+    public void setNodeThread(Thread nodeThread) {
     	synchronized (nodeThreadMonitor) {
 			if(nodeThread != null) {
-	    		this.nodeThread = nodeThread;
+				if (this.nodeThread != nodeThread) {
+		    		this.nodeThread = nodeThread;
 	    		
-				//thread context classloader is preset to a reasonable classloader
-				//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
-	    		nodeThread.setContextClassLoader(this.getClass().getClassLoader());
+					//thread context classloader is preset to a reasonable classloader
+					//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
+	    			nodeThread.setContextClassLoader(this.getClass().getClassLoader());
 	    		
-				String oldName = nodeThread.getName();
-	    		long runId = getGraph().getRuntimeContext().getRunId();
-	    		nodeThread.setName(getId()+"_"+runId);
-				MDC.put("runId", getGraph().getRuntimeContext().getRunId());
+					formerThreadName = nodeThread.getName();
+	    			long runId = getGraph().getRuntimeContext().getRunId();
+		    		nodeThread.setName(getId()+"_"+runId);
+					MDC.put("runId", getGraph().getRuntimeContext().getRunId());
 				
-				if (logger.isTraceEnabled()) {
-					logger.trace("set thread name; old:"+oldName+" new:"+ nodeThread.getName());
-					logger.trace("set thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
+					if (logger.isTraceEnabled()) {
+						logger.trace("set thread name; old:"+formerThreadName+" new:"+ nodeThread.getName());
+						logger.trace("set thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
+					}
 				}
-				
 			} else {
 				MDC.remove("runId");
 				long runId = getGraph().getRuntimeContext().getRunId();
 				if (logger.isTraceEnabled()) 
 					logger.trace("reset thread runId; runId:"+runId+" thread name:"+Thread.currentThread().getName());
 				
-				this.nodeThread.setName("<unnamed>");
+				if (!StringUtils.isEmpty(formerThreadName)) {
+					this.nodeThread.setName(formerThreadName); //use former thread name if any 
+				} else {
+					this.nodeThread.setName("<unnamed>");
+				}
 				this.nodeThread = null;
 			}
     	}

@@ -54,7 +54,8 @@ boolean isDate22;
 boolean isDate23;
 boolean isDate24;
 boolean isDate25;
-
+boolean isDate26;
+boolean isDate27;
 
 function integer transform() {
 	test='test';
@@ -130,6 +131,7 @@ function integer transform() {
 	// test for using default pattern from Defaults - assumed pattern yyyy-MM-dd - if different change the input string
 	isDate24=isDate('2013-12-12',null); // expected result - true
 	isDate25=isDate('17/11/1990', null); // expected result - false
-		
+	isDate26 = isDate('2013-12-12', null, null);
+	isDate27 = isDate('2013-12-12', null, null, null);	
 	return 0;
 }

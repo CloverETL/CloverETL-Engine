@@ -27,7 +27,6 @@ import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -377,7 +376,7 @@ public class runGraph {
         	logger.info("Graph definition file: " + graphFileName);
 
         	try {
-            	in = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, graphFileName));
+            	in = FileUtils.getInputStream(contextURL, graphFileName);
             } catch (IOException e) {
             	ExceptionUtils.logException(logger, "Error - graph definition file can't be read", e);
             	ExceptionUtils.logHighlightedException(logger, "Error - graph definition file can't be read", e);
@@ -543,7 +542,7 @@ public class runGraph {
 
 	public static void printRuntimeHeader() {
         logger.info("***  CloverETL framework/transformation graph"
-                + ", (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s, released under GNU Lesser General Public License  ***");
+                + ", (c) 2002-" + JetelVersion.LIBRARY_BUILD_YEAR + " Javlin a.s.  ***");
         logger.info("Running with " + getInfo());
 
         logger.info("Running on " + Runtime.getRuntime().availableProcessors() + " CPU(s), " +

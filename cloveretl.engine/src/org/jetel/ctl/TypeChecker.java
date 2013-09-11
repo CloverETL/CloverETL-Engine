@@ -296,6 +296,21 @@ public class TypeChecker extends NavigatingVisitor {
 			getFunctionCalls().add(context);
 			node.setCopyByNameCallContext(context);
 			node.setType(lhs);
+			
+			// CLO-1084
+			DataRecordMetadata inMetadata = ((TLTypeRecord) rhs).getMetadata();
+			DataRecordMetadata outMetadata = ((TLTypeRecord) lhs).getMetadata();
+			List<String> warnings = new ArrayList<String>(); 
+			for (DataFieldMetadata inField: inMetadata) {
+				for (DataFieldMetadata outField: outMetadata) {
+					if (TLUtils.equalsIgnoreCase(inField, outField, warnings)) {
+						break;
+					}
+				}
+			}
+			if (!warnings.isEmpty()) {
+				warn(node, warnings.get(0));
+			}
 		} else {
 			error(node, "Type mismatch: cannot convert from " + "'" + rhs.name() + "' to '" + lhs.name() + "'");
 			node.setType(TLType.ERROR);
@@ -783,7 +798,8 @@ public class TypeChecker extends NavigatingVisitor {
 				context.setInitMethodName(extCandidate.getName() + "Init");
 				context.setLibClassName(node.getExternalFunction().getLibrary().getLibraryClassName());
 			}
-			castIfNeeded(args,extCandidate.getFormalParameters());
+			//also fix context if casting
+			castIfNeeded(args,extCandidate.getFormalParameters(),context);
 			if (!extCandidate.isGeneric()) {
 				node.setType(extCandidate.getReturnType());
 			} else {
@@ -797,7 +813,7 @@ public class TypeChecker extends NavigatingVisitor {
 		// no better external candidate found, fall back to any local function
 		if (localCandidate != null) {
 			node.setCallTarget(localCandidate);
-			castIfNeeded(args,localCandidate.getFormalParameters());
+			castIfNeeded(args,localCandidate.getFormalParameters(),null);
 			node.setType(localCandidate.getType());
 		} else {
 			// no match found - if we have any candidates, report with hints
@@ -1870,24 +1886,26 @@ public class TypeChecker extends NavigatingVisitor {
 	 * @param parent	parent of the node to wrap into cast node
 	 * @param index		index of the node to wrap
 	 * @param toType	target type for cast
+	 * @return type to which the cast will be performed or null if no casting will be done
 	 */
-	private void castIfNeeded(SimpleNode parent, int index, TLType toType) {
+	private TLType castIfNeeded(SimpleNode parent, int index, TLType toType) {
 		final SimpleNode child = (SimpleNode)parent.jjtGetChild(index);
 		
 		// do not generate type case for identical types or null literal 
 		if (child.getType().equals(toType) || child.getType().isNull() || toType.isNull()) {
-			return;
+			return null;
 		}
 		
 		// do not generate type case if the target type is generic record (coming from CTL function)
 		if (toType.isRecord() && ((TLTypeRecord)toType).getMetadata() == null) {
-			return;
+			return null;
 		}
 		
 		final CastNode c = new CastNode(CAST_NODE_ID,child.getType(),toType);
 		c.jjtAddChild(child, 0);
 		c.jjtSetParent(parent);
 		parent.jjtAddChild(c, index);
+		return toType;
 	}
 	
 	
@@ -1897,8 +1915,9 @@ public class TypeChecker extends NavigatingVisitor {
 	 * @param node
 	 * @param formalParameters
 	 * @param varArg
+	 * @param context
 	 */
-	private void castIfNeeded(CLVFArguments node , TLType[] formal) {
+	private void castIfNeeded(CLVFArguments node , TLType[] formal, TLFunctionCallContext context ) {
 		int i=0;
 		while (i < formal.length) {
 			// do not cast parameterized types or type symbols
@@ -1907,7 +1926,10 @@ public class TypeChecker extends NavigatingVisitor {
 				continue;
 			}
 			
-			castIfNeeded(node,i,formal[i]);
+			TLType newType=castIfNeeded(node,i,formal[i]);
+			if (newType!=null && context!=null){ //we are casting, fix context
+				context.setParam(i, newType);
+			}
 			i++;
 		}
 		

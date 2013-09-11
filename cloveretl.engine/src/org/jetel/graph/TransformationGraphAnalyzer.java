@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.graph.runtime.SingleThreadWatchDog;
 
 /*
  *  import org.apache.log4j.Logger;
@@ -206,16 +207,17 @@ public class TransformationGraphAnalyzer {
 	}
 
 	/**
-	 * Components topological sorting based on depth-first search. This algorithm is used mainly for user friendly nodes
-	 * visualization.
+	 * Components topological sorting based on Kahn algorithm.
+	 * This algorithm is used for user friendly nodes visualisation
+	 * and for single thread graph execution, see {@link SingleThreadWatchDog}.
 	 * 
-	 * @param givenNodes
-	 * @return
+	 * @param givenNodes scope in which the topological sorting is performed - only mentioned components are considered
+	 * @return given nodes in topological order 
 	 * @note algorithm is described for example at http://en.wikipedia.org/wiki/Topological_sorting
 	 */
 	public static List<Node> nodesTopologicalSorting(List<Node> givenNodes) {
 		List<Node> result = new ArrayList<Node>();
-		List<Node> roots = new ArrayList<Node>();
+		Stack<Node> roots = new Stack<Node>();
 
 		// find root nodes - nodes without precedent nodes in the given list of nodes
 		for (Node givenNode : givenNodes) {
@@ -225,18 +227,32 @@ public class TransformationGraphAnalyzer {
 		}
 
 		// topological sorting
-		Stack<Node> nodesToProcess = new Stack<Node>();
-		nodesToProcess.addAll(roots);
-		List<Node> visited = new ArrayList<Node>();
-		while (!nodesToProcess.isEmpty()) {
-			Node nodeToProcess = nodesToProcess.pop();
-			if (!visited.contains(nodeToProcess)) {
-				visited.add(nodeToProcess);
-				nodesToProcess.addAll(findFollowingNodes(nodeToProcess, givenNodes));
-				result.add(nodeToProcess);
+		List<Edge> removedEdges = new ArrayList<Edge>();
+		while (!roots.isEmpty()) {
+			Node root = roots.pop();
+			result.add(root);
+			for (OutputPort outputPort : root.getOutPorts()) {
+				removedEdges.add(outputPort.getEdge());
+			}
+			for (OutputPort outputPort : root.getOutPorts()) {
+				Node followingComponent = outputPort.getReader();
+				if (givenNodes.contains(followingComponent) && !roots.contains(followingComponent)) {
+					boolean isNewRoot = true;
+					for (InputPort inputPort : followingComponent.getInPorts()) {
+						if (!removedEdges.contains(inputPort.getEdge())) {
+							isNewRoot = false;
+							break;
+						}
+					}
+					if (isNewRoot) {
+						roots.push(followingComponent);
+					}
+				}
 			}
 		}
-
+		//TODO check whether all edges have been 'removed', if an edge
+		//remains in the given scope, topological order does not exist -
+		//an oriented cycle found
 		return result;
 	}
 

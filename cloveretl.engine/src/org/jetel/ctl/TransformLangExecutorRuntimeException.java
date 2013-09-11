@@ -21,6 +21,7 @@ package org.jetel.ctl;
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.ctl.ASTnode.Node;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -50,6 +51,8 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
         super(new JetelRuntimeException(message, cause)); 
         this.nodeInError=node;
         this.arguments=arguments;
+        
+        System.err.println(this.getExtendedMessage());
     }
     
 	public TransformLangExecutorRuntimeException(Object[] arguments,String message){
@@ -122,6 +125,25 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 		return strBuf.toString();
 	}
 
+	public String getExtendedMessage(){
+		StringBuffer strBuf=new StringBuffer();
+		strBuf.append("THIS: ").append(nodeInError.toString());
+		if (nodeInError != null) {
+			Node parent=nodeInError.jjtGetParent();
+        	while(parent!=null){
+        		strBuf.append(" parent: ").append(parent.toString());
+        		parent=parent.jjtGetParent();
+        	}
+        	if(nodeInError.jjtHasChildren()){
+        		for(int i=0;i<nodeInError.jjtGetNumChildren();i++){
+        			strBuf.append(" child ").append(nodeInError.jjtGetChild(i).toString());
+        		}
+        	}
+		}
+		return strBuf.toString();
+	}
+	
+	
 	public int getErrorCode() {
 		return errorCode;
 	}

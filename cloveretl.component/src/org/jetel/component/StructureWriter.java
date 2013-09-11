@@ -154,6 +154,7 @@ public class StructureWriter extends Node {
 	private static final String XML_PARTITION_OUTFIELDS_ATTRIBUTE = "partitionOutFields";
 	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	private static final String XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE = "partitionUnassignedFileName";
+	private static final String XML_SORTED_INPUT_ATTRIBUTE = "sortedInput";
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 
 	private String fileURL;
@@ -176,7 +177,8 @@ public class StructureWriter extends Node {
 	private String partitionUnassignedFileName;
 	private String headerMask;
 	private String footerMask;
-
+	private boolean sortedInput = false;
+	
 	private static Log logger = LogFactory.getLog(StructureWriter.class);
 
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
@@ -396,6 +398,7 @@ public class StructureWriter extends Node {
             writer.setPartitionKeyNames(attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             writer.setPartitionFileTag(partitionFileTagType);
         	writer.setPartitionUnassignedFileName(partitionUnassignedFileName);
+        	writer.setSortedInput(sortedInput);
         	
         	if (attrPartitionOutFields != null) {
         		writer.setPartitionOutFields(attrPartitionOutFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -499,6 +502,9 @@ public class StructureWriter extends Node {
         }
 		if(xattribs.exists(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE)) {
 			aDataWriter.setPartitionUnassignedFileName(xattribs.getStringEx(XML_PARTITION_UNASSIGNED_FILE_NAME_ATTRIBUTE, RefResFlag.URL));
+        }
+		if(xattribs.exists(XML_SORTED_INPUT_ATTRIBUTE)) {
+			aDataWriter.setSortedInput(xattribs.getBoolean(XML_SORTED_INPUT_ATTRIBUTE));
         }
 		if(xattribs.exists(XML_MK_DIRS_ATTRIBUTE)) {
 			aDataWriter.setMkDirs(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE));
@@ -620,6 +626,20 @@ public class StructureWriter extends Node {
 	 */
 	public PartitionFileTagType getPartitionFileTag() {
 		return partitionFileTagType;
+	}
+	
+	/**
+	 * @return the sortedInput
+	 */
+	public boolean isSortedInput() {
+		return sortedInput;
+	}
+
+	/**
+	 * @param sortedInput the sortedInput to set
+	 */
+	public void setSortedInput(boolean sortedInput) {
+		this.sortedInput = sortedInput;
 	}
 
 	/**

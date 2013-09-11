@@ -24,7 +24,6 @@
 	
 	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false">
 		<ExcludeRegEx ident="error"/>
-		<FlatFile outputFile="data-tmp/CustomersFixedCorrect.txt" supposedFile="supposed-out/CustomersFixedCorrect.txt"/>
 		<RegEx expression="Exception raised by user: O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="3"/>
 	</FunctionalTest>
 	
