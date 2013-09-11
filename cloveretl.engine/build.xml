@@ -271,16 +271,17 @@ defined.version.suffix=release
 	<target name="dist.bin" depends="build" description="Creates binary distribution">
 
 		<!-- binary distribution -->
+		<if>
+		    <equals arg1="${dist.type}" arg2="opensource"/>
+		        <then>
+		          <antcall target="copy-license-LGPL"/>
+		        </then>
+		</if>
+		
 		<mkdir dir="${dir.distprepare.bin}/cloverETL"/>
 		<copy todir="${dir.distprepare.bin}/cloverETL">
 			<fileset dir="${dir.package}" />
-		</copy>
-			 <if>
-		        <equals arg1="${dist.type}" arg2="opensource"/>
-		           <then>
-		             <antcall target="copy-license-LGPL"/>
-		           </then>
-		      </if>
+		</copy>			 
 			
 	   	<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
