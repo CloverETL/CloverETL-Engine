@@ -1491,7 +1491,7 @@ public class StringUtils {
 		if (str == null){
 			return null;
 		}
-		return str.replaceAll("[^\\p{Print}]+", "");
+		return str.replaceAll("[\\p{C}]+", ""); // CLO-1814 - previously "[^\\p{Print}]+"
 	}
 	
 	/**
@@ -2131,7 +2131,7 @@ public class StringUtils {
 		}
 		
 		
-		final Comparator comparator =new  Comparator(){
+		final Comparator<Object> comparator = new Comparator<Object>(){
 
 			@Override
 			public int compare(Object o1, Object o2) {
