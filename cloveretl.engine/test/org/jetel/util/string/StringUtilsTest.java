@@ -764,6 +764,42 @@ public class StringUtilsTest extends CloverTestCase {
 		assertEquals("jedna;dva;;tri;null;ctyri", StringUtils.join(Arrays.asList("jedna", "dva", "", "tri", null, "ctyri"), ";"));
 	}
 	
+	public void testRemoveNonPrintable() {
+		String input;
+		
+		// remove non-printable
+		input = "A\u000b\u000bH\u000b\u000bO\u000b\u000bJ";
+		assertEquals("AHOJ", StringUtils.removeNonPrintable(input));
+		
+		// remove ASCII control characters
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i <= 31; i++) { // space (32) is considered printable 
+			sb.appendCodePoint(i);
+		}
+		sb.appendCodePoint(127); // delete (127)
+		assertEquals("", StringUtils.removeNonPrintable(sb.toString()));
+
+		// preserve non-ASCII characters
+		input = "\u017Elu\u0165ou\u010Dk\u00FD k\u016F\u0148 \u00FAp\u011Bl \u010F\u00E1belsk\u00E9 \u00F3dy";
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		// preserve space
+		input = "a b";
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		// empty string
+		input = "";
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		// null
+		input = null;
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		// blank string
+		input = "   ";
+		assertEquals(input, StringUtils.removeNonPrintable(input));
+	}
+	
 }
 
 /*
