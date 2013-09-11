@@ -75,6 +75,10 @@ public class TLFunctionCallContext {
 		this.params = params;
 	}
 	
+	public void setParam(int index, TLType param){
+		this.params[index]=param;
+	}
+	
 	public boolean isLiteral(int i) {
 		return isLiteral[i];
 	}
