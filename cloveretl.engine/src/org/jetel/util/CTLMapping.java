@@ -160,6 +160,11 @@ public class CTLMapping {
 	private Set<Field> usedOutputFields = null;
 	
 	/**
+	 * Before transform is executed, default values will be copied to output records
+	 */
+	private boolean outputSetDefaults = true;
+	
+	/**
 	 * Only constructor
 	 * @param name name of CTL mapping used mainly for reporting purposes
 	 * @param component associated component used mainly for CTL mapping compilation
@@ -337,6 +342,15 @@ public class CTLMapping {
 		} catch (Exception e) {
 			throw new IllegalArgumentException(String.format("field '%s' in output '%s' cannot be initialized by value '%s'", fieldName, outputName, String.valueOf(value)));
 		}
+	}
+	
+	/**
+	 * By default, output records will be filled with default values taken from the output record used in initialization.
+	 * 
+	 * @param outputSetDefaults Setting this to false will disable this behavior - no default values will be set.
+	 */
+	public void setOutputSetDefaults(boolean outputSetDefaults) {
+		this.outputSetDefaults = outputSetDefaults;
 	}
 	
 	/**
@@ -521,9 +535,11 @@ public class CTLMapping {
 		if (!isInitialized) {
 			throw new IllegalStateException("mapping needs to be initialized before execution");
 		}
-		for (int i = 0; i < outputRecordsArray.length; i++) {
-			if (outputRecordsArray[i] != null) {
-				outputRecordsArray[i].copyFrom(defaultOutputRecords[i]);
+		if (outputSetDefaults) {
+			for (int i = 0; i < outputRecordsArray.length; i++) {
+				if (outputRecordsArray[i] != null) {
+					outputRecordsArray[i].copyFrom(defaultOutputRecords[i]);
+				}
 			}
 		}
 
@@ -552,6 +568,9 @@ public class CTLMapping {
 	 * @return
 	 */
 	public boolean isOutputOverridden(DataRecord record, DataField field) {
+		if (!outputSetDefaults) {
+			return false;
+		}
 		if (record.getField(field.getMetadata().getName()) != field) {
 			throw new IllegalArgumentException("field is not part of record");
 		}
