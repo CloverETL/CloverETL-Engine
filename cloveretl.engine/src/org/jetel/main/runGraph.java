@@ -27,7 +27,6 @@ import java.net.Authenticator;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -384,7 +383,7 @@ public class runGraph {
         	logger.info("Graph definition file: " + graphFileName);
 
         	try {
-            	in = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, graphFileName));
+            	in = FileUtils.getInputStream(contextURL, graphFileName);
             } catch (IOException e) {
             	ExceptionUtils.logException(logger, "Error - graph definition file can't be read", e);
             	ExceptionUtils.logHighlightedException(logger, "Error - graph definition file can't be read", e);

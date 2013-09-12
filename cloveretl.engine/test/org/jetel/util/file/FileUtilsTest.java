@@ -261,6 +261,14 @@ public class FileUtilsTest extends CloverTestCase {
 			result = FileUtils.getFileURL("dict:path"); // must not fail
 			assertEquals("dict:path", result.toString());
 		}
+		
+		// CLO-978
+		try {
+			FileUtils.getFileURL("smb://virt-orange%3BSMBTest:p%40ss{/}@VIRT-ORANGE/SMBTestPub/test.txt");
+			fail();
+		} catch (MalformedURLException ex) {
+			assertTrue(ex.getMessage().contains("p%40ss{"));
+		}
 	}
 	
 	private void testInvalidURL(String urlString) {

@@ -136,8 +136,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected abstract Object getVariable(String varName);
 
 	protected void check(String varName, Object expectedResult) {
-		assertEquals(varName, expectedResult, getVariable(varName));
+		  assertEquals(varName, expectedResult, getVariable(varName));
 	}
+	
+	protected void checkEqualValue(String varName, Object expectedResult) {
+		  assertTrue(varName, ((Comparable)expectedResult).compareTo(getVariable(varName))==0);
+	}
+	
 	
 	protected void checkEquals(String varName1, String varName2) {
 		assertEquals("Comparing " + varName1 + " and " + varName2 + " : ", getVariable(varName1), getVariable(varName2));
@@ -6162,7 +6167,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("intResult", Arrays.asList(2.0, 3.0));
 		check("longResult", Arrays.asList(2.0, 3.0));
 		check("doubleResult", Arrays.asList(3.0, -3.0));
-		check("decimalResult", Arrays.asList(3.0, -3.0));
+		check("decimalResult", Arrays.asList(new BigDecimal(3.0), new BigDecimal(-3.0)));
 	}
 	
 	public void test_mathlib_ceil_expect_error(){
@@ -6185,7 +6190,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal var = null; double d = ceil(var); return 0;}","test_mathlib_ceil_expect_error");
+			doCompile("function integer transform(){decimal var = null; decimal d = ceil(var); return 0;}","test_mathlib_ceil_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6240,7 +6245,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("intResult", Arrays.asList(2.0, 3.0));
 		check("longResult", Arrays.asList(2.0, 3.0));
 		check("doubleResult", Arrays.asList(2.0, -4.0));
-		check("decimalResult", Arrays.asList(2.0, -4.0));
+		check("decimalResult", Arrays.asList(new BigDecimal("2"), new BigDecimal("-4")));
 	}
 	
 	public void test_math_lib_floor_expect_error(){
@@ -6263,7 +6268,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal input = null; double d = floor(input); return 0;}","test_math_lib_floor_expect_error");
+			doCompile("function integer transform(){decimal input = null; decimal d = floor(input); return 0;}","test_math_lib_floor_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6358,10 +6363,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("power1", Math.pow(3,1.2));
 		check("power2", Double.NaN);
 		
-		check("intResult", Arrays.asList(8d, 8d, 8d, 8d));
-		check("longResult", Arrays.asList(8d, 8d, 8d, 8d));
-		check("doubleResult", Arrays.asList(8d, 8d, 8d, 8d));
-		check("decimalResult", Arrays.asList(8d, 8d, 8d, 8d));
+		check("intResult", Arrays.asList(new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8")));
+		check("longResult", Arrays.asList(new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8")));
+		check("doubleResult", Arrays.asList(new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8"), new BigDecimal("8")));
+		check("decimalResult", Arrays.asList(new BigDecimal("8.000"), new BigDecimal("8.000"), new BigDecimal("8.000"), new BigDecimal("8.000")));
 	}
 	
 	public void test_mathlib_pow_expect_error(){
@@ -6402,19 +6407,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal var1 = 12.2d; decimal var2 = null; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			doCompile("function integer transform(){decimal var1 = 12.2d; decimal var2 = null; decimal n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal var1 = null; decimal var2 = 45.3d; number n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
+			doCompile("function integer transform(){decimal var1 = null; decimal var2 = 45.3d; decimal n = pow(var1, var2); return 0;}","test_mathlib_pow_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 	}
 	
+	/*
+	 * The equals() method also takes the scale into account,
+	 * CTL uses compareTo() instead.
+	 */
+	private void compareDecimals(List<BigDecimal> expected, List<BigDecimal> actual) {
+		assertEquals(expected.size(), actual.size());
+		for (int i = 0; i < actual.size(); i++) {
+			assertTrue("Expected: " + expected.get(i) + ", actual: " + actual.get(i), expected.get(i).compareTo(actual.get(i)) == 0);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
 	public void test_mathlib_round() {
 		doCompile("test_mathlib_round");
 		check("round1", -4l);
@@ -6422,7 +6439,35 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("intResult", Arrays.asList(2l, 3l));
 		check("longResult", Arrays.asList(2l, 3l));
 		check("doubleResult", Arrays.asList(2l, 4l));
-		check("decimalResult", Arrays.asList(2l, 4l));
+		//CLO-1835
+//		check("decimalResult", Arrays.asList(new BigDecimal("2"), new BigDecimal("4")));
+		
+		// negative precision means the number of places after the decimal point
+		// positive precision before the decimal point
+		List<BigDecimal> expected = Arrays.asList(
+				new BigDecimal("0"),
+				new BigDecimal("1000000"),
+				new BigDecimal("1200000"),
+				new BigDecimal("1230000"),
+				new BigDecimal("1235000"), // rounded up
+				new BigDecimal("1234600"), // rounded up
+				new BigDecimal("1234570"), // rounded up
+				new BigDecimal("1234567"),
+				new BigDecimal("1234567.1"),
+				new BigDecimal("1234567.12"),
+				new BigDecimal("1234567.123"),
+				new BigDecimal("1234567.1235"), // rounded up
+				new BigDecimal("1234567.12346"), // rounded up
+				new BigDecimal("1234567.123457"), // rounded up
+				new BigDecimal("1234567.1234567")
+		);
+		//CLO-1835
+		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal2Result"));
+		//CLO-1832
+		check("intWithPrecisionResult", 1234d);
+		check("longWithPrecisionResult", 123456d);
+		check("ret1", 1234d);
+		check("ret2", 13565d);
 	}
 	
 	public void test_mathlib_round_expect_error(){
@@ -6433,7 +6478,43 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal input = null; long l = round(input);return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){decimal input = null; decimal l = round(input);return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){number input = null; number l = round(input, 2);return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; decimal l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; number l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; number l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; number l = round(input); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; number l = round(input); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6556,6 +6637,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void test_mathlib_max_min() {
+		doCompile("test_mathlib_max_min");
+		
+//		check("intResult", Arrays.asList(2l, 3l));
+//		check("longResult", Arrays.asList(2l, 3l));
+//		check("doubleResult", Arrays.asList(2l, 4l));
+		
 	}
 	
 //-------------------------DateLib tests----------------------

@@ -21,7 +21,6 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.nio.channels.Channels;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -676,7 +675,7 @@ public final class TransformationGraph extends GraphElement {
 		// some JDBC drivers start up thread which monitors opened connection
 		// this thread sometimes won't die when the main thread is finished - hence
 		// this code
-		Iterator iterator;
+		Iterator<?> iterator;
 		IConnection dbCon;
 		
 		// free all phases
@@ -900,7 +899,7 @@ public final class TransformationGraph extends GraphElement {
 		TypedProperties graphProperties = new TypedProperties();
 		InputStream inStream = null;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeContext().getContextURL(), fileURL));
+        	inStream = FileUtils.getInputStream(getRuntimeContext().getContextURL(), fileURL);
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
@@ -931,7 +930,7 @@ public final class TransformationGraph extends GraphElement {
 
 		InputStream inStream = null;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeContext().getContextURL(), fileURL));
+        	inStream = FileUtils.getInputStream(getRuntimeContext().getContextURL(), fileURL);
             graphProperties.loadSafe(inStream);
     		getGraphParameters().addProperties(graphProperties);
         } catch(MalformedURLException e) {
@@ -1257,7 +1256,7 @@ public final class TransformationGraph extends GraphElement {
     	return getUniqueId(null, connections);
     }
     
-    private String getUniqueId(String id, Map elements) {
+    private String getUniqueId(String id, Map<String, ?> elements) {
 
     	if (id == null) {
 			if (elements == dataRecordMetadata) {
