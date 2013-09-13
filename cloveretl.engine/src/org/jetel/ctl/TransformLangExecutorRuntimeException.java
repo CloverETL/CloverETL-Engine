@@ -106,7 +106,7 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 	
 	@Override
 	public String getMessage() {
-		StringBuffer strBuf = new StringBuffer("Interpreter runtime exception");
+		StringBuilder strBuf = new StringBuilder("Interpreter runtime exception");
         if (nodeInError != null) {
         	if (nodeInError instanceof CLVFFunctionCall) {
         		strBuf.append(" in function ").append(((CLVFFunctionCall) nodeInError).getName());
@@ -130,9 +130,9 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 	}
 
 	public String getExtendedMessage(){
-		StringBuffer strBuf=new StringBuffer();
-		strBuf.append("THIS: ").append(nodeInError.toString());
+		StringBuilder strBuf=new StringBuilder();
 		if (nodeInError != null) {
+			strBuf.append("THIS: ").append(nodeInError.toString());
 			Node parent=nodeInError.jjtGetParent();
         	while(parent!=null){
         		strBuf.append(" parent: ").append(parent.toString());
