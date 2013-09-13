@@ -83,8 +83,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 this.token_source.input_stream.setTabSize(size);
         }
 
-    @Override
-	public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
+    public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
         return parserHelper.getFunctions();
     }
 
@@ -608,6 +607,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
                                 parser.addParsedImports(getParsedImports());
                                 parseTree = parser.Start();
+                                jjtn000.setSourceFilename(filenameURL);
                                 jjtn000.jjtAddChild(parseTree,0);
                                 jjtn000.jjtGetChild(0).jjtSetParent(jjtn000);
                                 addParsedImports(parser.getParsedImports()); // merge child's imports

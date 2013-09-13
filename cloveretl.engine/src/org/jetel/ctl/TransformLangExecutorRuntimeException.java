@@ -113,6 +113,10 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
         	}
             strBuf.append(" on line ").append(nodeInError.getLine());
             strBuf.append(" column ").append(nodeInError.getColumn());
+            String fileName = nodeInError.getSourceFilename();
+            if (fileName != null) {
+            	strBuf.append(" in file ").append(fileName);
+            }
         }
 		if (arguments != null) {
 			for(int i = 0; i < arguments.length; i++) {

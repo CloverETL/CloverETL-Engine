@@ -6638,17 +6638,166 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
-	
-	@SuppressWarnings("unchecked")
-	public void test_mathlib_max_min() {
-		doCompile("test_mathlib_max_min");
-		
-//		check("intResult", Arrays.asList(2l, 3l));
-//		check("longResult", Arrays.asList(2l, 3l));
-//		check("doubleResult", Arrays.asList(2l, 4l));
-		
+	public void test_mathlib_max() throws UnsupportedEncodingException{
+		doCompile("test_mathlib_max");
+		check("retInt", Arrays.asList(7,545,15,11,67,-43));
+		check("retIntNull", Arrays.asList(4,-4, null, null, 12, 54, 11, 11));
+		check("retLong", Arrays.asList(23L, 58L, 45l, 75L, 89L, -11L));
+		check("retLongNull", Arrays.asList(40L, 89L, null, null, 44L, 56L, 89L, 78l, 89L, 78L, 23L));
+		check("retDec", Arrays.asList(new BigDecimal("56.3"), new BigDecimal("87.3"), new BigDecimal("65.1"), new BigDecimal("56.3"), new BigDecimal("65.1"), new BigDecimal("-11.1")));
+		check("retDecNull", Arrays.asList(new BigDecimal("65.9"), new BigDecimal("-12.6"), null, null, 
+				new BigDecimal("32.4"), new BigDecimal("21.5"), new BigDecimal("11.3"), 
+				new BigDecimal("56.3"), new BigDecimal("78.1"), new BigDecimal("45.3"),
+				new BigDecimal("87.9"), new BigDecimal("12.3"), new BigDecimal("13.4"),
+				new BigDecimal("78"), new BigDecimal("59.6"), new BigDecimal("78.6"),
+				new BigDecimal("89.6"), new BigDecimal("58.6"), new BigDecimal("48.6"),
+				new BigDecimal("65.1")));
+		check("retNum", Arrays.asList(54.89d, 0d, 89.7d, 89.7d, 23.6d, -12.5));
+		check("retNumNull", Arrays.asList(56.4d, 98.3d, null, null, 56.9d, 45.7d, -78.6d, -11.2d, 78d, 45.6d, 89.6d, 56.9d, 123.3d, 45.9d, 48.5d, 67.8d));
+		check("retString", Arrays.asList("Kennen", "Zac"));
+		check("retStringNull", Arrays.asList("Warwick", "Quinn", null));
+		check("retBool", Arrays.asList(true, true));
+		check("retBoolNull", Arrays.asList(true, true, null));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2013, 1, 24, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("retDate", Arrays.asList(cal.getTime(), cal.getTime()));
+		check("retDateNull", Arrays.asList(cal.getTime(), cal.getTime(), null));
 	}
 	
+	public void test_mathlib_max_expect_error(){
+		try {
+			doCompile("function integer transform(){long[] my_list = null; max(my_list); return 0;}","test_mathlib_max_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long[] my_list; max(my_list); return 0;}","test_mathlib_max_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){byte[] my_list = [str2byte('Lux', 'utf-8'), str2byte('Tresh', 'utf-8')]; max(my_list); return 0;}","test_mathlib_max_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_min(){
+		doCompile("test_mathlib_min");
+		check("retInt", Arrays.asList(-5, 14, 17, 15, -9, -48));
+		check("retIntNull", Arrays.asList(-3, -9, null, 19, 12, null, 15, 56));
+		check("retLong", Arrays.asList(-76l, 12l, 156l, -6l, 76l, -6l));
+		check("retLongNull", Arrays.asList(-30L, 12L, null, 13L, 12L, null, 89L, -4L, 12L, -9l, -5L, -89L));
+		check("retNum", Arrays.asList(0.99d, -90.1d, 56.9d, 56.9d, 45.1d, -1.11d));
+		check("retNumNull", Arrays.asList(11.3d, -11.1d, null, null, null, 12.3d, 11.2d, 11.6d, 12.6d, 12.3d, 17d, 12.6d, 12d, null, 12.3d, -23.6d, 36.9d, 23d, null));
+		check("retDec", Arrays.asList(new BigDecimal("-7.8"), new BigDecimal("-1.11"), new BigDecimal("56.7"),
+				new BigDecimal("32.1"), new BigDecimal("56.7"), new BigDecimal("-12.4")));
+		check("retDecNull", Arrays.asList(new BigDecimal("34.2"), new BigDecimal("-1.6"), null, null, null,
+				new BigDecimal("12.3"), new BigDecimal("11.2"), new BigDecimal("1.11"), new BigDecimal("-13.5"),
+				new BigDecimal("2.11"), new BigDecimal("-23.9"), new BigDecimal("89.7"), new BigDecimal("16"),
+				null, new BigDecimal("23.6"), new BigDecimal("78.9"), new BigDecimal("45.3"), new BigDecimal("458"),
+				null, new BigDecimal("12.1"), new BigDecimal("-89.6"), new BigDecimal("78.9"), 
+				new BigDecimal("12.6"), null));
+		check("retStr", Arrays.asList("Jax", "Sivir"));
+		check("retStrNull", Arrays.asList("Lulu", "Poppy", null));
+		check("retBool", Arrays.asList(false, false));
+		check("retBoolNull", Arrays.asList(false, false, null));
+		Calendar cal = Calendar.getInstance();
+		cal.set(2003, 10, 17, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("retDate", Arrays.asList(cal.getTime(), cal.getTime()));
+		check("retDate", Arrays.asList(cal.getTime(), cal.getTime(), null));
+	}
+	
+	public void test_mathlib_min_expect_error(){
+		try {
+			doCompile("function integer transform(){integer[] myList = null; min(myList); return 0;}","test_mathlib_min_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer[] myList; min(myList); return 0;}","test_mathlib_min_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){min([str2byte('Renektor', 'utf-8'), str2byte('Kayle', 'utf-16')]); return 0;}","test_mathlib_min_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_cos(){
+		doCompile("test_mathlib_cos");
+		check("ret", Arrays.asList(Math.cos(12.6d), Math.cos(0d), Math.cos(-1456.8d), 
+				Math.cos(1.6d), Math.cos(12.6d), Math.cos(-19.3d), Math.cos(12d), Math.cos(23d),
+				Math.cos(0d), Math.cos(0d)));
+	}
+	
+	public void test_mathlib_cos_expect_error(){
+
+		try {
+			doCompile("function integer transform(){double input = null; double d = cos(input); return 0;}","test_mathlib_cos_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; double d = cos(input); return 0;}","test_mathlib_cos_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_sin(){
+		doCompile("test_mathlib_sin");
+		check("ret", Arrays.asList(Math.sin(1d), Math.sin(25.9d), Math.sin(256d), Math.sin(123d), 
+				Math.sin(0d), Math.sin(0d)));
+	}
+	
+	public void test_mathlib_sin_expect_error(){
+		try {
+			doCompile("function integer transform(){double input = null; double d = sin(input); return 0;}","test_mathlib_sin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; double d = sin(input); return 0;}","test_mathlib_sin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_tan(){
+		doCompile("test_mathlib_tan");
+		check("ret", Arrays.asList(Math.tan(Math.PI/2), Math.tan(2*Math.PI), Math.tan(Math.PI),
+				Math.tan(0d), Math.tan(12.44d), Math.tan(78d), Math.tan(725d), Math.tan(0d), Math.tan(0d)));
+	}
+	
+	public void test_mathlib_tan_expect_error(){
+		try {
+			doCompile("function integer transform(){double input = null; double dd = tan(input); return 0;}","test_mathlib_tan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; double dd = tan(input); return 0;}","test_mathlib_tan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 //-------------------------DateLib tests----------------------
 	
 	public void test_datelib_cache() {

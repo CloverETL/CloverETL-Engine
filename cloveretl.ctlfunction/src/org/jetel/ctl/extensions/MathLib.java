@@ -703,6 +703,8 @@ public class MathLib extends TLFunctionLibrary {
     	}
     	
     }
+    
+    
 
     @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
 	public static final Boolean bitIsSet(TLFunctionCallContext context, Integer input, Integer bitPosition) {
@@ -781,22 +783,58 @@ public class MathLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Returns min value of the arguments.")
     public static final Integer min(TLFunctionCallContext context, Integer a, Integer b) {
-    	return Math.min(a, b);
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.min(a, b);
+    		}
+    	}
     }
     
     @TLFunctionAnnotation("Returns min value of the arguments.")
     public static final Long min(TLFunctionCallContext context, Long a, Long b) {
-    	return Math.min(a, b);
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.min(a, b);
+    		}
+    	}
     }
     
     @TLFunctionAnnotation("Returns min value of the arguments.")
     public static final Double min(TLFunctionCallContext context, Double a, Double b) {
-    	return Math.min(a, b);
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.min(a, b);
+    		}
+    	}
     }
     
     @TLFunctionAnnotation("Returns min value of the arguments.")
     public static final BigDecimal min(TLFunctionCallContext context, BigDecimal a, BigDecimal b) {
-    	return a.min(b);
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return a.min(b);
+    		}
+    	}
     }
     
     
@@ -808,7 +846,10 @@ public class MathLib extends TLFunctionLibrary {
 
 		while (i.hasNext()) {
 			Comparable next = (Comparable) i.next();
-			if (next.compareTo(candidate) < 0)
+			if (next==null) continue;
+			if (candidate==null)
+				candidate=next;
+			else if (next.compareTo(candidate) < 0)
 				candidate = next;
 		}
 		return (E)candidate;
@@ -853,22 +894,58 @@ public class MathLib extends TLFunctionLibrary {
     
     @TLFunctionAnnotation("Returns max value of the arguments.")
     public static final Integer max(TLFunctionCallContext context, Integer a, Integer b) {
-    	return Math.max(a, b);
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.max(a, b);
+    		}
+    	}
     }
     
     @TLFunctionAnnotation("Returns max value of the arguments.")
     public static final Long max(TLFunctionCallContext context, Long a, Long b) {
-    	return Math.max(a, b);
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.max(a, b);
+    		}
+    	}
     }
     
     @TLFunctionAnnotation("Returns max value of the arguments.")
     public static final Double max(TLFunctionCallContext context, Double a, Double b) {
-    	return Math.max(a, b);
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.max(a, b);
+    		}
+    	}
     }
     
     @TLFunctionAnnotation("Returns max value of the arguments.")
     public static final BigDecimal max(TLFunctionCallContext context, BigDecimal a, BigDecimal b) {
-    	return a.max(b);
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return a.max(b);
+    		}
+    	}
     }
     
     @TLFunctionAnnotation("Returns max value of the array.")
@@ -879,7 +956,10 @@ public class MathLib extends TLFunctionLibrary {
 
 		while (i.hasNext()) {
 			Comparable next = (Comparable) i.next();
-			if (next.compareTo(candidate) > 0)
+			if (next==null) continue;
+			if (candidate==null)
+				candidate=next;
+			else if (next.compareTo(candidate) > 0)
 				candidate = next;
 		}
 		return (E)candidate;
