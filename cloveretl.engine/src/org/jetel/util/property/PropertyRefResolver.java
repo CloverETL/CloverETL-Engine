@@ -489,6 +489,21 @@ public class PropertyRefResolver {
 	}
 
 	/**
+	 * @param propertyName value of this property name is returned
+	 * @param refResFlag flag which is used by resolver
+	 * @return resolved value of given property name
+	 */
+	public String getResolvedPropertyValue(String propertyName, RefResFlag refResFlag) {
+		if (!StringUtils.isEmpty(propertyName)) {
+			StringBuilder propertyReference = new StringBuilder();
+			propertyReference.append("${").append(propertyName).append('}');
+			return resolveRef(propertyReference.toString(), refResFlag);
+		} else {
+			throw new IllegalArgumentException("empty property name");
+		}
+	}
+	
+	/**
 	 * Indicates if given string contains also property reference (that needs to be de-referenced)
 	 * @param value value to inspect
 	 * @return <code>true</code> if value contains reference to at least one property.

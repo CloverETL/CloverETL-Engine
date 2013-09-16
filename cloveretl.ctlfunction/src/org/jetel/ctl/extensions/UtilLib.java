@@ -106,7 +106,7 @@ public class UtilLib extends TLFunctionLibrary {
     // GET PARAM VALUE
 	@TLFunctionAnnotation("Returns the resolved value of a graph parameter")
     public static String getParamValue(TLFunctionCallContext context, String paramName) {
-		return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().resolveRef(context.getGraph().getGraphParameters().getGraphParameter(paramName).getValue(), RefResFlag.SPEC_CHARACTERS_OFF);
+		return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().getResolvedPropertyValue(paramName, RefResFlag.SPEC_CHARACTERS_OFF);
     }
     
     @TLFunctionInitAnnotation()
@@ -146,7 +146,7 @@ public class UtilLib extends TLFunctionLibrary {
 		
 		Map<String, String> map = new HashMap<String, String>();
 		for (GraphParameter param : parameters.getAllGraphParameters()) {
-			map.put(param.getName(), refResolver.resolveRef(param.getValue(), RefResFlag.SPEC_CHARACTERS_OFF));
+			map.put(param.getName(), refResolver.getResolvedPropertyValue(param.getName(), RefResFlag.SPEC_CHARACTERS_OFF));
 		}
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
     }
