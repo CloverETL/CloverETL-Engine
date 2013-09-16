@@ -7173,6 +7173,14 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertNotNull(getVariable("patt_null"));
 		assertNotNull(getVariable("ret1"));
 		assertNotNull(getVariable("ret2"));
+		Calendar cal = Calendar.getInstance();
+		cal.set(1997,10,12,0,0,0);
+		cal.set(Calendar.MILLISECOND,0);
+		check("ret3", cal.getTime());
+		cal.clear();
+		cal.set(1970,0,1,1,0,12);
+		cal.set(Calendar.MILLISECOND, 0);
+		check("ret4", cal.getTime());
 	}
 	
 	
