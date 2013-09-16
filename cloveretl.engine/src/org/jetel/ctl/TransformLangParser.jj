@@ -1617,7 +1617,7 @@ void VariableDeclaration():{/*@bgen(jjtree) VariableDeclaration */
     <IDENTIFIER>
     {
     	jjtn000.setName(token.image);
-    	jjtn000.end(token.beginLine,token.beginColumn);
+    	jjtn000.end(token.endLine,token.endColumn);
     }
 
     [ 
