@@ -12,6 +12,13 @@ string[] strList;
 string[] strList2;
 string[] emptyList;
 string[] emptyList2;
+string[] retNull1;
+boolean[] retNull2;
+date[] retNull3;
+integer[] retNull4;
+long[] retNull5;
+number[] retNull6;
+decimal[] retNull7;
 
 function integer transform() {
 	intList = [3, 2, 1, 1, 5];
@@ -27,5 +34,13 @@ function integer transform() {
 	strList = ['Soraka', 'Nocturne', 'Alistar', ''];
 	strList2 = strList.sort();
 	emptyList2 = sort(emptyList);
+	retNull1 = sort(['Kennen', null, 'Renector', null]);
+	retNull2 = sort([true, null, false, null, true, null]);
+	retNull3 = sort([null, 2001-01-20, null, 2003-05-12]);
+	retNull4 = sort([12,null,8,null,10,null,1]);
+	retNull5 = sort([12, null, 15L, null, 1, null]);
+	retNull6 = sort([null, 12.3, null, 12.4, 12.1]);
+	retNull7 = sort([11.1d, null, 11d, null, 11.2d, null]);
+	printErr(retNull7);
 	return 0;
 }

@@ -385,24 +385,15 @@ public class PropertyRefResolver {
 			if (parameters.hasGraphParameter(reference)) {
 				GraphParameter param = parameters.getGraphParameter(reference);
 				if (param.isSecure()) {
-					if (flag.resolveSecureParameters()) {
+					//secure parameters are resolved in all attributes for now
+//					if (flag.resolveSecureParameters()) {
 						resolvedReference = getAuthorityProxy().getSecureParamater(param.getName(), param.getValue());
-					} else {
-						throw new JetelRuntimeException("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used only in dedicated locations.");
-					}
+//					} else {
+//						throw new JetelRuntimeException("Secure parameter reference " + reference + " cannot be resolved. Secure parameters can be used only in dedicated locations.");
+//					}
 				} else {
 					resolvedReference = parameters.getGraphParameter(reference).getValue();
 				}
-
-//this behaviour is turned off for now, do we really want this?
-//					if (flag.forceSecureParameters()) {
-//						//in case the parameter is secured, but the secure parameters should not be resolved by the flag
-//						//an exception is thrown to inform user about this situation ASAP
-//						if (ContextProvider.getAuthorityProxy().getSecureParamater(reference) != null) {
-//							throw new JetelRuntimeException("Secure parameter '" + reference + "' cannot be resolved in this attribute.");
-//						}
-//					}
-//				}
 			} else {
 				if (resolvedReference == null) {
 					resolvedReference = MiscUtils.getEnvSafe(reference);
@@ -498,6 +489,21 @@ public class PropertyRefResolver {
 	}
 
 	/**
+	 * @param propertyName value of this property name is returned
+	 * @param refResFlag flag which is used by resolver
+	 * @return resolved value of given property name
+	 */
+	public String getResolvedPropertyValue(String propertyName, RefResFlag refResFlag) {
+		if (!StringUtils.isEmpty(propertyName)) {
+			StringBuilder propertyReference = new StringBuilder();
+			propertyReference.append("${").append(propertyName).append('}');
+			return resolveRef(propertyReference.toString(), refResFlag);
+		} else {
+			throw new IllegalArgumentException("empty property name");
+		}
+	}
+	
+	/**
 	 * Indicates if given string contains also property reference (that needs to be de-referenced)
 	 * @param value value to inspect
 	 * @return <code>true</code> if value contains reference to at least one property.
@@ -505,6 +511,18 @@ public class PropertyRefResolver {
 	public static boolean containsProperty(String value){
 		if (!StringUtils.isEmpty(value)) {
 			return propertyPattern.matcher(value).find();
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * @param value tested string
+	 * @return true if the given string is represents reference to property, for example "${abc}"; false otherwise 
+	 */
+	public static boolean isPropertyReference(String value){
+		if (!StringUtils.isEmpty(value)) {
+			return propertyPattern.matcher(value).matches();
 		} else {
 			return false;
 		}

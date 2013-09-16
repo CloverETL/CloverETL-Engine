@@ -167,6 +167,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String QUOTE_CHAR = "quoteChar";
 	private static final String KEY_FIELD_NAMES_ATTR = "keyFieldNames";
 	private static final String AUTO_FILLING_ATTR = "auto_filling";
+	private static final String DESCRIPTION_ATTR = "description";
 	public static final String CONNECTION_ATTR = "connection";
 	private static final String COLLATOR_SENSITIVITY_ATTR = "collator_sensitivity";
 	private static final String NATURE_ATTR = "nature";
@@ -400,6 +401,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				}
 				if (field.getAutoFilling() != null) {
 					fieldElement.setAttribute(AUTO_FILLING_ATTR, field.getAutoFilling());
+				}
+				if (field.getDescription() != null) {
+					fieldElement.setAttribute(DESCRIPTION_ATTR, field.getDescription());
 				}
 				fieldElement.setAttribute(EOF_AS_DELIMITER_ATTR,
 						String.valueOf(field.isEofAsDelimiter()));

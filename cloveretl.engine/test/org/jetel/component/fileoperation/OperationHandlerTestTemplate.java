@@ -1426,7 +1426,7 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			modifiedDate = manager.info(uri).getLastModified();
 			Thread.sleep(1000);
 			assertTrue(manager.create(uri).success());
-			assertTrue(manager.info(uri).getLastModified().after(modifiedDate));
+			assertTrue(after(manager.info(uri).getLastModified(), modifiedDate));
 			
 			uri = relativeURI(dirName + "/dir/");
 			System.out.println(uri.getAbsoluteURI());
@@ -1434,8 +1434,16 @@ public abstract class OperationHandlerTestTemplate extends CloverTestCase {
 			modifiedDate = manager.info(uri).getLastModified();
 			Thread.sleep(1000);
 			assertTrue(manager.create(uri).success());
-			assertTrue(manager.info(uri).getLastModified().after(modifiedDate));
+			assertTrue(after(manager.info(uri).getLastModified(), modifiedDate));
 		}
+	}
+	
+	protected boolean after(Date after, Date before) {
+		return new Date(after.getTime() + getTolerance()).after(before);
+	}
+	
+	protected long getTolerance() {
+		return 0;
 	}
 	
 	/**

@@ -71,7 +71,7 @@
 	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="dir.licenses" value="${basedir}/licenses" />
 	<property name="test.license.version" value="3.5"/>
-
+	
 	<!--load external properties-->
 	<property file="build-local.properties"/>
 	<property file="version.properties"/>
@@ -271,14 +271,21 @@ defined.version.suffix=release
 	<target name="dist.bin" depends="build" description="Creates binary distribution">
 
 		<!-- binary distribution -->
+		<if>
+		    <equals arg1="${dist.type}" arg2="opensource"/>
+		        <then>
+		          <antcall target="copy-license-LGPL"/>
+		        </then>
+		</if>
+		
 		<mkdir dir="${dir.distprepare.bin}/cloverETL"/>
-
 		<copy todir="${dir.distprepare.bin}/cloverETL">
 			<fileset dir="${dir.package}" />
-		</copy>
-
-		<!-- create zip distribution package -->
+		</copy>			 
+			
+	   	<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
+		
 		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.rel-${version.major}-${version.minor}-${version.revision}.zip" >
 			<fileset dir="${dir.distprepare.bin}">
 				<include name="cloverETL/**/*"/>
@@ -286,6 +293,16 @@ defined.version.suffix=release
 		</zip>
 
 	</target>
+	
+	 <target name="copy-license-LGPL">
+	            <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
+	            <echo file="${dir.package}/readme.txt" append="true">
+Licensing
+----------	                        	
+This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
+	            </echo>
+	 </target>
+
 
 	<target name="dist.javadoc" depends="javadoc" description="Creates javadoc distribution">
 		<!-- create zip package for javadoc -->
@@ -344,7 +361,7 @@ defined.version.suffix=release
 			</filtermapper>
 		</copy>
 	</target>
-
+	
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean-engine">
 		<delete dir="${dir.build}"/>
@@ -443,8 +460,8 @@ defined.version.suffix=release
 			<keep name="org.jetel.graph.runtime.jmx.*Tracking"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.*TrackingDetail"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.TrackingUtils"><field access="public"/><method access="public"/></keep>
-
 			<keep name="org.jetel.graph.runtime.WatchDog"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.SingleThreadWatchDog"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="org.jetel.plugin.PluginRepositoryLocation"><field access="public"/><method access="public"/></keep>
 
@@ -606,7 +623,7 @@ defined.version.suffix=release
 		<replace file="${dir.package}/readme.txt" encoding="UTF-8" >
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 		</replace>
-
+		
 	</target>
 
 	<!-- make a temp copy of source - necessary to substitute release number constants in the source code -->

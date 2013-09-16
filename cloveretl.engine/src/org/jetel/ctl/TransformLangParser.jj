@@ -971,7 +971,8 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
 
 				TransformLangParser parser = new TransformLangParser(this,filenameURL,stream);				
 				parser.addParsedImports(getParsedImports());
-			 	parseTree = parser.Start();				jjtn000.jjtAddChild(parseTree,0);
+			 	parseTree = parser.Start();
+			 	jjtn000.setSourceFilename(filenameURL);				jjtn000.jjtAddChild(parseTree,0);
 				jjtn000.jjtGetChild(0).jjtSetParent(jjtn000);
 				addParsedImports(parser.getParsedImports()); // merge child's imports
 				this.hasEvalNode = this.hasEvalNode || parser.hasEvalNode;			} catch(IOException e){				error(jjtn000,"Unable to open import \""+filenameURL+"\": " + e.getMessage());
@@ -1616,7 +1617,7 @@ void VariableDeclaration():{/*@bgen(jjtree) VariableDeclaration */
     <IDENTIFIER>
     {
     	jjtn000.setName(token.image);
-    	jjtn000.end(token.beginLine,token.beginColumn);
+    	jjtn000.end(token.endLine,token.endColumn);
     }
 
     [ 

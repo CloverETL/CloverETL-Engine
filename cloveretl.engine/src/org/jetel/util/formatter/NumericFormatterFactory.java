@@ -36,7 +36,11 @@ public class NumericFormatterFactory {
 	private static final JavolutionNumericFormatter PLAIN_FORMATTER = new JavolutionNumericFormatter();
 
 	public static NumericFormatter getFormatter(String formatString, String localeString) {
-		NumberFormat numberFormat = createNumberFormatter(formatString, localeString);
+		return getFormatter(formatString, createLocale(localeString));
+	}
+
+	public static NumericFormatter getFormatter(String formatString, Locale locale) {
+		NumberFormat numberFormat = createNumberFormatter(formatString, locale);
 		
 		if (numberFormat != null) {
 			return new JavaNumericFormatter(formatString, numberFormat);
@@ -46,7 +50,10 @@ public class NumericFormatterFactory {
 	}
 	
 	public static NumericFormatter getDecimalFormatter(String formatString, String localeString, int length, int scale) {
-		NumberFormat numberFormat = createNumberFormatter(formatString, localeString);
+		return getDecimalFormatter(formatString, createLocale(localeString), length, scale);
+	}
+	public static NumericFormatter getDecimalFormatter(String formatString, Locale locale, int length, int scale) {
+		NumberFormat numberFormat = createNumberFormatter(formatString, locale);
 		
 		if (numberFormat != null) {
 			if( numberFormat instanceof DecimalFormat){
@@ -59,7 +66,11 @@ public class NumericFormatterFactory {
 	}
 
 	public static NumericFormatter getDecimalFormatter(String formatString, String localeString) {
-		NumberFormat numberFormat = createNumberFormatter(formatString, localeString);
+		return getDecimalFormatter(formatString, createLocale(localeString));
+	}
+
+	public static NumericFormatter getDecimalFormatter(String formatString, Locale locale) {
+		NumberFormat numberFormat = createNumberFormatter(formatString, locale);
 		
 		if (numberFormat != null) {
 			if( numberFormat instanceof DecimalFormat){
@@ -69,37 +80,6 @@ public class NumericFormatterFactory {
 		} else {
 			return getPlainFormatterInstance();
 		}
-		
-// This implementation exploit our NumericFormat, which is unfortunately pretty buggy 
-//		- its only advantage is that is able to parse CharSequence instead String what is faster in our case 
-		
-//		// handle locale
-//		final Locale locale;
-//		if (!StringUtils.isEmpty(localeString)) {
-//			locale = MiscUtils.createLocale(localeString);
-//		} else {
-//			locale = null;
-//		}
-//
-//		// handle formatString
-//		NumberFormat numericFormat = null;
-//		if (!StringUtils.isEmpty(formatString)) {
-//			if (locale != null) {
-//				numericFormat = new NumericFormat(formatString,
-//						new DecimalFormatSymbols(locale));
-//			} else {
-//				numericFormat = new NumericFormat(formatString);
-//			}
-//		} else if (locale != null) {
-//			numericFormat = new NumericFormat(locale);
-//		}
-//
-//		if (numericFormat != null) {
-//			return new JavaNumericFormatter(numericFormat);
-//		} else {
-//			return createPlainFormatter();
-//		}
-
 	}
 
 	public static NumericFormatter getPlainFormatterInstance() {
@@ -109,15 +89,18 @@ public class NumericFormatterFactory {
 	private NumericFormatterFactory() {
 		throw new UnsupportedOperationException();
 	}
-
-	private static NumberFormat createNumberFormatter(String formatString, String localeString) {
-		// handle locale
-		final Locale locale;
+	
+	private static Locale createLocale(String localeString) {
+		Locale locale;
 		if (!StringUtils.isEmpty(localeString)) {
 			locale = MiscUtils.createLocale(localeString);
 		} else {
 			locale = null;
 		}
+		return locale;
+	}
+
+	private static NumberFormat createNumberFormatter(String formatString, Locale locale) {
 
 		// handle formatString
 		NumberFormat numberFormat = null;

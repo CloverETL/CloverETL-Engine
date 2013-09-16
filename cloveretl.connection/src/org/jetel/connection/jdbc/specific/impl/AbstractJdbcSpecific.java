@@ -48,6 +48,7 @@ import org.jetel.connection.jdbc.specific.conn.BasicSqlConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.database.sql.CopySQLData;
 import org.jetel.database.sql.DBConnection;
+import org.jetel.database.sql.DbMetadata;
 import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.database.sql.QueryType;
@@ -212,8 +213,15 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	}
 	
 	@Override
-	public char sqlType2jetel(int sqlType, int sqlPrecision) {
-		return sqlType2jetel(sqlType);
+	public DataFieldType sqlType2jetel(DbMetadata dbMetadata, int sqlIndex) throws SQLException {
+		int sqlType = dbMetadata.getType(sqlIndex);
+		int precision = dbMetadata.getPrecision(sqlIndex);
+		return this.sqlType2jetel(sqlType, precision);
+	}
+
+	@Override
+	public DataFieldType sqlType2jetel(int sqlType, int sqlPrecision) {
+		return DataFieldType.fromChar(sqlType2jetel(sqlType));
 	}
 
 	/* (non-Javadoc)

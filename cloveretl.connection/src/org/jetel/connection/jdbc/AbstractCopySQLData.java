@@ -1330,7 +1330,7 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 			        pStatement.setTime(fieldSQL, timeValue);
 			    }
 			} else {
-				pStatement.setNull(fieldSQL, java.sql.Types.DATE);
+				pStatement.setNull(fieldSQL, java.sql.Types.TIME);
 			}
 		}
 		
