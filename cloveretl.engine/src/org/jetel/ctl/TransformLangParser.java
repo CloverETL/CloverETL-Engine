@@ -83,7 +83,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 this.token_source.input_stream.setTabSize(size);
         }
 
-    public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
+    @Override
+	public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
         return parserHelper.getFunctions();
     }
 
