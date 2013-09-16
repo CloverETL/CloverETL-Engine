@@ -1215,7 +1215,7 @@ void VariableDeclaration():{}{
     <IDENTIFIER>
     {
     	jjtThis.setName(token.image);
-    	jjtThis.end(token.beginLine,token.beginColumn);
+    	jjtThis.end(token.endLine,token.endColumn);
     }
 
     [ 
