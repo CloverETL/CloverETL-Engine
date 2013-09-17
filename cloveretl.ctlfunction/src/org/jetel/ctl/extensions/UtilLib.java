@@ -33,6 +33,7 @@ import org.jetel.graph.GraphParameters;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 
 public class UtilLib extends TLFunctionLibrary {
 
@@ -106,7 +107,11 @@ public class UtilLib extends TLFunctionLibrary {
     // GET PARAM VALUE
 	@TLFunctionAnnotation("Returns the resolved value of a graph parameter")
     public static String getParamValue(TLFunctionCallContext context, String paramName) {
-		return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().getResolvedPropertyValue(paramName, RefResFlag.SPEC_CHARACTERS_OFF);
+		if (!StringUtils.isEmpty(paramName)) {
+			return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().getResolvedPropertyValue(paramName, RefResFlag.SPEC_CHARACTERS_OFF);
+		} else {
+			return null;
+		}
     }
     
     @TLFunctionInitAnnotation()
