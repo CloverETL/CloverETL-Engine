@@ -144,7 +144,7 @@ function integer transform(){
  	retDecNull[15] = max(78.6d, tmpL1);
 
 	//mixed - upcast number -> decimal
-	retDecNull[16] = max(89.6, 12.3d); //this
+	retDecNull[16] = max(11.8, 12.3d); 
 	retDecNull[17] = max(58.6d, 11.6);
 	retDecNull[18] = max(nullNum, 48.6d);
 	retDecNull[19] = max(12.5d, tmpD1);
