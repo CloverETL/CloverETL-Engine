@@ -6870,6 +6870,39 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_mathlib_atan(){
+		doCompile("test_mathlib_atan");
+		check("ret", Arrays.asList(Math.atan(Math.PI), Math.atan(Math.PI*2), Math.atan(Math.PI/2),
+				Math.atan(45), Math.atan(0)));
+	}
+	
+	public void test_mathlib_atan_expect_error(){
+		try {
+			doCompile("function integer transform(){number input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 //-------------------------DateLib tests----------------------
 	
 	public void test_datelib_cache() {
