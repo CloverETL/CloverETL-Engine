@@ -6803,6 +6803,40 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+	
+	public void test_mathlib_acos(){
+		doCompile("test_mathlib_acos");
+		check("ret", Arrays.asList(Math.acos(Math.PI), Math.acos(Math.PI*2), Math.acos(Math.PI/2), 
+				Math.acos(180), Math.acos(90), Math.acos(0), Math.acos(123)));
+	}
+	
+	public void test_mathlib_acos_expect_error(){
+		try {
+			doCompile("function integer transform(){double input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 //-------------------------DateLib tests----------------------
 	
 	public void test_datelib_cache() {
