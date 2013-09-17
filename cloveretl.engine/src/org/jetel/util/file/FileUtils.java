@@ -1200,14 +1200,9 @@ public class FileUtils {
 		return input.startsWith("http:") || input.startsWith("https:");
 	}
 	
-	private static boolean hasCustomPathOutputResolver(URL contextURL, String input, boolean appendData,
-			int compressLevel)
-		throws IOException {
-		OutputStream os;
+	private static boolean hasCustomPathResolver(URL contextURL, String input) {
     	for (CustomPathResolver customPathResolver : customPathResolvers) {
-    		os = customPathResolver.getOutputStream(contextURL, input, appendData, compressLevel);
-    		if (os != null) {
-    			os.close();
+    		if (customPathResolver.handlesURL(contextURL, input)) {
     			return true;
     		}
     	}
@@ -1219,20 +1214,6 @@ public class FileUtils {
 		return customPathResolvers;
 	}
 
-	
-	
-	private static boolean hasCustomPathInputResolver(URL contextURL, String input) throws IOException {	
-		InputStream innerStream;
-		for (CustomPathResolver customPathResolver : customPathResolvers) {
-			innerStream = customPathResolver.getInputStream(contextURL, input);
-			if (innerStream != null) {
-				innerStream.close();
-				return true;
-			}
-		}
-		
-		return false;
-	}
 	
 	@java.lang.SuppressWarnings("unchecked")
 	private static String getFirstFileInZipArchive(URL context, String filePath) throws NullPointerException, FileNotFoundException, ZipException, IOException {
@@ -1273,15 +1254,8 @@ public class FileUtils {
 	private static boolean getLocalArchivePath(URL contextURL, String input, boolean appendData, int compressLevel,
 			StringBuilder path, int nestLevel, boolean output) throws IOException {
 		
-		if (output) {
-			if (hasCustomPathOutputResolver(contextURL, input, appendData, compressLevel)) {
-				return false;
-			}
-		}
-		else {
-			if (hasCustomPathInputResolver(contextURL, input)) {
-				return false;
-			}
+		if (hasCustomPathResolver(contextURL, input)) {
+			return false;
 		}
 		
 		if (isZipArchive(input)) {
@@ -2310,14 +2284,15 @@ public class FileUtils {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new IOException("Interrupted");
 		}
-		if (root != null && root.isDirectory()) {
+		if (root != null) {
+			if (root.isDirectory()) {
 				File[] children = root.listFiles();
 				if (children != null) {
-					for (int i = 0; i < children.length; i++) {
-						deleteRecursively(children[i]);
+					for (File child: children) {
+						deleteRecursively(child);
 					}
 				}
-
+			}
 			return root.delete();
 		}
 		return false;

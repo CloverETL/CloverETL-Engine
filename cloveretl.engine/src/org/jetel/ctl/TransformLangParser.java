@@ -83,7 +83,8 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 this.token_source.input_stream.setTabSize(size);
         }
 
-    public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
+    @Override
+	public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
         return parserHelper.getFunctions();
     }
 
@@ -1219,7 +1220,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         jjtn000.begin(n.getLine(),n.getColumn());
       jj_consume_token(IDENTIFIER);
         jjtn000.setName(token.image);
-        jjtn000.end(token.beginLine,token.beginColumn);
+        jjtn000.end(token.endLine,token.endColumn);
       switch (jj_nt.kind) {
       case ASSIGN:
         jj_consume_token(ASSIGN);
