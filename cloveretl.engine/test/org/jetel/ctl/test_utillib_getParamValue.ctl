@@ -11,6 +11,5 @@ function integer transform() {
 	string str = null;
 	ret1 = getParamValue(null);
 	ret2 = getParamValue(str);
-	printErr(ret2);
 	return 0;
 }
