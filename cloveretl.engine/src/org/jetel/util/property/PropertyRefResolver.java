@@ -497,7 +497,13 @@ public class PropertyRefResolver {
 		if (!StringUtils.isEmpty(propertyName)) {
 			StringBuilder propertyReference = new StringBuilder();
 			propertyReference.append("${").append(propertyName).append('}');
-			return resolveRef(propertyReference.toString(), refResFlag);
+			String propertyReferenceStr = propertyReference.toString();
+			String result = resolveRef(propertyReferenceStr, refResFlag);
+			if (!result.equals(propertyReferenceStr)) {
+				return result;
+			} else {
+				return null;
+			}
 		} else {
 			throw new IllegalArgumentException("empty property name");
 		}
