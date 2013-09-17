@@ -6837,6 +6837,39 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	public void test_mathlib_asin(){
+		doCompile("test_mathlib_asin");
+		check("ret", Arrays.asList(Math.asin(Math.PI), Math.asin(Math.PI*2), Math.asin(Math.PI/2),
+				Math.asin(1236), Math.asin(0)));
+	}
+	
+	public void test_mathlib_asin_expect_error(){
+		try {
+			doCompile("function integer transform(){number input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 //-------------------------DateLib tests----------------------
 	
 	public void test_datelib_cache() {
