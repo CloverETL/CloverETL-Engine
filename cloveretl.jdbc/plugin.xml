@@ -130,7 +130,7 @@
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
 		<parameter id="dbDriver" value="org.gjt.mm.mysql.Driver"/>
-		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.22-bin.jar"/>
+		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.26-bin.jar"/>
 		<parameter id="urlHint" value="jdbc:mysql://hostname:3306/database"/>
 		<parameter id="jdbcSpecific" value="MYSQL"/>
 		<parameter id="jdbc.zeroDateTimeBehavior" value="convertToNull"/>
