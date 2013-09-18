@@ -164,6 +164,8 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertEquals("a\nb", resolver.getResolvedPropertyValue("specChars", null));
 		assertEquals("a\nb", resolver.getResolvedPropertyValue("specChars", RefResFlag.REGULAR));
 		assertEquals("a\\nb", resolver.getResolvedPropertyValue("specChars", RefResFlag.SPEC_CHARACTERS_OFF));
+		assertEquals(null, resolver.getResolvedPropertyValue("nonexisting_parameter", RefResFlag.SPEC_CHARACTERS_OFF));
+		
 		try {
 			resolver.getResolvedPropertyValue("", RefResFlag.REGULAR);
 			assertTrue(false);
