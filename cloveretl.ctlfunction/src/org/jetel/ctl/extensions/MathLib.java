@@ -250,7 +250,7 @@ public class MathLib extends TLFunctionLibrary {
     		return ((double)Math.round(d/multiple))*multiple;
     }
     
-    @TLFunctionAnnotation("Returns double value rounded to specified precision.")
+    @TLFunctionAnnotation("Returns long value rounded to specified precision.")
     public static final Long round(TLFunctionCallContext context, long d, int precision) {
     	long multiple=pow10(precision);
     	if (precision>0)
@@ -259,7 +259,7 @@ public class MathLib extends TLFunctionLibrary {
     		return (d/multiple)*multiple;
     }
     
-    @TLFunctionAnnotation("Returns double value rounded to specified precision.")
+    @TLFunctionAnnotation("Returns integer value rounded to specified precision.")
     public static final Integer round(TLFunctionCallContext context, int d, int precision) {
     	long multiple=pow10(precision);
     	if (precision>0)
