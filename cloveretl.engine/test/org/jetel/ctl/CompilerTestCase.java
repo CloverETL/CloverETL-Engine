@@ -6501,25 +6501,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){integer input = null; number l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){integer input = null; integer l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){long input = null; number l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){long input = null; long l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){long input = null; number l = round(input); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){long input = null; long l = round(input); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){integer input = null; number l = round(input); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){integer input = null; long l = round(input); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = 7012; integer l = round(input, null); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
