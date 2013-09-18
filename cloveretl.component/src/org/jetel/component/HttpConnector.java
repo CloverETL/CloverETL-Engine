@@ -65,6 +65,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpResponseInterceptor;
+import org.apache.http.HttpVersion;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
@@ -89,6 +90,9 @@ import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieOrigin;
 import org.apache.http.cookie.CookieSpec;
 import org.apache.http.cookie.CookieSpecFactory;
+import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.StringBody;
@@ -626,12 +630,12 @@ public class HttpConnector extends Node {
 		
 		@Override
 		protected WritableByteChannel getFileOutputChannel() throws IOException {
-			return FileUtils.getWritableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileName, appendOutputToUse);
+			return FileUtils.getWritableChannel(getContextURL(), fileName, appendOutputToUse);
 		}		
 
 		@Override
 		protected String getFileOutputPath() throws IOException {
-			File file = FileUtils.getJavaFile(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileName); 
+			File file = FileUtils.getJavaFile(getContextURL(), fileName); 
 			if (file != null) {
 				return file.getAbsolutePath();
 			}
@@ -888,12 +892,19 @@ public class HttpConnector extends Node {
 	private static final int IP_REQUEST_CONTENT_INDEX = 7;
     private static final String IP_REQUEST_CONTENT_NAME = "requestContent";
 
-	/**  
+    /**
+     * Raw request content bytes.
+     */
+    private byte[] requestContentByteToUse;
+	private static final int IP_REQUEST_CONTENT_BYTE_INDEX = 8;
+    private static final String IP_REQUEST_CONTENT_BYTE_NAME = "requestContentByte";
+
+    /**  
 	 * URL of the file containing request content.
 	 */
 	private String inputFileUrl;
 	private String inputFileUrlToUse;
-    private static final int IP_INPUT_FILE_URL_INDEX = 8;
+    private static final int IP_INPUT_FILE_URL_INDEX = 9;
     private static final String IP_INPUT_FILE_URL_NAME = "inputFileUrl";
     
 
@@ -902,7 +913,7 @@ public class HttpConnector extends Node {
 	 */
 	private String outputFileUrl;
 	private String outputFileUrlToUse;
-	private static final int IP_OUTPUT_FILE_URL_INDEX = 9;
+	private static final int IP_OUTPUT_FILE_URL_INDEX = 10;
     private static final String IP_OUTPUT_FILE_URL_NAME = "outputFileUrl";
    
 	/**  
@@ -910,7 +921,7 @@ public class HttpConnector extends Node {
 	 */
 	private boolean appendOutput;
 	private Boolean appendOutputToUse;
-	private static final int IP_APPEND_OUTPUT_INDEX = 10;
+	private static final int IP_APPEND_OUTPUT_INDEX = 11;
     private static final String IP_APPEND_OUTPUT_NAME = "appendOutput";
    	
 	/** 
@@ -918,7 +929,7 @@ public class HttpConnector extends Node {
 	 */
 	private String authenticationMethod;
 	private String authenticationMethodToUse;
-	private static final int IP_AUTHENTICATION_METHOD_INDEX = 11;
+	private static final int IP_AUTHENTICATION_METHOD_INDEX = 12;
     private static final String IP_AUTHENTICATION_METHOD_NAME = "authenticationMethod";
     
 	/** 
@@ -926,7 +937,7 @@ public class HttpConnector extends Node {
 	 */
 	private String username;
 	private String usernameToUse;
-	private static final int IP_USERNAME_INDEX = 12;
+	private static final int IP_USERNAME_INDEX = 13;
     private static final String IP_USERNAME_NAME = "username";
     
 	/** 
@@ -934,7 +945,7 @@ public class HttpConnector extends Node {
 	 */
     private String password;
 	private String passwordToUse;
-	private static final int IP_PASSWORD_INDEX = 13;
+	private static final int IP_PASSWORD_INDEX = 14;
     private static final String IP_PASSWORD_NAME = "password";
     
 	/**
@@ -942,7 +953,7 @@ public class HttpConnector extends Node {
 	 */
 	private String consumerKey;
 	private String consumerKeyToUse;
-	private static final int IP_CONSUMER_KEY_INDEX = 14;
+	private static final int IP_CONSUMER_KEY_INDEX = 15;
     private static final String IP_CONSUMER_KEY_NAME = "consumerKey";
  
 	/**
@@ -950,24 +961,24 @@ public class HttpConnector extends Node {
 	 */
 	private String consumerSecret;
 	private String consumerSecretToUse;
-    private static final int IP_CONSUMER_SECRET_INDEX = 15;
+    private static final int IP_CONSUMER_SECRET_INDEX = 16;
     private static final String IP_CONSUMER_SECRET_NAME = "consumerSecret";
     
 	private String oAuthAccessToken;
 	private String oAuthAccessTokenToUse;
-	private static final int IP_OATUH_TOKEN_INDEX = 16;
+	private static final int IP_OATUH_TOKEN_INDEX = 17;
     private static final String IP_OATUH_TOKEN_NAME = "oAuthAccessToken";
 
 	private String oAuthAccessTokenSecret;
 	private String oAuthAccessTokenSecretToUse;
-	private static final int IP_OATUH_TOKEN_SECRET_INDEX = 17;
+	private static final int IP_OATUH_TOKEN_SECRET_INDEX = 18;
     private static final String IP_OATUH_TOKEN_SECRET_NAME = "oAuthAccessTokenSecret";
 /**
 	 * <code>true</code> if the responses should be stored to temporary files, <code>false</code> otherwise.  
 	 */
 	private boolean storeResponseToTempFile;
 	private Boolean storeResponseToTempFileToUse;
-	private static final int IP_STORE_RESPONSE_TO_TEMP_INDEX = 18;
+	private static final int IP_STORE_RESPONSE_TO_TEMP_INDEX = 19;
     private static final String IP_STORE_RESPONSE_TO_TEMP_NAME = "storeResponseToTempFile";
     
 	/** 
@@ -975,7 +986,7 @@ public class HttpConnector extends Node {
 	 */
 	private String temporaryFilePrefix;
 	private String temporaryFilePrefixToUse;
-	private static final int IP_TEMP_FILE_PREFIX_INDEX = 19;
+	private static final int IP_TEMP_FILE_PREFIX_INDEX = 20;
     private static final String IP_TEMP_FILE_PREFIX_NAME = "temporaryFilePrefix";
     
 	/**
@@ -983,7 +994,7 @@ public class HttpConnector extends Node {
 	 */
 	private String multipartEntities;
 	private String multipartEntitiesToUse;
-	private static final int IP_MULTIPART_ENTITIES_INDEX = 20;
+	private static final int IP_MULTIPART_ENTITIES_INDEX = 21;
     private static final String IP_MULTIPART_ENTITIES_NAME = "multipartEntities";
     
 	/**
@@ -991,7 +1002,7 @@ public class HttpConnector extends Node {
 	 */
 	private String rawHttpHeaders;
 	private List<CharSequence> rawHttpHeadersToUse;
-	private static final int IP_RAW_HTTP_HEADERS_INDEX = 21;
+	private static final int IP_RAW_HTTP_HEADERS_INDEX = 22;
     private static final String IP_RAW_HTTP_HEADERS_NAME = "rawHTTPHeaders";
 
 	/**
@@ -1158,7 +1169,7 @@ public class HttpConnector extends Node {
 		private String proxy;
 		private Map<String, String> parameters = new LinkedHashMap<String, String>();
 		private Map<String, String> multipartEntities = new LinkedHashMap<String, String>();
-		private String content;
+		private Object content;
 		
 		private URL targetURL;
 		private URL proxyURL;
@@ -1220,11 +1231,23 @@ public class HttpConnector extends Node {
 			this.multipartEntities.putAll(multipartEntities);
 		}
 		
-		public String getContent() {
+		public Object getContent() {
 			return content;
 		}
 
+		private void setContent(Object content) {
+			this.content = content;
+		}
+
 		public void setContent(String content) {
+			this.content = content;
+		}
+		
+		public void setContent(byte[] content) {
+			this.content = content;
+		}
+		
+		public void setContent(InputStream content) {
 			this.content = content;
 		}
 		
@@ -1340,6 +1363,20 @@ public class HttpConnector extends Node {
 		return null;
 	}
 	
+	/** Returns a byte[] value of the given field in input record.
+	 * 
+	 * @param index
+	 * @return a byte[] value of the given field.
+	 */
+	private byte[] getByteInputParameterValue(int index) {
+		Object value = inputParamsRecord.getField(index).getValue();
+		if (value != null) {
+			return (byte[]) value;
+		}
+
+		return null;
+	}
+
 	/** Processes the input records. The values contained in the fields of the record are set as a 
 	 *  properties of this components.
 	 * 
@@ -1350,6 +1387,7 @@ public class HttpConnector extends Node {
 //		urlInputFieldToUse = getStringInputParameterValue(IP_URL_FIELD_INDEX);
 		requestMethodToUse = getStringInputParameterValue(IP_REQUEST_METHOD_INDEX);
 		requestContentToUse = getStringInputParameterValue(IP_REQUEST_CONTENT_INDEX);
+		requestContentByteToUse = getByteInputParameterValue(IP_REQUEST_CONTENT_BYTE_INDEX);
 		inputFileUrlToUse = getStringInputParameterValue(IP_INPUT_FILE_URL_INDEX);
 //		inputFieldNameToUse = getStringInputParameterValue(IP_INPUT_FIELD_NAME_INDEX);
 //		outputFieldNameToUse = getStringInputParameterValue(IP_OUTPUT_FIELD_NAME_INDEX);
@@ -1570,20 +1608,28 @@ public class HttpConnector extends Node {
 	 * 
 	 * @return the request content.
 	 */
-	private String prepareRequestContent() {
+	private Object prepareRequestContent() {
 		DataField inField = getFieldSafe(inputRecord, inputFieldName);
 
 		if (inField != null) {
 		    return inField.toString();
 		    
-		} if (!StringUtils.isEmpty(requestContentToUse)) {
+		} else if (requestContentByteToUse != null) {
+			return requestContentByteToUse;
+			
+		} else if (!StringUtils.isEmpty(requestContentToUse)) {
 			return requestContentToUse;
 			
 		} else if (!StringUtils.isEmpty(inputFileUrlToUse)) {
 			//input file with http request is entered
-	        String contentToSend = FileUtils.getStringFromURL(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, inputFileUrlToUse, null);
-	        
-			return contentToSend;
+			InputStream is = null;
+			try {
+				is = FileUtils.getInputStream(getContextURL(), inputFileUrlToUse);
+				return is;
+			} catch (IOException ioe) {
+				FileUtils.closeQuietly(is);
+				throw new JetelRuntimeException("Can't open input stream", ioe);
+			}
 		} 
 		
 		return null;
@@ -2551,9 +2597,32 @@ public class HttpConnector extends Node {
 		}
 		
 		// process content
-		if (!StringUtils.isEmpty(configuration.getContent())) {
-			StringEntity entity = new StringEntity(configuration.getContent(), charsetToUse == null? Defaults.DataParser.DEFAULT_CHARSET_DECODER: charsetToUse);
-			httpMethod.setEntity(entity);
+		Object content = configuration.getContent();
+		if (content != null) {
+			HttpEntity entity = null;
+			ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), charsetToUse == null ? Defaults.DataParser.DEFAULT_CHARSET_DECODER: charsetToUse);
+			if (content instanceof String) {
+				entity = new StringEntity((String) content, contentType);
+			} else if (content instanceof byte[]) {
+				entity = new ByteArrayEntity((byte[]) content, contentType);
+			} else if (content instanceof InputStream) {
+				if (httpMethod.getRequestLine().getProtocolVersion().lessEquals(HttpVersion.HTTP_1_0)) {
+					// chunked transfer encoding is not supported in HTTP/1.0
+					try {
+						ByteArrayOutputStream os = new ByteArrayOutputStream();
+						StreamUtils.copy((InputStream) content, os, true, true);
+						entity = new ByteArrayEntity(os.toByteArray(), contentType);
+					} catch (IOException ioe) {
+						throw new JetelRuntimeException("Reading from input stream failed", ioe);
+					}
+				} else {
+					// the length is set to -1 (unknown), which enforces Transfer-Encoding: chunked
+					entity = new InputStreamEntity((InputStream) content, -1, contentType);
+				}
+			}
+			if (entity != null) {
+				httpMethod.setEntity(entity);
+			}
 		}
 		
 		return httpMethod;
@@ -3165,6 +3234,7 @@ public class HttpConnector extends Node {
 //		inputParamsRecord.getField(IP_URL_FIELD_INDEX).setValue(urlInputFieldToUse);
 		inputParamsRecord.getField(IP_REQUEST_METHOD_INDEX).setValue(requestMethodToUse);
 		inputParamsRecord.getField(IP_REQUEST_CONTENT_INDEX).setValue(requestContentToUse);
+//		inputParamsRecord.getField(IP_REQUEST_CONTENT_BYTE_INDEX).setValue(requestContentByteToUse);
 		inputParamsRecord.getField(IP_INPUT_FILE_URL_INDEX).setValue(inputFileUrlToUse);
 //		inputParamsRecord.getField(IP_INPUT_FIELD_NAME_INDEX).setValue(inputFieldNameToUse);
 //		inputParamsRecord.getField(IP_OUTPUT_FIELD_NAME_INDEX).setValue(outputFieldNameToUse);
@@ -3240,6 +3310,7 @@ public class HttpConnector extends Node {
 		metadata.addField(IP_ADDITIONAL_REQUEST_HEADERS_INDEX, new DataFieldMetadata(IP_ADDITIONAL_REQUEST_HEADERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.MAP));
 		metadata.addField(IP_CHARSET_INDEX, new DataFieldMetadata(IP_CHARSET_NAME, DataFieldType.STRING, null));
 		metadata.addField(IP_REQUEST_CONTENT_INDEX, new DataFieldMetadata(IP_REQUEST_CONTENT_NAME, DataFieldType.STRING, null));
+		metadata.addField(IP_REQUEST_CONTENT_BYTE_INDEX, new DataFieldMetadata(IP_REQUEST_CONTENT_BYTE_NAME, DataFieldType.BYTE, null));
 		metadata.addField(IP_INPUT_FILE_URL_INDEX, new DataFieldMetadata(IP_INPUT_FILE_URL_NAME, DataFieldType.STRING, null));
 //		metadata.addField(IP_INPUT_FIELD_NAME_INDEX, new DataFieldMetadata(IP_INPUT_FIELD_NAME_NAME, DataFieldType.STRING, null));
 //		metadata.addField(IP_OUTPUT_FIELD_NAME_INDEX, new DataFieldMetadata(IP_OUTPUT_FIELD_NAME_NAME, DataFieldType.STRING, null));
@@ -3388,6 +3459,10 @@ public class HttpConnector extends Node {
 
 	public String getCharset() {
 		return charset;
+	}
+	
+	private URL getContextURL() {
+		return (getGraph() != null) ? getGraph().getRuntimeContext().getContextURL() : null;
 	}
 
 	public void setCharset(String charset) {
