@@ -21,11 +21,16 @@ package org.jetel.component;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PushbackInputStream;
+import java.io.Reader;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -290,9 +295,10 @@ public class XMLExtract extends Node {
 	 * @param xmlElement
 	 * @return
 	 * @throws XMLConfigurationException
-	 * @throws AttributeNotFoundException 
+	 * @throws AttributeNotFoundException
 	 */
-	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException,
+			AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		XMLExtract extract;
 
@@ -318,7 +324,7 @@ public class XMLExtract extends Node {
 			extract.setNodes(nodes);
 		} else {
 			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL); // throw configuration
-																								// exception
+																				// exception
 		}
 
 		// set namespace bindings attribute
@@ -459,24 +465,96 @@ public class XMLExtract extends Node {
 			autoFilling.setFilename(readableChannelIterator.getCurrentFileName());
 			long fileSize = 0;
 			Date fileTimestamp = null;
-			if (autoFilling.getFilename() != null
-					&& !readableChannelIterator.isGraphDependentSource()) {
+			if (autoFilling.getFilename() != null && !readableChannelIterator.isGraphDependentSource()) {
 				try {
 					File tmpFile = FileUtils.getJavaFile(getGraph().getRuntimeContext().getContextURL(), autoFilling.getFilename());
 					long timestamp = tmpFile.lastModified();
 					fileTimestamp = timestamp == 0 ? null : new Date(timestamp);
 					fileSize = tmpFile.length();
 				} catch (Exception e) {
-					//do nothing - the url is not regular file
+					// do nothing - the url is not regular file
 				}
 			}
 			autoFilling.setFileSize(fileSize);
-			autoFilling.setFileTimestamp(fileTimestamp);				
-			m_inputSource = new InputSource(Channels.newReader(stream, charset));
+			autoFilling.setFileTimestamp(fileTimestamp);
+
+			m_inputSource = new InputSource(this.handleBOM(stream, autoFilling.getFilename()));
 			return true;
 		}
 		readableChannelIterator.blankRead();
 		return false;
+	}
+
+	private Reader handleBOM(ReadableByteChannel stream, String fileName) {
+		PushbackInputStream reader = new PushbackInputStream(Channels.newInputStream(stream), 4);
+
+		try {
+			byte[] bom = new byte[4];
+			int read = reader.read(bom);
+			int unread = 0;
+
+			int[] unsigned = new int[read];
+			for (int i = 0; i < read; i++) {
+				unsigned[i] = bom[i] & 0xFF;
+			}
+
+			String warnEncoding = null;
+
+			if (read == 4) {
+				if (unsigned[0] == 0xFF && unsigned[1] == 0xFE && unsigned[2] == 0x00 && unsigned[3] == 0x00) {
+					// unsigned.UTF_32_LE;
+					if (!"UTF-32LE".equals(this.charset)) {
+						warnEncoding = "UTF-32LE";
+					}
+					unread = 0;
+				} else if (unsigned[0] == 0x00 && unsigned[1] == 0x00 && unsigned[2] == 0xFE && unsigned[3] == 0xFF) {
+					// unsigned.UTF_32_BE;
+					if (!"UTF-32BE".equals(this.charset)) {
+						warnEncoding = "UTF-32BE";
+					}
+					unread = 0;
+				} else if (unsigned[0] == 0xEF && unsigned[1] == 0xBB && unsigned[2] == 0xBF) {
+					// unsigned.UTF_8;
+					if (!"UTF-8".equals(this.charset)) {
+						warnEncoding = "UTF-8";
+					}
+					unread = 1;
+				} else if (unsigned[0] == 0xFF && unsigned[1] == 0xFE) {
+					// unsigned.UTF_16_LE;
+					if (!"UTF-16LE".equals(this.charset)) {
+						warnEncoding = "UTF-16LE";
+					}
+					unread = 2;
+				} else if (unsigned[0] == 0xFE && unsigned[1] == 0xFF) {
+					// unsigned.UTF_16_BE;
+					if (!"UTF-16BE".equals(this.charset)) {
+						warnEncoding = "UTF-16BE";
+					}
+					unread = 2;
+				} else {
+					unread = 4;
+				}
+			} else if (read > 0) {
+				unread = read;
+			}
+
+			if (warnEncoding != null) {
+				LOGGER.warn("Byte Order Mark indicates " + warnEncoding + " but charset attribute is set to " + this.charset +(fileName != null? " (file:"+fileName+")" : ""));
+			}
+
+			if (unread > 0) {
+				reader.unread(bom, bom.length - unread, unread);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			return new InputStreamReader(reader, this.charset);
+		} catch (UnsupportedEncodingException e) {
+			throw new UnsupportedCharsetException(this.charset);
+		}
+
 	}
 
 	@Override
@@ -601,8 +679,7 @@ public class XMLExtract extends Node {
 	}
 
 	private boolean isXMLAttribute(String attribute) {
-		return attribute.equals(XmlSaxParser.XML_ELEMENT) || attribute.equals(XmlSaxParser.XML_OUTPORT) || attribute.equals(XmlSaxParser.XML_PARENTKEY) || attribute.equals(XmlSaxParser.XML_GENERATEDKEY) || attribute.equals(XmlSaxParser.XML_XMLFIELDS) || attribute.equals(XmlSaxParser.XML_CLOVERFIELDS) || attribute.equals(XmlSaxParser.XML_SEQUENCEFIELD) || attribute.equals(XmlSaxParser.XML_SEQUENCEID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_ID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_REF) || attribute.equals(XmlSaxParser.XML_TEMPLATE_DEPTH) || attribute.equals(XML_SKIP_ROWS_ATTRIBUTE) || attribute.equals(XML_NUMRECORDS_ATTRIBUTE) || attribute.equals(XML_TRIM_ATTRIBUTE) || attribute.equals(XML_VALIDATE_ATTRIBUTE) || attribute.equals(XML_XML_FEATURES_ATTRIBUTE) || attribute.equals(XmlSaxParser.XML_USE_PARENT_RECORD) 
-				|| attribute.equals(XmlSaxParser.XML_IMPLICIT)|| attribute.equals(XmlSaxParser.XML_INPUTFIELD)|| attribute.equals(XmlSaxParser.XML_OUTPUTFIELD);
+		return attribute.equals(XmlSaxParser.XML_ELEMENT) || attribute.equals(XmlSaxParser.XML_OUTPORT) || attribute.equals(XmlSaxParser.XML_PARENTKEY) || attribute.equals(XmlSaxParser.XML_GENERATEDKEY) || attribute.equals(XmlSaxParser.XML_XMLFIELDS) || attribute.equals(XmlSaxParser.XML_CLOVERFIELDS) || attribute.equals(XmlSaxParser.XML_SEQUENCEFIELD) || attribute.equals(XmlSaxParser.XML_SEQUENCEID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_ID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_REF) || attribute.equals(XmlSaxParser.XML_TEMPLATE_DEPTH) || attribute.equals(XML_SKIP_ROWS_ATTRIBUTE) || attribute.equals(XML_NUMRECORDS_ATTRIBUTE) || attribute.equals(XML_TRIM_ATTRIBUTE) || attribute.equals(XML_VALIDATE_ATTRIBUTE) || attribute.equals(XML_XML_FEATURES_ATTRIBUTE) || attribute.equals(XmlSaxParser.XML_USE_PARENT_RECORD) || attribute.equals(XmlSaxParser.XML_IMPLICIT) || attribute.equals(XmlSaxParser.XML_INPUTFIELD) || attribute.equals(XmlSaxParser.XML_OUTPUTFIELD);
 	}
 
 	@Override
