@@ -485,7 +485,7 @@ public class XMLExtract extends Node {
 		return false;
 	}
 
-	private Reader handleBOM(ReadableByteChannel stream, String fileName) {
+	private Reader handleBOM(ReadableByteChannel stream, String fileName) throws JetelException {
 		PushbackInputStream reader = new PushbackInputStream(Channels.newInputStream(stream), 4);
 
 		try {
@@ -546,8 +546,7 @@ public class XMLExtract extends Node {
 				reader.unread(bom, bom.length - unread, unread);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new JetelException(e.getMessage());
 		}
 		try {
 			return new InputStreamReader(reader, this.charset);
