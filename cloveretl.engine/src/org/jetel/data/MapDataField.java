@@ -419,6 +419,18 @@ public class MapDataField extends DataField {
 	}
 	
 	@Override
+	public int hashCode() {
+		if (isNull) {
+			return 0;
+		}
+		int hash = 0;
+		for (Map.Entry<String, DataField> entry : fields.entrySet()) {
+			hash += entry.hashCode();
+		}
+		return hash;
+	}
+	
+	@Override
 	public boolean equals(Object otherField) {
 	    if (isNull || otherField == null) return false;
 		if (this == otherField) return true;

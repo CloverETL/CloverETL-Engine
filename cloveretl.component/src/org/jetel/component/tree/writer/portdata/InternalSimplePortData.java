@@ -64,11 +64,15 @@ class InternalSimplePortData extends InternalPortData {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	protected Collection<DataRecord> fetchData(int key[], int parentKey[], DataRecord keyData) {
+	protected Collection<DataRecord> fetchData(int key[], int parentKey[], DataRecord parentData) {
 		if (key == null) {
 			return records.values();
 		} else {
-			return records.getCollection(keyData.getField(parentKey[0]));
+			DataField childKeyField = keyRecord.getField(key[0]);
+			childKeyField.setValue(parentData.getField(parentKey[0]));
+			Collection<DataRecord> data = records.getCollection(childKeyField);
+			childKeyField.reset();
+			return data;
 		}
 	}
 }
