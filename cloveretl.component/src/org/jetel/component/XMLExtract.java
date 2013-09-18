@@ -546,7 +546,7 @@ public class XMLExtract extends Node {
 				reader.unread(bom, bom.length - unread, unread);
 			}
 		} catch (IOException e) {
-			throw new JetelException(e.getMessage());
+			throw new JetelException("Error during BOM detection.",e);
 		}
 		try {
 			return new InputStreamReader(reader, this.charset);
