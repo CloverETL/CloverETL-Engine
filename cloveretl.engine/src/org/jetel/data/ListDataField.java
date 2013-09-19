@@ -462,6 +462,19 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 
 	@Override
+	public int hashCode() {
+		if (isNull) {
+			return 0;
+		}
+		int hash = 1;
+		for (int i = 0; i < size; ++i) {
+			DataField field = fields.get(i);
+			hash = 31 * hash + (field == null ? 0 : field.hashCode());
+		}
+		return hash;
+	}
+	
+	@Override
 	public boolean equals(Object otherField) {
 	    if (isNull || otherField == null) return false;
 		if (this == otherField) return true;

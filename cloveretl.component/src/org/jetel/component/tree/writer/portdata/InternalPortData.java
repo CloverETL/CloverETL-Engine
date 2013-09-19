@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.map.MultiValueMap;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 
@@ -44,6 +45,7 @@ import org.jetel.graph.InputPort;
 abstract class InternalPortData extends PortData {
 
 	protected MultiValueMap records;
+	protected DataRecord keyRecord;
 	
 	InternalPortData(InputPort inPort, Set<List<String>> keys) {
 		super(inPort, keys);
@@ -58,6 +60,8 @@ abstract class InternalPortData extends PortData {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		records = createRecordMap();
+		keyRecord = DataRecordFactory.newRecord(inPort.getMetadata());
+		keyRecord.init();
 	}
 	
 	protected MultiValueMap createRecordMap() {
@@ -68,6 +72,7 @@ abstract class InternalPortData extends PortData {
 	public void free() {
 		super.free();
 		records = null;
+		keyRecord = null;
 	}
 	
 	@Override
