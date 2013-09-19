@@ -6464,11 +6464,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		//CLO-1835
 		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal2Result"));
 		//CLO-1832
-		check("intWithPrecisionResult", 1234d);
-		check("longWithPrecisionResult", 123456d);
-		check("ret1", 1234d);
-		check("ret2", 13565d);
-	}
+		check("intWithPrecisionResult", 1000);
+		check("longWithPrecisionResult", 123456l);
+		check("ret1", 1200);
+		check("ret2", 10000l);
+		List<Double> expectedDouble = Arrays.asList(0.0d, 1000000.0d, 1200000.0d, 1230000.0d,
+				1235000.0d, 1234600.0d, 1234570.0d, 1234567.0d, 1234567.1d, 1234567.12d, 
+				1234567.123d, 1234567.1235d, 1234567.12346d, 1234567.123457d, 1234567.1234567d
+				);
+		check("double2Result", expectedDouble);
+}
 	
 	public void test_mathlib_round_expect_error(){
 		try {
@@ -6496,25 +6501,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){integer input = null; number l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){integer input = null; integer l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){long input = null; number l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){long input = null; long l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){long input = null; number l = round(input); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){long input = null; long l = round(input); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){integer input = null; number l = round(input); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){integer input = null; long l = round(input); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = 7012; integer l = round(input, null); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6650,7 +6661,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				new BigDecimal("56.3"), new BigDecimal("78.1"), new BigDecimal("45.3"),
 				new BigDecimal("87.9"), new BigDecimal("12.3"), new BigDecimal("13.4"),
 				new BigDecimal("78"), new BigDecimal("59.6"), new BigDecimal("78.6"),
-				new BigDecimal("89.6"), new BigDecimal("58.6"), new BigDecimal("48.6"),
+				new BigDecimal("12.3"), new BigDecimal("58.6"), new BigDecimal("48.6"),
 				new BigDecimal("65.1")));
 		check("retNum", Arrays.asList(54.89d, 0d, 89.7d, 89.7d, 23.6d, -12.5));
 		check("retNumNull", Arrays.asList(56.4d, 98.3d, null, null, 56.9d, 45.7d, -78.6d, -11.2d, 78d, 45.6d, 89.6d, 56.9d, 123.3d, 45.9d, 48.5d, 67.8d));
@@ -6700,17 +6711,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				new BigDecimal("12.3"), new BigDecimal("11.2"), new BigDecimal("1.11"), new BigDecimal("-13.5"),
 				new BigDecimal("2.11"), new BigDecimal("-23.9"), new BigDecimal("89.7"), new BigDecimal("16"),
 				null, new BigDecimal("23.6"), new BigDecimal("78.9"), new BigDecimal("45.3"), new BigDecimal("458"),
-				null, new BigDecimal("12.1"), new BigDecimal("-89.6"), new BigDecimal("78.9"), 
-				new BigDecimal("12.6"), null));
+				null, new BigDecimal("36.9"), new BigDecimal("-89.6"), new BigDecimal("78.9"), 
+				new BigDecimal("0"), null));
 		check("retStr", Arrays.asList("Jax", "Sivir"));
-		check("retStrNull", Arrays.asList("Lulu", "Poppy", null));
+		check("retStrNull", Arrays.asList("Lulu", "Fizz", null, null));
 		check("retBool", Arrays.asList(false, false));
 		check("retBoolNull", Arrays.asList(false, false, null));
 		Calendar cal = Calendar.getInstance();
 		cal.set(2003, 10, 17, 0, 0, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		check("retDate", Arrays.asList(cal.getTime(), cal.getTime()));
-		check("retDate", Arrays.asList(cal.getTime(), cal.getTime(), null));
+		check("retDateNull", Arrays.asList(cal.getTime(), cal.getTime(), null));
 	}
 	
 	public void test_mathlib_min_expect_error(){
@@ -6798,6 +6809,106 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+	
+	public void test_mathlib_acos(){
+		doCompile("test_mathlib_acos");
+		check("ret", Arrays.asList(Math.acos(Math.PI), Math.acos(Math.PI*2), Math.acos(Math.PI/2), 
+				Math.acos(180), Math.acos(90), Math.acos(0), Math.acos(123)));
+	}
+	
+	public void test_mathlib_acos_expect_error(){
+		try {
+			doCompile("function integer transform(){double input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_asin(){
+		doCompile("test_mathlib_asin");
+		check("ret", Arrays.asList(Math.asin(Math.PI), Math.asin(Math.PI*2), Math.asin(Math.PI/2),
+				Math.asin(1236), Math.asin(0)));
+	}
+	
+	public void test_mathlib_asin_expect_error(){
+		try {
+			doCompile("function integer transform(){number input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_atan(){
+		doCompile("test_mathlib_atan");
+		check("ret", Arrays.asList(Math.atan(Math.PI), Math.atan(Math.PI*2), Math.atan(Math.PI/2),
+				Math.atan(45), Math.atan(0)));
+	}
+	
+	public void test_mathlib_atan_expect_error(){
+		try {
+			doCompile("function integer transform(){number input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 //-------------------------DateLib tests----------------------
 	
 	public void test_datelib_cache() {

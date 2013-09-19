@@ -129,10 +129,10 @@ function integer transform(){
 	retDecNull[17] = min(nullDec, 458l);
 	retDecNull[18] = min(nullLong, nullDec);
 	//mixed - upcast number -> decimal
-	retDecNull[19] = min(36.9d, 12.1); //this
+	retDecNull[19] = min(36.9d, 100.1); 
 	retDecNull[20] = min(tmpN, -89.6d);
 	retDecNull[21] = min(nullNum, 78.9d);
-	retDecNull[22] = min(nullDec, 12.6); //this
+	retDecNull[22] = min(nullDec, 0.0); 	
 	retDecNull[23] = min(nullNum, nullDec);	
 
 //string

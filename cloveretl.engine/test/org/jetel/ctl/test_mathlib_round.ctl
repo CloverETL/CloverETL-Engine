@@ -5,11 +5,12 @@ long[] longResult;
 long[] doubleResult;
 decimal[] decimalResult;
 
+double[] double2Result;
 decimal[] decimal2Result;
-number intWithPrecisionResult;
-number longWithPrecisionResult;
-number ret1;
-number ret2;
+integer intWithPrecisionResult;
+long longWithPrecisionResult;
+integer ret1;
+long ret2;
 
 function integer transform() {
 	round1=round(-pow(3,1.2));
@@ -19,6 +20,7 @@ function integer transform() {
 	double[] doubleArgs = [ 2.4, 3.5 ];
 	decimal[] decimalArgs = [ 2.4D, 3.5D ];
 	decimal decimal2Arg = 1234567.1234567D;
+	double double2Arg = 1234567.1234567;
 	
 	// rounding of int argument
 	intResult[0] = round(intArgs[0]);
@@ -41,11 +43,13 @@ function integer transform() {
 	for (integer i = -7; i < 8; i++) {
 		decimal2Result.push(round(decimal2Arg, i));
 	}
-	
+	for (integer j = -7; j < 8; j++) {
+		double2Result.push(round(double2Arg, j));
+	}
 	//CLO-1832
-	intWithPrecisionResult = round(1234, 2);
+	intWithPrecisionResult = round(1234, -3);
 	longWithPrecisionResult = round(123456L, 2);
 	ret1 = round(1234, -2);
-	ret2 = round(13565L, 2);
+	ret2 = round(13565L, -4);
 	return 0;
 }

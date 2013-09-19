@@ -232,22 +232,44 @@ public class MathLib extends TLFunctionLibrary {
 
     static final long pow10(int exponent){
     	long value=1;
-    	while(exponent>0){
+    	int i = Math.abs(exponent);
+    	while(i>0){
     		value*=10l;
-    		exponent--;
+    		i--;
     	}
     	return value;
     }
     
     
     @TLFunctionAnnotation("Returns double value rounded to specified precision.")
-    public static final Double round(TLFunctionCallContext context, double d, int precision) {
+    public static final Double round(TLFunctionCallContext context, double d, Integer precision) {
     	long multiple=pow10(precision);
-    	return ((double)Math.round(d*multiple))/multiple;
+    	if (precision>0)
+    		return ((double)Math.round(d*multiple))/multiple;
+    	else
+    		return ((double)Math.round(d/multiple))*multiple;
+    }
+    
+    @TLFunctionAnnotation("Returns long value rounded to specified precision.")
+    public static final Long round(TLFunctionCallContext context, long d, Integer precision) {
+    	long multiple=pow10(precision);
+    	if (precision>0)
+    		return d;
+    	else
+    		return (d/multiple)*multiple;
+    }
+    
+    @TLFunctionAnnotation("Returns integer value rounded to specified precision.")
+    public static final Integer round(TLFunctionCallContext context, int d, Integer precision) {
+    	long multiple=pow10(precision);
+    	if (precision>0)
+    		return d;
+    	else
+    		return (int)((d/multiple)*multiple);
     }
     
     @TLFunctionAnnotation("Returns decimal value rounded to specified precision.")
-    public static final BigDecimal round(TLFunctionCallContext context, BigDecimal d, int precision) {
+    public static final BigDecimal round(TLFunctionCallContext context, BigDecimal d, Integer precision) {
     	return d.setScale(precision, RoundingMode.HALF_EVEN); 
     }
     
@@ -276,8 +298,12 @@ public class MathLib extends TLFunctionLibrary {
 				final Integer precision = stack.popInt();
 				if (context.getParams()[0].isDecimal()) {
 					stack.push(round(context, stack.popDecimal(), precision));
-				} else {
+				} else if (context.getParams()[0].isDouble()) {
 					stack.push(round(context, stack.popDouble(), precision));
+				} else if (context.getParams()[0].isLong()) {
+					stack.push(round(context, stack.popLong(), precision));
+				} else{
+					stack.push(round(context, stack.popInt(), precision));
 				}
 			} else {
 				if (context.getParams()[0].isDecimal()) {
