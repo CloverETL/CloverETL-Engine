@@ -20,6 +20,8 @@ package org.jetel.util;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Collected methods which allow easy implementation of <code>hashCode</code>.
@@ -186,11 +188,11 @@ public final class HashCodeUtil {
 		if (map == null)
 			return 0;
 
-		int result = 1;
-
-		for (Object element : map.values())
-			result = 31 * result + (element == null ? 0 : element.hashCode());
-
+		int result = 0;
+		Iterator<Map.Entry<K, V>> it = map.entrySet().iterator();
+		while (it.hasNext()) {
+			result += it.next().hashCode();
+		}
 		return result;
 	}
 	

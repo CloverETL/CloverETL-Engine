@@ -424,11 +424,7 @@ public class MapDataField extends DataField {
 		if (isNull) {
 			return 0;
 		}
-		int hash = 0;
-		for (Map.Entry<String, DataField> entry : fields.entrySet()) {
-			hash += entry.hashCode();
-		}
-		return hash;
+		return HashCodeUtil.getHash(fields);
 	}
 	
 	@Override
@@ -470,12 +466,6 @@ public class MapDataField extends DataField {
 	public int compareTo(Object otherField) {
 		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be compared to each other. Map fields are not supported.");
 	}
-
-	@Override
-	public int hashCode(){
-		return HashCodeUtil.getHash(this.fields);
-	}
-	
 	
 	/**
 	 * 
