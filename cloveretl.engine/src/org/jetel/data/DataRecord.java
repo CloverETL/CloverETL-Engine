@@ -747,7 +747,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 */
 	@Override
 	public int hashCode(){
-	    return HashCodeUtil.getHash(fields);
+	    return HashCodeUtil.hash(fields);
 	}
     
     /**

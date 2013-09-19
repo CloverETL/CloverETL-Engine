@@ -616,8 +616,8 @@ public class IntegerDataField extends DataField implements Numeric, Comparable<O
 	}
 
 	@Override
-	public int hashCode(){
-		return HashCodeUtil.getHash(value);
+	public int hashCode() {
+		return HashCodeUtil.hash(value);
 	}
 
 	@Override

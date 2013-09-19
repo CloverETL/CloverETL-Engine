@@ -302,8 +302,8 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 
 	@Override
 	public int hashCode(){
-		if (isNull) return 123;
-		return HashCodeUtil.getHash(value);
+		if (isNull) return HashCodeUtil.SEED;
+		return HashCodeUtil.hash(value);
 	}
 	
 	/**
