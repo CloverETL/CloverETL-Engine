@@ -19,9 +19,6 @@
 package org.jetel.util;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Map;
 
 /**
  * Collected methods which allow easy implementation of <code>hashCode</code>.
@@ -54,8 +51,22 @@ public final class HashCodeUtil {
 	/**
 	 * booleans.
 	 */
+	public static int hash(boolean aBoolean) {
+		return hash(SEED, aBoolean);
+	}
+
+	/**
+	 * booleans.
+	 */
 	public static int hash(int aSeed, boolean aBoolean) {
-		return firstTerm(aSeed) + (aBoolean ? 1 : 0);
+		return firstTerm(aSeed) + (aBoolean ? 1231 : 1237);
+	}
+
+	/**
+	 * chars.
+	 */
+	public static int hash(char aChar) {
+		return hash(SEED, aChar);
 	}
 
 	/**
@@ -68,8 +79,22 @@ public final class HashCodeUtil {
 	/**
 	 * ints.
 	 */
+	public static int hash(int aInt) {
+		return hash(SEED, aInt);
+	}
+
+	/**
+	 * ints.
+	 */
 	public static int hash(int aSeed, int aInt) {
 		return firstTerm(aSeed) + aInt;
+	}
+
+	/**
+	 * longs.
+	 */
+	public static int hash(long aLong) {
+		return hash(SEED, aLong);
 	}
 
 	/**
@@ -82,8 +107,22 @@ public final class HashCodeUtil {
 	/**
 	 * floats.
 	 */
+	public static int hash(float aFloat) {
+		return hash(SEED, aFloat);
+	}
+
+	/**
+	 * floats.
+	 */
 	public static int hash(int aSeed, float aFloat) {
 		return hash(aSeed, Float.floatToIntBits(aFloat));
+	}
+
+	/**
+	 * doubles.
+	 */
+	public static int hash(double aDouble) {
+		return hash(SEED, aDouble);
 	}
 
 	/**
@@ -93,6 +132,154 @@ public final class HashCodeUtil {
 		return hash(aSeed, Double.doubleToLongBits(aDouble));
 	}
 
+	public static int hash(boolean[] aArray) {
+		return hash(SEED, aArray);
+	}
+
+	public static int hash(int aSeed, boolean[] aArray) {
+		int result = aSeed;
+		if (aArray == null) {
+			result = hash(result, 0);
+		} else {
+			for (boolean item : aArray) {
+				result = hash(result, item);
+			}
+		}
+		return result;
+	}
+
+	public static int hash(char[] aArray) {
+		return hash(SEED, aArray);
+	}
+
+	public static int hash(int aSeed, char[] aArray) {
+		int result = aSeed;
+		if (aArray == null) {
+			result = hash(result, 0);
+		} else {
+			for (char item : aArray) {
+				result = hash(result, item);
+			}
+		}
+		return result;
+	}
+
+	public static int hash(byte[] aArray) {
+		return hash(SEED, aArray);
+	}
+
+	public static int hash(int aSeed, byte[] aArray) {
+		int result = aSeed;
+		if (aArray == null) {
+			result = hash(result, 0);
+		} else {
+			for (byte item : aArray) {
+				result = hash(result, item);
+			}
+		}
+		return result;
+	}
+
+	public static int hash(short[] aArray) {
+		return hash(SEED, aArray);
+	}
+
+	public static int hash(int aSeed, short[] aArray) {
+		int result = aSeed;
+		if (aArray == null) {
+			result = hash(result, 0);
+		} else {
+			for (short item : aArray) {
+				result = hash(result, item);
+			}
+		}
+		return result;
+	}
+
+	public static int hash(int[] aArray) {
+		return hash(SEED, aArray);
+	}
+
+	public static int hash(int aSeed, int[] aArray) {
+		int result = aSeed;
+		if (aArray == null) {
+			result = hash(result, 0);
+		} else {
+			for (int item : aArray) {
+				result = hash(result, item);
+			}
+		}
+		return result;
+	}
+
+	public static int hash(long[] aArray) {
+		return hash(SEED, aArray);
+	}
+
+	public static int hash(int aSeed, long[] aArray) {
+		int result = aSeed;
+		if (aArray == null) {
+			result = hash(result, 0);
+		} else {
+			for (long item : aArray) {
+				result = hash(result, item);
+			}
+		}
+		return result;
+	}
+
+	public static int hash(float[] aArray) {
+		return hash(SEED, aArray);
+	}
+
+	public static int hash(int aSeed, float[] aArray) {
+		int result = aSeed;
+		if (aArray == null) {
+			result = hash(result, 0);
+		} else {
+			for (float item : aArray) {
+				result = hash(result, item);
+			}
+		}
+		return result;
+	}
+
+	public static int hash(double[] aArray) {
+		return hash(SEED, aArray);
+	}
+
+	public static int hash(int aSeed, double[] aArray) {
+		int result = aSeed;
+		if (aArray == null) {
+			result = hash(result, 0);
+		} else {
+			for (double item : aArray) {
+				result = hash(result, item);
+			}
+		}
+		return result;
+	}
+
+	public static int hash(Object[] aObjectArray) {
+		return hash(SEED, aObjectArray);
+	}
+
+	public static int hash(int aSeed, Object[] aObjectArray) {
+		int result = aSeed;
+		if (aObjectArray == null) {
+			result = hash(result, 0);
+		} else {
+			for (Object item : aObjectArray) {
+				result = hash(result, item);
+			}
+		}
+		return result;
+	}
+
+	public static int hash(Object aObject) {
+		return hash(SEED, aObject);
+	}
+	
 	/**
 	 * <code>aObject</code> is a possibly-null object field, and possibly an array.
 	 * 
@@ -126,84 +313,4 @@ public final class HashCodeUtil {
 		return aObject.getClass().isArray();
 	}
 	
-	//---------------------------------------------------------------------------------------
-	// ---- implementations of hash functions for individual data types recognized by Clover
-	
-	public static final int getHash(double value){
-		long v=Double.doubleToLongBits(value);
-		return (int)(v^(v>>32));
-	}
-	
-	public static final int getHash(int value){
-		return value;
-	}
-	
-	public static final int getHash(CharSequence value){
-		int hash=5381;
-		for (int i=0;i<value.length();i++){
-			hash = ((hash << 5) + hash) + value.charAt(i); 
-		}
-		return (hash & 0x7FFFFFFF);
-	}
-
-	public static final int getHash(java.util.Date value){
-		return value.hashCode();
-	}
-	
-	public static final int getHash(byte[] value){
-		return  Arrays.hashCode(value);
-	}
-	
-	public static final int getHash(long value){
-		return (int)(value^value>>32);
-	}
-	
-	public static final int getHash(org.jetel.data.primitive.Decimal value){
-		return value.hashCode();
-	}
-	
-	public static final int getHash(java.math.BigDecimal value){
-		return value.hashCode();
-	}
-	
-	
-	
-	public static final int getHash(boolean value){
-		return Boolean.valueOf(value).hashCode();
-	}
-	
-	public static final <E> int getHash(java.util.List<E> list) {
-		if (list == null)
-			return 0;
-
-		int result = 1;
-
-		for (Object element : list)
-			result = 31 * result + (element == null ? 0 : element.hashCode());
-
-		return result;
-	}
-	
-	public static final <K,V> int getHash(java.util.Map <K,V> map){
-		if (map == null)
-			return 0;
-
-		int result = 0;
-		Iterator<Map.Entry<K, V>> it = map.entrySet().iterator();
-		while (it.hasNext()) {
-			result += it.next().hashCode();
-		}
-		return result;
-	}
-	
-	public static final int getHash(Object[] objects){
-		if (objects == null)
-			return 0;
-		
-		int result= 1;
-	    for (Object element: objects){
-	        result =31 *result + element.hashCode();
-	    }
-	    return result;
-	}
 }

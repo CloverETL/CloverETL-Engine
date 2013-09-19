@@ -35,6 +35,7 @@ import org.jetel.ctl.TLUtils;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.HashCodeUtil;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.IdentityArrayList;
@@ -461,19 +462,6 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 
 	@Override
-	public int hashCode() {
-		if (isNull) {
-			return 0;
-		}
-		int hash = 1;
-		for (int i = 0; i < size; ++i) {
-			DataField field = fields.get(i);
-			hash = 31 * hash + (field == null ? 0 : field.hashCode());
-		}
-		return hash;
-	}
-	
-	@Override
 	public boolean equals(Object otherField) {
 	    if (isNull || otherField == null) return false;
 		if (this == otherField) return true;
@@ -553,6 +541,11 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	@Override
 	public Iterator<DataField> iterator() {
 		return new Itr();
+	}
+	
+	@Override
+	public int hashCode() {
+		return HashCodeUtil.hash(this.fields);
 	}
 
 	private class Itr implements Iterator<DataField> {

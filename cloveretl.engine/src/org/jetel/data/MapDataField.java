@@ -420,14 +420,6 @@ public class MapDataField extends DataField {
 	}
 	
 	@Override
-	public int hashCode() {
-		if (isNull) {
-			return 0;
-		}
-		return HashCodeUtil.getHash(fields);
-	}
-	
-	@Override
 	public boolean equals(Object otherField) {
 	    if (isNull || otherField == null) return false;
 		if (this == otherField) return true;
@@ -465,6 +457,11 @@ public class MapDataField extends DataField {
 	@Override
 	public int compareTo(Object otherField) {
 		throw new UnsupportedOperationException(getMetadata().toString() + " cannot be compared to each other. Map fields are not supported.");
+	}
+
+	@Override
+	public int hashCode() {
+		return HashCodeUtil.hash(this.fields);
 	}
 	
 	/**
