@@ -40,6 +40,8 @@ import org.jetel.util.file.FileUtils;
  * Does not extend from AbstractParser thus can not be used in standard reader. A special component is used.<br>
  * Structure info from http://www.cs.cmu.edu/~varun/cs315p/xbase.txt.
  * 
+ * Further information is available at https://wiki.javlin.eu/pages/viewpage.action?pageId=4883082
+ * 
  * @author dpavlis (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
