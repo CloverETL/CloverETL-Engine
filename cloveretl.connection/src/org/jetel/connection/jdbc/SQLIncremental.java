@@ -21,6 +21,7 @@ package org.jetel.connection.jdbc;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -100,7 +101,13 @@ public class SQLIncremental {
 		
 		File file = new File(incrementalFile);
 		if (file.exists()) {
-			keyValue.load(FileUtils.getFileURL(incrementalFile).openStream());
+			InputStream is = null;
+			try {
+				is = FileUtils.getFileURL(incrementalFile).openStream();
+				keyValue.load(is);
+			} finally {
+				FileUtils.closeQuietly(is);
+			}
 		}
 		setInitialValues(keyValue, key);
 		
