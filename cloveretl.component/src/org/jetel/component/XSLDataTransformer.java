@@ -301,7 +301,7 @@ public class XSLDataTransformer extends Node {
 
     private void initChannelIterator() throws ComponentNotReadyException {
     	TransformationGraph graph = getGraph();
-    	channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), graph != null ? graph.getRuntimeContext().getContextURL() : null, xmlInputFile);
+    	channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), getContextURL(), xmlInputFile);
     	channelIterator.setCharset(charset);
     	channelIterator.setDictionary(graph != null ? graph.getDictionary() : null);
     	channelIterator.init();
@@ -316,7 +316,7 @@ public class XSLDataTransformer extends Node {
     	// prepare type of targets: lookpup/keyValue
 		try {
 			InputPort inputPort = getInputPort(READ_FROM_PORT);
-			URL contextURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
+			URL contextURL = getContextURL();
 			if (mkDir) { // CLO-1085
 				FileUtils.createParentDirs(contextURL, xmlOutputFile);
 			}

@@ -270,8 +270,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
             fromProperties(initialSettings);
         } else if(!StringUtils.isEmpty(configFileName)) {
             try {
-            	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
-                InputStream stream = FileUtils.getInputStream(projectURL, configFileName);
+                InputStream stream = FileUtils.getInputStream(getContextURL(), configFileName);
 
                 Properties tempProperties = new Properties();
                 tempProperties.load(stream);
@@ -693,7 +692,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 
 	private void prepareDriverLibraryURLs() throws ComponentNotReadyException {
 		if(!StringUtils.isEmpty(driverLibrary)) {
-			URL contextURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
+			URL contextURL = getContextURL();
 			try {
 				driverLibraryURLs = ClassLoaderUtils.getClassloaderUrls(contextURL, driverLibrary);
 			} catch (Exception e) {
