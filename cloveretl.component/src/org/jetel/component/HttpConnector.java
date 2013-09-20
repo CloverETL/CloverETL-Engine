@@ -396,6 +396,8 @@ public class HttpConnector extends Node {
 	
 	public final static String XML_RESPONSE_COOKIES_ATTRIBUTE = "responseCookies";
 	
+	public final static String XML_STREAMING_ATTRIBUTE = "streaming";
+	
 	/**
 	 * Default value of the 'append output' flag 
 	 */
@@ -788,6 +790,11 @@ public class HttpConnector extends Node {
      * Output records for error output mapping transformation.
      */
     protected DataRecord[] errorOutputMappingOutRecords;	
+    
+    /**
+     * Use Transfer-Encoding: chunked for Input file.
+     */
+    private boolean streaming;
     
     
 	/*  === Component base properties === */
@@ -2276,6 +2283,7 @@ public class HttpConnector extends Node {
 		httpConnector.setRawHttpHeaders(xattribs.getString(XML_RAW_HTTP_HEADERS_ATTRIBUTE, null));
 		httpConnector.setRequestCookies(xattribs.getString(XML_REQUEST_COOKIES_ATTRIBUTE, null));
 		httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
+		httpConnector.setStreaming(xattribs.getBoolean(XML_STREAMING_ATTRIBUTE, true));
 
 		/** job flow related properties */
 		httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -2606,7 +2614,7 @@ public class HttpConnector extends Node {
 			} else if (content instanceof byte[]) {
 				entity = new ByteArrayEntity((byte[]) content, contentType);
 			} else if (content instanceof InputStream) {
-				if (httpMethod.getRequestLine().getProtocolVersion().lessEquals(HttpVersion.HTTP_1_0)) {
+				if (!isStreaming() || httpMethod.getRequestLine().getProtocolVersion().lessEquals(HttpVersion.HTTP_1_0)) {
 					// chunked transfer encoding is not supported in HTTP/1.0
 					try {
 						ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -3617,6 +3625,14 @@ public class HttpConnector extends Node {
 	 */
 	public void setoAuthAccessTokenSecret(String oAuthAccessTokenSecret) {
 		this.oAuthAccessTokenSecret = oAuthAccessTokenSecret;
+	}
+
+	public boolean isStreaming() {
+		return streaming;
+	}
+
+	public void setStreaming(boolean streaming) {
+		this.streaming = streaming;
 	}
 
 	@Override
