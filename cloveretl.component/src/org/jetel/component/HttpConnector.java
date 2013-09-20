@@ -136,6 +136,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -558,7 +559,7 @@ public class HttpConnector extends Node {
 			WritableByteChannel outputChannel = getFileOutputChannel();
 			
 			if (outputChannel == null) {
-				outputChannel = Channels.newChannel(System.out);
+				outputChannel = new SystemOutByteChannel();
 			}
 			
 			ReadableByteChannel inputConnection = Channels.newChannel(response.getEntity().getContent());
