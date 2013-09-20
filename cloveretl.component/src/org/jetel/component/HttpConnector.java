@@ -562,21 +562,24 @@ public class HttpConnector extends Node {
 				outputChannel = new SystemOutByteChannel();
 			}
 			
-			ReadableByteChannel inputConnection = Channels.newChannel(response.getEntity().getContent());
-			
-			if (inputConnection != null) {
-				try {
-					StreamUtils.copy(inputConnection, outputChannel);
-				} finally {
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				InputStream inputStream = entity.getContent();
+				
+				if (inputStream != null) {
 					try {
-						inputConnection.close();
-					} catch (IOException e) {
-						logger.warn("Failed to close HTTP response input channel");
-					}
-					try {
-						outputChannel.close();
-					} catch (IOException e) {
-						logger.warn("Failed to close HTTP response output channel");
+						StreamUtils.copy(Channels.newChannel(inputStream), outputChannel);
+					} finally {
+						try {
+							FileUtils.close(inputStream);
+						} catch (IOException e) {
+							logger.warn("Failed to close HTTP response input channel");
+						}
+						try {
+							FileUtils.close(outputChannel);
+						} catch (IOException e) {
+							logger.warn("Failed to close HTTP response output channel");
+						}
 					}
 				}
 			}
