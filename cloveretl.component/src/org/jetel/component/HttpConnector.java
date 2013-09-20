@@ -3461,10 +3461,6 @@ public class HttpConnector extends Node {
 		return charset;
 	}
 	
-	private URL getContextURL() {
-		return (getGraph() != null) ? getGraph().getRuntimeContext().getContextURL() : null;
-	}
-
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
