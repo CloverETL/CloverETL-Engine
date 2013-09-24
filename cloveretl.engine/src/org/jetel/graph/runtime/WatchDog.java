@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.runtime;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.MDC;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.CompoundException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
@@ -219,7 +221,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
            	} catch (Exception e) {
     			setCauseException(e);
     			if (e instanceof ComponentNotReadyException) {
-    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
+    				setCauseGraphElement(((ComponentNotReadyException) e).getGraphElement());
     			}
            		watchDogStatus = Result.ERROR;
            		ExceptionUtils.logException(logger, "Graph pre-execute initialization failed.", e);
@@ -276,7 +278,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	           	} catch (Exception e) {
 	    			setCauseException(e);
 	    			if (e instanceof ComponentNotReadyException) {
-	    				causeGraphElement = ((ComponentNotReadyException) e).getGraphElement();
+	    				setCauseGraphElement(((ComponentNotReadyException) e).getGraphElement());
 	    			}
 	           		watchDogStatus = Result.ERROR;
 	           		ExceptionUtils.logException(logger, "Graph post-execute method failed.", e);
@@ -315,7 +317,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
             logger.info("WatchDog thread finished - total execution time: " + (System.currentTimeMillis() - startTimestamp) / 1000 + " (sec)");
        	} catch (Throwable t) {
        		setCauseException(t);
-       		causeGraphElement = null;
+       		setCauseGraphElement(null);
        		watchDogStatus = Result.ERROR;
        		ExceptionUtils.logException(logger, "Error watchdog execution", t);
 		} finally {
@@ -462,9 +464,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
 				switch(message.getType()){
 				case ERROR:
 					setCauseException(((ErrorMsgBody) message.getBody()).getSourceException());
-					causeGraphElement = message.getSender();
+					setCauseGraphElement(message.getSender());
 					if (getCauseException() == null) {
-						setCauseException(new JetelRuntimeException(String.format("Graph element %s failed with unknown cause.", causeGraphElement)));
+						setCauseException(new JetelRuntimeException(String.format("Graph element %s failed with unknown cause.", message.getSender())));
 					}
 					ExceptionUtils.logException(logger, null, getCauseException());
 					return Result.ERROR;
@@ -619,10 +621,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		//preExecute() invocation
 		try {
 			phase.preExecute();
-		} catch (ComponentNotReadyException e) {
+		} catch (Exception e) {
 			ExceptionUtils.logException(logger, "Phase pre-execute initialization failed", e);
 			setCauseException(e);
-			causeGraphElement = e.getGraphElement();
+			if (e instanceof ComponentNotReadyException) {
+				setCauseGraphElement(((ComponentNotReadyException) e).getGraphElement());
+			}
 			return Result.ERROR;
 		}
 		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
@@ -656,10 +660,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	        	//postExecute() invocation
 	        	try {
 	        		phase.postExecute();
-	        	} catch (ComponentNotReadyException e) {
+	        	} catch (Exception e) {
 	        		ExceptionUtils.logException(logger, "Phase post-execute finalization failed", e);
 	    			setCauseException(e);
-	    			causeGraphElement = e.getGraphElement();
+	    			if (e instanceof ComponentNotReadyException) {
+	    				setCauseGraphElement(((ComponentNotReadyException) e).getGraphElement());
+	    			}
 	    			phaseStatus = Result.ERROR;
 	        	}
             }
@@ -705,13 +711,24 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
     /**
      * Sets cause exception of graph failure.
-     * The given cause exception is wrapped to obfuscate
-     * sensitive information.
+     * If some cause exception is already exists, {@link CompoundException} is created for both of them.
      * @param e
      */
     protected void setCauseException(Throwable e) {
     	//causeException = new ObfuscatingException(e);
-    	causeException = e;
+
+    	if (causeException == null) {
+        	causeException = e;
+    	} else {
+    		List<Throwable> causes = new ArrayList<Throwable>();
+    		if (causeException instanceof CompoundException) {
+    			causes.addAll(((CompoundException) causeException).getCauses());
+    		} else {
+    			causes.add(causeException);
+    		}
+    		causes.add(e);
+    		causeException = new CompoundException(causes.toArray(new Throwable[0]));
+    	}
     }
 
     /**
@@ -726,7 +743,9 @@ public class WatchDog implements Callable<Result>, CloverPost {
     }
 
     protected void setCauseGraphElement(IGraphElement causeGraphElement) {
-    	this.causeGraphElement = causeGraphElement;
+    	if (causeGraphElement == null) {
+    		this.causeGraphElement = causeGraphElement;
+    	}
     }
     
 	public String getErrorMessage() {
