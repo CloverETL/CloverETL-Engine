@@ -486,11 +486,11 @@ public class XMLExtract extends Node {
 	}
 
 	private Reader handleBOM(ReadableByteChannel stream, String fileName) throws JetelException {
-		PushbackInputStream reader = new PushbackInputStream(Channels.newInputStream(stream), 4);
+		PushbackInputStream pushbackInputStream = new PushbackInputStream(Channels.newInputStream(stream), 4);
 
 		try {
 			byte[] bom = new byte[4];
-			int read = reader.read(bom);
+			int read = pushbackInputStream.read(bom);
 			int unread = 0;
 
 			int[] unsigned = new int[read];
@@ -539,20 +539,18 @@ public class XMLExtract extends Node {
 			}
 
 			if (warnEncoding != null) {
-				LOGGER.warn("Byte Order Mark indicates " + warnEncoding + " but charset attribute is set to " + this.charset +(fileName != null? " (file:"+fileName+")" : ""));
+				LOGGER.warn("Byte Order Mark indicates " + warnEncoding + " but charset attribute is set to " + this.charset + (fileName != null ? " (file:" + fileName + ")" : ""));
 			}
 
 			if (unread > 0) {
-				reader.unread(bom, bom.length - unread, unread);
+				pushbackInputStream.unread(bom, bom.length - unread, unread);
 			}
 		} catch (IOException e) {
-			throw new JetelException("Error during BOM detection.",e);
+			throw new JetelException("Error during BOM detection.", e);
 		}
-		try {
-			return new InputStreamReader(reader, this.charset);
-		} catch (UnsupportedEncodingException e) {
-			throw new UnsupportedCharsetException(this.charset);
-		}
+		Charset charsetInstance = charset != null ? Charset.forName(this.charset) : Charset.defaultCharset();
+		
+		return new InputStreamReader(pushbackInputStream, charsetInstance.newDecoder());
 
 	}
 
