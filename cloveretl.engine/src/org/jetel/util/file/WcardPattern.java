@@ -633,9 +633,13 @@ public class WcardPattern {
 	 * @param url
 	 * @return
 	 */
-	private boolean hasWildcard(URL url) {
+	public static boolean hasWildcard(URL url) {
+		return hasWildcard(url.getFile());
+	}
+	
+	public static boolean hasWildcard(String fileURL) {
 		// check if the url has wildcards
-		String fileName = new File(url.getFile()).getName();
+		String fileName = new File(fileURL).getName();
 		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
 			if (fileName.indexOf("" + WCARD_CHAR[wcardIdx]) >= 0) { // wildcard found
 				return true;
