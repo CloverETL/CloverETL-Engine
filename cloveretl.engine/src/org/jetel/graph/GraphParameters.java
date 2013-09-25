@@ -29,6 +29,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -148,13 +149,14 @@ public class GraphParameters {
 	}
 	
 	/**
-	 * @return content of this container in properties form
+	 * @return content of this container in properties form, all parameters are already resolved
 	 */
 	public TypedProperties asProperties() {
+		PropertyRefResolver refResolver = new PropertyRefResolver(this);
 		TypedProperties result = new TypedProperties();
 		
 		for (GraphParameter parameter : parameters.values()) {
-			result.setProperty(parameter.getName(), parameter.getValue());
+			result.setProperty(parameter.getName(), refResolver.resolveRef(parameter.getValue()));
 		}
 		
 		return result;
