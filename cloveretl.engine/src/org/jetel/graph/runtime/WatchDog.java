@@ -743,7 +743,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
     }
 
     protected void setCauseGraphElement(IGraphElement causeGraphElement) {
-    	if (causeGraphElement == null) {
+    	if (this.causeGraphElement == null) {
     		this.causeGraphElement = causeGraphElement;
     	}
     }
