@@ -1748,6 +1748,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	public void test_ambiguous() {
+		// no error expected
+		doCompile("test_ambiguous_working");
+		
 		// built-in toString function
 		doCompileExpectError("test_ambiguous_toString", "Function 'toString' is ambiguous");
 		// built-in join function
@@ -1758,6 +1761,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompileExpectError("test_ambiguous_combined", "Function 'getUrlPath' is ambiguous");
 		// swapped arguments - non null ambiguity
 		doCompileExpectError("test_ambiguous_swapped", "Function 'swapped' is ambiguous");
+		// swapped arguments (internal and external function)
+		doCompileExpectError("test_ambiguous_swapped_combined", "Function 'charAt' is ambiguous");
 		// primitive type widening; the test depends on specific values of the type distance function, can be removed
 		doCompileExpectError("test_ambiguous_widening", "Function 'widening' is ambiguous");
 	}
