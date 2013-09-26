@@ -18,6 +18,7 @@
  */
 package org.jetel.data.formatter;
 import java.io.Closeable;
+import java.io.Flushable;
 import java.io.IOException;
 import java.net.URI;
 
@@ -32,7 +33,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *@since      December 30, 2002
  *@see        OtherClasses
  */
-public interface Formatter extends Closeable {
+public interface Formatter extends Closeable, Flushable {
 	
 	/**
 	 * This enumeration is used by #getPreferredDataSourceType() method to suggest preferred 
@@ -71,6 +72,7 @@ public interface Formatter extends Closeable {
 	/**
 	 *  Closing/deinitialization of formatter
 	 */
+	@Override
 	public void close() throws IOException;
 
 
@@ -101,6 +103,7 @@ public interface Formatter extends Closeable {
 	 *  Flush any unwritten data into output stream
 	 * @throws IOException
 	 */
+	@Override
 	public void flush() throws IOException;
 
 	/**
