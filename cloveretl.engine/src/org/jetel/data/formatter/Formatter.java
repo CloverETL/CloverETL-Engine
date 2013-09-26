@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.data.formatter;
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 
@@ -31,7 +32,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *@since      December 30, 2002
  *@see        OtherClasses
  */
-public interface Formatter {
+public interface Formatter extends Closeable {
 	
 	/**
 	 * This enumeration is used by #getPreferredDataSourceType() method to suggest preferred 

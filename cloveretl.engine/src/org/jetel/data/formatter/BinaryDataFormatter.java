@@ -69,16 +69,18 @@ public class BinaryDataFormatter extends AbstractFormatter {
 	}
 	
 	@Override
-	public void close() {
-		if (writer != null && writer.isOpen()) {
-			try {
-				flush();
-				writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
+	public void close() throws IOException {
+		try {
+			if ((writer != null) && writer.isOpen()) {
+				try {
+					flush();
+				} finally {
+					writer.close();
+				}
 			}
+		} finally {
+			buffer.clear();
 		}
-		buffer.clear();
 	}
 
 	@Override
@@ -106,7 +108,11 @@ public class BinaryDataFormatter extends AbstractFormatter {
 	
 	@Override
 	public void reset() {
-		close();
+		try {
+			close();
+		} catch (IOException ioe) {
+			throw new JetelRuntimeException(ioe);
+		}
 	}
 
 	@Override
