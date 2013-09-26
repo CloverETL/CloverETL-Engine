@@ -495,4 +495,12 @@
 	 <FlatFile outputFile="data-out/mathSetRandomSeedOverview.txt" supposedFile="supposed-out/mathSetRandomSeedOverview.txt"/>
 </FunctionalTest>
 
+<FunctionalTest ident="mathFloor" graphFile="graph/mathFloor.grf">
+	 <FlatFile outputFile="data-out/mathFloorOverview.txt" supposedFile="supposed-out/mathFloorOverview.txt"/>
+</FunctionalTest>
+
+<FunctionalTest ident="mathCeil" graphFile="graph/mathCeil.grf">
+	 <FlatFile outputFile="data-out/mathCeilOverview.txt" supposedFile="supposed-out/mathCeilOverview.txt"/>
+</FunctionalTest>
+
 </TestScenario>
