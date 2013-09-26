@@ -260,6 +260,7 @@ Licensing
 ----------                              
 This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
 		            </echo>
+		      <fixcrlf srcdir="${src.distribution.dir.engine}/../" includes="readme.txt" eol="crlf" />
 		      </then>
 	   </if>
 		                		
