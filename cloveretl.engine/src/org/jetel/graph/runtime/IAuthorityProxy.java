@@ -562,7 +562,7 @@ public abstract class IAuthorityProxy {
 	 */
 	public String getSecureParamater(String parameterName, String parameterValue) {
 		//no secure storage is implemented in default authority proxy
-		return null;
+		throw new JetelRuntimeException("Secure parameters are supported only in CloverETL Server environment.");
 	}
 
 	/**
