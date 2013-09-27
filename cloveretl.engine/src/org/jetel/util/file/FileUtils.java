@@ -46,6 +46,7 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -2212,7 +2213,7 @@ public class FileUtils {
 			closeable.close();
 		}
 	}
-
+	
 	/**
 	 * Closes all objects passed as the argument.
 	 * If any of them throws an exception, the first exception is thrown.
@@ -2220,7 +2221,7 @@ public class FileUtils {
 	 * @param closeables
 	 * @throws IOException
 	 */
-	public static void closeAll(Closeable... closeables) throws IOException {
+	public static void closeAll(Iterable<? extends Closeable> closeables) throws IOException {
 		if (closeables != null) {
 			IOException firstException = null;
 			
@@ -2242,6 +2243,19 @@ public class FileUtils {
 			if (firstException != null) {
 				throw firstException;
 			}
+		}
+	}
+
+	/**
+	 * Closes all objects passed as the argument.
+	 * If any of them throws an exception, the first exception is thrown.
+	 * 
+	 * @param closeables
+	 * @throws IOException
+	 */
+	public static void closeAll(Closeable... closeables) throws IOException {
+		if (closeables != null) {
+			closeAll(Arrays.asList(closeables));
 		}
 	}
 

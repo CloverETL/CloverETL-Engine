@@ -208,7 +208,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 
 		// prepare context URL
 		if (contextURL == null) {
-			contextURL = getGraph() == null ? null : getGraph().getRuntimeContext().getContextURL();
+			contextURL = getContextURL();
 		}
 
 		try {

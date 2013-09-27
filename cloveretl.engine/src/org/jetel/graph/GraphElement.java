@@ -18,6 +18,8 @@
  */
 package org.jetel.graph;
 
+import java.net.URL;
+
 import org.apache.log4j.Logger;
 import org.jetel.data.GraphElementDescription;
 import org.jetel.exception.ComponentNotReadyException;
@@ -282,6 +284,10 @@ public abstract class GraphElement implements IGraphElement {
     	this.description = description;
     }
     
+	protected URL getContextURL() {
+		return (getGraph() != null) ? getGraph().getRuntimeContext().getContextURL() : null;
+	}
+
     @Override
     public String toString() {
     	return identifiersToString(getId(), getName());

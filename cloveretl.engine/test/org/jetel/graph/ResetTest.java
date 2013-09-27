@@ -190,6 +190,9 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("DenormalizerWithoutInputFile.grf") // probably subgraph not supposed to be executed separately
 							&& !file.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
 							&& !file.getName().equals("BeanWriterReader_employees.grf") // remove after CL-2474 solved
+							&& !file.getName().equals("GraphParameters_secure.grf") // server test
+							&& !file.getName().equals("TypedProperties_CLO-1997.grf") // server test
+							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
 							&& !file.getName().equals("EmptyGraph.grf"); // ok, is to fail
 					
 				}

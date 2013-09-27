@@ -94,7 +94,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
 		//load external definition of this sequence
 		if (!StringUtils.isEmpty(configFileName)) {
 			try {
-	        	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
+	        	URL projectURL = getContextURL();
 	        	InputStream stream = null;
 	        	try {
 		            stream = FileUtils.getFileURL(projectURL, configFileName).openStream();

@@ -1748,6 +1748,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	public void test_ambiguous() {
+		// no error expected
+		doCompile("test_ambiguous_working");
+		
 		// built-in toString function
 		doCompileExpectError("test_ambiguous_toString", "Function 'toString' is ambiguous");
 		// built-in join function
@@ -1758,6 +1761,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompileExpectError("test_ambiguous_combined", "Function 'getUrlPath' is ambiguous");
 		// swapped arguments - non null ambiguity
 		doCompileExpectError("test_ambiguous_swapped", "Function 'swapped' is ambiguous");
+		// swapped arguments (internal and external function)
+		doCompileExpectError("test_ambiguous_swapped_combined", "Function 'charAt' is ambiguous");
 		// primitive type widening; the test depends on specific values of the type distance function, can be removed
 		doCompileExpectError("test_ambiguous_widening", "Function 'widening' is ambiguous");
 	}
@@ -4776,6 +4781,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch ( Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input, 'cs.CZ');return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input, input);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input, 'cs.CZ', input);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_find() {
@@ -6506,6 +6531,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		
 		try {
 			doCompile("function integer transform(){long input = null; long l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
 			fail();

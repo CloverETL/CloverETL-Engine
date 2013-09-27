@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,7 +167,7 @@ public class Trash extends Node {
 			
 			if (debugFilename != null) {
 				try {
-					FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, debugFilename, mkDir);
+					FileUtils.canWrite(getContextURL(), debugFilename, mkDir);
 				} catch (ComponentNotReadyException e) {
 					status.add(e, Severity.ERROR, this, Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);
 				}
@@ -193,10 +194,11 @@ public class Trash extends Node {
 		super.init();
 		
 		TransformationGraph graph = getGraph();
+		URL contextURL = getContextURL();
 
 		// creates necessary directories
 		if (mkDir && (debugFilename != null)) {
-			FileUtils.makeDirs(graph != null ? graph.getRuntimeContext().getContextURL() : null, new File(FileURLParser.getMostInnerAddress(debugFilename)).getParent());
+			FileUtils.makeDirs(contextURL, new File(FileURLParser.getMostInnerAddress(debugFilename)).getParent());
 		}
 		
 		if (debugPrint && inPorts.size() == 1) {
@@ -204,7 +206,7 @@ public class Trash extends Node {
 			if (debugFilename != null) {
 				formatter = new TextTableFormatter(charSet);
 				try {
-					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(FileUtils.getWritableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, debugFilename, debugAppend, compressLevel)));
+					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(FileUtils.getWritableChannel(contextURL, debugFilename, debugAppend, compressLevel)));
 				} catch (IOException e) {
 					throw new ComponentNotReadyException(this, "Output file '" + debugFilename + "' does not exist.", e);
 				}
@@ -235,7 +237,7 @@ public class Trash extends Node {
 				if (debugPrint) {
 					if (debugFilename != null) {
 						try {
-							writer.setChannels(new WritableByteChannelIterator(FileUtils.getWritableChannel(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, debugFilename, debugAppend, compressLevel)));
+							writer.setChannels(new WritableByteChannelIterator(FileUtils.getWritableChannel(getContextURL(), debugFilename, debugAppend, compressLevel)));
 						} catch (IOException e) {
 							e.printStackTrace();
 						}

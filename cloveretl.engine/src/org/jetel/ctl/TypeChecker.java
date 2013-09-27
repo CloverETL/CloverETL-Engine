@@ -21,6 +21,7 @@ package org.jetel.ctl;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTVARIABLEDECLARATION;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -749,6 +750,8 @@ public class TypeChecker extends NavigatingVisitor {
 			
 		}
 		
+		boolean localCandidateUsed = (localCandidate != null);
+		
 		// even if minResult==0, we still need to scan the external functions to perform ambiguity check
 				
 		/*
@@ -761,12 +764,17 @@ public class TypeChecker extends NavigatingVisitor {
 				int distance = functionDistance(actual, fd.getFormalParameters(), fd.isVarArg());
 				
 				if (distance < minResult) {
+					localCandidateUsed = false;
 					ambiguous = false; // strictly better function found, not ambiguous
 					minResult = distance;
 					minTypeVarMapping = new HashMap<String, TLType>(typeVarMapping);
 					extCandidate = fd;
 				} else if ((distance == minResult) && (distance < Integer.MAX_VALUE)) {
-					ambiguous = true; // equally good function, ambiguous
+					// unless we have found a strictly better external function
+					// or the local candidate overrides the external one
+					if (!localCandidateUsed || !Arrays.equals(fd.getFormalParameters(), localCandidate.getFormalParameters())) {
+						ambiguous = true; // equally good function, ambiguous
+					}
 				}
 			}
 		}
