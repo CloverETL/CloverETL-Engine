@@ -145,7 +145,10 @@ public class ComponentFactory {
 				String nodeName = xattribs.getString(Node.XML_NAME_ATTRIBUTE);
 				result.setName(nodeName);
 			}
-
+			
+			//preset description to the node
+			result.setDescription(componentMap.get(componentType));
+			
 			return result;
 		} catch (Exception e) {
 			Throwable t = e;

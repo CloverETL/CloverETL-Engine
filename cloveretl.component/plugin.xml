@@ -25,6 +25,87 @@
 	<extension point-id="component">
 		<parameter id="className" value="org.jetel.component.DataReader"/>
 		<parameter id="type" value="DATA_READER"/>
+		  <ETLComponent category="readers" iconPath="icons/readers/UniversalDataReader" name="UniversalDataReader"  type="DATA_READER">
+		    <shortDescription>Reads data from flat files.</shortDescription>
+		    <description>Reads data from delimited or fixed length files and sends data records to first connected output port. If any error occurs, the report is sent to the second port if &quot;Data policy&quot; is set to &quot;Controlled&quot;.</description>
+		    <inputPorts>
+		      <singlePort name="0" required="false" label="input"/>
+		    </inputPorts>
+		    <outputPorts>
+		      <singlePort name="0" required="true" label="output"/>
+		      <singlePort name="1" label="logs">
+		        <Metadata id="UDR_ErrorPort"/>
+		      </singlePort>
+		    </outputPorts>
+		    <properties>
+		      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+		        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only"/>
+		      </property>
+		      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+		        <singleType name="charset"/>
+		      </property>
+		      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+		        <enumType>
+		          <item displayValue="Strict" value="strict"/>
+		          <item displayValue="Controlled" value="controlled"/>
+		          <item displayValue="Lenient" value="lenient"/>
+		        </enumType>
+		      </property>
+		      <property category="deprecated" displayName="Skip first line" modifiable="true" name="skipFirstLine" nullable="true" defaultHint="false">
+		        <singleType name="bool"/>
+		      </property>
+		      <property category="basic" displayName="Trim strings" modifiable="true" name="trim" nullable="true" defaultHint="false">
+		        <singleType name="bool"/>
+		      </property>
+		      <property category="basic" displayName="Quoted strings" modifiable="true" name="quotedStrings" nullable="true" defaultHintProvider="quotedStringsFromOutputPortHint">
+		        <singleType name="bool"/>
+		      </property>
+		      <property category="basic" displayName="Quote character" modifiable="true" name="quoteCharacter" nullable="true" defaultHintProvider="quotedCharFromOutputPortHint">
+		        <singleType name="readerQuoteChar"/>
+		      </property>
+		      <property category="advanced" displayName="Skip leading blanks" modifiable="true" name="skipLeadingBlanks" nullable="true" defaultHint="false">
+		        <singleType name="bool"/>
+		      </property>
+		      <property category="advanced" displayName="Skip trailing blanks" modifiable="true" name="skipTrailingBlanks" nullable="true" defaultHint="false (true for fixlen metadata)">
+		        <singleType name="bool"/>
+		      </property>
+		      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" defaultHint="0">
+		        <singleType name="int"/>
+		      </property>
+		      <property category="advanced" displayName="Max number of records" modifiable="true" name="numRecords" nullable="true">
+		        <singleType name="int"/>
+		      </property>
+		      <property category="advanced" displayName="Number of skipped records per source" modifiable="true" name="skipSourceRows" nullable="true" defaultHintProvider="skipSourceRows">
+		        <singleType name="int"/>
+		      </property>
+		      <property category="advanced" displayName="Max number of records per source" modifiable="true" name="numSourceRecords" nullable="true">
+		        <singleType name="int"/>
+		      </property>
+		      <property category="advanced" displayName="Max error count" modifiable="true" name="maxErrorCount" nullable="true" defaultHint="(unlimited)">
+		        <singleType name="int"/>
+		      </property>
+		      <property category="advanced" displayName="Treat multiple delimiters as one" modifiable="true" name="treatMultipleDelimitersAsOne" nullable="true" defaultHint="false">
+		        <singleType name="bool"/>
+		      </property>
+		      <property category="advanced" displayName="Incremental file" modifiable="true" name="incrementalFile" nullable="true" required="incrementalKey">
+		        <singleType name="file"/>
+		      </property>
+		      <property category="advanced" displayName="Incremental key" modifiable="true" name="incrementalKey" nullable="true" required="incrementalFile">
+		        <singleType name="string"/>
+		      </property>
+		      <property category="advanced" displayName="Verbose" modifiable="true" name="verbose" nullable="true" defaultHint="false">
+		        <singleType name="bool"/>
+		      </property>
+		      <property category="advanced" displayName="Parser" modifiable="true" name="parser" nullable="true" defaultHint="Auto">
+		        <enumType>
+		          <item value="org.jetel.data.parser.SimpleDataParser" displayValue="org.jetel.data.parser.SimpleDataParser"/>
+		          <item value="org.jetel.data.parser.DataParser" displayValue="org.jetel.data.parser.DataParser"/>
+		          <item value="org.jetel.data.parser.CharByteDataParser" displayValue="org.jetel.data.parser.CharByteDataParser"/>
+		          <item value="org.jetel.data.parser.FixLenByteDataParser" displayValue="org.jetel.data.parser.FixLenByteDataParser"/>
+		        </enumType>
+		      </property>
+		    </properties>
+		  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
@@ -45,6 +126,21 @@
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.SimpleCopy"/>
 	    <parameter id="type" value="SIMPLE_COPY"/>
+		  <ETLComponent category="transformers" iconPath="icons/transformers/SimpleCopy" name="SimpleCopy"  type="SIMPLE_COPY" passThrough="true">
+		    <shortDescription>Copies data to output ports.</shortDescription>
+		    <description>Receives data through connected input port and copies data records to all connected output ports.</description>
+		    <inputPorts>
+		      <singlePort name="0" required="true">
+		      	<Metadata reference="out:0"/>
+		      </singlePort>
+		    </inputPorts>
+		    <outputPorts>
+		      <multiplePort name="0" required="true">
+		      	<Metadata reference="in:0"/>
+		      </multiplePort>
+		    </outputPorts>
+		    <properties />
+		  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">

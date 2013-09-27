@@ -169,7 +169,7 @@ public class PluginDescriptionBuilder {
             throw new InvalidAttributesException("Plugin.extension 'point-id' attribute is not set.");
         }
 
-        Extension extension = plugin.addExtension(extensionElement.getAttribute(POINT_ID_ATTR));
+        Extension extension = plugin.addExtension(extensionElement.getAttribute(POINT_ID_ATTR), extensionElement);
 
         //parameter elements
         NodeList nodes = extensionElement.getElementsByTagName(PARAMETER_ELEMENT);

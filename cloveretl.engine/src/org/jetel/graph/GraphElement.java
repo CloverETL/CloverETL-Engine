@@ -19,6 +19,7 @@
 package org.jetel.graph;
 
 import org.apache.log4j.Logger;
+import org.jetel.data.GraphElementDescription;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
@@ -58,6 +59,13 @@ public abstract class GraphElement implements IGraphElement {
      * cannot be invoked in first run of transformation graph. 
      */
     private boolean firstRun = true;
+    
+    /**
+     * Graph element descriptor which is related to element type.
+     * For example all SimpleCopy components has identical descriptor with
+     * information about SimpleCopy component type in general.
+     */
+    private GraphElementDescription description;
     
     /**
      * Constructor.
@@ -262,6 +270,16 @@ public abstract class GraphElement implements IGraphElement {
     	} else {
     		return new PropertyRefResolver();
     	}
+    }
+    
+    @Override
+    public GraphElementDescription getDescription() {
+    	return description;
+   }
+    
+    @Override
+    public void setDescription(GraphElementDescription description) {
+    	this.description = description;
     }
     
     @Override

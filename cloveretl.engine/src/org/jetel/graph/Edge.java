@@ -169,7 +169,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		return metadata;
 	}
 
-
+	public void setMetadata(DataRecordMetadata metadata) {
+		this.metadata = metadata;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.InputPort#getRecordCounter()
 	 */

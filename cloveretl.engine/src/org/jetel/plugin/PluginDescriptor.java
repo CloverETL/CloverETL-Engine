@@ -39,6 +39,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
@@ -302,8 +303,14 @@ public class PluginDescriptor {
         return FileUtils.getFileURL(manifest, path);
     }
     
-    public Extension addExtension(String pointId) {
-        Extension ret = new Extension(pointId, this); 
+    /**
+     * Add new extension to this plugin.
+     * @param pointId extension point id
+     * @param xmlElement complete XML definition of extension
+     * @return
+     */
+    public Extension addExtension(String pointId, Element xmlElement) {
+        Extension ret = new Extension(pointId, xmlElement, this); 
         extensions.add(ret);
         return ret;
     }

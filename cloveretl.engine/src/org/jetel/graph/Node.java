@@ -32,6 +32,7 @@ import java.util.concurrent.CyclicBarrier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
+import org.jetel.component.ComponentDescription;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
@@ -1409,4 +1410,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		return true;
 	}
 	
+    @Override
+	public ComponentDescription getDescription() {
+    	return (ComponentDescription) super.getDescription();
+    }
+
 }

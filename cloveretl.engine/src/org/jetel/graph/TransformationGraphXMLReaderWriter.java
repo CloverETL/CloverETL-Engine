@@ -417,6 +417,10 @@ public class TransformationGraphXMLReaderWriter {
 	        //remove disabled components and their edges
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
 
+			//pre-process the graph - automatic metadata propagation is performed
+			GraphPreProcessor graphPreProcessor = new GraphPreProcessor(graph);
+			graphPreProcessor.preProcess();
+
 	        return graph;
 		} finally {
 			ContextProvider.unregister(c);
