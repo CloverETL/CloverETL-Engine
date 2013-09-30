@@ -41,4 +41,13 @@ public class CompareUtilsTest extends TestCase {
 		assertFalse(CompareUtils.equals(new Integer("123456"), new Integer("123457")));
 	}
 	
+	public void testCompare() {
+		assertTrue(CompareUtils.compare(null, null) == 0);
+		assertTrue(CompareUtils.compare(null, "abc") < 0);
+		assertTrue(CompareUtils.compare("abc", null) > 0);
+		assertTrue(CompareUtils.compare("abc", "abc") == 0);
+		assertTrue(CompareUtils.compare("abc", "bcd") < 0);
+		assertTrue(CompareUtils.compare("bcd", "abc") > 0);
+	}
+	
 }
