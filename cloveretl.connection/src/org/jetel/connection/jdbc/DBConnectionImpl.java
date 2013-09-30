@@ -863,6 +863,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 	 * @throws JetelException
 	 */
 	protected Connection createConnection() {
+		JdbcSpecific jdbcSpecific = getJdbcSpecific();
 		JdbcDriver jdbcDriver = getJdbcDriver();
 		// -pnajvar
 		// this is a bad hack, workaround for issue 2668
@@ -875,7 +876,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		connectionProperties.putAll(createConnectionProperties());
 		
         try {
-            connection = driver.connect(getDbUrl(), connectionProperties);
+            connection = jdbcSpecific.connect(driver, getDbUrl(), connectionProperties);
         } catch (SQLException ex) {
             throw new JetelRuntimeException("Can't connect to DB: " + ex.getMessage(), ex);
         }

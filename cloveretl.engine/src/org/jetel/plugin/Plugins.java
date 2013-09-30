@@ -36,7 +36,6 @@ import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.dictionary.DictionaryTypeFactory;
 import org.jetel.graph.runtime.AuthorityProxyFactory;
 import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
@@ -215,7 +214,7 @@ public class Plugins {
         		pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
         		logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
     		} else {
-        		logger.warn("Plugin at '" + pluginManifestUrl + "' cannot be loaded. An another plugin is already registered with identical id attribute.");
+        		logger.warn("Plugin at '" + pluginManifestUrl + "' cannot be loaded. Another plugin is already registered with identical id attribute.");
     		}
         }
     }
