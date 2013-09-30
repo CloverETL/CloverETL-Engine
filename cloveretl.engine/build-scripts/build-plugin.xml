@@ -83,6 +83,19 @@
 
 		<mkdir dir="${dir.build}"/>
 
+		<if><available file="icons"/>
+			<then>
+				<fileset id="plugin-icons" dir="icons">
+					<include name="**"/> 
+				</fileset>
+			</then>
+			<else>
+				<fileset id="plugin-icons" dir="${basedir}">
+					<include name=""/>
+				</fileset>
+			</else>
+		</if>
+
 		<if><available file="${dir.lib}"/>
 			<then>
 				<echo message="Plugin has own libraries in ${dir.engine.lib}"/>
@@ -563,6 +576,10 @@
 		<!-- copy all libraries from lib directory -->
 		<copy todir="${dir.plugin.dist}/lib">
 			<fileset refid="plugin-lib-files"/>
+		</copy>
+		<!-- copy all icons -->
+		<copy todir="${dir.plugin.dist}/icons">
+			<fileset refid="plugin-icons"/>
 		</copy>
 	</target>
 

@@ -60,6 +60,24 @@ public class ComponentDescription extends GraphElementDescription {
         }
     }
 
+    @Override
+    public String getType() {
+    	if (hasDescription()) {
+    		return componentDesc.getType();
+    	} else {
+    		return super.getType();
+    	}
+    }
+    
+    @Override
+    public String getClassName() {
+    	if (hasDescription()) {
+    		return componentDesc.getClassName();
+    	} else {
+    		return super.getClassName();
+    	}
+    }
+    
     /**
      * @return deep description which contains details about component, number of ports, attributes, ...
      */
@@ -88,6 +106,8 @@ public class ComponentDescription extends GraphElementDescription {
     
     @XmlRootElement(name = "ETLComponent")
     public static class Component {
+    	private String type;
+		private String className;
     	private boolean passThrough = false;
     	@XmlElement(name = "inputPorts")
     	private Ports inputPorts;
@@ -99,6 +119,20 @@ public class ComponentDescription extends GraphElementDescription {
     	public Ports getOutputPorts() {
     		return outputPorts;
     	}
+    	@XmlAttribute
+		public String getType() {
+			return type;
+		}
+		public void setType(String type) {
+			this.type = type;
+		}
+    	@XmlAttribute
+		public String getClassName() {
+			return className;
+		}
+		public void setClassName(String className) {
+			this.className = className;
+		}
     	@XmlAttribute
 		public boolean isPassThrough() {
 			return passThrough;
