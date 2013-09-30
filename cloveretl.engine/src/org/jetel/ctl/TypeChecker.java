@@ -264,10 +264,17 @@ public class TypeChecker extends NavigatingVisitor {
 		if (!checkChildren(node)) {
 			return data;
 		}
-
-		TLType lhs = ((SimpleNode) node.jjtGetChild(0)).getType();
-		TLType rhs = ((SimpleNode) node.jjtGetChild(1)).getType();
 		
+		SimpleNode rhsNode = (SimpleNode) node.jjtGetChild(1);
+		
+		TLType lhs = ((SimpleNode) node.jjtGetChild(0)).getType();
+		TLType rhs = rhsNode.getType();
+		
+		// CLO-2049: generate a warning for number literal to decimal assignments
+		if ((rhsNode.getId() == TransformLangParserTreeConstants.JJTLITERAL) && lhs.isDecimal() && rhs.isDouble()) {
+			warn(node, "Assignment of a number literal to a decimal variable. Consider using a decimal literal, e.g. '" + ((CLVFLiteral) rhsNode).getValueImage() + "D'");
+		}
+
 		/*
 		 * Resulting type of assignment expression is LHS of assignment
 		 * Java example:
@@ -1866,9 +1873,16 @@ public class TypeChecker extends NavigatingVisitor {
 			return data;
 		}
 
+		SimpleNode rhsNode = (SimpleNode) node.jjtGetChild(1);
+		
 		// check if initializer type matches the variable type
 		TLType lhs = node.getType();
-		TLType rhs = ((SimpleNode) node.jjtGetChild(1)).getType();
+		TLType rhs = rhsNode.getType();
+
+		// CLO-2049: generate a warning for number literal to decimal assignments
+		if ((rhsNode.getId() == TransformLangParserTreeConstants.JJTLITERAL) && lhs.isDecimal() && rhs.isDouble()) {
+			warn(node, "Assignment of a number literal to a decimal variable. Consider using a decimal literal, e.g. '" + ((CLVFLiteral) rhsNode).getValueImage() + "D'");
+		}
 
 		// initializer is in error -> can't check anything further
 		if (rhs.isError()) {
