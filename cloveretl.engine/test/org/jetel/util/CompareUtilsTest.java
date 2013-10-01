@@ -42,7 +42,7 @@ public class CompareUtilsTest extends TestCase {
 	}
 	
 	public void testCompare() {
-		assertTrue(CompareUtils.compare(null, null) == 0);
+		assertTrue(CompareUtils.compare((String) null, (String) null) == 0);
 		assertTrue(CompareUtils.compare(null, "abc") < 0);
 		assertTrue(CompareUtils.compare("abc", null) > 0);
 		assertTrue(CompareUtils.compare("abc", "abc") == 0);
