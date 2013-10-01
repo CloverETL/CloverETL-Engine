@@ -32,7 +32,7 @@
 	    <outputPorts>
 	      <singlePort name="0" required="true" label="output"/>
 	      <singlePort name="1" label="logs">
-	        <!--Metadata id="UDR_ErrorPort"/-->
+	        <Metadata id="UDR_ErrorPort"/>
 	      </singlePort>
 	    </outputPorts>
 	    <properties>
@@ -422,6 +422,18 @@
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XSLDataTransformer"/>
 	    <parameter id="type" value="XSL_TRANSFORMER"/>
+	</extension>
+	
+	<extension point-id="metadata">
+		<Metadata id="UDR_ErrorPort">
+	      <Record fieldDelimiter="|" name="ErrorPort" recordDelimiter="\n" type="delimited">
+	        <Field name="recordNo" type="long"/>
+	        <Field name="fieldNo" type="integer"/>
+	        <Field name="originalData" type="string"/>
+	        <Field name="errorMessage" type="string"/>
+	        <Field name="fileURL" type="string"/>
+	      </Record>
+	    </Metadata>
 	</extension>
 	
 </plugin>

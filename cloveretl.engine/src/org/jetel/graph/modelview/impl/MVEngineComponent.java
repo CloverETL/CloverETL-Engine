@@ -28,6 +28,7 @@ import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.MetadataRepository;
 
 /**
  * General model wrapper for engine component ({@link Node}).
@@ -76,20 +77,36 @@ public class MVEngineComponent implements MVComponent<DataRecordMetadata> {
 
 	@Override
 	public MVMetadata<DataRecordMetadata> getDefaultOutputMetadata(int portIndex) {
+		//first let's try to find default metadata dynamically from component instance
 		if (engineComponent instanceof MetadataProvider) {
-			return new MVEngineMetadata(((MetadataProvider) engineComponent).getOutputMetadata(portIndex));
-		} else {
-			return null;
+			DataRecordMetadata metadata = ((MetadataProvider) engineComponent).getOutputMetadata(portIndex);
+			if (metadata != null) {
+				return new MVEngineMetadata(metadata);
+			}
 		}
+		//no dynamic metadata found, let's use statical metadata from component descriptor 
+		String metadataId = engineComponent.getDescription().getDefaultOutputMetadataId(portIndex);
+		if (MetadataRepository.contains(metadataId)) {
+			return new MVEngineMetadata(MetadataRepository.getMetadata(metadataId));
+		}
+		return null;
 	}
 
 	@Override
 	public MVMetadata<DataRecordMetadata> getDefaultInputMetadata(int portIndex) {
+		//first let's try to find default metadata dynamically from component instance
 		if (engineComponent instanceof MetadataProvider) {
-			return new MVEngineMetadata(((MetadataProvider) engineComponent).getInputMetadata(portIndex));
-		} else {
-			return null;
+			DataRecordMetadata metadata = ((MetadataProvider) engineComponent).getInputMetadata(portIndex);
+			if (metadata != null) {
+				return new MVEngineMetadata(metadata);
+			}
 		}
+		//no dynamic metadata found, let's use statical metadata from component descriptor 
+		String metadataId = engineComponent.getDescription().getDefaultInputMetadataId(portIndex);
+		if (MetadataRepository.contains(metadataId)) {
+			return new MVEngineMetadata(MetadataRepository.getMetadata(metadataId));
+		}
+		return null;
 	}
 	
 	@Override

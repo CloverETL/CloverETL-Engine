@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jetel.data.GraphElementDescription;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.metadata.MetadataRepository;
 import org.jetel.plugin.Extension;
 import org.w3c.dom.NodeList;
 
@@ -104,6 +105,38 @@ public class ComponentDescription extends GraphElementDescription {
     	}
     }
     
+    /**
+     * Returns ID of metadata associated with given port.
+     * Metadata needs to be defined statically in component description
+     * in plugin.xml
+     * Metadata ID can be used to get real metadata from {@link MetadataRepository}. 
+     */
+    public String getDefaultInputMetadataId(int portIndex) {
+    	Ports inputPorts = componentDesc.getInputPorts();
+    	Port port = inputPorts.getPort(portIndex);
+    	if (port != null) {
+    		return port.getMetadata().getId();
+    	} else {
+    		return null;
+    	}
+    }
+
+    /**
+     * Returns ID of metadata associated with given port.
+     * Metadata needs to be defined statically in component description
+     * in plugin.xml
+     * Metadata ID can be used to get real metadata from {@link MetadataRepository}. 
+     */
+    public String getDefaultOutputMetadataId(int portIndex) {
+    	Ports outputPorts = componentDesc.getOutputPorts();
+    	Port port = outputPorts.getPort(portIndex);
+    	if (port != null) {
+    		return port.getMetadata().getId();
+    	} else {
+    		return null;
+    	}
+    }
+
     @XmlRootElement(name = "ETLComponent")
     public static class Component {
     	private String type;
@@ -153,10 +186,25 @@ public class ComponentDescription extends GraphElementDescription {
     	public List<MultiPort> getMultiPorts() {
     		return multiPorts;
     	}
+    	public Port getPort(int portIndex) {
+    		for (SinglePort singlePort : singlePorts) {
+    			if (singlePort.getIndex() == portIndex) {
+    				return singlePort;
+    			}
+    		}
+    		if (!multiPorts.isEmpty()) {
+    			return multiPorts.get(0);
+    		}
+    		return null;
+    	}
+    }
+    
+    public static interface Port {
+    	public Metadata getMetadata();
     }
     
     @XmlRootElement(name = "singlePort")
-    public static class SinglePort {
+    public static class SinglePort implements Port {
     	private String name;
     	private String label;
     	private boolean required = false;
@@ -167,6 +215,13 @@ public class ComponentDescription extends GraphElementDescription {
 		}
 		public void setName(String name) {
 			this.name = name;
+		}
+		public int getIndex() {
+			try {
+				return Integer.parseInt(name);
+			} catch (NumberFormatException e) {
+				throw new JetelRuntimeException("Name of single port '" + name + "' is not valid integer.", e);
+			}
 		}
     	@XmlAttribute
 		public String getLabel() {
@@ -182,6 +237,7 @@ public class ComponentDescription extends GraphElementDescription {
 		public void setRequired(boolean required) {
 			this.required = required;
 		}
+		@Override
 		@XmlElement(name = "Metadata")
 		public Metadata getMetadata() {
 			return metadata;
@@ -192,7 +248,7 @@ public class ComponentDescription extends GraphElementDescription {
     }
 
     @XmlRootElement(name = "multiplePort")
-    public static class MultiPort {
+    public static class MultiPort implements Port {
     	private String name;
     	private String label;
     	private boolean required = false;
@@ -218,6 +274,7 @@ public class ComponentDescription extends GraphElementDescription {
 		public void setRequired(boolean required) {
 			this.required = required;
 		}
+		@Override
 		@XmlElement(name = "Metadata")
 		public Metadata getMetadata() {
 			return metadata;
