@@ -168,7 +168,7 @@ public class ErrorReporter {
 	String process(CLVFIdentifier node){
 		Object value=stack.getVariable(node.getBlockOffset(), node.getVariableOffset());
 		if (node.getType().isPrimitive() || value==null){
-			err.format("variable \"%s\" (%s) -> %s\n",node.getName(),node.getType(),maxstr(value.toString()));
+			err.format("variable \"%s\" (%s) -> %s\n",node.getName(),node.getType(),maxstr(value==null ? "null" : value.toString()));
 		}else{
 			err.format("variable \"%s\" (%s) :\n",node.getName(),node.getType());
 			err.println(maxstr(value.toString()));
