@@ -1189,6 +1189,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_type_string() {
 		doCompile("test_type_string");
+
+		check("literalParserTest1", "some // string");
+		check("literalParserTest2", "some /* string */");
+		check("literalParserTest3", "some \" string");
+		check("literalParserTest4", "some \\ string");
+		check("literalParserTest5", "some \\\" string");
+		check("literalParserTest6", "some \\\\\" string");
+		check("literalParserTest7", "some \\\\\\\" string");
+		
 		check("i","0");
 		check("helloEscaped", "hello\\nworld");
 		check("helloExpanded", "hello\nworld");
@@ -1204,7 +1213,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("empty", "");
 		check("def", "");
 		checkNull("varWithNullInitializer");
-}
+		
+		doCompileExpectError("string promenna = \"^\\..*\"; function integer transform() { return 0;}", "test_type_string", Arrays.asList("Invalid escape sequence: \\."));
+	}
 	
 	public void test_type_string_long() {
 		int length = 1000;

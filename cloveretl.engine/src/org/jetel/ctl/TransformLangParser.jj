@@ -439,10 +439,7 @@ TOKEN :
 		"\"" 
 		(	( ~["\"","\\","\n","\r"] ) 
 			| ("\\" 
-				( ["n","t","b","r","f","\\","\'","\""] 
-				| ["0"-"7"] (["0"-"7"])? 
-				| ["0"-"3"] ["0"-"7"] ["0"-"7"]
-				)
+				~["\n", "\r"]
 			  )
 		)* 
 		"\""
@@ -3026,7 +3023,9 @@ void LogLevel() :
  	 	{ 
 			jjtn004.begin(t.beginLine,t.beginColumn);
 	 		jjtn004.end(t.endLine,t.endColumn);
- 			jjtn004.setValue(STRING_LITERAL,StringUtils.stringToSpecChar(unquote(t.image)));
+	 		try { 				jjtn004.setValue(STRING_LITERAL,StringUtils.stringToSpecCharStrict(unquote(t.image)));	 		} catch (IllegalArgumentException iae) {
+	 		  	error(jjtn004, iae.getMessage());
+	 		}
  	 	}/*@bgen(jjtree)*/
                 } finally {
                   if (jjtc004) {
