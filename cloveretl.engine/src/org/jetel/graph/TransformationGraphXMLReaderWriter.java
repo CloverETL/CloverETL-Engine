@@ -58,6 +58,7 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider.Context;
+import org.jetel.graph.analyse.SubGraphAnalyser;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
 import org.jetel.graph.runtime.ExecutionType;
@@ -417,6 +418,11 @@ public class TransformationGraphXMLReaderWriter {
 	        //remove disabled components and their edges
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
 
+			//pre-process sub-graph - remove component before SubGraphInput and after SubGraphOutput
+			if (runtimeContext.isSubJob()) {
+				SubGraphAnalyser.adjustGraph(graph);
+			}
+			
 			//pre-process the graph - automatic metadata propagation is performed
 			GraphPreProcessor graphPreProcessor = new GraphPreProcessor(graph);
 			graphPreProcessor.preProcess();

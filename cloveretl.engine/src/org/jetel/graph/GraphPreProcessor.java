@@ -18,9 +18,9 @@
  */
 package org.jetel.graph;
 
+import org.jetel.graph.MetadataPropagationResolver.EngineMVEdgeFactory;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MVEngineEdge;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * This graph pre-processor is executed immediately after graph instantiation.
@@ -36,7 +36,7 @@ public class GraphPreProcessor {
 	
 	private TransformationGraph graph;
 
-	private MetadataPropagationResolver<DataRecordMetadata> metadataPropagationResolver = new MetadataPropagationResolver<DataRecordMetadata>();
+	private MetadataPropagationResolver metadataPropagationResolver = new MetadataPropagationResolver(new EngineMVEdgeFactory());
 	
 	public GraphPreProcessor(TransformationGraph graph) {
 		this.graph = graph;
@@ -48,7 +48,8 @@ public class GraphPreProcessor {
 	public void preProcess() {
 		for (Edge edge : graph.getEdges().values()) {
 			if (edge.getMetadata() == null) {
-				MVMetadata<DataRecordMetadata> metadata = metadataPropagationResolver.findMetadata(new MVEngineEdge(edge));
+				metadataPropagationResolver.reset();
+				MVMetadata metadata = metadataPropagationResolver.findMetadata(new MVEngineEdge(edge));
 				if (metadata != null) {
 					edge.setMetadata(metadata.getMetadata());
 				}

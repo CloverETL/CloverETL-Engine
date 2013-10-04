@@ -16,30 +16,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.graph.modelview.impl;
+package org.jetel.component;
 
-import org.jetel.graph.modelview.MVMetadata;
-import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.graph.Node;
 
 /**
- * General model wrapper for engine metadata ({@link DataRecordMetadata}).
+ * This metadata provider extends regular {@link MetadataProvider},
+ * so engine component is available for provider.
+ * This provider can be referenced by plugin.xml in 'component'
+ * extension point, see for example SubGraphInput component description
+ * (SubGraphInput$PortToPortMetadataProvider).
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 19. 9. 2013
+ * @created 3. 10. 2013
  */
-public class MVEngineMetadata implements MVMetadata {
+public interface ComponentMetadataProvider extends MetadataProvider {
 
-	private DataRecordMetadata metadata;
-	
-	public MVEngineMetadata(DataRecordMetadata metadata) {
-		this.metadata = metadata;
-	}
-
-	@Override
-	public DataRecordMetadata getMetadata() {
-		return metadata;
-	}
+	/**
+	 * Engine calls this method automatically to provide correct
+	 * component instance.
+	 * @param component
+	 */
+	public void setComponent(Node component);
 	
 }

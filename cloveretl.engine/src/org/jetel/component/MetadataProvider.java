@@ -18,15 +18,18 @@
  */
 package org.jetel.component;
 
+import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Components can provide default metadata for theirs input and output ports.
  * These metadata are automatically propagated to connected edges if the edge does not have
- * defined metadata.
+ * defined metadata. Propagation resolver is available to recursive
+ * metadata searching. For example if you want to say, that metadata 
+ * on requested port are identical with the metadata on an other port -
+ * use {@link MetadataPropagationResolver} to find the metadata.
  * 
- * @note only {@link Node}s can implement this interface
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
@@ -37,11 +40,11 @@ public interface MetadataProvider {
 	/**
 	 * @return default metadata for input port with given index
 	 */
-	public DataRecordMetadata getInputMetadata(int portIndex);
+	public DataRecordMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver);
 	
 	/**
 	 * @return default metadata for output port with given index
 	 */
-	public DataRecordMetadata getOutputMetadata(int portIndex);
+	public DataRecordMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver);
 
 }

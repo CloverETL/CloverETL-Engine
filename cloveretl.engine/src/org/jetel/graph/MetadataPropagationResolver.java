@@ -21,9 +21,12 @@ package org.jetel.graph;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jetel.component.ComponentMetadataProvider;
+import org.jetel.component.MetadataProvider;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MVEngineEdge;
 
 /**
  * General metadata propagation evaluator.
@@ -35,59 +38,107 @@ import org.jetel.graph.modelview.MVMetadata;
  *
  * @created 18. 9. 2013
  */
-public class MetadataPropagationResolver<T> {
+public class MetadataPropagationResolver {
+	
+	/** Set of already visited edges. */
+	private Set<MVEdge> visitedEdges = new HashSet<MVEdge>(); 
+
+	/**
+	 * This view edge factory is used by {@link #findMetadata(Edge)}.
+	 * This is necessary for {@link MetadataPropagationResolver}
+	 * used from {@link MetadataProvider}.
+	 */
+	private MVEdgeFactory edgeFactory;
 	
 	/**
-	 * @return metadata for given edge
+	 * @param edgeFactory factory which converts regular engine {@link Edge} to correct {@link MVEdge} implementation.
 	 */
-	public MVMetadata<T> findMetadata(MVEdge<T> edge) {
-		return findMetadata(edge, new HashSet<MVComponent<T>>());
+	public MetadataPropagationResolver(MVEdgeFactory edgeFactory) {
+		this.edgeFactory = edgeFactory;
+	}
+	
+	/**
+	 * @return suggested metadata for given edge
+	 */
+	public MVMetadata findMetadata(Edge edge) {
+		return findMetadata(createEdge(edge));
 	}
 
-	private MVMetadata<T> findMetadata(MVEdge<T> edge, Set<MVComponent<T>> visitedComponents) {
-		if (!edge.hasMetadata()) {
-			//check writer
-			MVComponent<T> writer = edge.getWriter();
-			if (writer != null && !visitedComponents.contains(writer)) {
-				visitedComponents.add(writer);
-				if (writer.isPassThrough()) {
-					if (writer.getInputEdges().size() > 0) {
-						MVMetadata<T> result = findMetadata(writer.getInputEdges().get(0), visitedComponents);
-						if (result != null) {
-							return result;
-						}
-					}
-				} else {
-					MVMetadata<T> result = writer.getDefaultOutputMetadata(edge.getOutputPortIndex());
-					if (result != null) {
-						return result;
-					}
-				}
-			}
+	private MVEdge createEdge(Edge edge) {
+		return edgeFactory.create(edge);
+	}
 
-			//check reader
-			MVComponent<T> reader = edge.getReader();
-			if (reader != null && !visitedComponents.contains(reader)) {
-				visitedComponents.add(reader);
-				if (reader.isPassThrough()) {
-					if (reader.getOutputEdges().size() > 0) {
-						MVMetadata<T> result = findMetadata(reader.getOutputEdges().get(0), visitedComponents);
+	/**
+	 * @return suggested metadata for given edge
+	 */
+	public MVMetadata findMetadata(MVEdge edge) {
+		if (!visitedEdges.contains(edge)) {
+			visitedEdges.add(edge);
+			if (!edge.hasMetadata()) {
+				//check writer
+				MVComponent writer = edge.getWriter();
+				if (writer != null) {
+					if (writer.isPassThrough()) {
+						if (writer.getInputEdges().size() > 0) {
+							MVMetadata result = findMetadata(writer.getInputEdges().get(0));
+							if (result != null) {
+								return result;
+							}
+						}
+					} else {
+						MVMetadata result = writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this);
 						if (result != null) {
 							return result;
 						}
 					}
-				} else {
-					MVMetadata<T> result = reader.getDefaultInputMetadata(edge.getInputPortIndex());
-					if (result != null) {
-						return result;
+				}
+	
+				//check reader
+				MVComponent reader = edge.getReader();
+				if (reader != null) {
+					if (reader.isPassThrough()) {
+						if (reader.getOutputEdges().size() > 0) {
+							MVMetadata result = findMetadata(reader.getOutputEdges().get(0));
+							if (result != null) {
+								return result;
+							}
+						}
+					} else {
+						MVMetadata result = reader.getDefaultInputMetadata(edge.getInputPortIndex(), this);
+						if (result != null) {
+							return result;
+						}
 					}
 				}
+				
+				return null;
+			} else {
+				return edge.getMetadata();
 			}
-			
-			return null;
 		} else {
-			return edge.getMetadata();
+			return null;
 		}
+	}
+	
+	/**
+	 * This factory allows to convert engine {@link Edge} to correct {@link MVEdge} implementation.
+	 */
+	public static interface MVEdgeFactory {
+		public MVEdge create(Edge edge);
+	}
+	
+	public static class EngineMVEdgeFactory implements MVEdgeFactory {
+		@Override
+		public MVEdge create(Edge edge) {
+			return new MVEngineEdge((Edge) edge);
+		}
+	}
+
+	/**
+	 * Resets this resolver for next usage.
+	 */
+	public void reset() {
+		visitedEdges.clear();
 	}
 	
 }

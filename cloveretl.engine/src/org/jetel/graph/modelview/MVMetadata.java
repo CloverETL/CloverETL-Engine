@@ -18,6 +18,9 @@
  */
 package org.jetel.graph.modelview;
 
+import org.jetel.graph.MetadataPropagationResolver;
+import org.jetel.metadata.DataRecordMetadata;
+
 /**
  * This is general view to a metadata. Two implementations are expected
  * - wrapper for engine and gui metadata.
@@ -30,11 +33,11 @@ package org.jetel.graph.modelview;
  *
  * @created 19. 9. 2013
  */
-public interface MVMetadata<T> {
+public interface MVMetadata {
 
 	/**
 	 * @return wrapped metadata, either DataRecordMetadata or GraphMetadata
 	 */
-	public T getMetadata();
+	public DataRecordMetadata getMetadata();
 	
 }

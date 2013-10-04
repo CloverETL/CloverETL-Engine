@@ -78,7 +78,18 @@ public class ComponentDescription extends GraphElementDescription {
     		return super.getClassName();
     	}
     }
-    
+
+    /**
+     * @return class name of metadata provider or null if no provider has been specified.
+     */
+    public String getMetadataProvider() {
+    	if (hasDescription()) {
+    		return componentDesc.getMetadataProvider();
+    	} else {
+    		return null;
+    	}
+    }
+
     /**
      * @return deep description which contains details about component, number of ports, attributes, ...
      */
@@ -112,10 +123,14 @@ public class ComponentDescription extends GraphElementDescription {
      * Metadata ID can be used to get real metadata from {@link MetadataRepository}. 
      */
     public String getDefaultInputMetadataId(int portIndex) {
-    	Ports inputPorts = componentDesc.getInputPorts();
-    	Port port = inputPorts.getPort(portIndex);
-    	if (port != null) {
-    		return port.getMetadata().getId();
+    	if (hasDescription()) {
+	    	Ports inputPorts = componentDesc.getInputPorts();
+	    	Port port = inputPorts.getPort(portIndex);
+	    	if (port != null && port.getMetadata() != null) {
+	    		return port.getMetadata().getId();
+	    	} else {
+	    		return null;
+	    	}
     	} else {
     		return null;
     	}
@@ -128,10 +143,14 @@ public class ComponentDescription extends GraphElementDescription {
      * Metadata ID can be used to get real metadata from {@link MetadataRepository}. 
      */
     public String getDefaultOutputMetadataId(int portIndex) {
-    	Ports outputPorts = componentDesc.getOutputPorts();
-    	Port port = outputPorts.getPort(portIndex);
-    	if (port != null) {
-    		return port.getMetadata().getId();
+    	if (hasDescription()) {
+	    	Ports outputPorts = componentDesc.getOutputPorts();
+	    	Port port = outputPorts.getPort(portIndex);
+	    	if (port != null && port.getMetadata() != null) {
+	    		return port.getMetadata().getId();
+	    	} else {
+	    		return null;
+	    	}
     	} else {
     		return null;
     	}
@@ -141,6 +160,7 @@ public class ComponentDescription extends GraphElementDescription {
     public static class Component {
     	private String type;
 		private String className;
+		private String metadataProvider;
     	private boolean passThrough = false;
     	@XmlElement(name = "inputPorts")
     	private Ports inputPorts;
@@ -165,6 +185,13 @@ public class ComponentDescription extends GraphElementDescription {
 		}
 		public void setClassName(String className) {
 			this.className = className;
+		}
+    	@XmlAttribute
+		public String getMetadataProvider() {
+			return metadataProvider;
+		}
+		public void setMetadataProvider(String metadataProvider) {
+			this.metadataProvider = metadataProvider;
 		}
     	@XmlAttribute
 		public boolean isPassThrough() {

@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.modelview;
 
+import org.jetel.graph.MetadataPropagationResolver;
+
 /**
  * This is general view to a edge. Two implementations are expected
  * - wrapper for engine and gui edge.
@@ -30,17 +32,17 @@ package org.jetel.graph.modelview;
  *
  * @created 27. 8. 2013
  */
-public interface MVEdge<T> {
+public interface MVEdge {
 
 	/**
 	 * @return reader (data producer) of this edge
 	 */
-	public MVComponent<T> getReader();
+	public MVComponent getReader();
 	
 	/**
 	 * @return writer (data consumer) of this edge
 	 */
-	public MVComponent<T> getWriter();
+	public MVComponent getWriter();
 	
 	/**
 	 * @return true if a specific metadata is assigned to this edge
@@ -50,7 +52,7 @@ public interface MVEdge<T> {
 	/**
 	 * @return specific metadat assigned to this edge
 	 */
-	public MVMetadata<T> getMetadata();
+	public MVMetadata getMetadata();
 	
 	/**
 	 * @return port index of this edge, where this edge is attached to its writer component

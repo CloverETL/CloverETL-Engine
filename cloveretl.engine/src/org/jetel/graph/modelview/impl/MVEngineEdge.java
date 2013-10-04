@@ -22,7 +22,6 @@ import org.jetel.graph.Edge;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * General model wrapper for engine edge ({@link Edge}).
@@ -32,7 +31,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @created 19. 9. 2013
  */
-public class MVEngineEdge implements MVEdge<DataRecordMetadata> {
+public class MVEngineEdge implements MVEdge {
 
 	private Edge engineEdge;
 	
@@ -41,12 +40,12 @@ public class MVEngineEdge implements MVEdge<DataRecordMetadata> {
 	}
 	
 	@Override
-	public MVComponent<DataRecordMetadata> getReader() {
+	public MVComponent getReader() {
 		return new MVEngineComponent(engineEdge.getReader());
 	}
 
 	@Override
-	public MVComponent<DataRecordMetadata> getWriter() {
+	public MVComponent getWriter() {
 		return new MVEngineComponent(engineEdge.getWriter());
 	}
 
@@ -56,7 +55,7 @@ public class MVEngineEdge implements MVEdge<DataRecordMetadata> {
 	}
 
 	@Override
-	public MVMetadata<DataRecordMetadata> getMetadata() {
+	public MVMetadata getMetadata() {
 		if (hasMetadata()) {
 			return new MVEngineMetadata(engineEdge.getMetadata());
 		} else {
@@ -72,6 +71,19 @@ public class MVEngineEdge implements MVEdge<DataRecordMetadata> {
 	@Override
 	public int getInputPortIndex() {
 		return engineEdge.getInputPortNumber();
+	}
+
+	@Override
+	public int hashCode() {
+		return engineEdge.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof MVEngineEdge)) { 
+			return false;
+		}
+		return engineEdge.equals(((MVEngineEdge) obj).engineEdge);
 	}
 
 }

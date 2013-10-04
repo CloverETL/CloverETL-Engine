@@ -34,17 +34,17 @@ import org.jetel.graph.MetadataPropagationResolver;
  *
  * @created 27. 8. 2013
  */
-public interface MVComponent<T> {
+public interface MVComponent {
 
 	/**
 	 * @return input edges in map container, where key is port index
 	 */
-	public Map<Integer, MVEdge<T>> getInputEdges();
+	public Map<Integer, MVEdge> getInputEdges();
 	
 	/**
 	 * @return output edges in map container, where key is port index
 	 */
-	public Map<Integer, MVEdge<T>> getOutputEdges();
+	public Map<Integer, MVEdge> getOutputEdges();
 	
 	/**
 	 * @return is the component passThrough - should be metadata automatically
@@ -53,13 +53,17 @@ public interface MVComponent<T> {
 	public boolean isPassThrough();
 	
 	/**
+	 * Instance of propagation resolver is passed to be able to provide
+	 * dynamic metadata based on other ports.
 	 * @return metadata suggested by this component for requested output port index
 	 */
-	public MVMetadata<T> getDefaultOutputMetadata(int portIndex);
+	public MVMetadata getDefaultOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver);
 
 	/**
+	 * Instance of propagation resolver is passed to be able to provide
+	 * dynamic metadata based on other ports.
 	 * @return metadata suggested by this component for requested input port index
 	 */
-	public MVMetadata<T> getDefaultInputMetadata(int portIndex);
+	public MVMetadata getDefaultInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver);
 	
 }

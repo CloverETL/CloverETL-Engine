@@ -22,13 +22,17 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jetel.component.ComponentMetadataProvider;
 import org.jetel.component.MetadataProvider;
+import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataRepository;
+import org.jetel.util.compile.ClassLoaderUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * General model wrapper for engine component ({@link Node}).
@@ -38,35 +42,35 @@ import org.jetel.metadata.MetadataRepository;
  *
  * @created 27. 8. 2013
  */
-public class MVEngineComponent implements MVComponent<DataRecordMetadata> {
+public class MVEngineComponent implements MVComponent {
 
 	private Node engineComponent;
 	
-	private Map<Integer, MVEdge<DataRecordMetadata>> inputEdges;
+	private Map<Integer, MVEdge> inputEdges;
 
-	private Map<Integer, MVEdge<DataRecordMetadata>> outputEdges;
+	private Map<Integer, MVEdge> outputEdges;
 	
 	public MVEngineComponent(Node engineComponent) {
 		this.engineComponent = engineComponent;
 		
-		inputEdges = new LinkedHashMap<Integer, MVEdge<DataRecordMetadata>>();
+		inputEdges = new LinkedHashMap<Integer, MVEdge>();
 		for (Entry<Integer, org.jetel.graph.InputPort> entry : engineComponent.getInputPorts().entrySet()) {
 			inputEdges.put(entry.getKey(), new MVEngineEdge(entry.getValue().getEdge()));
 		}
 		
-		outputEdges = new LinkedHashMap<Integer, MVEdge<DataRecordMetadata>>();
+		outputEdges = new LinkedHashMap<Integer, MVEdge>();
 		for (Entry<Integer, org.jetel.graph.OutputPort> entry : engineComponent.getOutputPorts().entrySet()) {
 			outputEdges.put(entry.getKey(), new MVEngineEdge(entry.getValue().getEdge()));
 		}
 	}
 
 	@Override
-	public Map<Integer, MVEdge<DataRecordMetadata>> getInputEdges() {
+	public Map<Integer, MVEdge> getInputEdges() {
 		return inputEdges;
 	}
 
 	@Override
-	public Map<Integer, MVEdge<DataRecordMetadata>> getOutputEdges() {
+	public Map<Integer, MVEdge> getOutputEdges() {
 		return outputEdges;
 	}
 
@@ -75,15 +79,33 @@ public class MVEngineComponent implements MVComponent<DataRecordMetadata> {
 		return engineComponent.getDescription().isPassThrough();
 	}
 
-	@Override
-	public MVMetadata<DataRecordMetadata> getDefaultOutputMetadata(int portIndex) {
-		//first let's try to find default metadata dynamically from component instance
+	/**
+	 * @return metadata provider based on engine component
+	 */
+	public static MetadataProvider getMetadataProvider(Node engineComponent) {
+		MetadataProvider metadataProvider = null;
 		if (engineComponent instanceof MetadataProvider) {
-			DataRecordMetadata metadata = ((MetadataProvider) engineComponent).getOutputMetadata(portIndex);
+			metadataProvider = (MetadataProvider) engineComponent;
+		} else if (!StringUtils.isEmpty(engineComponent.getDescription().getMetadataProvider())) {
+			metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescription().getMetadataProvider(), engineComponent);
+			if (metadataProvider instanceof ComponentMetadataProvider) {
+				((ComponentMetadataProvider) metadataProvider).setComponent(engineComponent);
+			}
+		}
+		return metadataProvider;
+	}
+	
+	@Override
+	public MVMetadata getDefaultOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		//first let's try to find default metadata dynamically from component instance
+		MetadataProvider metadataProvider = getMetadataProvider(engineComponent);
+		if (metadataProvider != null) {
+			DataRecordMetadata metadata = metadataProvider.getOutputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
 				return new MVEngineMetadata(metadata);
 			}
 		}
+
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
 		String metadataId = engineComponent.getDescription().getDefaultOutputMetadataId(portIndex);
 		if (MetadataRepository.contains(metadataId)) {
@@ -93,10 +115,11 @@ public class MVEngineComponent implements MVComponent<DataRecordMetadata> {
 	}
 
 	@Override
-	public MVMetadata<DataRecordMetadata> getDefaultInputMetadata(int portIndex) {
+	public MVMetadata getDefaultInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		//first let's try to find default metadata dynamically from component instance
-		if (engineComponent instanceof MetadataProvider) {
-			DataRecordMetadata metadata = ((MetadataProvider) engineComponent).getInputMetadata(portIndex);
+		MetadataProvider metadataProvider = getMetadataProvider(engineComponent);
+		if (metadataProvider != null) {
+			DataRecordMetadata metadata = metadataProvider.getInputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
 				return new MVEngineMetadata(metadata);
 			}
