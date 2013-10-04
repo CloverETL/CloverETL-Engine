@@ -6568,8 +6568,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void test_mathlib_roundToEven() {
-		doCompile("test_mathlib_roundToEven");
+	public void test_mathlib_roundHalfToEven() {
+		doCompile("test_mathlib_roundHalfToEven");
 		check("round1", new BigDecimal(-4));
 		
 		check("intResult", Arrays.asList(new BigDecimal(2), new BigDecimal(3)));
@@ -6623,27 +6623,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal3result"));
 	}
 
-	public void test_mathlib_roundToEven_expect_error(){
+	public void test_mathlib_roundHalfToEven_expect_error(){
 		try {
-			doCompile("function integer transform(){decimal d = roundToEven(null);return 0;}","test_mathlib_roundToEven_expect_error");
+			doCompile("function integer transform(){decimal d = roundHalfToEven(null);return 0;}","test_mathlib_roundHalfToEven_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal input = null;decimal d = roundToEven(input);return 0;}","test_mathlib_roundToEven_expect_error");
+			doCompile("function integer transform(){decimal input = null;decimal d = roundHalfToEven(input);return 0;}","test_mathlib_roundHalfToEven_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){integer precision = null; decimal d = roundToEven(1D, precision);return 0;}","test_mathlib_roundToEven_expect_error");
+			doCompile("function integer transform(){integer precision = null; decimal d = roundHalfToEven(1D, precision);return 0;}","test_mathlib_roundHalfToEven_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){decimal d = roundToEven(1D, null);return 0;}","test_mathlib_roundToEven_expect_error");
+			doCompile("function integer transform(){decimal d = roundHalfToEven(1D, null);return 0;}","test_mathlib_roundHalfToEven_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing

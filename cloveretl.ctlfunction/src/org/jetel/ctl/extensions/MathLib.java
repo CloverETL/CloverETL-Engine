@@ -36,7 +36,7 @@ public class MathLib extends TLFunctionLibrary {
 			"exp".equals(functionName) ? new ExpFunction() :
 			"floor".equals(functionName) ? new FloorFunction() :
 			"round".equals(functionName) ? new RoundFunction() :
-			"roundToEven".equals(functionName) ? new RoundToEvenFunction() :
+			"roundHalfToEven".equals(functionName) ? new RoundHalfToEvenFunction() :
 			"ceil".equals(functionName) ? new CeilFunction() :
 			"pow".equals(functionName) ? new PowFunction() :
 			"pi".equals(functionName) ? new PiFunction() :
@@ -321,17 +321,17 @@ public class MathLib extends TLFunctionLibrary {
 	}
 	
     @TLFunctionAnnotation("Returns decimal value rounded to specified precision using the Banker's algorithm.")
-    public static final BigDecimal roundToEven(TLFunctionCallContext context, BigDecimal d, Integer precision) {
+    public static final BigDecimal roundHalfToEven(TLFunctionCallContext context, BigDecimal d, Integer precision) {
     	return d.setScale(precision, RoundingMode.HALF_EVEN); 
     }
     
     @TLFunctionAnnotation("Returns decimal value rounded to the closest integer value using the Banker's algorithm.")
-    public static final BigDecimal roundToEven(TLFunctionCallContext context, BigDecimal d) {
+    public static final BigDecimal roundHalfToEven(TLFunctionCallContext context, BigDecimal d) {
     	return d.setScale(0, RoundingMode.HALF_EVEN); 
     }
 
     // ROUND TO EVEN
-    static class RoundToEvenFunction implements TLFunctionPrototype {
+    static class RoundHalfToEvenFunction implements TLFunctionPrototype {
 		@Override
 		public void init(TLFunctionCallContext context) {
 		}
@@ -342,9 +342,9 @@ public class MathLib extends TLFunctionLibrary {
 			if (context.getParams().length == 2) {
 				// Precision has to be popped from stack before the argument to round
 				final Integer precision = stack.popInt();
-				stack.push(roundToEven(context, stack.popDecimal(), precision));
+				stack.push(roundHalfToEven(context, stack.popDecimal(), precision));
 			} else {
-				stack.push(roundToEven(context, stack.popDecimal()));
+				stack.push(roundHalfToEven(context, stack.popDecimal()));
 			}
 		}
 	}
