@@ -6507,6 +6507,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				1234567.123d, 1234567.1235d, 1234567.12346d, 1234567.123457d, 1234567.1234567d
 				);
 		check("double2Result", expectedDouble);
+		
+		check("documentationExample1", 100);
+		check("documentationExample2", 123);
+		check("documentationExample3", 123.12d);
 	}
 	
 	public void test_mathlib_round_expect_error(){

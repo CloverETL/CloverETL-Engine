@@ -12,6 +12,10 @@ long longWithPrecisionResult;
 integer ret1;
 long ret2;
 
+integer documentationExample1;
+integer documentationExample2;
+number documentationExample3;
+
 function integer transform() {
 	round1=round(-pow(3,1.2));
 	
@@ -53,5 +57,10 @@ function integer transform() {
 	longWithPrecisionResult = round(123456L, 2);
 	ret1 = round(1234, -2);
 	ret2 = round(13565L, -4);
+	
+	documentationExample1 = round(123, -2);
+	documentationExample2 = round(123, 2);
+	documentationExample3 = round(123.123, 2);
+	
 	return 0;
 }
