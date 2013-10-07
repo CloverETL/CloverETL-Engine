@@ -64,6 +64,13 @@ public class MVEngineEdge implements MVEdge {
 	}
 
 	@Override
+	public void setMetadata(MVMetadata metadata) {
+		if (metadata != null) {
+			engineEdge.setMetadata(metadata.getMetadata());
+		}
+	}
+	
+	@Override
 	public int getOutputPortIndex() {
 		return engineEdge.getOutputPortNumber();
 	}

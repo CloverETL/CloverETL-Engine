@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
+import org.jetel.component.MetadataProvider;
 import org.jetel.data.Defaults;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.IGraphElement;
@@ -97,6 +98,7 @@ public class GraphRuntimeContext {
 	/** Is true if and only if the graph should be executed as sub-job, see SubGraph and SubJobflow components. */
 	private boolean isSubJob;
 	private IAuthorityProxy authorityProxy;
+	private MetadataProvider metadataProvider;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -153,6 +155,7 @@ public class GraphRuntimeContext {
 		ret.isSubJob = isSubJob();
 		ret.authorityProxy = getAuthorityProxy();
 		ret.executionType = getExecutionType();
+		ret.metadataProvider = getMetadataProvider();
 		
 		return ret;
 	}
@@ -704,6 +707,21 @@ public class GraphRuntimeContext {
 			throw new NullPointerException();
 		}
 		this.executionType = executionType;
+	}
+
+	/**
+	 * @return class which provides input and output metadata of parent graph
+	 */
+	public MetadataProvider getMetadataProvider() {
+		return metadataProvider;
+	}
+
+	/**
+	 * Sets provider of input and output metadata of parent graph.
+	 * @param metadataProvider parent graph metadata provider
+	 */
+	public void setMetadataProvider(MetadataProvider metadataProvider) {
+		this.metadataProvider = metadataProvider;
 	}
 
 	/**

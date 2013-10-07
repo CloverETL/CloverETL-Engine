@@ -46,12 +46,17 @@ public class GraphPreProcessor {
 	 * Pre-process the graph. Automatic metadata propagation is performed.
 	 */
 	public void preProcess() {
-		for (Edge edge : graph.getEdges().values()) {
-			if (edge.getMetadata() == null) {
-				metadataPropagationResolver.reset();
-				MVMetadata metadata = metadataPropagationResolver.findMetadata(new MVEngineEdge(edge));
-				if (metadata != null) {
-					edge.setMetadata(metadata.getMetadata());
+		boolean metadataFound = true;
+		while (metadataFound) { //repeat metadata propagation until something new is found
+			metadataFound = false;
+			for (Edge edge : graph.getEdges().values()) {
+				if (edge.getMetadata() == null) {
+					metadataPropagationResolver.reset();
+					MVMetadata metadata = metadataPropagationResolver.findMetadata(new MVEngineEdge(edge));
+					if (metadata != null) {
+						metadataFound = true;
+						edge.setMetadata(metadata.getMetadata());
+					}
 				}
 			}
 		}

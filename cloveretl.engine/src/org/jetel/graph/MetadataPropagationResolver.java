@@ -18,10 +18,9 @@
  */
 package org.jetel.graph;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.jetel.component.ComponentMetadataProvider;
 import org.jetel.component.MetadataProvider;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
@@ -40,8 +39,8 @@ import org.jetel.graph.modelview.impl.MVEngineEdge;
  */
 public class MetadataPropagationResolver {
 	
-	/** Set of already visited edges. */
-	private Set<MVEdge> visitedEdges = new HashSet<MVEdge>(); 
+	/** Set of already visited edges with associated metadata. */
+	private Map<MVEdge, MVMetadata> visitedEdges = new HashMap<MVEdge, MVMetadata>(); 
 
 	/**
 	 * This view edge factory is used by {@link #findMetadata(Edge)}.
@@ -72,51 +71,59 @@ public class MetadataPropagationResolver {
 	 * @return suggested metadata for given edge
 	 */
 	public MVMetadata findMetadata(MVEdge edge) {
-		if (!visitedEdges.contains(edge)) {
-			visitedEdges.add(edge);
-			if (!edge.hasMetadata()) {
-				//check writer
-				MVComponent writer = edge.getWriter();
-				if (writer != null) {
-					if (writer.isPassThrough()) {
-						if (writer.getInputEdges().size() > 0) {
-							MVMetadata result = findMetadata(writer.getInputEdges().get(0));
-							if (result != null) {
-								return result;
-							}
-						}
-					} else {
-						MVMetadata result = writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this);
-						if (result != null) {
-							return result;
-						}
-					}
-				}
-	
-				//check reader
-				MVComponent reader = edge.getReader();
-				if (reader != null) {
-					if (reader.isPassThrough()) {
-						if (reader.getOutputEdges().size() > 0) {
-							MVMetadata result = findMetadata(reader.getOutputEdges().get(0));
-							if (result != null) {
-								return result;
-							}
-						}
-					} else {
-						MVMetadata result = reader.getDefaultInputMetadata(edge.getInputPortIndex(), this);
-						if (result != null) {
-							return result;
-						}
-					}
-				}
-				
-				return null;
-			} else {
-				return edge.getMetadata();
-			}
+		if (!visitedEdges.containsKey(edge)) {
+			visitedEdges.put(edge, null);
+			MVMetadata metadata;
+			metadata = findMetadataInternal(edge);
+			visitedEdges.put(edge, metadata);
+			edge.setMetadata(metadata);
+			return metadata;
 		} else {
+			return visitedEdges.get(edge);
+		}
+	}
+
+	private MVMetadata findMetadataInternal(MVEdge edge) {
+		if (!edge.hasMetadata()) {
+			//check writer
+			MVComponent writer = edge.getWriter();
+			if (writer != null) {
+				if (writer.isPassThrough()) {
+					if (writer.getInputEdges().size() > 0) {
+						MVMetadata result = findMetadata(writer.getInputEdges().get(0));
+						if (result != null) {
+							return result;
+						}
+					}
+				} else {
+					MVMetadata result = writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this);
+					if (result != null) {
+						return result;
+					}
+				}
+			}
+
+			//check reader
+			MVComponent reader = edge.getReader();
+			if (reader != null) {
+				if (reader.isPassThrough()) {
+					if (reader.getOutputEdges().size() > 0) {
+						MVMetadata result = findMetadata(reader.getOutputEdges().get(0));
+						if (result != null) {
+							return result;
+						}
+					}
+				} else {
+					MVMetadata result = reader.getDefaultInputMetadata(edge.getInputPortIndex(), this);
+					if (result != null) {
+						return result;
+					}
+				}
+			}
+			
 			return null;
+		} else {
+			return edge.getMetadata();
 		}
 	}
 	

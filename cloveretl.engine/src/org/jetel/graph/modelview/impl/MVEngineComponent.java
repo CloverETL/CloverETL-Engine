@@ -86,7 +86,7 @@ public class MVEngineComponent implements MVComponent {
 		MetadataProvider metadataProvider = null;
 		if (engineComponent instanceof MetadataProvider) {
 			metadataProvider = (MetadataProvider) engineComponent;
-		} else if (!StringUtils.isEmpty(engineComponent.getDescription().getMetadataProvider())) {
+		} else if (engineComponent != null && !StringUtils.isEmpty(engineComponent.getDescription().getMetadataProvider())) {
 			metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescription().getMetadataProvider(), engineComponent);
 			if (metadataProvider instanceof ComponentMetadataProvider) {
 				((ComponentMetadataProvider) metadataProvider).setComponent(engineComponent);
