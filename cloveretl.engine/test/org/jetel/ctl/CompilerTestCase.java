@@ -1748,6 +1748,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	}
 
 	public void test_ambiguous() {
+		// no error expected
+		doCompile("test_ambiguous_working");
+		
 		// built-in toString function
 		doCompileExpectError("test_ambiguous_toString", "Function 'toString' is ambiguous");
 		// built-in join function
@@ -1758,6 +1761,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompileExpectError("test_ambiguous_combined", "Function 'getUrlPath' is ambiguous");
 		// swapped arguments - non null ambiguity
 		doCompileExpectError("test_ambiguous_swapped", "Function 'swapped' is ambiguous");
+		// swapped arguments (internal and external function)
+		doCompileExpectError("test_ambiguous_swapped_combined", "Function 'charAt' is ambiguous");
 		// primitive type widening; the test depends on specific values of the type distance function, can be removed
 		doCompileExpectError("test_ambiguous_widening", "Function 'widening' is ambiguous");
 	}
@@ -4776,6 +4781,26 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch ( Exception e) {
 			// do nothing
 		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input, 'cs.CZ');return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input, input);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("integer test;function integer transform() {integer input = null; test = editDistance('Talon','Ahri', input, 'cs.CZ', input);return 0;}","test_stringlib_editDistance_expect_error");
+		} catch ( Exception e) {
+			// do nothing
+		}
 	}
 	
 	public void test_stringlib_find() {
@@ -6501,25 +6526,32 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){integer input = null; number l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){integer input = null; integer l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		try {
+			doCompile("function integer transform(){long input = null; long l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){long input = null; number l = round(input, 9); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){long input = null; long l = round(input); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){long input = null; number l = round(input); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){integer input = null; long l = round(input); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){integer input = null; number l = round(input); return 0;}","test_mathlib_round_expect_error");
+			doCompile("function integer transform(){integer input = 7012; integer l = round(input, null); return 0;}","test_mathlib_round_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -6803,6 +6835,106 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+	
+	public void test_mathlib_acos(){
+		doCompile("test_mathlib_acos");
+		check("ret", Arrays.asList(Math.acos(Math.PI), Math.acos(Math.PI*2), Math.acos(Math.PI/2), 
+				Math.acos(180), Math.acos(90), Math.acos(0), Math.acos(123)));
+	}
+	
+	public void test_mathlib_acos_expect_error(){
+		try {
+			doCompile("function integer transform(){double input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; acos(input);return 0;}");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_asin(){
+		doCompile("test_mathlib_asin");
+		check("ret", Arrays.asList(Math.asin(Math.PI), Math.asin(Math.PI*2), Math.asin(Math.PI/2),
+				Math.asin(1236), Math.asin(0)));
+	}
+	
+	public void test_mathlib_asin_expect_error(){
+		try {
+			doCompile("function integer transform(){number input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; asin(input); return 0;}","test_mathlib_asin_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_mathlib_atan(){
+		doCompile("test_mathlib_atan");
+		check("ret", Arrays.asList(Math.atan(Math.PI), Math.atan(Math.PI*2), Math.atan(Math.PI/2),
+				Math.atan(45), Math.atan(0)));
+	}
+	
+	public void test_mathlib_atan_expect_error(){
+		try {
+			doCompile("function integer transform(){number input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){long input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer input = null; atan(input); return 0;}","test_mathlib_atan_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
 //-------------------------DateLib tests----------------------
 	
 	public void test_datelib_cache() {

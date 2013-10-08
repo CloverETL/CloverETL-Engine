@@ -39,5 +39,24 @@ public class CompareUtils {
             return (b == null);
         }
     }
-
+    
+    /**
+     * Null safe comparison of Comparables. null is assumed to be less than a non-null value.
+     */
+    public static <T extends Comparable<? super T>> int compare(T o1, T o2) {
+    	if (o1 == null) {
+    		if (o2 == null) {
+    			return 0;
+    		} else {
+    			return -1;
+    		}
+    	} else {
+    		if (o2 == null) {
+    			return 1;
+    		} else {
+    			return o1.compareTo(o2);
+    		}
+    	}
+    }
+    
 }

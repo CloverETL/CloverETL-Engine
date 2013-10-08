@@ -25,6 +25,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.jetel.data.DataRecord;
@@ -75,6 +76,18 @@ public interface JdbcSpecific {
 	 * @return True if it's possible to close result set before creating new one, false otherwise.
 	 */
 	public boolean canCloseResultSetBeforeCreatingNewOne();
+	
+	
+	/**
+	 * Calls {@link java.sql.Driver#connect(String, Properties)},
+	 * but may perform additional validation before.
+	 * 
+	 * @param driver
+	 * @param info
+	 * @return
+	 * @throws SQLException
+	 */
+	public java.sql.Connection connect(java.sql.Driver driver, String url, Properties info) throws SQLException;
 
 	/**
 	 * @return Pattern of db field.

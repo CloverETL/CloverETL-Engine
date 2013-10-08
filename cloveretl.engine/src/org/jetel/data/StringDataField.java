@@ -439,8 +439,8 @@ public class StringDataField extends DataField implements CharSequence{
 
     
 	@Override
-	public int hashCode(){
-		return HashCodeUtil.getHash(value);
+	public int hashCode() {
+		return HashCodeUtil.hash(value);
 	}
 	
 	/**

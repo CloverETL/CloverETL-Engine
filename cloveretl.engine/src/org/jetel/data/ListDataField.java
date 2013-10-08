@@ -544,8 +544,8 @@ public class ListDataField extends DataField implements Iterable<DataField> {
 	}
 	
 	@Override
-	public int hashCode(){
-		return HashCodeUtil.getHash(this.fields);
+	public int hashCode() {
+		return HashCodeUtil.hash(this.fields);
 	}
 
 	private class Itr implements Iterator<DataField> {

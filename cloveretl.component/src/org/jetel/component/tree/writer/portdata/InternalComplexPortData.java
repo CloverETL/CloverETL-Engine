@@ -60,9 +60,20 @@ class InternalComplexPortData extends InternalPortData {
 		if (key == null) {
 			return records.getCollection(DataRecordKey.NULL_KEY);
 		}
-		return records.getCollection(DataRecordKey.forDataRecord(keyData, parentKey));
+		DataRecordKey recordKey = createRecordKey(key, parentKey, keyData, keyRecord);
+		Collection<DataRecord> data = records.getCollection(recordKey);
+		keyRecord.reset();
+		return data;
 	}
 
+	protected DataRecordKey createRecordKey(int key[], int parentKey[], DataRecord parentData, DataRecord childData) {
+		
+		for (int i = 0; i < key.length; ++i) {
+			childData.getField(key[i]).setValue(parentData.getField(parentKey[i]));
+		}
+		return DataRecordKey.forDataRecord(childData, key); 
+	}
+	
 	static class DataRecordKey {
 		
 		static final DataRecordKey NULL_KEY = new DataRecordKey();
@@ -85,10 +96,7 @@ class InternalComplexPortData extends InternalPortData {
 
 		@Override
 		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + Arrays.hashCode(fields);
-			return result;
+			return Arrays.hashCode(fields);
 		}
 
 		@Override
@@ -103,6 +111,23 @@ class InternalComplexPortData extends InternalPortData {
 			if (!Arrays.equals(fields, other.fields))
 				return false;
 			return true;
+		}
+		
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder("KEY[");
+			if (fields != null) {
+				for (int i = 0; i < fields.length; ++i) {
+					sb.append(fields[i]);
+					if (i < fields.length - 1) {
+						sb.append(", ");
+					}
+				}
+			} else {
+				sb.append(fields);
+			}
+			sb.append(']');
+			return sb.toString();
 		}
 	}
 }
