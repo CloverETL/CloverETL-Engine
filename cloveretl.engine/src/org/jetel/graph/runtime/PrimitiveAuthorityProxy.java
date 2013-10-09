@@ -329,7 +329,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public InputStream getSandboxResourceInput(String componentId, String storageCode, String path) {
+	public InputStream getSandboxResourceInput(String componentId, String storageCode, String path) throws IOException {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
@@ -338,7 +338,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceOutput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) {
+	public OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) throws IOException {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 

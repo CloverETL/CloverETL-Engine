@@ -36,6 +36,7 @@ public class MathLib extends TLFunctionLibrary {
 			"exp".equals(functionName) ? new ExpFunction() :
 			"floor".equals(functionName) ? new FloorFunction() :
 			"round".equals(functionName) ? new RoundFunction() :
+			"roundHalfToEven".equals(functionName) ? new RoundHalfToEvenFunction() :
 			"ceil".equals(functionName) ? new CeilFunction() :
 			"pow".equals(functionName) ? new PowFunction() :
 			"pi".equals(functionName) ? new PiFunction() :
@@ -229,7 +230,7 @@ public class MathLib extends TLFunctionLibrary {
 			stack.push(floor(context, stack.popDouble()));
 		}
     }
-
+    
     static final long pow10(int exponent){
     	long value=1;
     	int i = Math.abs(exponent);
@@ -241,7 +242,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     
-    @TLFunctionAnnotation("Returns double value rounded to specified precision.")
+    @TLFunctionAnnotation("Returns double value rounded to specified precision. Equidistant numbers are rounded up.")
     public static final Double round(TLFunctionCallContext context, double d, Integer precision) {
     	long multiple=pow10(precision);
     	if (precision>0)
@@ -250,7 +251,7 @@ public class MathLib extends TLFunctionLibrary {
     		return ((double)Math.round(d/multiple))*multiple;
     }
     
-    @TLFunctionAnnotation("Returns long value rounded to specified precision.")
+    @TLFunctionAnnotation("Returns long value rounded to specified precision. Equidistant numbers are rounded up.")
     public static final Long round(TLFunctionCallContext context, long d, Integer precision) {
     	long multiple=pow10(precision);
     	if (precision>0)
@@ -259,7 +260,7 @@ public class MathLib extends TLFunctionLibrary {
     		return (d/multiple)*multiple;
     }
     
-    @TLFunctionAnnotation("Returns integer value rounded to specified precision.")
+    @TLFunctionAnnotation("Returns integer value rounded to specified precision. Equidistant numbers are rounded up.")
     public static final Integer round(TLFunctionCallContext context, int d, Integer precision) {
     	long multiple=pow10(precision);
     	if (precision>0)
@@ -268,19 +269,23 @@ public class MathLib extends TLFunctionLibrary {
     		return (int)((d/multiple)*multiple);
     }
     
-    @TLFunctionAnnotation("Returns decimal value rounded to specified precision.")
+    @TLFunctionAnnotation("Returns decimal value rounded to specified precision. Equidistant numbers are rounded up.")
     public static final BigDecimal round(TLFunctionCallContext context, BigDecimal d, Integer precision) {
-    	return d.setScale(precision, RoundingMode.HALF_EVEN); 
+    	// use HALF_UP rounding mode to be consistent with round(Double)
+    	// use roundHalfEven() for HALF_EVEN rounding mode
+    	return d.setScale(precision, RoundingMode.HALF_UP); 
     }
     
-    @TLFunctionAnnotation("Returns long value closest to the argument.")
+    @TLFunctionAnnotation("Returns long value closest to the argument. Equidistant numbers are rounded up.")
     public static final Long round(TLFunctionCallContext context, double d) {
     	return Math.round(d);
     }
     
-    @TLFunctionAnnotation("Returns decimal value rounded to the closest integer value.")
+    @TLFunctionAnnotation("Returns decimal value rounded to the closest integer value. Equidistant numbers are rounded up.")
     public static final BigDecimal round(TLFunctionCallContext context, BigDecimal d) {
-    	return d.setScale(0, RoundingMode.HALF_EVEN); 
+    	// use HALF_UP rounding mode to be consistent with round(Double)
+    	// use roundHalfEven() for HALF_EVEN rounding mode
+    	return d.setScale(0, RoundingMode.HALF_UP); 
     }
     
     // ROUND
@@ -311,6 +316,35 @@ public class MathLib extends TLFunctionLibrary {
 				} else {
 					stack.push(round(context, stack.popDouble()));
 				}
+			}
+		}
+	}
+	
+    @TLFunctionAnnotation("Returns decimal value rounded to specified precision using the Banker's algorithm.")
+    public static final BigDecimal roundHalfToEven(TLFunctionCallContext context, BigDecimal d, Integer precision) {
+    	return d.setScale(precision, RoundingMode.HALF_EVEN); 
+    }
+    
+    @TLFunctionAnnotation("Returns decimal value rounded to the closest integer value using the Banker's algorithm.")
+    public static final BigDecimal roundHalfToEven(TLFunctionCallContext context, BigDecimal d) {
+    	return d.setScale(0, RoundingMode.HALF_EVEN); 
+    }
+
+    // ROUND TO EVEN
+    static class RoundHalfToEvenFunction implements TLFunctionPrototype {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+
+			if (context.getParams().length == 2) {
+				// Precision has to be popped from stack before the argument to round
+				final Integer precision = stack.popInt();
+				stack.push(roundHalfToEven(context, stack.popDecimal(), precision));
+			} else {
+				stack.push(roundHalfToEven(context, stack.popDecimal()));
 			}
 		}
 	}
