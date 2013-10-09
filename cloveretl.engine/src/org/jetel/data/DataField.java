@@ -362,6 +362,15 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 */
 	@Override
 	public abstract boolean equals(Object obj);
+	
+	/**
+	 * Answers hash code for this field, obeying general principle:
+	 * <code>
+	 * field1.equals(field2) == true =&gt; field1.hashCode() == field2.hashCode()
+	 * </code>
+	 */
+	@Override
+	public abstract int hashCode();
 
 
 	/**

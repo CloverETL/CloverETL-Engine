@@ -844,7 +844,7 @@ public class StringUtils {
 	/**
 	 * Formats string from specified messages and their lengths.<br>
 	 * Negative (&lt;0) length means justify to the left, positive (&gt;0) to the right<br>
-	 * If message is longer than specified size, it is trimmed; if shorter, it is padded with blanks.
+	 * If message is longer than specified size, it is trimmed; if shorter, it is padded with specified fill char.
 	 * 
 	 * @param messages
 	 *            array of objects with toString() implemented methods
@@ -852,7 +852,7 @@ public class StringUtils {
 	 *            array of desired lengths (+-) for every message specified
 	 * @return Formatted string
 	 */
-	public static String formatString(Object[] messages, int[] sizes) {
+	public static String formatString(Object[] messages, int[] sizes, char fillchar) {
 		int formatSize;
 		String message;
 		StringBuilder strBuff = new StringBuilder(100);
@@ -861,22 +861,37 @@ public class StringUtils {
 			// left or right justified ?
 			if (sizes[i] < 0) {
 				formatSize = sizes[i] * (-1);
-				fillString(strBuff, message, 0, formatSize);
+				fillString(strBuff, message, 0, formatSize,fillchar);
 			} else {
 				formatSize = sizes[i];
 				if (message.length() < formatSize) {
 					fillBlank(strBuff, formatSize - message.length());
-					fillString(strBuff, message, 0, message.length());
+					fillString(strBuff, message, 0, message.length(),fillchar);
 				} else {
-					fillString(strBuff, message, 0, formatSize);
+					fillString(strBuff, message, 0, formatSize,fillchar);
 				}
 			}
 		}
 		return strBuff.toString();
 	}
+	
+	/**
+	 * Like formatString() but pads with blanks
+	 * 
+	 * @param messages
+	 * @param sizes
+	 * @return
+	 */
+	
+	public static String formatString(Object[] messages, int[] sizes){
+		return formatString(messages,sizes,' ');
+	}
+	
+	
 
 	/**
-	 * Description of the Method
+	 * Fills the provided buffer with source string and pads with specified fill character up to
+	 * specified length
 	 * 
 	 * @param strBuf
 	 *            Description of the Parameter
@@ -887,16 +902,21 @@ public class StringUtils {
 	 * @param length
 	 *            Description of the Parameter
 	 */
-	private static void fillString(StringBuilder strBuff, String source, int start, int length) {
+	private static void fillString(StringBuilder strBuff, String source, int start, int length,char fillchar) {
 		int srcLength = source.length();
 		for (int i = start; i < start + length; i++) {
 			if (i < srcLength) {
 				strBuff.append(source.charAt(i));
 			} else {
-				strBuff.append(' ');
+				strBuff.append(fillchar);
 			}
 		}
 	}
+	
+	private static void fillString(StringBuilder strBuff, String source, int start, int length) {
+		fillString(strBuff,source,start,length,' ');
+	}
+	
 
 	/**
 	 * Description of the Method

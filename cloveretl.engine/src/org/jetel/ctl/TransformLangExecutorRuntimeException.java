@@ -19,9 +19,9 @@
 package org.jetel.ctl;
 
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
+import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.ctl.ASTnode.Node;
 
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
@@ -51,8 +51,6 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
         super(new JetelRuntimeException(message, cause)); 
         this.nodeInError=node;
         this.arguments=arguments;
-        
-        System.err.println(this.getExtendedMessage());
     }
     
 	public TransformLangExecutorRuntimeException(Object[] arguments,String message){

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -602,6 +603,7 @@ public class XmlWriter extends Node {
         if(isInitialized()) return;
 		super.init();
 		TransformationGraph graph = getGraph();
+		URL contextURL = getContextURL();
 
 		portsCnt = inPorts.size();
 
@@ -618,7 +620,7 @@ public class XmlWriter extends Node {
     		Map<Integer, PortDefinition> allPortDefinitionMap = new HashMap<Integer,PortDefinition>();
     		try {
     			if (this.mappingURL != null) {
-    				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
+    				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
     				Document doc = createDocumentFromChannel(ch);
     	            Element mappingRoot = doc.getDocumentElement();
     				PortDefinition portDef = createInputPortDefinitionStructure(graph, allPortDefinitionMap, mappingRoot);
@@ -647,7 +649,7 @@ public class XmlWriter extends Node {
         }
 		
         XmlFormatter formatter = new XmlFormatter(); 
-        writer = new MultiFileWriter(formatter, graph != null ? graph.getRuntimeContext().getContextURL() : null, this.fileUrl);
+        writer = new MultiFileWriter(formatter, contextURL, this.fileUrl);
         writer.setLogger(logger);
         writer.setRecordsPerFile(this.recordsPerFile);
         writer.setAppendData(false);
