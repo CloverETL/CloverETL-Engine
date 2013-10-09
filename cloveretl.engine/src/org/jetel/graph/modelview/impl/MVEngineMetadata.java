@@ -34,12 +34,22 @@ public class MVEngineMetadata implements MVMetadata {
 	private DataRecordMetadata metadata;
 	
 	public MVEngineMetadata(DataRecordMetadata metadata) {
+		this(metadata, LOW_PRIORITY);
+	}
+	
+	public MVEngineMetadata(DataRecordMetadata metadata, int priority) {
 		this.metadata = metadata;
+		this.metadata.setPriority(priority);
 	}
 
 	@Override
 	public DataRecordMetadata getMetadata() {
 		return metadata;
+	}
+	
+	@Override
+	public int getPriority() {
+		return metadata.getPriority();
 	}
 	
 }

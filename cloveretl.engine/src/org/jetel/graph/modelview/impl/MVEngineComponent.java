@@ -29,7 +29,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataRepository;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.string.StringUtils;
@@ -100,9 +99,9 @@ public class MVEngineComponent implements MVComponent {
 		//first let's try to find default metadata dynamically from component instance
 		MetadataProvider metadataProvider = getMetadataProvider(engineComponent);
 		if (metadataProvider != null) {
-			DataRecordMetadata metadata = metadataProvider.getOutputMetadata(portIndex, metadataPropagationResolver);
+			MVMetadata metadata = metadataProvider.getOutputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
-				return new MVEngineMetadata(metadata);
+				return metadata;
 			}
 		}
 
@@ -119,9 +118,9 @@ public class MVEngineComponent implements MVComponent {
 		//first let's try to find default metadata dynamically from component instance
 		MetadataProvider metadataProvider = getMetadataProvider(engineComponent);
 		if (metadataProvider != null) {
-			DataRecordMetadata metadata = metadataProvider.getInputMetadata(portIndex, metadataPropagationResolver);
+			MVMetadata metadata = metadataProvider.getInputMetadata(portIndex, metadataPropagationResolver);
 			if (metadata != null) {
-				return new MVEngineMetadata(metadata);
+				return metadata;
 			}
 		}
 		//no dynamic metadata found, let's use statical metadata from component descriptor 

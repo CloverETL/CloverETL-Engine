@@ -19,8 +19,7 @@
 package org.jetel.component;
 
 import org.jetel.graph.MetadataPropagationResolver;
-import org.jetel.graph.Node;
-import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.graph.modelview.MVMetadata;
 
 /**
  * Components can provide default metadata for theirs input and output ports.
@@ -40,11 +39,11 @@ public interface MetadataProvider {
 	/**
 	 * @return default metadata for input port with given index
 	 */
-	public DataRecordMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver);
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver);
 	
 	/**
 	 * @return default metadata for output port with given index
 	 */
-	public DataRecordMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver);
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver);
 
 }

@@ -76,30 +76,34 @@ public class MetadataPropagationResolver {
 			MVMetadata metadata;
 			metadata = findMetadataInternal(edge);
 			visitedEdges.put(edge, metadata);
-			edge.setMetadata(metadata);
 			return metadata;
 		} else {
 			return visitedEdges.get(edge);
 		}
 	}
 
+	private static MVMetadata combineMetadata(MVMetadata currentMetadata, MVMetadata newMetadata) {
+		if (currentMetadata == null) {
+			return newMetadata;
+		} else if (newMetadata == null) {
+			return currentMetadata;
+		} else {
+			return currentMetadata.getPriority() < newMetadata.getPriority() ? newMetadata : currentMetadata;
+		}
+	}
+	
 	private MVMetadata findMetadataInternal(MVEdge edge) {
 		if (!edge.hasMetadata()) {
+			MVMetadata result = null;
 			//check writer
 			MVComponent writer = edge.getWriter();
 			if (writer != null) {
 				if (writer.isPassThrough()) {
 					for (MVEdge inputEdge : writer.getInputEdges().values()) {
-						MVMetadata result = findMetadata(inputEdge);
-						if (result != null) {
-							return result;
-						}
+						result = combineMetadata(result, findMetadata(inputEdge));
 					}
 				} else {
-					MVMetadata result = writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this);
-					if (result != null) {
-						return result;
-					}
+					result = combineMetadata(result, writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this));
 				}
 			}
 
@@ -108,20 +112,14 @@ public class MetadataPropagationResolver {
 			if (reader != null) {
 				if (reader.isPassThrough()) {
 					for (MVEdge outputEdge : reader.getOutputEdges().values()) {
-						MVMetadata result = findMetadata(outputEdge);
-						if (result != null) {
-							return result;
-						}
+						result = combineMetadata(result, findMetadata(outputEdge));
 					}
 				} else {
-					MVMetadata result = reader.getDefaultInputMetadata(edge.getInputPortIndex(), this);
-					if (result != null) {
-						return result;
-					}
+					result = combineMetadata(result, reader.getDefaultInputMetadata(edge.getInputPortIndex(), this));
 				}
 			}
 			
-			return null;
+			return result;
 		} else {
 			return edge.getMetadata();
 		}

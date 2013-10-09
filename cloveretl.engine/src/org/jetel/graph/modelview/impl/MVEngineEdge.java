@@ -57,19 +57,12 @@ public class MVEngineEdge implements MVEdge {
 	@Override
 	public MVMetadata getMetadata() {
 		if (hasMetadata()) {
-			return new MVEngineMetadata(engineEdge.getMetadata());
+			return new MVEngineMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
 		} else {
 			return null;
 		}
 	}
 
-	@Override
-	public void setMetadata(MVMetadata metadata) {
-		if (metadata != null) {
-			engineEdge.setMetadata(metadata.getMetadata());
-		}
-	}
-	
 	@Override
 	public int getOutputPortIndex() {
 		return engineEdge.getOutputPortNumber();

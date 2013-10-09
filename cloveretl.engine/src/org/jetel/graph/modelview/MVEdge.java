@@ -55,12 +55,6 @@ public interface MVEdge {
 	public MVMetadata getMetadata();
 	
 	/**
-	 * Sets given metadata on the underlying edge.
-	 * @param metadata
-	 */
-	public void setMetadata(MVMetadata metadata);
-	
-	/**
 	 * @return port index of this edge, where this edge is attached to its writer component
 	 */
 	public int getOutputPortIndex();

@@ -23,7 +23,6 @@ import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.modelview.MVMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * This metadata provider ensures that metadata from n-th input port
@@ -39,22 +38,20 @@ public class PortToPortMetadataProvider implements ComponentMetadataProvider {
 	protected Node component;
 	
 	@Override
-	public DataRecordMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		OutputPort outputPort = component.getOutputPort(portIndex);
 		if (outputPort != null) {
-			MVMetadata metadata = metadataPropagationResolver.findMetadata(outputPort.getEdge());
-			return metadata != null ? metadata.getMetadata() : null;
+			return metadataPropagationResolver.findMetadata(outputPort.getEdge());
 		} else {
 			return null;
 		}
 	}
 
 	@Override
-	public DataRecordMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		InputPort inputPort = component.getInputPort(portIndex);
 		if (inputPort != null) {
-			MVMetadata metadata = metadataPropagationResolver.findMetadata(inputPort.getEdge());
-			return metadata != null ? metadata.getMetadata() : null;
+			return metadataPropagationResolver.findMetadata(inputPort.getEdge());
 		} else {
 			return null;
 		}

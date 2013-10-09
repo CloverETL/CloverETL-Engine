@@ -801,42 +801,30 @@ public class DataIntersection extends Node implements MetadataProvider {
 	}
 
 	@Override
-	public DataRecordMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex == 0) {
 			if (getOutputPort(0) != null) {
-				MVMetadata metadata = metadataPropagationResolver.findMetadata(getOutputPort(0).getEdge());
-				if (metadata != null) {
-					return metadata.getMetadata();
-				}
+				return metadataPropagationResolver.findMetadata(getOutputPort(0).getEdge());
 			}
 		}
 		if (portIndex == 1) {
 			if (getOutputPort(2) != null) {
-				MVMetadata metadata = metadataPropagationResolver.findMetadata(getOutputPort(2).getEdge());
-				if (metadata != null) {
-					return metadata.getMetadata();
-				}
+				return metadataPropagationResolver.findMetadata(getOutputPort(2).getEdge());
 			}
 		}
 		return null;
 	}
 
 	@Override
-	public DataRecordMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex == 0) {
 			if (getInputPort(0) != null) {
-				MVMetadata metadata = metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
-				if (metadata != null) {
-					return metadata.getMetadata();
-				}
+				return metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
 			}
 		}
 		if (portIndex == 2) {
 			if (getInputPort(1) != null) {
-				MVMetadata metadata = metadataPropagationResolver.findMetadata(getInputPort(1).getEdge());
-				if (metadata != null) {
-					return metadata.getMetadata();
-				}
+				return metadataPropagationResolver.findMetadata(getInputPort(1).getEdge());
 			}
 		}
 		return null;

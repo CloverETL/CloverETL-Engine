@@ -36,8 +36,27 @@ import org.jetel.metadata.DataRecordMetadata;
 public interface MVMetadata {
 
 	/**
+	 * This high priority is used when metadata is defined directly on edge.
+	 */
+	public static final int HIGH_PRIORITY = 10;
+	
+	/**
+	 * This is default priority.
+	 */
+	public static final int LOW_PRIORITY = 1;
+	
+	/**
 	 * @return wrapped metadata, either DataRecordMetadata or GraphMetadata
 	 */
 	public DataRecordMetadata getMetadata();
+	
+	/**
+	 * Priority of metadata is used to decide which metadata should be used.
+	 * Metadata decision for an edge - look left, look right and take metadata
+	 * with higher priority.
+	 * @see MetadataPropagationResolver
+	 * @return metadata priority
+	 */
+	public int getPriority();
 	
 }
