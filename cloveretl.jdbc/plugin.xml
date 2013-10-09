@@ -227,6 +227,7 @@
 		<parameter id="jdbcSpecific" value="FIREBIRD"/>
 	</extension>
 
+<!--
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="EXASOLUTION"/>
 		<parameter id="name" value="EXASolution"/>
@@ -235,5 +236,6 @@
 		<parameter id="urlHint" value="jdbc:exa:localhost:8563;schema=sys"/>
 		<parameter id="jdbcSpecific" value="EXASOLUTION"/>
 	</extension>
+-->
 
 </plugin>
