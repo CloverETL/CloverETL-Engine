@@ -89,8 +89,8 @@ public class MetadataPropagationResolver {
 			MVComponent writer = edge.getWriter();
 			if (writer != null) {
 				if (writer.isPassThrough()) {
-					if (writer.getInputEdges().size() > 0) {
-						MVMetadata result = findMetadata(writer.getInputEdges().get(0));
+					for (MVEdge inputEdge : writer.getInputEdges().values()) {
+						MVMetadata result = findMetadata(inputEdge);
 						if (result != null) {
 							return result;
 						}
@@ -107,8 +107,8 @@ public class MetadataPropagationResolver {
 			MVComponent reader = edge.getReader();
 			if (reader != null) {
 				if (reader.isPassThrough()) {
-					if (reader.getOutputEdges().size() > 0) {
-						MVMetadata result = findMetadata(reader.getOutputEdges().get(0));
+					for (MVEdge outputEdge : reader.getOutputEdges().values()) {
+						MVMetadata result = findMetadata(outputEdge);
 						if (result != null) {
 							return result;
 						}

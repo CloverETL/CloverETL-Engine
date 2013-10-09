@@ -139,13 +139,31 @@
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Concatenate"/>
-	    <parameter id="type" value="CONCATENATE"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Concatenate" name="Concatenate" type="CONCATENATE" passThrough="true" className="org.jetel.component.Concatenate">
+	    <shortDescription>Concatenates data flows.</shortDescription>
+	    <description>Receives data through all connected input ports in turn. Gets all records from each input port, sends them to output port and continues with the next input port. Skips ports without incoming data. Terminates when all incoming records are received and sent to connected output port.</description>
+	    <inputPorts>
+	      <multiplePort required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties />
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.SimpleGather"/>
-	    <parameter id="type" value="SIMPLE_GATHER"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/SimpleGather" name="SimpleGather"  type="SIMPLE_GATHER" passThrough="true" className="org.jetel.component.SimpleGather">
+	    <shortDescription>Gathers data flows.</shortDescription>
+	    <description>Receives data incoming through all connected input ports in the order so that all records are gathered and send out through output port as soon as possible.</description>
+	    <inputPorts>
+	      <multiplePort required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true"/>
+	    </outputPorts>
+	    <properties />
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
@@ -239,13 +257,61 @@
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.ExtFilter"/>
-	    <parameter id="type" value="EXT_FILTER"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/ExtFilter" name="ExtFilter"  type="EXT_FILTER" passThrough="true" className="org.jetel.component.ExtFilter">
+	    <shortDescription>Filters incoming data.</shortDescription>
+	    <description>Receives data records through connected input port, removes some of them depending on defined filter expression and sends the rest to the connected first output port. Rejected records are sent to the optional second output port if connected.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="accepted"/>
+	      <singlePort name="1" label="rejected"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="!filterClass">
+	        <singleType name="filter"/>
+	      </property>
+	      <property category="advanced" displayName="Filter class" modifiable="true" name="filterClass" nullable="true" required="!filterExpression">
+	        <singleType name="class" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.ExtSort"/>
-	    <parameter id="type" value="EXT_SORT"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/ExtSort" name="ExtSort"  type="EXT_SORT" passThrough="true" className="org.jetel.component.ExtSort">
+	    <shortDescription>Sorts incoming data.</shortDescription>
+	    <description>Receives data records through connected input port, sorts them according to specified sort key and sends them to all connected output ports. Sort key is name or combination of names of field(s) of incoming records. Sort order can be either Ascending (default) or Descending. Any number of records can be sorted. If internal buffer is full, external sorting is performed.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="deprecated" displayName="Sort order" modifiable="true" name="sortOrder" nullable="true" defaultHint="Ascending">
+	        <singleType name="order"/>
+	      </property>
+	      <property category="basic" displayName="Sort key" modifiable="true" name="sortKey" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0" keyType="ordered" rightLabel="Sort key:" />
+	      </property>
+	      <property category="deprecated" displayName="Sorting locale" modifiable="true" name="locale" nullable="true" defaultHint="none">
+	        <singleType name="locale"/>
+	      </property>
+	      <property category="deprecated" displayName="Case sensitive" modifiable="true" name="caseSensitive" nullable="true" defaultHint="(true)">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Buffer capacity" modifiable="true" name="bufferCapacity" nullable="true" defaultHintProvider="internalSortBufferCapacity">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="deprecated" displayName="Sorter initial capacity" modifiable="true" name="sorterInitialCapacity" nullable="true" defaultHintProvider="internalSortBufferCapacity">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Number of tapes" modifiable="true" name="numberOfTapes" nullable="true" defaultHint="6">
+	        <singleType name="int"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
     <extension point-id="component">
@@ -259,8 +325,51 @@
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.DataIntersection"/>
-	    <parameter id="type" value="DATA_INTERSECTION"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/DataIntersection" name="DataIntersection" type="DATA_INTERSECTION" className="org.jetel.component.DataIntersection">
+	    <shortDescription>Intersects two data flows.</shortDescription>
+	    <description>Receives sorted data flows through both input ports, finds data records with the same key values, converts these records to outgoing records according to defined transformation and sends these resulting records to the second output port. Data records contained only in the first or second data flow are sent to the first or third output ports, respectively.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="set A" />
+	      <singlePort name="1" required="true" label="set B" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="only in A" />
+	      <singlePort name="1" required="true" label="in A &amp; B" />
+	      <singlePort name="2" required="true" label="only in B" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
+	        <singleType name="joinKey" labels="Join key;Set A key;Set B key;;;Set A key field;Set B key field" />
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
+	        <singleType name="transform" outputPortName="1" shiftPortIndexing="true"/>
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Allow key duplicates" modifiable="true" name="keyDuplicates" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions" />
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file" />
+	      </property>
+		  <property category="deprecated" displayName="Slave override key" modifiable="true" name="slaveOverrideKey" nullable="true">
+			<singleType name="key" inputPortName="1" rightLabel="Slave override key:" />
+		  </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
