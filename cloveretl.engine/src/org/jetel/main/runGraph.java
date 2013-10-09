@@ -28,13 +28,17 @@ import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
+import org.apache.log4j.Appender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.spi.Filter;
+import org.apache.log4j.spi.LoggingEvent;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
@@ -326,8 +330,9 @@ public class runGraph {
 			PropertyConfigurator.configure(log4jPropertiesFile);
 		}
         
-        if (logLevel != null)
-        	Logger.getRootLogger().setLevel(logLevel);
+        if (logLevel != null) {
+        	setLogLevel(logLevel);
+        }
 
         EngineInitializer.initLicenses(licenseLocations);
         // engine initialization - should be called only once
@@ -556,5 +561,33 @@ public class runGraph {
         		", Java version " + System.getProperty("java.version") +
         		", max available memory for JVM " + Runtime.getRuntime().maxMemory() / 1024 + " KB");
 	}
+	
+	/**
+	 * Sets user-defined level of logging.
+	 * First of all, level of root logger is set to requested level and
+	 * filters to all appenders are added to avoid unintended logging messages
+	 * from child loggers with specified log level (see CLO-1682). 
+	 * @param logLevel
+	 */
+	private static void setLogLevel(final Level logLevel) {
+    	Logger.getRootLogger().setLevel(logLevel);
+    	
+    	Filter filter = new Filter() {
+			@Override
+			public int decide(LoggingEvent event) {
+			    if (event.getLevel().isGreaterOrEqual(logLevel)) {
+			    	return NEUTRAL;
+			    } else {
+			    	return DENY;
+			    }
+			}
+		};
+    	
+    	Enumeration appenders = Logger.getRootLogger().getAllAppenders();
+    	while (appenders.hasMoreElements()) {
+    		((Appender) appenders.nextElement()).addFilter(filter);
+    	}
+	}
+	
 }
 
