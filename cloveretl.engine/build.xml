@@ -70,7 +70,6 @@
 	<property name="dir.pmdreport" value="${dir.build}/pmdreport" />
 	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="dir.licenses" value="${basedir}/licenses" />
-	<property name="test.license.version" value="3.5"/>
 	
 	<!--load external properties-->
 	<property file="build-local.properties"/>
@@ -91,6 +90,10 @@
               input="${version}"
               regexp="([^\.]*)\.([^\.]*)\.([^\.]*)"
               select="\3" />
+	
+	<property name="test.license.version" value="${version.major}.${version.minor}"/>
+	
+	
 	<tstamp>
 		<format property="build.time" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
 		<format property="build.time.compact" pattern="yyyyMMddHHmmss" locale="en" />
@@ -180,7 +183,7 @@
 	<target name="dist.src" depends="init,improve-java-sources" description="Creates source distribution">
 
 		<mkdir dir="${dir.distprepare.src}/cloverETL"/>
-
+	
 		<!-- call source target for all plugins -->
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.src" param="plugin.dir"/>
 
@@ -240,13 +243,27 @@ defined.version.suffix=release
 		<replace file="${src.distribution.dir.engine}/../readme.txt" encoding="UTF-8" >
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 		</replace>
+		
 
 		<property name="version.suffix" value="develbefore${build.time.compact}${user}"/>
 
-
-
+	
 		<!-- create zip package for source distribution -->
 		<mkdir dir="${dir.distribution}"/>
+		 
+		<if>
+		     <equals arg1="${dist.type}" arg2="opensource"/>
+		      <then>
+		             <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${src.distribution.dir.engine}/../LICENSE"/>
+		             <echo file="${src.distribution.dir.engine}/../readme.txt" append="true">
+Licensing
+----------                              
+This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
+		            </echo>
+		      <fixcrlf srcdir="${src.distribution.dir.engine}/../" includes="readme.txt" eol="crlf" />
+		      </then>
+	   </if>
+		                		
 		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.src.rel-${version.major}-${version.minor}-${version.revision}.zip" >
 			<fileset dir="${dir.distprepare.src}">
 				<include name="cloverETL/**/*"/>

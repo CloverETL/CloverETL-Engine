@@ -864,10 +864,13 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
 	/**
-	 *  Gets the graphProperties attribute of the TransformationGraph object
+	 * Gets the graphProperties attribute of the TransformationGraph object
+	 * NOTE: backward compatibility issue introduced in rel-3-5 - returned graph parameters
+	 * are only copy of real graph parameters, no changes on returned object are reflected in real graph parameters
 	 *
 	 * @return    The graphProperties value
 	 * @deprecated use getGraphParameters().asProperties() instead
+	 * @see CLO-2002
 	 */
 	@Deprecated
 	public TypedProperties getGraphProperties() {

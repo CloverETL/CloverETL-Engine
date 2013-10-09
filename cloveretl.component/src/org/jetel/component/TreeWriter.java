@@ -314,9 +314,8 @@ public abstract class TreeWriter extends Node {
 
 		InputStream stream;
 		if (this.mappingURL != null) {
-			TransformationGraph graph = getGraph();
 			try {
-				stream = FileUtils.getInputStream(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
+				stream = FileUtils.getInputStream(getContextURL(), mappingURL);
 			} catch (IOException e) {
 				throw new ComponentNotReadyException("cannot instantiate node from XML", e);
 			}

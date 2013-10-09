@@ -136,6 +136,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CTLMapping;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -396,6 +397,8 @@ public class HttpConnector extends Node {
 	
 	public final static String XML_RESPONSE_COOKIES_ATTRIBUTE = "responseCookies";
 	
+	public final static String XML_STREAMING_ATTRIBUTE = "streaming";
+	
 	/**
 	 * Default value of the 'append output' flag 
 	 */
@@ -556,24 +559,27 @@ public class HttpConnector extends Node {
 			WritableByteChannel outputChannel = getFileOutputChannel();
 			
 			if (outputChannel == null) {
-				outputChannel = Channels.newChannel(System.out);
+				outputChannel = new SystemOutByteChannel();
 			}
 			
-			ReadableByteChannel inputConnection = Channels.newChannel(response.getEntity().getContent());
-			
-			if (inputConnection != null) {
-				try {
-					StreamUtils.copy(inputConnection, outputChannel);
-				} finally {
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				InputStream inputStream = entity.getContent();
+				
+				if (inputStream != null) {
 					try {
-						inputConnection.close();
-					} catch (IOException e) {
-						logger.warn("Failed to close HTTP response input channel");
-					}
-					try {
-						outputChannel.close();
-					} catch (IOException e) {
-						logger.warn("Failed to close HTTP response output channel");
+						StreamUtils.copy(Channels.newChannel(inputStream), outputChannel);
+					} finally {
+						try {
+							FileUtils.close(inputStream);
+						} catch (IOException e) {
+							logger.warn("Failed to close HTTP response input channel");
+						}
+						try {
+							FileUtils.close(outputChannel);
+						} catch (IOException e) {
+							logger.warn("Failed to close HTTP response output channel");
+						}
 					}
 				}
 			}
@@ -788,6 +794,11 @@ public class HttpConnector extends Node {
      * Output records for error output mapping transformation.
      */
     protected DataRecord[] errorOutputMappingOutRecords;	
+    
+    /**
+     * Use Transfer-Encoding: chunked for Input file.
+     */
+    private boolean streaming;
     
     
 	/*  === Component base properties === */
@@ -2276,6 +2287,7 @@ public class HttpConnector extends Node {
 		httpConnector.setRawHttpHeaders(xattribs.getString(XML_RAW_HTTP_HEADERS_ATTRIBUTE, null));
 		httpConnector.setRequestCookies(xattribs.getString(XML_REQUEST_COOKIES_ATTRIBUTE, null));
 		httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
+		httpConnector.setStreaming(xattribs.getBoolean(XML_STREAMING_ATTRIBUTE, true));
 
 		/** job flow related properties */
 		httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -2606,7 +2618,7 @@ public class HttpConnector extends Node {
 			} else if (content instanceof byte[]) {
 				entity = new ByteArrayEntity((byte[]) content, contentType);
 			} else if (content instanceof InputStream) {
-				if (httpMethod.getRequestLine().getProtocolVersion().lessEquals(HttpVersion.HTTP_1_0)) {
+				if (!isStreaming() || httpMethod.getRequestLine().getProtocolVersion().lessEquals(HttpVersion.HTTP_1_0)) {
 					// chunked transfer encoding is not supported in HTTP/1.0
 					try {
 						ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -3461,10 +3473,6 @@ public class HttpConnector extends Node {
 		return charset;
 	}
 	
-	private URL getContextURL() {
-		return (getGraph() != null) ? getGraph().getRuntimeContext().getContextURL() : null;
-	}
-
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}
@@ -3621,6 +3629,14 @@ public class HttpConnector extends Node {
 	 */
 	public void setoAuthAccessTokenSecret(String oAuthAccessTokenSecret) {
 		this.oAuthAccessTokenSecret = oAuthAccessTokenSecret;
+	}
+
+	public boolean isStreaming() {
+		return streaming;
+	}
+
+	public void setStreaming(boolean streaming) {
+		this.streaming = streaming;
 	}
 
 	@Override

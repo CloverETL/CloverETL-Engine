@@ -20,12 +20,14 @@ package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -98,6 +100,12 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		this.id = id;
 	}
 	
+
+	@Override
+	public Connection connect(Driver driver, String url, Properties info) throws SQLException {
+		return driver.connect(url, info);
+	}
+
 	@Override
 	public ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata, Node node) {
 		return status;

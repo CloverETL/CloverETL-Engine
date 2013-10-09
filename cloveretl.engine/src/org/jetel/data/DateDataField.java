@@ -410,9 +410,8 @@ public class DateDataField extends DataField implements Comparable<Object> {
 
 	
 	@Override
-	public int hashCode(){
-		if (isNull) return 0;
-		return HashCodeUtil.getHash(value);
+	public int hashCode() {
+		return HashCodeUtil.hash(value);
 	}
 	
 	/**

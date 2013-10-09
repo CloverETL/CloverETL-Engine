@@ -212,7 +212,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		
         buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
-        	File file = FileUtils.getJavaFile(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, filename);
+        	File file = FileUtils.getJavaFile(getContextURL(), filename);
             if (!file.exists()) {
             	logger.info("Sequence file " + filename + " doesn't exist. Creating new file.");
                 file.createNewFile();
@@ -247,7 +247,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     private void loadExternalSequence() throws ComponentNotReadyException {
         if (!StringUtils.isEmpty(configFileName)) {
             try {
-            	URL projectURL = getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null;
+            	URL projectURL = getContextURL();
             	InputStream stream = null;
             	try {
 	                stream = FileUtils.getFileURL(projectURL, configFileName).openStream();

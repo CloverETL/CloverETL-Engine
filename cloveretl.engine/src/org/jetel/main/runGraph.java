@@ -466,14 +466,12 @@ public class runGraph {
             System.exit(result.code());
             break;
         default:
-            ExceptionUtils.logHighlightedException(logger, watchDogFuture.getWatchDog().getErrorMessage(),
+            ExceptionUtils.logHighlightedException(logger, null,
             		watchDogFuture.getWatchDog().getCauseException());
             logger.error("Execution of graph failed !");
             System.exit(result.code());
         }
-
     }
-
 
 	public static WatchDogFuture executeGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext) throws ComponentNotReadyException {
 		if (!graph.isInitialized()) {

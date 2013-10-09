@@ -396,7 +396,7 @@ public class DataReader extends Node {
 	private void prepareMultiFileReader() throws ComponentNotReadyException {
 		// initialize multifile reader based on prepared parser
 		TransformationGraph graph = getGraph();
-        reader = new MultiFileReader(parser, graph != null ? graph.getRuntimeContext().getContextURL() : null, fileURL);
+        reader = new MultiFileReader(parser, getContextURL(), fileURL);
         reader.setLogger(logger);
         reader.setSkip(skipRows);
         reader.setNumSourceRecords(numSourceRecords);
