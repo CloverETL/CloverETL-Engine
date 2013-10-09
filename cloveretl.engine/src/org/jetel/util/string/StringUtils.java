@@ -762,16 +762,7 @@ public class StringUtils {
 	}
 	
 	
-	/**
-	 * Converts textual representation of control characters into control characters<br>
-	 * Note: This code handles only \n, \r , \t , \f, \" ,\', \`, \\ special chars
-	 * 
-	 * @param controlString
-	 *            Description of the Parameter
-	 * @return String with control characters
-	 * @since July 25, 2002
-	 */
-	public static String stringToSpecChar(CharSequence controlString) {
+	private static String stringToSpecChar(CharSequence controlString, boolean lenient) {
 		if (controlString == null) {
 			return null;
 		}
@@ -825,8 +816,12 @@ public class StringUtils {
 					}
 					break;
 				default:
-					copy.append('\\');
-					copy.append(character);
+					if (lenient) {
+						copy.append('\\');
+						copy.append(character);
+					} else {
+						throw new IllegalArgumentException("Invalid escape sequence: \\" + character);
+					}
 					break;
 				}
 				isBackslash = false;
@@ -839,6 +834,35 @@ public class StringUtils {
 			}
 		}
 		return copy.toString();
+	}
+
+	/**
+	 * Converts textual representation of control characters into control characters<br>
+	 * Note: This code handles only \n, \r , \t , \f, \" ,\', \`, \\ special chars
+	 * 
+	 * @param controlString
+	 *            Description of the Parameter
+	 * @return String with control characters
+	 * @since July 25, 2002
+	 */
+	public static String stringToSpecChar(CharSequence controlString) {
+		return stringToSpecChar(controlString, true);
+	}
+
+	/**
+	 * Converts textual representation of control characters into control characters<br>
+	 * Note: This code handles only \n, \r , \t , \f, \" ,\', \`, \\ special chars
+	 * 
+	 * @param controlString
+	 *            Description of the Parameter
+	 * @return String with control characters
+	 * 
+	 * @throws IllegalArgumentException if an invalid escape sequence is encountered
+	 * 
+	 * @since July 25, 2002
+	 */
+	public static String stringToSpecCharStrict(CharSequence controlString) {
+		return stringToSpecChar(controlString, false);
 	}
 
 	/**
