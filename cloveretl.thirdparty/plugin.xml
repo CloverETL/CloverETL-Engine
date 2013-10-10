@@ -11,18 +11,123 @@
 	</requires>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Filter"/>
-	    <parameter id="type" value="FILTER"/>
+	  <ETLComponent category="deprecated" iconPath="clover:/plugin/org.jetel.component/icons/transformers/ExtFilter" name="Filter" type="FILTER" passThrough="true" defaultVisibility="false" className="org.jetel.component.Filter">
+	    <shortDescription>Filters incoming data.</shortDescription>
+	    <description>Receives data through connected input port, removes some data records depending on defined filter expression and sends the rest to the connected first output port. Rejected records are sent to the optional second output port if connected. This component is deprecated and should not be used anymore, we suggest you work with ExtFilter instead.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="accepted" />
+	      <singlePort name="1" label="rejected" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="true">
+	        <singleType name="multiline" />
+	      </property>f
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="com.linagora.component.LdapReader"/>
-	    <parameter id="type" value="LDAP_READER"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/LDAPReader" name="LDAPReader" type="LDAP_READER" className="com.linagora.component.LdapReader">
+	    <shortDescription>Reads information from LDAP directory trees.</shortDescription>
+	    <description>Reads information from LDAP directory trees, converts it to data records and sends them to all connected output ports.</description>
+	    <inputPorts />
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="LDAP URL" modifiable="true" name="ldapUrl" nullable="false" defaultValue="ldap://host:port/" required="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Base DN" modifiable="true" name="base" nullable="true" required="true">
+	        <singleType name="multiline" />
+	      </property>
+	      <property category="basic" displayName="Filter" modifiable="true" name="filter" nullable="true" required="true">
+	        <singleType name="multiline" />
+	      </property>
+	      <property category="basic" displayName="Scope" modifiable="true" name="scope" nullable="true" defaultHint="object">
+	        <enumType>
+	          <item displayValue="object" value="object" />
+	          <item displayValue="onelevel" value="onelevel" />
+	          <item displayValue="subtree" value="subtree" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="User" modifiable="true" name="user" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Password" modifiable="true" name="password" nullable="true">
+	        <singleType name="password" />
+	      </property>
+	      <property category="advanced" displayName="Multi-value separator" modifiable="true" name="multiValueSeparator" nullable="true" defaultHint="|">
+	        <enumType>
+	          <item displayValue="&lt;none&gt;" value="__none__" />
+	          <item displayValue="|" value="|" />
+	          <item displayValue="," value="," />
+	          <item displayValue=";" value=";" />
+	          <item displayValue=":" value=":" />
+	          <item displayValue="\t" value="\t" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Alias handling" modifiable="true" name="aliasHandling" nullable="false" defaultHint="finding">
+	        <enumType>
+	          <item displayValue="always" value="ALWAYS" />
+	          <item displayValue="never" value="NEVER" />
+	          <item displayValue="finding" value="FINDING" />
+	          <item displayValue="searching" value="SEARCHING" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Referral handling" modifiable="true" name="referralHandling" nullable="false" defaultHint="ignore">
+	        <enumType>
+	          <item displayValue="ignore" value="IGNORE" />
+	          <item displayValue="follow" value="FOLLOW" />
+	        </enumType>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="com.linagora.component.LdapWriter"/>
-	    <parameter id="type" value="LDAP_WRITER"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/LDAPWriter" name="LDAPWriter" type="LDAP_WRITER" className="com.linagora.component.LdapWriter">
+	    <shortDescription>Writes information to LDAP directory trees.</shortDescription>
+	    <description>Receives data through connected input port and converts data records to information in LDAP directory trees. Rejected records are sent to the optional output port if connected.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" label="rejected" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Ldap URL" modifiable="true" name="ldapUrl" nullable="true" defaultValue="ldap://host:port/" required="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Action" modifiable="true" name="action" nullable="true" defaultHint="Replace attributes" required="true">
+	        <enumType>
+	          <item displayValue="Add entry" value="add_entry" />
+	          <item displayValue="Remove entry" value="remove_entry" />
+	          <item displayValue="Replace attributes" value="replace_attributes" />
+	          <item displayValue="Remove attributes" value="remove_attributes" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="User" modifiable="true" name="user" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Password" modifiable="true" name="password" nullable="true">
+	        <singleType name="password" />
+	      </property>
+	      <property category="advanced" displayName="Multi-value separator" modifiable="true" name="multiValueSeparator" nullable="true" defaultHint="|">
+	        <enumType>
+	          <item displayValue="&lt;none&gt;" value="__none__" />
+	          <item displayValue="|" value="|" />
+	          <item displayValue="," value="," />
+	          <item displayValue=";" value=";" />
+	          <item displayValue=":" value=":" />
+	          <item displayValue="\t" value="\t" />
+	        </enumType>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 </plugin>

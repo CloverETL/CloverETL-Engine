@@ -10,38 +10,416 @@
 	</requires>
 	
 	<extension point-id="component">
-		<parameter id="type" value="ORACLE_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.OracleDataWriter"/>
+		<ETLComponent category="writers" iconPath="icons/writers/OracleDataWriter" name="OracleDataWriter" type="ORACLE_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.OracleDataWriter">
+			<shortDescription>Loads data into Oracle database.</shortDescription>
+			<description>Receives data through connected input port or reads it from input file, connects to Oracle database using sqlldr utility and loads data records into specified database table. User can log the process of loading data into Log file, write incorrect and/or rejected records into Bad file and/or Discard file, respectively. It works faster than DBOutputTable.</description>
+			<inputPorts>
+				<singlePort name="0" />
+			</inputPorts>
+			<outputPorts>
+				<singlePort name="0" />
+			</outputPorts>
+			<properties>
+				<property category="basic" displayName="Path to sqlldr utility" modifiable="true" name="sqlldr" nullable="true" required="true">
+					<singleType name="file" />
+				</property>
+				<property category="basic" displayName="TNS name" modifiable="true" name="tnsname" nullable="true" required="true">
+					<singleType name="string" />
+				</property>
+				<property category="basic" displayName="User name" modifiable="true" name="username" nullable="true" required="true">
+					<singleType name="string" />
+				</property>
+				<property category="basic" displayName="Password" modifiable="true" name="password" nullable="true" required="true">
+					<singleType name="password" />
+				</property>
+				<property category="basic" displayName="Oracle table" modifiable="true" name="table" nullable="true" required="!control">
+					<singleType name="table" />
+				</property>
+				<property category="advanced" displayName="Control script" modifiable="true" name="control" nullable="true">
+					<singleType name="control" />
+				</property>
+				<property category="advanced" displayName="Append" modifiable="true" name="append" defaultHint="Append">
+					<enumType>
+						<item displayValue="Insert" value="insert" />
+						<item displayValue="Append" value="append" />
+						<item displayValue="Replace" value="replace" />
+						<item displayValue="Truncate" value="truncate" />
+					</enumType>
+				</property>
+				<property category="advanced" displayName="Log file name" modifiable="true" name="log" nullable="true" defaultHint="[project_path/name_of_data_file_to_be_loaded].log">
+					<singleType name="file" />
+				</property>
+				<property category="advanced" displayName="Bad file name" modifiable="true" name="bad" nullable="true" defaultHint="[project_path/name_of_data_file_to_be_loaded].bad">
+					<singleType name="file" />
+				</property>
+				<property category="advanced" displayName="Discard file name" modifiable="true" name="discard" nullable="true" defaultHint="[project_path/name_of_data_file_to_be_loaded].dis">
+					<singleType name="file" />
+				</property>
+				<property category="advanced" displayName="DB column names" modifiable="true" name="dbFields" nullable="true">
+					<singleType name="string" />
+				</property>
+				<property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
+					<singleType name="file" selectionMode="file_only" />
+	      		</property>
+	      		<property category="advanced" displayName="Max error count" modifiable="true" name="maxErrors" nullable="true" defaultHint="50">
+	        		<singleType name="int" />
+	      		</property>
+	      		<property category="advanced" displayName="Max discard count" modifiable="true" name="maxDiscards" nullable="true">
+	        		<singleType name="int" />
+	      		</property>
+	      		<property category="advanced" displayName="Ignore rows" modifiable="true" name="ignoreRows" nullable="true" defaultHint="0">
+					<singleType name="int" />
+				</property>
+				<property category="advanced" displayName="Commit interval" modifiable="true" name="commitInterval" nullable="true" defaultHint="64">
+	        		<singleType name="int" />
+	      		</property>
+				<property category="advanced" displayName="Use file for exchange" modifiable="true" name="useFileForExchange" nullable="true">
+					<singleType name="bool" />
+				</property>
+				<property category="advanced" displayName="Parameters" modifiable="true" name="parameters" nullable="true">
+					<singleType name="parameters" />
+	      		</property>
+				<property category="advanced" displayName="Fail on warnings" modifiable="true" name="failOnWarnings" nullable="true" defaultHint="false">
+					<singleType name="bool" />
+	      		</property>
+			</properties>
+		</ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="type" value="DB2_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.DB2DataWriter"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/DB2DataWriter" name="DB2DataWriter" type="DB2_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.DB2DataWriter">
+	    <shortDescription>Loads data into DB2 database.</shortDescription>
+	    <description>Receives data through connected input port or reads it from input file, connects to DB2 database using db2 utility and loads data records into specified database table. Correspondence of input metadata and DB columns must be defined. Information about rejected records can be sent out through optional output port if connected. It works faster than DBOutputTable.</description>
+	    <inputPorts>
+	      <singlePort name="0" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File metadata" modifiable="true" name="fileMetadata" nullable="true">
+	        <singleType name="metadata" />
+	      </property>
+	      <property category="basic" displayName="Database" modifiable="true" name="database" nullable="true" required="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Database table" modifiable="true" name="table" nullable="true" required="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="User name" modifiable="true" name="userName" nullable="true" required="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Password" modifiable="true" name="password" nullable="true" required="true">
+	        <singleType name="password" />
+	      </property>
+	      <property category="basic" displayName="Load mode" modifiable="true" name="loadMode" nullable="true" required="false" defaultHint="insert">
+	        <enumType>
+	          <item displayValue="insert" value="insert" />
+	          <item displayValue="replace" value="replace" />
+	          <item displayValue="restart" value="restart" />
+	          <item displayValue="terminate" value="terminate" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Field mapping" modifiable="true" name="fieldMap" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Clover fields" modifiable="true" name="cloverFields" nullable="true">
+	        <singleType name="key" inputPortName="0" rightLabel="Clover fields:"/>
+	      </property>
+	      <property category="basic" displayName="DB fields" modifiable="true" name="dbFields" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
+	        <singleType name="file" selectionMode="file_only" />
+	      </property>
+	      <property category="advanced" displayName="Parameters" modifiable="true" name="parameters" nullable="true">
+	        <singleType name="parameters" />
+	      </property>
+	      <property category="advanced" displayName="Rejected records URL (on server)" modifiable="true" name="rejectedURL" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Batch file URL" modifiable="true" name="batchURL" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="DB2 command interpreter" modifiable="true" name="sqlInterpreter" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Use pipe transfer" modifiable="true" name="useNamedPipe" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Column delimiter" modifiable="true" name="columnDelimiter" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max error count" modifiable="true" name="maxErrors" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max warning count" modifiable="true" name="capturedWarningLines" nullable="true" defaultHint="999">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Fail on warnings" modifiable="true" name="failOnWarnings" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="type" value="INFORMIX_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.InformixDataWriter"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/InformixDataWriter" name="InformixDataWriter" type="INFORMIX_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.InformixDataWriter">
+	    <shortDescription>Loads data into Informix database.</shortDescription>
+	    <description>Receives data through connected input port or reads it from input file, connects to Informix database using dbload or load2 utilities and loads data records into specified database table. Rejected records along with information about error are sent out through optional output port if connected. It works faster than DBOutputTable.</description>
+	    <inputPorts>
+	      <singlePort name="0" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Path to dbload utility" modifiable="true" name="dbLoaderPath" required="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Host" modifiable="true" name="host" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Database" modifiable="true" name="database" required="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Database table" modifiable="true" name="table" required="!command">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Control script" modifiable="true" name="command" nullable="true">
+	        <singleType name="multiline" />
+	      </property>
+	      <property category="advanced" displayName="Error log URL" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="Max error count" modifiable="true" name="maxErrors" nullable="true" defaultHint="10">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Ignore rows" modifiable="true" name="ignoreRows" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Commit interval" modifiable="true" name="commitInterval" nullable="true" defaultHint="100">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Column delimiter" modifiable="true" name="columnDelimiter" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
+	        <singleType name="file" selectionMode="file_only" />
+	      </property>
+	      <property category="advanced" displayName="Use load utility" modifiable="true" name="useLoadUtility" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="User name" modifiable="true" name="username" nullable="true">
+			<singleType name="string" />
+		  </property>
+		  <property category="advanced" displayName="Password" modifiable="true" name="password" nullable="true">
+			<singleType name="password" />
+		  </property>
+	      <property category="advanced" displayName="Ignore unique key violation" modifiable="true" name="ignoreUniqueKeyViolation" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Use insert cursor" modifiable="true" name="useInsertCursor" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="type" value="MS_SQL_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.MsSqlDataWriter"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/MSSQLDataWriter" name="MSSQLDataWriter" type="MS_SQL_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.MsSqlDataWriter">
+	    <shortDescription>Loads data into MSSQL database.</shortDescription>
+	    <description>Receives data through connected input port or reads it from input file, connects to MSSQL database using bcp utility and loads data records into specified database table. Rejected records along with information about error are sent out through optional output port if connected. It works faster than DBOutputTable.</description>
+	    <inputPorts>
+	      <singlePort name="0" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Path to bcp utility" modifiable="true" name="bcpUtilityPath" required="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Database" modifiable="true" name="database" required="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Server name" modifiable="true" name="serverName" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Database table" modifiable="true" name="table" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Database view" modifiable="true" name="view" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Database owner" modifiable="true" name="owner" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="User name" modifiable="true" name="username" nullable="true">
+			<singleType name="string" />
+		  </property>
+		  <property category="basic" displayName="Password" modifiable="true" name="password" nullable="true">
+			<singleType name="password" />
+		  </property>
+		  <property category="advanced" displayName="Column delimiter" modifiable="true" name="columnDelimiter" nullable="true">
+			<singleType name="string" />
+		  </property>
+	      <property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
+	        <singleType name="file" selectionMode="file_only" />
+	      </property>
+	      <property category="advanced" displayName="Parameters" modifiable="true" name="parameters" nullable="true" defaultValue="characterType">
+	        <singleType name="parameters" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="type" value="MYSQL_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.MysqlDataWriter"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/MySQLDataWriter" name="MysqlDataWriter" type="MYSQL_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.MysqlDataWriter">
+		<shortDescription>Loads data into MySQL database.</shortDescription>
+		<description>Receives data through connected input port or reads it from input file, connects to MySQL database using mysql utility and loads data records into specified database table. Information about rejected records can be sent out through optional output port if connected. It works faster than DBOutputTable.</description>
+		<inputPorts>
+			<singlePort name="0" />
+		</inputPorts>
+		<outputPorts>
+			<singlePort name="0" />
+		</outputPorts>
+		<properties>
+			<property category="basic" displayName="Path to mysql utility" modifiable="true" name="mysqlPath" required="true">
+				<singleType name="file" />
+			</property>
+			<property category="basic" displayName="Host" modifiable="true" name="host" nullable="true">
+				<singleType name="string" />
+			</property>
+			<property category="basic" displayName="Database" modifiable="true" name="database" required="true">
+				<singleType name="string" />
+			</property>
+			<property category="basic" displayName="Database table" modifiable="true" name="table" required="true">
+				<singleType name="string" />
+			</property>
+			<property category="basic" displayName="User name" modifiable="true" name="username" nullable="true">
+				<singleType name="string" />
+			</property>
+			<property category="basic" displayName="Password" modifiable="true" name="password" nullable="true">
+				<singleType name="password" />
+			</property>
+			<property category="advanced" displayName="Path to control script" modifiable="true" name="commandURL" nullable="true">
+				<singleType name="file" />
+			</property>
+			<property category="advanced" displayName="Lock database table" modifiable="true" name="lockTable" nullable="true" defaultHint="false">
+				<singleType name="bool" />
+			</property>
+			<property category="advanced" displayName="Ignore rows" modifiable="true" name="ignoreRows" nullable="true">
+				<singleType name="int" />
+			</property>
+			<property category="advanced" displayName="Column delimiter" modifiable="true" name="columnDelimiter" nullable="true">
+				<singleType name="string" />
+			</property>
+			<property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
+				<singleType name="file" selectionMode="file_only" />
+	      	</property>
+			<property category="advanced" displayName="Control script parameters" modifiable="true" name="parameters" nullable="true">
+				<singleType name="parameters" />
+	      	</property>
+		  </properties>
+		</ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="type" value="POSTGRESQL_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.PostgreSqlDataWriter"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/PostgreSQLDataWriter" name="PostgreSQLDataWriter" type="POSTGRESQL_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.PostgreSqlDataWriter">
+	    <shortDescription>Loads data into PostgreSQL database.</shortDescription>
+	    <description>Receives data through connected input port or reads it from input file, connects to PostgreSQL database using psql utility and loads data records into specified database table. It works faster than DBOutputTable.</description>
+	    <inputPorts>
+	      <singlePort name="0" />
+	    </inputPorts>
+	    <outputPorts>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Path to psql utility" modifiable="true" name="psqlPath" required="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Host" modifiable="true" name="host" nullable="true">
+			<singleType name="string" />
+		  </property>
+	      <property category="basic" displayName="Database" modifiable="true" name="database" required="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Database table" modifiable="true" name="table" nullable="true">
+	        <singleType name="string" />
+	      </property>
+		  <property category="basic" displayName="User name" modifiable="true" name="username" nullable="true">
+			<singleType name="string" />
+		  </property>
+	      <property category="advanced" displayName="Fail on error" modifiable="true" name="failOnError" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Path to control script" modifiable="true" name="commandURL" nullable="true">
+	        <singleType name="file" />
+	      </property>
+		  <property category="advanced" displayName="Column delimiter" modifiable="true" name="columnDelimiter" nullable="true">
+			<singleType name="string" />
+		  </property>
+	      <property category="advanced" displayName="Loader input file" modifiable="true" name="fileURL" nullable="true">
+	        <singleType name="file" selectionMode="file_only" />
+	      </property>
+	      <property category="advanced" displayName="Parameters" modifiable="true" name="parameters" nullable="true">
+	        <singleType name="parameters" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="type" value="INFOBRIGHT_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.InfobrightDataWriter"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/InfobrightDataWriter" name="InfobrightDataWriter" type="INFOBRIGHT_DATA_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.InfobrightDataWriter">
+	    <shortDescription>Loads data into Infobright database.</shortDescription>
+	    <inputPorts>
+	      <singlePort name="0" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
+	        <singleType name="connection" />
+	      </property>
+	      <property category="basic" displayName="Database table" modifiable="true" name="table" nullable="true" required="true">
+	        <singleType name="table" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Data format" modifiable="true" name="dataFormat" nullable="true" defaultHint="Text">
+	        <enumType>
+	          <item displayValue="Binary" value="binary" />
+	          <item displayValue="Text" value="txt_variable" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Clover fields" modifiable="true" name="cloverFields" nullable="true">
+	        <singleType name="key" inputPortName="0" rightLabel="Clover fields:" />
+	      </property>
+	      <property category="advanced" displayName="Log file" modifiable="true" name="logFile" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="Append data to log file" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Execution timeout" modifiable="true" name="timeout" nullable="true" defaultHint="15">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Check string's and binary's sizes" modifiable="true" name="checkValues" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Remote agent port" modifiable="true" name="agentPort" nullable="true" defaultHint="5555">
+	        <singleType name="int" />
+	      </property>
+	      </properties>
+	  </ETLComponent>
 	</extension>
 	
 </plugin>
