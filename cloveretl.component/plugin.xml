@@ -2382,16 +2382,14 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLXPathReader" type="XML_XPATH_READER" className="org.jetel.component.XmlXPathReader">
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLXPathReader" type="XML_XPATH_READER" className="org.jetel.component.XmlXPathReader" metadataProvider="org.jetel.component.tree.reader.TreeReaderErrMetadataProvider">
 	    <shortDescription>Reads data from XML files.</shortDescription>
 	    <description>Reads data from XML files, converts elements matched by XPath defined in mapping along with their direct children to data records and sends them into different connected output ports as defined by mapping.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" />
 	    </inputPorts>
 	    <outputPorts>
-	      <multiplePort required="true">
-	        <MetadataProvider id="treeReaderErrMetadataProvider"/>
-	      </multiplePort>
+	      <multiplePort required="true"/>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
@@ -2520,16 +2518,14 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLReader" type="XML_READER" defaultVisibility="etlGraph" className="org.jetel.component.XmlReader">
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLReader" type="XML_READER" defaultVisibility="etlGraph" className="org.jetel.component.XmlReader" metadataProvider="org.jetel.component.tree.reader.TreeReaderErrMetadataProvider">
 	    <shortDescription>Reads data from XML.</shortDescription>
 	    <description>Reads data from XML, converts properties matched by XPath defined in mapping along with their direct children to data records and sends them into different connected output ports as defined by mapping.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" />
 	    </inputPorts>
 	    <outputPorts>
-	      <multiplePort required="true">
-	        <MetadataProvider id="treeReaderErrMetadataProvider"/>
-	      </multiplePort>
+	      <multiplePort required="true"/>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
