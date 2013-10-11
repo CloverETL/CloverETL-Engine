@@ -155,15 +155,15 @@ public class PropertyRefResolver {
 		return (authorityProxy != null) ? authorityProxy : ContextProvider.getAuthorityProxy();
 	}
 	
-	/**
-	 * @return properties used for resolving property references
-	 */
-	public Properties getProperties() {
-		return parameters.asProperties();
-	}
-
 	public GraphParameters getGraphParameters() {
 		return parameters;
+	}
+	
+	/**
+	 * Clears properties used by this resolver.
+	 */
+	public void clear() {
+		parameters.clear();
 	}
 	
 	/**

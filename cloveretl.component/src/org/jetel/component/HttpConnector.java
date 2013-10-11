@@ -34,7 +34,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -3189,9 +3188,7 @@ public class HttpConnector extends Node {
 	 * @param props
 	 */
 	private void setRefProperties(Properties props) {
-		if (refResolver.getProperties() != null) {
-			refResolver.getProperties().clear();
-		}
+		refResolver.clear();
 		refResolver.addProperties(props);
 	}
 
