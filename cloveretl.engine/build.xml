@@ -91,6 +91,16 @@
               regexp="([^\.]*)\.([^\.]*)\.([^\.]*)"
               select="\3" />
 	
+	<if>
+		  <isset property="suffix"/>
+		         <then>
+		            <property name="engine.version" value="${version.major}-${version.minor}-${version.revision}-${suffix}" />
+		         </then>
+		<else>
+		        <property name="engine.version" value="${version.major}-${version.minor}-${version.revision}" />
+		</else> 
+		</if>
+		
 	<property name="test.license.version" value="${version.major}.${version.minor}"/>
 	
 	
@@ -264,7 +274,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 		      </then>
 	   </if>
 		                		
-		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.src.rel-${version.major}-${version.minor}-${version.revision}.zip" >
+		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.src.rel-${engine.version}.zip" >
 			<fileset dir="${dir.distprepare.src}">
 				<include name="cloverETL/**/*"/>
 			</fileset>
@@ -302,8 +312,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 			
 	   	<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
-		
-		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.rel-${version.major}-${version.minor}-${version.revision}.zip" >
+					         	
+		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.rel-${engine.version}.zip" >
 			<fileset dir="${dir.distprepare.bin}">
 				<include name="cloverETL/**/*"/>
 			</fileset>
@@ -324,7 +334,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="dist.javadoc" depends="javadoc" description="Creates javadoc distribution">
 		<!-- create zip package for javadoc -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.javadoc.rel-${version.major}-${version.minor}-${version.revision}.zip" >
+		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.javadoc.rel-${engine.version}.zip" >
 			<fileset dir="${dir.doc}">
 				<include name="cloverETL/**/*"/>
 			</fileset>
@@ -355,7 +365,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 
 		<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
-		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.examples.rel-${version.major}-${version.minor}-${version.revision}.zip">
+		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.examples.rel-${engine.version}.zip">
 			<fileset dir="${dir.distprepare.exa}">
 				<include name="**/*"/>
 			</fileset>
