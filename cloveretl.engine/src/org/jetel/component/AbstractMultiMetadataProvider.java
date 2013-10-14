@@ -34,13 +34,13 @@ public abstract class AbstractMultiMetadataProvider implements MultiMetadataProv
 	@Override
 	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		List<MVMetadata> allInputMetadata = getAllInputMetadata(portIndex, metadataPropagationResolver);
-		return (allInputMetadata.size() > 0) ? allInputMetadata.get(0) : null;
+		return (allInputMetadata != null && allInputMetadata.size() > 0) ? allInputMetadata.get(0) : null;
 	}
 
 	@Override
 	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		List<MVMetadata> allOutputMetadata = getAllOutputMetadata(portIndex, metadataPropagationResolver);
-		return (allOutputMetadata.size() > 0) ? allOutputMetadata.get(0) : null;
+		return (allOutputMetadata != null && allOutputMetadata.size() > 0) ? allOutputMetadata.get(0) : null;
 	}
 
 }
