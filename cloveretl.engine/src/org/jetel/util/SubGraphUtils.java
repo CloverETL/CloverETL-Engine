@@ -33,18 +33,24 @@ public class SubGraphUtils {
 	/** Type of SubGraphOutput component. */
 	public static final String SUB_GRAPH_OUTPUT_TYPE = "SUB_GRAPH_OUTPUT";
 
+	/** Type of SubJobflowInput component. */
+	public static final String SUB_JOBFLOW_INPUT_TYPE = "SUB_JOBFLOW_INPUT";
+	/** Type of SubJobflowOutput component. */
+	public static final String SUB_JOBFLOW_OUTPUT_TYPE = "SUB_JOBFLOW_OUTPUT";
+
+
 	/**
 	 * @return true if and only if the given component type is SubGraphInput component.
 	 */
 	public static boolean isSubGraphInput(String componentType) {
-		return SUB_GRAPH_INPUT_TYPE.equals(componentType);
+		return SUB_GRAPH_INPUT_TYPE.equals(componentType) || SUB_JOBFLOW_INPUT_TYPE.equals(componentType);
 	}
 
 	/**
 	 * @return true if and only if the given component type is SubGraphOutput component.
 	 */
 	public static boolean isSubGraphOutput(String componentType) {
-		return SUB_GRAPH_OUTPUT_TYPE.equals(componentType);
+		return SUB_GRAPH_OUTPUT_TYPE.equals(componentType) || SUB_JOBFLOW_OUTPUT_TYPE.equals(componentType);
 	}
 
 }
