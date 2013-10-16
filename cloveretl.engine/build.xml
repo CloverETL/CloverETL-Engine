@@ -92,9 +92,9 @@
               select="\3" />
 	
 	<if>
-		  <isset property="suffix"/>
+		  <isset property="version.suffix"/>
 		         <then>
-		            <property name="engine.version" value="${version.major}-${version.minor}-${version.revision}-${suffix}" />
+		            <property name="engine.version" value="${version.major}-${version.minor}-${version.revision}-${version.suffix}" />
 		         </then>
 		<else>
 		        <property name="engine.version" value="${version.major}-${version.minor}-${version.revision}" />
