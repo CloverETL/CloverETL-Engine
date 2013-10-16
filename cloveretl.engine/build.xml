@@ -100,6 +100,7 @@
 		        <property name="engine.version" value="${version.major}-${version.minor}-${version.revision}" />
 		</else> 
 		</if>
+	<echo message="Engine version - ${engine.version}"/>
 		
 	<property name="test.license.version" value="${version.major}.${version.minor}"/>
 	
