@@ -16,33 +16,29 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.util.property;
+package org.jetel.util.primitive;
 
-import java.util.Properties;
-
+import org.jetel.graph.GraphParameters;
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.property.RefResFlag;
 
 /**
- * @author reichmanf (info@cloveretl.com)
+ * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 08.10.2013
+ * @created 11. 10. 2013
  */
-public class PropertiesRefResolverTest extends CloverTestCase {
-	
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-	}
-	
-	/**
-	 * issue CLO-2154
-	 */
-	public void testResolveRef_CLO2154() {
-		String path = "C:\\Users\\user/CloverETL/sandboxes/test";
-		Properties properties = new Properties();
+public class TypedPropertiesTest extends CloverTestCase {
 
-		PropertyRefResolver propertyRefResolver = new PropertyRefResolver(properties);
-		assertEquals("C:\\Users\\user/CloverETL/sandboxes/test", propertyRefResolver.resolveRef(path));
+	public void test() {
+		GraphParameters graphParameters = new GraphParameters();
+		graphParameters.addGraphParameter("a", "valueA");
+		graphParameters.addGraphParameter("b", "${a} valueB");
+		graphParameters.addGraphParameter("c", "${a} \\user");
+		
+		TypedProperties properties = graphParameters.asProperties();
+		assertEquals("valueA valueB", properties.getStringProperty("b"));
+		assertEquals("valueA \\user", properties.getStringProperty("c", null, RefResFlag.SPEC_CHARACTERS_OFF));
 	}
+	
 }

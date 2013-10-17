@@ -298,6 +298,11 @@ public abstract class IAuthorityProxy {
 	public abstract RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext);
 	
 	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
+	
+	/**
+	 * Checks whether profiler database to store profiler results is available.
+	 */
+	public abstract boolean isProfilerResultsDataSourceSupported();
 
 	public abstract DataSource getProfilerResultsDataSource();
 	

@@ -198,13 +198,21 @@ public class TypedProperties extends Properties {
     }
 
     private String resolvePropertyReferences(String s, RefResFlag refResFlag) {
-    	if(propertyRefResolver != null && s != null) {
-    		return propertyRefResolver.resolveRef(s, refResFlag);
-    	} else {
-    		return s;
+    	if (s != null) {
+    		if (propertyRefResolver == null) {
+    			//local property reference resolver is used only if no special resolver is available
+    			s = getLocalPropertyRefResolver().resolveRef(s, refResFlag);
+    		} else {
+    			s = propertyRefResolver.resolveRef(s, refResFlag);
+    		}
     	}
+    	return s;
     }
 
+    private PropertyRefResolver getLocalPropertyRefResolver() {
+    	return new PropertyRefResolver(this);
+    }
+    
     private String resolvePropertyReferences(String s) {
     	return resolvePropertyReferences(s, null);
     }

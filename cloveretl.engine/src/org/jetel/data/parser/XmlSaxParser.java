@@ -664,6 +664,8 @@ public class XmlSaxParser {
 							fieldName = xmlCloverMap.get(attrName);
 						} else if (m_activeMapping.getExplicitCloverFields().contains(attrName)) {
 							continue; // don't do implicit mapping if clover field is used in an explicit mapping
+						} else if (m_activeMapping.getSequenceField()!=null && (m_activeMapping.getSequenceField().equals(attributeLocalName)||m_activeMapping.getSequenceField().equals(attrName))) {
+							continue; //don't do implicit mapping for fields mapped to sequence
 						}
 					}
 
@@ -1079,7 +1081,9 @@ public class XmlSaxParser {
 					} else if (m_activeMapping.getExplicitCloverFields().contains(localName) || keys.contains(localName) || keys.contains(universalName)) {
 						//if local name is mentioned in explicit mapping, we will not let code do implicit mapping for this field
 						continue;
-					}
+					} else if (m_activeMapping.getSequenceField()!=null && (m_activeMapping.getSequenceField().equals(localName) || m_activeMapping.getSequenceField().equals(universalName) ) ) {
+						continue; //don't do implicit mapping for fields mapped to sequence
+					} 
 
 					if (fieldName == null && m_activeMapping.isImplicit()) {
 						/*

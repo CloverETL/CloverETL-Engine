@@ -496,10 +496,10 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	    			preExecute();
 	    		} catch (Throwable e) {
 	    			throw new ComponentNotReadyException(this, "Component pre-execute initialization failed.", e);
+	    		} finally {
+		    		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
+		    		executeBarrier.await();
 	    		}
-	
-	    		//waiting for other nodes in the current phase - first all pre-execution has to be done at all nodes
-	    		executeBarrier.await();
         	}
     		
     		//execute() invocation
@@ -606,11 +606,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 					//interrupt main node thread
 					nodeThread.interrupt();
 					//interrupt all child threads if any
-					for (Thread childThread : getChildThreads()) {
-						if (logger.isDebugEnabled()) {
-							logger.debug("trying to interrupt child thread " + childThread);
+					synchronized (childThreads) {
+						for (Thread childThread : childThreads) {
+							if (logger.isDebugEnabled()) {
+								logger.debug("trying to interrupt child thread " + childThread);
+							}
+							childThread.interrupt();
 						}
-						childThread.interrupt();
 					}
 					//wait some time for graph result
 					try {
@@ -1300,7 +1302,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @param childThread
      */
     public void registerChildThread(Thread childThread) {
-    	childThreads.add(childThread);
+    	if (runIt) {
+    		//new child thread can be registered only for running components
+    		childThreads.add(childThread);
+    	} else {
+    		throw new JetelRuntimeException("New component's child thread cannot be registered. Component has been already finished.");
+    	}
     }
 
     /**
@@ -1310,7 +1317,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @param childThreads
      */
     protected void registerChildThreads(List<Thread> childThreads) {
-    	this.childThreads.addAll(childThreads);
+    	if (runIt) {
+    		//new child thread can be registered only for running components
+    		this.childThreads.addAll(childThreads);
+    	} else {
+    		throw new JetelRuntimeException("New component's child threads cannot be registered. Component has been already finished.");
+    	}
     }
 
     /**
