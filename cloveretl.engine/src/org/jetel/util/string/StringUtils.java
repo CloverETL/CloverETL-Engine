@@ -58,7 +58,7 @@ public class StringUtils {
 	// quoting characters
 	public final static char QUOTE_CHAR = '\'';
 	public final static char DOUBLE_QUOTE_CHAR = '"';
-	public final static String ILLICIT_CHAR_REPLACEMENT = "_";
+	public final static String ILLICIT_CHAR_REPLACEMENT = "_"; //$NON-NLS-1$
 
 	public final static char DECIMAL_POINT = '.';
 	public final static char EXPONENT_SYMBOL = 'e';
@@ -72,19 +72,20 @@ public class StringUtils {
 
 	private final static int SEQUENTIAL_TRANLATE_LENGTH = 16;
 
-    private static final String HEX_STRING_ENCODING = "ISO-8859-1";
-    private static final String HEX_STRING_LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String HEX_STRING_ENCODING = "ISO-8859-1"; //$NON-NLS-1$
+    private static final String HEX_STRING_LINE_SEPARATOR = System.getProperty("line.separator"); //$NON-NLS-1$
     private static final int HEX_STRING_BYTES_PER_LINE = 16;
 
     private static Pattern delimiterPattern;
 	
-	public final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*";
+	public final static String OBJECT_NAME_PATTERN = "[_A-Za-z]+[_A-Za-z0-9]*"; //$NON-NLS-1$
+	public final static String GRAPH_NAME_PATTERN = "[^\\\\]+"; //$NON-NLS-1$
 	
-	private final static String INVALID_CHARACTER_CLASS = "[^_A-Za-z0-9]";
-	private final static Pattern INVALID_CHAR = Pattern.compile(INVALID_CHARACTER_CLASS + "{1}");
-	private final static Pattern LEADING_INVALID_SUBSTRING = Pattern.compile("^" + INVALID_CHARACTER_CLASS + "+");
-	private final static Pattern TRAILING_INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+$");
-	private final static Pattern INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+");
+	private final static String INVALID_CHARACTER_CLASS = "[^_A-Za-z0-9]"; //$NON-NLS-1$
+	private final static Pattern INVALID_CHAR = Pattern.compile(INVALID_CHARACTER_CLASS + "{1}"); //$NON-NLS-1$
+	private final static Pattern LEADING_INVALID_SUBSTRING = Pattern.compile("^" + INVALID_CHARACTER_CLASS + "+");  //$NON-NLS-1$//$NON-NLS-2$
+	private final static Pattern TRAILING_INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+$"); //$NON-NLS-1$
+	private final static Pattern INVALID_SUBSTRING = Pattern.compile(INVALID_CHARACTER_CLASS + "+"); //$NON-NLS-1$
 	
 	private static final int MAX_OBJECT_NAME_LENGTH = 250;
 	
@@ -983,7 +984,10 @@ public class StringUtils {
 	 * @return <code>true</code> if name is a valid graph name, <code>false</code> otherwise.
 	 */
 	public static boolean isValidGraphName(CharSequence name) {
-		return (name != null);
+		if (name == null) {
+			return false;
+		}
+		return name.toString().matches(GRAPH_NAME_PATTERN);
 	}
 	
 	/**

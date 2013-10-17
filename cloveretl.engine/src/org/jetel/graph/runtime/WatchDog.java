@@ -171,13 +171,15 @@ public class WatchDog implements Callable<Result>, CloverPost {
 	@Override
 	public Result call() {
 		CURRENT_PHASE_LOCK.lock();
-		
 		String originalThreadName = null;
 
 		//we have to register current watchdog's thread to context provider - from now all 
 		//ContextProvider.getGraph() invocations return proper transformation graph
 		Context c = ContextProvider.registerGraph(graph);
 		try {
+			if (watchDogStatus == Result.ABORTED) { //graph has been aborted before real execution
+				return watchDogStatus;
+			}
 			
 			//thread context classloader is preset to a reasonable classloader
 			//this is just for sure, threads are recycled and no body can guarantee which context classloader remains preset
@@ -526,7 +528,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 			CURRENT_PHASE_LOCK.unlock();
 			return;
 		}
+		Object oldMDCRunId = null;
 		try {
+			//update MDC for current thread to route logging message to correct logging destination
+			oldMDCRunId = MDC.get("runId");
+			MDC.put("runId", runtimeContext.getRunId());
+			
 			//if the phase is running broadcast all nodes in the phase they should be aborted
 			if (watchDogStatus == Result.RUNNING) { 
 		        watchDogStatus = Result.ABORTED;
@@ -550,6 +557,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					cloverJMX.notifyAll();
 				}
 			}
+		} catch (RuntimeException e) {
+			throw new JetelRuntimeException("Graph abort failed.", e);
 		} finally {
 			synchronized (ABORT_MONITOR) {
 				CURRENT_PHASE_LOCK.unlock();
@@ -565,6 +574,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 					} catch (InterruptedException ignore) {	}// catch
 				}// while
 			}// synchronized
+
+			//rollback MDC
+			MDC.remove("runId");
+			if (oldMDCRunId != null) {
+				MDC.put("runId", oldMDCRunId);
+			}
 		}// finally
 	}
 
