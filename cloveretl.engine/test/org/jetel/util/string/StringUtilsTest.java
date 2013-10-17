@@ -198,6 +198,14 @@ public class StringUtilsTest extends CloverTestCase {
 
 		assertEquals(controlString2, tmp);
 
+		assertEquals(";", StringUtils.stringToSpecChar("\\u003B"));
+		assertEquals("\\", StringUtils.stringToSpecChar("\\"));
+		assertEquals("\\u", StringUtils.stringToSpecChar("\\u"));
+		assertEquals("a\\", StringUtils.stringToSpecChar("a\\"));
+		assertEquals("\\a", StringUtils.stringToSpecChar("\\a"));
+		assertEquals("\\u00XX", StringUtils.stringToSpecChar("\\u00XX"));
+		assertEquals(";a", StringUtils.stringToSpecChar("\\u003ba"));
+		assertEquals("b;a", StringUtils.stringToSpecChar("b\\u003ba"));
 	}
 
 	/**

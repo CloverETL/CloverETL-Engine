@@ -31,14 +31,18 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
+import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
@@ -58,6 +62,9 @@ import org.jetel.util.string.StringUtils;
  * @created Jul 11, 2008
  */
 public abstract class IAuthorityProxy {
+
+	protected final static Log logger = LogFactory.getLog(IAuthorityProxy.class);
+	
 	/* This authority proxy is available all the time. */
 	private static IAuthorityProxy defaultProxy;
 	
@@ -291,6 +298,11 @@ public abstract class IAuthorityProxy {
 	public abstract RunStatus executeProfilerJobAsync(String profilerJobUrl, GraphRuntimeContext runtimeContext);
 	
 	public abstract RunStatus executeProfilerJobSync(String profilerJobUrl, GraphRuntimeContext runtimeContext, Long timeout);
+	
+	/**
+	 * Checks whether profiler database to store profiler results is available.
+	 */
+	public abstract boolean isProfilerResultsDataSourceSupported();
 
 	public abstract DataSource getProfilerResultsDataSource();
 	
@@ -534,6 +546,18 @@ public abstract class IAuthorityProxy {
 
 	public final File newTempFile(String label, int allocationHint) throws TempFileCreationException {
 		return newTempFile(label, null, allocationHint);
+	}
+	
+	protected void logNewTempFile(File newTempFile) {
+		Node component = ContextProvider.getNode();
+		TransformationGraph graph = ContextProvider.getGraph();
+		if (component != null && graph != null) {
+			logger.trace("Component " + component + " from graph " + graph + " acquires new temporary file " + newTempFile);
+		} else if (graph != null) {
+			logger.trace("Graph " + graph + " acquires new temporary file " + newTempFile);
+		} else {
+			logger.trace("New temporary file created " + newTempFile);
+		}
 	}
 	
 	/**
