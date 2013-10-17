@@ -217,6 +217,83 @@ public class StringUtils {
 
         return stringBuilder.toString();
     }
+    
+    /**
+	 * Converts a string into its HEX representation (that can be used for display).
+	 *
+	 * @param string the string to be converted
+	 * @param charsetName 
+	 * @return the string in HEX mode
+	 *
+	 * @throws NullPointerException if the string is <code>null</code>
+	 * @throws IllegalArgumentException if charsetName is unsupported
+	 *
+	 * @since 17th October 2013
+	 */
+    public static String stringToHexString(String string, String charsetName) {
+        if (string == null) {
+            throw new NullPointerException("string");
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        byte[] stringBytes = null;
+        
+        try {
+            stringBytes = string.getBytes(charsetName);
+        } catch (UnsupportedEncodingException exception) {
+        	throw new IllegalArgumentException("Unsupported charsetName " + charsetName);
+        }
+
+        int lineSpacesForNextRow = 0;//count of spaces added to beginning of the row (if previous char is greater than one byte)
+        int stringPosition = 0;//current absolute position within given string parameter
+        for (int i = 0; i < stringBytes.length; i += HEX_STRING_BYTES_PER_LINE) {
+            stringBuilder.append(String.format("%1$08X:  ", i));
+
+            int lineLength = Math.min(HEX_STRING_BYTES_PER_LINE, stringBytes.length - i);
+
+            for (int j = 0; j < lineLength; j++) {
+                stringBuilder.append(String.format("%1$02X ", stringBytes[i + j]));
+            }
+
+            for (int j = lineLength; j < HEX_STRING_BYTES_PER_LINE; j++) {
+                stringBuilder.append("   ");
+            }
+
+            stringBuilder.append(' ');
+            
+            int j = lineSpacesForNextRow;
+            if(lineSpacesForNextRow>0) {//add spaces from previous row
+            	for(int l=0; l<lineSpacesForNextRow;l++) {
+            		stringBuilder.append(' ');
+            	}
+            	lineSpacesForNextRow = 0;
+            }
+            byte[] charBytes = null;
+            while(j<lineLength) {
+            	String currentCharacter = String.valueOf(string.charAt(stringPosition++));
+            	stringBuilder.append(!Character.isWhitespace(currentCharacter.charAt(0)) ? currentCharacter : ' ');
+            	try {
+            		charBytes = currentCharacter.getBytes(charsetName);
+            		j++;
+            		if(charBytes.length>1) {
+            			for(int k=0; k<charBytes.length-1; k++) {
+            				if(j<lineLength) {
+            					stringBuilder.append(' ');
+            				} else {
+            					lineSpacesForNextRow++;
+            				}
+            				j++;
+            			}
+            		}
+	            } catch (UnsupportedEncodingException exception) {
+	            	throw new IllegalArgumentException("Unsupported charsetName " + charsetName);
+	            }
+            }
+            stringBuilder.append(HEX_STRING_LINE_SEPARATOR);
+        }
+
+        return stringBuilder.toString();
+    }
 
 	//FIXME Move to Utils ---------------------------
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
