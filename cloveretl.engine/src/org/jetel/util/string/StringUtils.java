@@ -803,17 +803,28 @@ public class StringUtils {
 					copy.append('\b');
 					break;
 				case 'u':	// '\u003B' will be converted to ';'
-					if (i + 5 > controlString.length()) {
-						throw new IllegalArgumentException("Invalid unicode character");
-					}
-					String hex = controlString.subSequence(i + 1, i + 5).toString();
-					char[] chars;
-					try {
-						chars = Character.toChars(Integer.parseInt(hex, 16));
-						copy.append(chars);
-						i += 4;
-					} catch (NumberFormatException e) {
-						throw new IllegalArgumentException("Invalid unicode character \\u" + hex);
+					if (i + 4 < controlString.length()) {
+						String hex = controlString.subSequence(i + 1, i + 5).toString();
+						char[] chars;
+						try {
+							chars = Character.toChars(Integer.parseInt(hex, 16));
+							copy.append(chars);
+							i += 4;
+						} catch (NumberFormatException e) {
+							if (lenient) {
+								copy.append('\\');
+								copy.append('u');
+							} else {
+								throw new IllegalArgumentException("Invalid unicode character \\u" + hex);
+							}
+						}
+					} else {
+						if (lenient) {
+							copy.append('\\');
+							copy.append('u');
+						} else {
+							throw new IllegalArgumentException("Invalid unicode character");
+						}
 					}
 					break;
 				default:
@@ -832,6 +843,13 @@ public class StringUtils {
 				} else {
 					copy.append(character);
 				}
+			}
+		}
+		if (isBackslash) {
+			if (lenient) {
+				copy.append('\\');
+			} else {
+				throw new IllegalArgumentException("Invalid escape sequence: \\");
 			}
 		}
 		return copy.toString();
