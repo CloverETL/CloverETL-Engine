@@ -244,12 +244,12 @@ public final class TransformationGraph extends GraphElement {
 	/**
 	 *  Gets the IConnection object asssociated with the name provided
 	 *
-	 * @param  name  The IConnection name under which the connection was registered.
+	 * @param  id  The IConnection ID under which the connection was registered.
 	 * @return       The IConnection object (if found) or null
 	 * @since        October 1, 2002
 	 */
-	public IConnection getConnection(String name) {
-		return  connections.get(name);
+	public IConnection getConnection(String id) {
+		return  connections.get(id);
 	}
 
 	/**

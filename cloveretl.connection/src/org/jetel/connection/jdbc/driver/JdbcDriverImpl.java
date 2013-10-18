@@ -174,7 +174,7 @@ public class JdbcDriverImpl implements JdbcDriver {
     }
 
     private void prepareClassLoader() throws ComponentNotReadyException {
-    	classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, null, true);
+    	classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, ContextProvider.getGraph().getRuntimeContext().getClassLoader(), true);
     }
     
     private void prepareDriver() throws ComponentNotReadyException {

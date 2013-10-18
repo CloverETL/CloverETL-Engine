@@ -564,6 +564,7 @@ public abstract class TreeWriter extends Node {
 				portData.free();
 			}
 		}
+		writer = null;
 	}
 
 	public void setFileUrl(String fileURL) {
