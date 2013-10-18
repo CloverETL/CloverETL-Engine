@@ -1424,7 +1424,7 @@
 	      <property category="basic" displayName="Graph parameters to pass" modifiable="true" name="paramsToPass" nullable="true">
 	        <singleType name="string" />
 	      </property>
-	      <property category="basic" displayName="Alternative JVM command line" modifiable="true" name="alternativeJavaCmdLine" nullable="true">
+	      <property category="basic" displayName="Alternative JVM command line" modifiable="true" name="alternativeJavaCmdLine" nullable="true" defaultHint="java -cp">
 	        <singleType name="string" />
 	      </property>
 	      <property category="advanced" displayName="Log file URL" modifiable="true" name="logFile" nullable="true">
