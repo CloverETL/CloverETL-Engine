@@ -133,7 +133,7 @@ public class MVEngineComponent implements MVComponent {
 	
 	@Override
 	public int hashCode() {
-		return engineComponent.hashCode();
+		return engineComponent.hashCodeIdentity();
 	}
 	
 	@Override
@@ -141,7 +141,7 @@ public class MVEngineComponent implements MVComponent {
 		if (!(obj instanceof MVEngineComponent)) { 
 			return false;
 		}
-		return engineComponent.equals(((MVEngineComponent) obj).engineComponent);
+		return engineComponent == ((MVEngineComponent) obj).engineComponent;
 	}
 	
 }

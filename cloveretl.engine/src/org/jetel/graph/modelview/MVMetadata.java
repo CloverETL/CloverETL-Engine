@@ -59,4 +59,9 @@ public interface MVMetadata {
 	 */
 	public int getPriority();
 	
+	/**
+	 * Sets metadata identifier.
+	 */
+	public void setId(String id);
+	
 }

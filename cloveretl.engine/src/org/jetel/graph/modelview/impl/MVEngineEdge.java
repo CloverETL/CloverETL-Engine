@@ -75,7 +75,7 @@ public class MVEngineEdge implements MVEdge {
 
 	@Override
 	public int hashCode() {
-		return engineEdge.hashCode();
+		return engineEdge.hashCodeIdentity();
 	}
 	
 	@Override
@@ -83,7 +83,7 @@ public class MVEngineEdge implements MVEdge {
 		if (!(obj instanceof MVEngineEdge)) { 
 			return false;
 		}
-		return engineEdge.equals(((MVEngineEdge) obj).engineEdge);
+		return engineEdge == ((MVEngineEdge) obj).engineEdge;
 	}
 
 }

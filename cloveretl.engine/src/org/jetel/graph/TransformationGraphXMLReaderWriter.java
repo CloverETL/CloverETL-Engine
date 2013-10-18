@@ -233,6 +233,9 @@ public class TransformationGraphXMLReaderWriter {
     private GraphRuntimeContext runtimeContext;
     
     private boolean strictParsing = true;
+
+    /** Should be graph pre-processing performed */
+    private boolean graphPreProcessing = true;
     
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
@@ -424,8 +427,10 @@ public class TransformationGraphXMLReaderWriter {
 			}
 			
 			//pre-process the graph - automatic metadata propagation is performed
-			GraphPreProcessor graphPreProcessor = new GraphPreProcessor(graph);
-			graphPreProcessor.preProcess();
+			if (graphPreProcessing) {
+				GraphPreProcessor graphPreProcessor = new GraphPreProcessor(graph);
+				graphPreProcessor.preProcess();
+			}
 
 	        return graph;
 		} finally {
@@ -1123,6 +1128,13 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	public void setStrictParsing(boolean strictParsing) {
 		this.strictParsing = strictParsing;
+	}
+
+	/**
+	 * Graph pre-processing (metadata propagation) can be turned off by this method.
+	 */
+	public void setGraphPreProcessing(boolean graphPreProcessing) {
+		this.graphPreProcessing = graphPreProcessing;
 	}
 
 	@Deprecated

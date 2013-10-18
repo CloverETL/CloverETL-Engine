@@ -33,13 +33,15 @@ public class MVEngineMetadata implements MVMetadata {
 
 	private DataRecordMetadata metadata;
 	
+	private int priority;
+	
 	public MVEngineMetadata(DataRecordMetadata metadata) {
 		this(metadata, LOW_PRIORITY);
 	}
 	
 	public MVEngineMetadata(DataRecordMetadata metadata, int priority) {
 		this.metadata = metadata;
-		this.metadata.setPriority(priority);
+		this.priority = priority;
 	}
 
 	@Override
@@ -49,7 +51,12 @@ public class MVEngineMetadata implements MVMetadata {
 	
 	@Override
 	public int getPriority() {
-		return metadata.getPriority();
+		return priority;
+	}
+	
+	@Override
+	public void setId(String id) {
+		metadata.setId(id);
 	}
 	
 }

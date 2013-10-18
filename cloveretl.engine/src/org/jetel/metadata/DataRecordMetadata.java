@@ -148,12 +148,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private DataRecordNature nature = null;
 	
 	/**
-	 * Priority is used only for automatic metadata propagation.
-	 * This attribute is consequence of engine-gui model hell. 
-	 */
-	private int priority;
-	
-	/**
 	 * @deprecated use {@link DataRecordParsingType#DELIMITED} instead
 	 */
 	@Deprecated
@@ -1740,14 +1734,6 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 		
 		return recordMetadata;
-	}
-
-	public int getPriority() {
-		return priority;
-	}
-
-	public void setPriority(int priority) {
-		this.priority = priority;
 	}
 
 }
