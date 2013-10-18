@@ -1362,4 +1362,9 @@ public final class TransformationGraph extends GraphElement {
 		this.guiVersion = guiVersion;
 	}
 
+	@Override
+	public String toString() {
+		return getId() + ":" + getRuntimeContext().getRunId();
+	}
+	
 }

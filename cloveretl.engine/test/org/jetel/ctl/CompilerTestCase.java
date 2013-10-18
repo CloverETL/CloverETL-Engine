@@ -2064,6 +2064,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 	public void test_type_string() {
 		doCompile("test_type_string");
+
+		check("literalParserTest1", "some // string");
+		check("literalParserTest2", "some /* string */");
+		check("literalParserTest3", "some \" string");
+		check("literalParserTest4", "some \\ string");
+		check("literalParserTest5", "some \\\" string");
+		check("literalParserTest6", "some \\\\\" string");
+		check("literalParserTest7", "some \\\\\\\" string");
+		
 		check("i","0");
 		check("helloEscaped", "hello\\nworld");
 		check("helloExpanded", "hello\nworld");
@@ -2079,7 +2088,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("empty", "");
 		check("def", "");
 		checkNull("varWithNullInitializer");
-}
+		
+		doCompileExpectError("string promenna = \"^\\..*\"; function integer transform() { return 0;}", "test_type_string", Arrays.asList("Invalid escape sequence: \\."));
+	}
 	
 	public void test_type_string_long() {
 		int length = 1000;
@@ -6445,6 +6456,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	private void compareDecimals(String variableName, BigDecimal expected) {
+		BigDecimal actual = (BigDecimal) getVariable(variableName);
+		compareDecimals(expected, actual);
+	}
+	
+	private void compareDecimals(BigDecimal expected, BigDecimal actual) {
+		assertTrue("Expected: " + expected + ", actual: " + actual, expected.compareTo(actual) == 0);
+	}
+	
 	/*
 	 * The equals() method also takes the scale into account,
 	 * CTL uses compareTo() instead.
@@ -6452,7 +6472,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	private void compareDecimals(List<BigDecimal> expected, List<BigDecimal> actual) {
 		assertEquals(expected.size(), actual.size());
 		for (int i = 0; i < actual.size(); i++) {
-			assertTrue("Expected: " + expected.get(i) + ", actual: " + actual.get(i), expected.get(i).compareTo(actual.get(i)) == 0);
+			compareDecimals(expected.get(i), actual.get(i));
 		}
 	}
 	
@@ -6463,9 +6483,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		
 		check("intResult", Arrays.asList(2l, 3l));
 		check("longResult", Arrays.asList(2l, 3l));
-		check("doubleResult", Arrays.asList(2l, 4l));
+		check("doubleResult", Arrays.asList(2l, 3l, 4l));
 		//CLO-1835
-//		check("decimalResult", Arrays.asList(new BigDecimal("2"), new BigDecimal("4")));
+		check("decimalResult", Arrays.asList(new BigDecimal("2"), new BigDecimal("3"), new BigDecimal("4")));
 		
 		// negative precision means the number of places after the decimal point
 		// positive precision before the decimal point
@@ -6498,7 +6518,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				1234567.123d, 1234567.1235d, 1234567.12346d, 1234567.123457d, 1234567.1234567d
 				);
 		check("double2Result", expectedDouble);
-}
+		
+		check("documentationExample1", 100);
+		check("documentationExample2", 123);
+		check("documentationExample3", 123.12d);
+	}
 	
 	public void test_mathlib_round_expect_error(){
 		try {
@@ -6558,6 +6582,89 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	public void test_mathlib_roundHalfToEven() {
+		doCompile("test_mathlib_roundHalfToEven");
+		check("round1", new BigDecimal(-4));
+		
+		check("intResult", Arrays.asList(new BigDecimal(2), new BigDecimal(3)));
+		check("longResult", Arrays.asList(new BigDecimal(2), new BigDecimal(3)));
+		check("doubleResult", Arrays.asList(new BigDecimal(2), new BigDecimal(2), new BigDecimal(4)));
+		//CLO-1835
+		check("decimalResult", Arrays.asList(new BigDecimal(2), new BigDecimal(2), new BigDecimal(4), new BigDecimal(4), new BigDecimal(5)));
+		
+		// negative precision means the number of places after the decimal point
+		// positive precision before the decimal point
+		List<BigDecimal> expected = Arrays.asList(
+				new BigDecimal("0"),
+				new BigDecimal("1000000"),
+				new BigDecimal("1200000"),
+				new BigDecimal("1230000"),
+				new BigDecimal("1235000"), // rounded up
+				new BigDecimal("1234600"), // rounded up
+				new BigDecimal("1234570"), // rounded up
+				new BigDecimal("1234567"),
+				new BigDecimal("1234567.1"),
+				new BigDecimal("1234567.12"),
+				new BigDecimal("1234567.123"),
+				new BigDecimal("1234567.1235"), // rounded up
+				new BigDecimal("1234567.12346"), // rounded up
+				new BigDecimal("1234567.123457"), // rounded up
+				new BigDecimal("1234567.1234567")
+		);
+		//CLO-1835
+		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal2Result"));
+		//CLO-1832
+		compareDecimals("intWithPrecisionResult", new BigDecimal(1000));
+		compareDecimals("longWithPrecisionResult", new BigDecimal(123456));
+		compareDecimals("ret1", new BigDecimal(1200));
+		compareDecimals("ret2", new BigDecimal(10000));
+		compareDecimals(expected, (List<BigDecimal>) getVariable("double2Result"));
+		
+		expected = Arrays.asList(
+				new BigDecimal("44.44"), 
+				new BigDecimal("55.56"),
+				new BigDecimal("66.66"),
+				new BigDecimal("44.444"), 
+				new BigDecimal("55.556"),
+				new BigDecimal("66.666"),
+				new BigDecimal("444000"), 
+				new BigDecimal("556000"),
+				new BigDecimal("666000"),
+				new BigDecimal("4444"), 
+				new BigDecimal("5556"),
+				new BigDecimal("6666")
+		); 
+		compareDecimals(expected, (List<BigDecimal>) getVariable("decimal3result"));
+	}
+
+	public void test_mathlib_roundHalfToEven_expect_error(){
+		try {
+			doCompile("function integer transform(){decimal d = roundHalfToEven(null);return 0;}","test_mathlib_roundHalfToEven_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal input = null;decimal d = roundHalfToEven(input);return 0;}","test_mathlib_roundHalfToEven_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){integer precision = null; decimal d = roundHalfToEven(1D, precision);return 0;}","test_mathlib_roundHalfToEven_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){decimal d = roundHalfToEven(1D, null);return 0;}","test_mathlib_roundHalfToEven_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
 	public void test_mathlib_sqrt() {
 		doCompile("test_mathlib_sqrt");
 		check("sqrtPi", Math.sqrt(Math.PI));

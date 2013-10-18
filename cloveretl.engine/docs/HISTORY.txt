@@ -2,6 +2,31 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-3-5-0-M2
+------------
+
+* Secure storage of credentials
+* EXASOL connectivity
+* JSONExtract component
+* Update of MySQL JDBC driver
+* HTTPConnector should use streaming for input file
+* HTTPConnector should allow manipulating with requestContent and responseContent 
+  in byte form (now only strings are supported)
+* Better implementation of partitioning for file writers
+* round() functions with precision
+* Allow null case values
+- FIXES:
+	- Fixed length file with last field as autofilling generates errors
+	- CTL function get() for lookups should work same in compiled and interpreted mode.
+- COMPATIBILITY:
+	- Some functions from DateLib have to return null for null input, instead of throwing an exception
+	- Some functions from ConvertLib have to return null for null input, instead of throwing exception
+	- Functions ceil() and floor() return decimal instead of number for parameters of type decimal
+	- CTL2: function removeNonPrintable() incorrectly removes also all non-ASCII characters (unicode)
+	- CloverDataReader in rel-3-5 cannot read data files written by CloverDataWriter used in a jobflow in rel-3-4
+	- Fixlen data reading should be possible even without trimming
+
+
 REL-3-5-0-M1
 ------------
 

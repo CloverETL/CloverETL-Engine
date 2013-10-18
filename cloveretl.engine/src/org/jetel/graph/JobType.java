@@ -56,6 +56,15 @@ public enum JobType {
 		this.id = id;
 		this.fileType = fileType;
 	}
+
+	/** 
+	 * Getter which returns response of name() method. 
+	 * This getter is useful when the JobType is used as placeholder 
+	 * and we must explicitly specify that it should return name() not toString() 
+	 * - e.g. JSF may sometimes call toString() in some cases instead of name(). */ 
+	public String getName() {
+		return this.name();
+	}
 	
 	private JobType(String id, FileType fileType, JobType parent) {
 		this(id, fileType);
