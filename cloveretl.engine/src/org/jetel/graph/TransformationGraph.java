@@ -489,9 +489,9 @@ public final class TransformationGraph extends GraphElement {
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
-		//check whehter the job type (etlGraph vs jobflow) of the graph is same as the job type in GraphRuntimeContext 
-    	if (getJobType() != getRuntimeContext().getJobType()) {
-    		throw new JetelRuntimeException("Inconsitent runtime setup. " +
+		//check whether the job type (etlGraph vs jobflow) of the graph is same as the job type in GraphRuntimeContext 
+    	if (!getJobType().isSubType(getRuntimeContext().getJobType())) {
+    		throw new JetelRuntimeException("Inconsistent runtime setup. " +
 					"Internal graph nature (" + getJobType() + ") differs from runtime graph nature (" + getRuntimeContext().getJobType() + "). " +
 							"Probably internal graph nature does not correspond to graph file suffix.");
     	}

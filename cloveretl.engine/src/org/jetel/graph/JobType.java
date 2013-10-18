@@ -38,7 +38,9 @@ public enum JobType {
 	ETL_GRAPH("etlGraph", FileType.ETL_GRAPH),
 	/** This type represents jobflows */
 	JOBFLOW("jobflow", FileType.JOBFLOW),
-	PROFILER_JOB("profilerJob", FileType.PROFILER_JOB);
+	PROFILER_JOB("profilerJob", FileType.PROFILER_JOB),
+	SUB_GRAPH("subGraph", FileType.SUB_GRAPH, ETL_GRAPH),
+	SUB_JOBFLOW("subJobflow", FileType.SUB_JOBFLOW, JOBFLOW);
 
 	/** This type is used in case the type is not specified in different way. */
 	public static final JobType DEFAULT = ETL_GRAPH;
@@ -48,10 +50,16 @@ public enum JobType {
 	/** Associated file type. */
 	private FileType fileType;
 	
+	private JobType parent;
+	
 	private JobType(String id, FileType fileType) {
 		this.id = id;
 		this.fileType = fileType;
-		
+	}
+	
+	private JobType(String id, FileType fileType, JobType parent) {
+		this(id, fileType);
+		this.parent = parent;
 	}
 	
 	@Override
@@ -64,6 +72,10 @@ public enum JobType {
 	 */
 	public FileType getFileType() {
 		return fileType;
+	}
+	
+	public boolean isSubType(JobType parentType) {
+		return this.equals(parentType) || ((parent != null) && parent.isSubType(parentType));
 	}
 
 	/**
