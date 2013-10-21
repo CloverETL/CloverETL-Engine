@@ -19,6 +19,7 @@
 package org.jetel.graph.modelview.impl;
 
 import org.jetel.graph.Edge;
+import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVMetadata;
@@ -41,12 +42,14 @@ public class MVEngineEdge implements MVEdge {
 	
 	@Override
 	public MVComponent getReader() {
-		return new MVEngineComponent(engineEdge.getReader());
+		Node reader = engineEdge.getReader();
+		return (reader != null) ? new MVEngineComponent(reader) : null;
 	}
 
 	@Override
 	public MVComponent getWriter() {
-		return new MVEngineComponent(engineEdge.getWriter());
+		Node writer = engineEdge.getWriter();
+		return (writer != null) ? new MVEngineComponent(writer) : null;
 	}
 
 	@Override
