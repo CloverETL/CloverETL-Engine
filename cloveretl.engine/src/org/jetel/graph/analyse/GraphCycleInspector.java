@@ -179,9 +179,9 @@ public class GraphCycleInspector {
 	 * @return
 	 */
 	private void setEdgeAsBuffered(Edge edge) {
-		if (edge.getGraph().getJobType() == JobType.ETL_GRAPH) {
+		if (edge.getGraph().getJobType().isSubType(JobType.ETL_GRAPH)) {
 			edge.setEdgeType(EdgeTypeEnum.BUFFERED);
-		} else if (edge.getGraph().getJobType() == JobType.JOBFLOW) {
+		} else if (edge.getGraph().getJobType().isSubType(JobType.JOBFLOW)) {
 			edge.setEdgeType(EdgeTypeEnum.BUFFERED_FAST_PROPAGATE);
 		} else {
 			throw new JetelRuntimeException("unexpected job type " + edge.getGraph().getJobType());

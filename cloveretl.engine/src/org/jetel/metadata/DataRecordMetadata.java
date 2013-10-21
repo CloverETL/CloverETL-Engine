@@ -1484,6 +1484,10 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		return hashCode;
 	}
 
+    public int hashCodeIdentity() {
+    	return super.hashCode();
+    }
+
 	@Override
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();

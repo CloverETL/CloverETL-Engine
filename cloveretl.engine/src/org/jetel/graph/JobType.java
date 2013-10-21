@@ -103,7 +103,7 @@ public enum JobType {
 	}
 	
 	/**
-	 * Detection of job type based on file name of graph or jobflow.
+	 * Detection of job type based on file name.
 	 */
 	public static JobType fromFileName(String fileName) {
 		if (StringUtils.isEmpty(fileName)) {
@@ -117,5 +117,20 @@ public enum JobType {
 		}
 		throw new IllegalArgumentException("unknown job type associated with file name " + fileName);
 	}
-	
+
+	/**
+	 * Detection of job type based on file name extension.
+	 */
+	public static JobType fromFileExtension(String fileExtension) {
+		if (StringUtils.isEmpty(fileExtension)) {
+			return DEFAULT;
+		}
+		for (JobType jobType : values()) {
+			if (fileExtension.equalsIgnoreCase(jobType.fileType.getExtension())) {
+				return jobType;
+			}
+		}
+		throw new IllegalArgumentException("unknown job type associated with file extension " + fileExtension);
+	}
+
 }
