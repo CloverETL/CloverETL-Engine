@@ -164,7 +164,7 @@
 		<parameter id="database" value="MSSQL"/>
 		<parameter id="name" value="Microsoft SQL Server"/>
 		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
+		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.8.jar"/>
 		<parameter id="urlHint" value="jdbc:jtds:sqlserver://hostname:1433/database"/>
 		<parameter id="jdbcSpecific" value="MSSQL"/>
 	</extension>
@@ -195,7 +195,7 @@
 		<parameter id="database" value="SYBASE"/>
 		<parameter id="name" value="Sybase"/>
 		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
+		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.8.jar"/>
 		<parameter id="urlHint" value="jdbc:jtds:sybase://hostname:7100/database"/>
 		<parameter id="jdbcSpecific" value="SYBASE"/>
 	</extension>
