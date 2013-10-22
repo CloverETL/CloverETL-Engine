@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="cook-version" basedir=".">
+
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <classpath>
+      <pathelement location="ant-contrib.jar"/>
+    </classpath>
+  </taskdef>
+
+  <target name="cook-version">
+
+    <property file="../cloveretl.engine/version.properties" prefix="properties.plugin"/>
+
+    <if>
+      <or>
+	<not><isset property="plugin.version.jenkins"/></not>
+	<equals arg1="${plugin.version.jenkins}" arg2=""/>
+      </or>
+      <then>
+	<echo message="using version ${properties.plugin.version} from version.properties" />
+	<property name="plugin.version" value="${properties.plugin.version}"/>
+      </then>
+      <else>
+	<echo message="using version ${plugin.version.jenkins} from Jenkins (VERSION_NUMBER)" />
+	<property name="plugin.version" value="${plugin.version.jenkins}"/>
+      </else>
+    </if>
+
+    <if>
+      <or>
+	<not><isset property="plugin.version.suffix.jenkins"/></not>
+	<equals arg1="${plugin.version.suffix.jenkins}" arg2=""/>
+      </or>
+      <then>
+	<echo message="using version suffix ${properties.plugin.version.suffix} from version.properties" />
+	<property name="plugin.version.suffix" value="${properties.plugin.version.suffix}"/>
+      </then>
+      <else>
+	<echo message="using version suffix ${plugin.version.suffix.jenkins} from Jenkins (VERSION_SUFFIX)" />
+	<property name="plugin.version.suffix" value="${plugin.version.suffix.jenkins}"/>
+      </else>
+    </if>
+
+    <if>
+      <or>
+	<not><isset property="plugin.version.product.jenkins"/></not>
+	<equals arg1="${plugin.version.product.jenkins}" arg2=""/>
+      </or>
+      <then>
+	<echo message="using product version ${properties.plugin.version.product} from version.properties" />
+	<property name="plugin.version.product" value="${properties.plugin.version.product}" />
+      </then>
+      <else>
+	<echo message="using product version ${plugin.version.product.jenkins} from Jenkins (VERSION_PRODUCT)" />
+        <property name="plugin.version.product" value="${plugin.version.product.jenkins}" />
+      </else>
+    </if>
+
+    <propertyregex property="plugin.version.major"
+			input="${plugin.version}"
+			regexp="(\d+)\.(\d+)(?:\.(\d+))?"
+			select="\1" />
+    <propertyregex property="plugin.version.minor"
+			input="${plugin.version}"
+			regexp="(\d+)\.(\d+)(?:\.(\d+))?"
+			select="\2" />
+    <propertyregex property="plugin.version.revision.tmp"
+			input="${plugin.version}"
+			regexp="(\d+)\.(\d+)(?:\.(\d+))?"
+			select="\3" />
+
+  	<!-- for the documentation -->
+   	<property name="version.docs" value="${plugin.version.major}.${plugin.version.minor}"/>
+
+    <!-- for license generator -->
+    <property name="majorVersion" value="${plugin.version.major}"/>
+    <property name="minorVersion" value="${plugin.version.minor}"/>
+
+
+    <if><equals arg1="${plugin.version.revision.tmp}" arg2=""/>
+      <then><property name="plugin.version.revision" value="0"/></then>
+      <else><property name="plugin.version.revision" value="${plugin.version.revision.tmp}"/></else>
+    </if>
+	
+    <property name="plugin.version.nsis" value="${plugin.version.major}.${plugin.version.minor}.${plugin.version.revision}.${build.number}"/>
+
+    <property name="plugin.version.full" value="${plugin.version.major}.${plugin.version.minor}.${plugin.version.revision}.${build.number}${plugin.version.suffix}" />
+    
+    <echo message="plugin.version.full ${plugin.version.full}" />
+
+    <propertyregex property="plugin.version.dash" 
+        			input="${plugin.version.full}" 
+       				regexp="\." 
+        			replace="_" 
+        			global="true" />
+      
+    <echo message="plugin.version.full.dash ${plugin.version.dash}" />
+      	
+    <if><isset property="update.dir.name"/>
+       <then>
+	    <property name="update.site.destination" location="${basedir}/${update.dir.name}"/>
+       </then>
+       <else>
+	    <property name="update.dir.name" value="${plugin.version.full}"/>
+	    <property name="update.site.destination" location="${releases.dir}/${update.dir.name}"/>
+       </else>
+    </if>
+      
+    <echo message="update.site.destination ${update.site.destination}" />
+
+    <echo message="plugin.version.major ${plugin.version.major} plugin.version.minor ${plugin.version.minor} plugin.version.revision ${plugin.version.revision}" />
+    <echo message="plugin.version.suffix ${plugin.version.suffix} plugin.version.full ${plugin.version.full}" />
+    <echo message="plugin.version.nsis ${plugin.version.nsis} plugin.version.product ${plugin.version.product}" />
+
+  </target>
+
+	
+	<target name="replace-version" depends="cook-version">
+	<if>
+		<available file="${doc.dir}/${manual}"/>
+		<then>
+		    <echo>Replacing the version to ${version.docs}</echo>
+		    
+		        <replaceregexp byline="true">
+		            <regexp pattern="([0-9]\.[0-9]).x release."/>
+		            <substitution expression="${version.docs}.x release."/>
+		            <fileset dir="${doc.dir}">
+		                <include name="${manual}"/>
+		            </fileset>
+		        </replaceregexp>
+		</then>
+			<else>
+				<echo> No file avalaible containing version to replace. </echo>
+			</else>
+	</if>		
+	</target>
+
+</project>
