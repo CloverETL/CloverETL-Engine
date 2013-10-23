@@ -298,6 +298,11 @@ public class DBFDataReader extends Node {
 		reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	/**
 	 *  Description of the Method
 	 *
