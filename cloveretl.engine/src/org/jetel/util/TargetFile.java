@@ -526,6 +526,13 @@ public class TargetFile {
      * @throws IOException
      */
     public void close() throws IOException {
+    	
+    	/*
+    	 * throw away references to dictionary values to prevent memory leak (MULE-84)
+    	 */
+    	dictOutArray = null;
+    	dictObjectArray = null;
+    	
         formatter.close();
     }
 
