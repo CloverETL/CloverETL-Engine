@@ -33,6 +33,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import javax.management.InstanceAlreadyExistsException;
+import javax.management.InstanceNotFoundException;
 import javax.management.MBeanRegistrationException;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -159,6 +160,12 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		if(provideJMX) {
 			try {
 				mbs.unregisterMBean(jmxObjectName);
+			} catch (InstanceNotFoundException e) {
+				if (logger.isDebugEnabled()) {
+					logger.info("JMX notification listener not found", e);
+				} else {
+					logger.info("JMX notification listener not found");
+				}
 			} catch (Exception e) {
 				logger.error("JMX error - ObjectName cannot be unregistered.", e);
 			}
