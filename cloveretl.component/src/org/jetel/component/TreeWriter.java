@@ -572,6 +572,11 @@ public abstract class TreeWriter extends Node {
 		writer = null;
 	}
 
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	public void setFileUrl(String fileURL) {
 		this.fileURL = fileURL;
 	}

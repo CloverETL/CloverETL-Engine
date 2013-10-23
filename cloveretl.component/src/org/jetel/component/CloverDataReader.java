@@ -400,6 +400,11 @@ public class CloverDataReader extends Node {
 		}
 	}
 	
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	@Deprecated
 	public void setStartRecord(int startRecord){
 		setSkipRows(startRecord);

@@ -444,6 +444,11 @@ public class StructureWriter extends Node {
 			}
 	}
 	
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	/**
 	 * Creates and initializes lookup table.
 	 * 
