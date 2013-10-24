@@ -92,7 +92,7 @@ public class GraphParameters {
 	public GraphParameter addGraphParameter(String name, String value) {
 		GraphParameter graphParameter = new GraphParameter(name, value);
 		addGraphParameter(graphParameter);
-		return graphParameter;
+		return getGraphParameter(name);
 	}
 
 	/**
@@ -146,7 +146,24 @@ public class GraphParameters {
 			}
 		}
 	}
-	
+
+	/**
+	 * Adds new graph parameters based on give properties. Values of existing
+	 * parameters are overridden.
+	 * @param properties
+	 */
+	public void addPropertiesOverride(Properties properties) {
+		if (properties != null) {
+			for (String propertyName : properties.stringPropertyNames()) {
+				if (hasGraphParameter(propertyName)) {
+					getGraphParameter(propertyName).setValue(properties.getProperty(propertyName));
+				} else {
+					addGraphParameter(propertyName, properties.getProperty(propertyName));
+				}
+			}
+		}
+	}
+
 	/**
 	 * @return content of this container in properties form
 	 */
