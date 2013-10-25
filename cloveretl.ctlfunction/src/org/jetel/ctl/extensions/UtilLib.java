@@ -30,6 +30,7 @@ import org.jetel.ctl.data.TLTypeEnum;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
@@ -44,6 +45,8 @@ public class UtilLib extends TLFunctionLibrary {
     		"randomUUID".equals(functionName) ? new RandomUuidFunction() : 
            	"getParamValue".equals(functionName) ? new GetParamValueFunction() :
         	"getParamValues".equals(functionName) ? new GetParamValuesFunction() :
+           	"getRawParamValue".equals(functionName) ? new GetRawParamValueFunction() :
+           	"getRawParamValues".equals(functionName) ? new GetRawParamValuesFunction() :
         	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
     		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
     		"hashCode".equals(functionName)	? new HashCodeFunction() :	null; 
@@ -136,6 +139,31 @@ public class UtilLib extends TLFunctionLibrary {
     	}
     }
 
+    // GET RAW PARAM VALUE
+	@TLFunctionAnnotation("Returns the unresolved value of a graph parameter")
+    public static String getRawParamValue(TLFunctionCallContext context, String paramName) {
+		if (!StringUtils.isEmpty(paramName)) {
+			TransformationGraph graph = context.getGraph();
+			if (graph != null) {
+				return graph.getGraphParameters().getGraphParameter(paramName).getValue();
+			}
+		}
+		return null;
+    }
+    
+    class GetRawParamValueFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+			String paramName = stack.popString();
+    		stack.push(getRawParamValue(context, paramName));
+    	}
+    }
+
     // GET PARAM VALUES
     @SuppressWarnings("unchecked")
 	@TLFunctionAnnotation("Returns an unmodifiable map of resolved values of graph parameters")
@@ -168,7 +196,40 @@ public class UtilLib extends TLFunctionLibrary {
     		stack.push(getParamValues(context));
     	}
     }
+
+    // GET RAW PARAM VALUES
+    @SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns an unmodifiable map of unresolved values of graph parameters")
+    public static Map<String, String> getRawParamValues(TLFunctionCallContext context) {
+		return ((TLObjectCache<Map<String, String>>) context.getCache()).getObject();
+    }
     
+    @TLFunctionInitAnnotation()
+    public static final void getRawParamValuesInit(TLFunctionCallContext context) {
+    	TransformationGraph graph = context.getGraph();
+		
+		Map<String, String> map = new HashMap<String, String>();
+		if (graph != null) {
+			for (GraphParameter param : graph.getGraphParameters().getAllGraphParameters()) {
+				map.put(param.getName(), param.getValue());
+			}
+		}
+		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
+    }
+
+    class GetRawParamValuesFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    		getRawParamValuesInit(context);
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		stack.push(getRawParamValues(context));
+    	}
+    }
+
     // GET JAVA PROPERTIES
     /*
      * Uses unchecked conversion - if someone obtains
