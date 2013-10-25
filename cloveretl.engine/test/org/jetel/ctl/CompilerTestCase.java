@@ -8882,7 +8882,32 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("params", params);
 		check("ret1", null);
 		check("ret2", null);
-	
+	}
+
+	public void test_utillib_getRawParamValues() {
+		doCompile("test_utillib_getRawParamValues");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("PROJECT", ".");
+		params.put("DATAIN_DIR", "${PROJECT}/data-in");
+		params.put("COUNT", "`1+2`");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
+		check("params", params);
+		check("ret1", null);
+		check("ret2", null);
+		check("ret3", null);
+	}
+
+	public void test_utillib_getRawParamValue() {
+		doCompile("test_utillib_getRawParamValue");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("PROJECT", ".");
+		params.put("DATAIN_DIR", "${PROJECT}/data-in");
+		params.put("COUNT", "`1+2`");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
+		params.put("NONEXISTING", null);
+		check("params", params);
+		check("ret1", null);
+		check("ret2", null);
 	}
 
 	public void test_stringlib_getUrlParts() {
