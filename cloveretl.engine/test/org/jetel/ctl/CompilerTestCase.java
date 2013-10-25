@@ -3670,6 +3670,31 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("City", null, outputRecords[3].getField("City").getValue());
 	}
 	
+	public void test_copyByName_assignment_caseInsensitive() {
+		TransformationGraph g = createEmptyGraph();
+		DataRecordMetadata m1 = new DataRecordMetadata("metadata1");
+		m1.addField(new DataFieldMetadata("a", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("b", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("c", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m1);
+		DataRecordMetadata m2 = new DataRecordMetadata("metadata2");
+		m2.addField(new DataFieldMetadata("D", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("B", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("A", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m2);
+
+		doCompile("metadata1 r1;metadata2 r2;\n"
+				+ "function integer transform(){\n"
+				+ "r1.a = \"a\"; r1.b = \"b\"; r1.c = \"c\";\n"
+				+ "r2.* = r1.*; \n"
+				+ "return 0;}","test_copyByName_assignment_caseInsensitive", g, new DataRecord[0], new DataRecord[0]);
+		
+		DataRecord r2 = (DataRecord) getVariable("r2");
+		assertEquals("a", r2.getField("A").getValue().toString());
+		assertEquals("b", r2.getField("B").getValue().toString());
+		assertEquals(null, r2.getField("D").getValue());
+	}
+	
 	public void test_containerlib_copyByPosition(){
 		doCompile("test_containerlib_copyByPosition");
 		assertEquals("Field1", NAME_VALUE, outputRecords[3].getField("Field1").getValue().toString());
