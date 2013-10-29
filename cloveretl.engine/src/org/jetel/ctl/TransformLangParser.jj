@@ -439,10 +439,7 @@ TOKEN :
 		"\"" 
 		(	( ~["\"","\\","\n","\r"] ) 
 			| ("\\" 
-				( ["n","t","b","r","f","\\","\'","\""] 
-				| ["0"-"7"] (["0"-"7"])? 
-				| ["0"-"3"] ["0"-"7"] ["0"-"7"]
-				)
+				~["\n", "\r"]
 			  )
 		)* 
 		"\""
@@ -971,7 +968,8 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
 
 				TransformLangParser parser = new TransformLangParser(this,filenameURL,stream);				
 				parser.addParsedImports(getParsedImports());
-			 	parseTree = parser.Start();				jjtn000.jjtAddChild(parseTree,0);
+			 	parseTree = parser.Start();
+			 	jjtn000.setSourceFilename(filenameURL);				jjtn000.jjtAddChild(parseTree,0);
 				jjtn000.jjtGetChild(0).jjtSetParent(jjtn000);
 				addParsedImports(parser.getParsedImports()); // merge child's imports
 				this.hasEvalNode = this.hasEvalNode || parser.hasEvalNode;			} catch(IOException e){				error(jjtn000,"Unable to open import \""+filenameURL+"\": " + e.getMessage());
@@ -1616,7 +1614,7 @@ void VariableDeclaration():{/*@bgen(jjtree) VariableDeclaration */
     <IDENTIFIER>
     {
     	jjtn000.setName(token.image);
-    	jjtn000.end(token.beginLine,token.beginColumn);
+    	jjtn000.end(token.endLine,token.endColumn);
     }
 
     [ 
@@ -3026,7 +3024,9 @@ void LogLevel() :
  	 	{ 
 			jjtn004.begin(t.beginLine,t.beginColumn);
 	 		jjtn004.end(t.endLine,t.endColumn);
- 			jjtn004.setValue(STRING_LITERAL,StringUtils.stringToSpecChar(unquote(t.image)));
+	 		try { 				jjtn004.setValue(STRING_LITERAL,StringUtils.stringToSpecCharStrict(unquote(t.image)));	 		} catch (IllegalArgumentException iae) {
+	 		  	error(jjtn004, iae.getMessage());
+	 		}
  	 	}/*@bgen(jjtree)*/
                 } finally {
                   if (jjtc004) {

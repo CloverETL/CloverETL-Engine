@@ -20,7 +20,6 @@ package org.jetel.connection.jms;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -146,7 +145,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private static TypedProperties readConfig(URL contextURL, String cfgFile, TransformationGraph graph) {
 		TypedProperties config = new TypedProperties(null, graph);
 		try {
-            InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, cfgFile));
+            InputStream stream = FileUtils.getInputStream(contextURL, cfgFile);
 			config.load(stream);
 			stream.close();
 		} catch (Exception ex) {
@@ -209,7 +208,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 
 		// prepare context URL
 		if (contextURL == null) {
-			contextURL = getGraph() == null ? null : getGraph().getRuntimeContext().getContextURL();
+			contextURL = getContextURL();
 		}
 
 		try {

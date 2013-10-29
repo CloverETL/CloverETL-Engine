@@ -42,6 +42,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.ByteCharBuffer;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.string.QuotingDecoder;
@@ -204,7 +205,7 @@ public class DataParser extends AbstractTextParser {
 		fieldBuffer = new StringBuilder(Defaults.Record.FIELD_INITIAL_SIZE);
 		recordBuffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		numFields = cfg.getMetadata().getNumFields();
+		numFields = getNumFields();
 		isAutoFilling = new boolean[numFields];
 //		isSkipBlanks = new boolean[numFields];
 		isSkipLeadingBlanks = new boolean[numFields];
@@ -634,12 +635,12 @@ public class DataParser extends AbstractTextParser {
 	//            decoder.decode(byteBuffer, charBuffer, isEof);
 	//        } else 
 	        if (result.isError()) {
-	            throw new IOException(result.toString()+" when converting from "+decoder.charset());
+	        	throw new IOException("Character decoding error occurred. Set correct charset. Current charset is " + decoder.charset());
 	        }
 	        if (isEof) {
 	            result = decoder.flush(charBuffer);
 	            if (result.isError()) {
-	                throw new IOException(result.toString()+" when converting from "+decoder.charset());
+		        	throw new IOException("Character decoding error occurred. Set correct charset. Current charset is " + decoder.charset());
 	            }
 	        }
 	        charBuffer.flip();
@@ -908,6 +909,23 @@ public class DataParser extends AbstractTextParser {
 		}
 	}
 	
+	/**
+	 * @return number of fields in given metadata (autofilled fields in the end of metadata are ignored)
+	 */
+	private int getNumFields() {
+		DataRecordMetadata metadata = cfg.getMetadata();
+		int numFields = metadata.getNumFields(); 
+		DataFieldMetadata field;
+		do {
+			if (numFields == 0) {
+				return 0;
+			}
+			numFields--;
+			field = metadata.getField(numFields);
+		} while (field.isAutoFilled());
+		
+		return numFields + 1;
+	}
 	
 	public boolean endOfInputChannel() {
 		return reader == null || !reader.isOpen();

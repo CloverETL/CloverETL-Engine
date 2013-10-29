@@ -70,8 +70,7 @@
 	<property name="dir.pmdreport" value="${dir.build}/pmdreport" />
 	<property name="pmd.ruleset.file" value="${dir.build-scripts}/pmd-ruleset.xml" />
 	<property name="dir.licenses" value="${basedir}/licenses" />
-	<property name="test.license.version" value="3.5"/>
-
+	
 	<!--load external properties-->
 	<property file="build-local.properties"/>
 	<property file="version.properties"/>
@@ -91,6 +90,10 @@
               input="${version}"
               regexp="([^\.]*)\.([^\.]*)\.([^\.]*)"
               select="\3" />
+	
+	<property name="test.license.version" value="${version.major}.${version.minor}"/>
+	
+	
 	<tstamp>
 		<format property="build.time" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
 		<format property="build.time.compact" pattern="yyyyMMddHHmmss" locale="en" />
@@ -180,7 +183,7 @@
 	<target name="dist.src" depends="init,improve-java-sources" description="Creates source distribution">
 
 		<mkdir dir="${dir.distprepare.src}/cloverETL"/>
-
+	
 		<!-- call source target for all plugins -->
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.src" param="plugin.dir"/>
 
@@ -240,13 +243,27 @@ defined.version.suffix=release
 		<replace file="${src.distribution.dir.engine}/../readme.txt" encoding="UTF-8" >
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 		</replace>
+		
 
 		<property name="version.suffix" value="develbefore${build.time.compact}${user}"/>
 
-
-
+	
 		<!-- create zip package for source distribution -->
 		<mkdir dir="${dir.distribution}"/>
+		 
+		<if>
+		     <equals arg1="${dist.type}" arg2="opensource"/>
+		      <then>
+		             <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${src.distribution.dir.engine}/../LICENSE"/>
+		             <echo file="${src.distribution.dir.engine}/../readme.txt" append="true">
+Licensing
+----------                              
+This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
+		            </echo>
+		      <fixcrlf srcdir="${src.distribution.dir.engine}/../" includes="readme.txt" eol="crlf" />
+		      </then>
+	   </if>
+		                		
 		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.src.rel-${version.major}-${version.minor}-${version.revision}.zip" >
 			<fileset dir="${dir.distprepare.src}">
 				<include name="cloverETL/**/*"/>
@@ -271,14 +288,21 @@ defined.version.suffix=release
 	<target name="dist.bin" depends="build" description="Creates binary distribution">
 
 		<!-- binary distribution -->
+		<if>
+		    <equals arg1="${dist.type}" arg2="opensource"/>
+		        <then>
+		          <antcall target="copy-license-LGPL"/>
+		        </then>
+		</if>
+		
 		<mkdir dir="${dir.distprepare.bin}/cloverETL"/>
-
 		<copy todir="${dir.distprepare.bin}/cloverETL">
 			<fileset dir="${dir.package}" />
-		</copy>
-
-		<!-- create zip distribution package -->
+		</copy>			 
+			
+	   	<!-- create zip distribution package -->
 		<mkdir dir="${dir.distribution}"/>
+		
 		<zip destfile="${dir.distribution}/cloverETL${dist.name.infix}.rel-${version.major}-${version.minor}-${version.revision}.zip" >
 			<fileset dir="${dir.distprepare.bin}">
 				<include name="cloverETL/**/*"/>
@@ -286,6 +310,16 @@ defined.version.suffix=release
 		</zip>
 
 	</target>
+	
+	 <target name="copy-license-LGPL">
+	            <copy file="${dir.docs}/licenses/LicenseLGPL.txt" tofile="${dir.package}/LICENSE" />
+	            <echo file="${dir.package}/readme.txt" append="true">
+Licensing
+----------	                        	
+This software is licensed under the terms you may find in the file named "LICENSE" in this directory.   
+	            </echo>
+	 </target>
+
 
 	<target name="dist.javadoc" depends="javadoc" description="Creates javadoc distribution">
 		<!-- create zip package for javadoc -->
@@ -344,7 +378,7 @@ defined.version.suffix=release
 			</filtermapper>
 		</copy>
 	</target>
-
+	
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean-engine">
 		<delete dir="${dir.build}"/>
@@ -443,8 +477,8 @@ defined.version.suffix=release
 			<keep name="org.jetel.graph.runtime.jmx.*Tracking"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.*TrackingDetail"><field access="public"/><method access="public"/></keep>
 			<keep name="org.jetel.graph.runtime.jmx.TrackingUtils"><field access="public"/><method access="public"/></keep>
-
 			<keep name="org.jetel.graph.runtime.WatchDog"><field access="public"/><method access="public"/></keep>
+			<keep name="org.jetel.graph.runtime.SingleThreadWatchDog"><field access="public"/><method access="public"/></keep>
 			
 			<keep name="org.jetel.plugin.PluginRepositoryLocation"><field access="public"/><method access="public"/></keep>
 
@@ -606,7 +640,7 @@ defined.version.suffix=release
 		<replace file="${dir.package}/readme.txt" encoding="UTF-8" >
 			<replacefilter token="0.0.0.devel" value="${version.full}"/>
 		</replace>
-
+		
 	</target>
 
 	<!-- make a temp copy of source - necessary to substitute release number constants in the source code -->
@@ -858,7 +892,7 @@ defined.version.suffix=release
 	<target name="generate-eval-license">
 		<mkdir dir="${dir.licenses}" />
 		<get 
-			src="http://vvpn.javlin.eu:81/cloveretl.licensegenerator/LicenseGenerator?licenseV2=true&amp;company=Javlin+a.s.&amp;person=&amp;vendor=&amp;note=Evaluation+license&amp;licenseType=EVALUATION&amp;licenseNo=Evaluation+Devel&amp;expiration=%2B45d&amp;validFrom=&amp;upgradeUntil=&amp;licenseProperties=&amp;product%5B0%5D=CloverETL+Designer&amp;product%5B0%5D.id=com.cloveretl.gui&amp;product%5B0%5D.version=${test.license.version}&amp;product%5B0%5D.features=com.cloveretl.gui%3Dtrue%0D%0Acom.cloveretl.gui.jobflow%3Dtrue&amp;product%5B1%5D=CloverETL+Profiler&amp;product%5B1%5D.id=com.cloveretl.profiler&amp;product%5B1%5D.version=${test.license.version}&amp;product%5B1%5D.features=com.cloveretl.profiler%3Dtrue%0D%0Acom.cloveretl.profiler.ProfilerProbe%3Dtrue&amp;product%5B2%5D=CloverETL+Engine&amp;product%5B2%5D.id=com.cloveretl.engine&amp;product%5B2%5D.version=${test.license.version}&amp;product%5B2%5D.features=com.cloveretl.engine%3Dtrue&amp;product%5B3%5D=CloverETL+Server&amp;product%5B3%5D.id=com.cloveretl.server&amp;product%5B3%5D.version=${test.license.version}&amp;product%5B3%5D.features=com.cloveretl.server%3Dtrue%0D%0Acom.cloveretl.server.maxCpuCores%3D8%0D%0Acom.cloveretl.server.platform%3D%0D%0Acom.cloveretl.server.security%3Dtrue%0D%0Acom.cloveretl.server.scheduling%3Dtrue%0D%0Acom.cloveretl.server.graphEventsListener%3Dtrue%0D%0Acom.cloveretl.server.fileEventsListener%3Dtrue%0D%0Acom.cloveretl.server.jmsEventsListener%3Dtrue%0D%0Acom.cloveretl.server.groovyEventsListener%3Dtrue%0D%0Acom.cloveretl.server.clustering%3Dtrue%0D%0Acom.cloveretl.server.launchServicesApi%3Dtrue%0D%0Acom.cloveretl.server.simpleHttpApi%3Dtrue%0D%0Acom.cloveretl.server.jmxApi%3Dtrue%0D%0Acom.cloveretl.server.osgiFramework%3Dtrue%0D%0Acom.cloveretl.server.sandboxes%3Dtrue%0D%0Acom.cloveretl.server.maxClusterNodes%3D4%0D%0Acom.cloveretl.server.graphPools%3Dtrue%0D%0Acom.cloveretl.server.jobflow%3Dtrue%0D%0Acom.cloveretl.server.jobflowEventsListener%3Dtrue%0D%0Acom.cloveretl.server.executeGraph%3Dtrue&amp;product%5B4%5D=&amp;product%5B4%5D.id=&amp;product%5B4%5D.version=&amp;product%5B4%5D.features="
+			src="http://vvpn.javlin.eu:81/cloveretl.licensegenerator/LicenseGenerator?licenseV2=true&amp;company=Javlin+a.s.&amp;person=&amp;vendor=&amp;note=Evaluation+license&amp;licenseType=EVALUATION&amp;licenseNo=Evaluation+Devel&amp;expiration=%2B45d&amp;validFrom=&amp;upgradeUntil=&amp;licenseProperties=&amp;product%5B0%5D=CloverETL+Designer&amp;product%5B0%5D.id=com.cloveretl.gui&amp;product%5B0%5D.version=${test.license.version}&amp;product%5B0%5D.features=com.cloveretl.gui%3Dtrue%0D%0Acom.cloveretl.gui.jobflow%3Dtrue&amp;product%5B1%5D=CloverETL+Profiler&amp;product%5B1%5D.id=com.cloveretl.profiler&amp;product%5B1%5D.version=${test.license.version}&amp;product%5B1%5D.features=com.cloveretl.profiler%3Dtrue%0D%0Acom.cloveretl.profiler.ProfilerProbe%3Dtrue%0D%0Acom.cloveretl.validator%3Dtrue&amp;product%5B2%5D=CloverETL+Engine&amp;product%5B2%5D.id=com.cloveretl.engine&amp;product%5B2%5D.version=${test.license.version}&amp;product%5B2%5D.features=com.cloveretl.engine%3Dtrue&amp;product%5B3%5D=CloverETL+Server&amp;product%5B3%5D.id=com.cloveretl.server&amp;product%5B3%5D.version=${test.license.version}&amp;product%5B3%5D.features=com.cloveretl.server%3Dtrue%0D%0Acom.cloveretl.server.maxCpuCores%3D8%0D%0Acom.cloveretl.server.platform%3D%0D%0Acom.cloveretl.server.security%3Dtrue%0D%0Acom.cloveretl.server.scheduling%3Dtrue%0D%0Acom.cloveretl.server.graphEventsListener%3Dtrue%0D%0Acom.cloveretl.server.fileEventsListener%3Dtrue%0D%0Acom.cloveretl.server.jmsEventsListener%3Dtrue%0D%0Acom.cloveretl.server.groovyEventsListener%3Dtrue%0D%0Acom.cloveretl.server.clustering%3Dtrue%0D%0Acom.cloveretl.server.launchServicesApi%3Dtrue%0D%0Acom.cloveretl.server.simpleHttpApi%3Dtrue%0D%0Acom.cloveretl.server.jmxApi%3Dtrue%0D%0Acom.cloveretl.server.osgiFramework%3Dtrue%0D%0Acom.cloveretl.server.sandboxes%3Dtrue%0D%0Acom.cloveretl.server.maxClusterNodes%3D4%0D%0Acom.cloveretl.server.graphPools%3Dtrue%0D%0Acom.cloveretl.server.jobflow%3Dtrue%0D%0Acom.cloveretl.server.jobflowEventsListener%3Dtrue%0D%0Acom.cloveretl.server.executeGraph%3Dtrue&amp;product%5B4%5D=&amp;product%5B4%5D.id=&amp;product%5B4%5D.version=&amp;product%5B4%5D.features="
       ignoreerrors="true"
 			verbose="true"
 			dest="${dir.licenses}/generated.license.dat" />

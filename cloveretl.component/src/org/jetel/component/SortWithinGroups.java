@@ -428,9 +428,10 @@ public class SortWithinGroups extends Node {
     }
 
     @Override
-    public synchronized void reset() throws ComponentNotReadyException {
-        super.reset();
-    }
+	public void postExecute() throws ComponentNotReadyException {
+		super.postExecute();
+		dataRecordSorter.postExecute();
+	}
 
     @Override
     public synchronized void free() {

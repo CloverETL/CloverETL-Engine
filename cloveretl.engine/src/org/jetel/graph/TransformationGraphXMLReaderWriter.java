@@ -21,8 +21,8 @@ package org.jetel.graph;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,6 +33,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -57,6 +60,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
+import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
@@ -269,6 +273,7 @@ public class TransformationGraphXMLReaderWriter {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			
 			if (in != null) {
+				db.setErrorHandler(null); // this avoid to print out to standard error output message "[Fatal Error] :1:1: Content is not allowed in prolog.", see CLO-1652
 				document = db.parse(new BufferedInputStream(in));
 				document.normalize();
 			}else{
@@ -347,7 +352,6 @@ public class TransformationGraphXMLReaderWriter {
 			c = ContextProvider.registerGraph(graph);
 			
 			graph.setInitialRuntimeContext(runtimeContext);
-			graph.getGraphParameters().addProperties(runtimeContext.getAdditionalProperties());
 			// get graph name
 			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
 			try {
@@ -378,7 +382,13 @@ public class TransformationGraphXMLReaderWriter {
 
 			// handle all defined graph parameters - new-fashion
 			List<Element> graphParametersElements = getChildElements(getGlobalElement(document), GRAPH_PARAMETERS_ELEMENT);
-			instantiateGraphParameters(graphParametersElements);
+			instantiateGraphParameters(graph.getGraphParameters(), graphParametersElements);
+
+			//additional graph parameters are loaded after all build-in parameters are already loaded
+			//moreover, additional parameters are used in regular loading of build-in parameters (see #instantiateGraphParameter)
+			//to ensure correct value of parameters is used when path parameter file is parametrised by
+			//parameter overridden by additional parameters.
+			graph.getGraphParameters().addPropertiesOverride(runtimeContext.getAdditionalProperties());
 
 			// handle dictionary
 			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
@@ -652,9 +662,14 @@ public class TransformationGraphXMLReaderWriter {
 			graphEdge.setFilterExpression(debugFilterExpression);
 			graphEdge.setDebugSampleData(debugSampleData);
 			// set edge type
-			EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.valueOfIgnoreCase(edgeType);
-			if (edgeTypeEnum != null) graphEdge.setEdgeType(edgeTypeEnum);
-			else if (fastPropagate) graphEdge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
+			if (runtimeContext.getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION) {
+				//in single thread execution all edges are buffered
+				graphEdge.setEdgeType(EdgeTypeEnum.BUFFERED);
+			} else {
+				EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.valueOfIgnoreCase(edgeType);
+				if (edgeTypeEnum != null) graphEdge.setEdgeType(edgeTypeEnum);
+				else if (fastPropagate) graphEdge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
+			}
             
             // assign edge to fromNode
 			specNodePort = fromNodeAttr.split(":");
@@ -811,8 +826,12 @@ public class TransformationGraphXMLReaderWriter {
 	 * Load single graph parameter.
 	 * @throws XMLConfigurationException 
 	 */
-	private void instantiateGraphParameter(Element graphParameter) throws XMLConfigurationException {
-    	GraphParameter gp = graph.getGraphParameters().addGraphParameter(graphParameter.getAttribute("name"), graphParameter.getAttribute("value"));
+	private void instantiateGraphParameter(GraphParameters graphParameters, Element graphParameter) throws XMLConfigurationException {
+		String name = graphParameter.getAttribute("name");
+		String value = graphParameter.getAttribute("value");
+		//value may be actually overridden by additional graph parameters defined in graph runtime context
+		value = getGraphParameterValue(name, value);
+    	GraphParameter gp = graphParameters.addGraphParameter(name, value);
     	if (graphParameter.hasAttribute("secure")) {
 			ComponentXMLAttributes attributes = new ComponentXMLAttributes(graphParameter);
 			try {
@@ -824,18 +843,30 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	/**
+	 * Returns either value from additional graph parameters from runtime context or suggested value.
+	 */
+	private String getGraphParameterValue(String name, String suggestedValue) {
+		Properties additionalProperties = runtimeContext.getAdditionalProperties();
+		if (additionalProperties.containsKey(name)) {
+			return additionalProperties.getProperty(name);
+		} else {
+			return suggestedValue;
+		}
+	}
+	
+	/**
 	 * Load parameter file.
 	 */
-	private boolean instantiateGraphParametersFile(Element graphParameterFile) throws XMLConfigurationException {
+	private boolean instantiateGraphParametersFile(GraphParameters graphParameters, Element graphParameterFile) throws XMLConfigurationException {
 		if (!graphParameterFile.hasAttribute("fileURL")) {
 			throwXMLConfigurationException("A graph parameter file does not specify fileURL attribute.");
 			return true;
 		}
     	String fileURL = graphParameterFile.getAttribute("fileURL");
-    	String resolvedFileURL = graph.getPropertyRefResolver().resolveRef(fileURL);
+    	String resolvedFileURL = new PropertyRefResolver(graphParameters).resolveRef(fileURL);
     	
 		if (!PropertyRefResolver.containsProperty(resolvedFileURL)) {
-			instantiateGraphParametersFile(resolvedFileURL);
+			instantiateGraphParametersFile(graphParameters, resolvedFileURL);
 	    	return true;
 		} else {
 			return false;
@@ -845,15 +876,15 @@ public class TransformationGraphXMLReaderWriter {
 	/**
 	 * Load parameter file.
 	 */
-	private void instantiateGraphParametersFile(String resolvedFileURL) throws XMLConfigurationException {
+	public void instantiateGraphParametersFile(GraphParameters graphParameters, String resolvedFileURL) throws XMLConfigurationException {
 		InputStream is = null;
         try {
-        	is = Channels.newInputStream(FileUtils.getReadableChannel(ContextProvider.getContextURL(), resolvedFileURL));
+        	is = FileUtils.getInputStream(runtimeContext.getContextURL(), resolvedFileURL);
         	Document document = prepareDocument(is);
-        	instantiateGraphParameters(Arrays.asList(document.getDocumentElement()));
+        	instantiateGraphParameters(graphParameters, Arrays.asList(document.getDocumentElement()));
         } catch (Exception e) {
         	try {
-        		graph.getGraphParameters().addProperties(loadGraphProperties(resolvedFileURL));
+        		graphParameters.addProperties(loadGraphProperties(resolvedFileURL));
         	} catch(IOException ex) {
         		throwXMLConfigurationException("Can't load property definition from " + resolvedFileURL, ex);
         	}
@@ -872,7 +903,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * Graph parameters loading.
 	 * @throws XMLConfigurationException 
 	 */
-	private void instantiateGraphParameters(List<Element> graphParametersElements) throws XMLConfigurationException {
+	private void instantiateGraphParameters(GraphParameters graphParameters, List<Element> graphParametersElements) throws XMLConfigurationException {
 		if (graphParametersElements.isEmpty()) {
 			return;
 		}
@@ -884,9 +915,9 @@ public class TransformationGraphXMLReaderWriter {
 		List<Element> graphParameterElements = getChildElements(graphParametersElements.get(0), null);
 		for (Element graphParameterElement : graphParameterElements) {
 			if (graphParameterElement.getNodeName().equals(GRAPH_PARAMETER_ELEMENT)) {
-				instantiateGraphParameter(graphParameterElement);
+				instantiateGraphParameter(graphParameters, graphParameterElement);
 			} else if (graphParameterElement.getNodeName().equals(GRAPH_PARAMETER_FILE_ELEMENT)) {
-				if (!instantiateGraphParametersFile(graphParameterElement)) {
+				if (!instantiateGraphParametersFile(graphParameters, graphParameterElement)) {
 					unresolvedGraphParametersFiles.add(graphParameterElement);
 				}
 			} else {
@@ -899,7 +930,7 @@ public class TransformationGraphXMLReaderWriter {
 		while (!unresolvedGraphParametersFiles.isEmpty() && progress) {
 			progress = false;
 			for (Element graphParameterFile : unresolvedGraphParametersFiles) {
-				if (instantiateGraphParametersFile(graphParameterFile)) {
+				if (instantiateGraphParametersFile(graphParameters, graphParameterFile)) {
 					progress = true;
 				}
 			}
@@ -924,7 +955,7 @@ public class TransformationGraphXMLReaderWriter {
         			unresolvedUrls.add(fileURL);
         			continue;
         		}
-        		instantiateGraphParametersFile(fileURL);
+        		instantiateGraphParametersFile(graph.getGraphParameters(), fileURL);
 	        } else if (propertyElement.hasAttribute("name")) {
 	        	graph.getGraphParameters().addGraphParameter(propertyElement.getAttribute("name"), propertyElement.getAttribute("value"));
 	        } else {
@@ -945,7 +976,7 @@ public class TransformationGraphXMLReaderWriter {
 		    	if (PropertyRefResolver.containsProperty(resolvedUrl)) {
 		    		stillUnresolvedUrls.add(resolvedUrl);
 		    	} else {
-		    		instantiateGraphParametersFile(resolvedUrl);
+		    		instantiateGraphParametersFile(graph.getGraphParameters(), resolvedUrl);
 		    	}
 		    }
 		    
@@ -961,7 +992,7 @@ public class TransformationGraphXMLReaderWriter {
 		TypedProperties graphProperties = new TypedProperties();
         InputStream inStream = null;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(runtimeContext.getContextURL(), fileURL));
+        	inStream = FileUtils.getInputStream(runtimeContext.getContextURL(), fileURL);
             graphProperties.load(inStream);
             return graphProperties;
         } catch(MalformedURLException e) {
@@ -1163,6 +1194,17 @@ public class TransformationGraphXMLReaderWriter {
 		return(null);
 	}
 	
+	public void writeGraphParameters(GraphParameters graphParameters, OutputStream os) {
+		try {
+		    JAXBContext context = JAXBContext.newInstance(GraphParameters.class);
+		    Marshaller m = context.createMarshaller();
+		    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		    
+		    m.marshal(graphParameters, os);
+		} catch (JAXBException e) {
+			throw new JetelRuntimeException("Serialisation of graph parameters failed.", e);
+		}
+	}
 	
 	@SuppressWarnings("deprecation")
 	private boolean write() {

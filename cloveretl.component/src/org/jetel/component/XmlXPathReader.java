@@ -211,8 +211,7 @@ public class XmlXPathReader extends Node {
     	super.preExecute();
     	if (firstRun()) {//a phase-dependent part of initialization
     		if (mappingURL != null) {
-    			TransformationGraph graph = getGraph();
-    			URL contextURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+    			URL contextURL = getContextURL();
     			try {
     				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
    					parser.setXPath(XmlUtils.createDocumentFromChannel(ch));
@@ -282,7 +281,7 @@ public class XmlXPathReader extends Node {
         if(isInitialized()) return;
 		super.init();
 		TransformationGraph graph = getGraph();
-		URL contextURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+		URL contextURL = getContextURL();
 		
         // initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, contextURL, fileURL);
@@ -306,6 +305,11 @@ public class XmlXPathReader extends Node {
     	reader.postExecute();
     }
 	
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	/**
 	 *  Description of the Method
 	 *

@@ -460,10 +460,9 @@ public class MapDataField extends DataField {
 	}
 
 	@Override
-	public int hashCode(){
-		return HashCodeUtil.getHash(this.fields);
+	public int hashCode() {
+		return HashCodeUtil.hash(this.fields);
 	}
-	
 	
 	/**
 	 * 

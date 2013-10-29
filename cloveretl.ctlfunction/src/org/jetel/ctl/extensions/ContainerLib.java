@@ -21,6 +21,7 @@ package org.jetel.ctl.extensions;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -239,10 +240,28 @@ public class ContainerLib extends TLFunctionLibrary {
 		
 	}
 
+	private static class MyComparator<T extends Comparable<T>> implements Comparator<T> {
+
+		@Override
+		public int compare(T o1, T o2) {
+			if (o1 == o2) {
+				return 0;
+			}
+			if (o1 == null) {
+				return 1;
+			}
+			if (o2 == null) {
+				return -1;
+			}
+			return o1.compareTo(o2);
+		}
+		
+	};
+	
 	// all CTL types are comparable so this will work in runtime
 	@TLFunctionAnnotation("Sorts elements contained in list - ascending order.")
 	public static final <E extends Comparable<E>> List<E> sort(TLFunctionCallContext context, List<E> list) { 
-		Collections.sort(list);
+		Collections.sort(list, new MyComparator<E>());
 		return list;
 	}
 	class SortFunction implements TLFunctionPrototype{

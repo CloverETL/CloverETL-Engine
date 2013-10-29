@@ -25,6 +25,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.jetel.data.DataRecord;
@@ -32,6 +33,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -74,6 +76,18 @@ public interface JdbcSpecific {
 	 * @return True if it's possible to close result set before creating new one, false otherwise.
 	 */
 	public boolean canCloseResultSetBeforeCreatingNewOne();
+	
+	
+	/**
+	 * Calls {@link java.sql.Driver#connect(String, Properties)},
+	 * but may perform additional validation before.
+	 * 
+	 * @param driver
+	 * @param info
+	 * @return
+	 * @throws SQLException
+	 */
+	public java.sql.Connection connect(java.sql.Driver driver, String url, Properties info) throws SQLException;
 
 	/**
 	 * @return Pattern of db field.
@@ -135,11 +149,20 @@ public interface JdbcSpecific {
 	
 	/**
 	 * This method defines a conversion table from a sql type to a clover field type.	 * 
+	 * @param dbMetadata
+	 * @param sqlIndex
+	 * @return
+	 * @throws SQLException
+	 */
+	public DataFieldType sqlType2jetel(DbMetadata dbMetadata, int sqlIndex) throws SQLException;
+	
+	/**
+	 * This method defines a conversion table from a sql type to a clover field type.	 * 
 	 * @param sqlType
 	 * @param sqlPrecision
 	 * @return
 	 */
-	public char sqlType2jetel(int sqlType, int sqlPrecision);
+	public DataFieldType sqlType2jetel(int sqlType, int sqlPrecision);
 	
 	/**
 	 * This method defines a conversion table from a sql type to a clover field type.	 * 

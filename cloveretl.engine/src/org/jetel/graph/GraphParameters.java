@@ -19,10 +19,13 @@
 package org.jetel.graph;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.primitive.TypedProperties;
@@ -37,9 +40,10 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 2.8.2013
  */
+@XmlRootElement(name = "GraphParameters")
 public class GraphParameters {
 
-	private final Map<String, GraphParameter> parameters = new HashMap<String, GraphParameter>();
+	private final Map<String, GraphParameter> parameters = new LinkedHashMap<String, GraphParameter>();
 	
 	public GraphParameters() {
 	}
@@ -74,6 +78,7 @@ public class GraphParameters {
 	/**
 	 * @return list of all graph parameters from this container
 	 */
+	@XmlElement(name = "GraphParameter")
 	public List<GraphParameter> getAllGraphParameters() {
 		return new ArrayList<GraphParameter>(parameters.values());
 	}
@@ -87,7 +92,7 @@ public class GraphParameters {
 	public GraphParameter addGraphParameter(String name, String value) {
 		GraphParameter graphParameter = new GraphParameter(name, value);
 		addGraphParameter(graphParameter);
-		return graphParameter;
+		return getGraphParameter(name);
 	}
 
 	/**
@@ -141,7 +146,24 @@ public class GraphParameters {
 			}
 		}
 	}
-	
+
+	/**
+	 * Adds new graph parameters based on give properties. Values of existing
+	 * parameters are overridden.
+	 * @param properties
+	 */
+	public void addPropertiesOverride(Properties properties) {
+		if (properties != null) {
+			for (String propertyName : properties.stringPropertyNames()) {
+				if (hasGraphParameter(propertyName)) {
+					getGraphParameter(propertyName).setValue(properties.getProperty(propertyName));
+				} else {
+					addGraphParameter(propertyName, properties.getProperty(propertyName));
+				}
+			}
+		}
+	}
+
 	/**
 	 * @return content of this container in properties form
 	 */
@@ -153,6 +175,13 @@ public class GraphParameters {
 		}
 		
 		return result;
+	}
+
+	/**
+	 * Clears this graph parameters.
+	 */
+	public void clear() {
+		parameters.clear();
 	}
 	
 }

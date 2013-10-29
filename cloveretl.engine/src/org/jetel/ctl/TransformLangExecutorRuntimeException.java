@@ -19,6 +19,7 @@
 package org.jetel.ctl;
 
 import org.jetel.ctl.ASTnode.CLVFFunctionCall;
+import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
 import org.jetel.exception.JetelRuntimeException;
 
@@ -103,13 +104,17 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 	
 	@Override
 	public String getMessage() {
-		StringBuffer strBuf = new StringBuffer("Interpreter runtime exception");
+		StringBuilder strBuf = new StringBuilder("Interpreter runtime exception");
         if (nodeInError != null) {
         	if (nodeInError instanceof CLVFFunctionCall) {
         		strBuf.append(" in function ").append(((CLVFFunctionCall) nodeInError).getName());
         	}
             strBuf.append(" on line ").append(nodeInError.getLine());
             strBuf.append(" column ").append(nodeInError.getColumn());
+            String fileName = nodeInError.getSourceFilename();
+            if (fileName != null) {
+            	strBuf.append(" in file ").append(fileName);
+            }
         }
 		if (arguments != null) {
 			for(int i = 0; i < arguments.length; i++) {
@@ -122,6 +127,25 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 		return strBuf.toString();
 	}
 
+	public String getExtendedMessage(){
+		StringBuilder strBuf=new StringBuilder();
+		if (nodeInError != null) {
+			strBuf.append("THIS: ").append(nodeInError.toString());
+			Node parent=nodeInError.jjtGetParent();
+        	while(parent!=null){
+        		strBuf.append(" parent: ").append(parent.toString());
+        		parent=parent.jjtGetParent();
+        	}
+        	if(nodeInError.jjtHasChildren()){
+        		for(int i=0;i<nodeInError.jjtGetNumChildren();i++){
+        			strBuf.append(" child ").append(nodeInError.jjtGetChild(i).toString());
+        		}
+        	}
+		}
+		return strBuf.toString();
+	}
+	
+	
 	public int getErrorCode() {
 		return errorCode;
 	}

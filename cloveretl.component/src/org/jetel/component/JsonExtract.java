@@ -59,7 +59,6 @@ import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
@@ -364,11 +363,11 @@ public class JsonExtract extends Node {
 
 	private void createReadableChannelIterator() throws ComponentNotReadyException {
 		TransformationGraph graph = getGraph();
-		URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+		URL projectURL = getContextURL();
 
 		this.readableChannelIterator = new ReadableChannelIterator(getInputPort(INPUT_PORT), projectURL, inputFile);
 		this.readableChannelIterator.setCharset(charset);
-		this.readableChannelIterator.setPropertyRefResolver(graph != null ? new PropertyRefResolver(graph.getGraphProperties()) : null);
+		this.readableChannelIterator.setPropertyRefResolver(getPropertyRefResolver());
 		this.readableChannelIterator.setDictionary(graph.getDictionary());
 	}
 
@@ -448,6 +447,7 @@ public class JsonExtract extends Node {
 		}
 
 		TransformationGraph graph = getGraph();
+		URL contextURL = getContextURL();
 		// Check whether XML mapping schema is valid
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
@@ -456,9 +456,9 @@ public class JsonExtract extends Node {
 			InputSource is = null;
 			Document doc = null;
 			if (this.mappingURL != null) {
-				InputStream inputStream = FileUtils.getInputStream(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
+				InputStream inputStream = FileUtils.getInputStream(contextURL, mappingURL);
 				is = new InputSource(inputStream);
-				ReadableByteChannel ch = FileUtils.getReadableChannel(graph != null ? graph.getRuntimeContext().getContextURL() : null, mappingURL);
+				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
 				doc = XmlUtils.createDocumentFromChannel(ch);
 			} else if (this.mapping != null) {
 				// inlined mapping
@@ -508,7 +508,6 @@ public class JsonExtract extends Node {
 				createReadableChannelIterator();
 				this.readableChannelIterator.checkConfig();
 
-				URL contextURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
 				String fName = null;
 				Iterator<String> fit = readableChannelIterator.getFileIterator();
 				while (fit.hasNext()) {

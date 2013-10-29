@@ -1082,6 +1082,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts binary data encoded in base64 to array of bytes.")
 	public static final byte[] base64byte(TLFunctionCallContext context, String src) {
+		if (src == null) {
+			return null;
+		}
 		return Base64.decode(src);
 	}	
 	
@@ -1105,6 +1108,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts binary data into their base64 representation. Optionally breaks lines after 76 characters.")
 	public static final String byte2base64(TLFunctionCallContext context, byte[] src, Boolean wrap) {
+		if (src == null) {
+			return null;
+		}
 		return Base64.encodeBytes(src, wrap ? Base64.NO_OPTIONS : Base64.DONT_BREAK_LINES);
 	}
 	
@@ -1127,6 +1133,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts bits into their string representation.")
 	public static final String bits2str(TLFunctionCallContext context, byte[] src) {
+		if (src == null) {
+			return null;
+		}
 		StringBuilder sb = new StringBuilder();
 		for (int i=0; i < src.length << 3; i++) {
 			sb.append((src[i >> 3] & (1 << (i & 7))) != 0 ? '1' : '0');
@@ -1149,6 +1158,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts string representation of bits into binary value.")
 	public static final byte[] str2bits(TLFunctionCallContext context, String src) {
+		if (src == null) {
+			return null;
+		}
 		byte[] bits = new byte[(src.length() >> 3) + ((src.length() & 7) != 0 ? 1 : 0)];
 		for (int i = 0; i < src.length(); i++) {
 			if (src.charAt(i) == '1') {
@@ -1173,6 +1185,12 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts string to byte according to given charset")
 	public static final byte[] str2byte(TLFunctionCallContext context, String src, String charset) {
+		if (src == null) {
+			if (charset == null) {
+				throw new NullPointerException("charset is null");
+			}
+			return null;
+		}
 		try {
 			return src.getBytes(charset);
 		} catch (UnsupportedEncodingException e) {
@@ -1199,6 +1217,12 @@ public class ConvertLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Converts byte to string according to given charset")
 	public static final String byte2str(TLFunctionCallContext context, byte[] src, String charset) {
+		if (src == null) {
+			if (charset == null) {
+				throw new NullPointerException("charset is null");
+			}
+			return null;
+		}
 		try {
 			return new String(src, charset);
 		} catch (UnsupportedEncodingException e) {
@@ -1261,6 +1285,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts long into packed decimal representation (bytes).")
 	public static final byte[] long2packDecimal(TLFunctionCallContext context, Long src) {
+		if (src == null) {
+			return null;
+		}
 		byte[] tmp = new byte[16];
 		int length = PackedDecimal.format(src, tmp);
 		byte[] result = new byte[length];
@@ -1283,6 +1310,9 @@ public class ConvertLib extends TLFunctionLibrary {
 	
 	@TLFunctionAnnotation("Converts packed decimal(bytes) into long value.")
 	public static final Long packDecimal2long(TLFunctionCallContext context, byte[] array) {
+		if (array == null) {
+			return null;
+		}
 		return PackedDecimal.parse(array);
 	}
 	

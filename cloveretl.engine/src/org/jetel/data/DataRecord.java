@@ -476,7 +476,9 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 
 
 	/**
-	 *  Description of the Method
+	 * Initializes the record - creates its fields.
+	 * 
+	 * <p>This method has to be called before accessing any of the record's fields.
 	 *
 	 * @since    April 5, 2002
 	 */
@@ -745,7 +747,7 @@ public class DataRecord implements Serializable, Comparable<Object>, Iterable<Da
 	 */
 	@Override
 	public int hashCode(){
-	    return HashCodeUtil.getHash(fields);
+	    return HashCodeUtil.hash(fields);
 	}
     
     /**

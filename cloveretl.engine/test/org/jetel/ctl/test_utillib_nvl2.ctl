@@ -14,6 +14,12 @@ decimal ret13;
 decimal ret14;
 string ret15;
 string ret16;
+string ret17;
+integer ret18;
+number ret19;
+long ret20;
+decimal ret21;
+
 function integer transform(){
 	ret1 = nvl2('Yorick', 'Ahri', 'Orianna');
 	ret2 = nvl2(null, 'Gregas', 'Galio');
@@ -31,5 +37,10 @@ function integer transform(){
 	ret14 = nvl2(null, 44.4d, 55.5d);
 	ret15 = nvl2('Talon', null, null);
 	ret16 = nvl2(null, null, null);
+	ret17 = nvl2(14, 'Shaco', 'Maoki');
+	ret18 = nvl2(12.6, 12, 13);
+	ret19 = nvl2(48.5d, 18.1, 20.9);
+	ret20 = nvl2('Hecarim', 15L, 48L);
+	ret21 = nvl2(18L, 18.1d, 78.5d);
 	return 0;
 }

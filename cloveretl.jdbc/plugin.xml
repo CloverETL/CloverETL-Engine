@@ -33,6 +33,12 @@
 	</extension>
 	
 	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="EXASOLUTION"/>
+		<parameter id="name" value="EXASolution"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.ExasolSpecific"/>
+	</extension>
+
+	<extension point-id="jdbcSpecific">
 		<parameter id="database" value="FIREBIRD"/>
 		<parameter id="name" value="Firebird"/>
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.FirebirdSpecific"/>
@@ -124,7 +130,7 @@
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
 		<parameter id="dbDriver" value="org.gjt.mm.mysql.Driver"/>
-		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.22-bin.jar"/>
+		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-5.1.26-bin.jar"/>
 		<parameter id="urlHint" value="jdbc:mysql://hostname:3306/database"/>
 		<parameter id="jdbcSpecific" value="MYSQL"/>
 		<parameter id="jdbc.zeroDateTimeBehavior" value="convertToNull"/>
@@ -158,7 +164,7 @@
 		<parameter id="database" value="MSSQL"/>
 		<parameter id="name" value="Microsoft SQL Server"/>
 		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
+		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.8.jar"/>
 		<parameter id="urlHint" value="jdbc:jtds:sqlserver://hostname:1433/database"/>
 		<parameter id="jdbcSpecific" value="MSSQL"/>
 	</extension>
@@ -189,7 +195,7 @@
 		<parameter id="database" value="SYBASE"/>
 		<parameter id="name" value="Sybase"/>
 		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.4.jar"/>
+		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.8.jar"/>
 		<parameter id="urlHint" value="jdbc:jtds:sybase://hostname:7100/database"/>
 		<parameter id="jdbcSpecific" value="SYBASE"/>
 	</extension>
@@ -220,4 +226,16 @@
 		<parameter id="urlHint" value="jdbc:firebirdsql:localhost/3050:/firebird/test.gdb"/>
 		<parameter id="jdbcSpecific" value="FIREBIRD"/>
 	</extension>
+
+<!--
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="EXASOLUTION"/>
+		<parameter id="name" value="EXASolution"/>
+		<parameter id="dbDriver" value="com.exasol.jdbc.EXADriver"/>
+		<parameter id="driverLibrary" value="lib/exasol/exajdbc-4.2.1.jar"/>
+		<parameter id="urlHint" value="jdbc:exa:hostname:8563;schema=schemaName"/>
+		<parameter id="jdbcSpecific" value="EXASOLUTION"/>
+	</extension>
+-->
+
 </plugin>

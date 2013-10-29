@@ -323,9 +323,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 		try {
 			if (mappingURL != null) {
-				TransformationGraph graph = getGraph();
-				URL contextURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
-				ReadableByteChannel ch = FileUtils.getReadableChannel(contextURL, mappingURL);
+				ReadableByteChannel ch = FileUtils.getReadableChannel(getContextURL(), mappingURL);
 				mappingDocument = XmlUtils.createDocumentFromChannel(ch);
 			} else {
 				mappingDocument = XmlUtils.createDocumentFromString(mappingString);
@@ -345,7 +343,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	protected SourceIterator createSourceIterator() {
 		TransformationGraph graph = getGraph();
-		URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
+		URL projectURL = getContextURL();
 
 		SourceIterator iterator = new SourceIterator(getInputPort(INPUT_PORT_INDEX), projectURL, fileURL);
 		iterator.setCharset(charset);
@@ -442,6 +440,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		sequences.clear();
+	}
+
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
 	}
 
 	private Object getNextSource() throws JetelException {

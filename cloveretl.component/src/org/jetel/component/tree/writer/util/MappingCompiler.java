@@ -98,9 +98,9 @@ public class MappingCompiler extends AbstractVisitor {
 
 	private MappingTagger tagger;
 
-	public MappingCompiler(Map<Integer, DataRecordMetadata> inPorts, String sortHintsString, boolean singleTopLevelRecord) {
+	public MappingCompiler(Map<Integer, DataRecordMetadata> inPorts, String sortHintsString, boolean singleTopLevelRecord, boolean inMemoryCache) {
 		this.inPorts = inPorts;
-		this.tagger = new MappingTagger(inPorts, sortHintsString, singleTopLevelRecord);
+		this.tagger = new MappingTagger(inPorts, sortHintsString, singleTopLevelRecord, inMemoryCache);
 	}
 
 	public WritableMapping compile(Map<Integer, InputPort> inPorts, boolean partition)
@@ -117,7 +117,7 @@ public class MappingCompiler extends AbstractVisitor {
 	}
 
 	public static int resolvePartitionKeyPortIndex(TreeWriterMapping mapping, Map<Integer, DataRecordMetadata> inPorts) {
-		MappingTagger tagger = new MappingTagger(inPorts, null, false);
+		MappingTagger tagger = new MappingTagger(inPorts, null, false, false);
 		tagger.setResolvePartition(true);
 		tagger.setMapping(mapping);
 		tagger.tag();

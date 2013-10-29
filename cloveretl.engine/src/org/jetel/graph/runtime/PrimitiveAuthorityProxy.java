@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.channels.Channels;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
@@ -201,7 +200,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		rr.startTime = new Date(startTime);
 		
 		try {
-            in = Channels.newInputStream(FileUtils.getReadableChannel(givenRuntimeContext.getContextURL(), graphFileName));
+            in = FileUtils.getInputStream(givenRuntimeContext.getContextURL(), graphFileName);
         } catch (IOException e) {
         	rr.endTime = new Date(System.currentTimeMillis());
         	rr.duration = rr.endTime.getTime() - rr.startTime.getTime(); 
@@ -330,7 +329,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceInput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public InputStream getSandboxResourceInput(String componentId, String storageCode, String path) {
+	public InputStream getSandboxResourceInput(String componentId, String storageCode, String path) throws IOException {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
@@ -339,7 +338,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	 * @see org.jetel.graph.runtime.IAuthorityProxy#getSandboxResourceOutput(java.lang.String, java.lang.String)
 	 */
 	@Override
-	public OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) {
+	public OutputStream getSandboxResourceOutput(String componentId, String storageCode, String path, boolean append) throws IOException {
 		throw new UnsupportedOperationException("Sandbox resources are accessible only in CloverETL Server environment!");
 	}
 
@@ -406,9 +405,10 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
-		
 		try {
-			return File.createTempFile(label, suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
+			File file = File.createTempFile(label, suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
+			logNewTempFile(file);
+			return file;
 		} catch (IOException e) {
 			throw new TempFileCreationException(e, label, allocationHint, null, TempSpace.ENGINE_DEFAULT);
 		}
@@ -416,7 +416,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public File newTempDir(String label, int allocationHint) throws TempFileCreationException {
-		
 		/*
 		 * TODO as soon as Java 1.7 will be required, use built-in facility.
 		 * Tracked under JIRA CLO-226 (https://bug.javlin.eu/browse/CLO-226)
@@ -432,10 +431,16 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 			if (!tmp.mkdir()) {
 				throw new IOException("Temporary directory could not be created.");
 			}
+			logNewTempFile(tmp);
 			return tmp;
 		} catch (IOException e) {
 			throw new TempFileCreationException(e, label, allocationHint, null, TempSpace.ENGINE_DEFAULT);
 		}
+	}
+	
+	@Override
+	public boolean isProfilerResultsDataSourceSupported() {
+		return false;
 	}
 	
 	@Override

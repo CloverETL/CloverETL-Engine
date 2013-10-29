@@ -30,9 +30,11 @@ import org.jetel.ctl.data.TLTypeEnum;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 
 public class UtilLib extends TLFunctionLibrary {
 
@@ -43,6 +45,8 @@ public class UtilLib extends TLFunctionLibrary {
     		"randomUUID".equals(functionName) ? new RandomUuidFunction() : 
            	"getParamValue".equals(functionName) ? new GetParamValueFunction() :
         	"getParamValues".equals(functionName) ? new GetParamValuesFunction() :
+           	"getRawParamValue".equals(functionName) ? new GetRawParamValueFunction() :
+           	"getRawParamValues".equals(functionName) ? new GetRawParamValuesFunction() :
         	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
     		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
     		"hashCode".equals(functionName)	? new HashCodeFunction() :	null; 
@@ -106,7 +110,11 @@ public class UtilLib extends TLFunctionLibrary {
     // GET PARAM VALUE
 	@TLFunctionAnnotation("Returns the resolved value of a graph parameter")
     public static String getParamValue(TLFunctionCallContext context, String paramName) {
-		return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().resolveRef(context.getGraph().getGraphParameters().getGraphParameter(paramName).getValue(), RefResFlag.SPEC_CHARACTERS_OFF);
+		if (!StringUtils.isEmpty(paramName)) {
+			return ((TLPropertyRefResolverCache) context.getCache()).getCachedPropertyRefResolver().getResolvedPropertyValue(paramName, RefResFlag.SPEC_CHARACTERS_OFF);
+		} else {
+			return null;
+		}
     }
     
     @TLFunctionInitAnnotation()
@@ -131,6 +139,31 @@ public class UtilLib extends TLFunctionLibrary {
     	}
     }
 
+    // GET RAW PARAM VALUE
+	@TLFunctionAnnotation("Returns the unresolved value of a graph parameter")
+    public static String getRawParamValue(TLFunctionCallContext context, String paramName) {
+		if (!StringUtils.isEmpty(paramName)) {
+			TransformationGraph graph = context.getGraph();
+			if (graph != null) {
+				return graph.getGraphParameters().getGraphParameter(paramName).getValue();
+			}
+		}
+		return null;
+    }
+    
+    class GetRawParamValueFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+			String paramName = stack.popString();
+    		stack.push(getRawParamValue(context, paramName));
+    	}
+    }
+
     // GET PARAM VALUES
     @SuppressWarnings("unchecked")
 	@TLFunctionAnnotation("Returns an unmodifiable map of resolved values of graph parameters")
@@ -146,7 +179,7 @@ public class UtilLib extends TLFunctionLibrary {
 		
 		Map<String, String> map = new HashMap<String, String>();
 		for (GraphParameter param : parameters.getAllGraphParameters()) {
-			map.put(param.getName(), refResolver.resolveRef(param.getValue(), RefResFlag.SPEC_CHARACTERS_OFF));
+			map.put(param.getName(), refResolver.getResolvedPropertyValue(param.getName(), RefResFlag.SPEC_CHARACTERS_OFF));
 		}
 		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
     }
@@ -163,7 +196,40 @@ public class UtilLib extends TLFunctionLibrary {
     		stack.push(getParamValues(context));
     	}
     }
+
+    // GET RAW PARAM VALUES
+    @SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Returns an unmodifiable map of unresolved values of graph parameters")
+    public static Map<String, String> getRawParamValues(TLFunctionCallContext context) {
+		return ((TLObjectCache<Map<String, String>>) context.getCache()).getObject();
+    }
     
+    @TLFunctionInitAnnotation()
+    public static final void getRawParamValuesInit(TLFunctionCallContext context) {
+    	TransformationGraph graph = context.getGraph();
+		
+		Map<String, String> map = new HashMap<String, String>();
+		if (graph != null) {
+			for (GraphParameter param : graph.getGraphParameters().getAllGraphParameters()) {
+				map.put(param.getName(), param.getValue());
+			}
+		}
+		context.setCache(new TLObjectCache<Map<String, String>>(Collections.unmodifiableMap(map)));
+    }
+
+    class GetRawParamValuesFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    		getRawParamValuesInit(context);
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		stack.push(getRawParamValues(context));
+    	}
+    }
+
     // GET JAVA PROPERTIES
     /*
      * Uses unchecked conversion - if someone obtains
@@ -210,54 +276,54 @@ public class UtilLib extends TLFunctionLibrary {
     // HASH CODE
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final int hashCode(TLFunctionCallContext context, int i) {
- 		return HashCodeUtil.getHash(i);
+ 		return HashCodeUtil.hash(i);
  	}
  	
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final int hashCode(TLFunctionCallContext context, long i) {
- 		return HashCodeUtil.getHash(i);
+ 		return HashCodeUtil.hash(i);
  	}
  	
  	
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final int hashCode(TLFunctionCallContext context, double i) {
- 		return HashCodeUtil.getHash(i);
+ 		return HashCodeUtil.hash(i);
  	}
  	
     
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
    	public static final int hashCode(TLFunctionCallContext context, boolean i) {
-   		return HashCodeUtil.getHash(i);
+   		return HashCodeUtil.hash(i);
    	}
  	
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final int hashCode(TLFunctionCallContext context, BigDecimal i) {
- 		return HashCodeUtil.getHash(i);
+ 		return HashCodeUtil.hash(i);
  	}
  	
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final int hashCode(TLFunctionCallContext context, String i) {
-    	return HashCodeUtil.getHash(i);
+    	return HashCodeUtil.hash(i);
  	}
     
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final int hashCode(TLFunctionCallContext context, java.util.Date i) {
- 		return HashCodeUtil.getHash(i);
+ 		return HashCodeUtil.hash(i);
  	}
     
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final <E> int hashCode(TLFunctionCallContext context, List<E> list) {
- 		return HashCodeUtil.getHash(list);
+ 		return HashCodeUtil.hash(list);
  	}
  	
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final <K,V> int hashCode(TLFunctionCallContext context, Map<K,V> map) {
- 		return HashCodeUtil.getHash(map);
+ 		return HashCodeUtil.hash(map);
  	}
  	
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
  	public static final int hashCode(TLFunctionCallContext context, byte[] i) {
- 		return HashCodeUtil.getHash(i);
+ 		return HashCodeUtil.hash(i);
  	}
  	
     @TLFunctionAnnotation("Returns parameter's hashCode - i.e. Java's hashCode().")
@@ -290,34 +356,34 @@ public class UtilLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			switch (((ParamCache) context.getCache()).getType()) {
 			case STRING:
-				stack.push(HashCodeUtil.getHash(stack.popString()));
+				stack.push(HashCodeUtil.hash(stack.popString()));
 				break;
 			case INT:
-				stack.push(HashCodeUtil.getHash(stack.popInt().intValue()));
+				stack.push(HashCodeUtil.hash(stack.popInt().intValue()));
 				break;
 			case LONG:
-				stack.push(HashCodeUtil.getHash(stack.popLong().longValue()));
+				stack.push(HashCodeUtil.hash(stack.popLong().longValue()));
 				break;
 			case DECIMAL:
-				stack.push(HashCodeUtil.getHash(stack.popDecimal()));
+				stack.push(HashCodeUtil.hash(stack.popDecimal()));
 				break;
 			case DOUBLE:
-				stack.push(HashCodeUtil.getHash(stack.popDouble().doubleValue()));
+				stack.push(HashCodeUtil.hash(stack.popDouble().doubleValue()));
 				break;
 			case BYTEARRAY:
-				stack.push(HashCodeUtil.getHash(stack.popByteArray()));
+				stack.push(HashCodeUtil.hash(stack.popByteArray()));
 				break;
 			case DATE:
-				stack.push(HashCodeUtil.getHash(stack.popDate()));
+				stack.push(HashCodeUtil.hash(stack.popDate()));
 				break;
 			case BOOLEAN:
-				stack.push(HashCodeUtil.getHash(stack.popBoolean().booleanValue()));
+				stack.push(HashCodeUtil.hash(stack.popBoolean().booleanValue()));
 				break;
 			case MAP:
-				stack.push(HashCodeUtil.getHash(stack.popMap()));
+				stack.push(HashCodeUtil.hash(stack.popMap()));
 				break;
 			case LIST:
-				stack.push(HashCodeUtil.getHash(stack.popList()));
+				stack.push(HashCodeUtil.hash(stack.popList()));
 				break;
 			case RECORD:
 				stack.push(stack.pop().hashCode());

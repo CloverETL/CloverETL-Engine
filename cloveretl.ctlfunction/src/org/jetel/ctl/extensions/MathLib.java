@@ -19,6 +19,9 @@
 package org.jetel.ctl.extensions;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Iterator;
+import java.util.List;
 
 import org.jetel.ctl.Stack;
 
@@ -33,6 +36,7 @@ public class MathLib extends TLFunctionLibrary {
 			"exp".equals(functionName) ? new ExpFunction() :
 			"floor".equals(functionName) ? new FloorFunction() :
 			"round".equals(functionName) ? new RoundFunction() :
+			"roundHalfToEven".equals(functionName) ? new RoundHalfToEvenFunction() :
 			"ceil".equals(functionName) ? new CeilFunction() :
 			"pow".equals(functionName) ? new PowFunction() :
 			"pi".equals(functionName) ? new PiFunction() :
@@ -46,6 +50,18 @@ public class MathLib extends TLFunctionLibrary {
 			"bitNegate".equals(functionName) ? new BitNegateFunction() :
 			"bitSet".equals(functionName) ? new BitSetFunction() :
 			"bitIsSet".equals(functionName) ? new BitIsSetFunction() :
+			"cos".equals(functionName) ? new CosFunction():
+			"sin".equals(functionName) ? new SinFunction():
+			"tan".equals(functionName) ? new TanFunction():
+			"acos".equals(functionName) ? new ACosFunction():
+			"asin".equals(functionName) ? new ASinFunction():
+			"atan".equals(functionName) ? new ATanFunction():
+			"min".equals(functionName) ? new MinFunction():
+			"max".equals(functionName) ? new MaxFunction():
+			"signum".equals(functionName) ? new SignumFunction():
+			"toDegrees".equals(functionName) ? new ToDegreesFunction():
+			"toRadians".equals(functionName) ? new ToRadiansFunction():
+				
 			null;
 			
 		if (ret == null) {
@@ -192,8 +208,8 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     @TLFunctionAnnotation("Returns the largest (closest to positive infinity) double value that is less than or equal to the argument and is equal to a mathematical integer.")
-    public static final Double floor(TLFunctionCallContext context, BigDecimal d) {
-    	return floor(context, d.doubleValue()); 
+    public static final BigDecimal floor(TLFunctionCallContext context, BigDecimal d) {
+    	return d.setScale(0, RoundingMode.FLOOR);
     }
     
     // FLOOR
@@ -214,44 +230,133 @@ public class MathLib extends TLFunctionLibrary {
 			stack.push(floor(context, stack.popDouble()));
 		}
     }
-
-    @TLFunctionAnnotation("Returns long value closest to the argument.")
+    
+    static final long pow10(int exponent){
+    	long value=1;
+    	int i = Math.abs(exponent);
+    	while(i>0){
+    		value*=10l;
+    		i--;
+    	}
+    	return value;
+    }
+    
+    
+    @TLFunctionAnnotation("Returns double value rounded to specified precision. Equidistant numbers are rounded up.")
+    public static final Double round(TLFunctionCallContext context, double d, Integer precision) {
+    	long multiple=pow10(precision);
+    	if (precision>0)
+    		return ((double)Math.round(d*multiple))/multiple;
+    	else
+    		return ((double)Math.round(d/multiple))*multiple;
+    }
+    
+    @TLFunctionAnnotation("Returns long value rounded to specified precision. Equidistant numbers are rounded up.")
+    public static final Long round(TLFunctionCallContext context, long d, Integer precision) {
+    	long multiple=pow10(precision);
+    	if (precision>0)
+    		return d;
+    	else
+    		return (d/multiple)*multiple;
+    }
+    
+    @TLFunctionAnnotation("Returns integer value rounded to specified precision. Equidistant numbers are rounded up.")
+    public static final Integer round(TLFunctionCallContext context, int d, Integer precision) {
+    	long multiple=pow10(precision);
+    	if (precision>0)
+    		return d;
+    	else
+    		return (int)((d/multiple)*multiple);
+    }
+    
+    @TLFunctionAnnotation("Returns decimal value rounded to specified precision. Equidistant numbers are rounded up.")
+    public static final BigDecimal round(TLFunctionCallContext context, BigDecimal d, Integer precision) {
+    	// use HALF_UP rounding mode to be consistent with round(Double)
+    	// use roundHalfEven() for HALF_EVEN rounding mode
+    	return d.setScale(precision, RoundingMode.HALF_UP); 
+    }
+    
+    @TLFunctionAnnotation("Returns long value closest to the argument. Equidistant numbers are rounded up.")
     public static final Long round(TLFunctionCallContext context, double d) {
     	return Math.round(d);
     }
     
-    @TLFunctionAnnotation("Returns long value closest to the argument. Decimal is converted into double prior to the operation.")
-    public static final Long round(TLFunctionCallContext context, BigDecimal d) {
-    	return round(context, d.doubleValue()); 
+    @TLFunctionAnnotation("Returns decimal value rounded to the closest integer value. Equidistant numbers are rounded up.")
+    public static final BigDecimal round(TLFunctionCallContext context, BigDecimal d) {
+    	// use HALF_UP rounding mode to be consistent with round(Double)
+    	// use roundHalfEven() for HALF_EVEN rounding mode
+    	return d.setScale(0, RoundingMode.HALF_UP); 
     }
     
     // ROUND
-    class RoundFunction implements TLFunctionPrototype { 
+	class RoundFunction implements TLFunctionPrototype {
 
 		@Override
 		public void init(TLFunctionCallContext context) {
 		}
 
-    	@Override
+		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			
-			if (context.getParams()[0].isDecimal()) {
-				stack.push(round(context, stack.popDecimal()));
-				return;
+
+			if (context.getParams().length == 2) {
+				// Precision has to be popped from stack before the argument to round
+				final Integer precision = stack.popInt();
+				if (context.getParams()[0].isDecimal()) {
+					stack.push(round(context, stack.popDecimal(), precision));
+				} else if (context.getParams()[0].isDouble()) {
+					stack.push(round(context, stack.popDouble(), precision));
+				} else if (context.getParams()[0].isLong()) {
+					stack.push(round(context, stack.popLong(), precision));
+				} else{
+					stack.push(round(context, stack.popInt(), precision));
+				}
+			} else {
+				if (context.getParams()[0].isDecimal()) {
+					stack.push(round(context, stack.popDecimal()));
+				} else {
+					stack.push(round(context, stack.popDouble()));
+				}
 			}
-			
-			stack.push(round(context, stack.popDouble()));
 		}
+	}
+	
+    @TLFunctionAnnotation("Returns decimal value rounded to specified precision using the Banker's algorithm.")
+    public static final BigDecimal roundHalfToEven(TLFunctionCallContext context, BigDecimal d, Integer precision) {
+    	return d.setScale(precision, RoundingMode.HALF_EVEN); 
     }
+    
+    @TLFunctionAnnotation("Returns decimal value rounded to the closest integer value using the Banker's algorithm.")
+    public static final BigDecimal roundHalfToEven(TLFunctionCallContext context, BigDecimal d) {
+    	return d.setScale(0, RoundingMode.HALF_EVEN); 
+    }
+
+    // ROUND TO EVEN
+    static class RoundHalfToEvenFunction implements TLFunctionPrototype {
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+
+			if (context.getParams().length == 2) {
+				// Precision has to be popped from stack before the argument to round
+				final Integer precision = stack.popInt();
+				stack.push(roundHalfToEven(context, stack.popDecimal(), precision));
+			} else {
+				stack.push(roundHalfToEven(context, stack.popDecimal()));
+			}
+		}
+	}
     
     @TLFunctionAnnotation("Returns the smallest (closest to negative infinity) double value that is greater than or equal to the argument and is equal to a mathematical integer.")
     public static final Double ceil(TLFunctionCallContext context, double d) {
     	return Math.ceil(d);
     }
     
-    @TLFunctionAnnotation("Returns the smallest (closest to negative infinity) double value that is greater than or equal to the argument and is equal to a mathematical integer.")
-    public static final Double ceil(TLFunctionCallContext context, BigDecimal d) {
-    	return ceil(context, d.doubleValue()); 
+    @TLFunctionAnnotation("Returns the smallest (closest to negative infinity) decimal value that is greater than or equal to the argument and is equal to a mathematical integer.")
+    public static final BigDecimal ceil(TLFunctionCallContext context, BigDecimal d) {
+    	return d.setScale(0,RoundingMode.CEILING);
     }
     
     // CEIL
@@ -279,8 +384,8 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     @TLFunctionAnnotation("Returns the value of the first argument raised to the power of the second argument.")
-    public static final Double pow(TLFunctionCallContext context, BigDecimal argument, BigDecimal power) {
-    	return Math.pow(argument.doubleValue(), power.doubleValue());
+    public static final BigDecimal pow(TLFunctionCallContext context, BigDecimal argument, BigDecimal power) {
+    	return argument.pow(power.intValue());
     }
     
     // POW
@@ -396,6 +501,60 @@ public class MathLib extends TLFunctionLibrary {
 
     }
 
+ // SIGNUM
+    
+    @TLFunctionAnnotation("Computes signum value of the argument.")
+    public static final Integer signum(TLFunctionCallContext context, Integer i) {
+    	return i > 0 ? 1 : i < 0 ? -1 : 0;
+    }
+    
+    @TLFunctionAnnotation("Computes signum value of the argument.")
+    public static final Long signum(TLFunctionCallContext context, Long l) {
+    	return l>0l ? 1l : l < 0l ? -1l : 0;
+    }
+    
+    @TLFunctionAnnotation("Computes signum value of the argument.")
+    public static final Double signum(TLFunctionCallContext context, Double d) {
+    	return Math.signum(d);
+    }
+    
+    @TLFunctionAnnotation("Computes signum value of the argument.")
+    public static final Integer signum(TLFunctionCallContext context, BigDecimal d) {
+    	return d.signum();
+    }
+    
+    class SignumFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isInteger()) {
+				stack.push(signum(context, stack.popInt()));
+				return;
+			} 
+			
+			if (context.getParams()[0].isLong()) {
+				stack.push(signum(context, stack.popLong()));
+				return;
+			} 
+			
+			if (context.getParams()[0].isDouble()) {
+				stack.push(signum(context, stack.popDouble()));
+				return;
+			} 
+			
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(signum(context, stack.popDecimal()));
+				return;
+			}
+		} 
+
+    }
+    
+    
     @TLFunctionAnnotation("Computes bitwise OR of two operands.")
     public static final Long bitOr(TLFunctionCallContext context, Long i, Long j) {
     	return i | j;
@@ -523,17 +682,20 @@ public class MathLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
+			 /*
+			  * The variant bitLShift(int,int) can only be called when both arguments are int
+			  */
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 				Integer second = stack.popInt();
-				stack.push(bitLShift(context, stack.popInt(), second));
-				return;
-			} 
-			
-			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
+				stack.push(bitLShift(context,stack.popInt(), second));
+			} else {
+			    /*
+			     * In all other cases, i.e. bitLShift(int,long), bitLShift(long, int), bitLShift(long,long)
+			     * the compiler will automatically cast int to long so we have to always call bitLShift(long,long)
+			     */
 				Long second = stack.popLong();
 				stack.push(bitLShift(context, stack.popLong(), second));
-				return;
-			} 
+			}
 		} 
     }
 
@@ -555,17 +717,20 @@ public class MathLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
+			 /*
+			  * The variant bitRShift(int,int) can only be called when both arguments are int
+			  */
 			if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 				Integer second = stack.popInt();
-				stack.push(bitRShift(context, stack.popInt(), second));
-				return;
-			} 
-			
-			if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
+				stack.push(bitRShift(context,stack.popInt(), second));
+			} else {
+			    /*
+			     * In all other cases, i.e. bitRShift(int,long), bitRShift(long, int), bitRShift(long,long)
+			     * the compiler will automatically cast int to long so we have to always call bitRShift(long,long)
+			     */
 				Long second = stack.popLong();
 				stack.push(bitRShift(context, stack.popLong(), second));
-				return;
-			} 
+			}
 		} 
     }
     
@@ -598,6 +763,8 @@ public class MathLib extends TLFunctionLibrary {
     	}
     	
     }
+    
+    
 
     @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
 	public static final Boolean bitIsSet(TLFunctionCallContext context, Integer input, Integer bitPosition) {
@@ -670,5 +837,458 @@ public class MathLib extends TLFunctionLibrary {
 			
 		}
     	
+    }
+    
+// MIN
+    
+    @TLFunctionAnnotation("Returns min value of the arguments.")
+    public static final Integer min(TLFunctionCallContext context, Integer a, Integer b) {
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.min(a, b);
+    		}
+    	}
+    }
+    
+    @TLFunctionAnnotation("Returns min value of the arguments.")
+    public static final Long min(TLFunctionCallContext context, Long a, Long b) {
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.min(a, b);
+    		}
+    	}
+    }
+    
+    @TLFunctionAnnotation("Returns min value of the arguments.")
+    public static final Double min(TLFunctionCallContext context, Double a, Double b) {
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.min(a, b);
+    		}
+    	}
+    }
+    
+    @TLFunctionAnnotation("Returns min value of the arguments.")
+    public static final BigDecimal min(TLFunctionCallContext context, BigDecimal a, BigDecimal b) {
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return a.min(b);
+    		}
+    	}
+    }
+    
+    
+	@TLFunctionAnnotation("Returns min value of the array.")
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static final <E> E min(TLFunctionCallContext context, List <E> vals) {
+		Iterator i = vals.iterator();
+		Comparable candidate = (Comparable) i.next();
+
+		while (i.hasNext()) {
+			Comparable next = (Comparable) i.next();
+			if (next==null) continue;
+			if (candidate==null)
+				candidate=next;
+			else if (next.compareTo(candidate) < 0)
+				candidate = next;
+		}
+		return (E)candidate;
+	}
+    
+    class MinFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isInteger()) {
+				stack.push(min(context, stack.popInt(),stack.popInt()));
+				return;
+			} 
+			
+			if (context.getParams()[0].isLong()) {
+				stack.push(min(context, stack.popLong(),stack.popLong()));
+				return;
+			} 
+			
+			if (context.getParams()[0].isDouble()) {
+				stack.push(min(context, stack.popDouble(),stack.popDouble()));
+				return;
+			} 
+			
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(min(context, stack.popDecimal(),stack.popDecimal()));
+				return;
+			}
+			if (context.getParams()[0].isList()) {
+				stack.push(min(context, stack.popList()));
+				return;
+			}
+		} 
+
+    }
+    
+// MAX
+    
+    @TLFunctionAnnotation("Returns max value of the arguments.")
+    public static final Integer max(TLFunctionCallContext context, Integer a, Integer b) {
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.max(a, b);
+    		}
+    	}
+    }
+    
+    @TLFunctionAnnotation("Returns max value of the arguments.")
+    public static final Long max(TLFunctionCallContext context, Long a, Long b) {
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.max(a, b);
+    		}
+    	}
+    }
+    
+    @TLFunctionAnnotation("Returns max value of the arguments.")
+    public static final Double max(TLFunctionCallContext context, Double a, Double b) {
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return Math.max(a, b);
+    		}
+    	}
+    }
+    
+    @TLFunctionAnnotation("Returns max value of the arguments.")
+    public static final BigDecimal max(TLFunctionCallContext context, BigDecimal a, BigDecimal b) {
+    	if (a==null){
+    		return b;
+    	}else{
+    		if (b==null){
+    			return a;
+    		}
+    		else{
+    			return a.max(b);
+    		}
+    	}
+    }
+    
+    @TLFunctionAnnotation("Returns max value of the array.")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public static final <E> E max(TLFunctionCallContext context, List <E> vals) {
+    	Iterator i = vals.iterator();
+		Comparable candidate = (Comparable) i.next();
+
+		while (i.hasNext()) {
+			Comparable next = (Comparable) i.next();
+			if (next==null) continue;
+			if (candidate==null)
+				candidate=next;
+			else if (next.compareTo(candidate) > 0)
+				candidate = next;
+		}
+		return (E)candidate;
+    }
+    
+    class MaxFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isInteger()) {
+				stack.push(max(context, stack.popInt(),stack.popInt()));
+				return;
+			} 
+			
+			if (context.getParams()[0].isLong()) {
+				stack.push(max(context, stack.popLong(),stack.popLong()));
+				return;
+			} 
+			
+			if (context.getParams()[0].isDouble()) {
+				stack.push(max(context, stack.popDouble(),stack.popDouble()));
+				return;
+			} 
+			
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(max(context, stack.popDecimal(),stack.popDecimal()));
+				return;
+			}
+			if (context.getParams()[0].isList()) {
+				stack.push(max(context, stack.popList()));
+				return;
+			}
+		} 
+
+    }
+    
+    @TLFunctionAnnotation("Calculates sin value of parameter.")
+    public static final Double sin(TLFunctionCallContext context, Double d) {
+    	return Math.sin(d);
+    }
+    
+    @TLFunctionAnnotation("Calculates sin value of parameter. Decimal is converted to double prior to the operation.")
+    public static final Double sin(TLFunctionCallContext context, BigDecimal d) {
+    	return sin(context, d.doubleValue());
+    }
+    
+    // SIN
+    class SinFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+    	
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(sin(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(sin(context, stack.popDouble()));
+			
+		}
+    }         
+    
+    @TLFunctionAnnotation("Calculates cos value of parameter.")
+    public static final Double cos(TLFunctionCallContext context, Double d) {
+    	return Math.cos(d);
+    }
+    
+    @TLFunctionAnnotation("Calculates cos value of parameter. Decimal is converted to double prior to the operation.")
+    public static final Double cos(TLFunctionCallContext context, BigDecimal d) {
+    	return cos(context, d.doubleValue());
+    }
+    
+    // COS
+    class CosFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+    	
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(cos(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(cos(context, stack.popDouble()));
+			
+		}
+    }         
+    
+    @TLFunctionAnnotation("Calculates tan value of parameter.")
+    public static final Double tan(TLFunctionCallContext context, Double d) {
+    	return Math.tan(d);
+    }
+    
+    @TLFunctionAnnotation("Calculates tan value of parameter. Decimal is converted to double prior to the operation.")
+    public static final Double tan(TLFunctionCallContext context, BigDecimal d) {
+    	return tan(context, d.doubleValue());
+    }
+    
+    // TAN
+    class TanFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+    	
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(tan(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(tan(context, stack.popDouble()));
+			
+		}
+    }
+    
+    @TLFunctionAnnotation("Calculates asin value of parameter.")
+    public static final Double asin(TLFunctionCallContext context, Double d) {
+    	return Math.asin(d);
+    }
+    
+    @TLFunctionAnnotation("Calculates asin value of parameter. Decimal is converted to double prior to the operation.")
+    public static final Double asin(TLFunctionCallContext context, BigDecimal d) {
+    	return asin(context, d.doubleValue());
+    }
+    
+    // ASIN
+    class ASinFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+    	
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(asin(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(asin(context, stack.popDouble()));
+			
+		}
+    }
+    
+    @TLFunctionAnnotation("Calculates acos value of parameter.")
+    public static final Double acos(TLFunctionCallContext context, Double d) {
+    	return Math.acos(d);
+    }
+    
+    @TLFunctionAnnotation("Calculates acos value of parameter. Decimal is converted to double prior to the operation.")
+    public static final Double acos(TLFunctionCallContext context, BigDecimal d) {
+    	return acos(context, d.doubleValue());
+    }
+    
+    // ACOS
+    class ACosFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+    	
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(acos(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(acos(context, stack.popDouble()));
+			
+		}
+    }
+    
+    @TLFunctionAnnotation("Calculates atan value of parameter.")
+    public static final Double atan(TLFunctionCallContext context, Double d) {
+    	return Math.atan(d);
+    }
+    
+    @TLFunctionAnnotation("Calculates atan value of parameter. Decimal is converted to double prior to the operation.")
+    public static final Double atan(TLFunctionCallContext context, BigDecimal d) {
+    	return atan(context, d.doubleValue());
+    }
+    
+    // ATAN
+    class ATanFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+    	
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(atan(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(atan(context, stack.popDouble()));
+			
+		}
+    }
+    
+    @TLFunctionAnnotation("Converts input value from radians to derees.")
+    public static final Double toDegrees(TLFunctionCallContext context, Double d) {
+    	return Math.toDegrees(d);
+    }
+    
+    @TLFunctionAnnotation("Converts input value from radians to derees. Decimal is converted to double prior to the operation.")
+    public static final Double toDegrees(TLFunctionCallContext context, BigDecimal d) {
+    	return toDegrees(context, d.doubleValue());
+    }
+    
+    // TO DEGREES
+    class ToDegreesFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+    	
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(toDegrees(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(toDegrees(context, stack.popDouble()));
+			
+		}
+    }
+    
+    @TLFunctionAnnotation("Converts input value from degrees to radians.")
+    public static final Double toRadians(TLFunctionCallContext context, Double d) {
+    	return Math.toRadians(d);
+    }
+    
+    @TLFunctionAnnotation("Converts input value from degrees to radians. Decimal is converted to double prior to the operation.")
+    public static final Double toRadians(TLFunctionCallContext context, BigDecimal d) {
+    	return toRadians(context, d.doubleValue());
+    }
+    
+    // TO RADIANS
+    class ToRadiansFunction implements TLFunctionPrototype {
+
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+    	
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isDecimal()) {
+				stack.push(toRadians(context, stack.popDecimal()));
+				return;
+			}
+			
+			stack.push(toRadians(context, stack.popDouble()));
+			
+		}
     }
 }

@@ -18,6 +18,10 @@
  */
 package org.jetel.graph;
 
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
 import org.jetel.graph.runtime.IAuthorityProxy;
 
 /**
@@ -29,6 +33,8 @@ import org.jetel.graph.runtime.IAuthorityProxy;
  *
  * @created 2.8.2013
  */
+@XmlRootElement(name = "GraphParameter")
+@XmlType(propOrder = { "description", "secure", "value", "name" })
 public class GraphParameter {
 
 	private String name;
@@ -37,22 +43,38 @@ public class GraphParameter {
 	
 	private boolean secure;
 	
+	private String description;
+	
+	public GraphParameter() {
+		
+	}
+	
 	public GraphParameter(String name, String value) {
 		this.name = name;
 		this.value = value;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 	
 	/**
 	 * @return name of this graph parameter, this is key of parameter
 	 * which is used to reference this parameter using ${PARAM_NAME} pattern
 	 */
+	@XmlAttribute(name="name")
 	public String getName() {
 		return name;
+	}
+	
+	public void setValue(String value) {
+		this.value = value;
 	}
 	
 	/**
 	 * @return value of this parameter; can contain a parameter reference recursively
 	 */
+	@XmlAttribute(name="value")
 	public String getValue() {
 		return value;
 	}
@@ -62,6 +84,7 @@ public class GraphParameter {
 	 * special value resolution is used for secure parameters,
 	 * see {@link IAuthorityProxy#getSecureParamater(String, String)}
 	 */
+	@XmlAttribute(name="secure")
 	public boolean isSecure() {
 		return secure;
 	}
@@ -73,5 +96,22 @@ public class GraphParameter {
 	public void setSecure(boolean secure) {
 		this.secure = secure;
 	}
-	
+
+	/**
+	 * @return description of this graph parameter
+	 * @note this attribute is not de-serialize from xml now by TransformationGraphXMLReaderWriter
+	 */
+	@XmlAttribute(name="description")
+	public String getDescription() {
+		return description;
+	}
+
+	/**
+	 * Sets description of this graph parameter
+	 * @param description new description of this graph parameter
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
 }

@@ -21,7 +21,6 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
-import java.nio.channels.Channels;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -256,12 +255,12 @@ public final class TransformationGraph extends GraphElement {
 	/**
 	 *  Gets the IConnection object asssociated with the name provided
 	 *
-	 * @param  name  The IConnection name under which the connection was registered.
+	 * @param  id  The IConnection ID under which the connection was registered.
 	 * @return       The IConnection object (if found) or null
 	 * @since        October 1, 2002
 	 */
-	public IConnection getConnection(String name) {
-		return  connections.get(name);
+	public IConnection getConnection(String id) {
+		return  connections.get(id);
 	}
 
 	/**
@@ -676,7 +675,7 @@ public final class TransformationGraph extends GraphElement {
 		// some JDBC drivers start up thread which monitors opened connection
 		// this thread sometimes won't die when the main thread is finished - hence
 		// this code
-		Iterator iterator;
+		Iterator<?> iterator;
 		IConnection dbCon;
 		
 		// free all phases
@@ -865,10 +864,13 @@ public final class TransformationGraph extends GraphElement {
 	}
 	
 	/**
-	 *  Gets the graphProperties attribute of the TransformationGraph object
+	 * Gets the graphProperties attribute of the TransformationGraph object
+	 * NOTE: backward compatibility issue introduced in rel-3-5 - returned graph parameters
+	 * are only copy of real graph parameters, no changes on returned object are reflected in real graph parameters
 	 *
 	 * @return    The graphProperties value
 	 * @deprecated use getGraphParameters().asProperties() instead
+	 * @see CLO-2002
 	 */
 	@Deprecated
 	public TypedProperties getGraphProperties() {
@@ -900,7 +902,7 @@ public final class TransformationGraph extends GraphElement {
 		TypedProperties graphProperties = new TypedProperties();
 		InputStream inStream = null;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeContext().getContextURL(), fileURL));
+        	inStream = FileUtils.getInputStream(getRuntimeContext().getContextURL(), fileURL);
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
@@ -931,7 +933,7 @@ public final class TransformationGraph extends GraphElement {
 
 		InputStream inStream = null;
         try {
-        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeContext().getContextURL(), fileURL));
+        	inStream = FileUtils.getInputStream(getRuntimeContext().getContextURL(), fileURL);
             graphProperties.loadSafe(inStream);
     		getGraphParameters().addProperties(graphProperties);
         } catch(MalformedURLException e) {
@@ -1257,7 +1259,7 @@ public final class TransformationGraph extends GraphElement {
     	return getUniqueId(null, connections);
     }
     
-    private String getUniqueId(String id, Map elements) {
+    private String getUniqueId(String id, Map<String, ?> elements) {
 
     	if (id == null) {
 			if (elements == dataRecordMetadata) {
@@ -1360,4 +1362,9 @@ public final class TransformationGraph extends GraphElement {
 		this.guiVersion = guiVersion;
 	}
 
+	@Override
+	public String toString() {
+		return getId() + ":" + getRuntimeContext().getRunId();
+	}
+	
 }

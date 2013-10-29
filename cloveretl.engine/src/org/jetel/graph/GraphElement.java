@@ -18,6 +18,8 @@
  */
 package org.jetel.graph;
 
+import java.net.URL;
+
 import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -256,12 +258,18 @@ public abstract class GraphElement implements IGraphElement {
     public PropertyRefResolver getPropertyRefResolver() {
     	TransformationGraph graph = getGraph();
     	if (graph != null) {
-    		return new PropertyRefResolver(graph.getGraphParameters());
+    		PropertyRefResolver resolver = new PropertyRefResolver(graph.getGraphParameters());
+    		resolver.setAuthorityProxy(graph.getAuthorityProxy());
+    		return resolver;
     	} else {
     		return new PropertyRefResolver();
     	}
     }
     
+	protected URL getContextURL() {
+		return (getGraph() != null) ? getGraph().getRuntimeContext().getContextURL() : null;
+	}
+
     @Override
     public String toString() {
     	return identifiersToString(getId(), getName());

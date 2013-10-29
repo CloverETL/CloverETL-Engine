@@ -94,7 +94,7 @@ abstract class ExternalPortData extends PortData {
 		recordBuffer.clear();
 
 		return serializedKey;
-	}
+	} 
 		
 	protected static boolean equalsKey(Tuple<byte[], byte[]> tuple, byte[] key) {
 		byte[] foundKey = tuple.getKey();

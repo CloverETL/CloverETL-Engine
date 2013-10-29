@@ -260,7 +260,7 @@ public class CloverDataWriter extends Node {
         }
         
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, fileURL, mkDir);
+        	FileUtils.canWrite(getContextURL(), fileURL, mkDir);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,
             		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
@@ -295,7 +295,12 @@ public class CloverDataWriter extends Node {
 		formatter.setProjectURL(getGraph().getRuntimeContext().getContextURL());
 		formatter.init(metadata);
 	}
-		
+
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	/**
 	 *  Description of the Method
 	 *

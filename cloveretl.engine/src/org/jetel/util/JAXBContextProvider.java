@@ -74,6 +74,17 @@ public class JAXBContextProvider {
 		return getContext(new ContextKey(contextPath, classLoader));
 	}
 	
+	/**
+	 * Use this instead of {@link JAXBContext#newInstance(String)}
+	 * @param contextPath
+	 * @return
+	 * @throws JAXBException
+	 */
+	public JAXBContext getContext(String contextPath) throws JAXBException {
+		
+		return getContext(new ContextKey(contextPath, null));
+	}
+	
 	private synchronized JAXBContext getContext(ContextKey key) throws JAXBException {
 		
 		JAXBContext ctx = cache.get(key);
@@ -102,8 +113,12 @@ public class JAXBContextProvider {
 		public JAXBContext createContext() throws JAXBException {
 			if (types != null) {
 				return JAXBContext.newInstance(types.toArray(new Class<?>[types.size()]));
-			} if (contextPath != null && classLoader != null) {
-				return JAXBContext.newInstance(contextPath, classLoader);
+			} if (contextPath != null) {
+				if (classLoader != null) {
+					return JAXBContext.newInstance(contextPath, classLoader);
+				} else {
+					return JAXBContext.newInstance(contextPath);
+				}
 			} else {
 				throw new JetelRuntimeException("Invalid arguments for context creation.");
 			}
@@ -147,4 +162,3 @@ public class JAXBContextProvider {
 		}
 	}
 }
-

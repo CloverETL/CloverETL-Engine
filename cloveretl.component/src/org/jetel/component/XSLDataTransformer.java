@@ -22,6 +22,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -100,6 +101,7 @@ public class XSLDataTransformer extends Node {
 	private static final String XML_XSLT_ATTRIBUTE = "xslt";
     private static final String XML_MAPPING_ATTRIBUTE = "mapping";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
     
 	private static final String ERR_MAPPING_FILE_NOT_FOUND = "Mapping attribute or xml file attributes must be defined.";
 	private static final String ERR_XSLT_NOT_FOUND = "XSL transformation attribute must be defined.";
@@ -120,6 +122,7 @@ public class XSLDataTransformer extends Node {
 	private String xslt;
 	private String mapping;
 	private String charset;
+	private boolean mkDir;
 	
 	private XSLTMappingTransition xsltMappingTransition;
 	private ReadableChannelIterator channelIterator;
@@ -181,7 +184,7 @@ public class XSLDataTransformer extends Node {
 		xsltIs = null;
 		if (xsltFile != null) {
 			try {
-				xsltIs = Channels.newInputStream(FileUtils.getReadableChannel(getGraph().getRuntimeContext().getContextURL(), xsltFile));
+				xsltIs = FileUtils.getInputStream(getGraph().getRuntimeContext().getContextURL(), xsltFile);
 			} catch (RuntimeException e) {
 				if (xslt == null || xslt.equals("")) throw e;
 			} catch (IOException e) {
@@ -298,7 +301,7 @@ public class XSLDataTransformer extends Node {
 
     private void initChannelIterator() throws ComponentNotReadyException {
     	TransformationGraph graph = getGraph();
-    	channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), graph != null ? graph.getRuntimeContext().getContextURL() : null, xmlInputFile);
+    	channelIterator = new ReadableChannelIterator(getInputPort(READ_FROM_PORT), getContextURL(), xmlInputFile);
     	channelIterator.setCharset(charset);
     	channelIterator.setDictionary(graph != null ? graph.getDictionary() : null);
     	channelIterator.init();
@@ -313,7 +316,11 @@ public class XSLDataTransformer extends Node {
     	// prepare type of targets: lookpup/keyValue
 		try {
 			InputPort inputPort = getInputPort(READ_FROM_PORT);
-	    	currentTarget = new TargetFile(xmlOutputFile, getGraph() != null ? getGraph().getRuntimeContext().getContextURL() : null, 
+			URL contextURL = getContextURL();
+			if (mkDir) { // CLO-1085
+				FileUtils.createParentDirs(contextURL, xmlOutputFile);
+			}
+	    	currentTarget = new TargetFile(xmlOutputFile, contextURL, 
 	    			new XSLTFormatter(), inputPort == null ? null : inputPort.getMetadata());
 			currentTarget.setAppendData(false);
 			currentTarget.setUseChannel(true);
@@ -406,12 +413,17 @@ public class XSLDataTransformer extends Node {
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			xslTransformer.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}
+		xslTransformer.setMkDir(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE, false));
 		return xslTransformer;
 	}
 
 
 	private void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	private void setMkDir(boolean mkDir) {
+		this.mkDir = mkDir;
 	}
 
 	/**
