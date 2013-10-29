@@ -100,6 +100,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         runtimeContext.setRunId(runId);
         runtimeContext.setLogLevel(Level.ALL);
+        runtimeContext.setLogLocation(givenRuntimeContext.getLogLocation());
         if (runtimeContext.getLogLocation() != null) {
         	prepareLogger(runtimeContext);
         }
