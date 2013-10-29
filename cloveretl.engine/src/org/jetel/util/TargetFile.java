@@ -521,6 +521,10 @@ public class TargetFile {
      * @throws IOException
      */
     public void close() throws IOException {
+    	
+    	dictOutArray =  null;
+    	dictObjectArray = null;
+    	
         formatter.close();
     }
 

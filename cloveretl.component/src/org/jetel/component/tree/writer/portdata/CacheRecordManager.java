@@ -233,6 +233,8 @@ public class CacheRecordManager extends RecordManagerImpl {
 		recman.close();
 		recman = null;
 		hash = null;
+		first = null;
+		last = null;
 	}
 
 	@Override
