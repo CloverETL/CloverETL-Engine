@@ -206,5 +206,13 @@ public class ErrorMessage implements Serializable {
 	 */
 	public interface Detail {
 		
+		public static enum ErrorKind {
+			UNKNOWN, // unspecified error
+			NO_METADATA, // metadata definitions not available
+			MISSING_FIELD // field not found
+		}
+		
+		public ErrorKind getKind();
+		
 	}
 }
