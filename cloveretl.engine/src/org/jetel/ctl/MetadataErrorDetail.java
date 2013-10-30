@@ -29,12 +29,11 @@ import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
  *
  * @created Jul 4, 2012
  */
-public class MetadataErrorDetail extends ErrorDetail implements Detail {
+public class MetadataErrorDetail implements Detail {
 
 	private final CLVFFieldAccessExpression node;
 	
 	public MetadataErrorDetail(CLVFFieldAccessExpression node) {
-		super(ErrorKind.MISSING_FIELD);
 		this.node = node;
 	}
 

@@ -52,7 +52,6 @@ import org.jetel.ctl.ASTnode.CLVFUnaryNonStatement;
 import org.jetel.ctl.ASTnode.CLVFVariableDeclaration;
 import org.jetel.ctl.ASTnode.Node;
 import org.jetel.ctl.ASTnode.SimpleNode;
-import org.jetel.ctl.ErrorMessage.Detail.ErrorKind;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.UnknownTypeException;
@@ -332,8 +331,7 @@ public class ASTBuilder extends NavigatingVisitor {
 		if (metadata != null) {
 			node.setMetadata(metadata);
 		} else {
-			ErrorMessage m = error(node, "Cannot " + (isOutput ? "write to output" : "read from input") + " port '" + id + "'", "Either the port has no edge connected or the operation is not permitted.");
-			m.setDetail(new ErrorDetail(ErrorKind.NO_METADATA));
+			error(node, "Cannot " + (isOutput ? "write to output" : "read from input") + " port '" + id + "'", "Either the port has no edge connected or the operation is not permitted.");
 			node.setType(TLType.ERROR);
 			return node;
 		}
