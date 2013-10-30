@@ -67,4 +67,8 @@
 		<FlatFile outputFile="data-out/Movies_list.html" supposedFile="supposed-out/Movies_list.html"/>
 	</FunctionalTest>
 
+	<FunctionalTest ident="ValidateData" graphFile="graph/ValidateData.grf">
+		<FlatFile outputFile="data-out/invalid_contacts.csv" supposedFile="supposed-out/invalid_contacts.csv"/>
+	</FunctionalTest>
+
 </TestScenario>
