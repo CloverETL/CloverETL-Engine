@@ -150,7 +150,7 @@ public class ErrorReporter {
 			}
 			
 			if (strbuf.length() > 0) {
-				strbuf.deleteCharAt(strbuf.length() - 1);
+				strbuf.delete(strbuf.length() - LINE_SEPARATOR.length(), strbuf.length());
 			}
 			return strbuf.toString();
 		} catch (IOException e) {
