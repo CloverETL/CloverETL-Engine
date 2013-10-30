@@ -38,19 +38,39 @@ public class SubGraphUtils {
 	/** Type of SubJobflowOutput component. */
 	public static final String SUB_JOBFLOW_OUTPUT_TYPE = "SUB_JOBFLOW_OUTPUT";
 
+	/** Type of SubGraph component. */
+	public static final String SUB_GRAPH_TYPE = "SUB_GRAPH";
+
+	/** Type of SubJobflow component. */
+	public static final String SUB_JOBFLOW_TYPE = "SUB_JOBFLOW";
+
 
 	/**
-	 * @return true if and only if the given component type is SubGraphInput component.
+	 * @return true if and only if the given component type is SubGraphInput or SubJobflowInput component.
 	 */
-	public static boolean isSubGraphInput(String componentType) {
+	public static boolean isSubJobInputComponent(String componentType) {
 		return SUB_GRAPH_INPUT_TYPE.equals(componentType) || SUB_JOBFLOW_INPUT_TYPE.equals(componentType);
 	}
 
 	/**
-	 * @return true if and only if the given component type is SubGraphOutput component.
+	 * @return true if and only if the given component type is SubGraphOutput or SubJobflowOutput component.
 	 */
-	public static boolean isSubGraphOutput(String componentType) {
+	public static boolean isSubJobOutputComponent(String componentType) {
 		return SUB_GRAPH_OUTPUT_TYPE.equals(componentType) || SUB_JOBFLOW_OUTPUT_TYPE.equals(componentType);
+	}
+
+	/**
+	 * @return true if and only if the given component type is {@link #isSubJobInputComponent(String)} or {@link #isSubJobOutputComponent(String)}
+	 */
+	public static boolean isSubJobInputOutputComponent(String componentType) {
+		return isSubJobInputComponent(componentType) || isSubJobOutputComponent(componentType);
+	}
+	
+	/**
+	 * @return true if and only if the given component type is SubGraph od SubJobflow component.
+	 */
+	public static boolean isSubJobComponent(String componentType) {
+		return SUB_GRAPH_TYPE.equals(componentType) || SUB_JOBFLOW_TYPE.equals(componentType);
 	}
 
 }

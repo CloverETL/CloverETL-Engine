@@ -44,7 +44,6 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider.Context;
-import org.jetel.graph.analyse.GraphAnalyser;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
@@ -461,16 +460,6 @@ public final class TransformationGraph extends GraphElement {
 				}
 			}
 
-	        // analyze graph's topology
-	        try {
-				GraphAnalyser.analyseGraph(this);
-				for (Edge edge : getEdges().values()) {
-					logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
-				}
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "Graph analyse failed.", e);
-			}
-			
 			//initialization of all phases
 			//it is no more true --> phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
 			for (Phase phase : phases.values()) {
@@ -1151,14 +1140,14 @@ public final class TransformationGraph extends GraphElement {
 	        boolean hasSubGraphInput = false;
 	        boolean hasSubGraphOutput = false;
 	        for (Node component : getNodes().values()) {
-	        	if (SubGraphUtils.isSubGraphInput(component.getType())) {
+	        	if (SubGraphUtils.isSubJobInputComponent(component.getType())) {
 	        		if (hasSubGraphInput) {
 	        			status.add("Multiple SubGraphInput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
 	        		} else {
 	        			hasSubGraphInput = true;
 	        		}
 	        	}
-	        	if (SubGraphUtils.isSubGraphOutput(component.getType())) {
+	        	if (SubGraphUtils.isSubJobOutputComponent(component.getType())) {
 	        		if (hasSubGraphOutput) {
 	        			status.add("Multiple SubGraphOutput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
 	        		} else {

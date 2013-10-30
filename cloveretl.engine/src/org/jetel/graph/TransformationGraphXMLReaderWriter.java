@@ -58,7 +58,6 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.ContextProvider.Context;
-import org.jetel.graph.analyse.SubGraphAnalyser;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
 import org.jetel.graph.runtime.ExecutionType;
@@ -421,15 +420,32 @@ public class TransformationGraphXMLReaderWriter {
 	        //remove disabled components and their edges
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
 
-			//pre-process sub-graph - remove component before SubGraphInput and after SubGraphOutput
+			//remove component before SubGraphInput and after SubGraphOutput if necessary
 			if (runtimeContext.isSubJob()) {
-				SubGraphAnalyser.adjustGraph(graph);
+				try {
+					TransformationGraphAnalyzer.analyseSubGraph(graph);
+				} catch (Exception e) {
+					throwXMLConfigurationException("Sub-graph analysis failed.", e);
+				}
 			}
 			
-			//pre-process the graph - automatic metadata propagation is performed
+			//perform automatic metadata propagation
 			if (graphPreProcessing) {
-				GraphPreProcessor graphPreProcessor = new GraphPreProcessor(graph);
-				graphPreProcessor.preProcess();
+				try {
+					TransformationGraphAnalyzer.analyseMetadataPropagation(graph);
+				} catch (Exception e) {
+					throwXMLConfigurationException("Metadata propagation analysis failed.", e);
+				}
+			}
+
+	        //analyze type of edges - specially buffered and phase edges
+	        try {
+	        	TransformationGraphAnalyzer.analyseEdgeTypes(graph);
+				for (Edge edge : graph.getEdges().values()) {
+					logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
+				}
+			} catch (Exception e) {
+				throwXMLConfigurationException("Edge type analysis failed.", e);
 			}
 
 	        return graph;
@@ -625,7 +641,8 @@ public class TransformationGraphXMLReaderWriter {
 		int fromPort;
 		int toPort;
 		org.jetel.graph.Edge graphEdge;
-		org.jetel.graph.Node graphNode;
+		org.jetel.graph.Node writerNode;
+		org.jetel.graph.Node readerNode;
 
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < edgeElements.getLength(); i++) {
@@ -687,8 +704,8 @@ public class TransformationGraphXMLReaderWriter {
 				throwXMLConfigurationException("Wrong definition of \"fromNode\" ["+fromNodeAttr+"] <Node>:<Port> at "+edgeID+" edge !");
 				continue;
 			}
-			graphNode = graph.getNodes().get(specNodePort[0]);
-			if (graphNode == null) {
+			writerNode = graph.getNodes().get(specNodePort[0]);
+			if (writerNode == null) {
 				throwXMLConfigurationException("Can't find node with ID: " + fromNodeAttr);
 				continue;
 			}
@@ -700,19 +717,19 @@ public class TransformationGraphXMLReaderWriter {
             }
             
 			// check whether port isn't already assigned
-			if (graphNode.getOutputPort(fromPort)!=null){
-				throwXMLConfigurationException("Output port ["+fromPort+"] of "+graphNode.getId()+" already assigned !");
+			if (writerNode.getOutputPort(fromPort)!=null){
+				throwXMLConfigurationException("Output port ["+fromPort+"] of " + writerNode.getId()+" already assigned !");
 				continue;
 			}
-			graphNode.addOutputPort(fromPort, graphEdge);
+			writerNode.addOutputPort(fromPort, graphEdge);
 			// assign edge to toNode
 			specNodePort = toNodeAttr.split(":");
 			if (specNodePort.length!=2){
 				throw new XMLConfigurationException("Wrong definition of \"toNode\" ["+toNodeAttr+"] <Node>:<Port> at edge: "+edgeID+" !");
 			}
 			// Node & port specified in form of: <nodeID>:<portNum>
-			graphNode = graph.getNodes().get(specNodePort[0]);
-			if (graphNode == null) {
+			readerNode = graph.getNodes().get(specNodePort[0]);
+			if (readerNode == null) {
 				throwXMLConfigurationException("Can't find node ID: " + toNodeAttr);
 				continue;
 			}
@@ -723,12 +740,12 @@ public class TransformationGraphXMLReaderWriter {
                 continue;
             }
 			// check whether port isn't already assigned
-			if (graphNode.getInputPort(toPort)!=null){
-				throwXMLConfigurationException("Input port ["+toPort+"] of "+graphNode.getId()+" already assigned !");
+			if (readerNode.getInputPort(toPort)!=null){
+				throwXMLConfigurationException("Input port ["+toPort+"] of " + readerNode.getId()+" already assigned !");
 				continue;
 			}
-			graphNode.addInputPort(toPort, graphEdge);
-
+			readerNode.addInputPort(toPort, graphEdge);
+			
             // register edge within graph
             graph.addEdge(graphEdge);
 			

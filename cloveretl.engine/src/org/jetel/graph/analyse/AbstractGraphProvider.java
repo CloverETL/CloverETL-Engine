@@ -18,6 +18,10 @@
  */
 package org.jetel.graph.analyse;
 
+import org.jetel.graph.Node;
+import org.jetel.util.ClusterUtils;
+import org.jetel.util.SubGraphUtils;
+
 
 /**
  * Common ancestor for both implementation of {@link GraphProvider} interface.
@@ -30,4 +34,13 @@ package org.jetel.graph.analyse;
  */
 public abstract class AbstractGraphProvider implements GraphProvider {
 
+	/**
+	 * RemoteEdgeComponent and SubJobInput/Output components are not processed in regular way.
+	 * @return true for the component which are dedicated to be root of graph processing
+	 */
+	protected boolean isAllowedComponent(Node component) {
+		return !ClusterUtils.isRemoteEdgeComponent(component.getType())
+				&& !SubGraphUtils.isSubJobInputOutputComponent(component.getType());
+	}
+	
 }

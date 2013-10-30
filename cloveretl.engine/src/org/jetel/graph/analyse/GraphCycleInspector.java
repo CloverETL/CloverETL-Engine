@@ -171,7 +171,7 @@ public class GraphCycleInspector {
 			throw new JetelRuntimeException("Oriented cycle found in the graph. Cycles are available only in jobflows. " + theCycle);
 		}
 		if (!hasWhileCycle) {
-			throw new JetelRuntimeException("Oriented cycle without WhileCycle component found in the graph. " + theCycle);
+			throw new JetelRuntimeException("Oriented cycle without Loop component found in the graph. " + theCycle);
 		}
 	}
 	
