@@ -3199,24 +3199,15 @@ public class HttpConnector extends Node {
 	 * @throws IOException
 	 */
 	private String getResponseContentAsString(InputStream responseInputStream) throws IOException {
-		BufferedReader reader;
-		if (charsetToUse == null) {
-			reader = new BufferedReader(new InputStreamReader(responseInputStream));
-		} else {
-			reader = new BufferedReader(new InputStreamReader(responseInputStream, charsetToUse));
-		}
-		StringBuilder sb = new StringBuilder();
-		String line = null;
 		try {
-			while ((line = reader.readLine()) != null) {
-				sb.append(line + "\n");
+			if (charsetToUse == null) {
+				return IOUtils.toString(responseInputStream);
+			} else {
+				return IOUtils.toString(responseInputStream, charsetToUse);
 			}
-		} catch (IOException e) {
-			throw new JetelRuntimeException("Unable to read request result.", e);
 		} finally {
 			closeStreamSilent(responseInputStream);
 		}
-		return sb.toString();
 	}
 
 	private byte[] getResponseContentAsByteArray(InputStream responseInputStream) throws IOException {

@@ -235,6 +235,8 @@ public class CacheRecordManager extends RecordManagerImpl {
 		JdbmCloser.fastCloseUsingReflection((BaseRecordManager)recman);
 		recman = null;
 		hash = null;
+        first = null;
+        last = null;
 	}
 
 	@Override

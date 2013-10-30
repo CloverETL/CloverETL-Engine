@@ -295,7 +295,12 @@ public class CloverDataWriter extends Node {
 		formatter.setProjectURL(getGraph().getRuntimeContext().getContextURL());
 		formatter.init(metadata);
 	}
-		
+
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	/**
 	 *  Description of the Method
 	 *

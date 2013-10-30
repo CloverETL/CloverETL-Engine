@@ -25,12 +25,10 @@ import java.io.InputStreamReader;
 import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -552,6 +550,11 @@ public class XMLExtract extends Node {
 		
 		return new InputStreamReader(pushbackInputStream, charsetInstance.newDecoder());
 
+	}
+
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { inputFile };
 	}
 
 	@Override
