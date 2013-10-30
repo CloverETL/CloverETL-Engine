@@ -59,6 +59,7 @@ public class TLCompiler implements ITLCompiler {
 	protected Log logger;
 	protected String componentId;
 	private List<TLFunctionCallContext> functionContexts;
+	protected boolean lenient = false;
 
 	
 	/**
@@ -146,6 +147,7 @@ public class TLCompiler implements ITLCompiler {
 		}
 		
 		ASTBuilder astBuilder = new ASTBuilder(graph,inMetadata,outMetadata,parser.getFunctions(),problemReporter);
+		astBuilder.setLenient(lenient);
 		astBuilder.resolveAST(parseTree);
 		if (problemReporter.errorCount() > 0) {
 			return getDiagnosticMessages();
@@ -231,6 +233,7 @@ public class TLCompiler implements ITLCompiler {
 		}
 		
 		ASTBuilder astBuilder = new ASTBuilder(graph,inMetadata,outMetadata,parser.getFunctions(),problemReporter);
+		astBuilder.setLenient(lenient);
 		astBuilder.resolveAST(parseTree);
 		if (problemReporter.errorCount() > 0) {
 			return getDiagnosticMessages();
@@ -384,7 +387,10 @@ public class TLCompiler implements ITLCompiler {
 	public void setTabSize(int size) {
 		this.tabSize = size;
 	}
-
+	
+	public void setLenient(boolean lenient) {
+		this.lenient = lenient;
+	}
 
 	/**
 	 * @return	Expression AST root created during {@link #validateExpression(InputStream)}

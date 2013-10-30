@@ -116,6 +116,8 @@ public class ASTBuilder extends NavigatingVisitor {
 	/** Problem collector */
 	private ProblemReporter problemReporter;
 	
+	private boolean lenient = false;
+	
 	private LiteralParser literalParser = new LiteralParser();
 	
 	public ASTBuilder(TransformationGraph graph, DataRecordMetadata[] inputMetadata, DataRecordMetadata[] outputMetadata,
@@ -185,6 +187,10 @@ public class ASTBuilder extends NavigatingVisitor {
 			}
 
 		}
+	}
+	
+	public void setLenient(boolean lenient) {
+		this.lenient = lenient;
 	}
 
 	/**
@@ -330,6 +336,9 @@ public class ASTBuilder extends NavigatingVisitor {
 		DataRecordMetadata metadata = isOutput ? getOutputMetadata(recordPos) : getInputMetadata(recordPos);
 		if (metadata != null) {
 			node.setMetadata(metadata);
+		} else if (lenient) {
+			node.setType(TLType.UNKNOWN);
+			return node;
 		} else {
 			error(node, "Cannot " + (isOutput ? "write to output" : "read from input") + " port '" + id + "'", "Either the port has no edge connected or the operation is not permitted.");
 			node.setType(TLType.ERROR);
