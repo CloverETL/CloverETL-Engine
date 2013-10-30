@@ -19,35 +19,29 @@
 package org.jetel.ctl;
 
 import org.jetel.ctl.ErrorMessage.Detail;
-import org.jetel.ctl.ASTnode.CLVFFieldAccessExpression;
 
 /**
- * {@link ErrorMessage.Detail} used to indicate missing fields.
+ * Base implementation of the {@link ErrorMessage.Detail} interface.
  * 
  * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created Jul 4, 2012
+ * @created 30. 10. 2013
  */
-public class MetadataErrorDetail extends ErrorDetail implements Detail {
-
-	private final CLVFFieldAccessExpression node;
+public class ErrorDetail implements Detail {
 	
-	public MetadataErrorDetail(CLVFFieldAccessExpression node) {
-		super(ErrorKind.MISSING_FIELD);
-		this.node = node;
-	}
+	public final ErrorKind kind;
 
-	public boolean isOutput() {
-		return node.isOutput();
-	}
-
-	public int getRecordId() {
-		return node.getRecordId();
+	public ErrorDetail(ErrorKind kind) {
+		this.kind = kind;
 	}
 	
-	public String getFieldName() {
-		return node.getFieldName();
+	/**
+	 * @return the kind of the error
+	 */
+	@Override
+	public ErrorKind getKind() {
+		return kind;
 	}
-
+	
 }
