@@ -590,7 +590,9 @@ public class TypeChecker extends NavigatingVisitor {
 	
 	@Override
 	public Object visit(CLVFFieldAccessExpression node, Object data) {
-		// nothing to do, type calculation done in ASTBuilder
+		if (node.getType().isUnknown()) {
+			warn(node, "Metadata not available");
+		}
 		return data;
 	}
 	
@@ -2053,6 +2055,9 @@ public class TypeChecker extends NavigatingVisitor {
 			return true;
 		}
 		if (actual.isNull()) { // perform no binding for null type; also prevents ClassCastExceptions
+			return true;
+		}
+		if (actual.isUnknown()) { // perform no binding for unknown type
 			return true;
 		}
 		
