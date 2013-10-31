@@ -60,6 +60,8 @@ import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -652,9 +654,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		executeCode(compiler);
 	}
+	
+	protected void doCompileExpectError(TransformationGraph graph, String expStr, String testIdentifier, List<String> errCodes) {
+		this.graph = graph;
 
-	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
-		graph = createDefaultGraph();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4) };
 
@@ -690,6 +693,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// parseTree.dump("");
 
 		// executeCode(compiler);
+	}
+
+	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
+		doCompileExpectError(createDefaultGraph(), expStr, testIdentifier, errCodes);
 	}
 
 	protected void doCompileExpectError(String testIdentifier, String errCode) {
@@ -8665,6 +8672,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		@SuppressWarnings("unchecked")
 		List<byte[]> byteList = (List<byte[]>) getVariable("byteList"); 
 		assertDeepEquals(byteList, Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
+	}
+	
+	public void test_dictionary_expect_error() throws Exception {
+		// CLO-2283
+		TransformationGraph graph = createEmptyGraph();
+		graph.getDictionary().setValue("listEntry", "list", new ArrayList<String>());
+		graph.getDictionary().setContentType("listEntry", "object");
+		graph.getDictionary().setValue("mapEntry", "map", new HashMap<String, String>());
+		graph.getDictionary().setContentType("mapEntry", "object");
+		
+		doCompileExpectError(graph, 
+				"function integer transform(){append(dictionary.listEntry, \"newValue\"); return 0;}",
+				"test_dictionary_expect_error",
+				Arrays.asList("Dictionary entry 'listEntry' has invalid content type: 'object'"));
+		doCompileExpectError(graph, 
+				"function integer transform(){containsKey(dictionary.mapEntry, \"myKey\"); return 0;}",
+				"test_dictionary_expect_error",
+				Arrays.asList("Dictionary entry 'mapEntry' has invalid content type: 'object'"));
 	}
 
 	public void test_dictionary_write() {
