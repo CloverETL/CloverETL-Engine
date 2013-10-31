@@ -655,7 +655,7 @@ public class ASTBuilder extends NavigatingVisitor {
 			
 			TLType tlType = dictType.getTLType();
 			if( tlType == null){
-				error(node, "Dictionary entry '" + node.getName() + " has type "+dictType.getTypeId()+" which is not supported in CTL");
+				error(node, "Dictionary entry '" + node.getName() + "' has type "+dictType.getTypeId()+" which is not supported in CTL");
 				node.setType(TLType.ERROR);
 				return node;
 			} else if (tlType.isList()) {
