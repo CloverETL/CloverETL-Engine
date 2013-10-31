@@ -177,6 +177,27 @@ public class GraphParameters {
 		return result;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		boolean firstParam = true;
+		for (GraphParameter parameter : parameters.values()) {
+			if (firstParam) {
+				firstParam = false;
+			} else {
+				result.append(", ");
+			}
+			result.append(parameter.getName());
+			result.append('=');
+			if (!parameter.isSecure()) {
+				result.append(parameter.getValue());
+			} else {
+				result.append(GraphParameter.HIDDEN_SECURE_PARAMETER);
+			}
+		}
+		return result.toString();
+	}
+	
 	/**
 	 * Clears this graph parameters.
 	 */
