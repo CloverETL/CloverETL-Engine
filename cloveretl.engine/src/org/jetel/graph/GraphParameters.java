@@ -92,7 +92,7 @@ public class GraphParameters {
 	public GraphParameter addGraphParameter(String name, String value) {
 		GraphParameter graphParameter = new GraphParameter(name, value);
 		addGraphParameter(graphParameter);
-		return graphParameter;
+		return getGraphParameter(name);
 	}
 
 	/**
@@ -146,7 +146,24 @@ public class GraphParameters {
 			}
 		}
 	}
-	
+
+	/**
+	 * Adds new graph parameters based on give properties. Values of existing
+	 * parameters are overridden.
+	 * @param properties
+	 */
+	public void addPropertiesOverride(Properties properties) {
+		if (properties != null) {
+			for (String propertyName : properties.stringPropertyNames()) {
+				if (hasGraphParameter(propertyName)) {
+					getGraphParameter(propertyName).setValue(properties.getProperty(propertyName));
+				} else {
+					addGraphParameter(propertyName, properties.getProperty(propertyName));
+				}
+			}
+		}
+	}
+
 	/**
 	 * @return content of this container in properties form
 	 */
@@ -160,6 +177,27 @@ public class GraphParameters {
 		return result;
 	}
 
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		boolean firstParam = true;
+		for (GraphParameter parameter : parameters.values()) {
+			if (firstParam) {
+				firstParam = false;
+			} else {
+				result.append(", ");
+			}
+			result.append(parameter.getName());
+			result.append('=');
+			if (!parameter.isSecure()) {
+				result.append(parameter.getValue());
+			} else {
+				result.append(GraphParameter.HIDDEN_SECURE_PARAMETER);
+			}
+		}
+		return result.toString();
+	}
+	
 	/**
 	 * Clears this graph parameters.
 	 */

@@ -1270,6 +1270,12 @@ public class TypeChecker extends NavigatingVisitor {
 		} else if (prefix.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
 			// the type has been set already in ASTBuilder phase. Nothing to do.
 			return data;
+		} else if (compositeType.isUnknown()) {
+			node.setType(TLType.UNKNOWN);
+			if (prefix.getId() == TransformLangParserTreeConstants.JJTLOOKUPNODE) {
+				warn(node, "Lookup metadata not available");
+			}
+			return data;
 		}
 		
 		// anything else is an error
@@ -2053,6 +2059,9 @@ public class TypeChecker extends NavigatingVisitor {
 			return true;
 		}
 		if (actual.isNull()) { // perform no binding for null type; also prevents ClassCastExceptions
+			return true;
+		}
+		if (actual.isUnknown()) { // perform no binding for unknown type
 			return true;
 		}
 		

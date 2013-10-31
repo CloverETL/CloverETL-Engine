@@ -619,4 +619,9 @@ public class XLSWriter extends Node {
 			}
     }
     
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 }

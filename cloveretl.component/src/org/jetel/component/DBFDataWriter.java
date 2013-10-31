@@ -393,6 +393,11 @@ public class DBFDataWriter extends Node {
 		}
 	}
 
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#fromXML(org.jetel.graph.TransformationGraph, org.w3c.dom.Element)
 	 */

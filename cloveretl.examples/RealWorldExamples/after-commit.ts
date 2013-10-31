@@ -24,7 +24,7 @@
 	
 	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false">
 		<ExcludeRegEx ident="error"/>
-		<RegEx expression="Exception raised by user: O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="3"/>
+		<RegEx expression="Exception raised by user: O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="5"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="ExecutingExternal" graphFile="graph/ExecutingExternal.grf" />
@@ -65,6 +65,10 @@
 	<FunctionalTest ident="XMLProcessing" graphFile="graph/XMLProcessing.grf">
 		<FlatFile outputFile="data-out/Actors.xml" supposedFile="supposed-out/Actors.xml"/>
 		<FlatFile outputFile="data-out/Movies_list.html" supposedFile="supposed-out/Movies_list.html"/>
+	</FunctionalTest>
+
+	<FunctionalTest ident="ValidateData" graphFile="graph/ValidateData.grf">
+		<FlatFile outputFile="data-out/invalid_contacts.csv" supposedFile="supposed-out/invalid_contacts.csv"/>
 	</FunctionalTest>
 
 </TestScenario>
