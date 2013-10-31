@@ -47,6 +47,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -100,6 +101,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         runtimeContext.setRunId(runId);
         runtimeContext.setLogLevel(Level.ALL);
+        runtimeContext.setLogLocation(givenRuntimeContext.getLogLocation());
         if (runtimeContext.getLogLocation() != null) {
         	prepareLogger(runtimeContext);
         }
@@ -266,7 +268,8 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	private static void prepareLogger(GraphRuntimeContext runtimeContext) {
 		FileAppender logAppender = null;
 		try {
-			logAppender = new FileAppender(new PatternLayout("%d %-5p %-3X{runId} [%t] %m%n"), runtimeContext.getLogLocation());
+			String logLocation = FileUtils.getFile(ContextProvider.getContextURL(), runtimeContext.getLogLocation());
+			logAppender = new FileAppender(new PatternLayout("%d %-5p %-3X{runId} [%t] %m%n"), logLocation);
 			Filter f = new GraphLogFilter(runtimeContext.getRunId(), runtimeContext.getLogLevel());
 			logAppender.addFilter(f);
 			Logger.getRootLogger().addAppender(logAppender);

@@ -60,6 +60,8 @@ import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -652,9 +654,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		executeCode(compiler);
 	}
+	
+	protected void doCompileExpectError(TransformationGraph graph, String expStr, String testIdentifier, List<String> errCodes) {
+		this.graph = graph;
 
-	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
-		graph = createDefaultGraph();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4) };
 
@@ -690,6 +693,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// parseTree.dump("");
 
 		// executeCode(compiler);
+	}
+
+	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
+		doCompileExpectError(createDefaultGraph(), expStr, testIdentifier, errCodes);
 	}
 
 	protected void doCompileExpectError(String testIdentifier, String errCode) {
@@ -3668,6 +3675,82 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
 		assertEquals("Age", null, outputRecords[3].getField("Age").getValue());
 		assertEquals("City", null, outputRecords[3].getField("City").getValue());
+	}
+	
+	public void test_copyByName_assignment_caseInsensitive() {
+		TransformationGraph g = createEmptyGraph();
+		DataRecordMetadata m1 = new DataRecordMetadata("metadata1");
+		
+		m1.addField(new DataFieldMetadata("a", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("b", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("c", DataFieldType.STRING, "|"));
+		
+		m1.addField(new DataFieldMetadata("noexactmatch", DataFieldType.STRING, "|"));
+		
+		m1.addField(new DataFieldMetadata("ambiguous", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("AMBIGUOUS", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("aMBIGUOUs", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("AmbiguouS", DataFieldType.STRING, "|"));
+		
+		m1.addField(new DataFieldMetadata("exactMATCH", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("exactMatch", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("EXACTMATCH", DataFieldType.STRING, "|"));
+
+		g.addDataRecordMetadata(m1);
+		
+		DataRecordMetadata m2 = new DataRecordMetadata("metadata2");
+		
+		m2.addField(new DataFieldMetadata("D", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("B", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("A", DataFieldType.STRING, "|"));
+		
+		m2.addField(new DataFieldMetadata("NOEXACTMATCH", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("noExactMatch", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("noEXACTmatch", DataFieldType.STRING, "|"));
+		
+		m2.addField(new DataFieldMetadata("ambiGUOUS", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("AMBIguous", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("ambiguouS", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("Ambiguous", DataFieldType.STRING, "|"));
+		
+		m2.addField(new DataFieldMetadata("ExactMatch", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("EXACTMATCH", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("ExactMATCH", DataFieldType.STRING, "|"));
+
+		g.addDataRecordMetadata(m2);
+
+		doCompile("metadata1 r1;metadata2 r2;\n"
+				+ "function integer transform() {\n"
+				+ "r1.a = \"a\"; r1.b = \"b\"; r1.c = \"c\";\n"
+				+ "r1.noexactmatch = \"noexactmatch\";\n"
+				+ "r1.ambiguous = \"ambiguous\";\n"
+				+ "r1.AMBIGUOUS = \"AMBIGUOUS\";\n"
+				+ "r1.aMBIGUOUs = \"aMBIGUOUs\";\n"
+				+ "r1.AmbiguouS = \"AmbiguouS\";\n"
+				+ "r1.exactMATCH = \"exactMATCH\";\n"
+				+ "r1.exactMatch = \"exactMatch\";\n"
+				+ "r1.EXACTMATCH = \"EXACTMATCH\";\n"
+				+ "r2.* = r1.*; \n"
+				+ "return 0; }","test_copyByName_assignment_caseInsensitive", g, new DataRecord[0], new DataRecord[0]);
+		
+		DataRecord r2 = (DataRecord) getVariable("r2");
+		
+		assertEquals("a", r2.getField("A").getValue().toString());
+		assertEquals("b", r2.getField("B").getValue().toString());
+		assertEquals(null, r2.getField("D").getValue());
+		
+		assertEquals("noexactmatch", r2.getField("NOEXACTMATCH").getValue().toString()); // assigned to the first matching field
+		assertEquals(null, r2.getField("noExactMatch").getValue());
+		assertEquals(null, r2.getField("noEXACTmatch").getValue());
+		
+		assertEquals("ambiguous", r2.getField("ambiGUOUS").getValue().toString()); // first unmapped input field selected
+		assertEquals("AMBIGUOUS", r2.getField("AMBIguous").getValue().toString()); // first unmapped input field selected
+		assertEquals("aMBIGUOUs", r2.getField("ambiguouS").getValue().toString()); // first unmapped input field selected
+		assertEquals("AmbiguouS", r2.getField("Ambiguous").getValue().toString()); // first unmapped input field selected
+
+		assertEquals("exactMATCH", r2.getField("ExactMatch").getValue().toString()); // first unmapped input field selected
+		assertEquals("EXACTMATCH", r2.getField("EXACTMATCH").getValue().toString()); // exact match (has priority)
+		assertEquals("exactMatch", r2.getField("ExactMATCH").getValue().toString()); // first unmapped input field selected
 	}
 	
 	public void test_containerlib_copyByPosition(){
@@ -8590,6 +8673,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		List<byte[]> byteList = (List<byte[]>) getVariable("byteList"); 
 		assertDeepEquals(byteList, Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
 	}
+	
+	public void test_dictionary_expect_error() throws Exception {
+		// CLO-2283
+		TransformationGraph graph = createEmptyGraph();
+		graph.getDictionary().setValue("listEntry", "list", new ArrayList<String>());
+		graph.getDictionary().setContentType("listEntry", "object");
+		graph.getDictionary().setValue("mapEntry", "map", new HashMap<String, String>());
+		graph.getDictionary().setContentType("mapEntry", "object");
+		
+		doCompileExpectError(graph, 
+				"function integer transform(){append(dictionary.listEntry, \"newValue\"); return 0;}",
+				"test_dictionary_expect_error",
+				Arrays.asList("Dictionary entry 'listEntry' has invalid content type: 'object'"));
+		doCompileExpectError(graph, 
+				"function integer transform(){containsKey(dictionary.mapEntry, \"myKey\"); return 0;}",
+				"test_dictionary_expect_error",
+				Arrays.asList("Dictionary entry 'mapEntry' has invalid content type: 'object'"));
+	}
 
 	public void test_dictionary_write() {
 		doCompile("test_dictionary_write");
@@ -8806,7 +8907,32 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("params", params);
 		check("ret1", null);
 		check("ret2", null);
-	
+	}
+
+	public void test_utillib_getRawParamValues() {
+		doCompile("test_utillib_getRawParamValues");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("PROJECT", ".");
+		params.put("DATAIN_DIR", "${PROJECT}/data-in");
+		params.put("COUNT", "`1+2`");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
+		check("params", params);
+		check("ret1", null);
+		check("ret2", null);
+		check("ret3", null);
+	}
+
+	public void test_utillib_getRawParamValue() {
+		doCompile("test_utillib_getRawParamValue");
+		Map<String, String> params = new HashMap<String, String>();
+		params.put("PROJECT", ".");
+		params.put("DATAIN_DIR", "${PROJECT}/data-in");
+		params.put("COUNT", "`1+2`");
+		params.put("NEWLINE", "\\n"); // special characters should NOT be resolved
+		params.put("NONEXISTING", null);
+		check("params", params);
+		check("ret1", null);
+		check("ret2", null);
 	}
 
 	public void test_stringlib_getUrlParts() {

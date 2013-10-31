@@ -625,4 +625,9 @@ public class XLSReader extends Node {
 		}
     }
     
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 }

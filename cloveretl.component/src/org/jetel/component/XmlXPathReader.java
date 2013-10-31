@@ -305,6 +305,11 @@ public class XmlXPathReader extends Node {
     	reader.postExecute();
     }
 	
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	/**
 	 *  Description of the Method
 	 *

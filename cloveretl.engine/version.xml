@@ -121,7 +121,7 @@
 		<then>
 		    <echo>Replacing the version to ${version.docs}</echo>
 		    
-		        <replaceregexp byline="true">
+		        <replaceregexp byline="true" encoding="UTF-8">
 		            <regexp pattern="([0-9]\.[0-9]).x release."/>
 		            <substitution expression="${version.docs}.x release."/>
 		            <fileset dir="${doc.dir}">

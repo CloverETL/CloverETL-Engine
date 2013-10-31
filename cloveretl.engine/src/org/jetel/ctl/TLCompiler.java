@@ -18,8 +18,10 @@
  */
 package org.jetel.ctl;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
@@ -34,6 +36,8 @@ import org.jetel.ctl.extensions.TLFunctionPluginRepository;
 import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ExceptionUtils;
+import org.jetel.util.file.FileUtils;
 
 /**
  * CTL frontend of compiler. It performs parsing, semantic pass, type checking
@@ -51,10 +55,11 @@ public class TLCompiler implements ITLCompiler {
 	protected TransformLangParser parser;
 	protected ProblemReporter problemReporter;
 	protected SimpleNode ast;
-	protected int tabSize = 6;
+	protected int tabSize = 4; // CLO-2104: changed from 6 to Eclipse default tab width
 	protected Log logger;
 	protected String componentId;
 	private List<TLFunctionCallContext> functionContexts;
+	protected boolean lenient = false;
 
 	
 	/**
@@ -114,21 +119,14 @@ public class TLCompiler implements ITLCompiler {
 	 */
 	@Override
 	public List<ErrorMessage> validateExpression(String code) {
-		try {
-			return validateExpression(new ByteArrayInputStream(code.getBytes(encoding)));
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(encoding + " encoding not availabe for conversion");
-		}
+		return validateExpression(new SourceStringReader(code));
 	}
 	
-	
-	/**
-	 * Validate given (Filter) expression stored in the InputStream
-	 * @param input
-	 * @return list of error messages (empty when no errors)
-	 */
 	@Override
-	public List<ErrorMessage> validateExpression(InputStream input) {
+	public List<ErrorMessage> validateExpression(Reader input) {
+		if (!(input instanceof SourceCodeProvider)) {
+			input = copy(input);
+		}
 		if (parser == null) {
 			parser = new TransformLangParser(graph, problemReporter, input, encoding);
 		} else {
@@ -149,6 +147,7 @@ public class TLCompiler implements ITLCompiler {
 		}
 		
 		ASTBuilder astBuilder = new ASTBuilder(graph,inMetadata,outMetadata,parser.getFunctions(),problemReporter);
+		astBuilder.setLenient(lenient);
 		astBuilder.resolveAST(parseTree);
 		if (problemReporter.errorCount() > 0) {
 			return getDiagnosticMessages();
@@ -165,6 +164,21 @@ public class TLCompiler implements ITLCompiler {
 		return getDiagnosticMessages();
 	}
 	
+	
+	/**
+	 * Validate given (Filter) expression stored in the InputStream
+	 * @param input
+	 * @return list of error messages (empty when no errors)
+	 */
+	@Override
+	public List<ErrorMessage> validateExpression(InputStream input) {
+		try {
+			return validate(new InputStreamReader(input, encoding));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(encoding+" encoding not available for conversion");
+		}
+	}
+	
 	/**
 	 * Validate complex CTL code
 	 * @param code
@@ -172,21 +186,34 @@ public class TLCompiler implements ITLCompiler {
 	 */
 	@Override
 	public List<ErrorMessage> validate(String code) {
-		try {
-			return validate(new ByteArrayInputStream(code.getBytes(encoding)));
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(encoding+" encoding not available for conversion");
-		}
+		return validate(new SourceStringReader(code));
 	}
 	
 	/**
-	 * Validate complex CTL code stored in the input stream.
-	 * Can be called repeatedly with different input stream.
+	 * Copies the <code>input</code> into a reader that implements
+	 * {@link SourceCodeProvider}.
+	 * 
+	 * Closes the original reader.
+	 * 
 	 * @param input
-	 * @return list of error messages (empty when no errors)
+	 * @return copy of <code>input</code>
 	 */
+	protected Reader copy(Reader input) {
+		try {
+			return SourceStringReader.fromReader(input);
+		} catch (IOException e) {
+			problemReporter.error(ExceptionUtils.getMessage("Reading failed", e), null);
+			return input;
+		} finally {
+			FileUtils.closeQuietly(input); // always closes the input reader, further reading will fail 
+		}
+	}
+	
 	@Override
-	public List<ErrorMessage> validate(InputStream input) {
+	public List<ErrorMessage> validate(Reader input) {
+		if (!(input instanceof SourceCodeProvider)) {
+			input = copy(input);
+		}
 		if (parser == null) {
 			parser = new TransformLangParser(graph, problemReporter, input, encoding);
 		} else {
@@ -206,6 +233,7 @@ public class TLCompiler implements ITLCompiler {
 		}
 		
 		ASTBuilder astBuilder = new ASTBuilder(graph,inMetadata,outMetadata,parser.getFunctions(),problemReporter);
+		astBuilder.setLenient(lenient);
 		astBuilder.resolveAST(parseTree);
 		if (problemReporter.errorCount() > 0) {
 			return getDiagnosticMessages();
@@ -226,7 +254,21 @@ public class TLCompiler implements ITLCompiler {
 		}
 		
 		return getDiagnosticMessages();
-		
+	}
+	
+	/**
+	 * Validate complex CTL code stored in the input stream.
+	 * Can be called repeatedly with different input stream.
+	 * @param input
+	 * @return list of error messages (empty when no errors)
+	 */
+	@Override
+	public List<ErrorMessage> validate(InputStream input) {
+		try {
+			return validate(new InputStreamReader(input, encoding));
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(encoding + " encoding not availabe for conversion");
+		}
 	}
 	
 	/**
@@ -236,11 +278,7 @@ public class TLCompiler implements ITLCompiler {
 	 */
 	@Override
 	public List<ErrorMessage> compile(String code, Class<?> targetInterface, String componentId) {
-		try {
-			return compile(new ByteArrayInputStream(code.getBytes(encoding)), targetInterface, componentId);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(encoding + " encoding not availabe for conversion");
-		}
+		return compile(new SourceStringReader(code), targetInterface, componentId);
 	}
 	
 	/**
@@ -252,11 +290,26 @@ public class TLCompiler implements ITLCompiler {
 	 * @return
 	 */
 	public List<ErrorMessage> compile(InputStream input, Class<?> targetInterface, String componentId) {
+		try {
+			return compile(new InputStreamReader(input, encoding), targetInterface, componentId);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(encoding + " encoding not availabe for conversion");
+		}
+	}
+
+	/**
+	 * Compiles the code into target interface.
+	 * Encoding of input must match to the encoding specified when TLCompiler was created.
+	 * 
+	 * @param input
+	 * @param targetInterface
+	 * @return
+	 */
+	public List<ErrorMessage> compile(Reader input, Class<?> targetInterface, String componentId) {
 		setComponentId(componentId);
 		validate(input);
 		return getDiagnosticMessages();
 	}
-
 	
 	
 	/**
@@ -334,7 +387,10 @@ public class TLCompiler implements ITLCompiler {
 	public void setTabSize(int size) {
 		this.tabSize = size;
 	}
-
+	
+	public void setLenient(boolean lenient) {
+		this.lenient = lenient;
+	}
 
 	/**
 	 * @return	Expression AST root created during {@link #validateExpression(InputStream)}
@@ -376,7 +432,7 @@ public class TLCompiler implements ITLCompiler {
 		return problemReporter.warningCount();
 	}
 	
-	private void reset(InputStream input) {
+	private void reset(Reader input) {
 		parser.reset(input);
 		problemReporter.reset();
 		ast = null;

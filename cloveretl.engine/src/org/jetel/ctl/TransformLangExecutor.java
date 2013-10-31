@@ -21,6 +21,7 @@ package org.jetel.ctl;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -121,6 +122,7 @@ import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.CharSequenceReader;
 import org.jetel.util.string.StringUtils;
 
@@ -2538,20 +2540,38 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	 * @return return value of executed function or <code>null</code> if <code>void</code>
 	 */
 	public Object executeFunction(CLVFFunctionDeclaration node, Object[] arguments, DataRecord[] inputRecords, DataRecord[] outputRecords) {
+		try {
 		
-		
-		//set input and output records (if given)
-		this.inputRecords = inputRecords;
-		this.outputRecords = outputRecords;
-
-		//clean previous return value
-		this.lastReturnValue = null;
-		
-		//execute function
-		executeFunction(node,arguments);
-
-		//return result
-        return this.lastReturnValue;
+			//set input and output records (if given)
+			this.inputRecords = inputRecords;
+			this.outputRecords = outputRecords;
+	
+			//clean previous return value
+			this.lastReturnValue = null;
+			
+			//execute function
+			executeFunction(node,arguments);
+	
+			//return result
+	        return this.lastReturnValue;
+		} catch (TransformLangExecutorRuntimeException ex) {
+			// CLO-2104: decorate the exception with an ErrorReporter instance to provide more detailed error reporting
+			String source = parser.getSource();
+			SimpleNode nodeInError = ex.getNode();
+			if ((nodeInError != null) && (nodeInError.getSourceFilename() != null)) {
+				URL contextURL = (graph != null) ? graph.getRuntimeContext().getContextURL() : null;
+				try {
+					source = FileUtils.getStringFromURL(contextURL, nodeInError.getSourceFilename(), parser.getEncoding());
+				} catch (Exception ioe) {
+					source = null;
+				}
+			}
+			ErrorReporter errorReporter = new ErrorReporter(ex, stack, inputRecords, outputRecords, source);
+			errorReporter.setTabWidth(parser.getTabSize());
+			errorReporter.createReport();
+			ex.setErrorReporter(errorReporter);
+			throw ex;
+		}
 	}
 	
 	

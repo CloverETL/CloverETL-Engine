@@ -2,10 +2,7 @@
 package org.jetel.ctl;
 
 import org.jetel.graph.TransformationGraph;
-import org.jetel.data.DataRecord;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.ctl.ASTnode.*;
-import org.jetel.ctl.ErrorMessage.ErrorLevel;
 import org.jetel.ctl.data.TLType;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.data.Scope;
@@ -13,21 +10,13 @@ import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.string.CharSequenceReader;
 import org.jetel.component.RecordTransform;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
-import java.util.LinkedList;
-import java.util.Collections;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.BufferedInputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.net.URL;
 
 
@@ -41,26 +30,31 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
        private PropertyRefResolver propertyRefResolver;
        private String encoding;
        private boolean isImported = false;
+       private String sourceCode;
+       private int tabSize;
 
         /**
 	 * Creates the main parser
 	 */
-        public TransformLangParser(TransformationGraph graph, ProblemReporter problemReporter, java.io.InputStream stream, String encoding) {
-                this(stream,encoding);
+        public TransformLangParser(TransformationGraph graph, ProblemReporter problemReporter, java.io.Reader input, String encoding) {
+                this(input);
+                if (input instanceof SourceCodeProvider) {
+                        this.sourceCode = ((SourceCodeProvider) input).getSourceCode();
+                }
                 this.graph = graph;
-        this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphProperties()) : null;
+                this.propertyRefResolver = (graph != null) ? new PropertyRefResolver(graph.getGraphProperties()) : null;
                 this.parserHelper = new ParserHelper();
                 this.hasEvalNode = false;
                 this.parsedImports = new HashSet<String>();
                 this.problemReporter = problemReporter;
-        this.encoding = encoding;
+                this.encoding = encoding;
         }
 
       /**
        * Used by main parser to create import parsers
        */
-      public TransformLangParser(TransformLangParser parent, String filename, java.io.InputStream stream){
-                          this(stream, parent.encoding);
+      public TransformLangParser(TransformLangParser parent, String filename, java.io.Reader input){
+                          this(input);
                           this.graph = parent.graph;
               this.propertyRefResolver = parent.propertyRefResolver;
                           this.parserHelper=parent.parserHelper;
@@ -69,22 +63,37 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               this.parsedImports = parent.parsedImports;
               this.isImported  = true;
               this.encoding = parent.encoding;
+              this.setTabSize(parent.tabSize);
       }
 
-        public void reset(java.io.InputStream stream) {
+        public void reset(java.io.Reader input) {
                 parserHelper.reset();
                 hasEvalNode = false;
                 parsedImports.clear();
                 problemReporter.reset();
-                ReInit(stream);
+                this.sourceCode = (input instanceof SourceCodeProvider) ? ((SourceCodeProvider) input).getSourceCode() : null;
+                ReInit(input);
         }
 
-        public void setTabSize(int size){
+        public String getSource() {
+                return sourceCode;
+        }
+
+        public String getEncoding() {
+            return encoding;
+        }
+
+        public void setTabSize(int size) {
+            this.tabSize = size;
                 this.token_source.input_stream.setTabSize(size);
         }
 
+        public int getTabSize() {
+            return this.tabSize;
+        }
+
     @Override
-	public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
+    public final Map<String,List<CLVFFunctionDeclaration>> getFunctions(){
         return parserHelper.getFunctions();
     }
 
@@ -574,7 +583,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
                 // to prevent parsing of an existing import
                 if (!isParsedImport(filenameURL)) {
-                        InputStream stream;
+                        Reader input;
 
                         // we need to resolve the filename to project path (if it is relative)
                         final URL projectURL = graph != null ? graph.getRuntimeContext().getContextURL() : null;
@@ -597,14 +606,14 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                                         importSourceCode = propertyRefResolver.resolveRef(importSourceCode, RefResFlag.SPEC_CHARACTERS_OFF);
                                 }
 
-                                stream = new ByteArrayInputStream(importSourceCode.getBytes(encoding));
+                                input = new StringReader(importSourceCode);
                                 addParsedImport(filenameURL); // the above will handle invalid URL etc.
                 // set new "import context", propagate error location if already defined
                         problemReporter.setImportFileUrl(filenameURL);
                         problemReporter.setErrorLocation((errorLocation != null)
                                         ? errorLocation : new ErrorLocation(jjtn000.getBegin(), jjtn000.getEnd()));
 
-                                TransformLangParser parser = new TransformLangParser(this,filenameURL,stream);
+                                TransformLangParser parser = new TransformLangParser(this,filenameURL,input);
 
                                 parser.addParsedImports(getParsedImports());
                                 parseTree = parser.Start();
@@ -4357,45 +4366,6 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     finally { jj_save(9, xla); }
   }
 
-  private boolean jj_3R_167() {
-    if (jj_scan_token(DATE_LITERAL)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_145() {
-    if (jj_3R_155()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_186() {
-    if (jj_scan_token(127)) return true;
-    Token xsp;
-    xsp = jj_scanpos;
-    if (jj_3R_187()) {
-    jj_scanpos = xsp;
-    if (jj_3R_188()) {
-    jj_scanpos = xsp;
-    if (jj_3R_189()) return true;
-    }
-    }
-    return false;
-  }
-
-  private boolean jj_3_6() {
-    if (jj_3R_22()) return true;
-    return false;
-  }
-
-  private boolean jj_3R_86() {
-    if (jj_scan_token(DOUBLE_VAR)) return true;
-    return false;
-  }
-
-  private boolean jj_3R_166() {
-    if (jj_scan_token(BOOLEAN_LITERAL)) return true;
-    return false;
-  }
-
   private boolean jj_3R_141() {
     Token xsp;
     xsp = jj_scanpos;
@@ -5787,6 +5757,45 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
   private boolean jj_3R_146() {
     if (jj_3R_156()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_167() {
+    if (jj_scan_token(DATE_LITERAL)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_145() {
+    if (jj_3R_155()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_186() {
+    if (jj_scan_token(127)) return true;
+    Token xsp;
+    xsp = jj_scanpos;
+    if (jj_3R_187()) {
+    jj_scanpos = xsp;
+    if (jj_3R_188()) {
+    jj_scanpos = xsp;
+    if (jj_3R_189()) return true;
+    }
+    }
+    return false;
+  }
+
+  private boolean jj_3_6() {
+    if (jj_3R_22()) return true;
+    return false;
+  }
+
+  private boolean jj_3R_86() {
+    if (jj_scan_token(DOUBLE_VAR)) return true;
+    return false;
+  }
+
+  private boolean jj_3R_166() {
+    if (jj_scan_token(BOOLEAN_LITERAL)) return true;
     return false;
   }
 
