@@ -337,6 +337,7 @@ public class ASTBuilder extends NavigatingVisitor {
 		if (metadata != null) {
 			node.setMetadata(metadata);
 		} else if (lenient) {
+			warn(node, "Metadata not available");
 			node.setType(TLType.UNKNOWN);
 			return node;
 		} else {
@@ -469,8 +470,13 @@ public class ASTBuilder extends NavigatingVisitor {
 		
 		LookupTable table = resolveLookup(node.getLookupName());
 		if (table == null) {
-			error(node, "Unable to resolve lookup table '" + node.getLookupName() + "'");
-			node.setType(TLType.ERROR);
+			if (lenient) {
+				warn(node, "Unable to resolve lookup table '" + node.getLookupName() + "'");
+				node.setType(TLType.UNKNOWN);
+			} else {
+				error(node, "Unable to resolve lookup table '" + node.getLookupName() + "'");
+				node.setType(TLType.ERROR);
+			}
 			return node;
 		} else {
 			if (ambiguousLookupTables.contains(table.getName())) {
@@ -624,16 +630,21 @@ public class ASTBuilder extends NavigatingVisitor {
 	public Object visit(CLVFMemberAccessExpression node, Object data) {
 		super.visit(node, data);
 		
-		//dictionary is not available, the ctl code is compiled without graph (graph == null)
-		if (dictionary == null) {
-			error(node, "Dictionary is not available");
-			node.setType(TLType.ERROR);
-			return data;
-		}
+		final SimpleNode prefix = (SimpleNode)node.jjtGetChild(0);
 		
 		// access to dictionary
-		final SimpleNode prefix = (SimpleNode)node.jjtGetChild(0);
 		if (prefix.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
+			//dictionary is not available, the ctl code is compiled without graph (graph == null)
+			if (dictionary == null) {
+				if (lenient) {
+					warn(node, "Dictionary is not available");
+					node.setType(TLType.UNKNOWN);
+				} else {
+					error(node, "Dictionary is not available");
+					node.setType(TLType.ERROR);
+				}
+				return data;
+			}
 			
 			IDictionaryType dictType = dictionary.getType(node.getName()) ; 
 			if (dictType == null) {
@@ -674,8 +685,12 @@ public class ASTBuilder extends NavigatingVisitor {
 	public CLVFSequenceNode visit(CLVFSequenceNode node, Object data) {
 		Sequence seq = resolveSequence(node.getSequenceName());
 		if (seq == null) {
-			error(node, "Unable to resolve sequence '" + node.getSequenceName() + "'");
-			node.setType(TLType.ERROR);
+			if (lenient) {
+				warn(node, "Unable to resolve sequence '" + node.getSequenceName() + "'");
+			} else {
+				error(node, "Unable to resolve sequence '" + node.getSequenceName() + "'");
+				node.setType(TLType.ERROR);
+			}
 		} else {
 			if (ambiguousSequences.contains(seq.getName())) {
 				warn("Sequence name '" + seq.getName() + "' is ambiguous", "Rename the sequence to a unique name");

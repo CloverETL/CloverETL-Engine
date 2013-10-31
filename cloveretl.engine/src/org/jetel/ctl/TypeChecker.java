@@ -590,9 +590,7 @@ public class TypeChecker extends NavigatingVisitor {
 	
 	@Override
 	public Object visit(CLVFFieldAccessExpression node, Object data) {
-		if (node.getType().isUnknown()) {
-			warn(node, "Metadata not available");
-		}
+		// nothing to do, type calculation done in ASTBuilder
 		return data;
 	}
 	
@@ -1271,6 +1269,12 @@ public class TypeChecker extends NavigatingVisitor {
 			return data;
 		} else if (prefix.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
 			// the type has been set already in ASTBuilder phase. Nothing to do.
+			return data;
+		} else if (compositeType.isUnknown()) {
+			node.setType(TLType.UNKNOWN);
+			if (prefix.getId() == TransformLangParserTreeConstants.JJTLOOKUPNODE) {
+				warn(node, "Lookup metadata not available");
+			}
 			return data;
 		}
 		
