@@ -660,16 +660,22 @@ public class ASTBuilder extends NavigatingVisitor {
 				return node;
 			} else if (tlType.isList()) {
 				final String contentType = dictionary.getContentType(node.getName());
-				if (!StringUtils.isEmpty(contentType)) {
-					TLType elementType = getTypeByContentType(contentType);
-					tlType = TLType.createList(elementType);
+				TLType elementType = getTypeByContentType(contentType);
+				if (elementType == null) {
+					error(node, "Dictionary entry '" + node.getName() + "' has invalid content type: '" + contentType + "'");
+					node.setType(TLType.ERROR);
+					return node;
 				}
+				tlType = TLType.createList(elementType);
 			} else if (tlType.isMap()) {
 				final String contentType = dictionary.getContentType(node.getName());
-				if (!StringUtils.isEmpty(contentType)) {
-					TLType elementType = getTypeByContentType(contentType);
-					tlType = TLType.createMap(TLTypePrimitive.STRING, elementType);
+				TLType elementType = getTypeByContentType(contentType);
+				if (elementType == null) {
+					error(node, "Dictionary entry '" + node.getName() + "' has invalid content type: '" + contentType + "'");
+					node.setType(TLType.ERROR);
+					return node;
 				}
+				tlType = TLType.createMap(TLTypePrimitive.STRING, elementType);
 			}
 			node.setType(tlType);
 		}
