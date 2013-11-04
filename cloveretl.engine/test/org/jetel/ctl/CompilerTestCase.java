@@ -3716,6 +3716,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		m2.addField(new DataFieldMetadata("ExactMatch", DataFieldType.STRING, "|"));
 		m2.addField(new DataFieldMetadata("EXACTMATCH", DataFieldType.STRING, "|"));
 		m2.addField(new DataFieldMetadata("ExactMATCH", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("Exactmatch", DataFieldType.STRING, "|"));
 
 		g.addDataRecordMetadata(m2);
 
@@ -3751,6 +3752,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("exactMATCH", r2.getField("ExactMatch").getValue().toString()); // first unmapped input field selected
 		assertEquals("EXACTMATCH", r2.getField("EXACTMATCH").getValue().toString()); // exact match (has priority)
 		assertEquals("exactMatch", r2.getField("ExactMATCH").getValue().toString()); // first unmapped input field selected
+		assertEquals(null, r2.getField("Exactmatch").getValue()); // no remaining unmapped input field
 	}
 	
 	public void test_containerlib_copyByPosition(){
