@@ -47,6 +47,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.EdgeBase;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -503,22 +504,12 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	@Override
-	public OutputStream getSubGraphDataTarget(long subGraphRunId, int inputPortIndex) {
+	public EdgeBase getParentGraphSourceEdgeBase(int inputPortIndex, String parentSubGraphComponentId) {
 		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
 	}
 
 	@Override
-	public InputStream getSubGraphDataSource(long subGraphRunId, int outputPortIndex) {
-		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
-	}
-
-	@Override
-	public InputStream getParentGraphDataSource(int inputPortIndex) {
-		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
-	}
-
-	@Override
-	public OutputStream getParentGraphDataTarget(int outputPortIndex) {
+	public EdgeBase getParentGraphTargetEdgeBase(int outputPortIndex, String parentSubGraphComponentId) {
 		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
 	}
 	

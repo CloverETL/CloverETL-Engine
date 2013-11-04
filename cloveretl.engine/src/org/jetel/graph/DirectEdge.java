@@ -57,6 +57,11 @@ public class DirectEdge extends EdgeBase {
 	
 	private final static int EOF=Integer.MAX_VALUE;
 
+    /**
+     * Monitor for {@link #waitForEOF()}
+     */
+	private final Object eofMonitor = new Object();
+	
 	/**
 	 *Constructor for the Edge object
 	 *
@@ -177,7 +182,7 @@ public class DirectEdge extends EdgeBase {
 	    try {
 	        // create the record/read it from buffer
 	        if (ByteBufferUtils.decodeLength(readBuffer) == EOF) {
-	            isClosed=true;
+	        	close();
 	            return null; // EOF
 	        }
 	        record.deserialize(readBuffer);
@@ -211,8 +216,8 @@ public class DirectEdge extends EdgeBase {
 	    try{
 	        // create the record/read it from buffer
 	        int length = ByteBufferUtils.decodeLength(readBuffer);
-	        if (length==EOF){
-	            isClosed=true;
+	        if (length == EOF) {
+	        	close();
 	            return false;
 	        }
 	        readBuffer.limit(readBuffer.position()+length);
@@ -407,6 +412,23 @@ public class DirectEdge extends EdgeBase {
     public boolean isEOF() {
         return isClosed;
     }
+    
+    private void close() {
+    	synchronized (eofMonitor) {
+    		isClosed = true;
+    		eofMonitor.notifyAll();
+    	}
+    }
+    
+    @Override
+    public void waitForEOF() throws InterruptedException {
+    	synchronized (eofMonitor) {
+    		while (!isClosed) {
+    			eofMonitor.wait();
+    		}
+    	}
+    }
+    
 }
 /*
  *  end class DirectEdge

@@ -233,8 +233,13 @@ public class TransformationGraphXMLReaderWriter {
     
     private boolean strictParsing = true;
 
-    /** Should be graph pre-processing performed */
-    private boolean graphPreProcessing = true;
+    /** Should be metadata automatically propagated? */
+    private boolean metadataPropagation = true;
+    
+    /**
+     * Extract only graph parameters and dictionary.
+     */
+    private boolean onlyParamsAndDict = false;
     
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
@@ -392,60 +397,62 @@ public class TransformationGraphXMLReaderWriter {
 			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
 			instantiateDictionary(dictionaryElements);
 			
-			// handle all defined DB connections
-			NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
-			instantiateDBConnections(dbConnectionElements);
+			if (!onlyParamsAndDict) {
+				// handle all defined DB connections
+				NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
+				instantiateDBConnections(dbConnectionElements);
+		
+				// handle all defined DB connections
+				NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
+				instantiateSequences(sequenceElements);
+				
+				//create metadata
+				NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
+				instantiateMetadata(metadataElements, metadata);
+		
+				// register all metadata (DataRecordMetadata) within transformation graph
+				graph.addDataRecordMetadata(metadata);
+		
+				// handle all defined lookup tables
+				NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
+				instantiateLookupTables(lookupsElements);
+		
+				NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
+				instantiatePhases(phaseElements);
+		
+				NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
+				instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
+		
+		        //remove disabled components and their edges
+				TransformationGraphAnalyzer.disableNodesInPhases(graph);
 	
-			// handle all defined DB connections
-			NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
-			instantiateSequences(sequenceElements);
-			
-			//create metadata
-			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
-			instantiateMetadata(metadataElements, metadata);
+				//remove component before SubGraphInput and after SubGraphOutput if necessary
+				if (runtimeContext.isSubJob()) {
+					try {
+						TransformationGraphAnalyzer.analyseSubGraph(graph);
+					} catch (Exception e) {
+						throwXMLConfigurationException("Sub-graph analysis failed.", e);
+					}
+				}
+				
+				//perform automatic metadata propagation
+				if (metadataPropagation) {
+					try {
+						TransformationGraphAnalyzer.analyseMetadataPropagation(graph);
+					} catch (Exception e) {
+						throwXMLConfigurationException("Metadata propagation analysis failed.", e);
+					}
+				}
 	
-			// register all metadata (DataRecordMetadata) within transformation graph
-			graph.addDataRecordMetadata(metadata);
-	
-			// handle all defined lookup tables
-			NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
-			instantiateLookupTables(lookupsElements);
-	
-			NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
-			instantiatePhases(phaseElements);
-	
-			NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
-			instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
-	
-	        //remove disabled components and their edges
-			TransformationGraphAnalyzer.disableNodesInPhases(graph);
-
-			//remove component before SubGraphInput and after SubGraphOutput if necessary
-			if (runtimeContext.isSubJob()) {
-				try {
-					TransformationGraphAnalyzer.analyseSubGraph(graph);
+		        //analyze type of edges - specially buffered and phase edges
+		        try {
+		        	TransformationGraphAnalyzer.analyseEdgeTypes(graph);
+					for (Edge edge : graph.getEdges().values()) {
+						logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
+					}
 				} catch (Exception e) {
-					throwXMLConfigurationException("Sub-graph analysis failed.", e);
+					throwXMLConfigurationException("Edge type analysis failed.", e);
 				}
-			}
-			
-			//perform automatic metadata propagation
-			if (graphPreProcessing) {
-				try {
-					TransformationGraphAnalyzer.analyseMetadataPropagation(graph);
-				} catch (Exception e) {
-					throwXMLConfigurationException("Metadata propagation analysis failed.", e);
-				}
-			}
-
-	        //analyze type of edges - specially buffered and phase edges
-	        try {
-	        	TransformationGraphAnalyzer.analyseEdgeTypes(graph);
-				for (Edge edge : graph.getEdges().values()) {
-					logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
-				}
-			} catch (Exception e) {
-				throwXMLConfigurationException("Edge type analysis failed.", e);
 			}
 
 	        return graph;
@@ -1148,12 +1155,19 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	/**
-	 * Graph pre-processing (metadata propagation) can be turned off by this method.
+	 * Metadata propagation can be turned off by this method.
 	 */
-	public void setGraphPreProcessing(boolean graphPreProcessing) {
-		this.graphPreProcessing = graphPreProcessing;
+	public void setMetadataPropagation(boolean metadataPropagation) {
+		this.metadataPropagation = metadataPropagation;
 	}
 
+	/**
+	 * @param onlyParamsAndDict true if only graph parameters and dictionary should be extracted
+	 */
+	public void setOnlyParamsAndDict(boolean onlyParamsAndDict) {
+		this.onlyParamsAndDict = onlyParamsAndDict;
+	}
+	
 	@Deprecated
 	public Document getOutputXMLDocumentReference() {
 		return(this.outputXMLDocument);

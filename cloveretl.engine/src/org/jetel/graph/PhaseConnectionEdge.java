@@ -47,7 +47,12 @@ public class PhaseConnectionEdge extends EdgeBase {
 	private boolean isReadMode;
 	private boolean wasInitialized;
 
-	private boolean isEmpty;
+	private volatile boolean isEmpty;
+	
+    /**
+     * Monitor for {@link #waitForEOF()}
+     */
+	private final Object eofMonitor = new Object();
 	
 	private CloverBuffer recordBuffer;
 
@@ -153,8 +158,8 @@ public class PhaseConnectionEdge extends EdgeBase {
             readByteCounter+=record.getSizeSerialized();
 		    readCounter++;
 		    return record;
-		}else{
-			isEmpty = true;
+		} else {
+			setEmpty();
 		    return null;
 		}
 		
@@ -180,8 +185,8 @@ public class PhaseConnectionEdge extends EdgeBase {
             readByteCounter+=record.remaining();
 		    readCounter++;
 		    return true;
-		}else{
-			isEmpty = true;
+		} else {
+			setEmpty();
 		    return false;
 		}
 	}
@@ -266,6 +271,22 @@ public class PhaseConnectionEdge extends EdgeBase {
     @Override
     public boolean isEOF() {
         return isEmpty;
+    }
+    
+    private void setEmpty() {
+    	synchronized (eofMonitor) {
+    		isEmpty = true;
+    		eofMonitor.notifyAll();
+    	}
+    }
+    
+    @Override
+    public void waitForEOF() throws InterruptedException {
+    	synchronized (eofMonitor) {
+    		while (!isEmpty) {
+    			eofMonitor.wait();
+    		}
+    	}
     }
     
 }

@@ -1427,4 +1427,17 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	return (ComponentDescription) super.getDescription();
     }
 
+    /**
+     * This method blocks current thread until all input and output edges are
+     * complete - last record is read, EOF indicator is reached.
+     */
+    protected void waitForEdgesEOF() throws InterruptedException {
+    	for (InputPort inputPort : getInPorts()) {
+    		inputPort.getEdge().waitForEOF();;
+    	}
+    	for (OutputPort outputPort : getOutPorts()) {
+    		outputPort.getEdge().waitForEOF();
+    	}
+    }
+    
 }

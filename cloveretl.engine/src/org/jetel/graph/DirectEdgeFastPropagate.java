@@ -278,6 +278,11 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     	return writerWaitingTime / 1000000;
     }
     
+    @Override
+    public void waitForEOF() throws InterruptedException {
+    	recordsBuffer.waitForEOF();
+    }
+    
     /**
      *  Class implementing semafor/internal buffer for handling
      * Producer,Consumer scenario of two threads.
@@ -291,13 +296,17 @@ public class DirectEdgeFastPropagate extends EdgeBase {
 
 		private final static int MIN_NUM_BUFFERS = 2; // minimum number of internal buffers for correct behaviour
         
-        CloverBuffer buffers[];
-        volatile int readPointer;
-        volatile int writePointer;
-        final int size;
-        volatile boolean isOpen;
-        volatile boolean eofWasRead;
+        private CloverBuffer buffers[];
+        private volatile int readPointer;
+        private volatile int writePointer;
+        private final int size;
+        private volatile boolean isOpen;
+        private volatile boolean eofWasRead;
 
+        /**
+         * Monitor for {@link #waitForEOF()}
+         */
+        private final Object eofMonitor = new Object();
 
         /**
          *Constructor for the EdgeRecordBufferPool object
@@ -408,7 +417,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         synchronized CloverBuffer getFullBuffer() throws InterruptedException {
             // already closed and no more data left
             if ((!isOpen) && (readPointer==writePointer)) {
-            	eofWasRead = true;
+            	eofWasRead();
                 return null;
             }
             while (readPointer==writePointer) {
@@ -421,8 +430,8 @@ public class DirectEdgeFastPropagate extends EdgeBase {
             	} else {
             		wait();
             	}
-                if ((!isOpen) && (readPointer==writePointer)){
-                	eofWasRead = true;
+                if ((!isOpen) && (readPointer==writePointer)) {
+                	eofWasRead();
                     return null;
                 }
             }
@@ -472,6 +481,24 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         		result += cloverBuffer.capacity();
         	}
         	return result;
+        }
+
+        private void eofWasRead() {
+        	synchronized (eofMonitor) {
+        		eofWasRead = true;
+        		eofMonitor.notifyAll();
+        	}
+        }
+        
+        /**
+         * Current thread waits for EOF is reached.
+         */
+        public void waitForEOF() throws InterruptedException {
+        	synchronized (eofMonitor) {
+        		while (!eofWasRead) {
+        			eofMonitor.wait();
+        		}
+        	}
         }
     }
     

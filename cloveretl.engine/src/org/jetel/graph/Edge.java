@@ -322,6 +322,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         return edge.isEOF();
     }
 
+    /**
+     * Current thread is block until EOF on the edge is reached - last
+     * record is read.
+     */
+    public void waitForEOF() throws InterruptedException {
+    	edge.waitForEOF();
+    }
+    
 	/**
 	 *  This method creates appropriate version of Edge (direct or buffered)
 	 *  based on specified type and then initializes it.

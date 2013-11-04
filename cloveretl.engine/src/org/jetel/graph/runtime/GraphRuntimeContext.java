@@ -97,6 +97,8 @@ public class GraphRuntimeContext {
 	private String jobUrl;
 	/** Is true if and only if the graph should be executed as sub-job, see SubGraph and SubJobflow components. */
 	private boolean isSubJob;
+	/** Only for subgraphs - component id, where this sub-graph has been executed. */
+	private String parentSubGraphComponentId;
 	private IAuthorityProxy authorityProxy;
 	private MetadataProvider metadataProvider;
 	
@@ -153,6 +155,7 @@ public class GraphRuntimeContext {
 		ret.jobType = getJobType();
 		ret.jobUrl = getJobUrl();
 		ret.isSubJob = isSubJob();
+		ret.parentSubGraphComponentId = getParentSubGraphComponentId();
 		ret.authorityProxy = getAuthorityProxy();
 		ret.executionType = getExecutionType();
 		ret.metadataProvider = getMetadataProvider();
@@ -633,6 +636,21 @@ public class GraphRuntimeContext {
 	 */
 	public void setSubJob(boolean isSubJob) {
 		this.isSubJob = isSubJob;
+	}
+
+	/**
+	 * @return component id of SubGraph component, where this sub-graph has been executed; null for non-sub-graph executions
+	 */
+	public String getParentSubGraphComponentId() {
+		return parentSubGraphComponentId;
+	}
+
+	/**
+	 * Shouldn't be set for non-sub-graph execution.
+	 * @param parentSubGraphComponentId component id of SubGraph component, where this sub-graph has been executed 
+	 */
+	public void setParentSubGraphComponentId(String parentSubGraphComponentId) {
+		this.parentSubGraphComponentId = parentSubGraphComponentId;
 	}
 
 	/**

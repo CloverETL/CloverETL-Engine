@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -42,6 +43,7 @@ import org.jetel.graph.analyse.SingleGraphProvider;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MVEngineEdge;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
+import org.jetel.util.GraphUtils;
 import org.jetel.util.SubGraphUtils;
 
 /*
@@ -129,6 +131,26 @@ public class TransformationGraphAnalyzer {
 		//let's find cycles of relationships in the graph and interrupted them by buffered edges to avoid deadlocks
 		GraphCycleInspector graphCycleInspector = new GraphCycleInspector(new SingleGraphProvider(graph));
 		graphCycleInspector.inspectGraph();
+		
+		//update edge types around SubGraph components
+		//real edge is combination of parent graph edge type and sub-graph edge type
+		for (Node component : graph.getNodes().values()) {
+			if (component instanceof SubGraphComponent) {
+				SubGraphComponent subGraphComponent = (SubGraphComponent) component;
+				for (Entry<Integer, InputPort> inputPort : component.getInputPorts().entrySet()) {
+					EdgeTypeEnum suggestedEdgeType = subGraphComponent.getInputEdgeType(inputPort.getKey());
+					EdgeTypeEnum currentEdgeType = inputPort.getValue().getEdge().getEdgeType();
+					EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(currentEdgeType, suggestedEdgeType);
+					inputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
+				}
+				for (Entry<Integer, OutputPort> outputPort : component.getOutputPorts().entrySet()) {
+					EdgeTypeEnum suggestedEdgeType = subGraphComponent.getOutputEdgeType(outputPort.getKey());
+					EdgeTypeEnum currentEdgeType = outputPort.getValue().getEdge().getEdgeType();
+					EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(currentEdgeType, suggestedEdgeType);
+					outputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
+				}
+			}
+		}
 	}
 
 	private static void analysePhaseEdges(TransformationGraph graph) {
