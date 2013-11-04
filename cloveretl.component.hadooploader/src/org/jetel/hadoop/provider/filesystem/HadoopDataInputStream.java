@@ -155,8 +155,14 @@ public class HadoopDataInputStream implements HadoopDataInput, SeekableByteChann
 
 	@Override
 	public int read(ByteBuffer dst) throws IOException {
-		if (dst.hasArray()){
-			return stream.read(dst.array());
+		if (dst.hasArray()) {
+			// the starting position may not be 0, the limit is the number of remaining bytes before the limit
+			int n = stream.read(dst.array(), dst.position(), dst.remaining());
+			// ReadableByteChannel.read(ByteBuffer) must update the buffer position
+			if (n > 0) {
+				dst.position(dst.position() + n);
+			}
+			return n;
 		}else{
 			int len;
 			int remaining;

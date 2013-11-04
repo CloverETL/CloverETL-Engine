@@ -116,6 +116,8 @@ public class ASTBuilder extends NavigatingVisitor {
 	/** Problem collector */
 	private ProblemReporter problemReporter;
 	
+	private boolean lenient = false;
+	
 	private LiteralParser literalParser = new LiteralParser();
 	
 	public ASTBuilder(TransformationGraph graph, DataRecordMetadata[] inputMetadata, DataRecordMetadata[] outputMetadata,
@@ -185,6 +187,10 @@ public class ASTBuilder extends NavigatingVisitor {
 			}
 
 		}
+	}
+	
+	public void setLenient(boolean lenient) {
+		this.lenient = lenient;
 	}
 
 	/**
@@ -330,6 +336,10 @@ public class ASTBuilder extends NavigatingVisitor {
 		DataRecordMetadata metadata = isOutput ? getOutputMetadata(recordPos) : getInputMetadata(recordPos);
 		if (metadata != null) {
 			node.setMetadata(metadata);
+		} else if (lenient) {
+			warn(node, "Metadata not available");
+			node.setType(TLType.UNKNOWN);
+			return node;
 		} else {
 			error(node, "Cannot " + (isOutput ? "write to output" : "read from input") + " port '" + id + "'", "Either the port has no edge connected or the operation is not permitted.");
 			node.setType(TLType.ERROR);
@@ -460,8 +470,13 @@ public class ASTBuilder extends NavigatingVisitor {
 		
 		LookupTable table = resolveLookup(node.getLookupName());
 		if (table == null) {
-			error(node, "Unable to resolve lookup table '" + node.getLookupName() + "'");
-			node.setType(TLType.ERROR);
+			if (lenient) {
+				warn(node, "Unable to resolve lookup table '" + node.getLookupName() + "'");
+				node.setType(TLType.UNKNOWN);
+			} else {
+				error(node, "Unable to resolve lookup table '" + node.getLookupName() + "'");
+				node.setType(TLType.ERROR);
+			}
 			return node;
 		} else {
 			if (ambiguousLookupTables.contains(table.getName())) {
@@ -615,16 +630,21 @@ public class ASTBuilder extends NavigatingVisitor {
 	public Object visit(CLVFMemberAccessExpression node, Object data) {
 		super.visit(node, data);
 		
-		//dictionary is not available, the ctl code is compiled without graph (graph == null)
-		if (dictionary == null) {
-			error(node, "Dictionary is not available");
-			node.setType(TLType.ERROR);
-			return data;
-		}
+		final SimpleNode prefix = (SimpleNode)node.jjtGetChild(0);
 		
 		// access to dictionary
-		final SimpleNode prefix = (SimpleNode)node.jjtGetChild(0);
 		if (prefix.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE) {
+			//dictionary is not available, the ctl code is compiled without graph (graph == null)
+			if (dictionary == null) {
+				if (lenient) {
+					warn(node, "Dictionary is not available");
+					node.setType(TLType.UNKNOWN);
+				} else {
+					error(node, "Dictionary is not available");
+					node.setType(TLType.ERROR);
+				}
+				return data;
+			}
 			
 			IDictionaryType dictType = dictionary.getType(node.getName()) ; 
 			if (dictType == null) {
@@ -635,21 +655,27 @@ public class ASTBuilder extends NavigatingVisitor {
 			
 			TLType tlType = dictType.getTLType();
 			if( tlType == null){
-				error(node, "Dictionary entry '" + node.getName() + " has type "+dictType.getTypeId()+" which is not supported in CTL");
+				error(node, "Dictionary entry '" + node.getName() + "' has type "+dictType.getTypeId()+" which is not supported in CTL");
 				node.setType(TLType.ERROR);
 				return node;
 			} else if (tlType.isList()) {
 				final String contentType = dictionary.getContentType(node.getName());
-				if (!StringUtils.isEmpty(contentType)) {
-					TLType elementType = getTypeByContentType(contentType);
-					tlType = TLType.createList(elementType);
+				TLType elementType = getTypeByContentType(contentType);
+				if (elementType == null) {
+					error(node, "Dictionary entry '" + node.getName() + "' has invalid content type: '" + contentType + "'");
+					node.setType(TLType.ERROR);
+					return node;
 				}
+				tlType = TLType.createList(elementType);
 			} else if (tlType.isMap()) {
 				final String contentType = dictionary.getContentType(node.getName());
-				if (!StringUtils.isEmpty(contentType)) {
-					TLType elementType = getTypeByContentType(contentType);
-					tlType = TLType.createMap(TLTypePrimitive.STRING, elementType);
+				TLType elementType = getTypeByContentType(contentType);
+				if (elementType == null) {
+					error(node, "Dictionary entry '" + node.getName() + "' has invalid content type: '" + contentType + "'");
+					node.setType(TLType.ERROR);
+					return node;
 				}
+				tlType = TLType.createMap(TLTypePrimitive.STRING, elementType);
 			}
 			node.setType(tlType);
 		}
@@ -665,8 +691,12 @@ public class ASTBuilder extends NavigatingVisitor {
 	public CLVFSequenceNode visit(CLVFSequenceNode node, Object data) {
 		Sequence seq = resolveSequence(node.getSequenceName());
 		if (seq == null) {
-			error(node, "Unable to resolve sequence '" + node.getSequenceName() + "'");
-			node.setType(TLType.ERROR);
+			if (lenient) {
+				warn(node, "Unable to resolve sequence '" + node.getSequenceName() + "'");
+			} else {
+				error(node, "Unable to resolve sequence '" + node.getSequenceName() + "'");
+				node.setType(TLType.ERROR);
+			}
 		} else {
 			if (ambiguousSequences.contains(seq.getName())) {
 				warn("Sequence name '" + seq.getName() + "' is ambiguous", "Rename the sequence to a unique name");

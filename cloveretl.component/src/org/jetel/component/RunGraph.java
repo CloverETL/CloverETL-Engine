@@ -713,8 +713,8 @@ public class RunGraph extends Node{
 				(isPipelineMode() || getInputPort(INPUT_PORT) == null)) {
         	ConfigurationProblem problem = new ConfigurationProblem("If the graph is " +
         			"executed in separate instance of clover, supplying the command " +
-        			"line for clover is necessary (at least the -plugins argument)." +
-        			"Command line arguments can be supplied by cloverCmdLineArgs attribute" +
+        			"line for clover is necessary (at least the -plugins argument). " +
+        			"Command line arguments can be supplied by cloverCmdLineArgs attribute " +
         			"or by second field in input port (Supplying by field can be made only in in/out mode)." , 
         			Severity.ERROR, this, Priority.NORMAL);
         	status.add(problem);

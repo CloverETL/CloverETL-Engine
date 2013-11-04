@@ -360,7 +360,6 @@ public class TransformationGraphXMLReaderWriter {
 			c = ContextProvider.registerGraph(graph);
 			
 			graph.setInitialRuntimeContext(runtimeContext);
-			graph.getGraphParameters().addProperties(runtimeContext.getAdditionalProperties());
 			// get graph name
 			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
 			try {
@@ -392,6 +391,12 @@ public class TransformationGraphXMLReaderWriter {
 			// handle all defined graph parameters - new-fashion
 			List<Element> graphParametersElements = getChildElements(getGlobalElement(document), GRAPH_PARAMETERS_ELEMENT);
 			instantiateGraphParameters(graph.getGraphParameters(), graphParametersElements);
+
+			//additional graph parameters are loaded after all build-in parameters are already loaded
+			//moreover, additional parameters are used in regular loading of build-in parameters (see #instantiateGraphParameter)
+			//to ensure correct value of parameters is used when path parameter file is parametrised by
+			//parameter overridden by additional parameters.
+			graph.getGraphParameters().addPropertiesOverride(runtimeContext.getAdditionalProperties());
 
 			// handle dictionary
 			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
@@ -861,7 +866,11 @@ public class TransformationGraphXMLReaderWriter {
 	 * @throws XMLConfigurationException 
 	 */
 	private void instantiateGraphParameter(GraphParameters graphParameters, Element graphParameter) throws XMLConfigurationException {
-    	GraphParameter gp = graphParameters.addGraphParameter(graphParameter.getAttribute("name"), graphParameter.getAttribute("value"));
+		String name = graphParameter.getAttribute("name");
+		String value = graphParameter.getAttribute("value");
+		//value may be actually overridden by additional graph parameters defined in graph runtime context
+		value = getGraphParameterValue(name, value);
+    	GraphParameter gp = graphParameters.addGraphParameter(name, value);
     	if (graphParameter.hasAttribute("secure")) {
 			ComponentXMLAttributes attributes = new ComponentXMLAttributes(graphParameter);
 			try {
@@ -872,6 +881,18 @@ public class TransformationGraphXMLReaderWriter {
     	}
 	}
 
+	/**
+	 * Returns either value from additional graph parameters from runtime context or suggested value.
+	 */
+	private String getGraphParameterValue(String name, String suggestedValue) {
+		Properties additionalProperties = runtimeContext.getAdditionalProperties();
+		if (additionalProperties.containsKey(name)) {
+			return additionalProperties.getProperty(name);
+		} else {
+			return suggestedValue;
+		}
+	}
+	
 	/**
 	 * Load parameter file.
 	 */

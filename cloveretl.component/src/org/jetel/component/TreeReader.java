@@ -448,6 +448,11 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		sequences.clear();
 	}
 
+	@Override
+	public String[] getUsedUrls() {
+		return new String[] { fileURL };
+	}
+
 	private Object getNextSource() throws JetelException {
 		Object input = null;
 		while (sourceIterator.hasNext()) {
