@@ -2486,7 +2486,7 @@ Sends all resulting records to all connected output ports.</description>
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input XML">
+	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input JSON">
 	        <singleType name="file" fields="input" dictionary="input" />
 	      </property>
 	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
