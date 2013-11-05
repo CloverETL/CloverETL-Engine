@@ -3725,7 +3725,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		g.addDataRecordMetadata(m3);
 		
 		DataRecordMetadata m4 = new DataRecordMetadata("metadata4");
-		m4.addField(new DataFieldMetadata("outputField1", DataFieldType.STRING, "|"));
+		m4.addField(new DataFieldMetadata("outputField1", DataFieldType.STRING, "|")); // must not match "singleInputField"
 		g.addDataRecordMetadata(m4);
 
 		doCompile("metadata1 r1; metadata2 r2; metadata3 r3; metadata4 r4;\n"
