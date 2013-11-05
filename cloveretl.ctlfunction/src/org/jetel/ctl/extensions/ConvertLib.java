@@ -1163,8 +1163,11 @@ public class ConvertLib extends TLFunctionLibrary {
 		}
 		byte[] bits = new byte[(src.length() >> 3) + ((src.length() & 7) != 0 ? 1 : 0)];
 		for (int i = 0; i < src.length(); i++) {
-			if (src.charAt(i) == '1') {
+			char c = src.charAt(i);
+			if (c == '1') {
 				bits[i >> 3] |= (1 << (i & 7));
+			} else if (c != '0') { // CLO-2022
+				throw new IllegalArgumentException("Invalid character '" + c + "' encountered at position " + i + " of '" + src + "'");
 			}
 		}
 		return bits;

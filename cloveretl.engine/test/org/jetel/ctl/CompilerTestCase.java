@@ -8194,6 +8194,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullVariableOutput", null);
 	}
 	
+	public void test_convertlib_str2bits_expect_error() {
+		try {
+			doCompile("function integer transform(){byte b = str2bits('abcd'); return 0;}","test_convertlib_str2bits_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+	}
+
 	public void test_convertlib_str2bool() {
 		doCompile("test_convertlib_str2bool");
 		check("fromTrueString", true);
