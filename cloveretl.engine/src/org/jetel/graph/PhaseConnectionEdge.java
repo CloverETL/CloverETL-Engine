@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.tape.DataRecordTape;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -113,28 +114,29 @@ public class PhaseConnectionEdge extends EdgeBase {
 		// we are ready to supply data
 		// there are two attemps to initialize this edge
 		// first by phase of the writer, then by phase of the reader, we initilize only once
-		if (!wasInitialized) {
-			writeCounter = readCounter=0;
-            writeByteCounter=readByteCounter=0;
-			dataTape.open(-1);
-			dataTape.addDataChunk();
-			wasInitialized = true;
-		}
 	}
 
 	@Override
-	public void reset() {
-		isReadMode=false;
+	public void preExecute() {
+		super.preExecute();
+
+		isReadMode = false;
 		isEmpty = false;
 		writeCounter = 0;
 		readCounter = 0;
         writeByteCounter = 0;
         readByteCounter = 0;
 		try {
-			dataTape.clear();
-			dataTape.addDataChunk();
+			if (!wasInitialized) {
+				dataTape.open(-1);
+				dataTape.addDataChunk();
+				wasInitialized = true;
+			} else {
+				dataTape.clear();
+				dataTape.addDataChunk();
+			}
 		} catch (Exception e) {
-			dataTape = new DataRecordTape();
+			throw new JetelRuntimeException("Phase edge preExecute operation failed.", e);
 		}
 	}
 

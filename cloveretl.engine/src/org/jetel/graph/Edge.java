@@ -33,6 +33,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.EdgeDebugUtils;
+import org.jetel.util.SubGraphUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -355,16 +356,24 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 				throw new ComponentNotReadyException("Creating metadata from db connection failed: ", ex);
 			}
 		}
+		
+		if (!isSharedEdgeBase()) {
+			//init edge base if it is not shared
+			initEdgeBase();
+		}
+	}
+
+	protected void initEdgeBase() {
 		if (edge == null) {
 			edge = getEdgeType().createEdgeBase(this);
 		}
         try {
             edge.init();
         } catch (Exception ex){
-            throw new ComponentNotReadyException(this, ex);
+            throw new JetelRuntimeException("Edge base initialisation failed.", ex);
         }
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#preExecute()
 	 */
@@ -372,8 +381,19 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
-		edge.preExecute();
+		eofSent = false;
+
+		if (!isSharedEdgeBase()) {
+			//pre-execute edge base only for non-shared edges
+			edge.preExecute();
+		}
 		
+		if (!isSharedEdgeBase()) {
+			initDebugMode();
+		}
+	}
+
+	protected void initDebugMode() {
 		if (debugMode && getGraph().isDebugMode()) {
             String debugFileName = getDebugFileName();
             logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
@@ -381,18 +401,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
             				debugFilterExpression, metadata, debugSampleData);
             try {
                 edgeDebuger.init();
-            } catch (Exception ex){
-                throw new ComponentNotReadyException(this, ex);
+            } catch (Exception ex) {
+                throw new JetelRuntimeException("Edge debugger initialisation failed.", ex);
             }
         }
-	}
-	
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-		
-		eofSent = false;
-		edge.reset();
 	}
 	
 	/* (non-Javadoc)
@@ -402,7 +414,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		
-		edge.postExecute();
+		if (!isSharedEdgeBase()) {
+			//post-execute edge base only for non-shared edges
+			edge.postExecute();
+		}
 		
         if (edgeDebuger != null) {
             edgeDebuger.close();
@@ -607,8 +622,11 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public void free() {
         if(!isInitialized()) return;
         super.free();
-
-        edge.free();
+        
+        if (!isSharedEdgeBase()) {
+			//free edge base only for non-shared edges
+        	edge.free();
+        }
     }
 
     @Override
@@ -649,10 +667,26 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	}
 
 	/**
-	 * @return internal edge implementation
+	 * @return true if this edge shares edge base with parent graph - see SubGraph component
 	 */
 	public EdgeBase getEdgeBase() {
 		return edge;
+	}
+
+	/**
+	 * Input and output edges of SubGraphInput/Output components share EdgeBase with parent graph.
+	 * This is important to known, that the EdgeBase is shared. So EdgeBase
+	 * initialisation, pre-execution, post-execution and freeing is not performed
+	 * in this edge.
+	 */
+	public boolean isSharedEdgeBase() {
+		if (getGraph().getRuntimeContext().isSubJob()
+				&& (SubGraphUtils.isSubJobInputComponent(getWriter().getType()) 
+						|| SubGraphUtils.isSubJobOutputComponent(getReader().getType()))) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
 	@Override

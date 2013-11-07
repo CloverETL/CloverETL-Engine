@@ -144,15 +144,12 @@ public class DirectEdge extends EdgeBase {
 		
 		readerWaitingTime = 0;
 		writerWaitingTime = 0;
-	}
-	
-	@Override
-	public void reset() {
+		
 		readBuffer.clear();
 		writeBuffer.clear();
 		inputRecordCounter = 0;
 		outputRecordCounter = 0;
-        byteCounter=0;
+        byteCounter = 0;
         bufferedRecords.set(0);
 		readBuffer.flip(); // we start with empty read buffer
 		tmpDataRecord.clear();
@@ -160,7 +157,7 @@ public class DirectEdge extends EdgeBase {
 	    readerWait=false;
 	    writerWait=false;
 	}
-
+	
 	// Operations
 	/**
 	 * An operation that does read one DataRecord from Edge

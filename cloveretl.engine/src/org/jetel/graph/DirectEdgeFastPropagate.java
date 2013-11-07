@@ -118,17 +118,14 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     	
 		readerWaitingTime = 0;
 		writerWaitingTime = 0;
-    }
-    
-    @Override
-    public void reset() {
+		
         recordsBuffer.reset();
 		inputRecordCounter = 0;
 		outputRecordCounter = 0;
-		byteCounter=0;
+		byteCounter = 0;
 		bufferedRecords.set(0);
     }
-
+    
     // Operations
     /**
      * An operation that does read one DataRecord from Edge
