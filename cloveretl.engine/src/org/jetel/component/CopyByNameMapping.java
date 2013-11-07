@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.BadDataFormatException;
 
 /**
  * Simple replacement for {@link org.jetel.component.CustomizedRecordTransform} 
@@ -98,7 +99,11 @@ public class CopyByNameMapping {
 		Iterator<DataField> targetIterator = targetFields.iterator();
 
 		while (sourceIterator.hasNext() && targetIterator.hasNext()) {
-			targetIterator.next().setValue(sourceIterator.next());
+			try {
+				targetIterator.next().setValue(sourceIterator.next().getValue());
+			} catch (BadDataFormatException bdfe) {
+				// CLO-331: ignore - same implementation as in CustomizedRecordTransform
+			}
 		}
 	}
 
