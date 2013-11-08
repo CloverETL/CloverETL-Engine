@@ -129,6 +129,7 @@ public class GraphRuntimeContext {
 		
 		ret.additionalProperties = new Properties();
 		ret.additionalProperties.putAll(getAdditionalProperties());
+		ret.logLevel = getLogLevel();
 		ret.trackingInterval = getTrackingInterval();
 		ret.skipCheckConfig = isSkipCheckConfig();
 		ret.verboseMode = isVerboseMode();
@@ -161,6 +162,7 @@ public class GraphRuntimeContext {
 		Properties prop = new Properties();
 		
 		prop.setProperty("additionProperties", String.valueOf(getAdditionalProperties()));
+		prop.setProperty("logLevel", String.valueOf(getLogLevel()));
 		prop.setProperty("trackingInterval", Integer.toString(getTrackingInterval()));
 		prop.setProperty(PropertyKey.SKIP_CHECK_CONFIG.getKey(), Boolean.toString(isSkipCheckConfig()));
 		prop.setProperty("verboseMode", Boolean.toString(isVerboseMode()));

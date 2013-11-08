@@ -30,22 +30,26 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DataRecordNature;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.data.Token;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
 
@@ -67,7 +71,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  * @see org.jetel.data.DataField
  * 
  */
-public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata> {
+public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata>, IGraphElement {
 
 	private static final long serialVersionUID = 7032218607804024730L;
 	
@@ -201,6 +205,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/**
 	 * @return metadata identifier
 	 */
+	@Override
 	public String getId() {
 		return id;
 	}
@@ -218,6 +223,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 *
 	 * @param name the new name of the data record
 	 */
+	@Override
 	public void setName(String name) {
 		if (!StringUtils.isValidObjectName(name)) {
 			throw new InvalidGraphObjectNameException(name, "RECORD");
@@ -229,6 +235,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/**
 	 * @return the name of the data record
 	 */
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -1132,11 +1139,12 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * @param status
 	 * @return
 	 */
+	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		// verify count of fields
 		if (fields.size() == 0) {
 			status.add(new ConfigurationProblem("No field elements for '" + name + "' have been found!",
-					Severity.ERROR, null, Priority.NORMAL));
+					Severity.ERROR, this, Priority.NORMAL));
 		}
 		
 		// verify delimiters - field delimiters
@@ -1153,7 +1161,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		if (parentGraph != null) {
 			if (parentGraph.getJobType() == JobType.JOBFLOW && getNature() != DataRecordNature.TOKEN) {
 				status.add(new ConfigurationProblem("Invalid metadata '" + name + "'. Token metadata nature is required.",
-						Severity.ERROR, null, Priority.NORMAL));
+						Severity.ERROR, this, Priority.NORMAL));
 			}
 		}
 		
@@ -1181,7 +1189,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			for (String keyFieldName : keyFieldNames) {
 				if (!fieldNames.contains(keyFieldName)) {
 					status.add(new ConfigurationProblem("Field with name '" + keyFieldName + "' that is listed in a record key " +
-							"does not exist", Severity.ERROR, null, Priority.NORMAL));
+							"does not exist", Severity.ERROR, this, Priority.NORMAL));
 				}
 			}
 		}
@@ -1199,7 +1207,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 			sName = field.getName();
 			if (setName.contains(sName)) {
 				status.add(new ConfigurationProblem("Field name '" + field.getName() + "' in the record element '"
-						+ name + "' is defined more than once!", Severity.ERROR, null, Priority.NORMAL));
+						+ name + "' is defined more than once!", Severity.ERROR, this, Priority.NORMAL));
 			} else {
 				setName.add(sName);
 			}
@@ -1245,7 +1253,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private void verifyFieldSize(DataFieldMetadata field, ConfigurationStatus status) {
 		if (field.getSize() <= 0) {
 			status.add(new ConfigurationProblem("Field size '" + field.getSize() + "' for the field '" + field.getName()
-					+ "' in the record element '" + name + "' has wrong number!", Severity.ERROR, null, Priority.NORMAL));
+					+ "' in the record element '" + name + "' has wrong number!", Severity.ERROR, this, Priority.NORMAL));
 		}
 	}
 	
@@ -1259,7 +1267,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		String[] fieldDelimiters = field.getDelimiters();
 		if (fieldDelimiters == null || fieldDelimiters.length == 0) {
 			status.add(new ConfigurationProblem("Field delimiter for the field '" + field.getName() +
-					"' in the record element '" + name + "' not found!", Severity.ERROR, null, Priority.NORMAL));
+					"' in the record element '" + name + "' not found!", Severity.ERROR, this, Priority.NORMAL));
 		}
 	}
 
@@ -1600,6 +1608,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	/**
 	 * @return the parent graph of this metadata or null if no parent graph is specified
 	 */
+	@Override
 	public TransformationGraph getGraph() {
 		return graph;
 	}
@@ -1608,6 +1617,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * Sets the parent graph of this metadata
 	 * @param graph the parent graph to set
 	 */
+	@Override
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
 	}
@@ -1734,6 +1744,81 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 		
 		return recordMetadata;
+	}
+
+	///////////////////////////////////////////
+	// dummy implementation of IGraphElement //
+	///////////////////////////////////////////
+	
+	//will be extended in the future - for now only this simple implementation, which allows
+	//to pass metadata object to ConfigurationProblem, where IGraphElement is only possible
+	//source of the problem
+	
+	@Override
+	public void init() throws ComponentNotReadyException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void preExecute() throws ComponentNotReadyException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void postExecute() throws ComponentNotReadyException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void commit() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void rollback() {
+		throw new UnsupportedOperationException();
+	}
+
+	@java.lang.SuppressWarnings("deprecation")
+	@Deprecated
+	@Override
+	public void reset() throws ComponentNotReadyException {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void free() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isChecked() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean isInitialized() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public boolean firstRun() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public JobType getJobType() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Logger getLog() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public PropertyRefResolver getPropertyRefResolver() {
+		throw new UnsupportedOperationException();
 	}
 	
 }
