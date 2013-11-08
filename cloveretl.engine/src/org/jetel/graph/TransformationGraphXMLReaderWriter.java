@@ -53,7 +53,6 @@ import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
@@ -606,9 +605,9 @@ public class TransformationGraphXMLReaderWriter {
                 nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
 				if(!nodeEnabled.equalsIgnoreCase(EnabledEnum.DISABLED.toString()) 
                         && !nodeEnabled.equalsIgnoreCase(EnabledEnum.PASS_THROUGH.toString())) {
-				    graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i));
+					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i), isStrictParsing());
                 } else {
-                    graphNode = new SimpleNode(nodeID, nodeType);
+                    graphNode = ComponentFactory.createDummyComponent(graph, nodeType, nodeElements.item(i));
                 }
 				if (graphNode != null) {
                     phase.addNode(graphNode);
@@ -1304,34 +1303,5 @@ public class TransformationGraphXMLReaderWriter {
 		return(true);
 	}
 
-    /**
-     * Simple implementation of Node, used for "disabled" and "pass through" nodes 
-     * by reading graph from xml. In next graph processing will be this nodes removed from graph.
-     */
-    private static class SimpleNode extends Node {
-    	private String type;
-    	
-        public SimpleNode(String id, String type) {
-            super(id);
-            this.type = type;
-        }
-
-        @Override
-		public String getType() { return type; }
-
-        @Override
-        public ConfigurationStatus checkConfig(ConfigurationStatus status) { return status; }
-
-        @Override
-		public Result execute() { return Result.FINISHED_OK; }
-
-        @Override
-		public void init() throws ComponentNotReadyException { }
-
-        @Override
-		public void free() {
-            
-        }
-    }
 }
 
