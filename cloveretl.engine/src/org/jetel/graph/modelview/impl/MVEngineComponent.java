@@ -75,7 +75,7 @@ public class MVEngineComponent implements MVComponent {
 
 	@Override
 	public boolean isPassThrough() {
-		return engineComponent.getDescription().isPassThrough();
+		return engineComponent.getDescriptor().isPassThrough();
 	}
 
 	/**
@@ -85,8 +85,8 @@ public class MVEngineComponent implements MVComponent {
 		MetadataProvider metadataProvider = null;
 		if (engineComponent instanceof MetadataProvider) {
 			metadataProvider = (MetadataProvider) engineComponent;
-		} else if (engineComponent != null && !StringUtils.isEmpty(engineComponent.getDescription().getMetadataProvider())) {
-			metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescription().getMetadataProvider(), engineComponent);
+		} else if (engineComponent != null && !StringUtils.isEmpty(engineComponent.getDescriptor().getMetadataProvider())) {
+			metadataProvider = ClassLoaderUtils.loadClassInstance(MetadataProvider.class, engineComponent.getDescriptor().getMetadataProvider(), engineComponent);
 			if (metadataProvider instanceof ComponentMetadataProvider) {
 				((ComponentMetadataProvider) metadataProvider).setComponent(engineComponent);
 			}
@@ -106,7 +106,7 @@ public class MVEngineComponent implements MVComponent {
 		}
 
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
-		String metadataId = engineComponent.getDescription().getDefaultOutputMetadataId(portIndex);
+		String metadataId = engineComponent.getDescriptor().getDefaultOutputMetadataId(portIndex);
 		if (MetadataRepository.contains(metadataId)) {
 			return new MVEngineMetadata(MetadataRepository.getMetadata(metadataId));
 		}
@@ -124,7 +124,7 @@ public class MVEngineComponent implements MVComponent {
 			}
 		}
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
-		String metadataId = engineComponent.getDescription().getDefaultInputMetadataId(portIndex);
+		String metadataId = engineComponent.getDescriptor().getDefaultInputMetadataId(portIndex);
 		if (MetadataRepository.contains(metadataId)) {
 			return new MVEngineMetadata(MetadataRepository.getMetadata(metadataId));
 		}

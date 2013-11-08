@@ -197,7 +197,7 @@ public class ComponentFactory {
 			}
 			
 			//preset description to the node
-			component.setDescription(componentMap.get(component.getType()));
+			component.setDescriptor(componentMap.get(component.getType()));
         } catch (Exception e) {
         	throw createException(xattribs, e);
         }

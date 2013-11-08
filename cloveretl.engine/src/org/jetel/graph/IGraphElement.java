@@ -215,12 +215,12 @@ public interface IGraphElement {
     /**
      * @return element type descriptor
      */
-    public GraphElementDescription getDescription();
+    public GraphElementDescription getDescriptor();
     
     /**
      * Sets element type descriptor.
      * @param description descriptor for type of this element
      */
-    public void setDescription(GraphElementDescription description);
+    public void setDescriptor(GraphElementDescription descriptor);
     
 }

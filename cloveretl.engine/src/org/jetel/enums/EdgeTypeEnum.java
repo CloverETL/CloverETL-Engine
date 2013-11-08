@@ -38,7 +38,7 @@ public enum EdgeTypeEnum {
 	/**  Proxy represents Buffered fast propagate edge */
 	BUFFERED_FAST_PROPAGATE("bufferedFastPropagate", BufferedFastPropagateEdge.class, true),
 	/** Proxy represents Edge connecting two different phases */
-	PHASE_CONNECTION("phaseConnection", PhaseConnectionEdge.class, true);
+	PHASE_CONNECTION("phaseConnection", PhaseConnectionEdge.class, true),
 
 	/** This edge type is used by server for remote edges in clustered graphs. */
 	L_REMOTE("lRemote", LRemoteEdge.class, false);

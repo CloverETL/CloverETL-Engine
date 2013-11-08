@@ -1423,8 +1423,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	}
 	
     @Override
-	public ComponentDescription getDescription() {
-    	return (ComponentDescription) super.getDescription();
+	public ComponentDescription getDescriptor() {
+    	return (ComponentDescription) super.getDescriptor();
     }
 
     /**

@@ -67,7 +67,7 @@ public abstract class GraphElement implements IGraphElement {
      * For example all SimpleCopy components has identical descriptor with
      * information about SimpleCopy component type in general.
      */
-    private GraphElementDescription description;
+    private GraphElementDescription descriptor;
     
     /**
      * Constructor.
@@ -275,13 +275,13 @@ public abstract class GraphElement implements IGraphElement {
     }
     
     @Override
-    public GraphElementDescription getDescription() {
-    	return description;
+    public GraphElementDescription getDescriptor() {
+    	return descriptor;
    }
     
     @Override
-    public void setDescription(GraphElementDescription description) {
-    	this.description = description;
+    public void setDescriptor(GraphElementDescription descriptor) {
+    	this.descriptor = descriptor;
     }
     
 	protected URL getContextURL() {

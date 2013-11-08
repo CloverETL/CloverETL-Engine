@@ -35,6 +35,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DataRecordNature;
 import org.jetel.data.Defaults;
+import org.jetel.data.GraphElementDescription;
 import org.jetel.data.RecordKey;
 import org.jetel.data.Token;
 import org.jetel.exception.ComponentNotReadyException;
@@ -1822,6 +1823,16 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 
 	@Override
 	public PropertyRefResolver getPropertyRefResolver() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public GraphElementDescription getDescriptor() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setDescriptor(GraphElementDescription descriptor) {
 		throw new UnsupportedOperationException();
 	}
 
