@@ -478,6 +478,11 @@ public final class TransformationGraph extends GraphElement {
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
+		//print out types of all edges
+		for (Edge edge : getEdges().values()) {
+			logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
+		}
+
 		//check whether the job type (etlGraph vs jobflow) of the graph is same as the job type in GraphRuntimeContext 
     	if (!getJobType().isSubType(getRuntimeContext().getJobType())) {
     		throw new JetelRuntimeException("Inconsistent runtime setup. " +

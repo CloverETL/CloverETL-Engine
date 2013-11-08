@@ -110,6 +110,11 @@ public class ErrorReporter {
 		for(int i=0;i<nodeInError.jjtGetNumChildren();i++){
 			process(nodeInError.jjtGetChild(i));
 		}
+		// error message should not end with a line break, delete it
+		StringBuffer sb = wr.getBuffer();
+		if (sb.toString().endsWith(LINE_SEPARATOR)) {
+			sb.delete(sb.length() - LINE_SEPARATOR.length(), sb.length());
+		}
 		return this;
 	}
 	

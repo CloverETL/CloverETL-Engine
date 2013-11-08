@@ -3716,10 +3716,19 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		m2.addField(new DataFieldMetadata("ExactMatch", DataFieldType.STRING, "|"));
 		m2.addField(new DataFieldMetadata("EXACTMATCH", DataFieldType.STRING, "|"));
 		m2.addField(new DataFieldMetadata("ExactMATCH", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("Exactmatch", DataFieldType.STRING, "|"));
 
 		g.addDataRecordMetadata(m2);
+		
+		DataRecordMetadata m3 = new DataRecordMetadata("metadata3");
+		m3.addField(new DataFieldMetadata("singleInputField", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m3);
+		
+		DataRecordMetadata m4 = new DataRecordMetadata("metadata4");
+		m4.addField(new DataFieldMetadata("outputField1", DataFieldType.STRING, "|")); // must not match "singleInputField"
+		g.addDataRecordMetadata(m4);
 
-		doCompile("metadata1 r1;metadata2 r2;\n"
+		doCompile("metadata1 r1; metadata2 r2; metadata3 r3; metadata4 r4;\n"
 				+ "function integer transform() {\n"
 				+ "r1.a = \"a\"; r1.b = \"b\"; r1.c = \"c\";\n"
 				+ "r1.noexactmatch = \"noexactmatch\";\n"
@@ -3731,6 +3740,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 				+ "r1.exactMatch = \"exactMatch\";\n"
 				+ "r1.EXACTMATCH = \"EXACTMATCH\";\n"
 				+ "r2.* = r1.*; \n"
+				+ "r3.singleInputField = \"dummy value\";\n"
+				+ "r4.* = r3.*;\n"
 				+ "return 0; }","test_copyByName_assignment_caseInsensitive", g, new DataRecord[0], new DataRecord[0]);
 		
 		DataRecord r2 = (DataRecord) getVariable("r2");
@@ -3751,6 +3762,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("exactMATCH", r2.getField("ExactMatch").getValue().toString()); // first unmapped input field selected
 		assertEquals("EXACTMATCH", r2.getField("EXACTMATCH").getValue().toString()); // exact match (has priority)
 		assertEquals("exactMatch", r2.getField("ExactMATCH").getValue().toString()); // first unmapped input field selected
+		assertEquals(null, r2.getField("Exactmatch").getValue()); // no remaining unmapped input field
+		
+		DataRecord r4 = (DataRecord) getVariable("r4");
+		assertEquals(null, r4.getField("outputField1").getValue()); // CLO-637
 	}
 	
 	public void test_containerlib_copyByPosition(){
@@ -8179,6 +8194,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullVariableOutput", null);
 	}
 	
+	public void test_convertlib_str2bits_expect_error() {
+		try {
+			doCompile("function integer transform(){byte b = str2bits('abcd'); return 0;}","test_convertlib_str2bits_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+	}
+
 	public void test_convertlib_str2bool() {
 		doCompile("test_convertlib_str2bool");
 		check("fromTrueString", true);

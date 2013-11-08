@@ -24,6 +24,7 @@ import org.jetel.graph.DirectEdge;
 import org.jetel.graph.DirectEdgeFastPropagate;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeBase;
+import org.jetel.graph.LRemoteEdge;
 import org.jetel.graph.PhaseConnectionEdge;
 
 
@@ -38,6 +39,9 @@ public enum EdgeTypeEnum {
 	BUFFERED_FAST_PROPAGATE("bufferedFastPropagate", BufferedFastPropagateEdge.class, true),
 	/** Proxy represents Edge connecting two different phases */
 	PHASE_CONNECTION("phaseConnection", PhaseConnectionEdge.class, true);
+
+	/** This edge type is used by server for remote edges in clustered graphs. */
+	L_REMOTE("lRemote", LRemoteEdge.class, false);
 
 	private String name;
 	
@@ -56,6 +60,20 @@ public enum EdgeTypeEnum {
 	 */
 	public boolean isBuffered() {
 		return buffered;
+	}
+	
+	/**
+	 * @return respective edge type is returned based on given edge base implementation 
+	 */
+	public static EdgeTypeEnum valueOf(EdgeBase edgeBase) {
+		if (edgeBase != null) {
+			for (EdgeTypeEnum edgeType : values()) {
+				if (edgeType.edgeBaseClass == edgeBase.getClass()) {
+					return edgeType;
+				}
+			}
+		}
+		return null;
 	}
 	
 	public EdgeBase createEdgeBase(Edge edge) {
