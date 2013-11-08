@@ -51,7 +51,12 @@ public class RRemoteDirectEdge extends EdgeBase {
 	private InputStream inputStream;
 	private BinaryDataParser dataParser;
 	private long inputRecordsCounter;
-	private boolean eof;
+	private volatile boolean eofReached;
+
+	/**
+     * Monitor for {@link #waitForEOF()}
+     */
+	private final Object eofMonitor = new Object();
 
 	/**
 	 * @param proxy
@@ -69,16 +74,11 @@ public class RRemoteDirectEdge extends EdgeBase {
 	}
 
 	@Override
-	public void reset() {
-		inputRecordsCounter = 0;
-		eof = false;
-	}
-
-	@Override
 	public void preExecute() {
 		super.preExecute();
 
-		reset();
+		inputRecordsCounter = 0;
+		eofReached = false;
 		
 		inputStream = proxy.getGraph().getAuthorityProxy().getRemoteEdgeDataSource(proxy.getId()).getInputStream();
 		
@@ -90,7 +90,7 @@ public class RRemoteDirectEdge extends EdgeBase {
 		DataRecord result = dataParser.getNext(record);
 		if (result == null) {
 			dataParser.close();
-			eof = true;
+			eofReached();
 		} else {
 			inputRecordsCounter++;
 		}
@@ -102,7 +102,7 @@ public class RRemoteDirectEdge extends EdgeBase {
 		boolean result = dataParser.getNext(record);
 		if (result == false) {
 			dataParser.close();
-			eof = true;
+			eofReached();
 		} else {
 			inputRecordsCounter++;
 		}
@@ -156,7 +156,7 @@ public class RRemoteDirectEdge extends EdgeBase {
 
 	@Override
 	public boolean isEOF() {
-		return eof;
+		return eofReached;
 	}
 
 	@Override
@@ -169,4 +169,20 @@ public class RRemoteDirectEdge extends EdgeBase {
 		throw new UnsupportedOperationException();
 	}
 
+    private void eofReached() {
+    	synchronized (eofMonitor) {
+    		eofReached = true;
+    		eofMonitor.notifyAll();
+    	}
+    }
+    
+    @Override
+    public void waitForEOF() throws InterruptedException {
+    	synchronized (eofMonitor) {
+    		while (!eofReached) {
+    			eofMonitor.wait();
+    		}
+    	}
+    }
+	
 }
