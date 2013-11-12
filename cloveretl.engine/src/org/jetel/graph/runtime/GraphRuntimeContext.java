@@ -643,6 +643,8 @@ public class GraphRuntimeContext {
 	/**
 	 * @return component id of SubGraph component, where this sub-graph has been executed; null for non-sub-graph executions
 	 */
+	//TODO shouldn't be part of runtime context, it is not necessary to have this information here
+	//what about to move it to RuntimeEnvironment
 	public String getParentSubGraphComponentId() {
 		return parentSubGraphComponentId;
 	}

@@ -480,7 +480,7 @@ public final class TransformationGraph extends GraphElement {
 
 		//print out types of all edges
 		for (Edge edge : getEdges().values()) {
-			logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
+			logger.debug("EdgeType [" + edge.getId() + "] : " + (edge.isSharedEdgeBase() ? "shared " + EdgeTypeEnum.valueOf(edge.getEdgeBase()) : edge.getEdgeType()));
 		}
 
 		//check whether the job type (etlGraph vs jobflow) of the graph is same as the job type in GraphRuntimeContext 

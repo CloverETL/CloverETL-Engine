@@ -23,9 +23,11 @@ import org.jetel.util.GraphUtils;
 
 /**
  * Only implementation of this interface is SubGraph component. This interface provides
- * types of edges derived from sub-graph instance. These types are used for local sub-graph
- * execution, where edges from parent graph shares edge base with edges from sub-graph.
- * The real type of this shared edge is combination of these two types.
+ * input (output edges of SubGraphInput component) and output (input edges of SubGraphOutput component)
+ * edges of executed sub-graph. These edges are used to decide whether they can share edge base with edges
+ * from parent graph. Moreover, if the edge base can be shared, edge types in parent graph needs to be
+ * properly updated to satisfy needs from both parent graph and sub-graph.
+ * 
  * @see GraphUtils#combineEdges(EdgeTypeEnum, EdgeTypeEnum)
  * 
  * @author Kokon (info@cloveretl.com)
@@ -37,14 +39,14 @@ public interface SubGraphComponent {
 
 	/**
 	 * @param portIndex
-	 * @return type of input edge of executed sub-graph
+	 * @return input edge of executed sub-graph
 	 */
-	public EdgeTypeEnum getInputEdgeType(int portIndex);
+	public Edge getSubGraphInputEdge(int portIndex);
 
 	/**
 	 * @param portIndex
-	 * @return type of output edge of executed sub-graph
+	 * @return output edge of executed sub-graph
 	 */
-	public EdgeTypeEnum getOutputEdgeType(int portIndex);
+	public Edge getSubGraphOutputEdge(int portIndex);
 	
 }

@@ -451,9 +451,6 @@ public class TransformationGraphXMLReaderWriter {
 		        //analyze type of edges - specially buffered and phase edges
 		        try {
 		        	TransformationGraphAnalyzer.analyseEdgeTypes(graph);
-					for (Edge edge : graph.getEdges().values()) {
-						logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
-					}
 				} catch (Exception e) {
 					throwXMLConfigurationException("Edge type analysis failed.", e);
 				}

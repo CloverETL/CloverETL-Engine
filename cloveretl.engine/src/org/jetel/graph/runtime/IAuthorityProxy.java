@@ -40,6 +40,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeBase;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
@@ -438,19 +439,17 @@ public abstract class IAuthorityProxy {
 	 * SubGraphInput component uses this method to get {@link EdgeBase} from 
 	 * parent graph, which is shared between parent graph and sub-graph.
 	 * @param inputPortIndex
-	 * @param parentSubGraphComponentId
-	 * @return edge base of edge from parent graph
+	 * @return edge from parent graph
 	 */
-	public abstract EdgeBase getParentGraphSourceEdgeBase(int inputPortIndex, String parentSubGraphComponentId);
+	public abstract Edge getParentGraphSourceEdge(int inputPortIndex);
 
 	/**
 	 * SubGraphOutput component uses this method to get {@link EdgeBase} from 
 	 * parent graph, which is shared between parent graph and sub-graph.
 	 * @param inputPortIndex
-	 * @param parentSubGraphComponentId
-	 * @return edge base of edge from parent graph
+	 * @return edge from parent graph
 	 */
-	public abstract EdgeBase getParentGraphTargetEdgeBase(int outputPortIndex, String parentSubGraphComponentId);
+	public abstract Edge getParentGraphTargetEdge(int outputPortIndex);
 
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,

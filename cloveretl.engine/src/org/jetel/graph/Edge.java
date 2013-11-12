@@ -33,7 +33,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.EdgeDebugUtils;
-import org.jetel.util.SubGraphUtils;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -74,6 +73,17 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
 	protected EdgeBase edge;
 
+	/**
+	 * True if and only if the edge base ({@link #edge}) is not under complete control
+	 * of this edge. The edge base is only shared with other edge (from parent graph).
+	 * Some operations like {@link #preExecute()}, {@link #postExecute()} and {@link #free()}
+	 * are performed only by the real owner of the edge base.
+	 * This functionality is used for edges between parent graph and sub-graph.
+	 * These edge couples can share edge base, which allows direct data passing
+	 * from parent graph to sub-graph and backward without special copy threads.
+	 */
+	private boolean sharedEdgeBase = false;
+	
 	/**
 	 *  Constructor for the EdgeStub object
 	 *
@@ -123,6 +133,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
     public void setDebugMode(boolean debugMode) {
     	this.debugMode = debugMode;
+    }
+    
+    public boolean isDebugMode() {
+    	return debugMode;
     }
     
     public void setDebugMaxRecords(long debugMaxRecords) {
@@ -356,22 +370,18 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 				throw new ComponentNotReadyException("Creating metadata from db connection failed: ", ex);
 			}
 		}
-		
-		if (!isSharedEdgeBase()) {
-			//init edge base if it is not shared
-			initEdgeBase();
-		}
 	}
 
-	protected void initEdgeBase() {
+	private void initEdgeBase() {
 		if (edge == null) {
 			edge = getEdgeType().createEdgeBase(this);
+
+			try {
+	            edge.init();
+	        } catch (Exception ex){
+	            throw new JetelRuntimeException("Edge base initialisation failed.", ex);
+	        }
 		}
-        try {
-            edge.init();
-        } catch (Exception ex){
-            throw new JetelRuntimeException("Edge base initialisation failed.", ex);
-        }
 	}
 	
 	/* (non-Javadoc)
@@ -381,6 +391,9 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
+		//init edge base
+		initEdgeBase();
+
 		eofSent = false;
 
 		if (!isSharedEdgeBase()) {
@@ -388,9 +401,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			edge.preExecute();
 		}
 		
-		if (!isSharedEdgeBase()) {
-			initDebugMode();
-		}
+		initDebugMode();
 	}
 
 	protected void initDebugMode() {
@@ -499,7 +510,9 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	@Override
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
-        if(edgeDebuger != null) edgeDebuger.writeRecord(record);
+        if (edgeDebuger != null) {
+        	edgeDebuger.writeRecord(record);
+        }
 		edge.writeRecord(record);
 	}
 
@@ -514,7 +527,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	@Override
 	public void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
-        if(edgeDebuger != null) {
+        if (edgeDebuger != null) {
             edgeDebuger.writeRecord(record);
             record.rewind();
         }
@@ -674,19 +687,23 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	}
 
 	/**
-	 * Input and output edges of SubGraphInput/Output components share EdgeBase with parent graph.
+	 * The edge has got {@link EdgeBase} via {@link #setEdge(EdgeBase)} and
+	 * this edge is not owner of the given edge base, so some operations above EdgeBase
+	 * are not performed in this edge.
+	 * @param sharedEdgeBase
+	 */
+	public void setSharedEdgeBase(boolean sharedEdgeBase) {
+		this.sharedEdgeBase = sharedEdgeBase;
+	}
+	
+	/**
+	 * Input and output edges of SubGraphInput/Output components can share EdgeBase with parent graph.
 	 * This is important to known, that the EdgeBase is shared. So EdgeBase
 	 * initialisation, pre-execution, post-execution and freeing is not performed
 	 * in this edge.
 	 */
 	public boolean isSharedEdgeBase() {
-		if (getGraph().getRuntimeContext().isSubJob()
-				&& (SubGraphUtils.isSubJobInputComponent(getWriter().getType()) 
-						|| SubGraphUtils.isSubJobOutputComponent(getReader().getType()))) {
-			return true;
-		} else {
-			return false;
-		}
+		return sharedEdgeBase;
 	}
 	
 	@Override

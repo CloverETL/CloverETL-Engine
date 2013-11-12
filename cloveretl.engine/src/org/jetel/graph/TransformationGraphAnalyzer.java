@@ -138,16 +138,24 @@ public class TransformationGraphAnalyzer {
 			if (component instanceof SubGraphComponent) {
 				SubGraphComponent subGraphComponent = (SubGraphComponent) component;
 				for (Entry<Integer, InputPort> inputPort : component.getInputPorts().entrySet()) {
-					EdgeTypeEnum suggestedEdgeType = subGraphComponent.getInputEdgeType(inputPort.getKey());
-					EdgeTypeEnum currentEdgeType = inputPort.getValue().getEdge().getEdgeType();
-					EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(currentEdgeType, suggestedEdgeType);
-					inputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
+					Edge subGraphEdge = subGraphComponent.getSubGraphInputEdge(inputPort.getKey());
+					Edge parentGraphEdge = inputPort.getValue().getEdge();
+					//will be edge base shared between these two edges?
+					if (SubGraphUtils.isSubGraphInputEdgeShared(subGraphEdge, parentGraphEdge)) {
+						//so we need to combine both edge types to satisfy needs of both parent and sub-graph
+						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subGraphEdge.getEdgeType());
+						inputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
+					}
 				}
 				for (Entry<Integer, OutputPort> outputPort : component.getOutputPorts().entrySet()) {
-					EdgeTypeEnum suggestedEdgeType = subGraphComponent.getOutputEdgeType(outputPort.getKey());
-					EdgeTypeEnum currentEdgeType = outputPort.getValue().getEdge().getEdgeType();
-					EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(currentEdgeType, suggestedEdgeType);
-					outputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
+					Edge subGraphEdge = subGraphComponent.getSubGraphOutputEdge(outputPort.getKey());
+					Edge parentGraphEdge = outputPort.getValue().getEdge();
+					//will be edge base shared between these two edges?
+					if (SubGraphUtils.isSubGraphOutputEdgeShared(subGraphEdge, parentGraphEdge)) {
+						//so we need to combine both edge types to satisfy needs of both parent and sub-graph
+						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subGraphEdge.getEdgeType());
+						outputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
+					}
 				}
 			}
 		}
