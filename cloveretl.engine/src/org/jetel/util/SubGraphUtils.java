@@ -18,6 +18,8 @@
  */
 package org.jetel.util;
 
+import org.jetel.graph.Edge;
+
 /**
  * Utility class for sub-graph related code.
  * 
@@ -73,4 +75,30 @@ public class SubGraphUtils {
 		return SUB_GRAPH_TYPE.equals(componentType) || SUB_JOBFLOW_TYPE.equals(componentType);
 	}
 
+	/**
+	 * Checks whether output edge of SubGraphInput component can share EdgeBase
+	 * with corresponding edge in parent graph. In regular cases, it is possible and
+	 * highly recommended due performance gain. But in case edge debugging is turned on,
+	 * sharing is not possible.
+	 * @param subGraphEdge an output edge from SubGraphInput component
+	 * @param parentGraphEdge corresponding edge from parent graph
+	 * @return true if and only if the edge base from parentEdge can be shared with localEdge
+	 */
+	public static boolean isSubGraphInputEdgeShared(Edge subGraphEdge, Edge parentGraphEdge) {
+		return subGraphEdge.getGraph().getRuntimeContext().isSubJob() && !subGraphEdge.isDebugMode();
+	}
+
+	/**
+	 * Checks whether input edge of SubGraphOutput component can share EdgeBase
+	 * with corresponding edge in parent graph. In regular cases, it is possible and
+	 * highly recommended due performance gain. But in case edge debugging is turned on,
+	 * sharing is not possible.
+	 * @param subGraphEdge an input edge from SubGraphOutput component
+	 * @param parentEdge corresponding edge from parent graph
+	 * @return true if and only if the edge base from parentEdge can be shared with localEdge
+	 */
+	public static boolean isSubGraphOutputEdgeShared(Edge subGraphEdge, Edge parentGraphEdge) {
+		return subGraphEdge.getGraph().getRuntimeContext().isSubJob() && !parentGraphEdge.isDebugMode();
+	}
+	
 }
