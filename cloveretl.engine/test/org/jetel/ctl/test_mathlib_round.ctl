@@ -16,6 +16,28 @@ integer documentationExample1;
 integer documentationExample2;
 number documentationExample3;
 
+decimal hundredsDecimalUp;
+long hundredsLongUp;
+integer hundredsIntegerUp;
+decimal hundredsDecimalNegativeUp;
+long hundredsLongNegativeUp;
+integer hundredsIntegerNegativeUp;
+
+decimal hundredsDecimalDown;
+long hundredsLongDown;
+integer hundredsIntegerDown;
+decimal hundredsDecimalNegativeDown;
+long hundredsLongNegativeDown;
+integer hundredsIntegerNegativeDown;
+
+long minLong;
+long maxLong;
+integer minInt;
+integer maxInt;
+
+integer zeroPrecisionInteger;
+long zeroPrecisionLong;
+
 function integer transform() {
 	round1=round(-pow(3,1.2));
 	
@@ -62,5 +84,29 @@ function integer transform() {
 	documentationExample2 = round(123, 2);
 	documentationExample3 = round(123.123, 2);
 	
+	hundredsDecimalUp = round(250.0D, -2);
+	hundredsIntegerUp = round(250, -2);
+	hundredsLongUp = round(250L, -2);
+	
+	hundredsDecimalNegativeUp = round(-250.0D, -2);
+	hundredsIntegerNegativeUp = round(-250, -2);
+	hundredsLongNegativeUp = round(-250L, -2);
+	
+	hundredsDecimalDown = round(249.0D, -2);
+	hundredsIntegerDown = round(249, -2);
+	hundredsLongDown = round(249L, -2);
+	
+	hundredsDecimalNegativeDown = round(-249.0D, -2);
+	hundredsIntegerNegativeDown = round(-249, -2);
+	hundredsLongNegativeDown = round(-249L, -2);
+	
+	minInt = round(-2147483648, -9);
+	maxInt = round(2147483647, -9);
+	minLong = round(-9223372036854775808L, -18);
+	maxLong = round(9223372036854775807L, -18);
+	
+	zeroPrecisionInteger = round(-2147483648, 0);
+	zeroPrecisionLong = round(-9223372036854775808L, 0);
+
 	return 0;
 }
