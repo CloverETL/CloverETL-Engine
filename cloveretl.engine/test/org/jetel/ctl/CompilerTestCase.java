@@ -60,8 +60,6 @@ import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
-
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -6620,6 +6618,32 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("documentationExample1", 100);
 		check("documentationExample2", 123);
 		check("documentationExample3", 123.12d);
+		
+		// CLO-2346
+		compareDecimals("hundredsDecimalUp", new BigDecimal("300"));
+		check("hundredsLongUp", 300L);
+		check("hundredsIntegerUp", 300);
+
+		compareDecimals("hundredsDecimalNegativeUp", new BigDecimal("-300"));
+		check("hundredsLongNegativeUp", -300L);
+		check("hundredsIntegerNegativeUp", -300);
+
+		compareDecimals("hundredsDecimalDown", new BigDecimal("200"));
+		check("hundredsLongDown", 200L);
+		check("hundredsIntegerDown", 200);
+
+		compareDecimals("hundredsDecimalNegativeDown", new BigDecimal("-200"));
+		check("hundredsLongNegativeDown", -200L);
+		check("hundredsIntegerNegativeDown", -200);
+
+		// no overflow should occur
+		check("minInt", -2000000000);
+		check("maxInt", 2000000000);
+		check("minLong", -9000000000000000000L);
+		check("maxLong", 9000000000000000000L);
+		
+		check("zeroPrecisionInteger", Integer.MIN_VALUE);
+		check("zeroPrecisionLong", Long.MIN_VALUE);
 	}
 	
 	public void test_mathlib_round_expect_error(){
