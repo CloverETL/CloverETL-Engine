@@ -106,6 +106,7 @@ import org.jetel.ctl.data.TLType.TLTypeRecord;
 import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
+import org.jetel.ctl.extensions.TLTransformationContext;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -179,6 +180,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 	/** Instance of running transformation graph where code executes */
 	protected TransformationGraph graph;
 	
+	/**
+	 * Global context shared between all function calls.
+	 */
+	protected TLTransformationContext context = new TLTransformationContext();
+	
 	protected Log runtimeLogger;
 	
 	protected TransformLangParser parser;
@@ -221,6 +227,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 			try {
 				if (node.isExternal()) {
 					node.getFunctionCallContext().setGraph(getGraph()); // CL-2203
+					node.getFunctionCallContext().setTransformationContext(context); // CLO-722
 					TLFunctionPrototype executable = node.getExternalFunction().getExecutable();
 					node.setExecutable(executable);
 					executable.init(node.getFunctionCallContext());
