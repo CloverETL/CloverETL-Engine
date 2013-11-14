@@ -18,8 +18,8 @@
  */
 package org.jetel.graph.dictionary;
 
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -59,7 +59,7 @@ public class Dictionary extends GraphElement {
 	public Dictionary(TransformationGraph graph) {
 		super(DEFAULT_ID, graph);
 		
-		dictionary = new HashMap<String, DictionaryEntry>();
+		dictionary = new LinkedHashMap<String, DictionaryEntry>();
 	}
 
 	@Override
