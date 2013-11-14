@@ -2323,35 +2323,6 @@ public class FileUtils {
 		return fileURL != null && (fileURL.contains(";") || fileURL.contains("*") || fileURL.contains("?"));
 	}
 	
-	public static class InputStreamProvider implements Runnable {
-		
-		private String input;
-		private URL contextURL;
-		private InputStream is;
-		private IOException exception;
-		
-		public InputStreamProvider(URL contextURL, String input) {
-			this.contextURL = contextURL;
-			this.input = input;
-		}
-
-		@Override
-		public void run() {
-			try {
-				is = FileUtils.getInputStream(contextURL, input);
-			} catch (IOException e) {
-				exception = e;
-			}
-		}
-		
-		public InputStream getInputStream() throws IOException {
-			if (exception == null) {
-				return is;
-			}
-			throw exception;
-		}
-		
-	}
 }
 
 /*
