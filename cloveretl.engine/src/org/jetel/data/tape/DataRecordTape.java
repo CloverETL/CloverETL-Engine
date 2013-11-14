@@ -164,7 +164,6 @@ public class DataRecordTape {
                 throw new IOException("Temp file does not exist.");
             }
         }
-        if(deleteOnExit) tmpFile.deleteOnExit();
         
 		// we want the temp file be deleted on exit
 		tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
