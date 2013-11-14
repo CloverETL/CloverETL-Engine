@@ -19,8 +19,6 @@
 package org.jetel.ctl.extensions;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
@@ -35,15 +33,20 @@ import org.jetel.util.formatter.DateFormatter;
  */
 public class RandomLib extends TLFunctionLibrary {
 	
-	private static Map<Object, DataGenerator> dataGenerators = new HashMap<Object, DataGenerator>();
+	private static final String DATA_GENERATOR_KEY = "DATA_GENERATOR";
 	
-	private static synchronized DataGenerator getGenerator(Object key) {
-    	DataGenerator generator = dataGenerators.get(key);
-    	if (generator == null) {
-    		generator = new DataGenerator();
-    		dataGenerators.put(key, generator);
-    	}
-    	return generator;
+	/*
+	 * CLO-722
+	 */
+	private static DataGenerator getGenerator(TLFunctionCallContext context) {
+		TLTransformationContext c = context.getTransformationContext();
+		// TLTransformationContext should be used by a single thread => no synchronization needed
+		DataGenerator generator = (DataGenerator) c.getCachedObject(DATA_GENERATOR_KEY);
+		if (generator == null) {
+			generator = new DataGenerator();
+			c.setCachedObject(DATA_GENERATOR_KEY, generator);
+		}
+		return generator;
     }
 
 	@Override
@@ -74,7 +77,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
     public static final void randomInit(TLFunctionCallContext context) {
-    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context)));
     }	
 
 	@TLFunctionAnnotation("Random number (>=0, <1)")
@@ -98,7 +101,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
     public static final void randomGaussianInit(TLFunctionCallContext context) {
-    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context)));
     }	
 
 	@TLFunctionAnnotation("Random Gaussian number.")
@@ -122,7 +125,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
     public static final void randomBooleanInit(TLFunctionCallContext context) {
-    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context)));
     }	
 
 	@TLFunctionAnnotation("Random boolean.")
@@ -146,7 +149,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
     public static final void randomIntegerInit(TLFunctionCallContext context) {
-    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context)));
     }	
 
 	@TLFunctionAnnotation("Random integer.")
@@ -183,7 +186,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
     public static final void randomLongInit(TLFunctionCallContext context) {
-    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context)));
     }	
 
 	@TLFunctionAnnotation("Random long.")
@@ -220,7 +223,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
     public static final void randomStringInit(TLFunctionCallContext context) {
-    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context)));
     }	
 
 	@TLFunctionAnnotation("Generates a random string.")
@@ -303,7 +306,7 @@ public class RandomLib extends TLFunctionLibrary {
 		if (from > to) {
 			throw new TransformLangExecutorRuntimeException("randomDate - fromDate is greater than toDate");
 		}
-		return new Date(getGenerator(context.getTransformationID()).nextLong(from, to));
+		return new Date(getGenerator(context).nextLong(from, to));
 	}
 
 	@TLFunctionAnnotation("Generates a random date from interval specified by string representation of dates in given format.")
@@ -334,7 +337,7 @@ public class RandomLib extends TLFunctionLibrary {
 
 	@TLFunctionInitAnnotation
     public static final void setRandomSeedInit(TLFunctionCallContext context) {
-    	context.setCache(new TLDataGeneratorCache(getGenerator(context.getTransformationID())));
+    	context.setCache(new TLDataGeneratorCache(getGenerator(context)));
     }	
 
 	@TLFunctionAnnotation("Changes seed of random.")
