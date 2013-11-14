@@ -2,6 +2,17 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+REL-3-4-3
+---------
+
+- FIXES:
+	- Component status and number of records on the edge are not shown after joiner 
+	that has input edges in different phases
+	- Insufficient error message while reading CSV files with header across two rows
+	- Insufficient and unclear error message while reading CSV files with incorrect encoding
+	- HTTPConnector changes EOL delimiters in response content
+	- Null value being saved into db table field of time type
+
 REL-3-4-2
 ---------
 
