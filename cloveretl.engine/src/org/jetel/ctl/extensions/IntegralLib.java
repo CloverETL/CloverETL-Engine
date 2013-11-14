@@ -76,8 +76,8 @@ public class IntegralLib extends TLFunctionLibrary {
 		}
 		TLCopyByNameTransformCache transformCache = (TLCopyByNameTransformCache) context.getCache();
 		try {
-			transformCache.init(from, to);
-			transformCache.transform();
+			transformCache.init(from.getMetadata(), to.getMetadata());
+			transformCache.transform(from, to);
 		} catch (Exception e) {
 			throw new TransformLangExecutorRuntimeException("copyByName", e);
 		}

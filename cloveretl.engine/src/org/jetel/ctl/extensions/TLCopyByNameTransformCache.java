@@ -20,6 +20,7 @@ package org.jetel.ctl.extensions;
 
 import org.jetel.component.CopyByNameMapping;
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * This class is used in Integral.copyByName() CTL2 function for caching
@@ -40,15 +41,15 @@ public class TLCopyByNameTransformCache extends TLCache {
 		isInitialized = false;
 	}
 
-	public void init(DataRecord source, DataRecord target) {
+	public void init(DataRecordMetadata source, DataRecordMetadata target) {
 		if (!isInitialized) {
 			transform = new CopyByNameMapping(source, target);
 			isInitialized = true;
 		}
 	}
 	
-	public void transform() {
-		transform.performMapping();
+	public void transform(DataRecord source, DataRecord target) {
+		transform.performMapping(source, target);
 	}
 	
 }
