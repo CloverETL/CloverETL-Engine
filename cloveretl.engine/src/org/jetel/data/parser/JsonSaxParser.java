@@ -24,6 +24,7 @@ import java.io.Writer;
 import java.net.URLEncoder;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
 import javax.xml.parsers.SAXParser;
 
 import org.codehaus.jackson.JsonFactory;
@@ -57,6 +58,8 @@ public class JsonSaxParser extends SAXParser {
 	
 	DefaultHandler handler;
 	boolean xmlEscapeChars=false;
+	
+	private boolean jsonStarted = false;
 	
 	public JsonSaxParser(){
 	}
@@ -111,17 +114,20 @@ public class JsonSaxParser extends SAXParser {
 		Deque<JsonToken> tokens = new ArrayDeque<JsonToken>();
 		Deque<String> names = new ArrayDeque<String>();
 		Deque<Integer> depthCounter = new ArrayDeque<Integer>();
+		depthCounter.add(0);
 		JsonToken currentToken = null;
 		
 		xmlEscapeChars=true;
 		
 		handler.startDocument();
-		boolean go=true;
+		boolean go = true;
+		jsonStarted = false;
 		while (go && (currentToken = parser.nextToken()) != null) {
-			if (firstObjectOnly && currentToken == JsonToken.END_OBJECT && names.size()==1 ){
-				go=false;
+			if (firstObjectOnly && jsonStarted && depthCounter.size() == 1 && depthCounter.peek() == 0){
+				go = false;
+			} else {
+				processToken(currentToken, parser, tokens, names, depthCounter);
 			}
-			processToken(currentToken, parser, tokens, names, depthCounter);
 		}
 		
 		handler.endDocument();
@@ -138,6 +144,7 @@ public class JsonSaxParser extends SAXParser {
 		Deque<JsonToken> tokens = new ArrayDeque<JsonToken>();
 		Deque<String> names = new ArrayDeque<String>();
 		Deque<Integer> depthCounter = new ArrayDeque<Integer>();
+		depthCounter.add(0);
 		JsonToken currentToken = null;
 		
 		handler.startDocument();
@@ -180,6 +187,7 @@ public class JsonSaxParser extends SAXParser {
 				}
 				top++;
 				depthCounter.add(top);
+				jsonStarted = true;
 				handler.startElement(NAMESPACE_URI, name, name, ATTRIBUTES);
 			}
 			tokens.add(token);
@@ -200,6 +208,7 @@ public class JsonSaxParser extends SAXParser {
 					name = name + "_" + top;
 				}
 			}
+			jsonStarted = true;
 			depthCounter.add(Integer.valueOf(0));
 			handler.startElement(NAMESPACE_URI, name,name, ATTRIBUTES);
 			break;
@@ -210,7 +219,9 @@ public class JsonSaxParser extends SAXParser {
 			
 			String name = names.getLast();
 			int top = depthCounter.pollLast();
-			top--;
+			if (top > 0) {
+				top--;
+			}
 			if (top > 0) {
 				name = name + "_" + top;
 			}
