@@ -3666,6 +3666,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
 		assertEquals("Age", AGE_VALUE, outputRecords[3].getField("Age").getValue());
 		assertEquals("City", CITY_VALUE, outputRecords[3].getField("City").getValue().toString());
+		
+		// CLO-637:
+		DataRecord outRecord1 = (DataRecord) getVariable("outRecord1");
+		DataRecord outRecord2 = (DataRecord) getVariable("outRecord2");
+		assertEquals(outRecord1.getField("Name").getValue(), null);
+		assertEquals(outRecord2.getField("Name").getValue().toString(), "some value");
 	}
 
 	public void test_copyByName_assignment1() {
