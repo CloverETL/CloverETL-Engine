@@ -42,6 +42,10 @@ public class TLFunctionCallContext {
     /** Instance of running transformation graph where code executes */
     private TransformationGraph graph;
 
+    /**
+     * Context shared by all functions of the same transformation.
+     */
+    private TLTransformationContext transformationContext;
 	
 	public TLFunctionCallContext(Object transformationID) {
 		this.transformationID = transformationID;
@@ -184,5 +188,13 @@ public class TLFunctionCallContext {
     public void setGraph(TransformationGraph graph) {
         this.graph = graph;
     }
+    
+	public TLTransformationContext getTransformationContext() {
+		return transformationContext;
+	}
+	
+	public void setTransformationContext(TLTransformationContext transformationContext) {
+		this.transformationContext = transformationContext;
+	}
 
 }

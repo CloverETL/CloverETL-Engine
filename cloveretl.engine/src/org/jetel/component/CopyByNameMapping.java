@@ -18,17 +18,15 @@
  */
 package org.jetel.component;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Simple replacement for {@link org.jetel.component.CustomizedRecordTransform} 
@@ -47,28 +45,27 @@ import org.jetel.exception.BadDataFormatException;
  */
 public class CopyByNameMapping {
 	
-	private List<DataField> sourceFields;
-	private List<DataField> targetFields;
+	private MappingPair[] mappings;
 	
-	public CopyByNameMapping(DataRecord source, DataRecord target) {
+	public CopyByNameMapping(DataRecordMetadata source, DataRecordMetadata target) {
 		Map<String, String> mapping = new HashMap<String, String>(source.getNumFields());
 		Set<String> mappedOutputFields = new HashSet<String>(target.getNumFields());
 		
 		// first map ALL exact matches
-		for (DataField sourceField: source) {
-			String sourceFieldName = sourceField.getMetadata().getName();
-			if (target.hasField(sourceFieldName)) {
+		for (DataFieldMetadata sourceField: source) {
+			String sourceFieldName = sourceField.getName();
+			if (target.getField(sourceFieldName) != null) { // has field
 				mapping.put(sourceFieldName, sourceFieldName);
 				mappedOutputFields.add(sourceFieldName);
 			}
 		}
 		
 		// then process case-insensitive matches; map the current input field to the first unused matching output field
-		for (DataField sourceField: source) {
-			String sourceFieldName = sourceField.getMetadata().getName();
+		for (DataFieldMetadata sourceField: source) {
+			String sourceFieldName = sourceField.getName();
 			if (!mapping.containsKey(sourceFieldName)) {
-				for (DataField targetField: target) {
-					String targetFieldName = targetField.getMetadata().getName();
+				for (DataFieldMetadata targetField: target) {
+					String targetFieldName = targetField.getName();
 					if (targetFieldName.equalsIgnoreCase(sourceFieldName)) {
 						if (!mappedOutputFields.contains(targetFieldName)) {
 							mapping.put(sourceFieldName, targetFieldName);
@@ -80,30 +77,38 @@ public class CopyByNameMapping {
 			}
 		}
 		
-		sourceFields = new ArrayList<DataField>(mapping.size());
-		targetFields = new ArrayList<DataField>(mapping.size());
+		mappings = new MappingPair[mapping.size()];
 		
 		// build a one-to-one mapping 
+		int i = 0;
+		Map<String, Integer> sourceMap = source.getFieldNamesMap();
+		Map<String, Integer> targetMap = target.getFieldNamesMap();
 		for (Map.Entry<String, String> entry: mapping.entrySet()) {
-			addMappedFields(source.getField(entry.getKey()), target.getField(entry.getValue()));
+			mappings[i++] = new MappingPair(sourceMap.get(entry.getKey()), targetMap.get(entry.getValue()));
 		}
 	}
 	
-	private void addMappedFields(DataField sourceField, DataField targetField) {
-		sourceFields.add(sourceField);
-		targetFields.add(targetField);
-	}
-
-	public void performMapping() {
-		Iterator<DataField> sourceIterator = sourceFields.iterator();
-		Iterator<DataField> targetIterator = targetFields.iterator();
-
-		while (sourceIterator.hasNext() && targetIterator.hasNext()) {
+	public void performMapping(DataRecord source, DataRecord target) {
+		for (MappingPair mapping: mappings) {
 			try {
-				targetIterator.next().setValue(sourceIterator.next().getValue());
+				mapping.execute(source, target);
 			} catch (BadDataFormatException bdfe) {
 				// CLO-331: ignore - same implementation as in CustomizedRecordTransform
 			}
+		}
+	}
+	
+	private static class MappingPair {
+		private final int sourceIndex;
+		private final int targetIndex;
+
+		public MappingPair(int sourceIndex, int targetIndex) {
+			this.sourceIndex = sourceIndex;
+			this.targetIndex = targetIndex;
+		}
+		
+		public void execute(DataRecord source, DataRecord target) {
+			target.getField(targetIndex).setValue(source.getField(sourceIndex).getValue());
 		}
 	}
 

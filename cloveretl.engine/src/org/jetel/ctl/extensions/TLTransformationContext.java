@@ -18,38 +18,34 @@
  */
 package org.jetel.ctl.extensions;
 
-import org.jetel.component.CopyByNameMapping;
-import org.jetel.data.DataRecord;
-import org.jetel.metadata.DataRecordMetadata;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * This class is used in Integral.copyByName() CTL2 function for caching
- * of CopyByNameMapping instance.
+ * Global transformation context shared
+ * between all function calls from the same transformation.
  * 
- * @author Martin Zatopek (info@cloveretl.com)
+ * Accessible via {@link TLFunctionCallContext#getTransformationContext()}.
+ * 
+ * Introduced to solve CLO-722;
+ * used to store DataGenerator instances 
+ * instead of the previously used static HashMap.
+ * 
+ * @author krivanekm (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 6.8.2010
+ * @created 14. 11. 2013
  */
-public class TLCopyByNameTransformCache extends TLCache {
-
-	private boolean isInitialized;
+public class TLTransformationContext {
 	
-	private CopyByNameMapping transform;
+	private Map<Object, Object> cache = new HashMap<Object, Object>(5);
 	
-	public TLCopyByNameTransformCache() {
-		isInitialized = false;
+	public Object getCachedObject(Object key) {
+		return cache.get(key);
+	}
+	
+	public Object setCachedObject(Object key, Object value) {
+		return cache.put(key, value);
 	}
 
-	public void init(DataRecordMetadata source, DataRecordMetadata target) {
-		if (!isInitialized) {
-			transform = new CopyByNameMapping(source, target);
-			isInitialized = true;
-		}
-	}
-	
-	public void transform(DataRecord source, DataRecord target) {
-		transform.performMapping(source, target);
-	}
-	
 }
