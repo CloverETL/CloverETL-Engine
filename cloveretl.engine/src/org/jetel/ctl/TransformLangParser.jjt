@@ -881,7 +881,10 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
 				String importSourceCode = null;
 				try {
 					importSourceCode = FileUtils.getStringFromURL(projectURL, filenameURL, encoding);
-				} catch (Exception e) {
+				} catch (RuntimeException re) { // CLO-2167
+				  	if (re.getCause() instanceof IOException) {
+				  	    throw (IOException) re.getCause();				  	} else {						throw new IOException(re.getMessage());
+				 	}				} catch (Exception e) {
 					throw new IOException(e.getMessage());
 				}
 				if (propertyRefResolver != null) {

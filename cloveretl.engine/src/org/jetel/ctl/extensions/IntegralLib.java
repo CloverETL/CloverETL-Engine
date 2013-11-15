@@ -52,7 +52,7 @@ public class IntegralLib extends TLFunctionLibrary {
     	return ret;
     }
     
-	private static String LIBRARY_NAME = "Integral";
+	private static String LIBRARY_NAME = "Record";
 
 	@Override
 	public String getName() {
@@ -76,8 +76,8 @@ public class IntegralLib extends TLFunctionLibrary {
 		}
 		TLCopyByNameTransformCache transformCache = (TLCopyByNameTransformCache) context.getCache();
 		try {
-			transformCache.init(from, to);
-			transformCache.transform();
+			transformCache.init(from.getMetadata(), to.getMetadata());
+			transformCache.transform(from, to);
 		} catch (Exception e) {
 			throw new TransformLangExecutorRuntimeException("copyByName", e);
 		}

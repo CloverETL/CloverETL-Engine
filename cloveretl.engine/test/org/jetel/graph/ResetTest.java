@@ -43,6 +43,7 @@ public class ResetTest extends CloverTestCase {
 			"../cloveretl.examples.community/WebSiteExamples/",
 			"../cloveretl.test.scenarios/",
 			"../cloveretl.examples.commercial/CommercialExamples/",
+			"../cloveretl.examples.commercial/DataQualityExamples/",
 			"../cloveretl.examples/CompanyTransactionsTutorial/"
 		};
 	
@@ -194,7 +195,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("TypedProperties_CLO-1997.grf") // server test
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
-							&& !file.getName().equals("EmptyGraph.grf"); // ok, is to fail
+							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
+							&& !file.getName().equals("EmailReader_BadDataFormatException.grf"); // ok, is to fail
 					
 				}
 			};
