@@ -108,7 +108,7 @@ public class CopyByNameMapping {
 		}
 		
 		public void execute(DataRecord source, DataRecord target) {
-			target.getField(targetIndex).setValue(source.getField(sourceIndex));
+			target.getField(targetIndex).setValue(source.getField(sourceIndex).getValue());
 		}
 	}
 
