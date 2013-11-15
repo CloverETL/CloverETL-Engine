@@ -3681,6 +3681,68 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("City", null, outputRecords[3].getField("City").getValue());
 	}
 	
+	public void test_copyByName_assignment_containers() {
+		TransformationGraph g = createEmptyGraph();
+		
+		DataRecordMetadata m1 = new DataRecordMetadata("metadata1");
+		m1.addField(new DataFieldMetadata("field1", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("field2", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("field3", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("yyy", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m1);
+		
+		DataRecordMetadata m2 = new DataRecordMetadata("metadata2");
+		DataFieldMetadata field;
+		m2.addField(new DataFieldMetadata("field1", DataFieldType.STRING, "|"));
+		m2.addField(field = new DataFieldMetadata("field2", DataFieldType.STRING, "|"));
+		field.setContainerType(DataFieldContainerType.LIST);
+		m2.addField(field = new DataFieldMetadata("field3", DataFieldType.STRING, "|"));
+		field.setContainerType(DataFieldContainerType.MAP);
+		m2.addField(new DataFieldMetadata("xxx", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m2);
+
+		DataRecord input1 = DataRecordFactory.newRecord(m1);
+		DataRecord input2 = DataRecordFactory.newRecord(m2);
+		DataRecord output1 = DataRecordFactory.newRecord(m2);
+		DataRecord output2 = DataRecordFactory.newRecord(m1);
+		
+		input1.init();
+		input2.init();
+		output1.init();
+		output2.init();
+		
+		input1.reset();
+		input2.reset();
+		output1.reset();
+		output2.reset();
+		
+		input1.getField("field1").setValue("abc");
+		input1.getField("field2").setValue("def");
+		input1.getField("field3").setValue("ghi");
+		input1.getField("yyy").setValue("jkl");
+		
+		input2.getField("field1").setValue("abc");
+		input2.getField("field2").setValue(Arrays.asList("def", "ghi"));
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("jkl", "mno");
+		map.put("pqr", "stu");
+		input2.getField("field3").setValue(map);
+		input2.getField("xxx").setValue("jkl");
+		
+		String testIdentifier = "test_copyByName_assignment_containers";
+		doCompile(loadSourceCode(testIdentifier), testIdentifier, g, new DataRecord[] {input1, input2}, new DataRecord[] {output1, output2});
+		
+		assertEquals("abc", output1.getField("field1").getValue().toString());
+		assertEquals(null, output1.getField("field2").getValue());
+		assertEquals(null, output1.getField("field3").getValue());
+		assertEquals(null, output1.getField("xxx").getValue());
+
+		assertEquals("abc", output2.getField("field1").getValue().toString());
+		assertEquals(null, output2.getField("field2").getValue());
+		assertEquals(null, output2.getField("field3").getValue());
+		assertEquals(null, output2.getField("yyy").getValue());
+	}
+
 	public void test_copyByName_assignment_caseInsensitive() {
 		TransformationGraph g = createEmptyGraph();
 		DataRecordMetadata m1 = new DataRecordMetadata("metadata1");
@@ -3699,7 +3761,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		m1.addField(new DataFieldMetadata("exactMATCH", DataFieldType.STRING, "|"));
 		m1.addField(new DataFieldMetadata("exactMatch", DataFieldType.STRING, "|"));
 		m1.addField(new DataFieldMetadata("EXACTMATCH", DataFieldType.STRING, "|"));
-
+		
 		g.addDataRecordMetadata(m1);
 		
 		DataRecordMetadata m2 = new DataRecordMetadata("metadata2");
@@ -3732,21 +3794,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		m4.addField(new DataFieldMetadata("outputField1", DataFieldType.STRING, "|")); // must not match "singleInputField"
 		g.addDataRecordMetadata(m4);
 
-		doCompile("metadata1 r1; metadata2 r2; metadata3 r3; metadata4 r4;\n"
-				+ "function integer transform() {\n"
-				+ "r1.a = \"a\"; r1.b = \"b\"; r1.c = \"c\";\n"
-				+ "r1.noexactmatch = \"noexactmatch\";\n"
-				+ "r1.ambiguous = \"ambiguous\";\n"
-				+ "r1.AMBIGUOUS = \"AMBIGUOUS\";\n"
-				+ "r1.aMBIGUOUs = \"aMBIGUOUs\";\n"
-				+ "r1.AmbiguouS = \"AmbiguouS\";\n"
-				+ "r1.exactMATCH = \"exactMATCH\";\n"
-				+ "r1.exactMatch = \"exactMatch\";\n"
-				+ "r1.EXACTMATCH = \"EXACTMATCH\";\n"
-				+ "r2.* = r1.*; \n"
-				+ "r3.singleInputField = \"dummy value\";\n"
-				+ "r4.* = r3.*;\n"
-				+ "return 0; }","test_copyByName_assignment_caseInsensitive", g, new DataRecord[0], new DataRecord[0]);
+		String testIdentifier = "test_copyByName_assignment_caseInsensitive";
+		doCompile(loadSourceCode(testIdentifier), testIdentifier, g, new DataRecord[0], new DataRecord[0]);
 		
 		DataRecord r2 = (DataRecord) getVariable("r2");
 		
