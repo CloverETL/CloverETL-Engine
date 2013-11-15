@@ -21,6 +21,7 @@ package org.jetel.graph;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -231,15 +232,20 @@ public class TransformationGraphAnalyzer {
 		while (!roots.isEmpty()) {
 			Node root = roots.pop();
 			result.add(root);
-			for (OutputPort outputPort : root.getOutPorts()) {
+			List<OutputPort> outputPorts = new ArrayList<OutputPort>(root.getOutPorts());
+			//let's reverse the output ports to get more logical output
+			Collections.reverse(outputPorts);
+			
+			for (OutputPort outputPort : outputPorts) {
 				removedEdges.add(outputPort.getEdge());
 			}
-			for (OutputPort outputPort : root.getOutPorts()) {
+			for (OutputPort outputPort : outputPorts) {
 				Node followingComponent = outputPort.getReader();
 				if (givenNodes.contains(followingComponent) && !roots.contains(followingComponent)) {
 					boolean isNewRoot = true;
 					for (InputPort inputPort : followingComponent.getInPorts()) {
-						if (!removedEdges.contains(inputPort.getEdge())) {
+						if (!removedEdges.contains(inputPort.getEdge())
+								&& givenNodes.contains(inputPort.getEdge().getWriter())) {
 							isNewRoot = false;
 							break;
 						}
