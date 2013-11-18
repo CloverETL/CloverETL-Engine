@@ -271,6 +271,13 @@ public class JsonSaxParser extends SAXParser {
 			}
 			case START_ARRAY: {
 				// array item
+				
+				if (depthCounter.size() == 1 && depthCounter.peek() == 0) {
+					tokens.addFirst(JsonToken.START_ARRAY);
+					depthCounter.add(1);
+					handler.startElement(NAMESPACE_URI, names.getFirst(), names.getFirst(), ATTRIBUTES);
+				}
+				
 				String name = names.getLast();
 				int top = depthCounter.peekLast();
 				if (top > 0) {
