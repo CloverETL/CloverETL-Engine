@@ -24,14 +24,13 @@ import java.io.Writer;
 import java.net.URLEncoder;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
 import javax.xml.parsers.SAXParser;
 
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
-import org.dom4j.io.SAXContentHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -59,6 +58,8 @@ public class JsonSaxParser extends SAXParser {
 	
 	DefaultHandler handler;
 	boolean xmlEscapeChars=false;
+	
+	private boolean jsonStarted = false;
 	
 	public JsonSaxParser(){
 	}
@@ -112,17 +113,21 @@ public class JsonSaxParser extends SAXParser {
 		}
 		Deque<JsonToken> tokens = new ArrayDeque<JsonToken>();
 		Deque<String> names = new ArrayDeque<String>();
+		Deque<Integer> depthCounter = new ArrayDeque<Integer>();
+		depthCounter.add(0);
 		JsonToken currentToken = null;
 		
 		xmlEscapeChars=true;
 		
 		handler.startDocument();
-		boolean go=true;
+		boolean go = true;
+		jsonStarted = false;
 		while (go && (currentToken = parser.nextToken()) != null) {
-			if (firstObjectOnly && currentToken == JsonToken.END_OBJECT && names.size()==1 ){
-				go=false;
+			if (firstObjectOnly && jsonStarted && depthCounter.size() == 1 && depthCounter.peek() == 0){
+				go = false;
+			} else {
+				processToken(currentToken, parser, tokens, names, depthCounter);
 			}
-			processToken(currentToken, parser, tokens, names);
 		}
 		
 		handler.endDocument();
@@ -138,12 +143,14 @@ public class JsonSaxParser extends SAXParser {
 		}
 		Deque<JsonToken> tokens = new ArrayDeque<JsonToken>();
 		Deque<String> names = new ArrayDeque<String>();
+		Deque<Integer> depthCounter = new ArrayDeque<Integer>();
+		depthCounter.add(0);
 		JsonToken currentToken = null;
 		
 		handler.startDocument();
 		
 		while ((currentToken = parser.nextToken()) != null) {
-			processToken(currentToken, parser, tokens, names);
+			processToken(currentToken, parser, tokens, names, depthCounter);
 		}
 		
 		handler.endDocument();
@@ -151,7 +158,7 @@ public class JsonSaxParser extends SAXParser {
 		
 	}
 	
-	protected void processToken(final JsonToken token, JsonParser parser, Deque<JsonToken> tokens, Deque<String> names) 
+	protected void processToken(final JsonToken token, JsonParser parser, Deque<JsonToken> tokens, Deque<String> names, Deque<Integer> depthCounter) 
 		throws JsonParseException, IOException, SAXException {
 		
 		if (token == null) {
@@ -174,6 +181,13 @@ public class JsonSaxParser extends SAXParser {
 				// add nested element
 				
 				String name = names.getLast();
+				int top = depthCounter.pollLast();
+				if (top > 0) {
+					name = name + "_" + top;
+				}
+				top++;
+				depthCounter.add(top);
+				jsonStarted = true;
 				handler.startElement(NAMESPACE_URI, name, name, ATTRIBUTES);
 			}
 			tokens.add(token);
@@ -188,15 +202,33 @@ public class JsonSaxParser extends SAXParser {
 			}
 			tokens.add(token);
 			String name = names.getLast();
+			if (!depthCounter.isEmpty()) {
+				int top = depthCounter.peekLast();
+				if (top > 0) {
+					name = name + "_" + top;
+				}
+			}
+			jsonStarted = true;
+			depthCounter.add(Integer.valueOf(0));
 			handler.startElement(NAMESPACE_URI, name,name, ATTRIBUTES);
 			break;
 		}
 		case END_ARRAY: {
 			// remove corresponding start
 			tokens.removeLast();
+			
+			String name = names.getLast();
+			int top = depthCounter.pollLast();
+			if (top > 0) {
+				top--;
+			}
+			if (top > 0) {
+				name = name + "_" + top;
+			}
+			depthCounter.add(top);
+			
 			if (!tokens.isEmpty() && tokens.peekLast() == JsonToken.START_ARRAY) {
 				// end nested array
-				String name = names.getLast();
 				handler.endElement(NAMESPACE_URI,name, name);
 			} else {
 				// remove name if not inside array
@@ -209,6 +241,14 @@ public class JsonSaxParser extends SAXParser {
 			tokens.removeLast();
 			// end current object
 			String name = names.getLast();
+			depthCounter.pollLast();
+			if (!depthCounter.isEmpty()) {
+				int top = depthCounter.pollLast();
+				if (top > 0) {
+					name = name + "_" + top;
+				}
+				depthCounter.add(top);
+			}
 			handler.endElement(NAMESPACE_URI, name, name);
 			if (tokens.isEmpty() || tokens.peekLast() != JsonToken.START_ARRAY) {
 				// remove name if not inside array
@@ -231,9 +271,22 @@ public class JsonSaxParser extends SAXParser {
 			}
 			case START_ARRAY: {
 				// array item
-				handler.startElement(NAMESPACE_URI, valueName, valueName, ATTRIBUTES);
+				
+				if (depthCounter.size() == 1 && depthCounter.peek() == 0) {
+					tokens.addFirst(JsonToken.START_ARRAY);
+					depthCounter.add(1);
+					handler.startElement(NAMESPACE_URI, names.getFirst(), names.getFirst(), ATTRIBUTES);
+				}
+				
+				String name = names.getLast();
+				int top = depthCounter.peekLast();
+				if (top > 0) {
+					name = name + "_" + top;
+				}
+				
+				handler.startElement(NAMESPACE_URI, name, name, ATTRIBUTES);
 				processScalarValue(parser);
-				handler.endElement(NAMESPACE_URI, valueName, valueName);
+				handler.endElement(NAMESPACE_URI, name, name);
 			}
 			}
 		}
