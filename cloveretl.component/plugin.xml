@@ -1450,8 +1450,8 @@
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="others" iconPath="icons/others/HTTPConnector" name="HTTP connector" type="HTTP_CONNECTOR" className="org.jetel.component.HttpConnector">
-	    <shortDescription>HTTP connector</shortDescription>
+	  <ETLComponent category="others" iconPath="icons/others/HTTPConnector" name="HTTPConnector" type="HTTP_CONNECTOR" className="org.jetel.component.HttpConnector">
+	    <shortDescription>HTTPConnector sends HTTP requests to a web server and receives responses.</shortDescription>
 	    <description>Receives an HTTP request through the connected input port, reads it from input file or directly from the graph and sends it to the HTTP server. Takes the response from the server and sends it out through the connected output port or writes it to the output file. Optionally also the output file URLs can be sent out through the connected output port.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false">
