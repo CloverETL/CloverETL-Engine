@@ -180,6 +180,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("BeanWriterReader_employees.grf") // remove after CL-2474 solved
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
+							&& !file.getName().equals("rpc-literal-service-test.grf") // remove after CLO-2396 solved
 							&& !file.getName().equals("EmailReader_BadDataFormatException.grf"); // ok, is to fail
 					
 				}
