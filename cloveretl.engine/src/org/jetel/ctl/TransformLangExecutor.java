@@ -2746,7 +2746,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		// decimal precisions does not have to be available
 		// for example DBLookupTable does not support getKeyMetadata()
 		// so we cannot preset correct precision - default is used
-		if (decimalPrecisions != null) {
+		if (decimalPrecisions != null && !decimalPrecisions.isEmpty()) {
 			decimalIter = decimalPrecisions.iterator();
 		}
 		for (int i=0; i<arguments.jjtGetNumChildren(); i++) {

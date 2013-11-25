@@ -172,6 +172,11 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 		}
 	}
 	
+	@Override
+	protected long getTolerance() {
+		return 1000;
+	}
+
 	public void testAdministrativeShare() throws Exception {
 		URI uri = new URI("smb://administrator:semafor@VIRT-ORANGE/ADMIN$/");
 		SingleCloverURI cloverURI = CloverURI.createSingleURI(uri);
