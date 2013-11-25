@@ -108,6 +108,12 @@ public class TreeWriterMapping {
 		ContainerNode currentElement = mapping.getRootElement();
 
 		XMLInputFactory factory = XMLInputFactory.newInstance();
+		try {
+			factory.setProperty("report-cdata-event", Boolean.TRUE);
+		} catch (IllegalArgumentException e) {
+			factory.setProperty("http://java.sun.com/xml/stream/properties/report-cdata-event", Boolean.TRUE);
+		}
+		
 		XMLStreamReader parser = factory.createXMLStreamReader(stream);
 		String documentVersion = parser.getVersion();
 		if (documentVersion == null) {
@@ -142,6 +148,10 @@ public class TreeWriterMapping {
 					currentElement = parseContainer(parser, currentElement);
 				}
 				break;
+			case XMLStreamConstants.CDATA: {
+				parseCDataSection(parser, currentElement);
+				break;
+			}
 			case XMLStreamConstants.CHARACTERS:
 				if (!parser.isWhiteSpace()) {
 					Value value = new Value(currentElement);
@@ -202,6 +212,12 @@ public class TreeWriterMapping {
 			}
 		}
 		return aggregateElement;
+	}
+	
+	private static void parseCDataSection(XMLStreamReader reader, ContainerNode currentElement) throws XMLStreamException {
+		
+		CDataSection cdataSection = new CDataSection(currentElement);
+		cdataSection.setProperty(MappingProperty.VALUE, reader.getText());
 	}
 
 	private static Attribute parseAttributeEntry(XMLStreamReader parser, ContainerNode currentElement)
