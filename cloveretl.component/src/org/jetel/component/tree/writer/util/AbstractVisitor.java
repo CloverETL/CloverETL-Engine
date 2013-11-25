@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
+import org.jetel.component.tree.writer.model.design.CDataSection;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.Comment;
 import org.jetel.component.tree.writer.model.design.ContainerNode;
@@ -73,6 +74,8 @@ public abstract class AbstractVisitor implements MappingVisitor {
 	public void visit(Relation element) throws Exception {}
 	@Override
 	public void visit(Comment element) throws Exception {}
+	@Override
+	public void visit(CDataSection cdataSection) throws Exception {}
 	@Override
 	public void visit(CollectionNode element) throws Exception {}
 	

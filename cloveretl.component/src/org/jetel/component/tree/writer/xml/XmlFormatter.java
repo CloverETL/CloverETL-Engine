@@ -24,6 +24,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.component.tree.writer.AttributeWriter;
+import org.jetel.component.tree.writer.CDataWriter;
 import org.jetel.component.tree.writer.CommentWriter;
 import org.jetel.component.tree.writer.NamespaceWriter;
 import org.jetel.component.tree.writer.TreeFormatter;
@@ -113,4 +114,8 @@ public class XmlFormatter extends TreeFormatter {
 		return writer;
 	}
 
+	@Override
+	public CDataWriter getCDataWriter() {
+		return writer;
+	}
 }
