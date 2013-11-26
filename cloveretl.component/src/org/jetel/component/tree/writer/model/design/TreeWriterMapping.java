@@ -34,6 +34,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.log4j.Logger;
 import org.jetel.component.tree.writer.util.MappingVisitor;
 import org.jetel.component.tree.writer.util.MappingWriter;
 import org.jetel.component.tree.writer.util.StaxPrettyPrintHandler;
@@ -49,6 +50,8 @@ import org.xml.sax.SAXException;
  */
 public class TreeWriterMapping {
 
+	private static final Logger log = Logger.getLogger(TreeWriterMapping.class);
+	
 	private static final String INPORT_REFERENCE_PATTERN = "(" + StringUtils.OBJECT_NAME_PATTERN + "|[0-9]+)";
 	private static final String QUALIFIED_FIELD_REFERENCE_PATTERN = "(?<!\\$)\\$" + INPORT_REFERENCE_PATTERN + "\\." + StringUtils.OBJECT_NAME_PATTERN;
 	private static final String REFERENCE = QUALIFIED_FIELD_REFERENCE_PATTERN + "|\\{" + QUALIFIED_FIELD_REFERENCE_PATTERN + "\\}";
@@ -111,7 +114,11 @@ public class TreeWriterMapping {
 		try {
 			factory.setProperty("report-cdata-event", Boolean.TRUE);
 		} catch (IllegalArgumentException e) {
-			factory.setProperty("http://java.sun.com/xml/stream/properties/report-cdata-event", Boolean.TRUE);
+			try {
+				factory.setProperty("http://java.sun.com/xml/stream/properties/report-cdata-event", Boolean.TRUE);
+			} catch (IllegalArgumentException e2) {
+				factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
+			}
 		}
 		
 		XMLStreamReader parser = factory.createXMLStreamReader(stream);
