@@ -1,0 +1,8 @@
+id|first_name|last_name|date_of_birth|street|city|zip|country|phone1|phone2|email|recordNo|ruleName|validationMessage|validatedFields
+1|Asher|Walker|29.01.2014|792-9039 Donec Rd.|Sant'Elena|67766-839|Sri Lanka|273385783||awalker@example.com|1|DOB is date|Cannot parse date: Unparseable date: "29.01.2014" at position 2|[date_of_birth]
+5|Xenos|Petersen|14/05/1987|248-9254 Proin Rd.|Cariboo Regional District|64462-925||1 (228) 485 1412||xenos@example.com|5|all address fields entered|Full adress required|[street, city, zip, country]
+7|Nomlanga|Mcdaniel|06/03/1985|P.O. Box 380, 9044 Non, St.|San Luca|63566|Bahrain|no phone||nickname@example.com|7|phone1|phone1 unsupported format|[phone1]
+9|Jaden|Guerra|24/12/1968|Ap #299-8998 Interdum. Street|Milazzo|aaaaaa|Grenada|222515827||jaden22@example.com|9|zip|Unsupported ZIP format|[zip]
+11|Brady|Durham|22/11/2002|833-7950 Et, St.|Sheffield|1201|Benin|||brady@example.com|11|at least one phone number|At least one phone number required|[phone1, phone2]
+16|Ingrid|Summers|20/02/1954|956-1572 Id Street|Rhemes-Notre-Dame|5717XS|Canada|1 (605) 834 2340||ingrid summers@some-hosting.com|16|valid email|Illegal whitespace in address|[email]
+17|||20/06/1975|7641 Turpis St.|Cagliari|04201|Lesotho|1 (480) 556 3308||hidden@example.com|17|non empty name|At least first_name or last_name must be found|[first_name, last_name]
