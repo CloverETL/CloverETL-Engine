@@ -436,6 +436,7 @@ public class CTLMapping {
         if (!StringUtils.isEmpty(sourceCode)) {
 			try {
 	        	TransformFactory<RecordTransform> transformFactory = TransformFactory.createTransformFactory(RecordTransformDescriptor.newInstance());
+	        	transformFactory.setAttributeName(xmlAttribute);
 	        	transformFactory.setTransform(sourceCode);
 	        	transformFactory.setComponent(component);
 	        	transformFactory.setInMetadata(inputRecordsMetadata);
