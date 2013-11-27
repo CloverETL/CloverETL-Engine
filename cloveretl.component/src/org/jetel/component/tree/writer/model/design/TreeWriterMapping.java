@@ -111,13 +111,23 @@ public class TreeWriterMapping {
 		ContainerNode currentElement = mapping.getRootElement();
 
 		XMLInputFactory factory = XMLInputFactory.newInstance();
+		factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
 		try {
+			/*
+			 * this is recommendation from manual, but doesn't seem to work
+			 * http://www.oracle.com/technetwork/java/stax-139959.html
+			 */
 			factory.setProperty("report-cdata-event", Boolean.TRUE);
 		} catch (IllegalArgumentException e) {
 			try {
+				// this is valid for impl. distributed with Sun JDK
 				factory.setProperty("http://java.sun.com/xml/stream/properties/report-cdata-event", Boolean.TRUE);
 			} catch (IllegalArgumentException e2) {
-				factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
+				/*
+				 * other factory, like XLXP-J (IBM SDK) or XLXP-J 2 (Websphere) - those fortunately report CDATA events properly,
+				 * but other ones may not, so print a warning
+				 */
+				log.warn("Could not set 'report-cdata-event' property for XML parser. Writing of CDATA sections may not work.");
 			}
 		}
 		
