@@ -34,6 +34,7 @@ import org.jetel.component.RecordFilter;
 import org.jetel.component.RecordFilterFactory;
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
+import org.jetel.component.tree.writer.model.design.CDataSection;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.Comment;
 import org.jetel.component.tree.writer.model.design.ContainerNode;
@@ -50,6 +51,7 @@ import org.jetel.component.tree.writer.model.runtime.NodeValue;
 import org.jetel.component.tree.writer.model.runtime.PortBinding;
 import org.jetel.component.tree.writer.model.runtime.StaticValue;
 import org.jetel.component.tree.writer.model.runtime.WritableAttribute;
+import org.jetel.component.tree.writer.model.runtime.WritableCData;
 import org.jetel.component.tree.writer.model.runtime.WritableCollection;
 import org.jetel.component.tree.writer.model.runtime.WritableComment;
 import org.jetel.component.tree.writer.model.runtime.WritableContainer;
@@ -573,5 +575,11 @@ public class MappingCompiler extends AbstractVisitor {
 			WritableValue value = parseValue(element.getProperty(MappingProperty.VALUE));
 			currentParent.addChild(new WritableComment(value));
 		}
+	}
+	
+	@Override
+	public void visit(CDataSection cdataSection) throws Exception {
+		WritableValue value = parseValue(cdataSection.getProperty(MappingProperty.VALUE));
+		currentParent.addChild(new WritableCData(value));
 	}
 }
