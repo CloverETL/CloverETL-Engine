@@ -133,6 +133,10 @@ public abstract class TreeFormatter extends AbstractFormatter {
 		throw new UnsupportedOperationException("This format does not support comments");
 	}
 
+	public CDataWriter getCDataWriter() {
+		throw new UnsupportedOperationException("This format does not support CDATA sections.");
+	}
+	
 	public WritableMapping getMapping() {
 		return mapping;
 	}

@@ -30,6 +30,7 @@ import java.util.TreeSet;
 
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
+import org.jetel.component.tree.writer.model.design.CDataSection;
 import org.jetel.component.tree.writer.model.design.Comment;
 import org.jetel.component.tree.writer.model.design.ContainerNode;
 import org.jetel.component.tree.writer.model.design.MappingProperty;
@@ -228,6 +229,17 @@ public abstract class AbstractMappingValidator extends AbstractVisitor {
 	}
 	
 	protected abstract void validateComment(Comment comment);
+	
+	@Override
+	public void visit(CDataSection cdataSection) throws Exception {
+		
+		if (!runIt) {
+			return;
+		}
+		validateCDataSection(cdataSection);
+	}
+	
+	protected void validateCDataSection(CDataSection section) {}
 	
 	@Override
 	public void visit(Relation element) throws Exception {

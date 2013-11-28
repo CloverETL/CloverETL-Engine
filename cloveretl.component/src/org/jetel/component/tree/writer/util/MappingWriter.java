@@ -26,6 +26,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
+import org.jetel.component.tree.writer.model.design.CDataSection;
 import org.jetel.component.tree.writer.model.design.CollectionNode;
 import org.jetel.component.tree.writer.model.design.Comment;
 import org.jetel.component.tree.writer.model.design.MappingProperty;
@@ -160,10 +161,14 @@ public class MappingWriter implements MappingVisitor {
 	public void visit(Value element) throws XMLStreamException {
 		String toWrite = element.getProperty(MappingProperty.VALUE);
 		if (toWrite != null) {
-			// If CRLF is written, LFLF is subsequently read 
-			toWrite = toWrite.replaceAll("\r\n", "\n"); // maybe StaxPrettyPrintHandler would be better place do this
-			writer.writeCharacters(toWrite);
+			writeText(toWrite);
 		}
+	}
+	
+	private void writeText(String text) throws XMLStreamException {
+		// If CRLF is written, LFLF is subsequently read 
+		text = text.replaceAll("\r\n", "\n"); // maybe StaxPrettyPrintHandler would be better place do this
+		writer.writeCharacters(text);
 	}
 
 	@Override
@@ -218,6 +223,13 @@ public class MappingWriter implements MappingVisitor {
 		}
 		comment.append(" ");
 		writer.writeComment(comment.toString());
+	}
+	
+	@Override
+	public void visit(CDataSection cdataSection) throws Exception {
+		
+		String value = cdataSection.getProperty(MappingProperty.VALUE);
+		writer.writeCData(value != null ? value : "");
 	}
 	
 	private void writePropertyAsCloverAttribute(AbstractNode element, MappingProperty property) throws XMLStreamException {

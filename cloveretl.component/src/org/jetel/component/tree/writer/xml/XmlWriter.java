@@ -25,8 +25,11 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
+import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import org.jetel.component.tree.writer.AttributeWriter;
+import org.jetel.component.tree.writer.CDataWriter;
 import org.jetel.component.tree.writer.CommentWriter;
 import org.jetel.component.tree.writer.NamespaceWriter;
 import org.jetel.component.tree.writer.TreeWriterBase;
@@ -40,7 +43,7 @@ import org.jetel.exception.JetelException;
  * 
  * @created 11 Mar 2011
  */
-public class XmlWriter extends TreeWriterBase implements NamespaceWriter, AttributeWriter, CommentWriter {
+public class XmlWriter extends TreeWriterBase implements NamespaceWriter, AttributeWriter, CommentWriter, CDataWriter {
 
 	private enum TagContent {EMPTY, ATTRIBUTE_COMMENT_NAMESPACE, VALUE_CHILD};
 	
@@ -66,6 +69,13 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 
 	private static final char[] NAMESPACE_PREFIX = " xmlns".toCharArray();
 	private static final char[] NAMESPACE_DELIMITER = ":".toCharArray();
+	
+	private static final char[] CDATA_SECTION_START_TAG = "<![CDATA[".toCharArray();
+	private static final char[] CDATA_SECTION_END_TAG = "]]>".toCharArray();
+	private static final char[] CDATA_FORBIDDEN_SEQUENCE_START = "]]".toCharArray();
+	private static final char[] CDATA_FORBIDDEN_SEQUENCE_END = CLOSE_END_TAG;
+	private static final String CDATA_FORBIDDEN_SEQUENCE = "]]>";
+	private static final Pattern CDATA_FORBIDDEN_SEQUENCE_PATTERN = Pattern.compile("\\]\\]>");
 
 	private boolean[] shouldIndentStack = new boolean[11];
 	private TagContent[] values = new TagContent[11];
@@ -117,6 +127,10 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 
 	public void setShouldIndent() {
 		shouldIndentStack[depth] = true;
+	}
+	
+	public void setShouldNotIndent() {
+		shouldIndentStack[depth] = false;
 	}
 
 	public boolean isEmpty() {
@@ -281,6 +295,49 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 		write(COMMENT_START_TAG);
 		writeContent(content.toString().toCharArray(), true, false);
 		write(COMMENT_END_TAG);
+	}
+	
+	@Override
+	public void writeCData(Object content) throws JetelException {
+		performDeferredWrite(true, TagContent.ATTRIBUTE_COMMENT_NAMESPACE);
+		
+		if (startTagOpened) {
+			closeStartTag(values[depth] == TagContent.VALUE_CHILD);
+		}
+		
+		if (!omitNewLines) {
+			indent(depth);
+		}
+		
+		setShouldNotIndent();
+		String cdata = content.toString();
+		if (cdata.contains(CDATA_FORBIDDEN_SEQUENCE)) {
+			/*
+			 * split characters by forbidden sequence, i.e.
+			 * should there be "]]>" in incoming data, it will be split in two CDATA sections
+			 */
+			Scanner scanner = new Scanner(cdata);
+			scanner.useDelimiter(CDATA_FORBIDDEN_SEQUENCE_PATTERN);
+			boolean forbiddenSeqStartWritten = false;
+			while (scanner.hasNext()) {
+				write(CDATA_SECTION_START_TAG);
+				if (forbiddenSeqStartWritten) {
+					writeContent(CDATA_FORBIDDEN_SEQUENCE_END, false, false);
+					forbiddenSeqStartWritten = false; // clear flag
+				}
+				writeContent(scanner.next().toCharArray(), false, false);
+				if (scanner.hasNext()) {
+					writeContent(CDATA_FORBIDDEN_SEQUENCE_START, false, false);
+					forbiddenSeqStartWritten = true;
+				}
+				write(CDATA_SECTION_END_TAG);
+			}
+		} else {
+			write(CDATA_SECTION_START_TAG);
+			writeContent(cdata.toCharArray(), false, false);
+			write(CDATA_SECTION_END_TAG);
+		}
+		setShouldIndent();
 	}
 
 	private void write(char[] content) throws JetelException {
