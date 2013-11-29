@@ -28,6 +28,7 @@ import net.sf.saxon.om.Name11Checker;
 
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
+import org.jetel.component.tree.writer.model.design.CDataSection;
 import org.jetel.component.tree.writer.model.design.Comment;
 import org.jetel.component.tree.writer.model.design.ContainerNode;
 import org.jetel.component.tree.writer.model.design.MappingProperty;
@@ -366,6 +367,11 @@ public class XmlMappingValidator extends AbstractMappingValidator {
 	protected void validateComment(Comment comment) {
 		checkCorrectBooleanValue(comment, MappingProperty.WRITE);
 		validateValue(comment);
+	}
+	
+	@Override
+	protected void validateCDataSection(CDataSection section) {
+		validateValue(section);
 	}
 
 	private boolean validateName(AbstractNode element, String name) {

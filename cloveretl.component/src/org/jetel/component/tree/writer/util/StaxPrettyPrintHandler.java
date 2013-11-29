@@ -76,7 +76,7 @@ public class StaxPrettyPrintHandler implements InvocationHandler {
 				indent(depth);
 			}
 
-		} else if ("writeEmptyElement".equals(m) || "writeComment".equals(m)) {
+		} else if ("writeEmptyElement".equals(m) || "writeComment".equals(m) || "writeCData".equals(m)) {
 			// update state of parent node
 			if (depth > 0) {
 				hasChildElement.put(depth - 1, true);
