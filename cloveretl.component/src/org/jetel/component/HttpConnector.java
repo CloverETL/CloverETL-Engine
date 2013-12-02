@@ -18,14 +18,12 @@
  */
 package org.jetel.component;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -49,6 +47,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import oauth.signpost.OAuthConsumer;
 import oauth.signpost.commonshttp.CommonsHttpOAuthConsumer;
@@ -3085,6 +3085,8 @@ public class HttpConnector extends Node {
 		return multipartEntitiesMap;
 	}
 	
+	private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\*\\{(" + StringUtils.OBJECT_NAME_PATTERN + ")\\}");
+	
 	/**
 	 * Prepares URL based on the given URL template. The substituted placeholders are added to the 
 	 * set given as parameter. 
@@ -3098,42 +3100,25 @@ public class HttpConnector extends Node {
 			throw new ComponentNotReadyException("Invalid URL: null");
 		}
 		
-		// FIXME: is this check really necessary? The URL is checked at the end for unresolved references 
-		if (!isPossibleToMapVariables(urlTemplate)) {
-			throw new ComponentNotReadyException("Invalid input. Can't create URL or map fields to URL");
-		}
-		
 		//parse URL
 		//placeholder format: *{placeholder_name}
-		String tempUrl = "";
-		StringTokenizer st = new StringTokenizer(urlTemplate, "*");
-		while (st.hasMoreTokens()) {
-			tempUrl += st.nextToken();
-		}
-
-		// substitute placeholders
-		String rawUrlToProceed = "";
-		while (tempUrl.indexOf("{") > 0 && tempUrl.length() > 0) {
-			rawUrlToProceed += tempUrl.substring(0, tempUrl.indexOf("{"));
-			String propertyName = tempUrl.substring(tempUrl.indexOf("{") + 1, tempUrl.indexOf("}"));
-
-			DataField field = inputRecord.getField(propertyName);
+		Matcher matcher = PLACEHOLDER_PATTERN.matcher(urlTemplate);
+		
+	    StringBuffer sb = new StringBuffer(urlTemplate.length());
+	    while (matcher.find()) {
+			String fieldName = matcher.group(1);
+			DataField field = inputRecord.getField(fieldName);
 			if (field != null) {
-				rawUrlToProceed += field.toString();
-				substituedPlaceHolders.add(propertyName);
+				matcher.appendReplacement(sb, Matcher.quoteReplacement(field.toString()));
+				substituedPlaceHolders.add(fieldName);
 			} else {
-				rawUrlToProceed += "*";
+				//some placeholder wasn't substituted. This should never happen.
+				throw new ComponentNotReadyException("Invalid URL - no such field in the input metadata: '" + fieldName + "'");
 			}
-			tempUrl = tempUrl.substring(tempUrl.indexOf("}") + 1, tempUrl.length());
-		}
-		rawUrlToProceed += tempUrl;
-
-		if (rawUrlToProceed.indexOf("*{") > 0) {
-			//some placeholder wasn't substituted. This should never happen.
-			throw new ComponentNotReadyException("Invalid URL.");
-		}
-
-		return rawUrlToProceed;
+	    }
+	    matcher.appendTail(sb);
+	    
+	    return sb.toString();
 	}
 
 	/** Checks  if there are suitable metadata fields for substitution of all placeholders in given string.
