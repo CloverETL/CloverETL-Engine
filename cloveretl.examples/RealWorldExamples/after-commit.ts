@@ -16,10 +16,10 @@
 	<FunctionalTest ident="DataSelectionAdvancedIBM" graphFile="graph/DataSelectionAdvanced.grf" excludedContainers="tomcat6,jetty6,glassfish2,weblogic10,weblogic12,jboss5,jboss6" excludedEtlEnvironment="engine,cluster">
 		<FlatFile outputFile="data-out/NumberOfCustomers.out" supposedFile="supposed-out/NumberOfCustomersIBM.out"/>
 		<FlatFile outputFile="data-tmp/had_duplicate_records.txt" supposedFile="supposed-out/had_duplicate_records.txt"/>
-		<RegEx expression="# 2 *\|Argentina *\|16" occurences="1"/>
-		<RegEx expression="# 4 *\|Spain *\|23" occurences="1"/>
-		<RegEx expression="# 1 *\|Brazil *\|83" occurences="1"/>
-		<RegEx expression="# 3 *\|Venezuela *\|46" occurences="1"/>
+		<RegEx expression="# 4 *\|Argentina *\|16" occurences="1"/>
+		<RegEx expression="# 1 *\|Spain *\|23" occurences="1"/>
+		<RegEx expression="# 3 *\|Brazil *\|83" occurences="1"/>
+		<RegEx expression="# 2 *\|Venezuela *\|46" occurences="1"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false">
