@@ -299,17 +299,12 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 	
 	@Override
 	public void writeCData(Object content) throws JetelException {
-		performDeferredWrite(true, TagContent.ATTRIBUTE_COMMENT_NAMESPACE);
+		performDeferredWrite(true, TagContent.VALUE_CHILD);
 		
 		if (startTagOpened) {
 			closeStartTag(values[depth] == TagContent.VALUE_CHILD);
 		}
 		
-		if (!omitNewLines) {
-			indent(depth);
-		}
-		
-		setShouldNotIndent();
 		String cdata = content.toString();
 		if (cdata.contains(CDATA_FORBIDDEN_SEQUENCE)) {
 			/*
@@ -337,7 +332,6 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 			writeContent(cdata.toCharArray(), false, false);
 			write(CDATA_SECTION_END_TAG);
 		}
-		setShouldIndent();
 	}
 
 	private void write(char[] content) throws JetelException {
