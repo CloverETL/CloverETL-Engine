@@ -254,9 +254,11 @@ public class CloverDataParser extends AbstractParser {
         //read and check header of clover binary data format to check out the compatibility issues
         version = checkCompatibilityHeader(recordBuffer, metadata);
         
-        //in case the input file has been created by clover 3.4 and current job type is jobflow
+        //in case the input file has been created by clover 3.4 or 3.3 and current job type is jobflow
         //special de-serialisation needs to be used, see CLO-1382
-        if (version.majorVersion == 3 && version.minorVersion == 4 && ContextProvider.getRuntimeContext().getJobType() == JobType.JOBFLOW) {
+        if (version.majorVersion == 3 
+        		&& (version.minorVersion == 3 || version.minorVersion == 4)
+        		&& ContextProvider.getRuntimeContext().getJobType() == JobType.JOBFLOW) {
         	useParsingFromJobflow_3_4 = true;
         }
     }
