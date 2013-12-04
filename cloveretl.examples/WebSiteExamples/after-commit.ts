@@ -31,9 +31,9 @@
 		<FlatFile outputFile="data-out/selected_customers.dat" supposedFile="supposed-out/selected_customers.dat"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="SalesforceWebService" graphFile="jobflow/SalesforceWebService.jbf" excludedEtlEnvironment="engine">
-		<Property name="FORCE.COM_PASSWORD" value="5rExaxU9" />
-		<Property name="FORCE.COM_SECURITY_TOKEN" value="VIAaNyiS8NuCbO35nA4Se1ZY" />
+	<FunctionalTest ident="SalesforceWebService" graphFile="jobflow/SalesforceWebService.jbf" excludedEtlEnvironment="engine,cluster">
+		<Property name="FORCE.COM_PASSWORD" value="yYk3RQ8S" />
+		<Property name="FORCE.COM_SECURITY_TOKEN" value="uNht5GerSudzyKYZSiUWi5Z6" />
 		<Property name="FORCE.COM_USER" value="support@javlin.eu" />
 	</FunctionalTest>
 
