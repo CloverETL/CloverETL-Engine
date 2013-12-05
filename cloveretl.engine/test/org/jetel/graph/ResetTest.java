@@ -192,7 +192,10 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("SimpleSequence_longValue.grf") // needs the sequence to be reset on start
 							&& !file.getName().equals("BeanWriterReader_employees.grf") // remove after CL-2474 solved
 							&& !file.getName().equals("GraphParameters_secure.grf") // server test
+							&& !file.getName().equals("GraphParameters_secureOverriden.grf") // server test
+							&& !file.getName().equals("GraphParameters_secureOverriden_subGraph.grf") // subgraph of server test
 							&& !file.getName().equals("TypedProperties_CLO-1997.grf") // server test
+							&& !file.getName().equals("ParallelReader_HDFS.grf") // cluster test
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail

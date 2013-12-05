@@ -267,6 +267,7 @@ public class JmsReader extends Node {
 		
 	@Override
 	public Result execute() throws Exception {
+		// TODO krivanekm: Does the interruptor really work? 
 		Interruptor interruptor = new Interruptor();
 		registerChildThread(interruptor); //register interrupter as a child thread of this component
 		interruptor.start();	// run thread taking care about interrupting blocking msg receive calls
@@ -282,17 +283,18 @@ public class JmsReader extends Node {
 				writeRecordBroadcast(rec);
 			}
 		} catch (javax.jms.JMSException e) {
-			if (e.getCause() instanceof InterruptedException)
+			if (e.getCause() instanceof InterruptedException) {
 				throw (InterruptedException)e.getCause();
-			else
+			} else {
 				throw e;
+			}
 		} catch (Exception e) {
 			throw e;
-		}finally{
+		} finally {
 	        broadcastEOF();
 		}
 		Result r = runIt ? Result.FINISHED_OK : Result.ABORTED;
-		runIt = false;	// for interruptor
+		interruptor.finished(); // CLO-2475: terminate the interruptor separately, do not use JmsReader.runIt to stop it
 		return r;
 	}
 
@@ -371,6 +373,9 @@ public class JmsReader extends Node {
 	 */
 	private class Interruptor extends Thread {
 		private static final int sleepInterval = 400;
+		
+		private volatile boolean runIt = false;
+		
 		public Interruptor() {
 			super(Thread.currentThread().getName() + ".Interruptor");			
 		}
@@ -380,7 +385,7 @@ public class JmsReader extends Node {
 		 */
 		@Override
 		public void run() {
-			while (runIt) {
+			while (JmsReader.this.runIt && Interruptor.this.runIt) {
 				try {
 					sleep(sleepInterval);
 				} catch (InterruptedException e) {
@@ -389,6 +394,11 @@ public class JmsReader extends Node {
 			}
 			//closeConnection();
 		}
+		
+		public void finished() {
+			Interruptor.this.runIt = false;
+		}
+		
 	}
 
 	public String getCharset() {
