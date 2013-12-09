@@ -32,9 +32,9 @@
 	</FunctionalTest>
 	
 	<FunctionalTest ident="SalesforceWebService" graphFile="jobflow/SalesforceWebService.jbf" excludedEtlEnvironment="engine,cluster">
-		<Property name="FORCE.COM_PASSWORD" value="yYk3RQ8S" />
-		<Property name="FORCE.COM_SECURITY_TOKEN" value="4sggXqAEs2QazY1NDb9nZjdx" />
-		<Property name="FORCE.COM_USER" value="support@javlin.eu" />
+		<Property name="FORCE_COM_PASSWORD" value="yYk3RQ8S" />
+		<Property name="FORCE_COM_SECURITY_TOKEN" value="4sggXqAEs2QazY1NDb9nZjdx" />
+		<Property name="FORCE_COM_USER" value="support@javlin.eu" />
 	</FunctionalTest>
 
 </TestScenario>
