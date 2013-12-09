@@ -60,7 +60,7 @@ public class PooledSFTPConnection extends AbstractPoolableConnection {
 	/**
 	 * Async close timeout (seconds).
 	 */
-	private static final int CLOSE_TIMEOUT = 5; // 5 seconds should be enough to close an input stream
+	private static final int CLOSE_TIMEOUT = 10; // 10 seconds should be enough to close an input stream
 	
 	private static final int DEFAULT_PORT = 22;
 
