@@ -66,6 +66,7 @@ import org.jetel.util.bytes.CloverBuffer;
  */
 public class DataRecordTape {
 
+    private RandomAccessFile tmpRandomAccessFile;
     private FileChannel tmpFileChannel;
 	private File tmpFile;
 	private String tmpFileName;
@@ -166,7 +167,8 @@ public class DataRecordTape {
         }
         
 		// we want the temp file be deleted on exit
-		tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
+        tmpRandomAccessFile = new RandomAccessFile(tmpFile, TMP_FILE_MODE);
+        tmpFileChannel = tmpRandomAccessFile.getChannel();
        	currentDataChunkIndex=-1;
 		currentDataChunk=null;
 	}
@@ -182,15 +184,26 @@ public class DataRecordTape {
 	public void close() throws IOException, InterruptedException {
         if(deleteOnExit) {
             clear();
-            tmpFileChannel.close();
+            closeTmpFile();
             if (!tmpFile.delete()) {
                 throw new IOException("Can't delete TMP file: " + tmpFile.getAbsoluteFile());
             }
         } else {
-            tmpFileChannel.close();
+        	closeTmpFile();
         }
 	}
 
+	/**
+	 * This special file closing tries to be sure the temporary file is really closed.
+	 */
+	private void closeTmpFile() throws IOException {
+		if (tmpFileChannel != null) {
+			tmpFileChannel.close();
+		} else if (tmpRandomAccessFile != null) {
+			tmpRandomAccessFile.close();
+		}
+	}
+	
 	/**
 	 * Flushes tape content to disk.
 	 * 
