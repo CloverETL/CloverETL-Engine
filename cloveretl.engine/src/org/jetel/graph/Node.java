@@ -606,14 +606,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 					//interrupt main node thread
 					nodeThread.interrupt();
 					//interrupt all child threads if any
-					synchronized (childThreads) {
-						for (Thread childThread : childThreads) {
-							if (logger.isDebugEnabled()) {
-								logger.debug("trying to interrupt child thread " + childThread);
-							}
-							childThread.interrupt();
-						}
-					}
+					abortChildThreads();
 					//wait some time for graph result
 					try {
 						Thread.sleep(10);
@@ -622,6 +615,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 				}
 			}
 		}
+		
+		//interrupt all child threads if any
+		//this invocation is just for sure, that really all child threads have been interrupted
+		//even those which have been executed just in time of this component abortation
+		abortChildThreads();
+		
 		if (cause != null) {
             setResultCode(Result.ERROR);
             resultException = createNodeException(cause);
@@ -636,6 +635,17 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		}
 	}
 
+	private void abortChildThreads() {
+		synchronized (childThreads) {
+			for (Thread childThread : childThreads) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("trying to interrupt child thread " + childThread);
+				}
+				childThread.interrupt();
+			}
+		}
+	}
+	
     /**
      * @return thread of running node; <b>null</b> if node does not running
      */
