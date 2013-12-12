@@ -445,7 +445,12 @@ public class DynamicRecordBuffer {
     		if (diskSlot != null) {
     			return diskSlot;
     		} else {
-    			obsoleteTempFiles.removeFirst();
+    			obsoleteTempFiles.removeFirst(); //removes obsoleteTempFile
+    			try {
+    				obsoleteTempFile.close();
+    			} catch (IOException e) {
+    				log.warn("Failed to close temp file.", e);
+    			}
     		}
     	}
     	
