@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -159,11 +158,11 @@ public final class TransformationGraph extends GraphElement {
 		//graph is graph for itself
 		setGraph(this);
 		
-		phases = new HashMap<Integer,Phase>();
-		connections = new HashMap <String,IConnection> ();
-		sequences = new HashMap<String,Sequence> ();
-		lookupTables = new HashMap<String,LookupTable> ();
-		dataRecordMetadata = new HashMap<String,Object> ();
+		phases = new LinkedHashMap<Integer,Phase>();
+		connections = new LinkedHashMap <String,IConnection> ();
+		sequences = new LinkedHashMap<String,Sequence> ();
+		lookupTables = new LinkedHashMap<String,LookupTable> ();
+		dataRecordMetadata = new LinkedHashMap<String,Object> ();
 		graphParameters = new GraphParameters();
 		dictionary = new Dictionary(this);
 		memoryTracker = new MemoryTracker();
