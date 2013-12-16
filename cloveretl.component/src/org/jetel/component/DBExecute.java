@@ -527,7 +527,7 @@ public class DBExecute extends Node {
 				connection.setAutoCommit(transaction == InTransaction.ONE);
 			} catch (SQLException ex) {
 				if (transaction != InTransaction.ONE) {
-					throw new ComponentNotReadyException("Can't disable AutoCommit mode (required by current \"Transaction set\" setting) for DB: " + dbConnection + " !");
+					throw new ComponentNotReadyException("Can't disable AutoCommit mode (required by current \"Transaction set\" setting) for DB: " + dbConnection + " !", ex);
 				}
 			}
 		} catch (SQLException e) {
