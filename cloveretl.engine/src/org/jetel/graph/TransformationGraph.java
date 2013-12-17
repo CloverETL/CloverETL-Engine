@@ -1101,6 +1101,8 @@ public final class TransformationGraph extends GraphElement {
 	    	if(status == null) {
 	            status = new ConfigurationStatus();
 	        }
+	    	
+	    	graphParameters.checkConfig(status);
 	        
 	        //check dictionary
 	        dictionary.checkConfig(status);
