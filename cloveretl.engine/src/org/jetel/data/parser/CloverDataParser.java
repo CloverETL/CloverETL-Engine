@@ -344,14 +344,23 @@ public class CloverDataParser extends AbstractParser {
 	public void close() {
 		releaseDataSource();
 	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
+	
+	/**
+	 * Makes sure there is at least one complete record
+	 * in <code>recordBuffer</code>.
+	 * Also sets the position of <code>recordBuffer</code> to the beginning
+	 * of the record.
+	 * <p>
+	 * Returns the length of the next serialized record in bytes.
+	 * </p>
+	 *  
+	 * @return length of the next serialized record in <code>recordBuffer</code> in bytes
+	 * or -1 if no data is available
+	 * @throws JetelException
 	 */
-	@Override
-	public DataRecord getNext(DataRecord record)throws JetelException{
+	private int fillRecordBuffer() throws JetelException {
 		// the skip rows has skipped whole file
-		if (noDataAvailable) return null;
+		if (noDataAvailable) return -1;
 		
 		//refill buffer if we are on the end of buffer
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER) {
@@ -363,7 +372,7 @@ public class CloverDataParser extends AbstractParser {
 			}
 		}
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER){
-			return null;
+			return -1;
 		}
 		int recordSize = recordBuffer.getInt();
 		//refill buffer if we are on the end of buffer
@@ -380,15 +389,61 @@ public class CloverDataParser extends AbstractParser {
 			}
 			recordBuffer.flip();
 		}
+		
+		return recordSize;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
+	 */
+	@Override
+	public DataRecord getNext(DataRecord record) throws JetelException {
+		if (fillRecordBuffer() < 0) {
+			return null;
+		}
+		
 		if (!useParsingFromJobflow_3_4) {
 			record.deserializeUnitary(recordBuffer);
 		} else {
 			record.deserialize(recordBuffer);
 		}
+		
 		sourceRecordCounter++;
 		return record;
 	}
- 
+	
+	/**
+	 * Reads the next serialized record into the provided buffer.
+	 * The target buffer is cleared first.
+	 * <p>
+	 * The position of the target buffer will be set to 0
+	 * and the limit will be set to the end of the serialized record.
+	 * </p><p>
+	 * Returns the provided buffer or <code>null</code> 
+	 * if there is no record available.
+	 * </p>
+	 * 
+	 * @param targetBuffer the target buffer
+	 * @return <code>targetBuffer</code> or <code>null</code> if no data available
+	 * @throws JetelException
+	 */
+	public CloverBuffer getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+		int recordSize = fillRecordBuffer();
+		if (recordSize < 0) {
+			return null;
+		}
+		
+	    targetBuffer.clear();
+		int oldLimit = recordBuffer.limit(); // store old limit
+		recordBuffer.limit(recordBuffer.position() + recordSize); // set new limit
+		targetBuffer.put(recordBuffer); // copy data up to new limit and update recordBuffer position
+		recordBuffer.limit(oldLimit); // restore old limit
+		targetBuffer.flip(); // prepare for reading
+		
+		sourceRecordCounter++;
+		return targetBuffer;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setExceptionHandler(org.jetel.exception.IParserExceptionHandler)
 	 */
