@@ -42,6 +42,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.AutoFilling;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.WcardPattern;
@@ -130,6 +131,12 @@ public class CloverDataReader extends Node {
 	private Iterator<String> filenameItor;
 
 	private boolean inputSource;
+	
+	/**
+	 * Used if there are no autofilled fields in the output metadata.
+	 * @see #executeDirect()
+	 */
+	private boolean directReading = false;
     
 	/**
 	 * @param id
@@ -165,10 +172,44 @@ public class CloverDataReader extends Node {
 		skip();
     }    
 
+    /**
+     * Reads records from the source file without deserialization.
+     * <p>
+     * Used if there are no autofilling fields.
+     * </p>
+     * 
+     * @throws Exception
+     */
+    private void executeDirect() throws Exception {
+    	CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+		if (inputSource) {
+			do {
+				if (checkRow() && (parser.getNextDirect(recordBuffer) != null)) {
+					autoFilling.incCounters();
+				    writeRecordBroadcastDirect(recordBuffer);
+					SynchronizeUtils.cloverYield();
+				} else {
+					// prepare next file
+					if (!nextSource()) {
+						break;
+					}
+				}				
+			} while (runIt);			
+		}
+	}
 	
-	
-	@Override
-	public Result execute() throws Exception {
+    /**
+     * Parses records from the input file,
+     * sets autofilling fields,
+     * serializes the records and writes them to the output port(s).
+     * <p>
+     * Should be deprecated in the future, since autofilling probably
+     * doesn't work anyway.
+     * </p>
+     * 
+     * @throws Exception
+     */
+	private void executeParsing() throws Exception {
 		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
         record.init();
         DataRecord rec;
@@ -185,6 +226,15 @@ public class CloverDataReader extends Node {
 					}
 				}				
 			} while (runIt);			
+		}
+	}
+	
+	@Override
+	public Result execute() throws Exception {
+		if (directReading) {
+			executeDirect();
+		} else {
+			executeParsing();
 		}
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -333,6 +383,7 @@ public class CloverDataReader extends Node {
 		parser.setProjectURL(getGraph().getRuntimeContext().getContextURL());
 		
     	if (metadata != null) {
+    		this.directReading = autoFilling.isAutofillingDisabled(metadata);
     		autoFilling.addAutoFillingFields(metadata);
     	}
     	autoFilling.setFilename(fileURL);
