@@ -30,8 +30,8 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
-import org.jetel.component.RecordFilter;
 import org.jetel.component.RecordFilterFactory;
+import org.jetel.component.RecordsFilter;
 import org.jetel.component.tree.writer.model.design.AbstractNode;
 import org.jetel.component.tree.writer.model.design.Attribute;
 import org.jetel.component.tree.writer.model.design.CDataSection;
@@ -454,7 +454,7 @@ public class MappingCompiler extends AbstractVisitor {
 			}
 		}
 
-		RecordFilter recordFilter = null;
+		RecordsFilter recordFilter = null;
 		if (filterExpression != null) {
 			recordFilter = RecordFilterFactory.createFilter(FILTER_PREFIX + filterExpression, metadata, graph, componentId, logger);
 		}
