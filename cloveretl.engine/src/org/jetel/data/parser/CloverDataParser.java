@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.Token;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -88,7 +89,12 @@ public class CloverDataParser extends AbstractParser {
     /** In case the input file has been created by clover 3.4 and current job type is jobflow
      * special de-serialisation needs to be used, see CLO-1382 */
 	private boolean useParsingFromJobflow_3_4 = false;
-	
+
+	/**
+	 * True, if the current transformation is jobflow.
+	 */
+	private boolean isJobflow;
+
 	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
 
@@ -254,11 +260,14 @@ public class CloverDataParser extends AbstractParser {
         //read and check header of clover binary data format to check out the compatibility issues
         version = checkCompatibilityHeader(recordBuffer, metadata);
         
+        //is the current transformation jobflow?
+        isJobflow = ContextProvider.getRuntimeContext().getJobType() == JobType.JOBFLOW;
+        
         //in case the input file has been created by clover 3.4 or 3.3 and current job type is jobflow
         //special de-serialisation needs to be used, see CLO-1382
         if (version.majorVersion == 3 
         		&& (version.minorVersion == 3 || version.minorVersion == 4)
-        		&& ContextProvider.getRuntimeContext().getJobType() == JobType.JOBFLOW) {
+        		&& isJobflow) {
         	useParsingFromJobflow_3_4 = true;
         }
     }
@@ -434,6 +443,15 @@ public class CloverDataParser extends AbstractParser {
 		}
 		
 	    targetBuffer.clear();
+	    
+		//in case current transformation is jobflow, tokenId must be added to targetBuffer
+		//since tokenId is not part of clover data file
+		//this is not applied for data files created by 3.3 and 3.4 clover versions,
+		//where tokenId has been serialised into clover data files
+		if (isJobflow && !useParsingFromJobflow_3_4) {
+			Token.serializeTokenId(-1, targetBuffer);
+		}
+
 		int oldLimit = recordBuffer.limit(); // store old limit
 		recordBuffer.limit(recordBuffer.position() + recordSize); // set new limit
 		targetBuffer.put(recordBuffer); // copy data up to new limit and update recordBuffer position
