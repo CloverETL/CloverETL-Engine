@@ -261,7 +261,8 @@ public class CloverDataParser extends AbstractParser {
         version = checkCompatibilityHeader(recordBuffer, metadata);
         
         //is the current transformation jobflow?
-        isJobflow = ContextProvider.getRuntimeContext().getJobType() == JobType.JOBFLOW;
+        isJobflow = ContextProvider.getRuntimeContext() != null
+        		&& ContextProvider.getRuntimeContext().getJobType() == JobType.JOBFLOW;
         
         //in case the input file has been created by clover 3.4 or 3.3 and current job type is jobflow
         //special de-serialisation needs to be used, see CLO-1382
