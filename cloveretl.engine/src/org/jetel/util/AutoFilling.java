@@ -183,7 +183,21 @@ public class AutoFilling {
         if(rec == null) return;
         setAutofilling(rec);
 	}
-
+	
+	/**
+	 * Returns autofilling data for the provided metadata.
+	 * Creates the autofilling data, if necessary.
+	 * 
+	 * @param metadata
+	 */
+	private void getAutofillingData(DataRecordMetadata metadata) {
+        autoFillingData = autoFillingMap.get(metadata);
+        if (autoFillingData == null) {
+        	autoFillingData = createAutoFillingFields(metadata);
+            autoFillingMap.put(metadata, autoFillingData);
+        }
+	}
+	
 	/**
 	 * Sets autofilling fields in data record.
 	 * 
@@ -191,12 +205,20 @@ public class AutoFilling {
 	 */
 	public void setAutoFillingFields(DataRecord rec) {
         if(rec == null) return;
-        autoFillingData = autoFillingMap.get(rec.getMetadata());
-        if (autoFillingData == null) {
-        	autoFillingData = createAutoFillingFields(rec.getMetadata());
-            autoFillingMap.put(rec.getMetadata(), autoFillingData);
-        }
+        getAutofillingData(rec.getMetadata());
         setAutofilling(rec);
+	}
+
+	/**
+	 * Returns <code>true</code> if the metadata
+	 * do not contain any autofilling fields.
+	 * 
+	 * @param metadata
+	 * @return <code>true</code> if there are no autofilling fields
+	 */
+	public boolean isAutofillingDisabled(DataRecordMetadata metadata) {
+		getAutofillingData(metadata);
+		return autoFillingData.noAutoFillingData;
 	}
 
 	/**
@@ -205,9 +227,7 @@ public class AutoFilling {
 	 */
 	private final void setAutofilling(DataRecord rec) {
         if (autoFillingData.noAutoFillingData) {
-            l3Counter++;
-            sourceCounter++;
-            globalCounter++;
+        	incCounters();
         	return;
         }
         try {
@@ -367,6 +387,15 @@ public class AutoFilling {
 	 */
 	public void incL3Counter(int step) {
 		l3Counter += step;
+	}
+	
+	/**
+	 * Adds 1 to all counters: global, per-source, per-section (L3).
+	 */
+	public void incCounters() {
+        l3Counter++;
+        sourceCounter++;
+        globalCounter++;
 	}
 
 	/**

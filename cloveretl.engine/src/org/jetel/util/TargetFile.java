@@ -384,14 +384,6 @@ public class TargetFile {
         	if (bbOutputStream != null) {
         		write2OutportOrDictionary(bbOutputStream.toByteArray());
         	}
-    		try {
-    			// there is only one target for port and dictionary protocol
-				if (outputPort != null) {
-					outputPort.eof();
-				}
-			} catch (InterruptedException e) {
-				throw new IOException(e);
-			}
     	}
     }
 

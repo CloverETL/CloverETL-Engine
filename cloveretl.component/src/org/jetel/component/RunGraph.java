@@ -432,6 +432,12 @@ public class RunGraph extends Node{
 			commandList.add(runGraph.CONTEXT_URL_SWITCH);
 			commandList.add(getGraph().getRuntimeContext().getContextURL().toString());
 		}
+		
+		if (!args.contains(runGraph.LOG4J_LOG_LEVEL_SWITCH) && getGraph().getRuntimeContext().getLogLevel() != null) {
+			commandList.add(runGraph.LOG4J_LOG_LEVEL_SWITCH);
+			commandList.add(getGraph().getRuntimeContext().getLogLevel().toString());
+		}
+
 		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
 		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
 		commandList.add(runGraph.NO_DEBUG_SWITCH);
