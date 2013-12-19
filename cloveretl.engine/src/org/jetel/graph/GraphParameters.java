@@ -27,6 +27,9 @@ import java.util.Properties;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
@@ -223,4 +226,15 @@ public class GraphParameters {
 		}
 	}
 	
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		synchronized (parameters) {
+			for (GraphParameter param: parameters.values()) {
+				if (!StringUtils.isValidObjectName(param.getName())) {
+					status.add("Invalid name of graph parameter: '" + param.getName() + "'", Severity.ERROR, null, Priority.HIGH);
+				}
+			}
+		}
+		return status;
+	}
+
 }

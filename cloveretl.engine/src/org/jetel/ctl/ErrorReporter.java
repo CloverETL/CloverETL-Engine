@@ -23,6 +23,8 @@ import java.io.LineNumberReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.jetel.ctl.ASTnode.*;
 import org.jetel.data.DataField;
@@ -39,7 +41,7 @@ public class ErrorReporter {
 	
 	final static int DEFAULT_TAB_WIDTH = 4;
 	final static int DEFAULT_BUFFER_SIZE = 8192;
-	final static int MAX_VALUE_LENGTH = 2048;
+	final static int MAX_VALUE_LENGTH = 512; // CLO-2658: decreased from 2048
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	
 	TransformLangExecutorRuntimeException runtimeException;
@@ -50,6 +52,8 @@ public class ErrorReporter {
 	PrintWriter err;
 	StringWriter wr;
 	
+	// already printed variables
+	private Set<String> identifiers;
 	
 	public ErrorReporter(TransformLangExecutorRuntimeException ex,Stack stack,DataRecord[] inputRecords,DataRecord[] outputRecords,String source) {
 		runtimeException = ex;
@@ -98,18 +102,20 @@ public class ErrorReporter {
 		while (exc.getCause()!=null) exc=exc.getCause();
 		SimpleNode nodeInError = runtimeException.getNode();
 		err.println(runtimeException.getSimpleMessage());
-		err.format("Caused by: %s -> %s%n",exc.getClass(),exc.getMessage());
-		err.println("In operation: "+nodeInError.toString());
+		err.format("Caused by: %s -> %s%n",exc.getClass().getName(),exc.getMessage());
+//		err.println("In operation: "+nodeInError.toString()); // CLO-2658
 		if (sourceCode != null) {
-			err.println("--------------------vvv code snippet vvv--------------------");
+			err.println("----------------------- CTL2 snippet -----------------------");
 			err.println(getSnippet(sourceCode, nodeInError.getBegin().getLine(), nodeInError.getBegin().getColumn(), nodeInError.getEnd().getLine(),nodeInError.getEnd().getColumn()));
-			err.println("--------------------^^^ code snippet ^^^--------------------");
+			err.println("----------------------- CTL2 snippet -----------------------");
 		} else {
 			err.println("(source not available)");
 		}
+		identifiers = new HashSet<String>();
 		for(int i=0;i<nodeInError.jjtGetNumChildren();i++){
 			process(nodeInError.jjtGetChild(i));
 		}
+		identifiers = null;
 		// error message should not end with a line break, delete it
 		StringBuffer sb = wr.getBuffer();
 		if (sb.toString().endsWith(LINE_SEPARATOR)) {
@@ -190,7 +196,7 @@ public class ErrorReporter {
 	 * processing of individual node types starts here
 	 */
 
-	String process(Node node){
+	String process(Node node) {
 		if (node instanceof CLVFIdentifier) {
 			return process((CLVFIdentifier) node);
 		} else if (node instanceof CastNode) {
@@ -206,24 +212,26 @@ public class ErrorReporter {
 		} else if (node instanceof CLVFArrayAccessExpression) {
 			return process((CLVFArrayAccessExpression) node);
 		}
-			return process((SimpleNode)node);
 		
+		return process((SimpleNode) node);
 	}
 	
 	
 	String process(SimpleNode anynode) {
-		err.println(anynode.toString());
+//		err.println(anynode.toString()); // CLO-2658
 		return null;
 	}
 	
 	
 	String process(CLVFIdentifier node) {
-		Object value = (stack != null) ? stack.getVariable(node.getBlockOffset(), node.getVariableOffset()) : "(value not available)";
-		if (node.getType().isPrimitive() || value==null){
-			err.format("variable \"%s\" (%s) -> %s%n",node.getName(),node.getType(),maxstr(value==null ? "null" : value.toString()));
-		} else {
-			err.format("variable \"%s\" (%s) :%n",node.getName(),node.getType());
-			err.println(maxstr(value.toString()));
+		if (identifiers.add(node.getName())) {
+			Object value = (stack != null) ? stack.getVariable(node.getBlockOffset(), node.getVariableOffset()) : "(value not available)";
+			if (node.getType().isPrimitive() || value==null){
+				err.format("variable \"%s\" (%s) -> %s%n",node.getName(),node.getType(),maxstr(value==null ? "null" : value.toString()));
+			} else {
+				err.format("variable \"%s\" (%s) :%n",node.getName(),node.getType());
+				err.println(maxstr(value.toString()));
+			}
 		}
 		return null;
 	}
@@ -244,12 +252,12 @@ public class ErrorReporter {
 	}
 	
 	String process(CLVFLiteral node) {
-		err.format("literal -> \"%s\"%n",node.getValue());
+//		err.format("literal -> \"%s\"%n",node.getValue()); // CLO-2658
 		return null;
 	}
 	
 	String process(CLVFListOfLiterals node) {
-		err.println("Literals: ");
+//		err.println("Literals: "); // CLO-2658
 		for(int j=0;j<node.jjtGetNumChildren();j++){
 			process(node.jjtGetChild(j));
 		}
