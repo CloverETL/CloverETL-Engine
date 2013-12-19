@@ -89,6 +89,15 @@ public class Token extends DataRecord {
 	}
 	
 	private void serializeTokenId(CloverBuffer buffer) {
+		serializeTokenId(tokenId, buffer);
+	}
+	
+	/**
+	 * Writes tokenId header into given buffer.
+	 * @param tokenId token Id written to the buffer
+	 * @param buffer target buffer
+	 */
+	public static void serializeTokenId(long tokenId, CloverBuffer buffer) {
 		if (tokenId == -1) {
 			buffer.put(EMPTY_TOKEN_TAG);
 		} else {

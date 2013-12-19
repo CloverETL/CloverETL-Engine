@@ -19,38 +19,23 @@
 package org.jetel.component;
 
 import org.jetel.data.DataRecord;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
-import org.jetel.graph.TransformationGraph;
 
 /**
- * Interface for record-filtering transformations based on boolean condition.
+ * Extension of {@link RecordsFilter} interface, where filtering
+ * can be performed on collection of {@link DataRecord}s.
  * 
- * @author Michal Tomcanyi <michal.tomcanyi@javlin.cz>
- * @since  24.4.2009
+ * @author Kokon (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 18. 12. 2013
  */
+public interface RecordsFilter extends RecordFilter {
 
-public interface RecordFilter {
-	    
-	    /**
-	     * @param record data 
-	     * @return true if valid record, false otherwise
-	     */
-	    boolean isValid(DataRecord record) throws TransformException;
+	/**
+	 * @param records collection of validated records 
+	 * @return true if the given records are considered as valid, false otherwise
+	 */
+	boolean isValid(DataRecord[] records) throws TransformException;
 
-	    /**
-	     * Called before partition function is first used (getOutputPort is used).
-	     * @param numPartitions how many partitions we have
-	     * @param recordKey set of fields composing key based on which should the
-	     * partition be determined
-	     */
-	    void init() throws ComponentNotReadyException;
-	    
-		/**
-		 * Graph instance for descendant
-		 * 
-		 * @param graph
-		 */
-		public void setGraph(TransformationGraph graph);
-		
 }
