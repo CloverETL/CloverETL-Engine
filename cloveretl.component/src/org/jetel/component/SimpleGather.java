@@ -100,12 +100,12 @@ public class SimpleGather extends Node {
 	/**
 	 * how many empty loops till thread wait() is called
 	 */
-	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 29;
+	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 5;
 
 	/**
 	 * how many millis to wait if we reached the specified number of empty loops (when no data has been read).
 	 */
-	private final static int EMPTY_LOOPS_WAIT = 10;
+	private final static int EMPTY_LOOPS_WAIT = 20;
 
 	public SimpleGather(String id, TransformationGraph graph) {
 		super(id, graph);
@@ -133,11 +133,9 @@ public class SimpleGather extends Node {
 		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 		readFromPort = 0;
 		inPort = inputPorts[readFromPort];
-		int lastReadPort = -1;
-		boolean forceReading = false;
+		int lastReadPort = 0;
 		while (runIt && numActive > 0) {
-			if (!isEOF[readFromPort] && (inPort.hasData() || forceReading || numActive == 1)) {
-				forceReading = false;
+			if (!isEOF[readFromPort] && (inPort.hasData() || numActive == 1)) {
 				emptyLoopCounter = 0;
 				if (inPort.readRecordDirect(recordBuffer)) {
 					writeRecordToOutputPorts(recordBuffer);
@@ -151,19 +149,18 @@ public class SimpleGather extends Node {
 				readFromPort = (++readFromPort) % (inputPorts.length);
 				inPort = inputPorts[readFromPort];
 
-				if (lastReadPort == readFromPort) {
-					forceReading = true;
-				}
 				// have we reached the maximum empty loops count ?
-				if (emptyLoopCounter > NUM_EMPTY_LOOPS_TRESHOLD) {
-					Thread.sleep(getSleepTime());
-				} else {
-					emptyLoopCounter++;
+				if (lastReadPort == readFromPort) {
+					if (emptyLoopCounter > NUM_EMPTY_LOOPS_TRESHOLD) {
+						Thread.sleep(getSleepTime());
+						emptyLoopCounter--;
+					} else {
+						emptyLoopCounter++;
+					}
 				}
 			}
 		}
 
-		broadcastEOF();
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 

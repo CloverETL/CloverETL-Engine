@@ -566,6 +566,11 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 			case Types.DOUBLE:
 				return true;
 			}
+		case INTEGER:
+			switch (sqlType) {
+			case Types.BIGINT:
+				return true;
+			}
 		case STRING:
 			switch (sqlType) {
 			case Types.CHAR:

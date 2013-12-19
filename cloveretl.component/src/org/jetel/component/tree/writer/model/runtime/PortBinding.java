@@ -21,7 +21,7 @@ package org.jetel.component.tree.writer.model.runtime;
 import java.io.IOException;
 import java.util.Map;
 
-import org.jetel.component.RecordFilter;
+import org.jetel.component.RecordsFilter;
 import org.jetel.component.tree.writer.TreeFormatter;
 import org.jetel.component.tree.writer.model.runtime.WritableMapping.MappingWriteState;
 import org.jetel.component.tree.writer.portdata.DataIterator;
@@ -48,14 +48,14 @@ public class PortBinding {
 	private final int parentPort;
 	private final PortBinding parentBinding;
 
-	private final RecordFilter recordFilter;
+	private final RecordsFilter recordFilter;
 	private int[] keys;
 	private int[] parentKeys;
 
 	private DataIterator iterator;
 
 	public PortBinding(PortBinding parentBinding, PortData portData, int[] keys, int[] parentKeys,
-			RecordFilter recordFilter) throws ComponentNotReadyException {
+			RecordsFilter recordFilter) throws ComponentNotReadyException {
 		this.parentBinding = parentBinding;
 		this.parentPort = parentBinding != null ? parentBinding.getPortIndex() : -1;
 		this.portData = portData;
