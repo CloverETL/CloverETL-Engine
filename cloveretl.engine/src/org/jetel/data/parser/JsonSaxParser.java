@@ -176,7 +176,7 @@ public class JsonSaxParser extends SAXParser {
 				if (depthCounter.size() == 1 && depthCounter.peek() == 0) {
 					tokens.addFirst(JsonToken.START_ARRAY);
 					depthCounter.add(1);
-					handler.startElement(NAMESPACE_URI, names.getFirst(), names.getFirst(), EMPTY_ATTRIBUTES);
+					handler.startElement(NAMESPACE_URI, normalizeElementName(names.getFirst()), normalizeElementName(names.getFirst()), EMPTY_ATTRIBUTES);
 				}
 			} else if (tokens.peekLast() == JsonToken.FIELD_NAME) {
 				// named array - remove field token
@@ -190,7 +190,7 @@ public class JsonSaxParser extends SAXParser {
 				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(top));
 				top++;
 				depthCounter.add(top);
-				handler.startElement(NAMESPACE_URI, name, name, attributesImpl);
+				handler.startElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name), attributesImpl);
 			}
 			tokens.add(token);
 			break;
@@ -212,7 +212,7 @@ public class JsonSaxParser extends SAXParser {
 				}
 			}
 			depthCounter.add(Integer.valueOf(0));
-			handler.startElement(NAMESPACE_URI, name,name, attributesImpl);
+			handler.startElement(NAMESPACE_URI, normalizeElementName(name),normalizeElementName(name), attributesImpl);
 			break;
 		}
 		case END_ARRAY: {
@@ -227,11 +227,11 @@ public class JsonSaxParser extends SAXParser {
 			depthCounter.add(top);
 			
 			if (names.size() == 1) {
-				handler.endElement(NAMESPACE_URI, name, names.getFirst());
+				handler.endElement(NAMESPACE_URI, normalizeElementName(names.getFirst()), normalizeElementName(names.getFirst()));
 				names.removeLast();
 			} else if (!tokens.isEmpty() && tokens.peekLast() == JsonToken.START_ARRAY) {
 				// end nested array
-				handler.endElement(NAMESPACE_URI,name, name);
+				handler.endElement(NAMESPACE_URI,normalizeElementName(name), normalizeElementName(name));
 			} else {
 				// remove name if not inside array
 				names.removeLast();
@@ -244,7 +244,7 @@ public class JsonSaxParser extends SAXParser {
 			// end current object
 			String name = names.getLast();
 			depthCounter.pollLast();
-			handler.endElement(NAMESPACE_URI, name, name);
+			handler.endElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name));
 			if (tokens.isEmpty() || tokens.peekLast() != JsonToken.START_ARRAY) {
 				// remove name if not inside array
 				names.removeLast();
@@ -257,9 +257,9 @@ public class JsonSaxParser extends SAXParser {
 			switch (tokens.getLast()) {
 			case FIELD_NAME: {
 				// simple property
-				handler.startElement(NAMESPACE_URI, valueName, valueName, EMPTY_ATTRIBUTES);
+				handler.startElement(NAMESPACE_URI, normalizeElementName(valueName), normalizeElementName(valueName), EMPTY_ATTRIBUTES);
 				processScalarValue(parser);
-				handler.endElement(NAMESPACE_URI, valueName, valueName);
+				handler.endElement(NAMESPACE_URI, normalizeElementName(valueName), normalizeElementName(valueName));
 				tokens.removeLast();
 				names.removeLast();
 				break;
@@ -271,9 +271,9 @@ public class JsonSaxParser extends SAXParser {
 				String name = names.getLast();
 				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(depthCounter.peekLast()));
 				
-				handler.startElement(NAMESPACE_URI, name, name, attributesImpl);
+				handler.startElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name), attributesImpl);
 				processScalarValue(parser);
-				handler.endElement(NAMESPACE_URI, name, name);
+				handler.endElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name));
 			}
 			}
 		}
@@ -341,5 +341,16 @@ public class JsonSaxParser extends SAXParser {
 				new SAXException(e);
 			}
 		}
-	}	
+	}
+	
+	private static String normalizeElementName(String name) {
+		if(name==null || name.trim().length()==0) {
+			return "UNNAMED";
+		}
+		if(!Character.isLetter(name.trim().charAt(0))) {
+			return "_"+name.trim();
+		}
+		return name;
+	}
+	
 }
