@@ -155,8 +155,39 @@ public class PropertyRefResolverTest extends CloverTestCase {
 		assertTrue(PropertyRefResolver.isPropertyReference("${a_b}"));
 		assertFalse(PropertyRefResolver.isPropertyReference("${aa.cc}"));
 		assertFalse(PropertyRefResolver.isPropertyReference("${aa.cc}asd"));
+		assertFalse(PropertyRefResolver.isPropertyReference("${123}"));
+		assertFalse(PropertyRefResolver.isPropertyReference("${123abc}"));
+		assertTrue(PropertyRefResolver.isPropertyReference("${abc123}"));
 	}
-	
+
+	public void testContainsProperty() {
+		assertFalse(PropertyRefResolver.containsProperty(null));
+		assertFalse(PropertyRefResolver.containsProperty(""));
+		assertFalse(PropertyRefResolver.containsProperty("a"));
+		assertFalse(PropertyRefResolver.containsProperty("$"));
+		assertFalse(PropertyRefResolver.containsProperty("${}"));
+		assertFalse(PropertyRefResolver.containsProperty("${a"));
+		assertFalse(PropertyRefResolver.containsProperty("$a}"));
+		assertFalse(PropertyRefResolver.containsProperty("$a"));
+		assertTrue(PropertyRefResolver.containsProperty("${a}"));
+		assertTrue(PropertyRefResolver.containsProperty("${abc}"));
+		assertTrue(PropertyRefResolver.containsProperty("b${a}"));
+		assertFalse(PropertyRefResolver.containsProperty("${{}"));
+		assertTrue(PropertyRefResolver.containsProperty("${a_b}"));
+		assertFalse(PropertyRefResolver.containsProperty("${aa.cc}"));
+		assertFalse(PropertyRefResolver.containsProperty("${aa.cc}asd"));
+		assertFalse(PropertyRefResolver.containsProperty("${123}"));
+		assertFalse(PropertyRefResolver.containsProperty("${123abc}"));
+		assertTrue(PropertyRefResolver.containsProperty("${abc123}"));
+
+		assertTrue(PropertyRefResolver.containsProperty("a${b}c"));
+		assertTrue(PropertyRefResolver.containsProperty("${b}c"));
+		assertTrue(PropertyRefResolver.containsProperty("a${b}"));
+		assertTrue(PropertyRefResolver.containsProperty("a${b}c${d}e"));
+		assertTrue(PropertyRefResolver.containsProperty("a${b}c${123}e"));
+		assertFalse(PropertyRefResolver.containsProperty("a${123}c${a.b}e"));
+	}
+
 	public void testGetResolvedPropertyValue() {
 		assertEquals("org.mysql.test", resolver.getResolvedPropertyValue("dbDriver", null));
 		assertEquals("secureValue", resolver.getResolvedPropertyValue("secureParameter", RefResFlag.REGULAR));
