@@ -565,11 +565,15 @@ public class DynamicRecordBuffer {
 			try {
 				fullFileBuffers = null;
 		        emptyFileBuffers = null;
-				tempFileChannel.close();
-			} finally {
-		        if (!tempFile.delete()) {
-		        	log.warn("Failed to delete temp file: " + tempFile.getAbsolutePath());
+		        if (tempFileChannel != null) {
+		        	tempFileChannel.close();
 		        }
+			} finally {
+				if (tempFile != null) {
+			        if (!tempFile.delete()) {
+			        	log.warn("Failed to delete temp file: " + tempFile.getAbsolutePath());
+			        }
+				}
 			}
 		}
 
