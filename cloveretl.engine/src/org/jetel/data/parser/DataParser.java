@@ -578,7 +578,6 @@ public class DataParser extends AbstractTextParser {
 	
 	private int readChar() throws IOException {
 		final char character;
-		final int size;
         CoderResult result;
 
 		if(tempReadBuffer.length() > 0) { // the tempReadBuffer is used as a cache of already read characters which should be read again
@@ -609,39 +608,36 @@ public class DataParser extends AbstractTextParser {
         	byteCharBuffer.readChars();
         } else { //(reader != null) let's decode bytes from reader to charBuffer
         
-	        charBuffer.clear();
-	        if (byteBuffer.hasRemaining())
-	        	byteBuffer.compact();
-	        else
-	        	byteBuffer.clear();
+    		int size;
+	        charBuffer.clear(); // sets the position to zero, used in the do-while loop condition
 	
-	        if ((size = reader.read(byteBuffer)) == -1) {
-	            isEof = true;
-	        } else {
-	        	bytesProcessed += size;
-	        }
-	        byteBuffer.flip();
-	
-	        result = decoder.decode(byteBuffer, charBuffer, isEof);
-	//        if (result == CoderResult.UNDERFLOW) {
-	//            // try to load additional data
-	//        	byteBuffer.compact();
-	//
-	//            if (reader.read(byteBuffer) == -1) {
-	//                isEof = true;
-	//            }
-	//            byteBuffer.flip();
-	//            decoder.decode(byteBuffer, charBuffer, isEof);
-	//        } else 
-	        if (result.isError()) {
-	        	throw new IOException("Character decoding error occurred. Set correct charset. Current charset is " + decoder.charset());
-	        }
+	        do { // CLO-2568
+		        if (byteBuffer.hasRemaining()) {
+		        	byteBuffer.compact(); // preserve non-decoded bytes
+		        } else {
+		        	byteBuffer.clear();
+		        }
+		        if ((size = reader.read(byteBuffer)) == -1) {
+		            isEof = true;
+		        } else {
+		        	bytesProcessed += size; // may be zero, TODO sleep
+		        }
+		        byteBuffer.flip();
+		        
+		        // CLO-2568: may not decode any characters at all, if there is an incomplete multi-byte character in the byteBuffer
+		        result = decoder.decode(byteBuffer, charBuffer, isEof);
+		        if (result.isError()) {
+		        	throw new IOException("Character decoding error occurred. Set correct charset. Current charset is " + decoder.charset());
+		        }
+	        } while ((charBuffer.position() == 0) && !isEof); // CLO-2568
+	        
 	        if (isEof) {
 	            result = decoder.flush(charBuffer);
 	            if (result.isError()) {
 		        	throw new IOException("Character decoding error occurred. Set correct charset. Current charset is " + decoder.charset());
 	            }
 	        }
+
 	        charBuffer.flip();
         }
 		
