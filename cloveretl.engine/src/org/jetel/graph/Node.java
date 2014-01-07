@@ -1366,19 +1366,21 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         setResultCode(Result.READY);
         resultMessage = null;
         resultException = null;
-    	
-        synchronized(nodeThreadMonitor) {
-    		childThreads.clear();
-    	}
+
+//should be uncommented after CLO-2574 is fixed   	
+//        synchronized(nodeThreadMonitor) {
+//    		childThreads.clear();
+//    	}
     }
 
     @Override
     public synchronized void free() {
     	super.free();
     	
-    	synchronized(nodeThreadMonitor) {
-    		childThreads.clear();
-    	}
+//should be uncommented after CLO-2574 is fixed   	
+//    	synchronized(nodeThreadMonitor) {
+//    		childThreads.clear();
+//    	}
     }
 
 	/**

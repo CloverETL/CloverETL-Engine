@@ -681,7 +681,7 @@ public final class Defaults {
 		/** a regular expression describing the format of CTL expressions */
 		public static String EXPRESSION_PLACEHOLDER_REGEX;// = "(?<!\\\\)`(.*?)(?<!\\\\)`";
 		/** a regular expression describing the format of property references */
-		public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{(\\w+)\\}";
+		public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{([a-zA-Z_]\\w*)\\}";
 
 		/** allowed depth of recursion by graph property resolving */
 		public static int PROPERTY_ALLOWED_RECURSION_DEPTH;// = 1000;
