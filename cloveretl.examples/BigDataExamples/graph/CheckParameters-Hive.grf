@@ -16,10 +16,10 @@
 
 /*  ----- Default settings of parameters -----
 
-HADOOP_JOBTRACKER_HOST=virt-hotel.javlin.eu
+HADOOP_JOBTRACKER_HOST=jobtracker.yourhost.com
 HADOOP_HIVE_URL=
 HADOOP_NAMESERVER_PORT=8020
-HADOOP_NAMESERVER_HOST=virt-hotel.javlin.eu
+HADOOP_NAMESERVER_HOST=namenode.yourhost.com
 HADOOP_HIVE_USER=
 HADOOP_JOBTRACKER_PORT=8021
 
