@@ -105,7 +105,7 @@ WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 1
 			
 GraphProperties.EXPRESSION_EVALUATION_ENABLED = true
 GraphProperties.EXPRESSION_PLACEHOLDER_REGEX = (?<\!\\\\)`(.*?)(?<\!\\\\)`
-GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
+GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{([a-zA-Z_]\\w*)\\}
 GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH = 1000
 
 InternalSortDataRecord.DEFAULT_INTERNAL_SORT_BUFFER_CAPACITY = 8000

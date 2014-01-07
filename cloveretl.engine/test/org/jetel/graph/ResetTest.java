@@ -194,6 +194,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("GraphParameters_secure.grf") // server test
 							&& !file.getName().equals("GraphParameters_secureOverriden.grf") // server test
 							&& !file.getName().equals("GraphParameters_secureOverriden_subGraph.grf") // subgraph of server test
+							&& !file.getName().equals("SSR_CloseOnError.grf") // subgraph of server test
 							&& !file.getName().equals("TypedProperties_CLO-1997.grf") // server test
 							&& !file.getName().equals("ParallelReader_HDFS.grf") // cluster test
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
