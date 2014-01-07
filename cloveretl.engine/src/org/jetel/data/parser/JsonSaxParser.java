@@ -27,6 +27,7 @@ import java.util.Deque;
 
 import javax.xml.parsers.SAXParser;
 
+import org.apache.xmlbeans.impl.common.XMLChar;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
@@ -344,11 +345,20 @@ public class JsonSaxParser extends SAXParser {
 	}
 	
 	private static String normalizeElementName(String name) {
-		if(name==null || name.trim().length()==0) {
-			return "UNNAMED";
-		}
-		if(!Character.isLetter(name.trim().charAt(0))) {
-			return "_"+name.trim();
+		if(!XMLChar.isValidName(name)) {
+			if(name==null || name.trim().length()==0) {
+				name = "UNNAMED";
+			}
+			if(name.indexOf(' ')>=0) {
+			  name = name.replaceAll(" ", "_");
+			}
+			if(!XMLChar.isValidName(name)) {
+				name = "_"+name;
+			}
+			if(!XMLChar.isValidName(name)) {
+				return "__INVALID_ELEMENT_NAME";
+			}
+			
 		}
 		return name;
 	}
