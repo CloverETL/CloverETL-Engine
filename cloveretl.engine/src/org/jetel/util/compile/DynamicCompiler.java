@@ -120,8 +120,17 @@ public final class DynamicCompiler {
 				Arrays.asList(new JavaSourceFileObject(className, sourceCode)));
 
 		if (!task.call()) {
-			throw new CompilationException("Compilation failed! See compiler output for more details.",
-					compilerOutput.toString());
+			String outputString = compilerOutput.toString();
+			String message = "Compilation failed! ";
+			if (outputString != null) {
+				try {
+					message = outputString.substring(outputString.indexOf(" ") + 1, outputString.indexOf(System.getProperty("line.separator")));
+					message += ". ";
+				} catch (IndexOutOfBoundsException ex) {
+				}
+				message += "See log for more details";
+			}
+			throw new CompilationException(message , compilerOutput.toString());
 		}
 
 		try {
