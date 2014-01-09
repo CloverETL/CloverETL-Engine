@@ -28,7 +28,7 @@ import java.net.URLDecoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Set;
+import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -160,10 +160,11 @@ public class ClassLoaderUtils {
 	 * @return
 	 */
 	public static ClassLoader createNodeClassLoader(Node node) {
-		Set<ClassLoader> classLoaders = DynamicCompiler.getCTLLibsClassLoaders();
-		classLoaders.add(node.getClass().getClassLoader());
+		ArrayList<ClassLoader> parentClassLoaders = new ArrayList<ClassLoader>();
+		parentClassLoaders.add(node.getClass().getClassLoader());
+		parentClassLoaders.addAll(DynamicCompiler.getCTLLibsClassLoaders());
 		
-		ClassLoader parentClassLoader = new MultiParentClassLoader(classLoaders.toArray(new ClassLoader[0]));
+		ClassLoader parentClassLoader = new MultiParentClassLoader(parentClassLoaders.toArray(new ClassLoader[0]));
 		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
 		return node.getGraph().getAuthorityProxy().createClassLoader(runtimeClasspath, parentClassLoader, true);
 	}
@@ -289,6 +290,14 @@ public class ClassLoaderUtils {
     public static Object loadClassInstance(String className, ClassLoader loader) {
     	try {
     		Class<?> klass = Class.forName(className, true, loader);
+
+    		//temporary logging, which should be removed after fixing failing test 'RunGraph_CLO-2734' 
+    		logger.debug("Class found: " + klass.getName());
+    		logger.debug("ClassLoader name: " + klass.getClassLoader().getClass().getName());
+    		logger.debug("ClassLoader urls: " + getClasspath(klass.getClassLoader(), (URL[]) null));
+    		logger.debug("ClassLoader.parent name: " + klass.getClassLoader().getParent().getClass().getName());
+    		logger.debug("ClassLoader.parent urls: " + getClasspath(klass.getClassLoader().getParent(), (URL[]) null));
+    		
     		return klass.newInstance();
     	} catch (ClassNotFoundException e) {
     		throw new LoadClassException("Cannot find class: " + className, e);
