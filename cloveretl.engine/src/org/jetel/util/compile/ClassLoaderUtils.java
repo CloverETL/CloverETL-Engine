@@ -290,14 +290,6 @@ public class ClassLoaderUtils {
     public static Object loadClassInstance(String className, ClassLoader loader) {
     	try {
     		Class<?> klass = Class.forName(className, true, loader);
-
-    		//temporary logging, which should be removed after fixing failing test 'RunGraph_CLO-2734' 
-    		logger.debug("Class found: " + klass.getName());
-    		logger.debug("ClassLoader name: " + klass.getClassLoader().getClass().getName());
-    		logger.debug("ClassLoader urls: " + getClasspath(klass.getClassLoader(), (URL[]) null));
-    		logger.debug("ClassLoader.parent name: " + klass.getClassLoader().getParent().getClass().getName());
-    		logger.debug("ClassLoader.parent urls: " + getClasspath(klass.getClassLoader().getParent(), (URL[]) null));
-    		
     		return klass.newInstance();
     	} catch (ClassNotFoundException e) {
     		throw new LoadClassException("Cannot find class: " + className, e);
