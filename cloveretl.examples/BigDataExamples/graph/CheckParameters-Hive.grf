@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="mtomcanyi" created="Tue Mar 19 13:20:07 CET 2013" guiVersion="3.4.0.M2" id="1363695843550" licenseType="Commercial" modified="Tue Mar 19 20:02:19 CET 2013" modifiedBy="mtomcanyi" name="CheckJobConfiguration" revision="1.50" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="mtomcanyi" created="Tue Mar 19 13:20:07 CET 2013" guiVersion="0.0.0.devel" id="1363695843550" licenseType="Commercial" modified="Mon Jan 13 18:39:53 CET 2014" modifiedBy="User" name="CheckJobConfiguration" revision="1.54" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="ValidationStatus" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -6,8 +7,10 @@
 <Field name="validationMessage" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="hadoop.prm" id="GraphParameter0"/>
-<Property fileURL="workspace.prm" id="GraphParameter3"/>
+<GraphParameters>
+<GraphParameterFile fileURL="hadoop.prm"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Dictionary/>
 </Global>
 <Phase number="0">

@@ -1,9 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="3.4.0.M2" id="1361360266035" licenseType="Commercial" modified="Mon Mar 18 13:18:44 CET 2013" modifiedBy="Pavel" name="RunJobInCloverETL" revision="1.32" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361360266035" licenseType="Commercial" modified="Mon Jan 13 18:38:07 CET 2014" modifiedBy="User" name="RunJobInCloverETL" revision="1.33" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/weblogs_parse_txt.fmt" id="Metadata2"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="233" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read Weblog (zipped)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="208" x="30" y="217">
 <attr name="text"><![CDATA[
 Reads data directly from a zipped Apache access log file.]]></attr>

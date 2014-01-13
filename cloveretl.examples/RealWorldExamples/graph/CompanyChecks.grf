@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Evaluation Devel" modified="Mon May 30 17:52:12 CEST 2011" modifiedBy="avackova" name="CompanyChecks" revision="1.144" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Commercial" modified="Mon Jan 13 17:02:18 CET 2014" modifiedBy="User" name="CompanyChecks" revision="1.146" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="companyData" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="delimited">
@@ -29,14 +29,16 @@
 </Record>
 </Metadata>
 <Connection database="DERBY" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/companies.db" id="Connection0" jdbcSpecific="DERBY" name="Derby" password="app" type="JDBC" user="app"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="112" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="                            Phase 0 (see '0' in top left corner of the component)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="564" x="36" y="311">
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="112" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="                            Phase 0 (see '0' in top left corner of the component)" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="564" x="36" y="311">
 <attr name="text"><![CDATA[                                              This runs in Phase 0 and deletes
                                                tables in Derby DB. Rest of graph
                                                runs in Phase 1 after Phase 0
                                                completes]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" folded="false" height="245" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Company Liquidation Check" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="605" x="316" y="25">
+<Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" enabled="true" folded="false" height="245" id="Note13" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Company Liquidation Check" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="605" x="316" y="25">
 <attr name="text"><![CDATA[We have a customer database and every week we want to match our customers with a file we receive from a 3rd party that containing a list of all companies that are in liquidation. We validate our customer company IDs; match them and write the output to database tables for the following criteria:
     *      Invalid customer company IDs
     *      Customers that are in liquidation
@@ -44,12 +46,12 @@
     *      Customers where the liquidation status is unclear
 ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="255" backgroundColorR="255" folded="false" height="260" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Before running this graph:" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="262" x="32" y="26">
+<Note alignment="1" backgroundColorB="0" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="260" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Before running this graph:" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="262" x="32" y="26">
 <attr name="text"><![CDATA[You need to start the embedded Derby database in order to run this graph. Please go to Run -> External Tools and use the provided shortcuts to start/stop the database. (on first start you'll need to go to External Tools Configuration/Program).
 
 - You will find Derby distribution under lib/derby in this project]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="205" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="253" x="215" y="428">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="205" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="253" x="215" y="428">
 <attr name="text"><![CDATA[
 
 
@@ -62,7 +64,7 @@ Mapping in the component uses the "star" notation:
 
 $0.* := $0.*;]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" folded="false" height="209" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="210" x="211" y="637">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="209" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="210" x="211" y="637">
 <attr name="text"><![CDATA[
 
 
@@ -78,26 +80,34 @@ $0.* := $0.*;]]></attr>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="69" guiName="DBExecute" guiWidth="128" guiX="48" guiY="328" id="DB_EXECUTE0" sqlQuery="DELETE FROM checksumfailures;&#10;DELETE FROM validated;" type="DB_EXECUTE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiName="DBExecute" guiX="48" guiY="328" id="DB_EXECUTE0" type="DB_EXECUTE">
+<attr name="sqlQuery"><![CDATA[DELETE FROM checksumfailures;
+DELETE FROM validated;]]></attr>
+</Node>
 </Phase>
 <Phase number="1">
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/companies.txt" guiHeight="101" guiName="Companies" guiWidth="128" guiX="48" guiY="457" id="DATA_READER0" type="DATA_READER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/companies.txt" guiName="Companies" guiX="48" guiY="457" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Load in Companies from our in-house database]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/res.txt" guiHeight="101" guiName="Company Status" guiWidth="147" guiX="44" guiY="666" id="DATA_READER1" type="DATA_READER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/res.txt" guiName="Company Status" guiX="44" guiY="666" id="DATA_READER1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read 'Companies in Liquidation' file]]></attr>
 </Node>
-<Node dbConnection="Connection0" dbTable="checksumfailures" enabled="enabled" guiHeight="101" guiName="Invalid Checksums" guiWidth="162" guiX="743" guiY="460" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE">
+<Node dbConnection="Connection0" dbTable="checksumfailures" enabled="enabled" guiName="Invalid Checksums" guiX="743" guiY="460" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Write bad IDs to DB table]]></attr>
 </Node>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="69" guiName="Unknown Liq Status" guiWidth="173" guiX="739" guiY="665" id="DB_OUTPUT_TABLE1" sqlQuery="INSERT INTO UNSELECTEDIC (IC, COMPANY, ZIP, CITY, DISTRICT, STREET, SCORE)&#10;VALUES ($ic, $company, $zip, $city, $district, $street, $score)" type="DB_OUTPUT_TABLE"/>
-<Node dbConnection="Connection0" dbTable="inliquidation" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiHeight="69" guiName="In Liquidation" guiWidth="128" guiX="739" guiY="754" id="DB_OUTPUT_TABLE2" type="DB_OUTPUT_TABLE"/>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="69" guiName="Operational" guiWidth="128" guiX="739" guiY="845" id="DB_OUTPUT_TABLE3" sqlQuery="INSERT INTO VALIDATED VALUES ($ic, $company, $zip, $city, $district, $street, $score)" type="DB_OUTPUT_TABLE"/>
-<Node enabled="enabled" guiHeight="85" guiName="Filter bad Checksums" guiWidth="183" guiX="488" guiY="460" id="EXT_FILTER0" type="EXT_FILTER">
+<Node dbConnection="Connection0" enabled="enabled" guiName="Unknown Liq Status" guiX="739" guiY="665" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[INSERT INTO UNSELECTEDIC (IC, COMPANY, ZIP, CITY, DISTRICT, STREET, SCORE)
+VALUES ($ic, $company, $zip, $city, $district, $street, $score)]]></attr>
+</Node>
+<Node dbConnection="Connection0" dbTable="inliquidation" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiName="In Liquidation" guiX="739" guiY="754" id="DB_OUTPUT_TABLE2" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiName="Operational" guiX="739" guiY="845" id="DB_OUTPUT_TABLE3" type="DB_OUTPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[INSERT INTO VALIDATED VALUES ($ic, $company, $zip, $city, $district, $street, $score)]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Filter bad Checksums" guiX="488" guiY="460" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[Filter out any bad IDs]]></attr>
 <attr name="filterExpression"><![CDATA[$0.score > 0]]></attr>
 </Node>
-<Node ascendingInputs="true" enabled="enabled" guiHeight="101" guiName="Merge List" guiWidth="128" guiX="248" guiY="666" id="EXT_MERGE_JOIN0" joinKey="$ic;#$ico;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
+<Node ascendingInputs="true" enabled="enabled" guiName="Merge List" guiX="248" guiY="666" id="EXT_MERGE_JOIN0" joinKey="$ic;#$ico;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -125,10 +135,10 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Merge it with our customer data]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Partition Results" guiWidth="151" guiX="484" guiY="667" id="PARTITION0" partitionKey="score" ranges="&lt;1,1&gt;;&lt;3,3&gt;;&lt;0,0&gt;;" type="PARTITION">
+<Node enabled="enabled" guiName="Partition Results" guiX="484" guiY="667" id="PARTITION0" partitionKey="score" ranges="&lt;1,1&gt;;&lt;3,3&gt;;&lt;0,0&gt;;" type="PARTITION">
 <attr name="guiDescription"><![CDATA[Output each customer into one of the 3 DB tables on the right, depending on Liquidation status of the customer]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Calculate Checksum" guiWidth="175" guiX="244" guiY="457" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiName="Calculate Checksum" guiX="244" guiY="457" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
