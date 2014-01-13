@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="3.4.0.M2" id="1278077546166" licenseType="Commercial" modified="Wed Mar 06 17:55:03 CET 2013" modifiedBy="Pavel" name="graphXMLProcessing" revision="1.71" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseType="Commercial" modified="Mon Jan 13 17:05:21 CET 2014" modifiedBy="User" name="graphXMLProcessing" revision="1.72" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="actor" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -30,7 +31,9 @@
 <Field name="actor_id" type="integer"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="107" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="XML data processing" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="493" x="230" y="73">
 <attr name="text"><![CDATA[The structure of input XML file is defined by XSD so you can use visual mapping editor for defining of mapping input fields to inner clover fields.]]></attr>
 </Note>

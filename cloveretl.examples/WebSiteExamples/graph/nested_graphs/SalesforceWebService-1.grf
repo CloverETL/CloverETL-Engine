@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="3.4.0.M2" id="1343738314141" licenseType="Commercial" modified="Wed Mar 06 14:00:17 CET 2013" modifiedBy="Pavel" name="example08_1" revision="1.33" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="0.0.0.devel" id="1343738314141" licenseType="Commercial" modified="Mon Jan 13 16:54:01 CET 2014" modifiedBy="User" name="example08_1" revision="1.34" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -14,11 +15,13 @@
 <Field name="last_name" type="string"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter13" name="PASSWORD" value="password"/>
-<Property id="GraphParameter12" name="SECURITY_TOKEN" value="security-token"/>
-<Property id="GraphParameter11" name="USER" value="username"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="370" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Salesforce Web Service" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="20" y="20">
+<GraphParameters>
+<GraphParameter name="PASSWORD" value="password"/>
+<GraphParameter name="SECURITY_TOKEN" value="security-token"/>
+<GraphParameter name="USER" value="username"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="371" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Salesforce Web Service" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="558" x="20" y="20">
 <attr name="text"><![CDATA[
 1. Log into Salesforce account
 
