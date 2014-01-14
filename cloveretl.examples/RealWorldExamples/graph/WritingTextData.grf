@@ -1,9 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="3.4.0.M2" id="1280121426438" licenseType="Commercial" modified="Wed Mar 06 17:54:29 CET 2013" modifiedBy="Pavel" name="graphWritingTextData" revision="1.50" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="0.0.0.devel" id="1280121426438" licenseType="Commercial" modified="Mon Jan 13 17:05:15 CET 2014" modifiedBy="User" name="graphWritingTextData" revision="1.51" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_short.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
-<Property id="GraphParameter0" name="FULL_FILE" value="5555"/>
-<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<GraphParameters>
+<GraphParameter name="FULL_FILE" value="5555"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="45" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="Gather all customers from the same state into separate files. " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="782" x="33" y="8"/>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="92" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="A side note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="309" x="259" y="411">
 <attr name="text"><![CDATA[Note the difference how SimpleGather and Concatenate component put data from various inputs together]]></attr>

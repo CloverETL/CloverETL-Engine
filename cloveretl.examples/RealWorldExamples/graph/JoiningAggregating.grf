@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Petr" created="Thu Jul 15 14:15:28 CEST 2010" guiVersion="3.4.0.M2" id="1279197992165" licenseType="Commercial" modified="Wed Mar 06 17:50:52 CET 2013" modifiedBy="Pavel" name="graphJoining_Aggregating" revision="1.75" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Petr" created="Thu Jul 15 14:15:28 CEST 2010" guiVersion="0.0.0.devel" id="1279197992165" licenseType="Commercial" modified="Mon Jan 13 17:04:12 CET 2014" modifiedBy="User" name="graphJoining_Aggregating" revision="1.76" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/categories.fmt" id="Metadata5"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
@@ -45,7 +46,9 @@
 <Field eofAsDelimiter="false" name="common_prod_id" nullable="true" shift="0" size="0" type="integer"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="245" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="180" x="364" y="95">
 <attr name="text"><![CDATA[Merges ordered data from two sources. The output data is ordered by the same key as input data.]]></attr>
 </Note>

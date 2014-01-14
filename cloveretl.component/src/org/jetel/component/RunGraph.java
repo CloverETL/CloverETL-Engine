@@ -505,6 +505,8 @@ public class RunGraph extends Node{
 		runtimeContext.setContextURL(this.getGraph().getRuntimeContext().getContextURL());
 		runtimeContext.setLogLocation(outputFileName);
 		runtimeContext.setUseJMX(this.getGraph().getRuntimeContext().useJMX());
+		runtimeContext.setRuntimeClassPath(this.getGraph().getRuntimeContext().getRuntimeClassPath());
+		runtimeContext.setCompileClassPath(this.getGraph().getRuntimeContext().getCompileClassPath());
 		
 		RunStatus rs = this.getGraph().getAuthorityProxy().executeGraphSync( graphFileName, runtimeContext, null);
 		

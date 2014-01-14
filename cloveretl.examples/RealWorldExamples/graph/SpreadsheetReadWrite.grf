@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="3.4.0.M2" id="1199778867506" licenseType="Commercial" modified="Wed Mar 06 16:06:21 CET 2013" modifiedBy="Pavel" name="graphXLSRead" revision="1.268" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="0.0.0.devel" id="1199778867506" licenseType="Commercial" modified="Mon Jan 13 17:04:47 CET 2014" modifiedBy="User" name="graphXLSRead" revision="1.269" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata7" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="_10staxss_Sheet1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
@@ -160,7 +161,9 @@
 <Field label="Affiliation with Foreigners" name="Affiliation_with_Foreigners" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="0" backgroundColorG="0" backgroundColorR="0" enabled="true" folded="false" height="122" id="Note2" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Spreadsheet Components Example" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="12" width="950" x="38" y="45">
 <attr name="text"><![CDATA[
 In this example graph, the most important features of SpreadsheetDataReader and SpreadsheetDataWriter components are demostrated. 

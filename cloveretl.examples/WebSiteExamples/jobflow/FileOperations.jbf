@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="3.4.0.M2" id="1343742976656" licenseType="Commercial" modified="Wed Mar 06 16:34:23 CET 2013" modifiedBy="Pavel" name="example01_A" nature="jobflow" revision="1.79" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="0.0.0.devel" id="1343742976656" licenseType="Commercial" modified="Mon Jan 13 16:49:40 CET 2014" modifiedBy="User" name="example01_A" nature="jobflow" revision="1.80" showComponentDetails="true">
 <Global>
 <Metadata id="CopyFiles_Result1">
 <Record fieldDelimiter="|" name="CopyFiles_Result" recordDelimiter="\n" type="delimited">
@@ -47,7 +48,9 @@
 <Field name="errorMessage" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="121" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="302" x="611" y="81">
 <attr name="text"><![CDATA[Related Processes:
 - BasicFileOperations.jbf (Main)
