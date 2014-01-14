@@ -19,50 +19,29 @@
 package org.jetel.component.tree.writer.portdata;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.InputPort;
 
 /**
- * Internal (i.e. in memory) port data that are looked-up
- * just by one {@link DataField}.
+ * Simple streamed port data, that cannot be looked-up by a key.
  * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 13.8.2013
+ * @created 14.1.2014
  */
-class InternalSimplePortData extends InternalPortData {
-	
-	InternalSimplePortData(InputPort inPort, Set<List<String>> keys) {
+class StreamedSimplePortData extends StreamedPortDataBase {
+
+	StreamedSimplePortData(InputPort inPort, Set<List<String>> keys) {
 		super(inPort, keys);
 	}
-
+	
 	@Override
-	public void put(DataRecord record) throws IOException {
-		if (nullKey) {
-			records.put(null, record);
-		}
-		if (primaryKey.length == 1) {
-			records.put(record.getField(primaryKey[0][0]), record);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	protected Collection<DataRecord> fetchData(int key[], int parentKey[], DataRecord parentData) {
-		if (key == null) {
-			return (Collection<DataRecord>)records.get(null);
-		} else {
-			DataField childKeyField = keyRecord.getField(key[0]);
-			childKeyField.setValue(parentData.getField(parentKey[0]));
-			Collection<DataRecord> data = records.getCollection(childKeyField);
-			childKeyField.reset();
-			return data;
-		}
+	public DataIterator iterator(int[] key, int[] parentKey, DataRecord keyData, DataRecord nextKeyData)
+			throws IOException {
+		return new SimpleDataIterator();
 	}
 }
