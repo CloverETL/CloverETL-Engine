@@ -308,6 +308,18 @@ public class HiveConnection extends BasicSqlConnection {
 			return delegate.isPoolable();
 		}
 		
+		/* JDBC 4.1 */
+
+		@Override
+		public void closeOnCompletion() throws SQLException {
+			delegate.closeOnCompletion();
+		}
+
+		@Override
+		public boolean isCloseOnCompletion() throws SQLException {
+			return delegate.isCloseOnCompletion();
+		}
+		
 		
 	}
 }
