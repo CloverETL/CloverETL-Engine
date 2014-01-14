@@ -1,9 +1,12 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="3.4.0.M2" id="1280331230946" licenseType="Commercial" modified="Wed Mar 06 16:00:50 CET 2013" modifiedBy="Pavel" name="CreatingFixedMixedCust" revision="1.121" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280331230946" licenseType="Commercial" modified="Mon Jan 13 17:03:48 CET 2014" modifiedBy="User" name="CreatingFixedMixedCust" revision="1.122" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_fixed.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
-<Property id="GraphParameter0" name="sample" value="0.1"/>
-<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<GraphParameters>
+<GraphParameter name="sample" value="0.1"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="63" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="12" title="This graph demonstrates raising an error!" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="758" x="18" y="5">
 <attr name="text"><![CDATA[When trying to find an error in your graph you can use various debugging tools...]]></attr>
 </Note>

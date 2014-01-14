@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1253338896057" licenseType="Commercial" modified="Tue May 28 14:29:30 CEST 2013" modifiedBy="sedlacek" name="WebServiceCalls" revision="1.164" showComponentDetails="true">
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1253338896057" licenseType="Commercial" modified="Mon Jan 13 17:05:01 CET 2014" modifiedBy="User" name="WebServiceCalls" revision="1.165" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="Forecast" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -22,7 +22,9 @@
 <Field eofAsDelimiter="true" name="XMLString" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="145" backgroundColorG="253" backgroundColorR="249" enabled="true" folded="false" height="280" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Web Service Call" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="368" x="793" y="23">
 <attr name="text"><![CDATA[ 
 This graph shows a Weather Forecast web service being called.
