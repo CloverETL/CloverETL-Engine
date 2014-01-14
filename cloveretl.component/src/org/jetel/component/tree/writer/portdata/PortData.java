@@ -72,8 +72,21 @@ public abstract class PortData {
 				}
 			}
 		} else {
-			return new StreamedPortData(inPort, keys, hint);
+			if (isKeyLess(keys)) {
+				return new StreamedSimplePortData(inPort, keys);
+			} else {
+				return new StreamedPortData(inPort, keys, hint);
+			}
 		}
+	}
+	
+	private static boolean isKeyLess(Set<List<String>> keys) {
+		
+		if (keys.size() == 1) {
+			List<String> fieldList = keys.iterator().next();
+			return fieldList == null;
+		}
+		return false;
 	}
 	
 	private static boolean isSingleFieldKey(Set<List<String>> keys) {
