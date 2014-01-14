@@ -1,4 +1,6 @@
-#Tue Mar 19 20:02:57 CET 2013
-HADOOP_JOBTRACKER_HOST=jobtracker.yourhost.com
-HADOOP_HIVE_URL=jdbc\:hive\://hive.yourhost.com\:10000/default
-HADOOP_NAMENODE_HOST=namenode.yourhost.com
+<?xml version="1.0" encoding="UTF-8"?>
+<GraphParameters>
+<GraphParameter name="HADOOP_HIVE_URL" value="jdbc:hive://hive.yourhost.com:10000/default"/>
+<GraphParameter name="HADOOP_JOBTRACKER_HOST" value="jobtracker.yourhost.com"/>
+<GraphParameter name="HADOOP_NAMENODE_HOST" value="namenode.yourhost.com"/>
+</GraphParameters>

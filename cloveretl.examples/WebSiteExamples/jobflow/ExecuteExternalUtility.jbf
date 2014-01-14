@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 12:42:20 CEST 2012" guiVersion="3.4.0.M2" id="1343731451896" licenseType="Commercial" modified="Wed Mar 06 15:39:01 CET 2013" modifiedBy="Pavel" name="example09_A" nature="jobflow" revision="1.76" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Tue Jul 31 12:42:20 CEST 2012" guiVersion="0.0.0.devel" id="1343731451896" licenseType="Commercial" modified="Mon Jan 13 16:49:33 CET 2014" modifiedBy="User" name="example09_A" nature="jobflow" revision="1.77" showComponentDetails="true">
 <Global>
 <Metadata id="ExecuteScript_RunResult">
 <Record fieldDelimiter="|" name="ExecuteScript_RunResult" recordDelimiter="\n" type="delimited">
@@ -36,8 +37,10 @@
 <Field name="fileName" type="string"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter11" name="BIN_DIR" value="${PROJECT}/bin"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameter name="BIN_DIR" value="${PROJECT}/bin"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="176" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="350" x="644" y="70">
 <attr name="text"><![CDATA[md5.exe for Windows is placed in the example ./bin folder
 
@@ -237,7 +240,7 @@ function integer transform() {
 </Node>
 <Node enabled="enabled" guiName="Job Complete" guiX="863" guiY="304" id="JOB_COMPLETE1" type="SUCCESS"/>
 <Node enabled="enabled" guiName="Job Complete" guiX="863" guiY="399" id="JOB_COMPLETE2" type="SUCCESS"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/ExecuteExternalUtility" guiName="List Files" guiX="17" guiY="304" id="LIST_FILES" target="${DATAIN_09_DIR}" type="LIST_FILES">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/ExecuteExternalUtility" guiName="List Files" guiX="17" guiY="304" id="LIST_FILES" type="LIST_FILES">
 <attr name="standardOutputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -276,6 +279,7 @@ function integer transform() {
 // Called to return a user-defined error message when an error occurs.
 // function string getMessage() {}
 ]]></attr>
+<attr name="target"><![CDATA[${DATAIN_09_DIR}]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Select by OS" guiX="389" guiY="304" id="SELECT_BY_OS" type="CONDITION">
 <attr name="filterExpression"><![CDATA[//#CTL2

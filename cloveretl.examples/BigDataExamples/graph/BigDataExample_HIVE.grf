@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Tue Dec 04 11:38:53 CET 2012" guiVersion="0.0.0.devel" id="1354619086069" licenseType="Commercial" modified="Tue Apr 16 14:54:55 CEST 2013" modifiedBy="Raszyk" name="BigDataGraph" revision="1.78" showComponentDetails="true">
+<Graph author="Wesley" created="Tue Dec 04 11:38:53 CET 2012" guiVersion="0.0.0.devel" id="1354619086069" licenseType="Commercial" modified="Mon Jan 13 18:37:44 CET 2014" modifiedBy="User" name="BigDataGraph" revision="1.79" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -45,7 +45,9 @@
 </Metadata>
 <Connection hadoopJar="C:/Big Data/version4/avro-1.7.1.cloudera.2.jar;C:/Big Data/version4/commons-cli-1.2.jar;C:/Big Data/version4/guava-11.0.2.jar;C:/Big Data/version4/hadoop-auth-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-common-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-hdfs-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/protobuf-java-2.4.0a.jar;C:/Big Data/version4/slf4j-api-1.6.1.jar;C:/Big Data/version4/slf4j-log4j12-1.6.1.jar" host="192.168.1.99" id="LOCAL_HADOOP" name="Local Hadoop" type="HADOOP"/>
 <Connection dbDriver="org.apache.hadoop.hive.jdbc.HiveDriver" dbURL="jdbc:hive://192.168.1.99:10000/default" driverLibrary="file:/C:/Big Data/hive/hadoop-core-0.20.205.jar;file:/C:/Big Data/hive/hive-exec-0.8.1.jar;file:/C:/Big Data/hive/hive-jdbc-0.8.1.jar;file:/C:/Big Data/hive/hive-metastore-0.8.1.jar;file:/C:/Big Data/hive/hive-service-0.8.1.jar;file:/C:/Big Data/hive/libfb303-0.7.0.jar;file:/C:/Big Data/hive/slf4j-api-1.6.1.jar;file:/C:/Big Data/hive/slf4j-log4j12-1.6.1.jar" id="LOCAL_HIVE" jdbcSpecific="HIVE" name="Local Hive" type="JDBC"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="310" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="270" x="672" y="103">
 <attr name="text"><![CDATA[The bundled data file is only a sample.
 

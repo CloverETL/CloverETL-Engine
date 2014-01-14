@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="lucie" created="Thu Jul 29 01:29:10 CEST 2010" guiVersion="3.4.0.M2" id="1280360243915" licenseType="Commercial" modified="Wed Mar 06 17:48:04 CET 2013" modifiedBy="Pavel" name="graphDatabaseAccess" revision="1.71" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="lucie" created="Thu Jul 29 01:29:10 CEST 2010" guiVersion="0.0.0.devel" id="1280360243915" licenseType="Commercial" modified="Mon Jan 13 17:03:20 CET 2014" modifiedBy="User" name="graphDatabaseAccess" revision="1.72" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -20,7 +21,9 @@
 </Record>
 </Metadata>
 <Connection database="DERBY" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/customers.db" id="Connection0" jdbcSpecific="DERBY" name="Derby" password="app" type="JDBC" user="app"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="260" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="DBExecute component" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="285" y="109">
 <attr name="text"><![CDATA[A database table “CUSTOMERS” is created.
 

@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Jaro" created="Thu Jul 19 14:05:17 CEST 2012" guiVersion="3.4.0.M2" id="1342706518598" licenseType="Commercial" modified="Wed Mar 06 16:34:00 CET 2013" modifiedBy="Pavel" name="profiling_firewall" nature="jobflow" revision="1.95" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Jaro" created="Thu Jul 19 14:05:17 CEST 2012" guiVersion="0.0.0.devel" id="1342706518598" licenseType="Commercial" modified="Mon Jan 13 16:49:06 CET 2014" modifiedBy="User" name="profiling_firewall" nature="jobflow" revision="1.96" showComponentDetails="true">
 <Global>
 <Metadata id="jobMetadata" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" keyFieldNames="filePath" name="processJob" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -6,15 +7,17 @@
 <Field eofAsDelimiter="false" name="status" nullable="true" shift="0" size="0" type="string"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter0" name="DATA_FAILED" value="${DATAOUT_DIR}/incoming_failed/${RUN_ID}/"/>
-<Property id="GraphParameter1" name="DATA_PROCESSED" value="${DATAOUT_DIR}/incoming_processed/${RUN_ID}/"/>
-<Property id="GraphParameter2" name="DATA_REJECTED" value="${DATAOUT_DIR}/incoming_rejected/${RUN_ID}/"/>
-<Property id="GraphParameter3" name="DATA_STAGING" value="${DATATMP_DIR}/staging/${RUN_ID}/"/>
-<Property id="GraphParameter4" name="EVENT_FILE_NAME" value="employees.csv"/>
-<Property id="GraphParameter5" name="EVENT_FILE_PATH" value="${DATAIN_DIR}/DataQualityFirewall"/>
-<Property id="GraphParameter6" name="GRAPH_FIREWALL" value="${GRAPH_DIR}/nested_graphs/DataQualityFirewall-profile.grf"/>
-<Property id="GraphParameter7" name="GRAPH_PROCESS" value="${GRAPH_DIR}/nested_graphs/DataQualityFirewall-process.grf"/>
-<Property fileURL="workspace.prm" id="GraphParameter8"/>
+<GraphParameters>
+<GraphParameter name="DATA_FAILED" value="${DATAOUT_DIR}/incoming_failed/${RUN_ID}/"/>
+<GraphParameter name="DATA_PROCESSED" value="${DATAOUT_DIR}/incoming_processed/${RUN_ID}/"/>
+<GraphParameter name="DATA_REJECTED" value="${DATAOUT_DIR}/incoming_rejected/${RUN_ID}/"/>
+<GraphParameter name="DATA_STAGING" value="${DATATMP_DIR}/staging/${RUN_ID}/"/>
+<GraphParameter name="EVENT_FILE_NAME" value="employees.csv"/>
+<GraphParameter name="EVENT_FILE_PATH" value="${DATAIN_DIR}/DataQualityFirewall"/>
+<GraphParameter name="GRAPH_FIREWALL" value="${GRAPH_DIR}/nested_graphs/DataQualityFirewall-profile.grf"/>
+<GraphParameter name="GRAPH_PROCESS" value="${GRAPH_DIR}/nested_graphs/DataQualityFirewall-process.grf"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="197" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="211" x="14" y="72">
 <attr name="text"><![CDATA[Let's process incoming files that appear in a directory. That means running a single ETL transformation on each of the files.
 

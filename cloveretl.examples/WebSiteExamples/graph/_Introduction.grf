@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Pavel" created="Thu Oct 04 11:41:15 CEST 2012" guiVersion="3.4.0.M2" id="1349357018755" licenseType="Commercial" modified="Wed Mar 06 15:40:45 CET 2013" modifiedBy="Pavel" name="graphIntroduction" revision="1.12" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Pavel" created="Thu Oct 04 11:41:15 CEST 2012" guiVersion="0.0.0.devel" id="1349357018755" licenseType="Commercial" modified="Mon Jan 13 16:50:52 CET 2014" modifiedBy="User" name="graphIntroduction" revision="1.16" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachment="${DATAIN_DIR}/delimited/addressbook.csv" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="," label="addressbook.csv" name="addressbook_csv" previewAttachment="${DATAIN_DIR}/delimited/addressbook.csv" previewAttachmentCharset="ISO-8859-1" quoteChar="both" quotedStrings="false" recordDelimiter="\n" skipSourceRows="1" type="delimited">
@@ -19,7 +20,9 @@
 <Field name="email" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="194" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Transformation graph in a nutshell" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="900" x="30" y="283">
 <attr name="text"><![CDATA[
 Data flows from Readers (green), through Transformers (yellow) into Writers (blue). Check the Palette to the right to see what's available.

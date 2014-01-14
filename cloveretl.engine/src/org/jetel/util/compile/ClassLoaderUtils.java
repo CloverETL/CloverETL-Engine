@@ -28,7 +28,7 @@ import java.net.URLDecoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Set;
+import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -160,10 +160,11 @@ public class ClassLoaderUtils {
 	 * @return
 	 */
 	public static ClassLoader createNodeClassLoader(Node node) {
-		Set<ClassLoader> classLoaders = DynamicCompiler.getCTLLibsClassLoaders();
-		classLoaders.add(node.getClass().getClassLoader());
+		ArrayList<ClassLoader> parentClassLoaders = new ArrayList<ClassLoader>();
+		parentClassLoaders.add(node.getClass().getClassLoader());
+		parentClassLoaders.addAll(DynamicCompiler.getCTLLibsClassLoaders());
 		
-		ClassLoader parentClassLoader = new MultiParentClassLoader(classLoaders.toArray(new ClassLoader[0]));
+		ClassLoader parentClassLoader = new MultiParentClassLoader(parentClassLoaders.toArray(new ClassLoader[0]));
 		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
 		return node.getGraph().getAuthorityProxy().createClassLoader(runtimeClasspath, parentClassLoader, true);
 	}

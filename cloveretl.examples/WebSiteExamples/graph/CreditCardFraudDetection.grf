@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="3.4.0.M2" id="1279697274740" licenseType="Commercial" modified="Wed Mar 06 16:31:35 CET 2013" modifiedBy="Pavel" name="CreditCards" revision="1.119" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Commercial" modified="Mon Jan 13 16:48:42 CET 2014" modifiedBy="User" name="CreditCards" revision="1.120" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
@@ -48,8 +49,10 @@
 <Field name="currency_id" type="integer"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter0" name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
-<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<GraphParameters>
+<GraphParameter name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="139" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="270" x="686" y="105">
 <attr name="text"><![CDATA["Load Online Exchange Rates" reads data from internet. If you don't have your computer connected to internet, you can read eurofxref-daily.xml placed in data-in directory. To do that, set parameter RATES_FILE to ${DATAIN_DIR}/eurofxref-daily.xml]]></attr>
 </Note>
