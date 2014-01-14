@@ -308,6 +308,9 @@ class StreamedPortData extends StreamedPortDataBase {
 		}
 	}
 
+	/**
+	 * TODO refactor this class so that it extends same-named inner class from parent class.
+	 */
 	private class SimpleDataIterator implements DataIterator {
 
 		private boolean dataAvailable = true;

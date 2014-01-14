@@ -26,6 +26,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.graph.InputPort;
 
 /**
+ * Simple streamed port data, that cannot be looked-up by a key.
+ * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *

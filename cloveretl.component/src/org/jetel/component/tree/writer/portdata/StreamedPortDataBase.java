@@ -29,6 +29,8 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 
 /**
+ * Base class for streamed, i.e. non cached port data.
+ * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *

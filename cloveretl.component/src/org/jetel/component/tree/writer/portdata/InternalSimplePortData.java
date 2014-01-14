@@ -20,12 +20,9 @@ package org.jetel.component.tree.writer.portdata;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.collections.map.MultiValueMap;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.InputPort;
@@ -44,29 +41,22 @@ class InternalSimplePortData extends InternalPortData {
 	InternalSimplePortData(InputPort inPort, Set<List<String>> keys) {
 		super(inPort, keys);
 	}
-	
-	@Override
-	protected MultiValueMap createRecordMap() {
-		if (nullKey) {
-			/*
-			 * linked map to preserve data record insertion order
-			 */
-			return MultiValueMap.decorate(new LinkedHashMap<Object, Object>(), LinkedList.class);
-		} else {
-			return super.createRecordMap();
-		}
-	}
 
 	@Override
 	public void put(DataRecord record) throws IOException {
-		records.put(record.getField(primaryKey[0][0]), record);
+		if (nullKey) {
+			records.put(null, record);
+		}
+		if (primaryKey.length == 1) {
+			records.put(record.getField(primaryKey[0][0]), record);
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	protected Collection<DataRecord> fetchData(int key[], int parentKey[], DataRecord parentData) {
 		if (key == null) {
-			return records.values();
+			return (Collection<DataRecord>)records.get(null);
 		} else {
 			DataField childKeyField = keyRecord.getField(key[0]);
 			childKeyField.setValue(parentData.getField(parentKey[0]));

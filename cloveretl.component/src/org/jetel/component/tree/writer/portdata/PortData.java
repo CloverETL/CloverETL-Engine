@@ -59,7 +59,7 @@ public abstract class PortData {
 			SortHint hint) {
 		if (cached) {
 			if (inMemory) {
-				if (isSingleFieldKey(keys)) {
+				if (hasNullKeyOnly(keys) || hasSingleFieldKey(keys)) {
 					return new InternalSimplePortData(inPort, keys);
 				} else {
 					return new InternalComplexPortData(inPort, keys);
@@ -72,7 +72,7 @@ public abstract class PortData {
 				}
 			}
 		} else {
-			if (isKeyLess(keys)) {
+			if (hasNullKeyOnly(keys)) {
 				return new StreamedSimplePortData(inPort, keys);
 			} else {
 				return new StreamedPortData(inPort, keys, hint);
@@ -80,24 +80,30 @@ public abstract class PortData {
 		}
 	}
 	
-	private static boolean isKeyLess(Set<List<String>> keys) {
-		
-		if (keys.size() == 1) {
-			List<String> fieldList = keys.iterator().next();
-			return fieldList == null;
-		}
-		return false;
+	/**
+	 * Answers <code>true</code> if there is only null key defined.
+	 * @param keys
+	 * @return
+	 */
+	private static boolean hasNullKeyOnly(Set<List<String>> keys) {
+		return keys.size() == 1 && keys.contains(null);
 	}
 	
-	private static boolean isSingleFieldKey(Set<List<String>> keys) {
+	/**
+	 * Answers <code>true</code> if there is only one one-field key defined
+	 * (null key is ignored).
+	 * @param keys
+	 * @return
+	 */
+	private static boolean hasSingleFieldKey(Set<List<String>> keys) {
 		
-		if (keys.size() == 1) {
-			List<String> fieldList = keys.iterator().next();
-			if (fieldList != null && fieldList.size() == 1) {
-				return true;
+		int fieldCount = 0;
+		for (List<String> keyFields : keys) {
+			if (keyFields != null) {
+				fieldCount += keyFields.size();
 			}
 		}
-		return false;
+		return fieldCount == 1;
 	}
 	
 	PortData(InputPort inPort, Set<List<String>> keys) {
