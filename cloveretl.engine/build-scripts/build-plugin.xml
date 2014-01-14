@@ -132,12 +132,10 @@
 			</else>
 		</if>
 
-		<available property="jdbc4.present" classname="java.sql.Wrapper"/>
-		
 	</target>
 
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
-	<target name="improve-java-sources" depends="copy-java-sources,improve-nojdbc4">
+	<target name="improve-java-sources" depends="copy-java-sources">
 		<if><not><equals arg1="${java.src.header.file}" arg2="" trim="true"/></not>
 			<then>
 				<echo>Changing license of all files - license file ${java.src.header.file}</echo> 
@@ -154,11 +152,6 @@
 		</copy>
 	</target>
 	
-	<target name="improve-nojdbc4" unless="jdbc4.present">
-		<replace dir="${dir.src.improved}" token="/* JDBC_4_ANT_KEY_BEGIN */" value="/* THIS FRAGMENT IS ONLY FOR JDBC 4"/>
-		<replace dir="${dir.src.improved}" token="/* JDBC_4_ANT_KEY_END */" value="*/"/>
-	</target>
-
   <target name="save-required-plugins-lib">
 			<echo file="${required.plugins.lib.collected}" append="true">;${lib.file}
 </echo>
