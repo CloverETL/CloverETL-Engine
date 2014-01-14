@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GraphParameters>
 <GraphParameter name="PROJECT" value="."/>
+<GraphParameter name="CONN_DIR" value="${PROJECT}/conn"/>
 <GraphParameter name="DATAIN_DIR" value="${PROJECT}/data-in"/>
 <GraphParameter name="DATAOUT_DIR" value="${PROJECT}/data-out"/>
 <GraphParameter name="DATATMP_DIR" value="${PROJECT}/data-tmp"/>
 <GraphParameter name="GRAPH_DIR" value="${PROJECT}/graph"/>
+<GraphParameter name="LIB_DIR" value="${PROJECT}/lib"/>
 <GraphParameter name="LOOKUP_DIR" value="${PROJECT}/lookup"/>
 <GraphParameter name="META_DIR" value="${PROJECT}/meta"/>
 <GraphParameter name="SEQ_DIR" value="${PROJECT}/seq"/>
