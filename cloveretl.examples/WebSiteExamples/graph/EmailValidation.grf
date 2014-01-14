@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="3.4.0.M2" id="1227892536666" licenseType="Commercial" modified="Tue Mar 05 15:10:42 CET 2013" modifiedBy="Pavel" name="EmailValidation" revision="1.59" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Commercial" modified="Mon Jan 13 16:48:49 CET 2014" modifiedBy="User" name="EmailValidation" revision="1.60" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="input_record" recordDelimiter="\r\n" type="delimited">
@@ -12,7 +13,9 @@
 <Field name="error" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Graylisting Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="239" x="702" y="72">
 <attr name="text"><![CDATA[EmailFilter comes with an anti-graylisting feature that performs retries after predefined time periods (usually in minutes or tens of minutes)
 

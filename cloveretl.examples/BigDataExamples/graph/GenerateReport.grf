@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361366651526" licenseType="Commercial" modified="Thu Jul 18 15:53:00 CEST 2013" modifiedBy="krivanekm" name="WriteCountOutput" revision="1.32" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361366651526" licenseType="Commercial" modified="Mon Jan 13 18:38:13 CET 2014" modifiedBy="User" name="WriteCountOutput" revision="1.33" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata0"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="278" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Read Metric values" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="210" x="30" y="195">
 <attr name="text"><![CDATA[
 

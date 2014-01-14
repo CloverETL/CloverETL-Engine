@@ -20,7 +20,6 @@ package org.jetel.component.tree.writer.portdata;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -86,13 +85,35 @@ abstract class InternalPortData extends PortData {
 			throws IOException {
 		
 		Collection<DataRecord> data = fetchData(key, parentKey, keyData);
-		if (data == null) {
-			data = Collections.emptyList();
+		if (data != null) {
+			return new DelegatingDataIterator(data.iterator());
 		}
-		return new DelegatingDataIterator(data.iterator());
+		return EmptyDataIterator.INSTANCE;
 	}
 	
 	protected abstract Collection<DataRecord> fetchData(int key[], int parentKey[], DataRecord keyData);
+	
+	static final class EmptyDataIterator implements DataIterator {
+
+		static final EmptyDataIterator INSTANCE = new EmptyDataIterator();
+		
+		private EmptyDataIterator() {}
+		
+		@Override
+		public boolean hasNext() {
+			return false;
+		}
+
+		@Override
+		public DataRecord peek() {
+			throw new NoSuchElementException();
+		}
+
+		@Override
+		public DataRecord next() throws IOException {
+			throw new NoSuchElementException();
+		}
+	}
 	
 	static class DelegatingDataIterator implements DataIterator {
 

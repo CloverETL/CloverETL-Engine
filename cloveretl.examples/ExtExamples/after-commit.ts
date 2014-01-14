@@ -139,12 +139,4 @@
      	 <DBTableToXMLFile outputTable="test" supposedTable="test" outputTableConnection="infobright" supposedXMLFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="InfobrightDataWriterRemote_3_5" graphFile="graph/graphInfobrightDataWriterRemote.grf">
-        <Property name="CONN_DIR" value="../../cloveretl.test.scenarios/conn" />
-         <Property name="connection_cfg" value="infobright-3-5.cfg" />
-      	<SQLStatement connection="infobright_3_5">drop table test</SQLStatement>
-	 	  <FlatFile outputFile="data-tmp/infobright_out.xml" supposedFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>	                                                                    
-     	 <DBTableToXMLFile outputTable="test" supposedTable="test" outputTableConnection="infobright_3_5" supposedXMLFile="supposed-out/infobright_out.InfobrightDataWriter.xml"/>
-	</FunctionalTest>
-	
 </TestScenario>
