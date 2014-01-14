@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 
 /**
@@ -64,12 +63,8 @@ abstract class StreamedPortDataBase extends PortData {
 		}
 		
 		@Override
-		public boolean hasNext() {
-			try {
-				fetchNextIfNeeded();
-			} catch (IOException e) {
-				throw new JetelRuntimeException(e);
-			}
+		public boolean hasNext() throws IOException {
+			fetchNextIfNeeded();
 			return hasNext && !allRead;
 		}
 
