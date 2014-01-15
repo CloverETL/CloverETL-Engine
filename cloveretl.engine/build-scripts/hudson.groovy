@@ -108,7 +108,7 @@ if( !runTests ){
         println "cloverVersionPropertiesURL ${cloverVersionPropertiesURL}"
 
 	cloverVersionProperties = new URL( cloverVersionPropertiesURL ).text
-        cloverVersionPropertiesM = cloverVersionProperties =~ /version=([^\n]*)/
+        cloverVersionPropertiesM = cloverVersionProperties =~ /version.product=([^\n]*)/
 
 	cloverVersion = cloverVersionPropertiesM[0][1]
 	cloverVersionDash = cloverVersion.replaceAll("\\.","-")
