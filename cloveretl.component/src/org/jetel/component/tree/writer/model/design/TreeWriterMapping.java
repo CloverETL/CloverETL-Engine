@@ -34,6 +34,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.log4j.Logger;
 import org.jetel.component.tree.writer.util.MappingVisitor;
 import org.jetel.component.tree.writer.util.MappingWriter;
 import org.jetel.component.tree.writer.util.StaxPrettyPrintHandler;
@@ -49,6 +50,8 @@ import org.xml.sax.SAXException;
  */
 public class TreeWriterMapping {
 
+	private static final Logger log = Logger.getLogger(TreeWriterMapping.class);
+	
 	private static final String INPORT_REFERENCE_PATTERN = "(" + StringUtils.OBJECT_NAME_PATTERN + "|[0-9]+)";
 	private static final String QUALIFIED_FIELD_REFERENCE_PATTERN = "(?<!\\$)\\$" + INPORT_REFERENCE_PATTERN + "\\." + StringUtils.OBJECT_NAME_PATTERN;
 	private static final String REFERENCE = QUALIFIED_FIELD_REFERENCE_PATTERN + "|\\{" + QUALIFIED_FIELD_REFERENCE_PATTERN + "\\}";
@@ -108,6 +111,26 @@ public class TreeWriterMapping {
 		ContainerNode currentElement = mapping.getRootElement();
 
 		XMLInputFactory factory = XMLInputFactory.newInstance();
+		factory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
+		try {
+			/*
+			 * this is recommendation from manual, but doesn't seem to work
+			 * http://www.oracle.com/technetwork/java/stax-139959.html
+			 */
+			factory.setProperty("report-cdata-event", Boolean.TRUE);
+		} catch (IllegalArgumentException e) {
+			try {
+				// this is valid for impl. distributed with Sun JDK
+				factory.setProperty("http://java.sun.com/xml/stream/properties/report-cdata-event", Boolean.TRUE);
+			} catch (IllegalArgumentException e2) {
+				/*
+				 * other factory, like XLXP-J (IBM SDK) or XLXP-J 2 (Websphere) - those fortunately report CDATA events properly,
+				 * but other ones may not, so print a warning
+				 */
+				log.warn("Could not set 'report-cdata-event' property for XML parser. Writing of CDATA sections may not work.");
+			}
+		}
+		
 		XMLStreamReader parser = factory.createXMLStreamReader(stream);
 		String documentVersion = parser.getVersion();
 		if (documentVersion == null) {
@@ -142,6 +165,10 @@ public class TreeWriterMapping {
 					currentElement = parseContainer(parser, currentElement);
 				}
 				break;
+			case XMLStreamConstants.CDATA: {
+				parseCDataSection(parser, currentElement);
+				break;
+			}
 			case XMLStreamConstants.CHARACTERS:
 				if (!parser.isWhiteSpace()) {
 					Value value = new Value(currentElement);
@@ -202,6 +229,12 @@ public class TreeWriterMapping {
 			}
 		}
 		return aggregateElement;
+	}
+	
+	private static void parseCDataSection(XMLStreamReader reader, ContainerNode currentElement) throws XMLStreamException {
+		
+		CDataSection cdataSection = new CDataSection(currentElement);
+		cdataSection.setProperty(MappingProperty.VALUE, reader.getText());
 	}
 
 	private static Attribute parseAttributeEntry(XMLStreamReader parser, ContainerNode currentElement)

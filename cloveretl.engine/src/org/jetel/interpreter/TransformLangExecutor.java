@@ -408,7 +408,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             }catch(Exception ex){
             	Object[] arguments = { a, b};
                 throw new TransformLangExecutorRuntimeException(node,
-                        arguments, "in - wrong type of literal(s)");
+                        arguments, "in - wrong type of literal(s)", ex);
             	
             }     
         	// SPECIAL hanadling of IN in case a is NULL
@@ -421,7 +421,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
        		}catch(Exception ex){
        			Object[] arguments = { a, b };
                    throw new TransformLangExecutorRuntimeException(node,
-                            arguments, "in - incompatible literals/expressions");
+                            arguments, "in - incompatible literals/expressions", ex);
        		}
         	break;
    		default:
@@ -465,7 +465,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             		Object arguments[] = { a, b };
                     throw new TransformLangExecutorRuntimeException(node,
                             arguments,
-                            "compare - error during comparison of literals/expressions");
+                            "compare - error during comparison of literals/expressions", ex);
             	}
                 break;
             case BOOLEAN:
@@ -578,7 +578,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         } catch (ClassCastException ex) {
             Object arguments[] = { a, b };
             throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "add - wrong type of literal(s)");
+                    "add - wrong type of literal(s)", ex);
         }
 
         return data;
@@ -794,7 +794,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			try{
 				fieldNo=val.getNumeric().getInt();
 			}catch(Exception ex){
-				throw new TransformLangExecutorRuntimeException(node,new Object[] {val},"invalid field index");
+				throw new TransformLangExecutorRuntimeException(node,new Object[] {val},"invalid field index", ex);
 			}
 		}
 
@@ -804,7 +804,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 					try{
 						node.value = TLValue.convertValue(record.getField(fieldNo));
 					}catch(Exception ex){
-						throw new TransformLangExecutorRuntimeException(node, "field index ("+fieldNo +") out of bounds");
+						throw new TransformLangExecutorRuntimeException(node, "field index ("+fieldNo +") out of bounds", ex);
 					}
 				}else{
 					node.value = new TLRecordValue(record);
@@ -814,7 +814,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 					try{
 						node.value = TLValue.convertValue(record.getField(fieldNo));
 					}catch(Exception ex){
-						throw new TransformLangExecutorRuntimeException(node, "field index ("+fieldNo +") out of bounds");
+						throw new TransformLangExecutorRuntimeException(node, "field index ("+fieldNo +") out of bounds", ex);
 					}
 				}else{
 					node.value.setValue(record);
@@ -973,7 +973,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             	throw new TransformLangExecutorRuntimeException(node,"loop condition does not evaluate to BOOLEAN value");
             condition = (conVal==TLBooleanValue.TRUE);
         }catch (NullPointerException ex){
-            throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition");
+            throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition", ex);
         }
 
         // loop execution
@@ -1069,7 +1069,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             	throw new TransformLangExecutorRuntimeException(node,"loop condition does not evaluate to BOOLEAN value");
             condition = (conVal==TLBooleanValue.TRUE);
         }catch (NullPointerException ex){
-            throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition");
+            throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition", ex);
         }
 
         // loop execution
@@ -1099,7 +1099,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             	throw new TransformLangExecutorRuntimeException(node,"if condition does not evaluate to BOOLEAN value");
             condition = (conVal==TLBooleanValue.TRUE);
         } catch (NullPointerException ex){
-            throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition");
+            throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition", ex);
         }
 
         // first if
@@ -1137,7 +1137,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             		throw new TransformLangExecutorRuntimeException(node,"loop condition does not evaluate to BOOLEAN value");
             	condition = (conVal==TLBooleanValue.TRUE);
             }catch (NullPointerException ex){
-                throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition");
+                throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition", ex);
             }
         } while (condition);
 
@@ -1185,12 +1185,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         	match=(switchVal.compareTo(value)==0);
         } catch (ClassCastException ex) {
             Object[] args=new Object[] {switchVal,value};
-            throw new TransformLangExecutorRuntimeException(node,args,"incompatible literals in case clause");
+            throw new TransformLangExecutorRuntimeException(node,args,"incompatible literals in case clause", ex);
         }catch (NullPointerException ex){
-            throw new TransformLangExecutorRuntimeException(node,"missing or invalid case value");
+            throw new TransformLangExecutorRuntimeException(node,"missing or invalid case value", ex);
         }catch (IllegalArgumentException ex){
         	Object[] args=new Object[] {switchVal,value};
-            throw new TransformLangExecutorRuntimeException(node,args,"incompatible literals in case clause");
+            throw new TransformLangExecutorRuntimeException(node,args,"incompatible literals in case clause", ex);
         }
         if (match){
             node.jjtGetChild(1).jjtAccept(this, data);
@@ -1718,15 +1718,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
 			} catch (BadDataFormatException ex) {
 				if (!outputRecords[node.recordNo].getField(node.fieldNo).getMetadata().isNullable()) {
-					throw new TransformLangExecutorRuntimeException(node, "can't assign NULL to \"" + node.fieldName + "\"");
+					throw new TransformLangExecutorRuntimeException(node, "can't assign NULL to \"" + node.fieldName + "\"", ex);
 				}
 
-				throw new TransformLangExecutorRuntimeException(node, "bad data when mapping field \"" + node.fieldName + "\" (" + field.getMetadata().getName() + ":" + field.getMetadata().getTypeAsString() + ") - assigning \"" + value + "\" (" + value.type + ")");
+				throw new TransformLangExecutorRuntimeException(node, "bad data when mapping field \"" + node.fieldName + "\" (" + field.getMetadata().getName() + ":" + field.getMetadata().getTypeAsString() + ") - assigning \"" + value + "\" (" + value.type + ")", ex);
 			} catch (TransformLangExecutorRuntimeException ex) {
 				throw ex;
 			} catch (Exception ex) {
 				String msg = ex.getMessage();
-				throw new TransformLangExecutorRuntimeException(node, (msg != null ? msg : "") + " when mapping \"" + node.fieldName + "\" (" + DataFieldMetadata.type2Str(field.getType()) + ") - assigning \"" + value + "\" (" + (value != null ? value.getType().getName() : "unknown type") + ")");
+				throw new TransformLangExecutorRuntimeException(node, (msg != null ? msg : "") + " when mapping \"" + node.fieldName + "\" (" + DataFieldMetadata.type2Str(field.getType()) + ") - assigning \"" + value + "\" (" + (value != null ? value.getType().getName() : "unknown type") + ")", ex);
 
 			}
 			break;
@@ -1738,14 +1738,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				field.setValue(node.srcField);
 			} catch (BadDataFormatException ex) {
 				if (!outputRecords[node.recordNo].getField(node.fieldNo).getMetadata().isNullable() && node.srcField.isNull()) {
-					throw new TransformLangExecutorRuntimeException(node, "can't assign NULL to \"" + node.fieldName + "\"");
+					throw new TransformLangExecutorRuntimeException(node, "can't assign NULL to \"" + node.fieldName + "\"", ex);
 				}else{
 					throw new TransformLangExecutorRuntimeException(node, "bad data when mapping field \"" + node.fieldName + "\" (" + field.getMetadata().getName() + ":" + field.getMetadata().getTypeAsString() + ") - assigning \"" + node.srcField.toString() + 
-							"\" (" + node.srcField.getMetadata().getName() + ":" + node.srcField.getMetadata().getTypeAsString() +" )");
+							"\" (" + node.srcField.getMetadata().getName() + ":" + node.srcField.getMetadata().getTypeAsString() +" )", ex);
 				}
 			} catch (Exception ex) {
 				String msg = ex.getMessage();
-				throw new TransformLangExecutorRuntimeException(node, (msg != null ? msg : "") + " when mapping \"" + node.fieldName + "\" (" + DataFieldMetadata.type2Str(field.getType()) + ") - assigning \"" + value + "\" (" + (value != null ? value.getType().getName() : "unknown type") + ")");
+				throw new TransformLangExecutorRuntimeException(node, (msg != null ? msg : "") + " when mapping \"" + node.fieldName + "\" (" + DataFieldMetadata.type2Str(field.getType()) + ") - assigning \"" + value + "\" (" + (value != null ? value.getType().getName() : "unknown type") + ")", ex);
 
 			}
 			break;
@@ -1764,7 +1764,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				throw ex;
 			} catch (Exception ex) {
 				String msg = ex.getMessage();
-				throw new TransformLangExecutorRuntimeException(node, (msg != null ? msg : "") + " when mapping \"" + node.fieldName + "\" (" + DataFieldMetadata.type2Str(field.getType()) + ") - assigning \"" + value + "\" (" + (value != null ? value.getType().getName() : "unknown type") + ")");
+				throw new TransformLangExecutorRuntimeException(node, (msg != null ? msg : "") + " when mapping \"" + node.fieldName + "\" (" + DataFieldMetadata.type2Str(field.getType()) + ") - assigning \"" + value + "\" (" + (value != null ? value.getType().getName() : "unknown type") + ")", ex);
 
 			}
 			break;
@@ -1930,7 +1930,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     			parseTree = ((TransformLangParser)parser).Start();
     	}catch(ParseException ex){
     		 throw new TransformLangExecutorRuntimeException(node,
-                     "Can't parse \"eval\" expression:"+ex.getMessage());
+                     "Can't parse \"eval\" expression:"+ex.getMessage(), ex);
     	}catch(NullPointerException ex){
     		throw new RuntimeException("Error in \"eval\" execution/parsing (parser is missing)." ,ex);
     	}
@@ -2195,7 +2195,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     		try {
 				d.setValue(keyToDelete, null);
 			} catch (ComponentNotReadyException e) {
-				throw new TransformLangExecutorRuntimeException("Cannot delete key '" + keyToDelete + "'");
+				throw new TransformLangExecutorRuntimeException("Cannot delete key '" + keyToDelete + "'", e);
 			}
     		break;
     	default:

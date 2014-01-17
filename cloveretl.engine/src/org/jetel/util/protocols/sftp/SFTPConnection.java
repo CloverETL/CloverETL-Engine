@@ -129,8 +129,10 @@ public class SFTPConnection extends URLConnection implements ProxyAuthenticable 
 	public void connect() throws IOException {
 		PooledSFTPConnection connection = null;
 		try {
+			// obtain a pooled connection or perform a connection attempt
 			connection = connect(authority);
 		} finally {
+			// return the connection to the pool, subsequent operations will retrieve it from there
 			disconnectQuietly(connection);
 		}
 	}

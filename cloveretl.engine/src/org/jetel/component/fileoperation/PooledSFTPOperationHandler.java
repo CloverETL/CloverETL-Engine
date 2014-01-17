@@ -369,7 +369,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		return sb.toString();
 	}
 	
-	private Info info(URI targetUri, ChannelSftp channel) {
+	private Info info(URI targetUri, ChannelSftp channel) throws IOException {
 		try {
 			String path = getPath(targetUri);
 			SftpATTRS attrs = channel.stat(path);
@@ -400,10 +400,10 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			}
 		} catch (SftpException sftpe) {
 			if (sftpe.id != ChannelSftp.SSH_FX_NO_SUCH_FILE) { // other than No such file
-				sftpe.printStackTrace();
+				throw new IOException("Failed to get SFTP file info", sftpe);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new IOException("Failed to get SFTP file info", e);
 		}
 		return null;
 	}
@@ -476,8 +476,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	}
 	
 	@Override
-	public Info info(SingleCloverURI target, InfoParameters params)
-			throws IOException {
+	public Info info(SingleCloverURI target, InfoParameters params) throws IOException {
 		return info(target.toURI());
 	}
 

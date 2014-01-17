@@ -98,6 +98,7 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 			throw new JetelRuntimeException(e);
 		} finally {
 			ContextProvider.unregister(c);
+			node.unregisterChildThread(thread);
 			MDC.remove("runId");
 			Thread.currentThread().setName("<unnamed>");
 		}
@@ -133,8 +134,11 @@ public abstract class CloverWorker implements Runnable, Thread.UncaughtException
 	 * @param cloverWorker
 	 * @return future of the given {@link CloverWorker}
 	 */
+	private static IThreadManager localSimpleThreadManager = new SimpleThreadManager();
 	public static <T extends CloverWorker> FutureOfRunnable<T> startWorker(T cloverWorker) {
 		return cloverWorker.getNode().getGraph().getWatchDog().getThreadManager().executeRunnable(cloverWorker);
+		
+		//return localSimpleThreadManager.executeRunnable(cloverWorker);
 	}
 	
 	public Thread getThread() {

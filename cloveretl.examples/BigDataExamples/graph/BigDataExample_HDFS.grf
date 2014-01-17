@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Mon Dec 10 11:05:44 CET 2012" guiVersion="0.0.0.devel" id="1355134051184" licenseType="Commercial" modified="Tue Apr 16 14:54:49 CEST 2013" modifiedBy="Raszyk" name="BigDataGraph_HDFS" revision="1.29" showComponentDetails="true">
+<Graph author="Wesley" created="Mon Dec 10 11:05:44 CET 2012" guiVersion="0.0.0.devel" id="1355134051184" licenseType="Commercial" modified="Mon Jan 13 18:37:31 CET 2014" modifiedBy="User" name="BigDataGraph_HDFS" revision="1.31" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="metaKeyValueFields" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -46,7 +46,9 @@
 </Record>
 </Metadata>
 <Connection hadoopJar="C:/Big Data/version4/avro-1.7.1.cloudera.2.jar;C:/Big Data/version4/commons-cli-1.2.jar;C:/Big Data/version4/guava-11.0.2.jar;C:/Big Data/version4/hadoop-auth-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-common-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/hadoop-hdfs-2.0.0-cdh4.1.1.jar;C:/Big Data/version4/protobuf-java-2.4.0a.jar;C:/Big Data/version4/slf4j-api-1.6.1.jar;C:/Big Data/version4/slf4j-log4j12-1.6.1.jar" host="192.168.1.99" id="LOCAL_HADOOP" name="Local Hadoop" type="HADOOP"/>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="336" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="233" x="716" y="103">
 <attr name="text"><![CDATA[The bundled data file is only a sample.
 

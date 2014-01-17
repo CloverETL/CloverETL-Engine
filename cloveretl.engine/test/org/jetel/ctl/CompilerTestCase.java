@@ -652,9 +652,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 
 		executeCode(compiler);
 	}
+	
+	protected void doCompileExpectError(TransformationGraph graph, String expStr, String testIdentifier, List<String> errCodes) {
+		this.graph = graph;
 
-	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
-		graph = createDefaultGraph();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(INPUT_1), graph.getDataRecordMetadata(INPUT_2), graph.getDataRecordMetadata(INPUT_3) };
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { graph.getDataRecordMetadata(OUTPUT_1), graph.getDataRecordMetadata(OUTPUT_2), graph.getDataRecordMetadata(OUTPUT_3), graph.getDataRecordMetadata(OUTPUT_4) };
 
@@ -690,6 +691,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		// parseTree.dump("");
 
 		// executeCode(compiler);
+	}
+
+	protected void doCompileExpectError(String expStr, String testIdentifier, List<String> errCodes) {
+		doCompileExpectError(createDefaultGraph(), expStr, testIdentifier, errCodes);
 	}
 
 	protected void doCompileExpectError(String testIdentifier, String errCode) {
@@ -3661,6 +3666,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("Field1", null, outputRecords[3].getField("Field1").getValue());
 		assertEquals("Age", AGE_VALUE, outputRecords[3].getField("Age").getValue());
 		assertEquals("City", CITY_VALUE, outputRecords[3].getField("City").getValue().toString());
+		
+		// CLO-637:
+		DataRecord outRecord1 = (DataRecord) getVariable("outRecord1");
+		DataRecord outRecord2 = (DataRecord) getVariable("outRecord2");
+		assertEquals(outRecord1.getField("Name").getValue(), null);
+		assertEquals(outRecord2.getField("Name").getValue().toString(), "some value");
 	}
 
 	public void test_copyByName_assignment1() {
@@ -3670,6 +3681,68 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("City", null, outputRecords[3].getField("City").getValue());
 	}
 	
+	public void test_copyByName_assignment_containers() {
+		TransformationGraph g = createEmptyGraph();
+		
+		DataRecordMetadata m1 = new DataRecordMetadata("metadata1");
+		m1.addField(new DataFieldMetadata("field1", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("field2", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("field3", DataFieldType.STRING, "|"));
+		m1.addField(new DataFieldMetadata("yyy", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m1);
+		
+		DataRecordMetadata m2 = new DataRecordMetadata("metadata2");
+		DataFieldMetadata field;
+		m2.addField(new DataFieldMetadata("field1", DataFieldType.STRING, "|"));
+		m2.addField(field = new DataFieldMetadata("field2", DataFieldType.STRING, "|"));
+		field.setContainerType(DataFieldContainerType.LIST);
+		m2.addField(field = new DataFieldMetadata("field3", DataFieldType.STRING, "|"));
+		field.setContainerType(DataFieldContainerType.MAP);
+		m2.addField(new DataFieldMetadata("xxx", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m2);
+
+		DataRecord input1 = DataRecordFactory.newRecord(m1);
+		DataRecord input2 = DataRecordFactory.newRecord(m2);
+		DataRecord output1 = DataRecordFactory.newRecord(m2);
+		DataRecord output2 = DataRecordFactory.newRecord(m1);
+		
+		input1.init();
+		input2.init();
+		output1.init();
+		output2.init();
+		
+		input1.reset();
+		input2.reset();
+		output1.reset();
+		output2.reset();
+		
+		input1.getField("field1").setValue("abc");
+		input1.getField("field2").setValue("def");
+		input1.getField("field3").setValue("ghi");
+		input1.getField("yyy").setValue("jkl");
+		
+		input2.getField("field1").setValue("abc");
+		input2.getField("field2").setValue(Arrays.asList("def", "ghi"));
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("jkl", "mno");
+		map.put("pqr", "stu");
+		input2.getField("field3").setValue(map);
+		input2.getField("xxx").setValue("jkl");
+		
+		String testIdentifier = "test_copyByName_assignment_containers";
+		doCompile(loadSourceCode(testIdentifier), testIdentifier, g, new DataRecord[] {input1, input2}, new DataRecord[] {output1, output2});
+		
+		assertEquals("abc", output1.getField("field1").getValue().toString());
+		assertEquals(null, output1.getField("field2").getValue());
+		assertEquals(null, output1.getField("field3").getValue());
+		assertEquals(null, output1.getField("xxx").getValue());
+
+		assertEquals("abc", output2.getField("field1").getValue().toString());
+		assertEquals(null, output2.getField("field2").getValue());
+		assertEquals(null, output2.getField("field3").getValue());
+		assertEquals(null, output2.getField("yyy").getValue());
+	}
+
 	public void test_copyByName_assignment_caseInsensitive() {
 		TransformationGraph g = createEmptyGraph();
 		DataRecordMetadata m1 = new DataRecordMetadata("metadata1");
@@ -3688,7 +3761,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		m1.addField(new DataFieldMetadata("exactMATCH", DataFieldType.STRING, "|"));
 		m1.addField(new DataFieldMetadata("exactMatch", DataFieldType.STRING, "|"));
 		m1.addField(new DataFieldMetadata("EXACTMATCH", DataFieldType.STRING, "|"));
-
+		
 		g.addDataRecordMetadata(m1);
 		
 		DataRecordMetadata m2 = new DataRecordMetadata("metadata2");
@@ -3709,22 +3782,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		m2.addField(new DataFieldMetadata("ExactMatch", DataFieldType.STRING, "|"));
 		m2.addField(new DataFieldMetadata("EXACTMATCH", DataFieldType.STRING, "|"));
 		m2.addField(new DataFieldMetadata("ExactMATCH", DataFieldType.STRING, "|"));
+		m2.addField(new DataFieldMetadata("Exactmatch", DataFieldType.STRING, "|"));
 
 		g.addDataRecordMetadata(m2);
+		
+		DataRecordMetadata m3 = new DataRecordMetadata("metadata3");
+		m3.addField(new DataFieldMetadata("singleInputField", DataFieldType.STRING, "|"));
+		g.addDataRecordMetadata(m3);
+		
+		DataRecordMetadata m4 = new DataRecordMetadata("metadata4");
+		m4.addField(new DataFieldMetadata("outputField1", DataFieldType.STRING, "|")); // must not match "singleInputField"
+		g.addDataRecordMetadata(m4);
 
-		doCompile("metadata1 r1;metadata2 r2;\n"
-				+ "function integer transform() {\n"
-				+ "r1.a = \"a\"; r1.b = \"b\"; r1.c = \"c\";\n"
-				+ "r1.noexactmatch = \"noexactmatch\";\n"
-				+ "r1.ambiguous = \"ambiguous\";\n"
-				+ "r1.AMBIGUOUS = \"AMBIGUOUS\";\n"
-				+ "r1.aMBIGUOUs = \"aMBIGUOUs\";\n"
-				+ "r1.AmbiguouS = \"AmbiguouS\";\n"
-				+ "r1.exactMATCH = \"exactMATCH\";\n"
-				+ "r1.exactMatch = \"exactMatch\";\n"
-				+ "r1.EXACTMATCH = \"EXACTMATCH\";\n"
-				+ "r2.* = r1.*; \n"
-				+ "return 0; }","test_copyByName_assignment_caseInsensitive", g, new DataRecord[0], new DataRecord[0]);
+		String testIdentifier = "test_copyByName_assignment_caseInsensitive";
+		doCompile(loadSourceCode(testIdentifier), testIdentifier, g, new DataRecord[0], new DataRecord[0]);
 		
 		DataRecord r2 = (DataRecord) getVariable("r2");
 		
@@ -3744,6 +3815,10 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		assertEquals("exactMATCH", r2.getField("ExactMatch").getValue().toString()); // first unmapped input field selected
 		assertEquals("EXACTMATCH", r2.getField("EXACTMATCH").getValue().toString()); // exact match (has priority)
 		assertEquals("exactMatch", r2.getField("ExactMATCH").getValue().toString()); // first unmapped input field selected
+		assertEquals(null, r2.getField("Exactmatch").getValue()); // no remaining unmapped input field
+		
+		DataRecord r4 = (DataRecord) getVariable("r4");
+		assertEquals(null, r4.getField("outputField1").getValue()); // CLO-637
 	}
 	
 	public void test_containerlib_copyByPosition(){
@@ -6598,6 +6673,32 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("documentationExample1", 100);
 		check("documentationExample2", 123);
 		check("documentationExample3", 123.12d);
+		
+		// CLO-2346
+		compareDecimals("hundredsDecimalUp", new BigDecimal("300"));
+		check("hundredsLongUp", 300L);
+		check("hundredsIntegerUp", 300);
+
+		compareDecimals("hundredsDecimalNegativeUp", new BigDecimal("-300"));
+		check("hundredsLongNegativeUp", -300L);
+		check("hundredsIntegerNegativeUp", -300);
+
+		compareDecimals("hundredsDecimalDown", new BigDecimal("200"));
+		check("hundredsLongDown", 200L);
+		check("hundredsIntegerDown", 200);
+
+		compareDecimals("hundredsDecimalNegativeDown", new BigDecimal("-200"));
+		check("hundredsLongNegativeDown", -200L);
+		check("hundredsIntegerNegativeDown", -200);
+
+		// no overflow should occur
+		check("minInt", -2000000000);
+		check("maxInt", 2000000000);
+		check("minLong", -9000000000000000000L);
+		check("maxLong", 9000000000000000000L);
+		
+		check("zeroPrecisionInteger", Integer.MIN_VALUE);
+		check("zeroPrecisionLong", Long.MIN_VALUE);
 	}
 	
 	public void test_mathlib_round_expect_error(){
@@ -8172,6 +8273,15 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("nullVariableOutput", null);
 	}
 	
+	public void test_convertlib_str2bits_expect_error() {
+		try {
+			doCompile("function integer transform(){byte b = str2bits('abcd'); return 0;}","test_convertlib_str2bits_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing;
+		}
+	}
+
 	public void test_convertlib_str2bool() {
 		doCompile("test_convertlib_str2bool");
 		check("fromTrueString", true);
@@ -8665,6 +8775,24 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		@SuppressWarnings("unchecked")
 		List<byte[]> byteList = (List<byte[]>) getVariable("byteList"); 
 		assertDeepEquals(byteList, Arrays.asList(new byte[] {0x12}, new byte[] {0x34, 0x56}, null, new byte[] {0x78}));
+	}
+	
+	public void test_dictionary_expect_error() throws Exception {
+		// CLO-2283
+		TransformationGraph graph = createEmptyGraph();
+		graph.getDictionary().setValue("listEntry", "list", new ArrayList<String>());
+		graph.getDictionary().setContentType("listEntry", "object");
+		graph.getDictionary().setValue("mapEntry", "map", new HashMap<String, String>());
+		graph.getDictionary().setContentType("mapEntry", "object");
+		
+		doCompileExpectError(graph, 
+				"function integer transform(){append(dictionary.listEntry, \"newValue\"); return 0;}",
+				"test_dictionary_expect_error",
+				Arrays.asList("Dictionary entry 'listEntry' has invalid content type: 'object'"));
+		doCompileExpectError(graph, 
+				"function integer transform(){containsKey(dictionary.mapEntry, \"myKey\"); return 0;}",
+				"test_dictionary_expect_error",
+				Arrays.asList("Dictionary entry 'mapEntry' has invalid content type: 'object'"));
 	}
 
 	public void test_dictionary_write() {

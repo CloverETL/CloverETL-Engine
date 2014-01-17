@@ -2010,6 +2010,20 @@ public class StringUtils {
 	}
 
 	/**
+	 * Replace all new line combinations like \r\n, \n and \r with the given replacement.
+	 */
+	public static String removeNewLineChars(String str, String replacement) {
+		if (str != null) {
+			if (replacement == null) {
+				replacement = "";
+			}
+			return str.replaceAll("\\r\\n|\\r|\\n", replacement);
+		} else {
+			return null;
+		}
+	}
+	
+	/**
 	 * This method copies substring of source to target.
 	 * 
 	 * @param target

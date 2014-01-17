@@ -21,6 +21,7 @@ package org.jetel.graph;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -33,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.graph.analyse.GraphCycleInspector;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
 
 /*
@@ -218,44 +220,84 @@ public class TransformationGraphAnalyzer {
 	public static List<Node> nodesTopologicalSorting(List<Node> givenNodes) {
 		List<Node> result = new ArrayList<Node>();
 		Stack<Node> roots = new Stack<Node>();
-
+		List<Node> loopComponents = new ArrayList<Node>(); 
+		
 		// find root nodes - nodes without precedent nodes in the given list of nodes
 		for (Node givenNode : givenNodes) {
 			if (findPrecedentNodes(givenNode, givenNodes).isEmpty()) {
 				roots.add(givenNode);
+			} else {
+				if (givenNode.getType().equals(GraphCycleInspector.LOOP_COMPONENT_TYPE)) {
+					loopComponents.add(givenNode);
+				}
 			}
 		}
 
+		//start with topological sorting using the roots
+		processRoots(givenNodes, roots, result);
+		
+		//if some components are no in the result - an oriented cycle has been found
+		//oriented cycle is now supported only for Loop component, which is natural root of these cycles
+		//let's start with topological sorting with Loop components as roots
+		if (result.size() < givenNodes.size()) {
+			//find all Loop components which are not in result
+			for (Node loopComponent : loopComponents) {
+				if (!result.contains(loopComponent)) {
+					roots.add(loopComponent);
+				}
+			}
+			
+			processRoots(givenNodes, roots, result);
+		}
+
+		//seems that the graph contains some oriented cycles without Loop component
+		//so take one component by one and use them as root for sorting iterations
+		while (result.size() < givenNodes.size()) {
+			for (Node givenNode : givenNodes) {
+				if (!result.contains(givenNode)) {
+					roots.add(givenNode);
+					processRoots(givenNodes, roots, result);
+					break;
+				}
+			}
+		}
+
+		return result;
+	}
+
+	private static void processRoots(List<Node> givenNodes, Stack<Node> roots, List<Node> result) {
 		// topological sorting
-		List<Edge> removedEdges = new ArrayList<Edge>();
 		while (!roots.isEmpty()) {
 			Node root = roots.pop();
-			result.add(root);
-			for (OutputPort outputPort : root.getOutPorts()) {
-				removedEdges.add(outputPort.getEdge());
-			}
-			for (OutputPort outputPort : root.getOutPorts()) {
-				Node followingComponent = outputPort.getReader();
-				if (givenNodes.contains(followingComponent) && !roots.contains(followingComponent)) {
-					boolean isNewRoot = true;
-					for (InputPort inputPort : followingComponent.getInPorts()) {
-						if (!removedEdges.contains(inputPort.getEdge())) {
-							isNewRoot = false;
-							break;
+			if (!result.contains(root)) {
+				result.add(root);
+				List<OutputPort> outputPorts = new ArrayList<OutputPort>(root.getOutPorts());
+				//let's reverse the output ports to get more logical output
+				//Loop component is only exception where reversing is not desired
+				if (!root.getType().equals(GraphCycleInspector.LOOP_COMPONENT_TYPE)) {
+					Collections.reverse(outputPorts);
+				}
+				
+				for (OutputPort outputPort : outputPorts) {
+					Node followingComponent = outputPort.getReader();
+					if (givenNodes.contains(followingComponent) && !result.contains(followingComponent)) {
+						boolean isNewRoot = true;
+						for (InputPort inputPort : followingComponent.getInPorts()) {
+							if (!result.contains(inputPort.getEdge().getWriter())
+									&& givenNodes.contains(inputPort.getEdge().getWriter())) {
+								isNewRoot = false;
+								break;
+							}
 						}
-					}
-					if (isNewRoot) {
-						roots.push(followingComponent);
+						if (isNewRoot) {
+							roots.push(followingComponent);
+						}
 					}
 				}
 			}
 		}
-		//TODO check whether all edges have been 'removed', if an edge
-		//remains in the given scope, topological order does not exist -
-		//an oriented cycle found
-		return result;
 	}
-
+	
 }
 /*
  * end class TransformationGraphAnalyzer

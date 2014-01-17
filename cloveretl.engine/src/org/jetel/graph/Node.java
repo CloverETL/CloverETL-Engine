@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -70,8 +69,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
     private static final Log logger = LogFactory.getLog(Node.class);
 
-    private Thread nodeThread;
-    private final Object nodeThreadMonitor = new Object(); // nodeThread variable is guarded by this monitor
+    private Thread nodeThread; // is guarde by nodeThreadMonitor
+    private final Object nodeThreadMonitor = new Object(); // nodeThread variable and childThreads variable are guarded by this monitor
     
     private String formerThreadName;
     
@@ -80,7 +79,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * For instance parallel reader uses threads for parallel reading.
      * It is component's responsibility to register all inner threads via addChildThread() method.
      */
-    protected List<Thread> childThreads;  
+    protected List<Thread> childThreads; // is guarded by nodeThreadMonitor
     protected EnabledEnum enabled;
     protected int passThroughInputPort;
     protected int passThroughOutputPort;
@@ -161,7 +160,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		inPorts = new TreeMap<Integer, InputPort>();
         phase = null;
         setResultCode(Result.N_A); // result is not known yet
-        childThreads = Collections.synchronizedList(new ArrayList<Thread>());
+        childThreads = new ArrayList<Thread>();
         allocation = EngineComponentAllocation.createBasedOnNeighbours();
 	}
 
@@ -606,14 +605,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 					//interrupt main node thread
 					nodeThread.interrupt();
 					//interrupt all child threads if any
-					synchronized (childThreads) {
-						for (Thread childThread : childThreads) {
-							if (logger.isDebugEnabled()) {
-								logger.debug("trying to interrupt child thread " + childThread);
-							}
-							childThread.interrupt();
-						}
-					}
+					abortChildThreads();
 					//wait some time for graph result
 					try {
 						Thread.sleep(10);
@@ -622,6 +614,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 				}
 			}
 		}
+		
 		if (cause != null) {
             setResultCode(Result.ERROR);
             resultException = createNodeException(cause);
@@ -636,6 +629,17 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		}
 	}
 
+	private void abortChildThreads() {
+		synchronized(nodeThreadMonitor) {
+			for (Thread childThread : childThreads) {
+				if (logger.isDebugEnabled()) {
+					logger.debug("trying to interrupt child thread " + childThread);
+				}
+				childThread.interrupt();
+			}
+		}
+	}
+	
     /**
      * @return thread of running node; <b>null</b> if node does not running
      */
@@ -1302,14 +1306,27 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @param childThread
      */
     public void registerChildThread(Thread childThread) {
-    	if (runIt) {
-    		//new child thread can be registered only for running components
-    		childThreads.add(childThread);
-    	} else {
-    		throw new JetelRuntimeException("New component's child thread cannot be registered. Component has been already finished.");
+    	synchronized(nodeThreadMonitor) {
+	    	if (runIt) {
+	    		//new child thread can be registered only for running components
+	    		childThreads.add(childThread);
+	    	} else {
+	    		throw new JetelRuntimeException("New component's child thread cannot be registered. Component has been already finished.");
+	    	}
     	}
     }
 
+    /**
+     * The given thread is unregistered from this node. Should be invoked by the child thread
+     * right before the thread finish.
+     * @param childThread
+     */
+    public void unregisterChildThread(Thread childThread) {
+    	synchronized(nodeThreadMonitor) {
+    		childThreads.remove(childThread);
+    	}
+    }
+    
     /**
      * The given threads are registered as child threads of this component.
      * The child threads are exploited for gathering of tracking information - for instance 
@@ -1317,11 +1334,13 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @param childThreads
      */
     protected void registerChildThreads(List<Thread> childThreads) {
-    	if (runIt) {
-    		//new child thread can be registered only for running components
-    		this.childThreads.addAll(childThreads);
-    	} else {
-    		throw new JetelRuntimeException("New component's child threads cannot be registered. Component has been already finished.");
+    	synchronized(nodeThreadMonitor) {
+	    	if (runIt) {
+	    		//new child thread can be registered only for running components
+	    		this.childThreads.addAll(childThreads);
+	    	} else {
+	    		throw new JetelRuntimeException("New component's child threads cannot be registered. Component has been already finished.");
+	    	}
     	}
     }
 
@@ -1329,7 +1348,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * @return list of all child threads - threads running under this component
      */
     public List<Thread> getChildThreads() {
-    	return new ArrayList<Thread>(childThreads); //duplicate is returned to ensure thread safety
+    	synchronized(nodeThreadMonitor) {
+    		return new ArrayList<Thread>(childThreads); //duplicate is returned to ensure thread safety
+    	}
     }
 
 
@@ -1345,14 +1366,21 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         setResultCode(Result.READY);
         resultMessage = null;
         resultException = null;
-        childThreads.clear();
+
+//should be uncommented after CLO-2574 is fixed   	
+//        synchronized(nodeThreadMonitor) {
+//    		childThreads.clear();
+//    	}
     }
 
     @Override
     public synchronized void free() {
     	super.free();
     	
-    	childThreads.clear();
+//should be uncommented after CLO-2574 is fixed   	
+//    	synchronized(nodeThreadMonitor) {
+//    		childThreads.clear();
+//    	}
     }
 
 	/**

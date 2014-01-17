@@ -808,6 +808,30 @@ public class StringUtilsTest extends CloverTestCase {
 		assertEquals(input, StringUtils.removeNonPrintable(input));
 	}
 	
+	public void testRemoveNewLineChars() {
+		assertEquals(null, StringUtils.removeNewLineChars(null, null));
+		assertEquals(null, StringUtils.removeNewLineChars(null, ""));
+		assertEquals(null, StringUtils.removeNewLineChars(null, "xxx"));
+
+		assertEquals("", StringUtils.removeNewLineChars("", null));
+		assertEquals("", StringUtils.removeNewLineChars("", ""));
+		assertEquals("", StringUtils.removeNewLineChars("", "xxx"));
+		
+		assertEquals("abc", StringUtils.removeNewLineChars("abc", null));
+		assertEquals("abc", StringUtils.removeNewLineChars("abc", ""));
+		assertEquals("abc", StringUtils.removeNewLineChars("abc", "xxx"));
+		
+		assertEquals("abcdef", StringUtils.removeNewLineChars("abc\ndef", null));
+		assertEquals("abcdef", StringUtils.removeNewLineChars("abc\ndef", ""));
+		assertEquals("abcxxxdef", StringUtils.removeNewLineChars("abc\ndef", "xxx"));
+
+		assertEquals("def", StringUtils.removeNewLineChars("\r\rdef", null));
+		assertEquals("abc", StringUtils.removeNewLineChars("abc\r", ""));
+		assertEquals("abcxxxdefxxx", StringUtils.removeNewLineChars("abc\r\ndef\n", "xxx"));
+
+		assertEquals("abcxxxxxxdefxxx", StringUtils.removeNewLineChars("abc\n\rdef\n", "xxx"));
+	}
+	
 }
 
 /*

@@ -219,9 +219,6 @@ public class MultiFileWriter {
 				if (currentTarget != null)
 					currentTarget.close();
 				currentTarget = createNewTarget(currentFormatter);
-				currentTarget.setOutputPort(outputPort);
-				currentTarget.setCharset(charset);
-				currentTarget.setDictionary(dictionary);
 				currentTarget.init();
 			}
 		} catch (IOException e) {
@@ -243,6 +240,9 @@ public class MultiFileWriter {
 		targetFile.setUseChannel(useChannel);
 		targetFile.setCharset(charset);
 		targetFile.setStoreRawData(storeRawData);
+		targetFile.setCompressLevel(compressLevel);
+		targetFile.setOutputPort(outputPort);
+		targetFile.setDictionary(dictionary);
 		return targetFile;
     }
     
@@ -263,6 +263,8 @@ public class MultiFileWriter {
 		targetFile.setCharset(charset);
 		targetFile.setStoreRawData(storeRawData);
 		targetFile.setCompressLevel(compressLevel);
+		targetFile.setOutputPort(outputPort);
+		targetFile.setDictionary(dictionary);
 		return targetFile;
     }
 
@@ -355,7 +357,6 @@ public class MultiFileWriter {
     	if ((currentTarget = multiTarget.get(keyString)) == null) {
     		currentTarget = createNewTarget();
     		currentTarget.setFileTag(useNumberFileTag ? numberFileTag++ : keyString);
-    		currentTarget.setDictionary(dictionary);
     		currentTarget.init();
     		multiTarget.put(keyString, currentTarget);
     	}
@@ -377,7 +378,6 @@ public class MultiFileWriter {
     		
     		currentTarget = createNewTarget();
     		currentTarget.setFileTag(useNumberFileTag ? numberFileTag++ : keyString);
-    		currentTarget.setDictionary(dictionary);
     		currentTarget.init();
     	}
 		currentFormatter = currentTarget.getFormatter();
@@ -432,7 +432,6 @@ public class MultiFileWriter {
 				if (unassignedFileURL == null) return;
 				unassignedTarget = createNewTarget();
 				unassignedTarget.setFileName(unassignedFileURL);
-				unassignedTarget.setDictionary(dictionary);
 				unassignedTarget.init();
 			}
     		currentTarget = unassignedTarget;

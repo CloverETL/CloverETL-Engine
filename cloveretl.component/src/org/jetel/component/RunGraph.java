@@ -432,6 +432,12 @@ public class RunGraph extends Node{
 			commandList.add(runGraph.CONTEXT_URL_SWITCH);
 			commandList.add(getGraph().getRuntimeContext().getContextURL().toString());
 		}
+		
+		if (!args.contains(runGraph.LOG4J_LOG_LEVEL_SWITCH) && getGraph().getRuntimeContext().getLogLevel() != null) {
+			commandList.add(runGraph.LOG4J_LOG_LEVEL_SWITCH);
+			commandList.add(getGraph().getRuntimeContext().getLogLevel().toString());
+		}
+
 		// TODO - hotfix - clover can't run two graphs simultaneously with enable edge debugging
 		// after resolve issue 1748 (http://home.javlinconsulting.cz/view.php?id=1748) next line should be removed
 		commandList.add(runGraph.NO_DEBUG_SWITCH);
@@ -499,6 +505,8 @@ public class RunGraph extends Node{
 		runtimeContext.setContextURL(this.getGraph().getRuntimeContext().getContextURL());
 		runtimeContext.setLogLocation(outputFileName);
 		runtimeContext.setUseJMX(this.getGraph().getRuntimeContext().useJMX());
+		runtimeContext.setRuntimeClassPath(this.getGraph().getRuntimeContext().getRuntimeClassPath());
+		runtimeContext.setCompileClassPath(this.getGraph().getRuntimeContext().getCompileClassPath());
 		
 		RunStatus rs = this.getGraph().getAuthorityProxy().executeGraphSync( graphFileName, runtimeContext, null);
 		
@@ -713,8 +721,8 @@ public class RunGraph extends Node{
 				(isPipelineMode() || getInputPort(INPUT_PORT) == null)) {
         	ConfigurationProblem problem = new ConfigurationProblem("If the graph is " +
         			"executed in separate instance of clover, supplying the command " +
-        			"line for clover is necessary (at least the -plugins argument)." +
-        			"Command line arguments can be supplied by cloverCmdLineArgs attribute" +
+        			"line for clover is necessary (at least the -plugins argument). " +
+        			"Command line arguments can be supplied by cloverCmdLineArgs attribute " +
         			"or by second field in input port (Supplying by field can be made only in in/out mode)." , 
         			Severity.ERROR, this, Priority.NORMAL);
         	status.add(problem);

@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -159,11 +158,11 @@ public final class TransformationGraph extends GraphElement {
 		//graph is graph for itself
 		setGraph(this);
 		
-		phases = new HashMap<Integer,Phase>();
-		connections = new HashMap <String,IConnection> ();
-		sequences = new HashMap<String,Sequence> ();
-		lookupTables = new HashMap<String,LookupTable> ();
-		dataRecordMetadata = new HashMap<String,Object> ();
+		phases = new LinkedHashMap<Integer,Phase>();
+		connections = new LinkedHashMap <String,IConnection> ();
+		sequences = new LinkedHashMap<String,Sequence> ();
+		lookupTables = new LinkedHashMap<String,LookupTable> ();
+		dataRecordMetadata = new LinkedHashMap<String,Object> ();
 		graphParameters = new GraphParameters();
 		dictionary = new Dictionary(this);
 		memoryTracker = new MemoryTracker();
@@ -464,9 +463,6 @@ public final class TransformationGraph extends GraphElement {
 	        // analyze graph's topology
 	        try {
 				GraphAnalyser.analyseGraph(this);
-				for (Edge edge : getEdges().values()) {
-					logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
-				}
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Graph analyse failed.", e);
 			}
@@ -488,6 +484,11 @@ public final class TransformationGraph extends GraphElement {
 	@Override
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
+
+		//print out types of all edges
+		for (Edge edge : getEdges().values()) {
+			logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
+		}
 
 		//check whehter the job type (etlGraph vs jobflow) of the graph is same as the job type in GraphRuntimeContext 
     	if (getJobType() != getRuntimeContext().getJobType()) {
@@ -1100,6 +1101,8 @@ public final class TransformationGraph extends GraphElement {
 	    	if(status == null) {
 	            status = new ConfigurationStatus();
 	        }
+	    	
+	    	graphParameters.checkConfig(status);
 	        
 	        //check dictionary
 	        dictionary.checkConfig(status);

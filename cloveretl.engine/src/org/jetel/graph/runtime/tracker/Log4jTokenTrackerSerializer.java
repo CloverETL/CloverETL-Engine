@@ -96,7 +96,7 @@ public class Log4jTokenTrackerSerializer implements TokenTrackerSerializer {
 				StringUtils.isEmpty(runStatus.executionGroup) ? "" : " in execution group \"" + runStatus.executionGroup + "\"", 
 				StringUtils.isEmpty(runStatus.clusterNodeId) ? "" : " on node " + runStatus.clusterNodeId));
 		if (runStatus.graphParameters != null && !runStatus.graphParameters.isEmpty()) {
-			result.append(String.format("\nGraph parameters:\n%s",
+			result.append(String.format("\nJob parameters:\n%s",
 					formatProperties(runStatus.graphParameters)));
 		}
 		if (runStatus.dictionaryIn != null && !runStatus.dictionaryIn.isEmpty()) {

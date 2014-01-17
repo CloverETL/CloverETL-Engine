@@ -242,7 +242,7 @@ public class MathLib extends TLFunctionLibrary {
     }
     
     
-    @TLFunctionAnnotation("Returns double value rounded to specified precision. Equidistant numbers are rounded up.")
+    @TLFunctionAnnotation("Returns double value rounded to specified precision. Equidistant numbers are away from zero.")
     public static final Double round(TLFunctionCallContext context, double d, Integer precision) {
     	long multiple=pow10(precision);
     	if (precision>0)
@@ -251,37 +251,52 @@ public class MathLib extends TLFunctionLibrary {
     		return ((double)Math.round(d/multiple))*multiple;
     }
     
-    @TLFunctionAnnotation("Returns long value rounded to specified precision. Equidistant numbers are rounded up.")
+    @TLFunctionAnnotation("Returns long value rounded to specified precision. Equidistant numbers are rounded away from zero.")
     public static final Long round(TLFunctionCallContext context, long d, Integer precision) {
-    	long multiple=pow10(precision);
-    	if (precision>0)
+    	if (precision >= 0) {
     		return d;
-    	else
-    		return (d/multiple)*multiple;
+    	} else {
+    		// CLO-2346
+    		// different approach taken here to prevent long overflow
+			long multiple = pow10(precision);
+			long remainder = d % multiple;
+			long result = d - remainder; // first round towards zero (compute floor)
+			if (Math.abs(remainder) >= multiple/2) { // if necessary, round away from zero
+				long correction = (d < 0) ? -multiple : multiple; // subtract from negative numbers, add to positive
+				result += correction; // overflow impossible, Long.MAX_VALUE and MIN_VALUE round towards zero
+			}
+    		return result;
+    	}
     }
     
-    @TLFunctionAnnotation("Returns integer value rounded to specified precision. Equidistant numbers are rounded up.")
+    @TLFunctionAnnotation("Returns integer value rounded to specified precision. Equidistant numbers are rounded away from zero.")
     public static final Integer round(TLFunctionCallContext context, int d, Integer precision) {
-    	long multiple=pow10(precision);
-    	if (precision>0)
+		if (precision >= 0) {
     		return d;
-    	else
-    		return (int)((d/multiple)*multiple);
+		} else {
+			// CLO-2346
+			long multiple = pow10(precision);
+			long half = multiple / 2;
+			if (d < 0) {
+				half = -half;
+			}
+    		return (int) (((d + half) / multiple) * multiple); // we calculate with longs, overflow not possible
+		}
     }
     
-    @TLFunctionAnnotation("Returns decimal value rounded to specified precision. Equidistant numbers are rounded up.")
+    @TLFunctionAnnotation("Returns decimal value rounded to specified precision. Equidistant numbers are rounded away from zero.")
     public static final BigDecimal round(TLFunctionCallContext context, BigDecimal d, Integer precision) {
     	// use HALF_UP rounding mode to be consistent with round(Double)
     	// use roundHalfEven() for HALF_EVEN rounding mode
     	return d.setScale(precision, RoundingMode.HALF_UP); 
     }
     
-    @TLFunctionAnnotation("Returns long value closest to the argument. Equidistant numbers are rounded up.")
+    @TLFunctionAnnotation("Returns long value closest to the argument. Equidistant numbers are rounded away from zero.")
     public static final Long round(TLFunctionCallContext context, double d) {
     	return Math.round(d);
     }
     
-    @TLFunctionAnnotation("Returns decimal value rounded to the closest integer value. Equidistant numbers are rounded up.")
+    @TLFunctionAnnotation("Returns decimal value rounded to the closest integer value. Equidistant numbers are rounded away from zero.")
     public static final BigDecimal round(TLFunctionCallContext context, BigDecimal d) {
     	// use HALF_UP rounding mode to be consistent with round(Double)
     	// use roundHalfEven() for HALF_EVEN rounding mode

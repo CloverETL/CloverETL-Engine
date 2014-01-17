@@ -1,7 +1,4 @@
 10100100;str2bits($0.String);%
-1a1cd1ab;str2bits($0.String);%
-1a1cd1;str2bits($0.String);%
-111001ac;str2bits($0.String);'
+111001;str2bits($0.String);'
 10101010;str2bits($0.String);U
-1a1/1)1.;str2bits($0.String);U
-1a1?1a1.1a1cd1;str2bits($0.String);U%
+1111;str2bits($0.String);

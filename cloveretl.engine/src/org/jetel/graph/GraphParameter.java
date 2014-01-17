@@ -37,6 +37,8 @@ import org.jetel.graph.runtime.IAuthorityProxy;
 @XmlType(propOrder = { "description", "secure", "value", "name" })
 public class GraphParameter {
 
+	public static final String HIDDEN_SECURE_PARAMETER = "*****";
+	
 	private String name;
 	
 	private String value;

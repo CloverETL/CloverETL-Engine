@@ -126,6 +126,12 @@
 		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.SQLiteSpecific"/>
 	</extension>
 
+	<extension point-id="jdbcSpecific">
+		<parameter id="database" value="VERTICA"/>
+		<parameter id="name" value="Vertica"/>
+		<parameter id="class" value="org.jetel.connection.jdbc.specific.impl.VerticaSpecific"/>
+	</extension>
+
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="MYSQL"/>
 		<parameter id="name" value="MySQL"/>
@@ -165,7 +171,10 @@
 		<parameter id="name" value="Microsoft SQL Server"/>
 		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
 		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.8.jar"/>
-		<parameter id="urlHint" value="jdbc:jtds:sqlserver://hostname:1433/database"/>
+		<parameter id="urlHint">
+			<value>jdbc:jtds:sqlserver://hostname:1433/database;instance=instanceName</value>
+			<value>jdbc:jtds:sqlserver://hostname:1433/database</value>
+		</parameter>
 		<parameter id="jdbcSpecific" value="MSSQL"/>
 	</extension>
 	

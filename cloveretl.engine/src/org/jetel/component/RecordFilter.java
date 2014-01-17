@@ -39,12 +39,6 @@ public interface RecordFilter {
 	    boolean isValid(DataRecord record) throws TransformException;
 
 	    /**
-	     * @param records validated records 
-	     * @return true if valid records, false otherwise
-	     */
-	    boolean isValid(DataRecord[] records) throws TransformException;
-
-	    /**
 	     * Called before partition function is first used (getOutputPort is used).
 	     * @param numPartitions how many partitions we have
 	     * @param recordKey set of fields composing key based on which should the

@@ -41,6 +41,8 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 	Object[] arguments;
 	int errorCode;
 	
+	private ErrorReporter errorReporter = null;
+	
 	public TransformLangExecutorRuntimeException(SimpleNode node,Object[] arguments,String message){
 		this(node,arguments,message,null);
 	}
@@ -101,9 +103,8 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
             return nodeInError.getLine();
         return -1;
     }
-	
-	@Override
-	public String getMessage() {
+    
+    public String getSimpleMessage() {
 		StringBuilder strBuf = new StringBuilder("Interpreter runtime exception");
         if (nodeInError != null) {
         	if (nodeInError instanceof CLVFFunctionCall) {
@@ -113,7 +114,7 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
             strBuf.append(" column ").append(nodeInError.getColumn());
             String fileName = nodeInError.getSourceFilename();
             if (fileName != null) {
-            	strBuf.append(" in file ").append(fileName);
+            	strBuf.append(" in import ").append(fileName);
             }
         }
 		if (arguments != null) {
@@ -125,6 +126,11 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 			}
 		}
 		return strBuf.toString();
+    }
+	
+	@Override
+	public String getMessage() {
+		return (errorReporter != null) ? errorReporter.getReport() : getSimpleMessage();
 	}
 
 	public String getExtendedMessage(){
@@ -152,5 +158,17 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 
 	public void setErrorCode(int errorCode) {
 		this.errorCode = errorCode;
+	}
+	
+	/**
+	 * Sets the error reporter.
+	 * Multiple invocations of this method have no effect.
+	 * 
+	 * @param errorReporter
+	 */
+	public void setErrorReporter(ErrorReporter errorReporter) {
+		if (this.errorReporter == null) {
+			this.errorReporter = errorReporter;
+		}
 	}
 }

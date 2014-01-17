@@ -80,6 +80,8 @@ public class TransformFactory<T> {
 	private String charset;
 	/** Component for which the transformation is instantiated */
 	private Node component;
+	/** Optional: Attribute of the component for which the transformation is instantiated */
+	private String attributeName;
 	/** Input metadata of transformation, used for CTL compilation */
 	private DataRecordMetadata[] inMetadata;
 	/** Output metadata of transformation, used for CTL compilation */
@@ -241,7 +243,11 @@ public class TransformFactory<T> {
         	}
         	final ITLCompiler compiler = 
         		TLCompilerFactory.createCompiler(component.getGraph(), inMetadata, outMetadata, charset);
-        	List<ErrorMessage> msgs = compiler.compile(transformCode, transformDescriptor.getCompiledCTL2TransformClass(), component.getId());
+        	String id = component.getId();
+        	if (!StringUtils.isEmpty(attributeName)) {
+        		id += "_" + attributeName;
+        	}
+        	List<ErrorMessage> msgs = compiler.compile(transformCode, transformDescriptor.getCompiledCTL2TransformClass(), id);
         	if (compiler.errorCount() > 0) {
         		String report = ErrorMessage.listToString(msgs, null); // message does not need to be logged here, will be thrown up as part of an exception
         		String message = "CTL code compilation finished with " + compiler.errorCount() + " errors." + report;
@@ -323,6 +329,13 @@ public class TransformFactory<T> {
 	 */
 	public void setComponent(Node component) {
 		this.component = component;
+	}
+
+	/**
+	 * Sets the name of the component attribute which requests the transformation instantiation. 
+	 */
+	public void setAttributeName(String attributeName) {
+		this.attributeName = attributeName;
 	}
 
 	/**

@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="3.4.0.M2" id="1280312940927" licenseType="Commercial" modified="Wed Mar 06 16:35:59 CET 2013" modifiedBy="Pavel" name="graphFilters_Lookups" revision="1.42" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="0.0.0.devel" id="1280312940927" licenseType="Commercial" modified="Mon Jan 13 16:48:58 CET 2014" modifiedBy="User" name="graphFilters_Lookups" revision="1.43" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata4"/>
@@ -12,7 +13,9 @@
 <Field name="customer_country" size="20" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <LookupTable charset="ISO-8859-1" id="LookupTable0" initialSize="512" key="customerid" metadata="Metadata1" name="customers_look" type="simpleLookup"/>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="146" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="211" x="32" y="105">
 <attr name="text"><![CDATA[Find which customers received their orders late due to delayed shipping]]></attr>

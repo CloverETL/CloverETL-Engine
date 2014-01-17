@@ -24,20 +24,21 @@ import java.io.Writer;
 import java.net.URLEncoder;
 import java.util.ArrayDeque;
 import java.util.Deque;
+
 import javax.xml.parsers.SAXParser;
 
-import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.xmlbeans.impl.common.XMLChar;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
-import org.dom4j.io.SAXContentHandler;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.AttributesImpl;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
@@ -50,19 +51,16 @@ public class JsonSaxParser extends SAXParser {
 	
 	
 	private static final String NAMESPACE_URI = "";
-	
 	private static final String XML_NAME_OBJECT = "json_object";
 	private static final String XML_NAME_ARRAY = "json_array";
+	private static final String XML_ARRAY_DEPTH = "arrayDepth";
 	
-	private static final Attributes ATTRIBUTES = new InternalAttributes();
 	private static final JsonFactory JSON_FACTORY = new JsonFactory();
+	private static final Attributes EMPTY_ATTRIBUTES = new AttributesImpl();
 	
-	DefaultHandler handler;
-	boolean xmlEscapeChars=false;
+	private DefaultHandler handler;
 	
-	public JsonSaxParser(){
-	}
-	
+	private boolean xmlEscapeChars=false;
 	
 	@Override
 	public org.xml.sax.Parser getParser() throws SAXException {
@@ -112,17 +110,24 @@ public class JsonSaxParser extends SAXParser {
 		}
 		Deque<JsonToken> tokens = new ArrayDeque<JsonToken>();
 		Deque<String> names = new ArrayDeque<String>();
+		Deque<Integer> depthCounter = new ArrayDeque<Integer>();
+		depthCounter.add(0);
 		JsonToken currentToken = null;
 		
 		xmlEscapeChars=true;
 		
 		handler.startDocument();
-		boolean go=true;
-		while (go && (currentToken = parser.nextToken()) != null) {
-			if (firstObjectOnly && currentToken == JsonToken.END_OBJECT && names.size()==1 ){
-				go=false;
+		int startEndCounter = 0;
+		while ((currentToken = parser.nextToken()) != null) {
+			processToken(currentToken, parser, tokens, names, depthCounter);
+			if (currentToken == JsonToken.START_ARRAY || currentToken == JsonToken.START_OBJECT) {
+				startEndCounter++;
+			} else if (currentToken == JsonToken.END_ARRAY || currentToken == JsonToken.END_OBJECT) {
+				startEndCounter--;
 			}
-			processToken(currentToken, parser, tokens, names);
+			if (startEndCounter == 0) {
+				break;
+			}
 		}
 		
 		handler.endDocument();
@@ -138,12 +143,14 @@ public class JsonSaxParser extends SAXParser {
 		}
 		Deque<JsonToken> tokens = new ArrayDeque<JsonToken>();
 		Deque<String> names = new ArrayDeque<String>();
+		Deque<Integer> depthCounter = new ArrayDeque<Integer>();
+		depthCounter.add(0);
 		JsonToken currentToken = null;
 		
 		handler.startDocument();
 		
 		while ((currentToken = parser.nextToken()) != null) {
-			processToken(currentToken, parser, tokens, names);
+			processToken(currentToken, parser, tokens, names, depthCounter);
 		}
 		
 		handler.endDocument();
@@ -151,7 +158,7 @@ public class JsonSaxParser extends SAXParser {
 		
 	}
 	
-	protected void processToken(final JsonToken token, JsonParser parser, Deque<JsonToken> tokens, Deque<String> names) 
+	protected void processToken(final JsonToken token, JsonParser parser, Deque<JsonToken> tokens, Deque<String> names, Deque<Integer> depthCounter) 
 		throws JsonParseException, IOException, SAXException {
 		
 		if (token == null) {
@@ -167,14 +174,24 @@ public class JsonSaxParser extends SAXParser {
 			if (names.isEmpty()) {
 				// top level array
 				names.add(XML_NAME_ARRAY);
+				if (depthCounter.size() == 1 && depthCounter.peek() == 0) {
+					tokens.addFirst(JsonToken.START_ARRAY);
+					depthCounter.add(1);
+					handler.startElement(NAMESPACE_URI, normalizeElementName(names.getFirst()), normalizeElementName(names.getFirst()), EMPTY_ATTRIBUTES);
+				}
 			} else if (tokens.peekLast() == JsonToken.FIELD_NAME) {
 				// named array - remove field token
 				tokens.removeLast();
 			} else if (tokens.peekLast() == JsonToken.START_ARRAY) {
 				// add nested element
 				
+				AttributesImpl attributesImpl = new AttributesImpl();
 				String name = names.getLast();
-				handler.startElement(NAMESPACE_URI, name, name, ATTRIBUTES);
+				int top = depthCounter.pollLast();
+				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(top));
+				top++;
+				depthCounter.add(top);
+				handler.startElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name), attributesImpl);
 			}
 			tokens.add(token);
 			break;
@@ -187,17 +204,35 @@ public class JsonSaxParser extends SAXParser {
 				tokens.removeLast();
 			}
 			tokens.add(token);
+			AttributesImpl attributesImpl = new AttributesImpl();
 			String name = names.getLast();
-			handler.startElement(NAMESPACE_URI, name,name, ATTRIBUTES);
+			if (!depthCounter.isEmpty()) {
+				int top = depthCounter.peekLast();
+				if (top > 0) {
+					attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(top));
+				}
+			}
+			depthCounter.add(Integer.valueOf(0));
+			handler.startElement(NAMESPACE_URI, normalizeElementName(name),normalizeElementName(name), attributesImpl);
 			break;
 		}
 		case END_ARRAY: {
 			// remove corresponding start
 			tokens.removeLast();
-			if (!tokens.isEmpty() && tokens.peekLast() == JsonToken.START_ARRAY) {
+			
+			String name = names.getLast();
+			int top = depthCounter.pollLast();
+			if (top > 0) {
+				top--;
+			}
+			depthCounter.add(top);
+			
+			if (names.size() == 1) {
+				handler.endElement(NAMESPACE_URI, normalizeElementName(names.getFirst()), normalizeElementName(names.getFirst()));
+				names.removeLast();
+			} else if (!tokens.isEmpty() && tokens.peekLast() == JsonToken.START_ARRAY) {
 				// end nested array
-				String name = names.getLast();
-				handler.endElement(NAMESPACE_URI,name, name);
+				handler.endElement(NAMESPACE_URI,normalizeElementName(name), normalizeElementName(name));
 			} else {
 				// remove name if not inside array
 				names.removeLast();
@@ -209,7 +244,8 @@ public class JsonSaxParser extends SAXParser {
 			tokens.removeLast();
 			// end current object
 			String name = names.getLast();
-			handler.endElement(NAMESPACE_URI, name, name);
+			depthCounter.pollLast();
+			handler.endElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name));
 			if (tokens.isEmpty() || tokens.peekLast() != JsonToken.START_ARRAY) {
 				// remove name if not inside array
 				names.removeLast();
@@ -222,18 +258,23 @@ public class JsonSaxParser extends SAXParser {
 			switch (tokens.getLast()) {
 			case FIELD_NAME: {
 				// simple property
-				handler.startElement(NAMESPACE_URI, valueName, valueName, ATTRIBUTES);
+				handler.startElement(NAMESPACE_URI, normalizeElementName(valueName), normalizeElementName(valueName), EMPTY_ATTRIBUTES);
 				processScalarValue(parser);
-				handler.endElement(NAMESPACE_URI, valueName, valueName);
+				handler.endElement(NAMESPACE_URI, normalizeElementName(valueName), normalizeElementName(valueName));
 				tokens.removeLast();
 				names.removeLast();
 				break;
 			}
 			case START_ARRAY: {
 				// array item
-				handler.startElement(NAMESPACE_URI, valueName, valueName, ATTRIBUTES);
+				
+				AttributesImpl attributesImpl = new AttributesImpl();
+				String name = names.getLast();
+				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(depthCounter.peekLast()));
+				
+				handler.startElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name), attributesImpl);
 				processScalarValue(parser);
-				handler.endElement(NAMESPACE_URI, valueName, valueName);
+				handler.endElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name));
 			}
 			}
 		}
@@ -244,7 +285,7 @@ public class JsonSaxParser extends SAXParser {
 		if (parser.getCurrentToken() != JsonToken.VALUE_NULL) {
 			char[] chars;
 			if (xmlEscapeChars){
-				chars=URLEncoder.encode(parser.getText()).toCharArray(); //may be too conservative
+				chars=URLEncoder.encode(parser.getText()).toCharArray();
 			}else{
 				chars= parser.getText().toCharArray();
 			}
@@ -252,33 +293,30 @@ public class JsonSaxParser extends SAXParser {
 		}
 	}
 
-	protected static class JSON2XMLHandler extends DefaultHandler{
-		Writer out;
-		boolean suppressNodeValues; 
+	private class JSON2XMLHandler extends DefaultHandler {
 		
-		JSON2XMLHandler(Writer out, boolean suppresNodeValues){
+		private final Writer out;
+		private final boolean suppressNodeValues; 
+		
+		private JSON2XMLHandler(Writer out, boolean suppresNodeValues){
 			this.out=out;
 			this.suppressNodeValues=suppresNodeValues;
 		}
 		
-
-		/*	
 		@Override
-		public void startDocument ()
-				throws SAXException{
-			try{
-				out.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-			} catch (IOException e) {
-				new SAXException(e);
-			}
-		}
-		*/
-		
-		@Override
-		public void startElement (String uri, String localName,
-			      String qName, Attributes attributes)	throws SAXException	{
+		public void startElement (String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			try {
-				out.append("<").append(localName).append(">");
+				out.append("<").append(localName);
+				//check if there is array depth attribute
+				if (attributes.getLength() == 1) {
+					//write attribute value
+					out.append(" ");
+					out.append(attributes.getLocalName(0));
+					out.append("=\"");
+					out.append(attributes.getValue(0));
+					out.append("\"");
+				}
+				out.append(">");
 			} catch (IOException e) {
 				new SAXException(e);
 			}
@@ -286,8 +324,7 @@ public class JsonSaxParser extends SAXParser {
 		}
 		
 		@Override
-		 public void endElement (String uri, String localName, String qName)
-					throws SAXException{
+		 public void endElement (String uri, String localName, String qName) throws SAXException{
 			try {
 				out.append("</").append(localName).append(">");
 			} catch (IOException e) {
@@ -297,8 +334,7 @@ public class JsonSaxParser extends SAXParser {
 		}
 		
 		@Override
-		public void characters (char ch[], int start, int length)
-				throws SAXException{
+		public void characters (char ch[], int start, int length) throws SAXException{
 			if (suppressNodeValues) return;
 			try {
 				out.write(ch,start,length);
@@ -308,82 +344,23 @@ public class JsonSaxParser extends SAXParser {
 		}
 	}
 	
-	
-	
-	/**
-	 * Dummy class - a placeholder.
-	 * 
-	 * @author dpavlis (info@cloveretl.com)
-	 *         (c) Javlin, a.s. (www.cloveretl.com)
-	 *
-	 * @created Aug 12, 2013
-	 */
-	private static class InternalAttributes implements Attributes{
-
-		@Override
-		public int getLength() {
-			return 0;
+	private static String normalizeElementName(String name) {
+		if(!XMLChar.isValidName(name)) {
+			if(name==null || name.trim().length()==0) {
+				name = "UNNAMED";
+			}
+			if(name.indexOf(' ')>=0) {
+			  name = name.replaceAll(" ", "_");
+			}
+			if(!XMLChar.isValidName(name)) {
+				name = "_"+name;
+			}
+			if(!XMLChar.isValidName(name)) {
+				return "__INVALID_ELEMENT_NAME";
+			}
+			
 		}
-
-		@Override
-		public String getURI(int index) {
-			return null;
-		}
-
-		@Override
-		public String getLocalName(int index) {
-			return null;
-		}
-
-		@Override
-		public String getQName(int index) {
-			return null;
-		}
-
-		@Override
-		public String getType(int index) {
-			return null;
-		}
-
-		@Override
-		public String getValue(int index) {
-			return null;
-		}
-
-		@Override
-		public int getIndex(String uri, String localName) {
-			return 0;
-		}
-
-		@Override
-		public int getIndex(String qName) {
-			return 0;
-		}
-
-		@Override
-		public String getType(String uri, String localName) {
-			return null;
-		}
-
-		@Override
-		public String getType(String qName) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public String getValue(String uri, String localName) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public String getValue(String qName) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-		
+		return name;
 	}
-	
 	
 }
