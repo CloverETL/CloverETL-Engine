@@ -531,9 +531,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
                     new ErrorMsgBody(runResult.code(), runResult.message(), resultException));
             sendMessage(msg);
         } finally {
-        	sendFinishMessage();
         	setNodeThread(null);
 			ContextProvider.unregister();
+        	sendFinishMessage();
         }
     }
     

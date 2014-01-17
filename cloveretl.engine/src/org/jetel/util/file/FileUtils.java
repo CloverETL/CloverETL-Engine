@@ -259,7 +259,7 @@ public class FileUtils {
     private static final String PORT_PROTOCOL = "port";
     private static final String DICTIONARY_PROTOCOL = "dict";
     
-    private static String getProtocol(String fileURL) {
+    public static String getProtocol(String fileURL) {
     	if (fileURL == null) {
     		throw new NullPointerException("fileURL is null");
     	}

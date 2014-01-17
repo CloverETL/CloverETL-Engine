@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.DynamicRecordBuffer;
+import org.jetel.graph.runtime.ExecutionType;
 import org.jetel.util.bytes.CloverBuffer;
 
 /**
@@ -103,6 +104,8 @@ public class BufferedEdge extends EdgeBase {
 	@Override
 	public void init() throws IOException {
 		recordBuffer = new DynamicRecordBuffer(internalBufferSize);
+		//for single thread execution we can say that the usage of record buffer is sequential - first all write operation and then all read operations
+		recordBuffer.setSequentialReading(proxy.getGraph().getRuntimeContext().getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION);
 		recordBuffer.init();
 	}
 

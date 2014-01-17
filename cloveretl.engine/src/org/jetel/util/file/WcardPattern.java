@@ -397,10 +397,9 @@ public class WcardPattern {
      * @param fileStreamNames 
      */
     private void processProxy(String fileStreamName, String originalFileName, List<String> fileStreamNames) {
-    	try {
-    		new URL(null, fileStreamName, new ProxyHandler());
+    	if (ProxyHandler.acceptProtocol(FileUtils.getProtocol(fileStreamName))) {
     		fileStreamNames.add(originalFileName); // fileStreamName is a proxy, return originalFileName
-    	} catch (MalformedURLException e) {
+    	} else {
     		fileStreamNames.add(fileStreamName); // not a proxy, return fileStreamName (why???)
     	}
 	}
