@@ -483,8 +483,8 @@ public final class TransformationGraph extends GraphElement {
 			logger.debug("EdgeType [" + edge.getId() + "] : " + (edge.isSharedEdgeBase() ? "shared " + EdgeTypeEnum.valueOf(edge.getEdgeBase()) : edge.getEdgeType()));
 		}
 
-		//check whether the job type (etlGraph vs jobflow) of the graph is same as the job type in GraphRuntimeContext 
-    	if (!getJobType().isSubType(getRuntimeContext().getJobType())) {
+		//check whether the job type (etlGraph vs jobflow) of the graph matches the job type in GraphRuntimeContext 
+    	if (!getJobType().isSubTypeOf(getRuntimeContext().getJobType())) {
     		throw new JetelRuntimeException("Inconsistent runtime setup. " +
 					"Internal graph nature (" + getJobType() + ") differs from runtime graph nature (" + getRuntimeContext().getJobType() + "). " +
 							"Probably internal graph nature does not correspond to graph file suffix.");

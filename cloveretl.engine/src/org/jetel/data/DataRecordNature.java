@@ -77,7 +77,7 @@ public enum DataRecordNature {
 			return DEFAULT;
 		}
 		for (DataRecordNature dataRecordNature : values()) {
-			if (jobType.isSubType(dataRecordNature.respectiveJobType)) {
+			if (jobType.isSubTypeOf(dataRecordNature.respectiveJobType)) {
 				return dataRecordNature;
 			}
 		}

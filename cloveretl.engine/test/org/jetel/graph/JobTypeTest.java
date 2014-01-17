@@ -37,8 +37,8 @@ public class JobTypeTest extends CloverTestCase {
 		assertEquals(JobType.SUB_GRAPH, JobType.fromFileExtension("subgrf"));
 		assertEquals(JobType.SUB_JOBFLOW, JobType.fromFileExtension("subjbf"));
 		try {
-			assertEquals(JobType.PROFILER_JOB, JobType.fromFileExtension("subcpj"));
-			assertTrue(false);
+			JobType.fromFileExtension("subcpj");
+			fail();
 		} catch (IllegalArgumentException e) {
 			//ok
 		}

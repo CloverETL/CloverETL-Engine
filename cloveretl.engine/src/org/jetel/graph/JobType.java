@@ -83,8 +83,49 @@ public enum JobType {
 		return fileType;
 	}
 	
-	public boolean isSubType(JobType parentType) {
-		return this.equals(parentType) || ((parent != null) && parent.isSubType(parentType));
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is a sub-type of the given job type (or the type itself).
+	 * 
+	 * @param parentType
+	 * @return
+	 */
+	public boolean isSubTypeOf(JobType parentType) {
+		return (this == parentType) || ((parent != null) && parent.isSubTypeOf(parentType));
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #ETL_GRAPH} or {@link #SUB_GRAPH}.
+	 * 
+	 * @return <code>true</code> for {@link #ETL_GRAPH} or {@link #SUB_GRAPH}
+	 */
+	public boolean isGraph() {
+		return this.isSubTypeOf(ETL_GRAPH);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #JOBFLOW} or {@link #SUB_JOBFLOW}.
+	 * 
+	 * @return <code>true</code> for {@link #JOBFLOW} or {@link #SUB_JOBFLOW}
+	 */
+	public boolean isJobflow() {
+		return this.isSubTypeOf(JOBFLOW);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #PROFILER_JOB}.
+	 * 
+	 * @return <code>true</code> for {@link #PROFILER_JOB}
+	 */
+	public boolean isProfilerJob() {
+		return this.isSubTypeOf(PROFILER_JOB);
+	}
+	
+	public JobType getBaseType() {
+		return (parent == null) ? this : parent.getBaseType();
 	}
 
 	/**

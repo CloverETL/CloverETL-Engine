@@ -1160,7 +1160,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		//verify job type - has to be same as job type of parent graph
 		TransformationGraph parentGraph = getGraph();
 		if (parentGraph != null) {
-			if (parentGraph.getJobType() == JobType.JOBFLOW && getNature() != DataRecordNature.TOKEN) {
+			if (parentGraph.getJobType().isJobflow() && getNature() != DataRecordNature.TOKEN) {
 				status.add(new ConfigurationProblem("Invalid metadata '" + name + "'. Token metadata nature is required.",
 						Severity.ERROR, this, Priority.NORMAL));
 			}
