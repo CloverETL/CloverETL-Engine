@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseType="Commercial" modified="Thu Jul 18 16:10:27 CEST 2013" modifiedBy="krivanekm" name="RunJobInHadoopHIVE" revision="1.43" showComponentDetails="true">
+<Graph author="Wesley" created="Wed Feb 20 11:21:19 CET 2013" guiVersion="0.0.0.devel" id="1361367492640" licenseType="Commercial" modified="Mon Jan 13 18:38:26 CET 2014" modifiedBy="User" name="RunJobInHadoopHIVE" revision="1.44" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/meta_count_output.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/meta_key_value_pairs.fmt" id="Metadata0"/>
 <Connection dbConfig="${CONN_DIR}/Hive.cfg" id="JDBC0" type="JDBC"/>
-<Property fileURL="hadoop.prm" id="GraphParameter0"/>
-<Property fileURL="workspace.prm" id="GraphParameter3"/>
+<GraphParameters>
+<GraphParameterFile fileURL="hadoop.prm"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="259" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Phase 0: Drop Hive table" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="274" x="20" y="189">
 <attr name="text"><![CDATA[
 

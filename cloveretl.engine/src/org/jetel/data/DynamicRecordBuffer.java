@@ -461,7 +461,12 @@ public class DynamicRecordBuffer {
     		if (diskSlot != null) {
     			return diskSlot;
     		} else {
-    			obsoleteTempFiles.removeFirst();
+    			obsoleteTempFiles.removeFirst(); //removes obsoleteTempFile
+    			try {
+    				obsoleteTempFile.close();
+    			} catch (IOException e) {
+    				log.warn("Failed to close temp file.", e);
+    			}
     		}
     	}
     	
@@ -576,11 +581,15 @@ public class DynamicRecordBuffer {
 			try {
 				fullFileBuffers = null;
 		        emptyFileBuffers = null;
-				tempFileChannel.close();
-			} finally {
-		        if (!tempFile.delete()) {
-		        	log.warn("Failed to delete temp file: " + tempFile.getAbsolutePath());
+		        if (tempFileChannel != null) {
+		        	tempFileChannel.close();
 		        }
+			} finally {
+				if (tempFile != null) {
+			        if (!tempFile.delete()) {
+			        	log.warn("Failed to delete temp file: " + tempFile.getAbsolutePath());
+			        }
+				}
 			}
 		}
 

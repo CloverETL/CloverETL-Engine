@@ -44,6 +44,7 @@ public abstract class AbstractNode {
 	public static final short RELATION = 8;
 	public static final short COMMENT = 9;
 	public static final short COLLECTION = 10;
+	public static final short CDATA = 11;
 	
 	public static final String LEVEL_DELIMITER = "/";
 

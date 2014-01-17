@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="3.4.0.M2" id="1343736408315" licenseType="Commercial" modified="Wed Mar 06 16:39:12 CET 2013" modifiedBy="Pavel" name="example08_A" nature="jobflow" revision="1.49" showComponentDetails="true">
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="0.0.0.devel" id="1343736408315" licenseType="Commercial" modified="Mon Jan 13 16:50:07 CET 2014" modifiedBy="User" name="example08_A" nature="jobflow" revision="1.51" showComponentDetails="true">
 <Global>
 <Metadata id="ExecuteGraph_RunStatus">
 <Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -24,13 +25,15 @@
 <Field eofAsDelimiter="false" name="security_token" nullable="true" shift="0" size="0" type="string"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter0" name="FORCE.COM_PASSWORD" value=""/>
-<Property id="GraphParameter1" name="FORCE.COM_SECURITY_TOKEN" value=""/>
-<Property id="GraphParameter2" name="FORCE.COM_USER" value=""/>
-<Property fileURL="workspace.prm" id="GraphParameter3"/>
+<GraphParameters>
+<GraphParameter name="FORCE_COM_PASSWORD"/>
+<GraphParameter name="FORCE_COM_SECURITY_TOKEN"/>
+<GraphParameter name="FORCE_COM_USER"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="194" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="565" x="457" y="93">
 <attr name="text"><![CDATA[!! Please note that a valid DE Salesforce account is necessary !!!
-Please set FORCE.COM_USER, FORCE.COM_PASSWORD and FORCE.COM_SECURITY_TOKEN parameters
+Please set FORCE_COM_USER, FORCE_COM_PASSWORD and FORCE_COM_SECURITY_TOKEN parameters
 
 Related Processes:
 - SalesforceWebService.jbf (Main)
@@ -105,15 +108,15 @@ NOTE: a valid Salesforce DE account  must be filled in SalesforceWebService-1.gr
 <attr name="filterExpression"><![CDATA[//#CTL2
 $in.0.user != '' && $in.0.password != '' && $in.0.security_token != '']]></attr>
 </Node>
-<Node enabled="enabled" errorMessage="Force.com credentials missing - Please go to Outline/Parameters and set FORCE.COM_USER, FORCE.COM_PASSWORD and FORCE.COM_SECURITY_TOKEN" guiName="Credentials missing" guiX="235" guiY="583" id="CREDENTIALS_MISSING" type="FAIL"/>
+<Node enabled="enabled" errorMessage="Force.com credentials missing - Please go to Outline/Parameters and set FORCE_COM_USER, FORCE_COM_PASSWORD and FORCE_COM_SECURITY_TOKEN" guiName="Credentials missing" guiX="235" guiY="583" id="CREDENTIALS_MISSING" type="FAIL"/>
 <Node enabled="enabled" guiName="Get Force.com credentials" guiX="35" guiY="344" id="GET_FORCE_COM_CREDENTIALS" type="GET_JOB_INPUT">
 <attr name="mapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
 function integer transform() {
-	$out.0.user = getParamValue("FORCE.COM_USER");
-	$out.0.password = getParamValue("FORCE.COM_PASSWORD");
-	$out.0.security_token = getParamValue("FORCE.COM_SECURITY_TOKEN");
+	$out.0.user = getParamValue("FORCE_COM_USER");
+	$out.0.password = getParamValue("FORCE_COM_PASSWORD");
+	$out.0.security_token = getParamValue("FORCE_COM_SECURITY_TOKEN");
 
 	return ALL;
 }

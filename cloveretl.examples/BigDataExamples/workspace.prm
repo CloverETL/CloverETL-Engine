@@ -1,18 +1,16 @@
-##Project path
-#Tue Mar 12 12:25:01 CET 2013
-PROJECT=.
-
-
-#Tue Mar 12 12:25:01 CET 2013
-CONN_DIR=${PROJECT}/conn
-SEQ_DIR=${PROJECT}/seq
-DATAOUT_DIR=${PROJECT}/data-out
-PROFILE_DIR=${PROJECT}/profile
-GRAPH_DIR=${PROJECT}/graph
-TRANS_DIR=${PROJECT}/trans
-DATATMP_DIR=${PROJECT}/data-tmp
-META_DIR=${PROJECT}/meta
-LIB_DIR=${PROJECT}/lib
-DATAIN_DIR=${PROJECT}/data-in
-LOOKUP_DIR=${PROJECT}/lookup
-JOBFLOW_DIR=${PROJECT}/jobflow
+<?xml version="1.0" encoding="UTF-8"?>
+<GraphParameters>
+<GraphParameter name="PROJECT" value="."/>
+<GraphParameter name="CONN_DIR" value="${PROJECT}/conn"/>
+<GraphParameter name="DATAIN_DIR" value="${PROJECT}/data-in"/>
+<GraphParameter name="DATAOUT_DIR" value="${PROJECT}/data-out"/>
+<GraphParameter name="DATATMP_DIR" value="${PROJECT}/data-tmp"/>
+<GraphParameter name="GRAPH_DIR" value="${PROJECT}/graph"/>
+<GraphParameter name="JOBFLOW_DIR" value="${PROJECT}/jobflow"/>
+<GraphParameter name="LIB_DIR" value="${PROJECT}/lib"/>
+<GraphParameter name="LOOKUP_DIR" value="${PROJECT}/lookup"/>
+<GraphParameter name="META_DIR" value="${PROJECT}/meta"/>
+<GraphParameter name="PROFILE_DIR" value="${PROJECT}/profile"/>
+<GraphParameter name="SEQ_DIR" value="${PROJECT}/seq"/>
+<GraphParameter name="TRANS_DIR" value="${PROJECT}/trans"/>
+</GraphParameters>

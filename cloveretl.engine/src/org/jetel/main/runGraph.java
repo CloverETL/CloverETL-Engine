@@ -351,6 +351,7 @@ public class runGraph {
         runtimeContext.setDebugMode(debugMode);
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
+        runtimeContext.setLogLevel(logLevel);
         try {
 			runtimeContext.setJobUrl(FileUtils.getFileURL(contextURL, graphFileName).toString());
 		} catch (MalformedURLException e1) {

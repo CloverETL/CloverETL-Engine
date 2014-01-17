@@ -27,6 +27,7 @@ import java.util.Deque;
 
 import javax.xml.parsers.SAXParser;
 
+import org.apache.xmlbeans.impl.common.XMLChar;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
@@ -60,7 +61,6 @@ public class JsonSaxParser extends SAXParser {
 	private DefaultHandler handler;
 	
 	private boolean xmlEscapeChars=false;
-	private boolean jsonStarted = false;
 	
 	@Override
 	public org.xml.sax.Parser getParser() throws SAXException {
@@ -117,13 +117,16 @@ public class JsonSaxParser extends SAXParser {
 		xmlEscapeChars=true;
 		
 		handler.startDocument();
-		boolean go = true;
-		jsonStarted = false;
-		while (go && (currentToken = parser.nextToken()) != null) {
-			if (firstObjectOnly && jsonStarted && depthCounter.size() == 1 && depthCounter.peek() == 0){
-				go = false;
-			} else {
-				processToken(currentToken, parser, tokens, names, depthCounter);
+		int startEndCounter = 0;
+		while ((currentToken = parser.nextToken()) != null) {
+			processToken(currentToken, parser, tokens, names, depthCounter);
+			if (currentToken == JsonToken.START_ARRAY || currentToken == JsonToken.START_OBJECT) {
+				startEndCounter++;
+			} else if (currentToken == JsonToken.END_ARRAY || currentToken == JsonToken.END_OBJECT) {
+				startEndCounter--;
+			}
+			if (startEndCounter == 0) {
+				break;
 			}
 		}
 		
@@ -171,6 +174,11 @@ public class JsonSaxParser extends SAXParser {
 			if (names.isEmpty()) {
 				// top level array
 				names.add(XML_NAME_ARRAY);
+				if (depthCounter.size() == 1 && depthCounter.peek() == 0) {
+					tokens.addFirst(JsonToken.START_ARRAY);
+					depthCounter.add(1);
+					handler.startElement(NAMESPACE_URI, normalizeElementName(names.getFirst()), normalizeElementName(names.getFirst()), EMPTY_ATTRIBUTES);
+				}
 			} else if (tokens.peekLast() == JsonToken.FIELD_NAME) {
 				// named array - remove field token
 				tokens.removeLast();
@@ -183,8 +191,7 @@ public class JsonSaxParser extends SAXParser {
 				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(top));
 				top++;
 				depthCounter.add(top);
-				jsonStarted = true;
-				handler.startElement(NAMESPACE_URI, name, name, attributesImpl);
+				handler.startElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name), attributesImpl);
 			}
 			tokens.add(token);
 			break;
@@ -205,9 +212,8 @@ public class JsonSaxParser extends SAXParser {
 					attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(top));
 				}
 			}
-			jsonStarted = true;
 			depthCounter.add(Integer.valueOf(0));
-			handler.startElement(NAMESPACE_URI, name,name, attributesImpl);
+			handler.startElement(NAMESPACE_URI, normalizeElementName(name),normalizeElementName(name), attributesImpl);
 			break;
 		}
 		case END_ARRAY: {
@@ -221,9 +227,12 @@ public class JsonSaxParser extends SAXParser {
 			}
 			depthCounter.add(top);
 			
-			if (!tokens.isEmpty() && tokens.peekLast() == JsonToken.START_ARRAY) {
+			if (names.size() == 1) {
+				handler.endElement(NAMESPACE_URI, normalizeElementName(names.getFirst()), normalizeElementName(names.getFirst()));
+				names.removeLast();
+			} else if (!tokens.isEmpty() && tokens.peekLast() == JsonToken.START_ARRAY) {
 				// end nested array
-				handler.endElement(NAMESPACE_URI,name, name);
+				handler.endElement(NAMESPACE_URI,normalizeElementName(name), normalizeElementName(name));
 			} else {
 				// remove name if not inside array
 				names.removeLast();
@@ -236,7 +245,7 @@ public class JsonSaxParser extends SAXParser {
 			// end current object
 			String name = names.getLast();
 			depthCounter.pollLast();
-			handler.endElement(NAMESPACE_URI, name, name);
+			handler.endElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name));
 			if (tokens.isEmpty() || tokens.peekLast() != JsonToken.START_ARRAY) {
 				// remove name if not inside array
 				names.removeLast();
@@ -249,9 +258,9 @@ public class JsonSaxParser extends SAXParser {
 			switch (tokens.getLast()) {
 			case FIELD_NAME: {
 				// simple property
-				handler.startElement(NAMESPACE_URI, valueName, valueName, EMPTY_ATTRIBUTES);
+				handler.startElement(NAMESPACE_URI, normalizeElementName(valueName), normalizeElementName(valueName), EMPTY_ATTRIBUTES);
 				processScalarValue(parser);
-				handler.endElement(NAMESPACE_URI, valueName, valueName);
+				handler.endElement(NAMESPACE_URI, normalizeElementName(valueName), normalizeElementName(valueName));
 				tokens.removeLast();
 				names.removeLast();
 				break;
@@ -259,24 +268,13 @@ public class JsonSaxParser extends SAXParser {
 			case START_ARRAY: {
 				// array item
 				
-				if (depthCounter.size() == 1 && depthCounter.peek() == 0) {
-					tokens.addFirst(JsonToken.START_ARRAY);
-					depthCounter.add(1);
-					AttributesImpl attributesImpl = new AttributesImpl();
-					attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(0));
-					handler.startElement(NAMESPACE_URI, names.getFirst(), names.getFirst(), attributesImpl);
-				}
-				
 				AttributesImpl attributesImpl = new AttributesImpl();
 				String name = names.getLast();
-				int top = depthCounter.peekLast();
-				if (top > 0) {
-					attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(top));
-				}
+				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(depthCounter.peekLast()));
 				
-				handler.startElement(NAMESPACE_URI, name, name, attributesImpl);
+				handler.startElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name), attributesImpl);
 				processScalarValue(parser);
-				handler.endElement(NAMESPACE_URI, name, name);
+				handler.endElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name));
 			}
 			}
 		}
@@ -344,5 +342,25 @@ public class JsonSaxParser extends SAXParser {
 				new SAXException(e);
 			}
 		}
-	}	
+	}
+	
+	private static String normalizeElementName(String name) {
+		if(!XMLChar.isValidName(name)) {
+			if(name==null || name.trim().length()==0) {
+				name = "UNNAMED";
+			}
+			if(name.indexOf(' ')>=0) {
+			  name = name.replaceAll(" ", "_");
+			}
+			if(!XMLChar.isValidName(name)) {
+				name = "_"+name;
+			}
+			if(!XMLChar.isValidName(name)) {
+				return "__INVALID_ELEMENT_NAME";
+			}
+			
+		}
+		return name;
+	}
+	
 }

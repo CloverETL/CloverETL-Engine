@@ -790,6 +790,18 @@ public class GraphRuntimeContext {
 			public Object parseValue(String s) {
 				return s;
 			}
+		},
+		CLASSPATH("classpath", String.class) {
+			@Override
+			public Object parseValue(String s) {
+				return s;
+			}
+		},
+		COMPILE_CLASSPATH("compileClasspath", String.class) {
+			@Override
+			public Object parseValue(String s) {
+				return s;
+			}
 		};
 		
 		String key;

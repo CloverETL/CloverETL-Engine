@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Evaluation Devel" modified="Thu Jun 02 11:52:53 CEST 2011" modifiedBy="avackova" name="graphParsingTextData" revision="1.124" showComponentDetails="true">
+<Graph author="avackova" created="Wed Aug 04 09:04:37 CEST 2010" guiVersion="0.0.0.devel" id="1280396941728" licenseType="Commercial" modified="Mon Jan 13 17:04:33 CET 2014" modifiedBy="User" name="graphParsingTextData" revision="1.125" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=" " name="master" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -15,14 +15,16 @@
 <Field name="name" trim="true" type="string"/>
 </Record>
 </Metadata>
-<Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" folded="false" height="46" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="How to process files with complicated structure?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="602" x="4" y="16"/>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="225" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="The order of states is known" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="602" x="4" y="73"/>
-<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" folded="false" height="218" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Prefix is used to identify the state" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="602" x="4" y="302"/>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="0" backgroundColorG="196" backgroundColorR="255" enabled="true" folded="false" height="46" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="How to process files with complicated structure?" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="602" x="4" y="16"/>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" enabled="true" folded="false" height="225" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="The order of states is known" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="602" x="4" y="73"/>
+<Note alignment="1" backgroundColorB="181" backgroundColorG="245" backgroundColorR="245" enabled="true" folded="false" height="218" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Prefix is used to identify the state" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="602" x="4" y="302"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiHeight="101" guiName="Multi Type Reader" guiWidth="161" guiX="13" guiY="119" id="COMPLEX_DATA_READER0" stateMetadata="Metadata0:person&#10;Metadata2:spouse&#10;Metadata2:children" type="COMPLEX_DATA_READER">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiName="Multi Type Reader" guiX="13" guiY="119" id="COMPLEX_DATA_READER0" stateMetadata="Metadata0:person&#10;Metadata2:spouse&#10;Metadata2:children" type="COMPLEX_DATA_READER">
 <attr name="guiDescription"><![CDATA[Parses text file with various kinds of records. In this, easier case, we know, how the states go each after another, so we don't need to create a selector. We add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
 <attr name="transformCode"><![CDATA[//#CTL2:COMPILE
 
@@ -117,7 +119,7 @@ function integer nextOutput(integer state, integer seq) {
 //md5sum: 5EC684CA50DDC038FC296F9D75F5736D
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/people.xml" guiHeight="101" guiName="XMLWriter" guiWidth="128" guiX="463" guiY="121" id="EXT_XML_WRITER0" omitNewLines="false" type="EXT_XML_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/people.xml" guiName="XMLWriter" guiX="463" guiY="121" id="EXT_XML_WRITER0" omitNewLines="false" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <persons xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <person clover:inPort="0">
@@ -128,7 +130,7 @@ function integer nextOutput(integer state, integer seq) {
 </persons>]]></attr>
 <attr name="guiDescription"><![CDATA[Joins person with her/his spouse and children and formats the data into xml file]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Normalizer" guiWidth="128" guiX="258" guiY="181" id="NORMALIZER0" type="NORMALIZER">
+<Node enabled="enabled" guiName="Normalizer" guiX="258" guiY="181" id="NORMALIZER0" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#CTL2
 // This transformation defines the way in which a single input record is normalized
 // into multiple output records.
@@ -193,8 +195,7 @@ function void clean() {
 <Edge debugMode="false" fromNode="NORMALIZER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 2 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:2"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiHeight="101" guiName="Multi Type Reader" guiWidth="161" guiX="13" guiY="338" id="COMPLEX_DATA_READER1" selectorProperties="*spouse\:|=1&#10;*children\:|=2&#10;" stateMetadata="Metadata0:person&#10;Metadata2:spouse&#10;Metadata2:children" type="COMPLEX_DATA_READER">
-<attr name="guiDescription"><![CDATA[Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  We add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/peoples.txt" guiName="Multi Type Reader" guiX="13" guiY="338" id="COMPLEX_DATA_READER1" selectorProperties="*spouse\:|=1&#10;*children\:|=2&#10;" stateMetadata="Metadata0:person&#10;Metadata2:spouse&#10;Metadata2:children" type="COMPLEX_DATA_READER">
 <attr name="selectorCode"><![CDATA[import com.opensys.cloveretl.component.complexdatareader.ComplexDataParser;
 import com.opensys.cloveretl.component.complexdatareader.PrefixInputMetadataSelector;
 
@@ -209,6 +210,7 @@ public class PrefixInputMetadataSelectorWithDefault extends	PrefixInputMetadataS
 	
 }
 ]]></attr>
+<attr name="guiDescription"><![CDATA[Parses text file with various kinds of records. Two of them are identified by prefix; record without prefix is sent to 0th output port.  We add a unique id, that idetifies the person, his/her spouse and children. The unique id is used in downstream transformation (XMLWriter) to join corresponding records together.]]></attr>
 <attr name="transformCode"><![CDATA[//#CTL2:COMPILE
 
 long counter0 = 0;
@@ -302,7 +304,7 @@ function integer nextOutput(integer state, integer seq) {
 //md5sum: 0263626E00311F5F395F1C3AF7C17015
 ]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/people1.xml" guiHeight="101" guiName="XMLWriter" guiWidth="128" guiX="463" guiY="340" id="EXT_XML_WRITER1" omitNewLines="false" type="EXT_XML_WRITER">
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/people1.xml" guiName="XMLWriter" guiX="463" guiY="340" id="EXT_XML_WRITER1" omitNewLines="false" type="EXT_XML_WRITER">
 <attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <persons xmlns:clover="http://www.cloveretl.com/ns/xmlmapping">
   <person clover:inPort="0">
@@ -313,7 +315,7 @@ function integer nextOutput(integer state, integer seq) {
 </persons>]]></attr>
 <attr name="guiDescription"><![CDATA[Joins person with her/his spouse and children and formats the data into xml file]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="101" guiName="Normalizer" guiWidth="128" guiX="258" guiY="400" id="NORMALIZER1" type="NORMALIZER">
+<Node enabled="enabled" guiName="Normalizer" guiX="258" guiY="400" id="NORMALIZER1" type="NORMALIZER">
 <attr name="normalize"><![CDATA[//#CTL2
 // This transformation defines the way in which a single input record is normalized
 // into multiple output records.

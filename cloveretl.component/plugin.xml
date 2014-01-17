@@ -1558,7 +1558,7 @@
 	      <property category="advanced" displayName="OAuth Access Token" modifiable="true" name="oAuthAccessToken" nullable="true" required="false">
 	        <singleType name="string" />
 	      </property>
-	      <property category="advanced" displayName="OAuth  Access Token secret" modifiable="true" name="oAuthAccessTokenSecret" nullable="true" required="false">
+	      <property category="advanced" displayName="OAuth Access Token secret" modifiable="true" name="oAuthAccessTokenSecret" nullable="true" required="false">
 	        <singleType name="string" />
 	      </property>
 	      <property category="advanced" displayName="Store HTTP response to file" modifiable="true" name="responseAsFileName" nullable="true" required="false" defaultHint="false" redundant="inFileUrl">
@@ -2163,7 +2163,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="readers" iconPath="icons/readers/JMSReader" name="JMSReader" type="JMS_READER" className="org.jetel.component.JmsReader">
+	  <ETLComponent category="readers" iconPath="icons/readers/JMSReader" name="JMSReader" type="JMS_READER" className="org.jetel.component.JmsReader" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Receives JMS messages.</shortDescription>
 	    <description>Receives JMS messages, converts them to data records and sends them to all connected output ports. Implements JmsMsg2DataRecord interface.</description>
 	    <inputPorts />
@@ -2206,7 +2206,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/JMSWriter" name="JMSWriter" type="JMS_WRITER" className="org.jetel.component.JmsWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/JMSWriter" name="JMSWriter" type="JMS_WRITER" className="org.jetel.component.JmsWriter" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Sends out JMS messages.</shortDescription>
 	    <description>Receives data through connected input port, converts data records to JMS messages and sends them out. Implements DataRecord2JmsMsg interface.</description>
 	    <inputPorts>

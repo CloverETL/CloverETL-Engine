@@ -109,6 +109,8 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         runtimeContext.setAdditionalProperties(givenRuntimeContext.getAdditionalProperties());
         runtimeContext.setContextURL(givenRuntimeContext.getContextURL());
         runtimeContext.setDictionaryContent(givenRuntimeContext.getDictionaryContent());
+        runtimeContext.setRuntimeClassPath(givenRuntimeContext.getRuntimeClassPath());
+        runtimeContext.setCompileClassPath(givenRuntimeContext.getCompileClassPath());
         
         // debug mode has to be turned off, parallel edge debugging is not available for non-server graph processing 
         runtimeContext.setDebugMode(false);

@@ -248,7 +248,7 @@ public class JdbcDriverImpl implements JdbcDriver {
 				}
 			} catch (Exception e) {
 				if (logger.isWarnEnabled()) {
-					logger.warn("Unable to create helper class for driver unregistering");
+					logger.warn("Unable to create helper class for driver unregistering", e);
 				}
 			}
 

@@ -89,7 +89,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="writers" iconPath="icons/writers/LDAPWriter" name="LDAPWriter" type="LDAP_WRITER" className="com.linagora.component.LdapWriter">
+	  <ETLComponent category="writers" iconPath="icons/writers/LDAPWriter" name="LDAPWriter" type="LDAP_WRITER" className="com.linagora.component.LdapWriter" viewPlainData="false" viewGridData="false">
 	    <shortDescription>Writes information to LDAP directory trees.</shortDescription>
 	    <description>Receives data through connected input port and converts data records to information in LDAP directory trees. Rejected records are sent to the optional output port if connected.</description>
 	    <inputPorts>
