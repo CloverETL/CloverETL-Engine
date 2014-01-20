@@ -29,6 +29,8 @@ import javax.naming.NamingException;
 import javax.naming.SizeLimitExceededException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
+import javax.naming.directory.Attribute;
+import javax.swing.text.html.HTMLDocument.HTMLReader.IsindexAction;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -43,6 +45,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 import com.linagora.ldap.Ldap2JetelData.Ldap2JetelByte;
 import com.linagora.ldap.Ldap2JetelData.Ldap2JetelString;
@@ -55,11 +58,39 @@ import com.linagora.ldap.LdapManager.ReferralHandling;
  * this class is the interface between data from an LDAP directory 
  * and Clover's data internal representation.
  * It gives common hight level method to parse an LDAP response
- * @author Francois Armand
+ * @author Francois Armand , David Pavlis <david.pavlis@cloveretl.com>
  * @since september, 2006
  */
 public class LdapParser extends AbstractParser {
 
+	
+	public static class LdapDataSource{
+		private String basedn;
+		private String filter;
+		
+		public LdapDataSource(String basedn,String filter){
+			this.basedn=basedn;
+			this.filter=filter;
+		}
+
+		public String getBasedn() {
+			return basedn;
+		}
+
+		public void setBasedn(String basedn) {
+			this.basedn = basedn;
+		}
+
+		public String getFilter() {
+			return filter;
+		}
+
+		public void setFilter(String filter) {
+			this.filter = filter;
+		}
+	}
+	
+	
 	/** timeout, in mili second. 0 means wait indefinitely */ 
 	public static final int TIMEOUT = 0;
 	
@@ -79,27 +110,39 @@ public class LdapParser extends AbstractParser {
 	private DataRecordMetadata metadata;
 
 
+	private static final String[] DEF_ATTR_LIST= { "1.1" };
+	
 	/** List of DN matching the search filter */
 	List<String> dnList = null; 
 	Iterator<String> resultDn = null;
 	
 	/** Transformation object between Attributes  and DataRecord */
 	private Ldap2JetelData[] transMap = null;
+	private Ldap2JetelData transDefault = null;
 
-	/** Hack to manage multivaluated attributes */
+	/** Managing multivaluated attributes mapped to single value fields  
+	 *	if target is LIST field, then direct mapping occurs*/
 	private String multiSeparator = null;
+	
+	private String defaultMappingFieldName = null;
+	private int defaultMappingFieldId = -1;
 
+	private int pageSize=0;
+	
 	private AliasHandling aliasHandling;
 	private ReferralHandling referralHandling;
 
+	private boolean allAttributes=true;
+	private String[] returnAttributesArray=null;
+	
 	/** Useful constant to connect to the LDAP server and perform the search */
-	private String base;
-	private String filter;
 	private int scope;
 	private String ldapUrl;
 	private String user;
 	private String pwd;
 
+	LdapDataSource dataSource;
+	
 
 	private static Log logger = LogFactory.getLog(LdapParser.class);
 
@@ -111,10 +154,8 @@ public class LdapParser extends AbstractParser {
 	 * @param scope one off  SearchControls.OBJECT_SCOPE,
 	 *               SearchControls.ONELEVEL_SCOPE, SearchControls.SUBTREE_SCOPE
 	 */
-	public LdapParser(DataRecordMetadata metadata, String ldapUrl, String base, String filter, int scope) {
+	public LdapParser(DataRecordMetadata metadata, String ldapUrl, int scope) {
 		this.metadata = metadata;
-		this.base = base;
-		this.filter = filter;
 		this.ldapUrl = ldapUrl;
 		this.scope = scope;
 	}
@@ -128,8 +169,8 @@ public class LdapParser extends AbstractParser {
 	 * @param user
 	 * @param pwd
 	 */
-	public LdapParser(DataRecordMetadata metadata, String ldapUrl, String base, String filter, int scope, String user, String pwd) {
-		this(metadata, ldapUrl, base, filter, scope);
+	public LdapParser(DataRecordMetadata metadata, String ldapUrl, int scope, String user, String pwd) {
+		this(metadata, ldapUrl,scope);
 		this.user = user;
 		this.pwd = pwd;
 	}
@@ -147,6 +188,10 @@ public class LdapParser extends AbstractParser {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
 
+		if (!StringUtils.isEmpty(defaultMappingFieldName)){
+			defaultMappingFieldId=metadata.getFieldPosition(defaultMappingFieldName);
+		}
+		
 		/* 
 		 * create a new LdapManager to do related actions
 		 */
@@ -158,6 +203,9 @@ public class LdapParser extends AbstractParser {
 		
 		ldapManager.setAliasHandling(aliasHandling);
 		ldapManager.setReferralHandling(referralHandling);
+		if (pageSize>0){
+			ldapManager.setPageSize(pageSize);
+		}
 		
 		try {
 			ldapManager.openContext();
@@ -165,8 +213,27 @@ public class LdapParser extends AbstractParser {
 			throw new ComponentNotReadyException("LDAP connection failed.", ne);
 		}
 
+		if (!allAttributes) returnAttributesArray=metadata.getFieldNamesArray();
+		
+		if (transMap == null) {
+	        transMap = new Ldap2JetelData[this.metadata.getNumFields()];
+	        try {
+	        		initTransMap();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException("Error during intitialization of LdapParser.", e);
+			}
+		}
+		if (transDefault==null && defaultMappingFieldId>=0){
+			transDefault = new Ldap2JetelData.Ldap2JetelMap(multiSeparator);
+		}
+	}
+
+	/**
+	 * @throws ComponentNotReadyException
+	 */
+	protected Iterator<String> initNonPaged() throws ComponentNotReadyException {
 		/*
-		 * This part has to be improve. We must think about large result set,
+		 * This part has to be improved. We must think about large result set,
 		 * and we must find a way to paginate the result, or not load every
 		 * DN on memory, or something like that.
 		 */
@@ -175,12 +242,14 @@ public class LdapParser extends AbstractParser {
 		 * Search for DN matching filter
 		 */
 		try {
-			ne = ldapManager.search(base,filter,new String[] { "1.1" },scope);
+			ne = ldapManager.search(dataSource.getBasedn(),dataSource.getFilter(),returnAttributesArray,scope); 
 		} catch (NamingException e) {
 			throw new ComponentNotReadyException(e);
 		}
 		
-		dnList = new ArrayList<String>();
+		if (dnList == null)	dnList = new ArrayList<String>(500);
+		dnList.clear();
+		
 		int i = 0;
 		try {
 			while (ne.hasMore()) {
@@ -188,7 +257,7 @@ public class LdapParser extends AbstractParser {
 				SearchResult result = (SearchResult) ne.next(); 
 				String name = result.getName();
 				if (result.isRelative()) {
-					dnList.add(name + (base.length() != 0 && name.length() != 0 ? "," : "") + base);
+					dnList.add(name + (dataSource.getBasedn().length() != 0 && name.length() != 0 ? "," : "") + dataSource.getBasedn());
 				} else {
 					// search result is a referral
 					dnList.add(name);
@@ -211,27 +280,74 @@ public class LdapParser extends AbstractParser {
 			}
 		}
 		
-		resultDn = dnList.iterator();
-		
-		if (transMap == null) {
-	        transMap = new Ldap2JetelData[this.metadata.getNumFields()];
-	        try {
-	        	/*
-	        	 * We assume that all search result have the same
-	        	 * class hierarchy, so we can take an one of them.
-	        	 */
-	        	if (dnList.size() != 0) {  	        	
-	        		initTransMap((String)dnList.get(0));
-	        	}
-			} catch (Exception e) {
-				throw new ComponentNotReadyException("Bad metadata name in LdapReader component", e);
-			}
-		} 
+		return dnList.iterator();
 	}
 
+	/**
+	 * @throws ComponentNotReadyException
+	 */
+	protected Iterator<String> initPaged() throws ComponentNotReadyException {
+		/*
+		 * This part has to be improved. We must think about large result set,
+		 * and we must find a way to paginate the result, or not load every
+		 * DN on memory, or something like that.
+		 */
+		NamingEnumeration ne = null;
+		/*
+		 * Search for DN matching filter
+		 */
+		
+		try{
+			ldapManager.initPagedSearch();
+		}catch(NamingException e){
+			throw new ComponentNotReadyException(e);
+		}catch(IOException e){
+			throw new ComponentNotReadyException(e);
+		}
+
+		if (dnList == null)	dnList = new ArrayList<String>(500);
+		dnList.clear();
+		
+		try {
+		do{
+			ne = ldapManager.search(dataSource.getBasedn(),dataSource.getFilter(),returnAttributesArray ,scope); 
+			while (ne.hasMore()) {
+				SearchResult result = (SearchResult) ne.next(); 
+				String name = result.getName();
+				if (result.isRelative()) {
+					dnList.add(name + (dataSource.getBasedn().length() != 0 && name.length() != 0 ? "," : "") + dataSource.getBasedn());
+				} else {
+					// search result is a referral
+					dnList.add(name);
+				}
+			}
+			ldapManager.reactivatePagedSearch();
+			
+		}while(ldapManager.hasMorePages());
+			
+		} catch (SizeLimitExceededException e) {
+				if(logger.isInfoEnabled()) {logger.info(" WARNING ! Ldap Search request reach client size limit !", e); };
+		} catch (NamingException e1) {
+			throw new ComponentNotReadyException(e1);
+		} catch (IOException e2){
+			throw new ComponentNotReadyException(e2);
+		} finally {
+			try {
+				ne.close();
+			} catch (NamingException e) {
+				// nothing to do
+				logger.debug("Failed to close naming enumeration", e);
+			}
+		}
+		
+		return dnList.iterator();
+	}
+
+	
+	
 	@Override
 	protected void releaseDataSource() {
-		// setDataSource() is not supported 
+		// do nothing 
 	}
 
 	/* (non-Javadoc)
@@ -245,8 +361,17 @@ public class LdapParser extends AbstractParser {
      * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
      */
     @Override
-	public void setDataSource(Object inputDataSource) {
-        throw new UnsupportedOperationException();
+	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException{
+    	if (inputDataSource instanceof LdapDataSource){
+        	dataSource=(LdapDataSource)inputDataSource;
+        }else{
+        	throw new IllegalArgumentException();
+        }
+        
+        if (pageSize>0)
+			resultDn=initPaged();
+		else
+			resultDn=initNonPaged();
     }
 
 	@Override
@@ -302,7 +427,7 @@ public class LdapParser extends AbstractParser {
 	 */
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		/*
-		 * This method is intersting. How should I transform an "Attributs" object
+		 * This method is interesting. How should I transform an "Attributes" object
 		 * to a "DataRecord" one and don't forget to use metadata rules...
 		 */
 		//simplest case...
@@ -313,7 +438,7 @@ public class LdapParser extends AbstractParser {
 		Attributes attrs = null;
 		String dn = (String) resultDn.next();
 		try {
-			attrs = ldapManager.getAttributes(dn);
+			attrs = ldapManager.getAttributes(dn,returnAttributesArray);
 			/*
 			 * we have to add the dn as a standard attribute
 			 */
@@ -333,7 +458,9 @@ public class LdapParser extends AbstractParser {
 			try {
 				// TODO Labels:
 				//transMap[i].setField(df,attrs.get(df.getMetadata().getLabelOrName()));
-				transMap[i].setField(df,attrs.get(df.getMetadata().getName()));
+				if (transMap[i].setField(df,attrs.get(df.getMetadata().getName())));
+					attrs.remove(df.getMetadata().getName());
+				
 			} catch (BadDataFormatException bdfe) {
 				if (exceptionHandler != null) { //use handler only if configured
 					exceptionHandler.populateHandler(getErrorMessage(recordCounter, i), record, recordCounter,
@@ -346,11 +473,30 @@ public class LdapParser extends AbstractParser {
 			}
 		}
 		
+		//should we handle unmapped attributes ?
+		if(defaultMappingFieldId>=0){
+			NamingEnumeration en=attrs.getAll();
+			try {
+				while(en.hasMore()){
+					transDefault.setField(record.getField(defaultMappingFieldId), (Attribute)en.next());
+				}
+			} catch (BadDataFormatException bdfe) {
+				if (exceptionHandler != null) { //use handler only if configured
+					exceptionHandler.populateHandler(getErrorMessage(recordCounter, defaultMappingFieldId), record, recordCounter,
+							defaultMappingFieldId, bdfe.getOffendingValue().toString(), bdfe);
+				} else {
+					throw new RuntimeException(getErrorMessage(recordCounter, defaultMappingFieldId), bdfe);
+				}
+			} catch (NamingException e) {
+					throw new RuntimeException(getErrorMessage(recordCounter, defaultMappingFieldId), e);
+			}
+			
+		}
 		recordCounter++;
 		return record;
 	}
 
-	protected void initTransMap(String dn) throws BadDataFormatException {
+	protected void initTransMap() throws BadDataFormatException {
 		/*
 		 * TODO : we should have two cases : 
 		 * - the first one, we can access the schema. In this case, 
@@ -455,6 +601,14 @@ public class LdapParser extends AbstractParser {
 		this.multiSeparator = multiValueSeparator;
 	}
 
+	public String getDefaultMappingFieldName() {
+		return defaultMappingFieldName;
+	}
+
+	public void setDefaultMappingFieldName(String defaultMappingFieldName) {
+		this.defaultMappingFieldName = defaultMappingFieldName;
+	}
+
 	public AliasHandling getAliasHandling() {
 		return aliasHandling;
 	}
@@ -469,6 +623,34 @@ public class LdapParser extends AbstractParser {
 
 	public void setReferralHandling(ReferralHandling referralHandling) {
 		this.referralHandling = referralHandling;
+	}
+
+	/**
+	 * @return the pageSize
+	 */
+	public int getPageSize() {
+		return pageSize;
+	}
+
+	/**
+	 * @param pageSize the pageSize to set
+	 */
+	public void setPageSize(int pageSize) {
+		this.pageSize = pageSize;
+	}
+
+	/**
+	 * @return the getAllLdapAttributes
+	 */
+	public boolean isAllAttributes() {
+		return allAttributes;
+	}
+
+	/**
+	 * @param getAllLdapAttributes the getAllLdapAttributes to set
+	 */
+	public void setAllAttributes(boolean getAllLdapAttributes) {
+		this.allAttributes = getAllLdapAttributes;
 	}
 
 	@Override

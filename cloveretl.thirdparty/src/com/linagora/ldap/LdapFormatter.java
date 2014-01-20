@@ -18,6 +18,9 @@
  */
 package com.linagora.ldap;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
@@ -28,10 +31,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.MapDataField;
+import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.StringUtils;
 
 import com.linagora.ldap.Jetel2LdapData.Jetel2LdapByte;
 import com.linagora.ldap.Jetel2LdapData.Jetel2LdapString;
@@ -98,8 +105,10 @@ public class LdapFormatter {
 	/** Object that manage connection and execute commands */
 	private LdapManager ldapManager;
 	
-	/** Ugly hack to simulate multivaluated attributes */
+	/** processing of multivaluated attributes */
 	private String multiSeparator = null; //'null' means no multi-values are expected
+	
+	private Jetel2LdapString string2attribute;
 	
 	/**
 	 * A logger (log4j) for the class
@@ -207,12 +216,12 @@ public class LdapFormatter {
 		boolean dn_exists = false;
 		String dn = record.getField("dn").toString();
 		
-		if(null == dn|| dn.equals("")) {
+		if(StringUtils.isEmpty(dn)) {
 			if(logger.isDebugEnabled()) {
 				logger.debug("<LdapFormatter> guilty record: ");
 				logger.debug("<LdapFormatter> " + record.toString());
 			}
-			throw new BadDataFormatException("Metadatas MUST have a \"dn\" field (not null).");
+			throw new BadDataFormatException("Metadatas MUST have a \"dn\" field (non empty).");
 		}
 		
 		/*
@@ -246,13 +255,18 @@ public class LdapFormatter {
 				if ((this.action == ADD_ENTRY && !dn_exists) && dataField.isNull()) {
 					continue;
 				}
-				transMap[i].setAttribute(attr, dataField);
-				/*
-				 * TODO Hum. Shall we add the attr in every case ? 
-				 * For instance, if the value is null or equals to "", should we had
-				 * the attribute ? In this case, think about setAttribute(attrs, ...)
-				 */
-				attrs.put(attr);
+				if (dataField.getMetadata().getContainerType() == DataFieldContainerType.MAP){
+					fillFromMap(attrs, (MapDataField)dataField);
+				}else{
+					transMap[i].setAttribute(attr, dataField);
+					/*
+					 * TODO Hum. Shall we add the attr in every case ? 
+					 * For instance, if the value is null or equals to "", should we had
+					 * the attribute ? In this case, think about setAttribute(attrs, ...)
+					 */
+					attrs.put(attr);
+				}
+				
 			}
 		}
 		
@@ -331,6 +345,17 @@ public class LdapFormatter {
 	}
 	
 	
+	private void fillFromMap(Attributes attrs, MapDataField field){
+		Map<String,StringDataField> map=(Map<String, StringDataField>) field.getValue();
+		
+		for(Map.Entry<String,StringDataField> entry: map.entrySet()){
+			Attribute attr = new BasicAttribute(entry.getKey());
+			string2attribute.setAttribute(attr, entry.getValue());
+			attrs.put(attr);
+		}
+		
+	}
+	
 	private void initTransMap() throws NamingException {
 		for (int i = 0; i < this.metadata.getNumFields(); i++) {
 			DataFieldMetadata dfm = this.metadata.getField(i);
@@ -361,6 +386,8 @@ public class LdapFormatter {
 				"Only String and Byte array types are supported.");
 			}
 		}
+		// will be used for map data field
+		string2attribute=new Jetel2LdapString(this.multiSeparator);
 	}
 	
 	public String getMultiSeparator() {
