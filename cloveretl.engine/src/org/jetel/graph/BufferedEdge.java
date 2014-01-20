@@ -104,8 +104,10 @@ public class BufferedEdge extends EdgeBase {
 	@Override
 	public void init() throws IOException {
 		recordBuffer = new DynamicRecordBuffer(internalBufferSize);
-		//for single thread execution we can say that the usage of record buffer is sequential - first all write operation and then all read operations
-		recordBuffer.setSequentialReading(proxy.getGraph().getRuntimeContext().getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION);
+		if (proxy != null && proxy.getGraph() != null) {
+			//for single thread execution we can say that the usage of record buffer is sequential - first all write operation and then all read operations
+			recordBuffer.setSequentialReading(proxy.getGraph().getRuntimeContext().getExecutionType() == ExecutionType.SINGLE_THREAD_EXECUTION);
+		}
 		recordBuffer.init();
 	}
 
