@@ -25,7 +25,10 @@ import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 
 import org.jetel.data.DataField;
+import org.jetel.data.ListDataField;
+import org.jetel.data.MapDataField;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -33,7 +36,7 @@ import org.jetel.util.string.StringUtils;
  * this class is a mapping utilities between LDAP data and Jetel internal data
  * representation.
  * 
- * @author Francois Armand - Linagora
+ * @author Francois Armand - Linagora, David Pavlis <david.pavlis@cloveretl.com>
  * @since august 2006
  */
 public abstract class Ldap2JetelData {
@@ -63,7 +66,7 @@ public abstract class Ldap2JetelData {
 	 * Attribute attr. Type must match. the comportment of the function with
 	 * multi-valuated attribute has to be managed in implementation.
 	 */
-	abstract public void setField(DataField df, Attribute attr)
+	abstract public boolean setField(DataField df, Attribute attr)
 			throws BadDataFormatException;
 
 	static public class Ldap2JetelString extends Ldap2JetelData {
@@ -79,14 +82,17 @@ public abstract class Ldap2JetelData {
 		 * @param attr the LDAP attribute whose values have to be got 
 		 */
 		@Override
-		public void setField(DataField df, Attribute attr)
+		public boolean setField(DataField df, Attribute attr)
 				throws BadDataFormatException {
 
 			if (attr == null) { // attr not set in the LDAP directory
 				df.setNull(true);
-			} else if (df.getType() != DataFieldMetadata.STRING_FIELD) {
+				return false;
+			}
+			
+			if (df.getType() != DataFieldMetadata.STRING_FIELD) {
 				throw new BadDataFormatException(
-						"LDAP attribute to Jetel field transformation exception : Field "
+						"LDAP attribute to Clover field transformation exception : Field "
 								+ attr.getID() + " is not a String.");
 			} else {
 				NamingEnumeration ne = null;
@@ -94,7 +100,7 @@ public abstract class Ldap2JetelData {
 					ne = attr.getAll();
 				} catch (NamingException e) {
 					throw new BadDataFormatException(
-							"LDAP attribute to Jetel field transformation exception : Field "
+							"LDAP attribute to Clover field transformation exception : Field "
 									+ attr.getID() + ".", e);
 				}
 				/*
@@ -102,25 +108,36 @@ public abstract class Ldap2JetelData {
 				 */
 				try {
 					if (ne.hasMore()) {
-						StringBuilder resString = new StringBuilder("");
-						resString.append(ne.next().toString());
-						if (!StringUtils.isEmpty(multiSeparator)) {
+						if (df.getMetadata().getContainerType() == DataFieldContainerType.SINGLE) {
+							StringBuilder resString = new StringBuilder("");
+							resString.append(ne.next().toString());
+							if (!StringUtils.isEmpty(multiSeparator)) {
+								while (ne.hasMore()) {
+									Object o = ne.next();
+									resString.append(this.multiSeparator);
+									resString.append(o.toString());
+								}
+							}
+							df.setValue(resString.toString());
+						} else if (df.getMetadata().getContainerType() == DataFieldContainerType.LIST) {
+							((ListDataField) df).clear();
 							while (ne.hasMore()) {
 								Object o = ne.next();
-								resString.append(this.multiSeparator);
-								resString.append(o.toString());
+								((ListDataField) df).addField().setValue(o.toString());
 							}
+						} else {
+							throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + " can not be copied to MAP.");
 						}
-						df.setValue(resString.toString());
 					} else { // attr exist but value are null.
 						df.setNull(true);
 					}
 				} catch (NamingException e) {
 					throw new BadDataFormatException(
-							"LDAP attribute to Jetel field transformation exception : Field "
+							"LDAP attribute to Clover field transformation exception : Field "
 									+ attr.getID() + ".", e);
 				}
 			}
+			return true; // attribute existed
 		}
 
 	} //end of class CopyString
@@ -138,16 +155,21 @@ public abstract class Ldap2JetelData {
 		 * @param attr the LDAP attribute whose values have to be got 
 		 */
 		@Override
-		public void setField(DataField df, Attribute attr) throws BadDataFormatException {
+		public boolean setField(DataField df, Attribute attr) throws BadDataFormatException {
 			if (attr == null) { // attr not set in the LDAP directory
 				df.setNull(true);
-			} else if (df.getType() == DataFieldMetadata.BYTE_FIELD 
+				return false;
+			}
+			
+			if (df.getType() == DataFieldMetadata.BYTE_FIELD 
 					|| df.getType() == DataFieldMetadata.BYTE_FIELD_COMPRESSED) {
+				
+				if (attr.size()<=1 && df.getMetadata().getContainerType()==DataFieldContainerType.SINGLE){
 				Object value;
 				try {
 					value = attr.get(); //only first value is taken into consideration
 				} catch (NamingException e) {
-					throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + ".", e);
+					throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + ".", e);
 				}
 				if (value == null) {
 					df.setNull(true);
@@ -161,14 +183,106 @@ public abstract class Ldap2JetelData {
 							throw new RuntimeException("Failed to set String into Byte field", e);
 						}
 					} else {
-						throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + " is not a Byte array or String.");
+						throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + " is not a Byte array or String.");
+					}
+				}
+				}else if (df.getMetadata().getContainerType()==DataFieldContainerType.LIST){
+					NamingEnumeration ne=null;
+					try{
+						ne = attr.getAll();
+					} catch (NamingException e) {
+						throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + ".", e);
+					}
+					((ListDataField)df).clear();
+					try{
+					while(ne.hasMore()){
+						Object value=ne.next();
+						if (value instanceof byte[]) {
+							((ListDataField)df).addField().setValue(value);
+						} else if (value instanceof String) {
+							try {
+								((ListDataField)df).addField().setValue(((String)value).getBytes("UTF-8"));
+							} catch (UnsupportedEncodingException e) {
+								throw new RuntimeException("Failed to set String into Byte field", e);
+							}
+						} else {
+							throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + " is not a Byte array or String.");
+						}
+					}
+					}catch(NamingException ex){
+						throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + ".", ex);
 					}
 				}
 			} else {
-				throw new BadDataFormatException("LDAP attribute to Jetel field transformation exception : Field " + attr.getID() + " is not a Byte array or String.");
+				throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + " is not a Byte array or String.");
 			}
+			return true; // attribute existed
 		}
 
 	} //end of class CopyByte
+	
+	static public class Ldap2JetelMap extends Ldap2JetelData {
+
+		public Ldap2JetelMap(String _multiSeparator) {
+			super(_multiSeparator);
+		}
+
+		/**
+		 * This function set the value of the field passed in argument to the (multi)value of the LDAP attr.
+		 * 
+		 * @param df
+		 *            the field which has to be set
+		 * @param attr
+		 *            the LDAP attribute whose values have to be got
+		 */
+		@Override
+		public boolean setField(DataField df, Attribute attr) throws BadDataFormatException {
+
+			if (attr == null) { // attr not set in the LDAP directory
+				df.setNull(true);
+				return false;
+			}
+
+			if (df.getType() != DataFieldMetadata.STRING_FIELD || df.getMetadata().getContainerType() != DataFieldContainerType.MAP) {
+				throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + " is not a MAP of String.");
+			}
+
+			DataField valueField = ((MapDataField)df).getField(attr.getID());
+			if (valueField == null) {
+				valueField=((MapDataField)df).putField(attr.getID());
+			}
+
+			NamingEnumeration ne = null;
+			try {
+				ne = attr.getAll();
+			} catch (NamingException e) {
+				throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + ".", e);
+			}
+			/*
+			 * Perhaps the attribute is multivaluated, so we add all values.
+			 */
+			try {
+				if (ne.hasMore()) {
+					StringBuilder resString = new StringBuilder("");
+					resString.append(ne.next().toString());
+					if (!StringUtils.isEmpty(multiSeparator)) {
+						while (ne.hasMore()) {
+							Object o = ne.next();
+							resString.append(this.multiSeparator);
+							resString.append(o.toString());
+						}
+					}
+					valueField.setValue(resString.toString());
+				} else { // attr exist but value are null.
+					valueField.setNull(true);
+				}
+			} catch (NamingException e) {
+				throw new BadDataFormatException("LDAP attribute to Clover field transformation exception : Field " + attr.getID() + ".", e);
+			}
+			return true; // attribute existed
+		}
+
+	} //end of class CopyMap
+
 
 }

@@ -25,7 +25,10 @@ import javax.naming.directory.Attribute;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
+import org.jetel.data.ListDataField;
+import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.string.StringUtils;
 
@@ -33,7 +36,7 @@ import org.jetel.util.string.StringUtils;
  * this class is a mapping utilities between 
  * LDAP data and Jetel internal data representation.
  * 
- * @author Francois Armand - Linagora
+ * @author Francois Armand - Linagora, David Pavlis <david.pavlis@cloveretl.com>
  * @since august 2006
  */
 
@@ -44,9 +47,9 @@ abstract public class Jetel2LdapData {
 	 * multi valuated, we have to concatenate them.
 	 * This is the separator btw value in Jetel format
 	 * 
-	 * XXX Sould it be static ? Should it be final ?
 	 */
 	protected String multiSeparator;
+	protected Pattern splitter;
 
 	/**
 	 * @param _multiSeparator
@@ -54,6 +57,7 @@ abstract public class Jetel2LdapData {
 
 	public Jetel2LdapData(String _multiSeparator) {
 		this.multiSeparator = _multiSeparator;
+		splitter = Pattern.compile(Pattern.quote(_multiSeparator));
 	}
 
 	public String getMultiSeparator() {
@@ -113,8 +117,6 @@ abstract public class Jetel2LdapData {
 				// Set Ldap Attr value to null
 				attr.clear();
 			} else {
-				//TODO perhaps the field is multivaluated ? Search for multiSeparator in it.
-				// Quick&dirty hack...
 				Object[] values = getvalues(df);
 				for(int i = 0; i < values.length; i++) {
 					Object o = values[i];
@@ -129,17 +131,26 @@ abstract public class Jetel2LdapData {
 
 		@Override
 		public Object[] getvalues(DataField df) {
-			String stringValues = df.getValue().toString();
-			/*
-			 * Have we a multivaluated value ?
-			 */
-			if (StringUtils.isEmpty(multiSeparator)) {
-				return new Object[] { stringValues };
-			} else {
-				Pattern pattern = Pattern.compile(Pattern.quote(this.multiSeparator));
-			
-				return pattern.split(stringValues);
+			switch(df.getMetadata().getContainerType()){
+			case SINGLE:
+				/*
+				 * Have we a multivaluated value ?
+				 */
+				if (StringUtils.isEmpty(multiSeparator)) {
+					return new Object[] { df.toString() };
+				} else {
+					return splitter.split(((StringDataField)df).getCharSequence());
+				}
+			case LIST:
+				Object[] values=new Object[((ListDataField)df).getSize()];
+				for(int i=0; i<values.length;i++){
+					values[i]=((ListDataField)df).getField(i).toString();
+				}
+				return values;
+			case MAP:
+				throw new BadDataFormatException("LDAP transformation exception : Field " + df.getMetadata().getName() + " is a MAP.");
 			}
+			return new Object[] {};
 		}
 
 	} //end of class CopyStrin
@@ -180,8 +191,20 @@ abstract public class Jetel2LdapData {
 		}
 
 		@Override
-		public Object[] getvalues(DataField df) {
-			return new Object[] { df.getValue() };
+		public Object[] getvalues(DataField df) throws BadDataFormatException{
+			switch(df.getMetadata().getContainerType()){
+			case SINGLE:
+				return new Object[] { df.getValue() };
+			case LIST:
+				Object[] values=new Object[((ListDataField)df).getSize()];
+				for(int i=0; i<values.length;i++){
+					values[i]=((ListDataField)df).getField(i).getValueDuplicate();
+				}
+				return values;
+			case MAP:
+				throw new BadDataFormatException("LDAP transformation exception : Field " + df.getMetadata().getName() + " is a MAP.");
+			}
+			return new Object[] {};
 		}
 
 	}
