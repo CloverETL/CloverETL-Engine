@@ -236,7 +236,7 @@ public class Denormalizer extends Node {
 	protected RecordKeyTokens legacyKeyOrderToRecordKeyToken(String[] key, Order order) {
 		List<KeyFieldTokens> list = new ArrayList<KeyFieldTokens>(key.length);
 		for (String keyPart : key) {
-			new KeyFieldTokens(keyPart, order.getOrderType());
+			list.add(new KeyFieldTokens(keyPart, order.getOrderType()));
 		}
 		RecordKeyTokens recordKeyTokens = new RecordKeyTokens(list);
 		return recordKeyTokens;
