@@ -201,6 +201,10 @@ public class ReadableChannelDictionaryIterator {
 				new ByteArrayInputStream((byte[])oValue) : new ByteArrayInputStream(oValue.toString().getBytes(charset));
 		return Channels.newChannel(str);
 	}
+	
+	public String getCurrentInnerFileName() {
+		return channelIterator != null ? channelIterator.getCurrentInnerFileName() : null;
+	}
 
 	/**
 	 * Iterators for dictionary values.
@@ -225,6 +229,10 @@ public class ReadableChannelDictionaryIterator {
 				}
 			}
 			throw new RuntimeException("Cannot create input stream for class instance: '" + value.getClass() + "'.");
+		}
+		
+		public String getCurrentInnerFileName() {
+			return null;
 		}
 	}
 	
@@ -304,6 +312,7 @@ public class ReadableChannelDictionaryIterator {
 		
 		private final URL contextURL;
 		private final Iterator<String> filenamesIterator;
+		private String currentInnerFileName;
 		
 		public SourceFileNameChannelIterator(URL contextURL, List<String> filenames) {
 			super();
@@ -312,21 +321,26 @@ public class ReadableChannelDictionaryIterator {
 		}
 		
 		@Override
+		public String getCurrentInnerFileName() {
+			return currentInnerFileName;
+		}
+
+		@Override
 		public boolean hasNext() {
 			return filenamesIterator.hasNext();
 		}
 		
 		@Override
 		public ReadableByteChannel next() {
-			String fileName = filenamesIterator.next();
+			currentInnerFileName = filenamesIterator.next();
 			
-			defaultLogger.debug("Opening input file " + fileName);
+			defaultLogger.debug("Opening input file " + currentInnerFileName);
 			try {
-				ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
-				defaultLogger.debug("Reading input file " + fileName);
+				ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, currentInnerFileName);
+				defaultLogger.debug("Reading input file " + currentInnerFileName);
 				return channel;
 			} catch (IOException e) {
-				throw new JetelRuntimeException("File is unreachable: " + fileName, e);
+				throw new JetelRuntimeException("File is unreachable: " + currentInnerFileName, e);
 			}
 		}
 		
