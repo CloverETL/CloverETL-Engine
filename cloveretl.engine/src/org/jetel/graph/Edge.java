@@ -375,13 +375,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	private void initEdgeBase() {
 		if (edge == null) {
 			edge = getEdgeType().createEdgeBase(this);
-
-			try {
-	            edge.init();
-	        } catch (Exception ex){
-	            throw new JetelRuntimeException("Edge base initialisation failed.", ex);
-	        }
 		}
+		try {
+			if (!isSharedEdgeBase()) {
+				edge.init();
+			}
+        } catch (Exception ex){
+            throw new JetelRuntimeException("Edge base initialisation failed.", ex);
+        }
 	}
 	
 	/* (non-Javadoc)
