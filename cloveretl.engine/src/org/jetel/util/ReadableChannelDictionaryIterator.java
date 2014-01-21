@@ -38,8 +38,10 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.enums.ProcessingType;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.dictionary.Dictionary;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.WcardPattern;
 
 
 /***
@@ -132,7 +134,9 @@ public class ReadableChannelDictionaryIterator {
 			else rch = createReadableByteChannel(value);
 			
 			if (dictProcesstingType == ProcessingType.SOURCE) {
-				rch = createChannelFromSource(rch, charset);
+				String source = readStringFromReadableByteChannel(rch);
+				channelIterator = createSourceFileNameChannelIterator(source);
+				return;
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new JetelException(e);
@@ -141,14 +145,28 @@ public class ReadableChannelDictionaryIterator {
 		channelIterator = new DirectChannelIterator(rch);
 	}
 	
+	private SourceFileNameChannelIterator createSourceFileNameChannelIterator(String source) throws JetelException {
+		WcardPattern pat = new WcardPattern();
+		pat.setParent(contextURL);
+		pat.addPattern(source, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+		pat.resolveAllNames(true);
+		List<String> filenames;
+		try {
+			filenames = pat.filenames();
+		} catch (IOException e) {
+			throw new JetelException(e);
+		}
+		
+		return new SourceFileNameChannelIterator(contextURL, filenames);
+	}
+
 	/**
 	 * @param readableByteChannel
 	 * @param charset
 	 * @return
 	 * @throws JetelException
-	 * @throws UnsupportedEncodingException
 	 */
-	private ReadableByteChannel createChannelFromSource(ReadableByteChannel readableByteChannel, String charset) throws JetelException, UnsupportedEncodingException {
+	private String readStringFromReadableByteChannel(ReadableByteChannel readableByteChannel) throws JetelException {
 		ByteBuffer dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		CharBuffer charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		CharsetDecoder decoder = Charset.forName(charset).newDecoder();
@@ -166,7 +184,8 @@ public class ReadableChannelDictionaryIterator {
 		charBuffer.compact();	// ready for writing
         decoder.decode(dataBuffer, charBuffer, false);
         charBuffer.flip();
-        return createChannelFromFileName(charBuffer.toString());
+        String sourceString = charBuffer.toString();
+		return sourceString;
 	}
 	
 	/**
@@ -183,25 +202,6 @@ public class ReadableChannelDictionaryIterator {
 		return Channels.newChannel(str);
 	}
 
-	/**
-	 * Creates readable channel for a file name.
-	 * 
-	 * @param fileName
-	 * @return
-	 * @throws JetelException
-	 */
-	private ReadableByteChannel createChannelFromFileName(String fileName) throws JetelException {
-		defaultLogger.debug("Opening input file " + fileName);
-		try {
-			ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
-			defaultLogger.debug("Reading input file " + fileName);
-			return channel;
-		} catch (IOException e) {
-			throw new JetelException("File is unreachable: " + fileName, e);
-		}
-	}
-
-	
 	/**
 	 * Iterators for dictionary values.
 	 */
@@ -299,11 +299,44 @@ public class ReadableChannelDictionaryIterator {
 			hasNext = false;
 		}
 	}
+	
+	private static class SourceFileNameChannelIterator extends ObjectChannelIterator {
+		
+		private final URL contextURL;
+		private final Iterator<String> filenamesIterator;
+		
+		public SourceFileNameChannelIterator(URL contextURL, List<String> filenames) {
+			super();
+			this.contextURL = contextURL;
+			this.filenamesIterator = filenames.iterator();
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return filenamesIterator.hasNext();
+		}
+		
+		@Override
+		public ReadableByteChannel next() {
+			String fileName = filenamesIterator.next();
+			
+			defaultLogger.debug("Opening input file " + fileName);
+			try {
+				ReadableByteChannel channel = FileUtils.getReadableChannel(contextURL, fileName);
+				defaultLogger.debug("Reading input file " + fileName);
+				return channel;
+			} catch (IOException e) {
+				throw new JetelRuntimeException("File is unreachable: " + fileName, e);
+			}
+		}
+		
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+		
+	}
 
-	/**
-	 * Sets a charset.
-	 * @param charset
-	 */
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}	
