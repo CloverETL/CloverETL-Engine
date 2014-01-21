@@ -21,7 +21,9 @@ package org.jetel.component;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -32,6 +34,7 @@ import org.jetel.component.denormalize.RecordDenormalizeDescriptor;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.RecordComapratorAnyOrderType;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -53,6 +56,10 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
+import org.jetel.util.key.KeyFieldTokens;
+import org.jetel.util.key.KeyTokenizer;
+import org.jetel.util.key.OrderType;
+import org.jetel.util.key.RecordKeyTokens;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
@@ -115,10 +122,20 @@ import org.w3c.dom.Element;
 public class Denormalizer extends Node {
 
 	public enum Order {
-		ASC,	// ascending order
-		DESC,	// descending order
-		IGNORE,	// don't check order of records
-		AUTO,	// check the input to be either in ascending or descending order
+		ASC(OrderType.ASCENDING),	// ascending order
+		DESC(OrderType.DESCENDING),	// descending order
+		IGNORE(OrderType.IGNORE),	// don't check order of records
+		AUTO(OrderType.AUTO),	// check the input to be either in ascending or descending order
+		;
+		
+		private final OrderType orderType;
+		private Order(OrderType orderType) {
+			this.orderType = orderType;
+		}
+		
+		public OrderType getOrderType() {
+			return orderType;
+		}
 	}
 
 	public static final String XML_TRANSFORMCLASS_ATTRIBUTE = "denormalizeClass";
@@ -155,9 +172,8 @@ public class Denormalizer extends Node {
 	protected String xform;
 	protected String xformURL = null;
 	protected String charset = null;
-	private Order order;
-	protected String[] key;
-	RecordKey recordKey;
+	protected RecordKeyTokens recordKeyTokens;
+	protected RecordComapratorAnyOrderType recordComparator;
 	private int size = 0;
 	private boolean incompleteGroupAllowed = false;
 		
@@ -169,27 +185,61 @@ public class Denormalizer extends Node {
     /** the flag specifying whether the null values are considered equal or not */
     private boolean equalNULL = true;
 
-    /**
+	public Denormalizer(String id, RecordDenormalize denorm, RecordKeyTokens recordKeyTokens) {
+		super(id);
+		this.denorm = denorm;
+		this.recordKeyTokens = recordKeyTokens;
+	}
+	
+	public Denormalizer(String id, String xform, String xformClass, String xformURL, RecordKeyTokens recordKeyTokens) {
+		super(id);
+		this.xformClass = xformClass;
+		this.xform = xform;
+		this.xformURL = xformURL;
+		this.recordKeyTokens = recordKeyTokens;
+	}
+	
+	/**
 	 * Sole ctor.
+	 * 
+	 * @deprecated Use constructor(s) that accept {@link RecordKeyTokens}.
 	 * @param id Component ID.
 	 * @param xform Denormalization implementation source code (either Java or TransformLang).
 	 * @param xformClass Denormalization class.
 	 * @param key
 	 * @param order
 	 */
-	public Denormalizer(String id, String xform, String xformClass, String xformURL, 
-			String[] key, Order order) {
+	@Deprecated
+	public Denormalizer(String id, String xform, String xformClass, String xformURL, String[] key, Order order) {
 		super(id);
 		this.xformClass = xformClass;
 		this.xform = xform;
 		this.xformURL = xformURL;
-		this.key = key;
-		this.order = order;
+		this.recordKeyTokens = legacyKeyOrderToRecordKeyToken(key, order);
 	}
 
-	public Denormalizer(String id, RecordDenormalize xform, String[] key, Order order) {
-		this(id, null, null, null, key, order);
-		this.denorm = xform;
+	/**
+	 * @deprecated Use constructor(s) that accept {@link RecordKeyTokens}.
+	 */
+	@Deprecated
+	public Denormalizer(String id, RecordDenormalize recordDenormalize, String[] key, Order order) {
+		super(id);
+		this.denorm = recordDenormalize;
+		this.recordKeyTokens = legacyKeyOrderToRecordKeyToken(key, order);
+	}
+	
+	/**
+	 * @param key
+	 * @param order
+	 * @return
+	 */
+	protected RecordKeyTokens legacyKeyOrderToRecordKeyToken(String[] key, Order order) {
+		List<KeyFieldTokens> list = new ArrayList<KeyFieldTokens>(key.length);
+		for (String keyPart : key) {
+			new KeyFieldTokens(keyPart, order.getOrderType());
+		}
+		RecordKeyTokens recordKeyTokens = new RecordKeyTokens(list);
+		return recordKeyTokens;
 	}
 
     public void setEqualNULL(boolean equalNULL) {
@@ -228,6 +278,10 @@ public class Denormalizer extends Node {
 		if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Normalizer initialization failed: " + denorm.getMessage());
 		}
+		if (recordKeyTokens != null) {
+			recordComparator = RecordComapratorAnyOrderType.createRecordComparator(recordKeyTokens, inMetadata);
+			recordComparator.setEqualNULLs(equalNULL);
+		}
 		errorActions = ErrorAction.createMap(errorActionsString);
 	}
 
@@ -248,13 +302,6 @@ public class Denormalizer extends Node {
 		outPort = getOutputPort(OUT_PORT);	
 		inMetadata = inPort.getMetadata();
 		outMetadata = outPort.getMetadata();
-		if (size > 0) {
-			order = Order.IGNORE;
-		}else {
-			recordKey = new RecordKey(key, inMetadata);
-			recordKey.setEqualNULLs(equalNULL);
-			recordKey.init();
-		}
 	}
 	
 	/**
@@ -280,23 +327,18 @@ public class Denormalizer extends Node {
 			return true;
 		}
 
-		int cmpResult = size > 0 ? (counter % size == 0 ? 1 : 0) //group defined by size 
-				: recordKey.compare(prevRecord, currentRecord); //group defined by key
+		int cmpResult = size > 0 ? (counter % size == 0 ? -1 : 0) //group defined by size 
+				: recordComparator.compare(prevRecord, currentRecord); //group defined by key
 
 		if (cmpResult == 0) {
 			return false;
 		}
-		if (order == Order.IGNORE) {
+		else if (cmpResult < 0) {
 			return true;
 		}
-		if ((order == Order.ASC && cmpResult == -1) || order == Order.DESC && cmpResult == 1) {
-			return true;
+		else { // cmpResult > 0
+			throw new TransformException("Input is not sorted as specified by component attributes");
 		}
-		if (order == Order.AUTO) {
-			order = cmpResult == -1 ? Order.ASC : Order.DESC;
-			return true;
-		}
-		throw new TransformException("Input is not sorted as specified by component attributes");
 	}
 
 	/**
@@ -526,28 +568,14 @@ public class Denormalizer extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Denormalizer denorm;
 
-		Order order = Order.AUTO;
-
-		String orderString = xattribs.getString(XML_ORDER_ATTRIBUTE, "auto");
-		if (orderString.compareToIgnoreCase("asc") == 0) {
-			order = Order.ASC;
-		} else if (orderString.compareToIgnoreCase("desc") == 0) {
-			order = Order.DESC;
-		} else if (orderString.compareToIgnoreCase("ignore") == 0) {
-			order = Order.IGNORE;
-		} else if (orderString.compareToIgnoreCase("auto") == 0) {
-			order = Order.AUTO;
-		} else {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + "unknown input order: '" + orderString + "'");				
-		}
+		RecordKeyTokens recordKeyTokensWithDefaultOrdering = createRecordKeyTokensFromAttributes(xattribs);
 
 		denorm = new Denormalizer(
 				xattribs.getString(XML_ID_ATTRIBUTE),					
 				xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
 				xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 				xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL),
-				parseKeyList(xattribs.getString(XML_KEY_ATTRIBUTE, null)),
-				order
+				recordKeyTokensWithDefaultOrdering
 				);
 		denorm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE, null));
 		denorm.setTransformationParameters(xattribs.attributes2Properties(
@@ -570,6 +598,56 @@ public class Denormalizer extends Node {
 		denorm.setEqualNULL(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE, true));
 
 		return denorm;
+	}
+
+	/**
+	 * Supports both old format "field1;field2" + "ASCENDING"
+	 * and new format "field1(a);field2(a)" key field ordering configurations
+	 */ 
+	private static RecordKeyTokens createRecordKeyTokensFromAttributes(ComponentXMLAttributes xattribs) throws XMLConfigurationException {
+		Order defaultOrder;
+		String orderString = xattribs.getString(XML_ORDER_ATTRIBUTE, "auto");
+		if (orderString.compareToIgnoreCase("asc") == 0) {
+			defaultOrder = Order.ASC;
+		} else if (orderString.compareToIgnoreCase("desc") == 0) {
+			defaultOrder = Order.DESC;
+		} else if (orderString.compareToIgnoreCase("ignore") == 0) {
+			defaultOrder = Order.IGNORE;
+		} else if (orderString.compareToIgnoreCase("auto") == 0) {
+			defaultOrder = Order.AUTO;
+		} else {
+			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + "unknown input order: '" + orderString + "'");				
+		}
+		
+		String keyAttributeValue = xattribs.getString(XML_KEY_ATTRIBUTE, null);
+		RecordKeyTokens recordKeyTokensWithDefaultOrdering;
+		if (keyAttributeValue == null || keyAttributeValue.equals("")) {
+			recordKeyTokensWithDefaultOrdering = KeyTokenizer.createEmptyRecordKey();
+		}
+		else {
+			RecordKeyTokens recordKeyTokens;
+			try {
+				recordKeyTokens = KeyTokenizer.tokenizeRecordKey(keyAttributeValue);
+			} catch (JetelException e) {
+				throw new XMLConfigurationException(COMPONENT_TYPE + ": " + XML_KEY_ATTRIBUTE + " attribute cannot be parsed", e);
+			}
+			
+			recordKeyTokensWithDefaultOrdering = setDefaultKeyOrdering(defaultOrder, recordKeyTokens);
+		}
+		return recordKeyTokensWithDefaultOrdering;
+	}
+
+	private static RecordKeyTokens setDefaultKeyOrdering(Order defaultOrder, RecordKeyTokens recordKeyTokens) {
+		List<KeyFieldTokens> keyFieldTokensWithDefaultOrdering = new ArrayList<KeyFieldTokens>(recordKeyTokens.size());
+		for (int i = 0; i < recordKeyTokens.size(); i++) {
+			KeyFieldTokens keyField = recordKeyTokens.getKeyField(i);
+			
+			String fieldName = keyField.getFieldName();
+			OrderType orderType = keyField.getOrderType() != null ? keyField.getOrderType() : defaultOrder.getOrderType();
+			
+			keyFieldTokensWithDefaultOrdering.add(new KeyFieldTokens(fieldName, orderType));
+		}
+		return new RecordKeyTokens(keyFieldTokensWithDefaultOrdering);
 	}
 	
 	/**
