@@ -59,32 +59,36 @@ import com.linagora.ldap.LdapFormatter;
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Provides the logic to update information on an LDAP directory.<br>
- * An update can be add/delete entries, add/replace/remove attributes.<br>
- * Metadata MUST match LDAP object attribute name.<br>
- * "DN" metadata attribute is mandatory<br>
- * String is the only metadata type supported.<br>
- * LDAP rules are applied : to add an entry,mandatory attribute (even object classe) 
- * are requiered in metadata.<br>
+ * An operation can be add/delete entries, add/replace/remove attributes.<br>
+ * Metadata MUST match LDAP object attributes names.<br>
+ * The "dn" (i.e. Distinguished Name) metadata field/attribute is mandatory.<br>
+ * To add a new entry,mandatory attribute/field "objectclass" is required in input metadata/record.<br>
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0] - input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>[0]- rejected records</td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
- * <td></td>LDAP attribute may be multivaluated. For now, we handle such case by using 
- * the "|" separator in a value. As a consequence, only string could be correctly handled. 
- * <br>That's why metadata string type is the only one supported.</tr>
+ * <td>LDAP attributes may be multivaluated. It depends on the input field type how multi values are handled. If
+ * Single type, then separator in the field's value may be used. If List, then each item from the list becomes one value
+ * of an attribute. 
+ * <br>Only String and (C)Byte field types are supported, both in Single & List container types.<br>
+ * If input data/record contains Map$lt;String&gt; field, then keys are mapped on attribute names and values become attribute values.
+ * In case of value string with "multiValueSeparator" (if defined) then such value is first split into individual items which then become
+ * attribute's multivalues. </td></tr>
  * </table>
  *  <br>
  *  
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"LDAP_READER"</td></tr>
+ *  <tr><td><b>type</b></td><td>"LDAP_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>ldapUrl</b><td>Ldap url of the directory, on the form "ldap://host:port/"</td>
  *  <tr><td><b>action</b></td><td>Choose one of these options: add_entry, remove_entry, replace_attributes, remove_attributes</td>
  *  <tr><td><b>user</b><br><i>optional</i></td>The user DN to used when connecting to directory.<td></td>
  *  <tr><td><b>password</b><br><i>optional</i></td>The password to used when connecting to directory.<td></td>
+ *  <tr><td><b>multiValueSeparator</b><br><i>optional</i></td>The character(s) used to delimit multi-values in String fields of Simple container type.<td></td>
+ *  
  * <!-- to be added <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td></tr> -->
  *  </table>
  * 
