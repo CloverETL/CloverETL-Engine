@@ -209,7 +209,7 @@ public class ReadableChannelIterator {
 	 * TODO to make hasData method for the InputPort that waits for new data if the edge is empty. Is it good solution???
 	 */
 	public boolean hasNext() {
-		return filenameItor.hasNext() || (bInputPort && portReadingIterator.hasNext());
+		return dictionaryReadingIterator.hasNext() || filenameItor.hasNext() || (bInputPort && portReadingIterator.hasNext());
 	}
 
 	/**
