@@ -52,11 +52,13 @@ import com.linagora.ldap.Jetel2LdapData.Jetel2LdapString;
  * @since september 2006
  */
 public class LdapFormatter {
-	/**
-	 * Possible actions and there meaning
-	 * TODO : change it to Enumeration (java 5 only)
-	 */
+
 	
+	/**
+	 * 
+	 */
+	private static final String LDAP_DN_DISTINGUISHED_NAME = "dn";
+
 	/**
 	 * Add a new entry. 
 	 * Metadata MUST contains 'dn', 'objectclass' and linked 
@@ -144,7 +146,7 @@ public class LdapFormatter {
 		
 		this.metadata = metadata;
 		
-		char dn_type = this.metadata.getFieldType("dn");
+		char dn_type = this.metadata.getFieldType(LDAP_DN_DISTINGUISHED_NAME);
 		if(dn_type != DataFieldMetadata.STRING_FIELD) {
 			throw new BadDataFormatException("Metadata MUST have a \"dn\" field of type string.");
 		}
@@ -214,7 +216,7 @@ public class LdapFormatter {
 	 */
 	public void write(DataRecord record) throws NamingException, BadDataFormatException {
 		boolean dn_exists = false;
-		String dn = record.getField("dn").toString();
+		String dn = record.getField(LDAP_DN_DISTINGUISHED_NAME).toString();
 		
 		if(StringUtils.isEmpty(dn)) {
 			if(logger.isDebugEnabled()) {
@@ -247,7 +249,7 @@ public class LdapFormatter {
 			// TODO Labels:
 			//String attrId = this.metadata.getField(i).getLabelOrName();
 			String attrId = this.metadata.getField(i).getName();
-			if(!attrId.equalsIgnoreCase("dn")) { //ignore dn as an attribute
+			if(!attrId.equalsIgnoreCase(LDAP_DN_DISTINGUISHED_NAME)) { //ignore dn as an attribute
 				Attribute attr = new BasicAttribute(attrId);
 				DataField dataField = record.getField(i);
 				
