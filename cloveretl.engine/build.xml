@@ -741,6 +741,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				author="true"
 				failonerror="true"
 				private="false"
+	        	encoding="UTF-8" charset="UTF-8" docencoding="UTF-8"
 				>
 			<fileset dir="${dir.src.javadoc}">
 				<include name="**/*.java"/>
