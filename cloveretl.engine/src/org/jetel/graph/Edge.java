@@ -61,7 +61,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	protected DataRecordMetadataStub metadataStub;
 
     protected boolean debugMode;
-    protected EdgeDebuger edgeDebuger;
+    protected EdgeDebugWriter edgeDebugWriter;
     protected long debugMaxRecords;
     protected boolean debugLastRecords;
     protected String debugFilterExpression;
@@ -408,10 +408,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		if (debugMode && getGraph().isDebugMode()) {
             String debugFileName = getDebugFileName();
             logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
-            edgeDebuger = new EdgeDebuger(this, debugFileName, false, debugMaxRecords, debugLastRecords,
-            				debugFilterExpression, metadata, debugSampleData);
+            edgeDebugWriter = new EdgeDebugWriter(this, debugFileName, metadata);
+            edgeDebugWriter.setDebugMaxRecords(debugMaxRecords);
+            edgeDebugWriter.setDebugLastRecords(debugLastRecords);
+            edgeDebugWriter.setFilterExpression(debugFilterExpression);
+            edgeDebugWriter.setSampleData(debugSampleData);
+			
             try {
-                edgeDebuger.init();
+                edgeDebugWriter.init();
             } catch (Exception ex) {
                 throw new JetelRuntimeException("Edge debugger initialisation failed.", ex);
             }
@@ -430,9 +434,9 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			edge.postExecute();
 		}
 		
-        if (edgeDebuger != null) {
-            edgeDebuger.close();
-            edgeDebuger = null;
+        if (edgeDebugWriter != null) {
+            edgeDebugWriter.close();
+            edgeDebugWriter = null;
         }
 	}
 	
@@ -510,8 +514,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	@Override
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
-        if (edgeDebuger != null) {
-        	edgeDebuger.writeRecord(record);
+        if (edgeDebugWriter != null) {
+        	edgeDebugWriter.writeRecord(record);
         }
 		edge.writeRecord(record);
 	}
@@ -527,8 +531,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	@Override
 	public void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
-        if (edgeDebuger != null) {
-            edgeDebuger.writeRecord(record);
+        if (edgeDebugWriter != null) {
+            edgeDebugWriter.writeRecord(record);
             record.rewind();
         }
 		edge.writeRecordDirect(record);
@@ -594,11 +598,13 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      */
     @Override
 	public void eof() throws InterruptedException, IOException {
-    	if (edgeDebuger != null) {
-    		edgeDebuger.eof();
-    	}
     	if (!eofSent) {
+        	if (edgeDebugWriter != null) {
+        		edgeDebugWriter.eof();
+        	}
+
         	edge.eof();
+
         	eofSent = true;
     	}
     }

@@ -173,7 +173,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String COLLATOR_SENSITIVITY_ATTR = "collator_sensitivity";
 	private static final String NATURE_ATTR = "nature";
 	
-	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
+	/** Default encoding for XML representation of metadata. */
+	public static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
 	  private static final String XSL_FORMATER
   	= "<?xml version='1.0' encoding='"+DEFAULT_CHARACTER_ENCODING+"'?>"
@@ -280,7 +281,12 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		DataRecordMetadataXMLReaderWriter reader = new DataRecordMetadataXMLReaderWriter();
 		return reader.parseMetadata(xmlElement);
 	}
-	
+
+	public static DataRecordMetadata readMetadata(InputStream input) {
+		DataRecordMetadataXMLReaderWriter reader = new DataRecordMetadataXMLReaderWriter();
+		return reader.read(input);
+	}
+
 	/**
 	 * An operation that writes DataRecord format definition into XML format
 	 * 
