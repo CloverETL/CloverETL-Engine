@@ -219,7 +219,12 @@ public class ReadableChannelIterator {
 	public Object next() throws JetelException {
 		// read next value from dictionary array or list
 		if (dictionaryReadingIterator.hasNext()) {
-			return dictionaryReadingIterator.next();
+			ReadableByteChannel next = dictionaryReadingIterator.next();
+			String currentInnerFileName = dictionaryReadingIterator.getCurrentInnerFileName();
+			if (currentInnerFileName != null) {
+				currentFileName = currentInnerFileName;
+			}
+			return next;
 		}
 		
 		// read from fields
