@@ -166,7 +166,7 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 	}
 	
 	public void testAutodetection() throws JetelException, ComponentNotReadyException {
-		String orderingSpecification = "field1(r);field2(r);field3(r);field4(i)";
+		String orderingSpecification = "field1(r);field2(r);field3(r)";
 		RecordKeyTokens recordKeyTokens = KeyTokenizer.tokenizeRecordKey(orderingSpecification);
 		
 		DataRecordMetadata drm = new DataRecordMetadata("myRec");
@@ -176,8 +176,6 @@ public class RecordComparatorAnyOrdertypeTest extends CloverTestCase {
 		drm.addField(dfm2);
 		DataFieldMetadata dfm3 = new DataFieldMetadata("field3", DataFieldType.INTEGER, "|");
 		drm.addField(dfm3);
-		DataFieldMetadata dfm4 = new DataFieldMetadata("field4", DataFieldType.INTEGER, "|");
-		drm.addField(dfm4);
 		
 		DataRecord dr1 = DataRecordFactory.newRecord(drm);
 		dr1.init();
