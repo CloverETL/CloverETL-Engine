@@ -81,7 +81,7 @@ public class MVEngineComponent implements MVComponent {
 	/**
 	 * @return metadata provider based on engine component
 	 */
-	public static MetadataProvider getMetadataProvider(Node engineComponent) {
+	private static MetadataProvider getMetadataProvider(Node engineComponent) {
 		MetadataProvider metadataProvider = null;
 		if (engineComponent instanceof MetadataProvider) {
 			metadataProvider = (MetadataProvider) engineComponent;
