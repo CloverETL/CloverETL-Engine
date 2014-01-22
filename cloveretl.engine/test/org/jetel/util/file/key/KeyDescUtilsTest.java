@@ -57,5 +57,20 @@ public class KeyDescUtilsTest extends CloverTestCase {
     	assertEquals(keyRecord.getKeyField(3).getOrderType(), OrderType.AUTO);
 
     }
+    
+    public void testLegacyKeyOrderingDetection() throws JetelException {
+    	String rawKeyRecord="field1;field2;field3";
+    	
+    	RecordKeyTokens keyRecord = KeyTokenizer.tokenizeRecordKey(rawKeyRecord);
+    	
+    	assertTrue(rawKeyRecord.equalsIgnoreCase(keyRecord.toString()));
+    	assertEquals(keyRecord.getKeyField(0).getFieldName(), "field1");
+    	assertEquals(keyRecord.getKeyField(1).getFieldName(), "field2");
+    	assertEquals(keyRecord.getKeyField(2).getFieldName(), "field3");
+    	
+    	assertEquals(keyRecord.getKeyField(0).getOrderType(), null);
+    	assertEquals(keyRecord.getKeyField(1).getOrderType(), null);
+    	assertEquals(keyRecord.getKeyField(2).getOrderType(), null);
+    }
 
 }

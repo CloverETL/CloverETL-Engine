@@ -209,7 +209,7 @@ public class ReadableChannelIterator {
 	 * TODO to make hasData method for the InputPort that waits for new data if the edge is empty. Is it good solution???
 	 */
 	public boolean hasNext() {
-		return filenameItor.hasNext() || (bInputPort && portReadingIterator.hasNext());
+		return dictionaryReadingIterator.hasNext() || filenameItor.hasNext() || (bInputPort && portReadingIterator.hasNext());
 	}
 
 	/**
@@ -219,7 +219,12 @@ public class ReadableChannelIterator {
 	public Object next() throws JetelException {
 		// read next value from dictionary array or list
 		if (dictionaryReadingIterator.hasNext()) {
-			return dictionaryReadingIterator.next();
+			ReadableByteChannel next = dictionaryReadingIterator.next();
+			String currentInnerFileName = dictionaryReadingIterator.getCurrentInnerFileName();
+			if (currentInnerFileName != null) {
+				currentFileName = currentInnerFileName;
+			}
+			return next;
 		}
 		
 		// read from fields

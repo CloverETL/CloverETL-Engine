@@ -33,7 +33,9 @@
 	  <ETLComponent category="readers" iconPath="icons/readers/LDAPReader" name="LDAPReader" type="LDAP_READER" className="com.linagora.component.LdapReader">
 	    <shortDescription>Reads information from LDAP directory trees.</shortDescription>
 	    <description>Reads information from LDAP directory trees, converts it to data records and sends them to all connected output ports.</description>
-	    <inputPorts />
+        <inputPorts>
+          <singlePort name="0" required="false" />
+        </inputPorts>
 	    <outputPorts>
 	      <multiplePort required="true" />
 	    </outputPorts>
@@ -84,6 +86,15 @@
 	          <item displayValue="follow" value="FOLLOW" />
 	        </enumType>
 	      </property>
+          <property category="advanced" displayName="Page size" modifiable="true" name="pageSize" nullable="true" defaultHint="0">
+            <singleType name="integer" />
+          </property>
+          <property category="advanced" displayName="All attributes" modifiable="true" name="allAttributes" nullable="true" defaultHint="true">
+            <singleType name="boolean" />
+          </property>
+          <property category="advanced" displayName="Default field" modifiable="true" name="defaultField" nullable="true">
+            <singleType name="field" outputPortName="0" />
+          </property>
 	    </properties>
 	  </ETLComponent>
 	</extension>
