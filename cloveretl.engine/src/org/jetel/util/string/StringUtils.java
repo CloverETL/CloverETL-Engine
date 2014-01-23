@@ -1563,7 +1563,10 @@ public class StringUtils {
 	 * 
 	 * @param data
 	 * @return true if parameter contains space characters only
+	 * @deprecated Does not recognize ASCII control (Unicode C0 control) characters, such as tab (09), CR (13), LF (10) and others to be blank.
+	 * Use {@link UnicodeBlanks#isBlank(CharSequence)} instead.
 	 */
+	@Deprecated
 	public static boolean isBlank(CharBuffer data) {
 		data.mark();
 		for (int i = 0; i < data.length(); i++) {
@@ -1581,7 +1584,10 @@ public class StringUtils {
 	 * 
 	 * @param data
 	 * @return true if parameter contains space characters only
+	 * @deprecated Does not recognize ASCII control (Unicode C0 control) characters, such as tab (09), CR (13), LF (10) to be blank.
+	 * Use {@link UnicodeBlanks#isBlank(CharSequence)} instead.
 	 */
+	@Deprecated
 	public static boolean isBlank(CharSequence data) {
 		if (data == null) {
 			return true;
@@ -2496,6 +2502,8 @@ public class StringUtils {
 	/**
 	 * @param c tested character
 	 * @return is the given character printable?
+	 * @deprecated This function wrongly marks many characters (e.g. U+2144) as non-printable
+	 * See {@link UnicodeBlanks}.
 	 */
 	public static boolean isPrintableChar(char c) {
         Character.UnicodeBlock block = Character.UnicodeBlock.of( c );

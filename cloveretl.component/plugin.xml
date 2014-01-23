@@ -1509,9 +1509,9 @@
 	      <property category="basic" displayName="Input file URL" modifiable="true" name="inFileUrl" nullable="true" required="false" redundant="inputField|outputField">
 	        <singleType name="file" />
 	      </property>
-	      <property category="basic" displayName="Output file URL" modifiable="true" name="outFileUrl" nullable="true" required="false" redundant="inputField|outputField">
-	        <singleType name="file" />
-	      </property>
+          <property category="basic" displayName="Output file URL" modifiable="true" name="outFileUrl" nullable="true" required="false" redundant="inputField|outputField">
+            <singleType name="file" fields="output" mandatory_existing_file="false"/>
+          </property>
 	      <property category="basic" displayName="Append output" modifiable="true" name="appendOutput" nullable="true" required="false" defaultHint="false">
 	        <singleType name="bool" />
 	      </property>

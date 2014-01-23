@@ -2,6 +2,30 @@
                           CloverETL Engine - HISTORY of RELEASES
 *******************************************************************************
 
+
+REL-3-5-0
+---------
+
+* Improved visualization of CTL errors in runtime
+* CloverDataReader: remove unnecessary deserialization
+* Add support for CDATA sections in XmlWriter
+* XMLExtract: use schema defined in XML
+* Create new CTL functions getRawParamValue() and getRawParamValues()
+* Vertica connectivity
+- FIXES:
+	- Graph which has Denormalizer with a class reference executed using RunGraph component does not work
+	- Function round does not work in the same way for double and decimal on one side and integer and long
+	 on the other side when rounding to hundred or thousand
+	- XMLXPathReader - document that reading multivalue fields is unsupported
+	- XMLExtract: explicit mapping to have priority over implicit automap by name
+	- str2bits does not check validity of its input string
+- COMPATIBILITY:
+	- RecordFilter interface declares two isValid() methods
+	- update jTDS to version 1.2.8
+	- Rename 'Integral Lib' to 'Record Lib'
+	- Validate names of graph parameters
+	
+
 REL-3-5-0-M2
 ------------
 
