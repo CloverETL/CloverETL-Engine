@@ -72,7 +72,7 @@ public abstract class PortData {
 				}
 			}
 		} else {
-			if (hasNullKeyOnly(keys)) {
+			if (hint == null && hasNullKeyOnly(keys)) {
 				return new StreamedSimplePortData(inPort, keys);
 			} else {
 				return new StreamedPortData(inPort, keys, hint);
