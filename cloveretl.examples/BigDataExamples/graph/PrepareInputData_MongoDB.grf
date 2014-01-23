@@ -51,8 +51,10 @@ Uses the potentially dangerous bulk insert mode.]]></attr>
 (CloverETL, Hadoop HIVE, Hadoop MapReduce, and MongoDB)]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="38" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="This graph is part of the &quot;UniqueVisits-MongoDB.jbf&quot; jobflow." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="929" x="30" y="113"/>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="154" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Drop the Collection" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="222" x="42" y="168">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Drop the Collection" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="222" x="42" y="168">
 <attr name="text"><![CDATA[
+
+
 
 
 
