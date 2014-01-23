@@ -82,6 +82,19 @@ public class DynamicRecordBuffer {
 	/** How long has been writer thread blocked on this buffer (in nanoseconds)? */ 
 	private long writerWaitingTime;
 
+    /**
+     * Set to true for performance improvement if writing and reading operations
+     * do not interlace. First, all writing operation need to be performed and
+     * {@link #setEOF()} method invoked and after that reading operation can be
+     * invoked.
+     * 
+     * This flag ensures that data records are flushed on disk only if do not fit
+     * into memory.
+     * 
+     * This variable can be changed only before {@link #init()} method invocation.
+     */
+    private boolean sequentialUsage = false;
+    
 	/**
 	 * Constructor of the DynamicRecordBuffer with tmp file
      * created under java.io.tmpdir dir.
@@ -112,6 +125,21 @@ public class DynamicRecordBuffer {
 		return isClosed;
 	}
 
+    /**
+     * Set to true for performance improvement if writing and reading operations
+     * do not interlace. First, all writing operations need to be performed and
+     * {@link #setEOF()} method invoked and after that reading operation can be
+     * invoked.
+     * 
+     * This flag ensures that the data records are flushed on disk only if do not fit
+     * into memory.
+     * 
+     * This variable can be changed only before {@link #init()} method invocation.
+     */
+	public void setSequentialReading(boolean sequentialReading) {
+		this.sequentialUsage = sequentialReading;
+	}
+	
 	/**
      * Initializes the buffer. Must be called before any write or read operation
      * is performed.
@@ -124,7 +152,7 @@ public class DynamicRecordBuffer {
         readDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
         writeDataBuffer = CloverBuffer.allocateDirect(initialBufferSize);
         tmpDataRecord = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-        awaitingData = false;
+        awaitingData = sequentialUsage; //for sequential usage the data records are 'awaiting' even no thread is already blocked on #readRecord() operation
         bufferedRecords = new AtomicInteger(0);
         readDataBuffer.flip();
     }
@@ -194,7 +222,7 @@ public class DynamicRecordBuffer {
 		
 		readDataBuffer.clear();
         writeDataBuffer.clear();
-        awaitingData = false;
+        awaitingData = sequentialUsage;
         bufferedRecords.set(0);
         readDataBuffer.flip();
 	}
