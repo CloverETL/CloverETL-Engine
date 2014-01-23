@@ -46,6 +46,8 @@ public class SubGraphUtils {
 	/** Type of SubJobflow component. */
 	public static final String SUB_JOBFLOW_TYPE = "SUB_JOBFLOW";
 
+    /** the name of an XML attribute used to pass a URL specified the executed sub-graph */
+    public static final String XML_JOB_URL_ATTRIBUTE = "jobURL";
 
 	/**
 	 * @return true if and only if the given component type is SubGraphInput or SubJobflowInput component.
