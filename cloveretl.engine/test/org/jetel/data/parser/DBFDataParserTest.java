@@ -29,7 +29,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordParsingType;
 import org.jetel.util.stream.StreamUtils;
 
-import de.schlichtherle.io.FileInputStream;
+import de.schlichtherle.truezip.file.TFileInputStream;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -80,7 +80,7 @@ public class DBFDataParserTest extends AbstractParserTestCase {
 				formatter.writeFooter();
 				formatter.close();
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
-				StreamUtils.copy(new FileInputStream(tmpFile), os, true, true);
+				StreamUtils.copy(new TFileInputStream(tmpFile), os, true, true);
 				bytes = os.toByteArray();
 				if (!tmpFile.delete()) {
 					System.err.println("Failed to delete " + tmpFile);
