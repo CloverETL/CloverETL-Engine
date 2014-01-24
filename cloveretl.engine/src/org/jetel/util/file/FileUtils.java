@@ -63,6 +63,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.FileManager;
 import org.jetel.component.fileoperation.Operation;
@@ -92,12 +94,13 @@ import org.jetel.util.protocols.sftp.SFTPConnection;
 import org.jetel.util.protocols.sftp.SFTPStreamHandler;
 import org.jetel.util.protocols.webdav.WebdavOutputStream;
 import org.jetel.util.stream.StreamUtils;
-import org.jetel.util.stream.TarInputStream;
 import org.jetel.util.string.StringUtils;
 
-import com.ice.tar.TarEntry;
 import com.jcraft.jsch.ChannelSftp;
 
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.file.TFileInputStream;
+import de.schlichtherle.truezip.file.TFileOutputStream;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 /**
  *  Helper class with some useful methods regarding file manipulation
@@ -530,8 +533,8 @@ public class FileUtils {
         	// apply the contextURL
         	URL url = FileUtils.getFileURL(contextURL, localArchivePath.toString());
 			String absolutePath = getUrlFile(url);
-			registerTrueZipVSFEntry(new de.schlichtherle.io.File(localArchivePath.toString()));
-			return new de.schlichtherle.io.FileInputStream(absolutePath);
+			registerTrueZipVSFEntry(new TFile(localArchivePath.toString()));
+			return new TFileInputStream(absolutePath);
         }
 
         //first we try the custom path resolvers
@@ -764,10 +767,10 @@ public class FileUtils {
         }
 
         //resolve url format for zip files
-        TarInputStream tis = new TarInputStream(parentStream) ;     
-        TarEntry entry;
+        TarArchiveInputStream tis = new TarArchiveInputStream(parentStream) ;     
+        TarArchiveEntry entry;
 
-        while ((entry = tis.getNextEntry()) != null) {
+        while ((entry = tis.getNextTarEntry()) != null) {
         	if (entry.isDirectory()) {
         		continue; // CLS-537: skip directories, we want to read the first file
         	}
@@ -832,12 +835,12 @@ public class FileUtils {
      * @return
      * @throws IOException
      */
-    public static TarInputStream getTarInputStream(InputStream parentStream, String entryName) throws IOException {
-        TarInputStream tis = new TarInputStream(parentStream) ;     
-        TarEntry entry;
+    public static TarArchiveInputStream getTarInputStream(InputStream parentStream, String entryName) throws IOException {
+        TarArchiveInputStream tis = new TarArchiveInputStream(parentStream) ;     
+        TarArchiveEntry entry;
 
         // find a matching entry
-        while ((entry = tis.getNextEntry()) != null) {
+        while ((entry = tis.getNextTarEntry()) != null) {
         	if (entry.isDirectory()) {
         		continue; // CLS-537: skip directories, we want to read the first file
         	}
@@ -989,12 +992,12 @@ public class FileUtils {
         }
     	
         //resolve url format for zip files
-    	TarInputStream tin = new TarInputStream(innerStream);
-        TarEntry entry;
+    	TarArchiveInputStream tin = new TarArchiveInputStream(innerStream);
+        TarArchiveEntry entry;
 
         // find entries
         int iMatched = 0;
-        while((entry = tin.getNextEntry()) != null) {	// tin is changing -> recursion !!!
+        while((entry = tin.getNextTarEntry()) != null) {	// tin is changing -> recursion !!!
             // wild cards
             if (bWildsCardedAnchor) {
            		matcher = WILDCARD_PATTERS.matcher(entry.getName());
@@ -1219,14 +1222,14 @@ public class FileUtils {
 	@java.lang.SuppressWarnings("unchecked")
 	private static String getFirstFileInZipArchive(URL context, String filePath) throws NullPointerException, FileNotFoundException, ZipException, IOException {
 		File file = getJavaFile(context, filePath); // CLS-537
-		de.schlichtherle.util.zip.ZipFile zipFile = null;
+		de.schlichtherle.truezip.zip.ZipFile zipFile = null;
 		
 		try {
-			zipFile = new de.schlichtherle.util.zip.ZipFile(file);
-			Enumeration<de.schlichtherle.util.zip.ZipEntry> zipEnmr;
-			de.schlichtherle.util.zip.ZipEntry entry;
+			zipFile = new de.schlichtherle.truezip.zip.ZipFile(file);
+			Enumeration<de.schlichtherle.truezip.zip.ZipEntry> zipEnmr;
+			de.schlichtherle.truezip.zip.ZipEntry entry;
 			
-			for (zipEnmr = zipFile.entries(); zipEnmr.hasMoreElements() ;) {
+			for (zipEnmr = (Enumeration<de.schlichtherle.truezip.zip.ZipEntry>) zipFile.entries(); zipEnmr.hasMoreElements() ;) {
 				entry = zipEnmr.nextElement();
 				if (!entry.isDirectory()) {
 					return entry.getName();
@@ -1325,12 +1328,12 @@ public class FileUtils {
 		return getLocalArchiveOutputPath(contextURL, path, false, -1, new StringBuilder());
 	}
 	
-	static de.schlichtherle.io.File getLocalZipArchive(URL contextURL, String localArchivePath) throws IOException {
+	static TFile getLocalZipArchive(URL contextURL, String localArchivePath) throws IOException {
     	// apply the contextURL
     	URL url = FileUtils.getFileURL(contextURL, localArchivePath);
 		String absolutePath = FileUtils.getUrlFile(url);
-		registerTrueZipVSFEntry(new de.schlichtherle.io.File(localArchivePath));
-		return new de.schlichtherle.io.File(absolutePath);
+		registerTrueZipVSFEntry(new TFile(localArchivePath));
+		return new TFile(absolutePath);
 	}
 		
 	private static boolean getLocalArchiveInputPath(URL contextURL, String input, StringBuilder path)
@@ -1338,7 +1341,7 @@ public class FileUtils {
 		return getLocalArchivePath(contextURL, input, false, 0, path, 0, false);
 	}
 	
-	private static void registerTrueZipVSFEntry(de.schlichtherle.io.File entry) {
+	private static void registerTrueZipVSFEntry(TFile entry) {
 		TransformationGraph graph = ContextProvider.getGraph();
 		if (graph != null) {
 			graph.getVfsEntries().addVFSEntry(entry);
@@ -1371,13 +1374,13 @@ public class FileUtils {
         	URL url = FileUtils.getFileURL(contextURL, archPath);
 			String absolutePath = getUrlFile(url);
 			
-        	de.schlichtherle.io.File archive = new de.schlichtherle.io.File(absolutePath);
+        	TFile archive = new TFile(absolutePath);
         	boolean mkdirsResult = archive.getParentFile().mkdirs();
 			log.debug("Opening local archive entry " + archive.getAbsolutePath()
         			+ " (mkdirs: " + mkdirsResult
         			+ ", exists:" + archive.exists() + ")");
 			registerTrueZipVSFEntry(archive);
-        	return new de.schlichtherle.io.FileOutputStream(absolutePath, appendData);
+        	return new TFileOutputStream(absolutePath, appendData);
         }
         
         //first we try the custom path resolvers
@@ -1502,13 +1505,13 @@ public class FileUtils {
 			if (appendData) {
 				throw new IOException("Appending to remote archives is not supported");
 			}
-			de.schlichtherle.util.zip.ZipOutputStream zout = new de.schlichtherle.util.zip.ZipOutputStream(os);
+			de.schlichtherle.truezip.zip.ZipOutputStream zout = new de.schlichtherle.truezip.zip.ZipOutputStream(os);
 			if (compressLevel != -1) {
 				zout.setLevel(compressLevel);
 			}
 			String anchor = sbAnchor.toString();
-			de.schlichtherle.util.zip.ZipEntry entry =
-				new de.schlichtherle.util.zip.ZipEntry(anchor.equals("") ? DEFAULT_ZIP_FILE : anchor);
+			de.schlichtherle.truezip.zip.ZipEntry entry =
+				new de.schlichtherle.truezip.zip.ZipEntry(anchor.equals("") ? DEFAULT_ZIP_FILE : anchor);
 			zout.putNextEntry(entry);
 			return zout;
         } 

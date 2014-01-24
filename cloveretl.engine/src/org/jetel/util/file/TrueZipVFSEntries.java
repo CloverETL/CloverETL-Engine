@@ -24,8 +24,8 @@ import java.util.HashSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import de.schlichtherle.io.ArchiveException;
-import de.schlichtherle.io.File;
+import de.schlichtherle.truezip.file.TFile;
+import de.schlichtherle.truezip.fs.FsSyncException;
 
 /**
  * This class registers all archives managed by TrueZip library for a single graph instance.
@@ -39,14 +39,14 @@ import de.schlichtherle.io.File;
  * @created 22.6.2011
  */
 public class TrueZipVFSEntries {
-	private final Collection<File> rootArchives = new HashSet<File>();
+	private final Collection<TFile> rootArchives = new HashSet<TFile>();
 	
 	static Log logger = LogFactory.getLog(TrueZipVFSEntries.class);
 	
-	public void addVFSEntry(File entry) {
-		File rootArchive = null;
+	public void addVFSEntry(TFile entry) {
+		TFile rootArchive = null;
 		
-		for (de.schlichtherle.io.File enclosingArchive = entry.getEnclArchive(); enclosingArchive != null; enclosingArchive = enclosingArchive.getEnclArchive()) {
+		for (TFile enclosingArchive = entry.getEnclArchive(); enclosingArchive != null; enclosingArchive = enclosingArchive.getEnclArchive()) {
 			rootArchive = enclosingArchive;
 		}
 
@@ -59,10 +59,10 @@ public class TrueZipVFSEntries {
 	}
 	
 	public void freeAll() {
-		for (File entry : rootArchives) {
+		for (TFile entry : rootArchives) {
 			try {
-				File.umount(entry, false, false, false, false);
-			} catch (ArchiveException e) {
+				TFile.umount(entry, false, false, false, false);
+			} catch (FsSyncException e) {
 				logger.warn("Cannot unmount zip archive " + entry.getAbsolutePath());
 			}
 		}
