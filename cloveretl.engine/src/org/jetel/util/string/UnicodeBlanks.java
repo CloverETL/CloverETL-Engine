@@ -105,4 +105,23 @@ public class UnicodeBlanks {
 		return (start != 0 || end != string.length()) ? string.substring(start, end) : string;
 	}
 	
+	public static CharSequence trim(CharSequence sequence) {
+		if (sequence == null) {
+			return null;
+		}
+		
+		int start = 0;
+		int end = sequence.length();
+		
+		while (start < end && isBlank(sequence.charAt(start))) {
+			start++;
+		}
+		
+		while (start < end && isBlank(sequence.charAt(end - 1))) {
+			end--;
+		}
+		
+		return (start != 0 || end != sequence.length()) ? sequence.subSequence(start, end) : sequence;
+	}
+	
 }
