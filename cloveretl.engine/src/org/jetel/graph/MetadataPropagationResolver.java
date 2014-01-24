@@ -75,6 +75,10 @@ public class MetadataPropagationResolver {
 			visitedEdges.put(edge, null);
 			MVMetadata metadata;
 			metadata = findMetadataInternal(edge);
+			if (metadata != null) {
+				//construct metadata origin path
+				metadata.addToOriginPath(edge.getModel());
+			}
 			visitedEdges.put(edge, metadata);
 			return metadata;
 		} else {
@@ -95,6 +99,7 @@ public class MetadataPropagationResolver {
 	private MVMetadata findMetadataInternal(MVEdge edge) {
 		if (!edge.hasMetadata()) {
 			MVMetadata result = null;
+			MVComponent originComponent = null;
 			//check writer
 			MVComponent writer = edge.getWriter();
 			if (writer != null) {
@@ -105,17 +110,33 @@ public class MetadataPropagationResolver {
 				} else {
 					result = combineMetadata(result, writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this));
 				}
+				if (result != null) {
+					originComponent = writer;
+				}
 			}
 
 			//check reader
 			MVComponent reader = edge.getReader();
 			if (reader != null) {
+				MVMetadata metadataFromWriter = result;
 				if (reader.isPassThrough()) {
 					for (MVEdge outputEdge : reader.getOutputEdges().values()) {
 						result = combineMetadata(result, findMetadata(outputEdge));
 					}
 				} else {
 					result = combineMetadata(result, reader.getDefaultInputMetadata(edge.getInputPortIndex(), this));
+				}
+				if (result != metadataFromWriter) {
+					originComponent = reader;
+				}
+			}
+			
+			if (result != null) {
+				if (originComponent != null) {
+					//construct metadata origin
+					result.addToOriginPath(originComponent.getModel());
+				} else {
+					throw new IllegalStateException();
 				}
 			}
 			

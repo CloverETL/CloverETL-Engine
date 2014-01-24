@@ -18,6 +18,9 @@
  */
 package org.jetel.graph.modelview;
 
+import java.util.List;
+
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -48,7 +51,7 @@ public interface MVMetadata {
 	/**
 	 * @return wrapped metadata, either DataRecordMetadata or GraphMetadata
 	 */
-	public DataRecordMetadata getMetadata();
+	public DataRecordMetadata getModel();
 	
 	/**
 	 * Priority of metadata is used to decide which metadata should be used.
@@ -63,5 +66,25 @@ public interface MVMetadata {
 	 * Sets metadata identifier.
 	 */
 	public void setId(String id);
+	
+	/**
+	 * Appends the given graph element to metadata origin path.
+	 * Origin path is list of graph elements which were used for automatic metadata propagation for this metadata.
+	 * @param graphElement
+	 */
+	public void addToOriginPath(IGraphElement graphElement);
+
+	/**
+	 * Appends the given graph elements to metadata origin path.
+	 * Origin path is list of graph elements which were used for automatic metadata propagation for this metadata.
+	 * @param graphElement
+	 */
+	public void addToOriginPath(List<IGraphElement> graphElement);
+	
+	/**
+	 * Origin path is list of graph elements which were used for automatic metadata propagation for this metadata.
+	 * @return origin path for this metadata
+	 */
+	public List<IGraphElement> getOriginPath();
 	
 }

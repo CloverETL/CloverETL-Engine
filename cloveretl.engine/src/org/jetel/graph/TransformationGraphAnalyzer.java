@@ -75,7 +75,10 @@ public class TransformationGraphAnalyzer {
 				metadataPropagationResolver.reset();
 				MVMetadata metadata = metadataPropagationResolver.findMetadata(new MVEngineEdge(edge));
 				if (metadata != null) {
-					edge.setMetadata(metadata.getMetadata());
+					//remember found metadata to the edge
+					edge.setMetadata(metadata.getModel());
+					//remember found metadata origin to the edge
+					edge.setMetadataOriginPath(metadata.getOriginPath());
 				}
 			}
 		}

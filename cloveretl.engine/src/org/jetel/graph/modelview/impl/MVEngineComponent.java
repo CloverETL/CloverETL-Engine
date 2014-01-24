@@ -64,6 +64,11 @@ public class MVEngineComponent implements MVComponent {
 	}
 
 	@Override
+	public Node getModel() {
+		return engineComponent;
+	}
+	
+	@Override
 	public Map<Integer, MVEdge> getInputEdges() {
 		return inputEdges;
 	}

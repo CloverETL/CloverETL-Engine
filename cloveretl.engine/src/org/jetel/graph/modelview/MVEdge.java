@@ -18,6 +18,7 @@
  */
 package org.jetel.graph.modelview;
 
+import org.jetel.graph.Edge;
 import org.jetel.graph.MetadataPropagationResolver;
 
 /**
@@ -34,6 +35,11 @@ import org.jetel.graph.MetadataPropagationResolver;
  */
 public interface MVEdge {
 
+	/**
+	 * @return engine edge
+	 */
+	public Edge getModel();
+	
 	/**
 	 * @return reader (data producer) of this edge
 	 */

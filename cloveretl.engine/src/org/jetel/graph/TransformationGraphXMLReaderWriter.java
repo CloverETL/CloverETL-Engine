@@ -444,7 +444,7 @@ public class TransformationGraphXMLReaderWriter {
 					try {
 						TransformationGraphAnalyzer.analyseMetadataPropagation(graph);
 					} catch (Exception e) {
-						throwXMLConfigurationException("Metadata propagation analysis failed.", e);
+						throw new JetelRuntimeException("Metadata propagation analysis failed.", e);
 					}
 				}
 	

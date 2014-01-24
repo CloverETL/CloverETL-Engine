@@ -21,6 +21,7 @@ package org.jetel.graph.modelview;
 import java.util.Map;
 
 import org.jetel.graph.MetadataPropagationResolver;
+import org.jetel.graph.Node;
 
 /**
  * This is general view to a component. Two implementations are expected
@@ -36,6 +37,11 @@ import org.jetel.graph.MetadataPropagationResolver;
  */
 public interface MVComponent {
 
+	/**
+	 * @return engine component
+	 */
+	public Node getModel();
+	
 	/**
 	 * @return input edges in map container, where key is port index
 	 */

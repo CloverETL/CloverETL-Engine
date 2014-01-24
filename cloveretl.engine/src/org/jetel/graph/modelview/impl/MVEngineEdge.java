@@ -18,7 +18,10 @@
  */
 package org.jetel.graph.modelview.impl;
 
+import java.util.List;
+
 import org.jetel.graph.Edge;
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
@@ -41,6 +44,11 @@ public class MVEngineEdge implements MVEdge {
 	}
 	
 	@Override
+	public Edge getModel() {
+		return engineEdge;
+	}
+	
+	@Override
 	public MVComponent getReader() {
 		Node reader = engineEdge.getReader();
 		return (reader != null) ? new MVEngineComponent(reader) : null;
@@ -60,7 +68,12 @@ public class MVEngineEdge implements MVEdge {
 	@Override
 	public MVMetadata getMetadata() {
 		if (hasMetadata()) {
-			return new MVEngineMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
+			MVMetadata metadata = new MVEngineMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
+			List<IGraphElement> originPath = engineEdge.getMetadataOriginPath();
+			if (originPath != null) {
+				metadata.addToOriginPath(originPath.subList(0, originPath.size() - 1)); //the last element in path is this edge, which will be appended later again
+			}
+			return metadata;
 		} else {
 			return null;
 		}
