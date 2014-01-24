@@ -28,6 +28,8 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Edge;
+import org.jetel.graph.OutputPort;
+import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -297,27 +299,40 @@ public class XMLExtractTest extends CloverTestCase {
 	private XMLExtract createAndRunXMLExtract(String inFile, String mappingFile, boolean useNestedNodes, DataRecordMetadata... edgesMetadata) throws Exception, ComponentNotReadyException {
 		XMLExtract xmlExtract = createXMLExtract(inFile, mappingFile, useNestedNodes, edgesMetadata);
 
-		xmlExtract.preExecute();
-		xmlExtract.init();
-
 		assertEquals("XMLExtract execution failed!", Result.FINISHED_OK, xmlExtract.execute());
 		return xmlExtract;
 	}
 
 	private static XMLExtract createXMLExtract(String inFile, String mappingFile, boolean useNestedNodes, DataRecordMetadata... edgesMetadata)
 	throws Exception {
+		TransformationGraph graph = new TransformationGraph("TestXMLExtractGraph");
+		Phase phase = new Phase(0);
+		graph.addPhase(phase);
+
 		XMLExtract xmlExtract = new XMLExtract("TestXMLExtract");
 		xmlExtract.setInputFile(TEST_RESOURCERS_DIR + inFile);
 		xmlExtract.setMappingURL(TEST_RESOURCERS_DIR + mappingFile);
 		xmlExtract.setUseNestedNodes(useNestedNodes);
+		phase.addNode(xmlExtract);
 
-		xmlExtract.setGraph(new TransformationGraph("TestXMLExtractGraph"));
+		Trash trash = new Trash("TestTrash");
+		phase.addNode(trash);
 		
 		for (int i = 0; i < edgesMetadata.length; i++) {
 			Edge edge = new Edge("Edge" + i, edgesMetadata[i]);
 			edge.setEdgeType(EdgeTypeEnum.BUFFERED);
-			edge.init();
 			xmlExtract.addOutputPort(i, edge);
+			trash.addInputPort(i, edge);
+			graph.addEdge(edge);
+		}
+
+		graph.init();
+		graph.preExecute();
+
+		xmlExtract.preExecute();
+		trash.preExecute();
+		for (OutputPort outputPort : xmlExtract.getOutputPorts().values()) {
+			outputPort.getEdge().preExecute();
 		}
 		
 		return xmlExtract;
