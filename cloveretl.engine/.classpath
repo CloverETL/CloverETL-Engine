@@ -22,7 +22,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/annotations.jar"/>
 	<classpathentry kind="lib" path="lib/icu4j-normalizer_transliterator-4.8.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar"/>
-	<classpathentry kind="lib" path="lib/tar.jar"/>
+	<classpathentry kind="lib" path="lib/commons-compress-1.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.1.jar" sourcepath="lib.src/joda-time-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/xmlbeans-2.5.0-modified-for-WSC.jar" sourcepath="lib.src/xmlbeans-2.5.0-modified-for-WSC-source.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/dom4j-1.6.1.jar"/>
@@ -31,7 +31,11 @@
 	<classpathentry kind="lib" path="lib/ftp4j-1.4.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/XmlSchema-1.4.7-modified-for-WSC.jar" sourcepath="lib.src/XmlSchema-1.4.7-modified-for-WSC-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-io-2.2.jar"/>
-	<classpathentry kind="lib" path="lib/truezip-6.8.1.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-kernel-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-driver-zip-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-driver-file-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-file-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-path-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/sardine.jar"/>
 	<classpathentry kind="lib" path="lib/jets3t-0.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.2.jar" sourcepath="lib.src/httpclient-4.2-sources.jar"/>
