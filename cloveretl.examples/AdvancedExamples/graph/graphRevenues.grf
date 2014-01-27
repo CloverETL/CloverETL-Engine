@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." guiVersion="0.0.0.devel" id="1204553576084" licenseType="Evaluation Devel" modified="Mon Oct 10 12:23:31 CEST 2011" modifiedBy="avackova" name="Revenues of one half-year" revision="1.52" showComponentDetails="true">
+<Graph author="avackova" created="Wed Mar 07 09:01:26 CET 2007" description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." guiVersion="0.0.0.devel" id="1204553576084" licenseType="Evaluation" modified="Mon Jan 27 13:53:39 CET 2014" modifiedBy="user" name="Revenues of one half-year" revision="1.53" showComponentDetails="true">
 <Global>
-<Metadata id="Metadata2">
-<Record fieldDelimiter=";" name="Aggr_revenues" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Aggr_revenues" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Aggr_revenue" nullable="true" shift="0" type="number"/>
+<Field locale="cs.CZ" name="Aggr_revenue" nullable="true" shift="0" type="decimal"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata5">
-<Record fieldDelimiter=";" name="Bonus" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Bonus" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="number"/>
+<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="decimal"/>
 <Field locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
@@ -19,39 +19,39 @@
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata6">
-<Record fieldDelimiter=";" name="Db_revenues" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Metadata id="Metadata6" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Db_revenues" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field name="client_id" nullable="true" shift="0" type="integer"/>
 <Field name="year_month" nullable="true" shift="0" type="string"/>
-<Field name="revenue" nullable="true" shift="0" type="number"/>
+<Field name="revenue" nullable="true" shift="0" type="decimal"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata9">
-<Record fieldDelimiter=";" name="Disprate" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Metadata id="Metadata9" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Disprate" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="number"/>
+<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="decimal"/>
 <Field locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata10">
-<Record fieldDelimiter=";" name="Matched" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Metadata id="Metadata10" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Matched" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="number"/>
+<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="decimal"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata3">
-<Record fieldDelimiter=";" name="Matching" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Matching" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
-<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="number"/>
+<Field locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="decimal"/>
 <Field locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
 <Field locale="cs.CZ" name="Client_id_n" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata0">
-<Record fieldDelimiter=";" name="Without_revenue_matching" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Without_revenue_matching" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
 <Field locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
 <Field locale="cs.CZ" name="Client_id_n" nullable="true" shift="0" type="integer"/>
-<Field name="Aggr_revenue" nullable="true" shift="0" type="number"/>
+<Field name="Aggr_revenue" nullable="true" shift="0" type="decimal"/>
 </Record>
 </Metadata>
 <Connection dbConfig="${CONN_DIR}/postgre.cfg" id="Connection0" type="JDBC"/>
@@ -59,12 +59,14 @@
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="69" guiName="Clients" guiWidth="128" guiX="7" guiY="149" id="DB_INPUT_TABLE1" sqlQuery="select $Client_id:=client_id from p_customer" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/bonus.csv" guiHeight="85" guiName="Bonus" guiWidth="128" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DATA_READER">
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="67" guiName="Clients" guiWidth="128" guiX="7" guiY="149" id="DB_INPUT_TABLE1" type="DB_INPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[select $Client_id:=client_id from p_customer]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/bonus.csv" guiHeight="80" guiName="Bonus" guiWidth="128" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read bonus file]]></attr>
 </Node>
-<Node append="false" enabled="enabled" excludeFields="Client_id_n" fileURL="${DATAOUT_DIR}/not_found_clientst.xt" guiHeight="101" guiName="Not found clients" guiWidth="155" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DATA_WRITER"/>
-<Node ascendingInputs="true" enabled="enabled" guiHeight="101" guiName="Merge Join" guiWidth="128" guiX="314" guiY="28" id="EXT_MERGE_JOIN0" joinKey="$Client_id;#$Client_id;#" leftOuterJoin="true" type="EXT_MERGE_JOIN">
+<Node append="false" enabled="enabled" excludeFields="Client_id_n" fileURL="${DATAOUT_DIR}/not_found_clientst.xt" guiHeight="93" guiName="Not found clients" guiWidth="128" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DATA_WRITER"/>
+<Node ascendingInputs="true" enabled="enabled" guiHeight="93" guiName="Merge Join" guiWidth="128" guiX="314" guiY="28" id="EXT_MERGE_JOIN0" joinKey="$Client_id;#$Client_id;#" leftOuterJoin="true" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 function integer transform() {
 	$0.Client_id_n = nvl($1.Client_id, -1);
@@ -75,15 +77,15 @@ function integer transform() {
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="85" guiName="Ext Sort" guiWidth="128" guiX="164" guiY="28" id="EXT_SORT0" sortKey="Client_id" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="85" guiName="Ext Sort" guiWidth="128" guiX="163" guiY="149" id="EXT_SORT1" sortKey="Client_id" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="69" guiName="Filter" guiWidth="128" guiX="475" guiY="149" id="FILTER0" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="80" guiName="Ext Sort" guiWidth="128" guiX="164" guiY="28" id="EXT_SORT0" sortKey="Client_id" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="80" guiName="Ext Sort" guiWidth="128" guiX="163" guiY="149" id="EXT_SORT1" sortKey="Client_id" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="67" guiName="Filter" guiWidth="128" guiX="475" guiY="149" id="FILTER0" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$Client_id_n>0]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Filter" guiWidth="128" guiX="476" guiY="28" id="FILTER1" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="67" guiName="Filter" guiWidth="128" guiX="476" guiY="28" id="FILTER1" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$Client_id_n<0]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Reformat" guiWidth="128" guiX="625" guiY="149" id="REFORMAT0" type="REFORMAT">
+<Node enabled="enabled" guiHeight="67" guiName="Reformat" guiWidth="128" guiX="625" guiY="149" id="REFORMAT0" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 function integer transform() {
 	$0.Client_id = $0.Client_id;
@@ -106,14 +108,17 @@ function integer transform() {
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="464:185|464:48" guiLocks="464|null|null" guiRouter="Manual" id="Edge4" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 1 (out)" toNode="FILTER1:0"/>
 </Phase>
 <Phase number="1">
-<Node aggregateKey="client_id" enabled="enabled" guiHeight="69" guiName="Aggregate" guiWidth="128" guiX="479" guiY="259" id="AGGREGATE0" mapping="$Client_id:=$client_id;$Aggr_revenue:=sum($revenue);" sorted="true" type="AGGREGATE"/>
+<Node aggregateKey="client_id" enabled="enabled" guiHeight="67" guiName="Aggregate" guiWidth="128" guiX="479" guiY="259" id="AGGREGATE0" mapping="$Client_id:=$client_id;$Aggr_revenue:=sum($revenue);" sorted="true" type="AGGREGATE"/>
 <Node enabled="enabled" guiHeight="72" guiName="Concatenate" guiWidth="128" guiX="163" guiY="259" id="CONCATENATE0" type="CONCATENATE"/>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="69" guiName="Interests" guiWidth="128" guiX="9" guiY="229" id="DB_INPUT_TABLE0" sqlQuery="select*from interests" type="DB_INPUT_TABLE">
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="67" guiName="Interests" guiWidth="128" guiX="9" guiY="229" id="DB_INPUT_TABLE0" type="DB_INPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[select*from interests]]></attr>
 <attr name="SQLCode"><![CDATA[
 ]]></attr>
 </Node>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="69" guiName="Charges" guiWidth="128" guiX="9" guiY="308" id="DB_INPUT_TABLE2" sqlQuery="select*from charges" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" guiHeight="85" guiName="Sort" guiWidth="128" guiX="314" guiY="259" id="SORT0" sortKey="client_id" sortOrder="Ascending" type="EXT_SORT"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="67" guiName="Charges" guiWidth="128" guiX="9" guiY="308" id="DB_INPUT_TABLE2" type="DB_INPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[select*from charges]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="80" guiName="Sort" guiWidth="128" guiX="314" guiY="259" id="SORT0" sortKey="client_id" sortOrder="Ascending" type="EXT_SORT"/>
 <Edge fromNode="AGGREGATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="CONCATENATE1:1"/>
 <Edge fromNode="CONCATENATE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="SORT0:0"/>
 <Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="CONCATENATE0:0"/>
@@ -121,12 +126,16 @@ function integer transform() {
 <Edge fromNode="SORT0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge22" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="AGGREGATE0:0"/>
 </Phase>
 <Phase number="2">
-<Node aggregateKey="Client_id" enabled="enabled" guiHeight="69" guiName="Aggregate" guiWidth="128" guiX="480" guiY="358" id="AGGREGATE1" mapping="$Client_id:=$Client_id;$Revenue:=sum($Revenue);" sorted="true" type="AGGREGATE"/>
+<Node aggregateKey="Client_id" enabled="enabled" guiHeight="67" guiName="Aggregate" guiWidth="128" guiX="480" guiY="358" id="AGGREGATE1" mapping="$Client_id:=$Client_id;$Revenue:=sum($Revenue);" sorted="true" type="AGGREGATE"/>
 <Node enabled="enabled" guiHeight="72" guiName="Concatenate" guiWidth="128" guiX="625" guiY="259" id="CONCATENATE1" type="CONCATENATE"/>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="69" guiName="Clients" guiWidth="128" guiX="10" guiY="529" id="DB_INPUT_TABLE3" sqlQuery="select $Client_id:=client_id from p_customer" type="DB_INPUT_TABLE"/>
-<Node dbConnection="Connection0" dbTable="halfyear_aggr_revenues" enabled="enabled" guiHeight="69" guiName="Aggregated revenues" guiWidth="186" guiX="774" guiY="358" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="69" guiName="Clients without revenues" guiWidth="212" guiX="773" guiY="506" id="DB_OUTPUT_TABLE1" sqlQuery="insert into Clients_without_revenues values($Client_id)" type="DB_OUTPUT_TABLE"/>
-<Node ascendingInputs="true" enabled="enabled" guiHeight="101" guiName="Merge Join" guiWidth="128" guiX="315" guiY="476" id="EXT_MERGE_JOIN1" joinKey="$Client_id;#$Client_id;#" leftOuterJoin="true" type="EXT_MERGE_JOIN">
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="67" guiName="Clients" guiWidth="128" guiX="10" guiY="529" id="DB_INPUT_TABLE3" type="DB_INPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[select $Client_id:=client_id from p_customer]]></attr>
+</Node>
+<Node dbConnection="Connection0" dbTable="halfyear_aggr_revenues" enabled="enabled" guiHeight="67" guiName="Aggregated revenues" guiWidth="151" guiX="774" guiY="358" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="67" guiName="Clients without revenues" guiWidth="169" guiX="773" guiY="506" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE">
+<attr name="sqlQuery"><![CDATA[insert into Clients_without_revenues values($Client_id)]]></attr>
+</Node>
+<Node ascendingInputs="true" enabled="enabled" guiHeight="93" guiName="Merge Join" guiWidth="128" guiX="315" guiY="476" id="EXT_MERGE_JOIN1" joinKey="$Client_id;#$Client_id;#" leftOuterJoin="true" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 function integer transform() {
 	$0.Client_id_n = nvl($1.Client_id,-1);
@@ -136,13 +145,13 @@ function integer transform() {
 }
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiHeight="69" guiName="Filter" guiWidth="128" guiX="479" guiY="506" id="FILTER2" type="EXT_FILTER">
+<Node enabled="enabled" guiHeight="67" guiName="Filter" guiWidth="128" guiX="479" guiY="506" id="FILTER2" type="EXT_FILTER">
 <attr name="filterExpression"><![CDATA[$Client_id_n<0]]></attr>
 </Node>
 <Node enabled="enabled" guiHeight="72" guiName="Simple Copy" guiWidth="128" guiX="626" guiY="358" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
-<Node enabled="enabled" guiHeight="85" guiName="Sort" guiWidth="128" guiX="316" guiY="358" id="SORT1" sortKey="Client_id" sortOrder="Ascending" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="85" guiName="Sort" guiWidth="128" guiX="165" guiY="549" id="SORT2" sortKey="Client_id" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="85" guiName="Sort" guiWidth="128" guiX="162" guiY="460" id="SORT3" sortKey="Client_id" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="80" guiName="Sort" guiWidth="128" guiX="316" guiY="358" id="SORT1" sortKey="Client_id" sortOrder="Ascending" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="80" guiName="Sort" guiWidth="128" guiX="165" guiY="549" id="SORT2" sortKey="Client_id" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="80" guiName="Sort" guiWidth="128" guiX="162" guiY="460" id="SORT3" sortKey="Client_id" type="EXT_SORT"/>
 <Edge fromNode="AGGREGATE1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
 <Edge fromNode="CONCATENATE1:0" guiBendpoints="9:0|773:349|296:349|-448:101" guiLocks="null|null|349" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata10" outPort="Port 0 (out)" toNode="SORT1:0"/>
 <Edge fromNode="DB_INPUT_TABLE3:0" guiBendpoints="" guiRouter="Manhattan" id="Edge20" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="SORT2:0"/>
