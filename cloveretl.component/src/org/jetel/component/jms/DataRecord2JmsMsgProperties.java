@@ -101,6 +101,7 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 			default:
 					throw new JMSException(String.format("Can not map field \"%s\" of type List<%s>.",field.getMetadata().getName(),
 							field.getMetadata().getDataType().toString()));
+			}
 		}
 		msg.setJMSPriority(Message.DEFAULT_PRIORITY);
 		return msg;
