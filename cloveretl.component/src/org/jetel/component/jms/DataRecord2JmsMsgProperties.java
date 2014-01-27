@@ -18,17 +18,24 @@
  */
 package org.jetel.component.jms;
 
+import java.util.Map;
 import java.util.Properties;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.MapDataField;
+import org.jetel.data.StringDataField;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.CloverString;
 
 /**
  * Class transforming data records to JMS messages (TextMessage). Message body may be filled with textual
@@ -80,7 +87,20 @@ public class DataRecord2JmsMsgProperties extends DataRecord2JmsMsgBase {
 			DataField field = record.getField(fieldIdx);
 			// TODO Labels:
 			//msg.setStringProperty(field.getMetadata().getLabelOrName(), field.toString());
-			msg.setStringProperty(field.getMetadata().getName(), field.toString());
+			switch(field.getMetadata().getContainerType()){
+			case SINGLE:
+				msg.setStringProperty(field.getMetadata().getName(), field.toString());
+				break;
+			case MAP:
+				@SuppressWarnings("unchecked")
+				Map<String,CloverString> map= ((MapDataField)field).getValue(CloverString.class);
+				for(Map.Entry<String,CloverString> entry: map.entrySet()){
+					msg.setStringProperty(entry.getKey(), entry.getValue().toString());
+				}
+				break;
+			default:
+					throw new JMSException(String.format("Can not map field \"%s\" of type List<%s>.",field.getMetadata().getName(),
+							field.getMetadata().getDataType().toString()));
 		}
 		msg.setJMSPriority(Message.DEFAULT_PRIORITY);
 		return msg;
