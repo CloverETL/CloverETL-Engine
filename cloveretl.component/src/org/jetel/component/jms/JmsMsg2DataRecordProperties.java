@@ -29,13 +29,18 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.MapDataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldContainerType;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Class transforming JMS messages (TextMessage or BytesMessage) to data records. One field of the record may be filled by body of the message. 
@@ -44,6 +49,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * 
  * All the other fields are saved using string properties in
  * the msg header. Property names are same as respective field names. Values contain textual representation of field values.
+ * Default property field of Map<String> may be defined to which all "unmappable" properties of header are saved as [key=property name]->[value=property value]
  * Last message has same format as all the others. Terminating message is not supported.
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  * @since 11/28/06  
@@ -53,10 +59,12 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 	private static final String DEFAULT_BODYFIELD_VALUE = "bodyField";
 	private final String PROPNAME_BODYFIELD = "bodyField";
 	private final String PROPNAME_CHARSET = "msgCharset";
+	private final String PROPNAME_PROPERTYFIELD = "propertyField";
 	
 	// index of field to be represented by message body.
 	protected int bodyField;
-
+	protected int propertyField;
+	
 	protected DataRecord record;
 
 	/**
@@ -89,7 +97,21 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 		else
 			usedByteMsgCharset = Charset.forName(byteMsgCharset);
 		decoder = usedByteMsgCharset.newDecoder();
-
+		
+		DataFieldMetadata propField;
+		String propertyFieldDef=props.getProperty(PROPNAME_PROPERTYFIELD);
+		if (!StringUtils.isEmpty(propertyFieldDef)){
+			if ((propField=metadata.getField(propertyFieldDef))==null){
+				throw new ComponentNotReadyException("Invalid propertyField name");
+			}
+			if (propField.getContainerType() != DataFieldContainerType.MAP) {
+				throw new ComponentNotReadyException("Invalid propertyField ["+ propField.getName() +"] container type (not a Map)");
+			}
+			propertyField=propField.getNumber();
+		}else{
+			propertyField=-1;
+		}
+		
 		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 	}
@@ -97,10 +119,13 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 	@Override
 	public DataRecord extractRecord(Message msg) throws JMSException {
 		record.reset();
+		MapDataField propertyDataField = (MapDataField)((propertyField<0) ? null:record.getField(propertyField));
+		
 		for (Enumeration<?> names = msg.getPropertyNames(); names.hasMoreElements();) {
 			String name = (String)names.nextElement();
+			String value=null;
 			try {
-				String value = msg.getStringProperty(name);
+				value = msg.getStringProperty(name);
 				if (value == null) {	// value is not accessible
 					continue;
 				}
@@ -109,6 +134,11 @@ public class JmsMsg2DataRecordProperties extends JmsMsg2DataRecordBase {
 				record.getField(name).fromString(value);
 			} catch (IndexOutOfBoundsException e) {
 				// field with given name doesn't exist
+				// ADD to propertyField if defined
+				if (propertyDataField!=null){
+					DataField field=propertyDataField.putField(name);
+					field.setValue(value);
+				}
 				continue;
 			}
 		}
