@@ -2833,10 +2833,7 @@ public class HttpConnector extends Node {
 	private void initHTTPClient(HTTPRequestConfiguration configuration) throws ComponentNotReadyException, IOException, InterruptedException {
 		validateConfiguration(configuration);
 		
-		// TODO: need to use SingleClientConnManager, because of the bug introduced in httpclient-4.2 (https://issues.apache.org/jira/browse/HTTPCLIENT-1193). When it is fixed, 
-		// the HTTP client can be constructed as follows:
-		// httpClient = new DefaultHttpClient(); 
-		httpClient = new DefaultHttpClient(new SingleClientConnManager());
+		httpClient = new DefaultHttpClient(); 
 		httpClient.setHttpRequestRetryHandler(new DefaultHttpRequestRetryHandler(3, false));
 		
 		httpClient.addRequestInterceptor(requestLoggingInterceptor);
