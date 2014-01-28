@@ -53,18 +53,18 @@ import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.jetel.util.protocols.ProxyConfiguration;
 
-import com.googlecode.sardine.DavResource;
-import com.googlecode.sardine.impl.SardineException;
-import com.googlecode.sardine.impl.SardineImpl;
-import com.googlecode.sardine.impl.handler.ExistsResponseHandler;
-import com.googlecode.sardine.impl.handler.MultiStatusResponseHandler;
-import com.googlecode.sardine.impl.io.ConsumingInputStream;
-import com.googlecode.sardine.impl.methods.HttpPropFind;
-import com.googlecode.sardine.model.Allprop;
-import com.googlecode.sardine.model.Multistatus;
-import com.googlecode.sardine.model.Propfind;
-import com.googlecode.sardine.model.Response;
-import com.googlecode.sardine.util.SardineUtil;
+import com.github.sardine.DavResource;
+import com.github.sardine.impl.SardineException;
+import com.github.sardine.impl.SardineImpl;
+import com.github.sardine.impl.handler.ExistsResponseHandler;
+import com.github.sardine.impl.handler.MultiStatusResponseHandler;
+import com.github.sardine.impl.io.ConsumingInputStream;
+import com.github.sardine.impl.methods.HttpPropFind;
+import com.github.sardine.model.Allprop;
+import com.github.sardine.model.Multistatus;
+import com.github.sardine.model.Propfind;
+import com.github.sardine.model.Response;
+import com.github.sardine.util.SardineUtil;
 
 /**
  * An extension of {@link SardineImpl}
