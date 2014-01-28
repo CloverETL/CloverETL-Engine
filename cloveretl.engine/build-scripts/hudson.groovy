@@ -94,7 +94,7 @@ if( !runTests ){
 	antBaseD = testEnvironmentD
 	
 	engineJobName = "cloveretl.engine-" + versionSuffix
-	engineBuildNumber = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/lastSuccessfulBuild/api/xml?xpath=/*/number/text%28%29").text
+	engineBuildNumber = new URL( env['HUDSON_URL'] + "/job/${engineJobName}/lastSuccessfulBuild/buildNumber").text
 	println "engineBuildNumber   = " + engineBuildNumber
 
         cloverVersionPropertiesURL = env['HUDSON_URL'] + "/job/${engineJobName}/${engineBuildNumber}/artifact/cloveretl.engine/version.properties"
