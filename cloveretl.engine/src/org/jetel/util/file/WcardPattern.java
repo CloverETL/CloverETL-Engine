@@ -58,8 +58,8 @@ import org.jetel.util.protocols.webdav.WebdavClient;
 import org.jetel.util.protocols.webdav.WebdavClientImpl;
 import org.jetel.util.string.StringUtils;
 
-import com.googlecode.sardine.DavResource;
-import com.googlecode.sardine.impl.SardineException;
+import com.github.sardine.DavResource;
+import com.github.sardine.impl.SardineException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
 import de.schlichtherle.truezip.file.TFile;

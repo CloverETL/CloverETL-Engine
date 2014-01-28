@@ -36,7 +36,7 @@ import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.protocols.ProxyConfiguration;
 
-import com.googlecode.sardine.impl.SardineException;
+import com.github.sardine.impl.SardineException;
 
 public class WebdavOutputStream extends OutputStream {
 	
