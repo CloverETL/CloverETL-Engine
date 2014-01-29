@@ -118,7 +118,7 @@ public abstract class DataGenerator extends Node {
 	public static final String XML_GENERATE_ATTRIBUTE = "generate";
 	private static final String XML_GENERATEURL_ATTRIBUTE = "generateURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
-	private static final String XML_RECORDS_NUMBER_ATTRIBUTE = "recordsNumber"; 
+	public static final String XML_RECORDS_NUMBER_ATTRIBUTE = "recordsNumber"; 
 	private static final String XML_RANDOM_SEED_ATTRIBUTE = "randomSeed";
 
 	private static final String XML_PATTERN_ATTRIBUTE = "pattern";
