@@ -19,9 +19,9 @@
 package org.jetel.util;
 
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Set;
 
 /**
@@ -43,6 +43,46 @@ public class Algorithms {
 		public Collection<T> getAdjacentVertices(T current);
 	}
 	
+	private static interface QueueManager<T> {
+		public void add(Deque<T> collection, T element);
+	}
+	
+	/**
+	 * Pushes the element onto the stack represented by the {@link Deque}.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @param <T>
+	 * @created 30. 1. 2014
+	 */
+	private static class DFSManager<T> implements QueueManager<T> {
+
+		@Override
+		public void add(Deque<T> collection, T element) {
+			collection.push(element);
+		}
+		
+	}
+	
+	/**
+	 * Adds the element to the tail of the queue represented by the {@link Deque}.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @param <T>
+	 * @created 30. 1. 2014
+	 */
+	private static class BFSManager<T> implements QueueManager<T> {
+
+		@Override
+		public void add(Deque<T> collection, T element) {
+			collection.add(element);
+		}
+		
+	}
+	
 	/**
 	 * Performs BFS from the root using the provided adjacency function implementation.
 	 * Returns the set of visited vertices, including the root.
@@ -52,7 +92,23 @@ public class Algorithms {
 	 * @return set of visited vertices
 	 */
 	public static <T> Set<T> breadthFirstSearch(T root, AdjacencyFunction<T> generator) {
-		Queue<T> queue = new LinkedList<T>();
+		return search(root, generator, new BFSManager<T>());
+	}
+	
+	/**
+	 * Performs DFS from the root using the provided adjacency function implementation.
+	 * Returns the set of visited vertices, including the root.
+	 * 
+	 * @param root the starting vertex
+	 * @param generator adjacency function implementation
+	 * @return set of visited vertices
+	 */
+	public static <T> Set<T> depthFirstSearch(T root, AdjacencyFunction<T> generator) {
+		return search(root, generator, new DFSManager<T>());
+	}
+
+	private static <T> Set<T> search(T root, AdjacencyFunction<T> generator, QueueManager<T> queueManager) {
+		Deque<T> queue = new LinkedList<T>();
 		Set<T> visited = new HashSet<T>();
 		queue.add(root);
 		while (!queue.isEmpty()) {
@@ -60,7 +116,7 @@ public class Algorithms {
 			visited.add(current);
 			for (T neighbor: generator.getAdjacentVertices(current)) {
 				if (!visited.contains(neighbor)) {
-					queue.add(neighbor);
+					queueManager.add(queue, neighbor);
 				}
 			}
 		}
