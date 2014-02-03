@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Kokon" created="Tue Apr 02 17:35:00 CEST 2013" guiVersion="0.0.0.devel" id="1364917053360" licenseType="Commercial" modified="Tue Jun 18 13:04:42 CEST 2013" modifiedBy="Kokon" name="g" revision="1.204" showComponentDetails="true">
+<Graph author="Kokon" created="Tue Apr 02 17:35:00 CEST 2013" guiVersion="0.0.0.devel" id="1364917053360" licenseType="Commercial" modified="Mon Feb 03 13:35:18 CET 2014" modifiedBy="Kokon" name="g" revision="1.207" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="agg" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -13,8 +13,10 @@
 <Field name="field2" type="string"/>
 </Record>
 </Metadata>
-<Property id="GraphParameter0" name="PPP" value="sekacka"/>
-<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<GraphParameters>
+<GraphParameter name="PPP" value="sekacka"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
 <Dictionary/>
 </Global>
 <Phase number="0">
@@ -81,12 +83,14 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
+<Node enabled="enabled" guiName="ExtSort" guiX="518" guiY="352" id="EXT_SORT1" sortKey="field1(a)" type="EXT_SORT"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/SingleThreadExecutionTestData1.txt" guiName="UniversalDataReader" guiX="151" guiY="12" id="UNIVERSAL_DATA_READER" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/SingleThreadExecutionTestData2.txt" guiName="UniversalDataReader" guiX="156" guiY="147" id="UNIVERSAL_DATA_READER1" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/SingleThreadExecutionTestOutData2.txt" guiName="UniversalDataWriter" guiX="553" guiY="339" id="UNIVERSAL_DATA_WRITER1" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="AGGREGATE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="UNIVERSAL_DATA_WRITER1:0"/>
+<Node enabled="enabled" fileURL="${DATAOUT_DIR}/SingleThreadExecutionTestOutData2.txt" guiName="UniversalDataWriter" guiX="683" guiY="352" id="UNIVERSAL_DATA_WRITER1" type="DATA_WRITER"/>
+<Edge debugMode="true" fromNode="AGGREGATE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_SORT1:0"/>
 <Edge fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE:0"/>
 <Edge debugMode="true" fromNode="EXT_HASH_JOIN:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="UNIVERSAL_DATA_WRITER1:0"/>
 <Edge fromNode="UNIVERSAL_DATA_READER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN:0"/>
 <Edge fromNode="UNIVERSAL_DATA_READER1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN:1"/>
 </Phase>
