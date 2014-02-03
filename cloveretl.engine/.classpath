@@ -5,7 +5,7 @@
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jms.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/javolution.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/javolution.jar" sourcepath="lib.src/javolution-6.1.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jxl.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.17.jar">
 		<attributes>
@@ -32,6 +32,7 @@
 	<classpathentry kind="lib" path="lib/truezip-driver-file-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-file-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/truezip-path-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-swing-7.7.5.jar"/>
 	<classpathentry kind="lib" path="lib/sardine-5.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jets3t-0.9.0.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.3.2.jar"/>
