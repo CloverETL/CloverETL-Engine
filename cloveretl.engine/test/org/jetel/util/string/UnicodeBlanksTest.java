@@ -80,7 +80,9 @@ public class UnicodeBlanksTest extends TestCase {
 			boolean isSurrogate = Character.isSurrogate(c);
 			boolean isBlank = UnicodeBlanks.isBlank(c);
 			
-			assertFalse("Character " + i + " is both surrogate and blank, therefore UnicodeBlank algorithm will not work properly for characters from Unicode supplementary plane", isSurrogate && isBlank);
+			if (isSurrogate && isBlank) {
+				assertFalse("Character " + i + " is both surrogate and blank, therefore UnicodeBlank algorithm will not work properly for characters from Unicode supplementary plane", isSurrogate && isBlank);
+			}
 		}
 	}
 	
@@ -93,10 +95,10 @@ public class UnicodeBlanksTest extends TestCase {
 	 */
 	@Test
 	public void testSupplementaryNeverBlank() {
-		assertFalse(Character.isSupplementaryCodePoint(0x10000 - 1));
-		assertFalse(Character.isSupplementaryCodePoint(0x10FFFF + 1));
+		assertFalse(Character.isSupplementaryCodePoint(Character.MIN_SUPPLEMENTARY_CODE_POINT - 1));
+		assertFalse(Character.isSupplementaryCodePoint(Character.MAX_CODE_POINT + 1));
 		
-		for (int i = 0x10000; i <= 0x10FFFF; i++) {
+		for (int i = Character.MIN_SUPPLEMENTARY_CODE_POINT; i <= Character.MAX_CODE_POINT; i++) {
 			assertTrue(Character.isSupplementaryCodePoint(i));
 			assertFalse(UnicodeBlanks.isBlank(i));
 		}
