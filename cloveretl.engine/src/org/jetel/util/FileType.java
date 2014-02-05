@@ -35,8 +35,8 @@ public enum FileType {
 	PROFILER_JOB("cpj"), //$NON-NLS-1$
 	METADATA("fmt"), //$NON-NLS-1$
 	CTL_TRANSFORMATION("ctl"), //$NON-NLS-1$
-	SUB_GRAPH("subgrf"), //$NON-NLS-1$
-	SUB_JOBFLOW("subjbf"); //$NON-NLS-1$
+	SUB_GRAPH("sgrf"), //$NON-NLS-1$
+	SUB_JOBFLOW("sjbf"); //$NON-NLS-1$
 	
 	public final String extension;
 	
