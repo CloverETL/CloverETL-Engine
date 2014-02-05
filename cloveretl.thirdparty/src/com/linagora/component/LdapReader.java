@@ -73,7 +73,8 @@ import com.linagora.ldap.LdapParser;
  * When defaultMapping field is set (must be of type Map<String>) then all unmapped attributes returned from LDAP server
  * are stored in the map in key->value manner. Multi-values are stored concatenated.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td>[0]- input records used for defining <i>base</i> & <i>filter</i>. If input port is connected then for each input record one query is assembled and sent to the LDAP server.<br><i>optional</i></td></tr>
+ * <td>[0]- input records used for defining <i>base</i> & <i>filter</i>. If input port is connected then for each input record one query is assembled and sent to the LDAP server.
+ * If such query returns no result then one empty record is sent out (with autofilling fields populated);<i>(this behavior only when input port connected.</i>)<br><i>optional</i></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>[0]- output records</td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
@@ -256,7 +257,7 @@ public class LdapReader extends Node {
 		parser.setAllAttributes(allAttributes);
 		
 		/*
-		 * TODO : well... I don't know how to add LdapConnection node to transformation graphe.
+		 * TODO : well... I don't know how to add LdapConnection node to transformation graph.
 		 * But it will be better if LdapConnection node exist, as it is for DB connection.
 		 * For now, there is a connection by parser.
 		 */
@@ -277,6 +278,7 @@ public class LdapReader extends Node {
 	@Override
 	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
+		StringBuilder filename=new StringBuilder();
 		DataRecord record = DataRecordFactory.newRecord(this.getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 		DataRecord outRecord;
@@ -289,6 +291,7 @@ public class LdapReader extends Node {
 			do {
 				String _base,_filter;
 				outRecord=record;
+				long count=0;
 				if (inRecord != null) {
 					inRecord = getInputPort(INPUT_PORT).readRecord(inRecord);
 					if (inRecord == null)
@@ -302,7 +305,9 @@ public class LdapReader extends Node {
 					parser.setDataSource(new LdapParser.LdapDataSource(this.base, this.filter));
 					loop = false;
 				}
-				autoFilling.setFilename(ldapUrl + ": " + _base + ": " + _filter);
+				filename.setLength(0);
+				filename.append(ldapUrl).append(':').append(_base).append(':').append(_filter);
+				autoFilling.setFilename(filename.toString());
 				// till it reaches end of data or it is stopped from outside
 				while ((outRecord = parser.getNext(outRecord)) != null && runIt) {
 					// set autofilling fields
@@ -310,6 +315,14 @@ public class LdapReader extends Node {
 
 					// broadcast the record to all connected Edges
 					this.writeRecordBroadcast(outRecord);
+					count++;
+				}
+				if  (count==0 && loop){
+					//query based on input data returned no results
+					// need to send out empty record with potential autofilling fields populated
+					record.reset();
+					autoFilling.setAutoFillingFields(record);
+					this.writeRecordBroadcast(record);
 				}
 			} while (loop && runIt);
 
