@@ -582,7 +582,12 @@
 		<mkdir dir="${dir.coverage.classes}"/>
 
 		<cobertura-instrument todir="${dir.coverage.classes}" datafile="${cobertura.ser}">
-			<auxClasspath path="${dir.engine.classes}" />
+			<auxClasspath>
+				<fileset refid="plugin-libs"/>
+				<fileset refid="engine-libs"/>
+				<fileset refid="license-libs"/>
+				<pathelement path="${dir.engine.classes}"/>
+			</auxClasspath>
             <fileset dir="${dir.classes}">
 				<include name="**/*.class" />
             </fileset>
