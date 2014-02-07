@@ -938,6 +938,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 	<target name="coverage-instrument-engine" depends="compile">
 		<cobertura-instrument todir="${dir.coverage.bin}" datafile="${cobertura.ser}">
 			<auxClasspath>
+				<pathelement path="${tools}"/>
 				<fileset refid="engine-libs"/>
 			</auxClasspath>
 			<fileset dir="${dir.bin}">
