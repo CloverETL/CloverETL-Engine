@@ -582,6 +582,7 @@
 		<mkdir dir="${dir.coverage.classes}"/>
 
 		<cobertura-instrument todir="${dir.coverage.classes}" datafile="${cobertura.ser}">
+			<auxClasspath path="${dir.engine.classes}" />
             <fileset dir="${dir.classes}">
 				<include name="**/*.class" />
             </fileset>
