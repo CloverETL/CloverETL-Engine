@@ -154,7 +154,7 @@ public class EdgeTypeDetectionTest  extends CloverTestCase {
 	public void testAnalyseGraph_12() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_12.subgrf"), runtimeContext);
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_12.sgrf"), runtimeContext);
 		
 		assertBufferedEdges(graph);
 	}
@@ -162,7 +162,7 @@ public class EdgeTypeDetectionTest  extends CloverTestCase {
 	public void testAnalyseGraph_13() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_13.subgrf"), runtimeContext);
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_13.sgrf"), runtimeContext);
 		
 		assertBufferedEdges(graph);
 	}
@@ -170,7 +170,7 @@ public class EdgeTypeDetectionTest  extends CloverTestCase {
 	public void testAnalyseGraph_14() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_14.subgrf"), runtimeContext);
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_14.sgrf"), runtimeContext);
 		
 		assertBufferedEdges(graph);
 	}
@@ -178,7 +178,7 @@ public class EdgeTypeDetectionTest  extends CloverTestCase {
 	public void testAnalyseGraph_15() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_15.subgrf"), runtimeContext);
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_15.sgrf"), runtimeContext);
 		
 		assertBufferedEdges(graph);
 	}
@@ -186,7 +186,7 @@ public class EdgeTypeDetectionTest  extends CloverTestCase {
 	public void testAnalyseGraph_16() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_16.subgrf"), runtimeContext);
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_16.sgrf"), runtimeContext);
 		
 		assertBufferedEdges(graph, "Edge1", "Edge2");
 	}
@@ -194,7 +194,7 @@ public class EdgeTypeDetectionTest  extends CloverTestCase {
 	public void testAnalyseGraph_17() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_17.subgrf"), runtimeContext);
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_17.sgrf"), runtimeContext);
 		
 		assertBufferedEdges(graph);
 	}
@@ -202,7 +202,7 @@ public class EdgeTypeDetectionTest  extends CloverTestCase {
 	public void testAnalyseGraph_18() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_18.subgrf"), runtimeContext);
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_18.sgrf"), runtimeContext);
 		
 		assertBufferedEdges(graph);
 	}
@@ -210,7 +210,7 @@ public class EdgeTypeDetectionTest  extends CloverTestCase {
 	public void testAnalyseGraph_19() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_19.subgrf"), runtimeContext);
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_19.sgrf"), runtimeContext);
 		
 		assertBufferedEdges(graph, "Edge0", "Edge1");
 	}
@@ -218,7 +218,7 @@ public class EdgeTypeDetectionTest  extends CloverTestCase {
 	public void testAnalyseGraph_20() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_20.subgrf"), runtimeContext);
+		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/GraphAnalyse_20.sgrf"), runtimeContext);
 		
 		assertBufferedEdges(graph, "Edge4", "Edge5");
 	}
