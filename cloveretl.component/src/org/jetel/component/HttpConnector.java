@@ -84,16 +84,11 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.methods.HttpTrace;
-import org.apache.http.client.params.AuthPolicy;
-import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIUtils;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.cookie.CookieOrigin;
-import org.apache.http.cookie.CookieSpec;
-import org.apache.http.cookie.CookieSpecFactory;
 import org.apache.http.cookie.CookieSpecProvider;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -104,10 +99,9 @@ import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
-import org.apache.http.impl.client.DefaultTargetAuthenticationHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
 import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
@@ -117,6 +111,7 @@ import org.apache.http.impl.cookie.BrowserCompatSpecFactory;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.Level;
 import org.jetel.data.DataField;
@@ -1189,6 +1184,8 @@ public class HttpConnector extends Node {
 	private CloseableHttpClient httpClient;
 
 	private RequestResponseCookieStore cookieStore;
+	
+	private HttpContext httpContext;
 
 	/**
 	 * OAuth consumer used to sign requests when OAuth is used.
@@ -1979,17 +1976,15 @@ public class HttpConnector extends Node {
 	 * @throws InterruptedException
 	 */
 	private HttpResponse buildAndSendRequest(HTTPRequestConfiguration configuration) throws Exception {
-		initHTTPClient(configuration);
-
-		HttpRequestBase method = prepareMethod(configuration);
-
-		// sign the request before sending it
-		if (oauthConsumer != null) {
-			oauthConsumer.sign(method);
-		}
-
-		HttpResponse response = httpClient.execute(method);
-
+		 initHTTPClient(configuration);
+		
+	    HttpRequestBase method = prepareMethod(configuration);
+		
+		 // sign the request before sending it
+		 if (oauthConsumer != null) {
+			 oauthConsumer.sign(method);
+		 }	  
+		HttpResponse response = httpClient.execute(method, this.httpContext);
 		return response;
 	}
 
@@ -3030,13 +3025,12 @@ public class HttpConnector extends Node {
 		            new BrowserCompatSpecFactory())
 		        .build();		
 		
-		builder.setDefaultCookieSpecRegistry(r);
-
-		builder.setDefaultCookieStore(this.cookieStore);
+		this.httpContext = new BasicHttpContext();
 		
-		httpClient = builder.build();		
-		//httpClient.getCookieSpecs().register("sendAllCookiesPolicy", csf);
-		//httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, "sendAllCookiesPolicy");
+		httpContext.setAttribute(HttpClientContext.COOKIE_STORE, this.cookieStore); 
+		
+		httpClient = builder.build();	
+
 	}
 
 	/**
@@ -3141,9 +3135,15 @@ public class HttpConnector extends Node {
 			if (!field.isNull()) {
 				String name = field.getMetadata().getLabelOrName();
 				String value = field.getValue().toString();
-				cookieStore.addCookie(new BasicClientCookie(name, value));
+				BasicClientCookie basicClientCookie = new BasicClientCookie(name, value);
+				if(method.getURI()!=null) {
+					basicClientCookie.setDomain(method.getURI().getHost());
+				}
+				basicClientCookie.setPath("/");
+				cookieStore.addCookie(basicClientCookie);
 			}
 		}
+	
 	}
 
 	/**
