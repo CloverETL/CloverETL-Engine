@@ -936,10 +936,14 @@ This software is licensed under the terms you may find in the file named "LICENS
 	</target>
 	
 	<target name="coverage-instrument-engine" depends="compile">
+		<echo message="Cobertura auxClasspath - tools: ${tools}" />
+		<echo message="Cobertura auxClasspath - engine-libs: ${engine-libs}" />
+		<echo message="Cobertura auxClasspath - engine-tools: ${engine-tools}" />
 		<cobertura-instrument todir="${dir.coverage.bin}" datafile="${cobertura.ser}">
 			<auxClasspath>
 				<pathelement path="${tools}"/>
 				<fileset refid="engine-libs"/>
+				<fileset refid="engine-tools"/>
 			</auxClasspath>
 			<fileset dir="${dir.bin}">
 				<include name="**/*.class" />
