@@ -68,8 +68,10 @@
 3. Each listed file is then sent to an ETL job for processing
 4. After successful process, the file is removed from the staging area]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="200" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Process File" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="174" x="538" y="228">
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="220" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Process File" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="174" x="538" y="228">
 <attr name="text"><![CDATA[
+
+
 
 
 
