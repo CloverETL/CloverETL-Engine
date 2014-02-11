@@ -26,10 +26,9 @@ import javax.sql.rowset.spi.XmlReader;
 import org.jetel.component.AbstractMultiMetadataProvider;
 import org.jetel.component.ComponentMetadataProvider;
 import org.jetel.component.TreeReader;
-import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVMetadata;
-import org.jetel.graph.modelview.impl.MVEngineMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
@@ -46,7 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class TreeReaderErrMetadataProvider extends AbstractMultiMetadataProvider implements ComponentMetadataProvider {
 
-	private List<MVMetadata> metadata = new ArrayList<MVMetadata>();
+	private List<DataRecordMetadata> allMetadata = new ArrayList<DataRecordMetadata>();
 	
 	private Node component;
 	
@@ -72,8 +71,8 @@ public class TreeReaderErrMetadataProvider extends AbstractMultiMetadataProvider
 		m2.addField(new DataFieldMetadata("message", DataFieldType.STRING, null));
 		m2.addField(new DataFieldMetadata("file", DataFieldType.STRING, null));
 		
-		metadata.add(new MVEngineMetadata(m1));
-		metadata.add(new MVEngineMetadata(m2));
+		allMetadata.add(m1);
+		allMetadata.add(m2);
 	}
 	
 	@Override
@@ -84,7 +83,11 @@ public class TreeReaderErrMetadataProvider extends AbstractMultiMetadataProvider
 	@Override
 	public List<MVMetadata> getAllOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex == component.getOutPorts().size() - 1) {
-			return metadata;
+			List<MVMetadata> result = new ArrayList<>();
+			for (DataRecordMetadata metadata : allMetadata) {
+				result.add(metadataPropagationResolver.getOrCreateMVMetadata(metadata));
+			}
+			return result;
 		} else {
 			return null;
 		}

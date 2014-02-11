@@ -20,8 +20,8 @@ package org.jetel.graph.modelview;
 
 import java.util.Map;
 
-import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.graph.Node;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
 /**
  * This is general view to a component. Two implementations are expected

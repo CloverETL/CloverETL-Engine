@@ -21,7 +21,7 @@ package org.jetel.graph.modelview;
 import java.util.List;
 
 import org.jetel.graph.IGraphElement;
-import org.jetel.graph.MetadataPropagationResolver;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**

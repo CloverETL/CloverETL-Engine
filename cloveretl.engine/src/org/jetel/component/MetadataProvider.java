@@ -18,8 +18,8 @@
  */
 package org.jetel.component;
 
-import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
 /**
  * Components can provide default metadata for theirs input and output ports.

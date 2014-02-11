@@ -19,10 +19,10 @@
 package org.jetel.component;
 
 import org.jetel.graph.InputPort;
-import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
 /**
  * This metadata provider ensures that metadata from n-th input port

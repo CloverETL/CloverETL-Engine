@@ -44,6 +44,7 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -141,6 +142,12 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private JobType jobType = JobType.ETL_GRAPH;
 
+	/**
+	 * This is result of automatic metadata propagation. Now it is cached only for designer purpose.
+	 * For example information about "no metadata" is stored in this resolver.
+	 */
+	private MetadataPropagationResolver metadataPropagationResolver;
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -1355,6 +1362,21 @@ public final class TransformationGraph extends GraphElement {
 
 	public void setGuiVersion(String guiVersion) {
 		this.guiVersion = guiVersion;
+	}
+
+	/**
+	 * @return result of automatic metadata propagation
+	 */
+	public MetadataPropagationResolver getMetadataPropagationResolver() {
+		return metadataPropagationResolver;
+	}
+
+	/**
+	 * Sets result of automatic metadata propagation.
+	 * @param metadataPropagationResolver result object of automatic metadata propagation
+	 */
+	public void setMetadataPropagationResolver(MetadataPropagationResolver metadataPropagationResolver) {
+		this.metadataPropagationResolver = metadataPropagationResolver;
 	}
 
 	@Override

@@ -19,7 +19,7 @@
 package org.jetel.graph.modelview;
 
 import org.jetel.graph.Edge;
-import org.jetel.graph.MetadataPropagationResolver;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
 /**
  * This is general view to a edge. Two implementations are expected
@@ -56,6 +56,11 @@ public interface MVEdge {
 	public boolean hasMetadata();
 	
 	/**
+	 * @return true if the edge has metadata directly assigned by user
+	 */
+	public boolean hasMetadataDirect();
+	
+	/**
 	 * @return specific metadat assigned to this edge
 	 */
 	public MVMetadata getMetadata();
@@ -69,5 +74,28 @@ public interface MVEdge {
 	 * @return port index of this edge, where this edge is attached to its reader component
 	 */
 	public int getInputPortIndex();
+
+	/**
+	 * Sets metadata to this edge which has been automatically propagated from neighbours.
+	 * @param propagatedMetadata propagated metadata
+	 */
+	public void setPropagatedMetadata(MVMetadata propagatedMetadata);
+
+	/**
+	 * Clears propagated metadata for this edge.
+	 */
+	public void unsetPropagatedMetadata();
+
+	/**
+	 * Sets 'no metadata' for this edge. The 'no metadata' are metadata which
+	 * would be used for this edge if no direct metadata is set on this edge.
+	 * @param noMetadata
+	 */
+	public void setNoMetadata(MVMetadata noMetadata);
 	
+	/**
+	 * @return 'no metadata' for this edge - metadata which would be used if no direct metadata is set on this edge
+	 */
+	public MVMetadata getNoMetadata();
+
 }

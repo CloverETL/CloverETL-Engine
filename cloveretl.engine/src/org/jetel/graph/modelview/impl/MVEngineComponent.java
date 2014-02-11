@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 
 import org.jetel.component.ComponentMetadataProvider;
 import org.jetel.component.MetadataProvider;
-import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
@@ -49,17 +48,17 @@ public class MVEngineComponent implements MVComponent {
 
 	private Map<Integer, MVEdge> outputEdges;
 	
-	public MVEngineComponent(Node engineComponent) {
+	MVEngineComponent(Node engineComponent, MetadataPropagationResolver metadataPropagationResolver) {
 		this.engineComponent = engineComponent;
-		
+
 		inputEdges = new LinkedHashMap<Integer, MVEdge>();
 		for (Entry<Integer, org.jetel.graph.InputPort> entry : engineComponent.getInputPorts().entrySet()) {
-			inputEdges.put(entry.getKey(), new MVEngineEdge(entry.getValue().getEdge()));
+			inputEdges.put(entry.getKey(), metadataPropagationResolver.getOrCreateMVEdge(entry.getValue().getEdge()));
 		}
 		
 		outputEdges = new LinkedHashMap<Integer, MVEdge>();
 		for (Entry<Integer, org.jetel.graph.OutputPort> entry : engineComponent.getOutputPorts().entrySet()) {
-			outputEdges.put(entry.getKey(), new MVEngineEdge(entry.getValue().getEdge()));
+			outputEdges.put(entry.getKey(), metadataPropagationResolver.getOrCreateMVEdge(entry.getValue().getEdge()));
 		}
 	}
 
@@ -113,7 +112,7 @@ public class MVEngineComponent implements MVComponent {
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
 		String metadataId = engineComponent.getDescriptor().getDefaultOutputMetadataId(portIndex);
 		if (MetadataRepository.contains(metadataId)) {
-			return new MVEngineMetadata(MetadataRepository.getMetadata(metadataId));
+			return metadataPropagationResolver.getOrCreateMVMetadata(MetadataRepository.getMetadata(metadataId));
 		}
 		return null;
 	}
@@ -131,7 +130,7 @@ public class MVEngineComponent implements MVComponent {
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
 		String metadataId = engineComponent.getDescriptor().getDefaultInputMetadataId(portIndex);
 		if (MetadataRepository.contains(metadataId)) {
-			return new MVEngineMetadata(MetadataRepository.getMetadata(metadataId));
+			return metadataPropagationResolver.getOrCreateMVMetadata(MetadataRepository.getMetadata(metadataId));
 		}
 		return null;
 	}
@@ -149,4 +148,8 @@ public class MVEngineComponent implements MVComponent {
 		return engineComponent == ((MVEngineComponent) obj).engineComponent;
 	}
 	
+	@Override
+	public String toString() {
+		return engineComponent.toString();
+	}
 }

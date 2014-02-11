@@ -38,11 +38,10 @@ import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.graph.MetadataPropagationResolver.EngineMVEdgeFactory;
 import org.jetel.graph.analyse.GraphCycleInspector;
 import org.jetel.graph.analyse.SingleGraphProvider;
 import org.jetel.graph.modelview.MVMetadata;
-import org.jetel.graph.modelview.impl.MVEngineEdge;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
 import org.jetel.util.GraphUtils;
 import org.jetel.util.SubGraphUtils;
@@ -69,19 +68,19 @@ public class TransformationGraphAnalyzer {
 	 * Performs automatic metadata propagation on the given graph.
 	 */
 	public static void analyseMetadataPropagation(TransformationGraph graph) {
-		MetadataPropagationResolver metadataPropagationResolver = new MetadataPropagationResolver(new EngineMVEdgeFactory());
+		//craete metatadata propagation resolver
+		MetadataPropagationResolver metadataPropagationResolver = new MetadataPropagationResolver(graph);
+		//analyse the graph
+		metadataPropagationResolver.analyseGraph();
+		//copy propagated metadata into transformation graph
 		for (Edge edge : graph.getEdges().values()) {
-			if (edge.getMetadata() == null) {
-				metadataPropagationResolver.reset();
-				MVMetadata metadata = metadataPropagationResolver.findMetadata(new MVEngineEdge(edge));
-				if (metadata != null) {
-					//remember found metadata to the edge
-					edge.setMetadata(metadata.getModel());
-					//remember found metadata origin to the edge
-					edge.setMetadataOriginPath(metadata.getOriginPath());
-				}
+			MVMetadata metadata = metadataPropagationResolver.getOrCreateMVEdge(edge).getMetadata();
+			if (metadata != null) {
+				edge.setMetadata(metadata.getModel());
 			}
 		}
+		//store complete resolver into graph for further usage (mainly in designer)
+		graph.setMetadataPropagationResolver(metadataPropagationResolver);
 	}
 
 	/**

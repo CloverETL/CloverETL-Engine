@@ -18,10 +18,7 @@
  */
 package org.jetel.graph.modelview.impl;
 
-import java.util.List;
-
 import org.jetel.graph.Edge;
-import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
@@ -39,8 +36,17 @@ public class MVEngineEdge implements MVEdge {
 
 	private Edge engineEdge;
 	
-	public MVEngineEdge(Edge engineEdge) {
+	private MVMetadata propagatedMetadata;
+	
+	private MVMetadata noMetadata;
+	
+	private boolean hasPropagatedMetadata = false;
+
+	private MetadataPropagationResolver metadataPropagationResolver;
+	
+	MVEngineEdge(Edge engineEdge, MetadataPropagationResolver metadataPropagationResolver) {
 		this.engineEdge = engineEdge;
+		this.metadataPropagationResolver = metadataPropagationResolver;
 	}
 	
 	@Override
@@ -51,34 +57,65 @@ public class MVEngineEdge implements MVEdge {
 	@Override
 	public MVComponent getReader() {
 		Node reader = engineEdge.getReader();
-		return (reader != null) ? new MVEngineComponent(reader) : null;
+		return (reader != null) ? metadataPropagationResolver.getOrCreateMVComponent(reader) : null;
 	}
 
 	@Override
 	public MVComponent getWriter() {
 		Node writer = engineEdge.getWriter();
-		return (writer != null) ? new MVEngineComponent(writer) : null;
+		return (writer != null) ? metadataPropagationResolver.getOrCreateMVComponent(writer) : null;
 	}
 
 	@Override
 	public boolean hasMetadata() {
-		return engineEdge.getMetadata() != null;
+		return hasPropagatedMetadata || engineEdge.getMetadata() != null;
 	}
 
 	@Override
+	public boolean hasMetadataDirect() {
+		return engineEdge.getMetadata() != null;
+	}
+	
+	@Override
 	public MVMetadata getMetadata() {
 		if (hasMetadata()) {
-			MVMetadata metadata = new MVEngineMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
-			List<IGraphElement> originPath = engineEdge.getMetadataOriginPath();
-			if (originPath != null) {
-				metadata.addToOriginPath(originPath.subList(1, originPath.size())); //the last element in path is this edge, which will be appended later again
+			if (hasPropagatedMetadata) {
+				return propagatedMetadata;
+			} else {
+				MVMetadata metadata = metadataPropagationResolver.getOrCreateMVMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
+//				List<IGraphElement> originPath = engineEdge.getMetadataOriginPath();
+//				if (originPath != null) {
+//					metadata.addToOriginPath(originPath.subList(1, originPath.size())); //the last element in path is this edge, which will be appended later again
+//				}
+				return metadata;
 			}
-			return metadata;
 		} else {
 			return null;
 		}
 	}
 
+	@Override
+	public void setPropagatedMetadata(MVMetadata propagatedMetadata) {
+		hasPropagatedMetadata = true;
+		this.propagatedMetadata = propagatedMetadata;
+	}
+	
+	@Override
+	public void unsetPropagatedMetadata() {
+		hasPropagatedMetadata = false;
+		this.propagatedMetadata = null;
+	}
+	
+	@Override
+	public void setNoMetadata(MVMetadata noMetadata) {
+		this.noMetadata = noMetadata;
+	}
+	
+	@Override
+	public MVMetadata getNoMetadata() {
+		return noMetadata;
+	}
+	
 	@Override
 	public int getOutputPortIndex() {
 		return engineEdge.getOutputPortNumber();
@@ -102,4 +139,9 @@ public class MVEngineEdge implements MVEdge {
 		return engineEdge == ((MVEngineEdge) obj).engineEdge;
 	}
 
+	@Override
+	public String toString() {
+		return engineEdge.toString();
+	}
+	
 }

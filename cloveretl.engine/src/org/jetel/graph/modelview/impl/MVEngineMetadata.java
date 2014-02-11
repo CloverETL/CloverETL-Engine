@@ -41,11 +41,11 @@ public class MVEngineMetadata implements MVMetadata {
 	
 	private List<IGraphElement> originPath;
 	
-	public MVEngineMetadata(DataRecordMetadata metadata) {
+	MVEngineMetadata(DataRecordMetadata metadata) {
 		this(metadata, LOW_PRIORITY);
 	}
 	
-	public MVEngineMetadata(DataRecordMetadata metadata, int priority) {
+	MVEngineMetadata(DataRecordMetadata metadata, int priority) {
 		this.metadata = metadata;
 		this.priority = priority;
 		originPath = new ArrayList<IGraphElement>();
@@ -83,6 +83,11 @@ public class MVEngineMetadata implements MVMetadata {
 	@Override
 	public List<IGraphElement> getOriginPath() {
 		return originPath;
+	}
+	
+	@Override
+	public String toString() {
+		return metadata.toString();
 	}
 	
 }

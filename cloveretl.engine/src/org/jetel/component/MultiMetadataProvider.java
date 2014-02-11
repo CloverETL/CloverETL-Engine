@@ -20,8 +20,8 @@ package org.jetel.component;
 
 import java.util.List;
 
-import org.jetel.graph.MetadataPropagationResolver;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
 /**
  * {@link MetadataProvider} which allows to provide multiple metadata for a single port.

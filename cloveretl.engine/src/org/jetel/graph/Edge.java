@@ -19,7 +19,6 @@
 package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,11 +73,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
 	protected EdgeBase edge;
 
-	/**
-	 * List of graph elements which were used for automatic metadata propagation for this edge.
-	 */
-	private List<IGraphElement> metadataOriginPath;
-	
 	/**
 	 * True if and only if the edge base ({@link #edge}) is not under complete control
 	 * of this edge. The edge base is only shared with other edge (from parent graph).
@@ -732,21 +726,6 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		return getId();
 	}
 
-	/**
-	 * Sets list of graph elements, which were used for automatic metadata propagation for this edge.
-	 * @param metadataOriginPath
-	 */
-	public void setMetadataOriginPath(List<IGraphElement> metadataOriginPath) {
-		this.metadataOriginPath = metadataOriginPath;
-	}
-	
-	/**
-	 * @return list  of graph elements, which were used for automatic metadata propagation for this edge.
-	 */
-	public List<IGraphElement> getMetadataOriginPath() {
-		return metadataOriginPath;
-	}
-	
 }
 /*
  *  end class EdgeStub
