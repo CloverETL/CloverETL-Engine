@@ -586,7 +586,7 @@
 				<fileset refid="plugin-libs"/>
 				<fileset refid="engine-libs"/>
 				<fileset refid="license-libs"/>
-				<pathelement path="${dir.engine.classes}"/>
+				<pathelement path="${cp.compile}"/>
 			</auxClasspath>
             <fileset dir="${dir.classes}">
 				<include name="**/*.class" />
