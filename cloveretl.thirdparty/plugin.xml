@@ -93,7 +93,7 @@
             <singleType name="boolean" />
           </property>
           <property category="advanced" displayName="Default field" modifiable="true" name="defaultField" nullable="true">
-            <singleType name="field" outputPortName="0" />
+            <singleType name="field" outputPortName="0" type="string" containerType="map"/>
           </property>
 	    </properties>
 	  </ETLComponent>
