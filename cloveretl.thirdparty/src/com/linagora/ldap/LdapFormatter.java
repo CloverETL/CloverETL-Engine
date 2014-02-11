@@ -38,6 +38,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.string.CloverString;
 import org.jetel.util.string.StringUtils;
 
 import com.linagora.ldap.Jetel2LdapData.Jetel2LdapByte;
@@ -348,11 +349,11 @@ public class LdapFormatter {
 	
 	
 	private void fillFromMap(Attributes attrs, MapDataField field){
-		Map<String,StringDataField> map=(Map<String, StringDataField>) field.getValue();
+		Map<String,CloverString> map= field.getValue(CloverString.class);
 		
-		for(Map.Entry<String,StringDataField> entry: map.entrySet()){
+		for(Map.Entry<String,CloverString> entry: map.entrySet()){
 			Attribute attr = new BasicAttribute(entry.getKey());
-			string2attribute.setAttribute(attr, entry.getValue());
+			attr.add( new Object[] { entry.getValue().toString() });
 			attrs.put(attr);
 		}
 		

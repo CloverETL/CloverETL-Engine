@@ -20,8 +20,8 @@ package org.jetel.util.protocols.webdav;
 
 import java.io.IOException;
 
-import com.googlecode.sardine.DavResource;
-import com.googlecode.sardine.Sardine;
+import com.github.sardine.DavResource;
+import com.github.sardine.Sardine;
 
 /**
  * Extends the {@link Sardine} interface with some useful methods.

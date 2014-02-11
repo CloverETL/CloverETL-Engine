@@ -148,7 +148,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 		
 		//start up JMX
-		cloverJMX = new CloverJMX(this, provideJMX);
+		cloverJMX = new CloverJMX(this);
 		if(provideJMX) {
 			registerTrackingMBean(cloverJMX);
 		}

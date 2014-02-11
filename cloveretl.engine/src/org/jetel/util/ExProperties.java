@@ -273,11 +273,11 @@ public class ExProperties extends HashMap<String, ArrayList<String>> {
 	}
 	
 	static String escape(String s) {
-		return s == null ? null : s.replaceAll("\\|", "\\\\|").replaceAll("\r\n", "\\\\r\\\\n");
+		return s == null ? null : s.replaceAll("\\|", "\\\\|").replaceAll("\r\n", "\\\\r\\\\n").replaceAll("=", "&#61;");
 	}
 
 	static String deEscape(String s) {
-		return s == null ? null : s.replaceAll("\\\\\\|", "|").replaceAll("\\\\r\\\\n", "\r\n");
+		return s == null ? null : s.replaceAll("\\\\\\|", "|").replaceAll("\\\\r\\\\n", "\r\n").replaceAll("&#61;", "=");
 	}
 
 

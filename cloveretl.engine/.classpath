@@ -3,40 +3,40 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.1.jar" sourcepath="lib.src/commons-logging-1.1.1-src.zip"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging-1.1.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jms.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/javolution.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/javolution.jar" sourcepath="lib.src/javolution-6.1.0-sources.jar"/>
 	<classpathentry kind="lib" path="lib/jxl.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.15.jar" sourcepath="lib.src/log4j-1.2.15-sources.jar">
+	<classpathentry exported="true" kind="lib" path="lib/log4j-1.2.17.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://logging.apache.org/log4j/1.2/apidocs/"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry exported="true" kind="lib" path="lib/jsch-0.1.50.jar" sourcepath="lib.src/jsch-0.1.50.zip"/>
-	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.1.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:platform:/resource/cloveretl.engine/lib.doc/commons-cli-1.1.zip!/apidocs"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.2.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry exported="true" kind="lib" path="lib/annotations.jar"/>
-	<classpathentry kind="lib" path="lib/icu4j-normalizer_transliterator-4.8.1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jakarta-oro-2.0.8.jar"/>
-	<classpathentry kind="lib" path="lib/tar.jar"/>
+	<classpathentry kind="lib" path="lib/icu4j-52_1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-compress-1.7.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/joda-time-2.1.jar" sourcepath="lib.src/joda-time-2.1-sources.jar"/>
 	<classpathentry kind="lib" path="lib/xmlbeans-2.5.0-modified-for-WSC.jar" sourcepath="lib.src/xmlbeans-2.5.0-modified-for-WSC-source.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-net-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-codec-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/ftp4j-1.4.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-net-3.3.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.6.jar"/>
+	<classpathentry kind="lib" path="lib/ftp4j-1.7.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/XmlSchema-1.4.7-modified-for-WSC.jar" sourcepath="lib.src/XmlSchema-1.4.7-modified-for-WSC-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-io-2.2.jar"/>
-	<classpathentry kind="lib" path="lib/truezip-6.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/sardine.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-kernel-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-driver-zip-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-driver-file-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-file-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-path-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/truezip-swing-7.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/sardine-5.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jets3t-0.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/httpclient-4.2.jar" sourcepath="lib.src/httpclient-4.2-sources.jar"/>
-	<classpathentry kind="lib" path="lib/httpcore-4.2.jar"/>
-	<classpathentry kind="lib" path="lib/httpmime-4.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpmime-4.3.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-3.8-20120326.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-3.8-20120326.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/poi-ooxml-schemas-3.8-20120326.jar"/>

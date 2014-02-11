@@ -58,10 +58,11 @@ import org.jetel.util.protocols.webdav.WebdavClient;
 import org.jetel.util.protocols.webdav.WebdavClientImpl;
 import org.jetel.util.string.StringUtils;
 
-import com.googlecode.sardine.DavResource;
-import com.googlecode.sardine.impl.SardineException;
+import com.github.sardine.DavResource;
+import com.github.sardine.impl.SardineException;
 import com.jcraft.jsch.ChannelSftp.LsEntry;
 
+import de.schlichtherle.truezip.file.TFile;
 import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
@@ -322,7 +323,7 @@ public class WcardPattern {
                 			if (localArchivePath != null) {
                 				// for local ZIP archives, FileUtils.getInputStream must not be called
                 				// - it treats archives as folders, therefore it is impossible to open an InputStream to read from them
-                		    	de.schlichtherle.io.File root = FileUtils.getLocalZipArchive(parent, localArchivePath);
+                		    	TFile root = FileUtils.getLocalZipArchive(parent, localArchivePath);
                 		    	if (root == null) {
                 		    		throw new IOException("Failed to open local ZIP archive");
                 		    	}
