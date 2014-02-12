@@ -21,6 +21,7 @@ package org.jetel.component;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Properties;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -309,13 +310,19 @@ public class XMLExtractTest extends CloverTestCase {
 		Phase phase = new Phase(0);
 		graph.addPhase(phase);
 
-		XMLExtract xmlExtract = new XMLExtract("TestXMLExtract");
+		Properties componentProperties = new Properties();
+		componentProperties.setProperty("id", "TestXMLExtract");
+		
+		XMLExtract xmlExtract = (XMLExtract) ComponentFactory.createComponent(graph, XMLExtract.COMPONENT_TYPE, componentProperties);
 		xmlExtract.setInputFile(TEST_RESOURCERS_DIR + inFile);
 		xmlExtract.setMappingURL(TEST_RESOURCERS_DIR + mappingFile);
 		xmlExtract.setUseNestedNodes(useNestedNodes);
 		phase.addNode(xmlExtract);
 
-		Trash trash = new Trash("TestTrash");
+		componentProperties.clear();
+		componentProperties.setProperty("id", "TestTrash");
+
+		Trash trash = (Trash) ComponentFactory.createComponent(graph, Trash.COMPONENT_TYPE, componentProperties);
 		phase.addNode(trash);
 		
 		for (int i = 0; i < edgesMetadata.length; i++) {
