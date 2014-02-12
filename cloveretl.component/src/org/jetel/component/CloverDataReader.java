@@ -149,14 +149,6 @@ public class CloverDataReader extends Node {
 		this.indexFileURL = indexFileURL;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-	
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();

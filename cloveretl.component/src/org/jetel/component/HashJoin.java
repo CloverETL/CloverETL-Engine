@@ -814,7 +814,7 @@ public class HashJoin extends Node {
 		} else if (joinStr.equalsIgnoreCase("fullOuter")) {
 			joinType = Join.FULL_OUTER;
 		} else {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + "Invalid joinType specification: " + joinStr);
+			throw new XMLConfigurationException(xattribs.getString(XML_ID_ATTRIBUTE, " unknown ID ") + ":" + "Invalid joinType specification: " + joinStr);
 		}
 
 		// legacy attributes handling {
@@ -970,11 +970,6 @@ public class HashJoin extends Node {
 		}
 
 		return status;
-	}
-
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
 	}
 
 	public boolean isSlaveDuplicates() {

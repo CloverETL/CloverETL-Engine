@@ -276,12 +276,6 @@ public class Sort extends Node {
 		return status;
 	}
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
-
     /**
      * @return the localeStr
      */

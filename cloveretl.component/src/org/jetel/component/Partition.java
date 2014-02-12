@@ -462,11 +462,6 @@ public class Partition extends Node {
 		
         return status;
     }
-	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
 
 	public String getCharset() {
 		return charset;

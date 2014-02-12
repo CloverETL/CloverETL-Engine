@@ -875,12 +875,6 @@ public class DBExecute extends Node {
         return status;
    }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
-
     public boolean isProcedureCall() {
         return procedureCall;
     }

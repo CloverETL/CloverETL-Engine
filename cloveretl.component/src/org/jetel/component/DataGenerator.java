@@ -184,14 +184,6 @@ public abstract class DataGenerator extends Node {
 		return dataGenerator;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/**
 	 * @param randomSeed the randomSeed to set
 	 */

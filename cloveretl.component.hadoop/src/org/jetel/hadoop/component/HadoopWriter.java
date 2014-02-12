@@ -113,11 +113,6 @@ public class HadoopWriter extends Node {
 	}
 
 	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 

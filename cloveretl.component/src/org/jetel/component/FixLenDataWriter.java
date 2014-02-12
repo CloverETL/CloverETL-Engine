@@ -367,11 +367,6 @@ public class FixLenDataWriter extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
     /**
      * Which character (1st from specified string) will
      * be used as filler for padding output fields

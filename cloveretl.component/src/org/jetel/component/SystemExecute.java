@@ -638,13 +638,6 @@ public class SystemExecute extends Node{
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override public String getType(){
-		return COMPONENT_TYPE;
-	}
-
-	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
     @Override

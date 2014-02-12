@@ -395,11 +395,6 @@ public class HadoopReader extends Node {
 		}
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/**
 	 * @param skipRows
 	 *            The skipRows to set.

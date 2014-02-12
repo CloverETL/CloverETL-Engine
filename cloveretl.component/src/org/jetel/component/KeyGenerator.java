@@ -395,11 +395,6 @@ import org.w3c.dom.Element;
         return status;
     }
 
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
 	static private class Key{
 		
 		String name;

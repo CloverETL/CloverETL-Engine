@@ -356,11 +356,6 @@ public class Trash extends Node {
         }
     }
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	public boolean isDebugAppend() {
 		return debugAppend;
 	}

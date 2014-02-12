@@ -387,14 +387,6 @@ public class Aggregate extends Node {
         return status;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/**
 	 * @return the equalNULLs
 	 */

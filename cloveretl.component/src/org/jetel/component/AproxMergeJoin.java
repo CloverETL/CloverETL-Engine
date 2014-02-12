@@ -1155,11 +1155,6 @@ public class AproxMergeJoin extends Node {
         return status;
     }
 
-    @Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
 	private void setConformityLimit(double conformityLimit) {
 		this.conformityLimit = conformityLimit;
 	}

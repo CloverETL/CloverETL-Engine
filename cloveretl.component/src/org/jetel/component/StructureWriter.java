@@ -226,13 +226,6 @@ public class StructureWriter extends Node {
 		formatterProvider = new StructureFormatterProvider(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		formatterProvider.setMask(mask);
 	}
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
 
 	@Override
 	public void preExecute() throws ComponentNotReadyException {

@@ -969,15 +969,6 @@ public class XmlWriter extends Node {
 		 } // for
 	}
 	
-	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/** 
 	 * Creates an instance according to XML specification.
 	 * @param graph

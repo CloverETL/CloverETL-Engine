@@ -207,11 +207,6 @@ public class Rollup extends Node {
 
         ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
-        if (!componentAttributes.getString(XML_TYPE_ATTRIBUTE).equalsIgnoreCase(COMPONENT_TYPE)) {
-            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
-                    + " attribute contains a value incompatible with this component!");
-        }
-
         rollup = new Rollup(componentAttributes.getString(XML_ID_ATTRIBUTE));
 
         String groupKeyString = componentAttributes.getString(XML_GROUP_KEY_FIELDS_ATTRIBUTE, null);
@@ -286,11 +281,6 @@ public class Rollup extends Node {
     public Rollup(String id, RecordRollup recordRollup) {
         this(id);
         this.recordRollup = recordRollup;
-    }
-
-    @Override
-    public String getType() {
-        return COMPONENT_TYPE;
     }
 
     public void setGroupKeyFields(String[] groupKeyFields) {

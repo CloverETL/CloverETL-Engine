@@ -682,11 +682,6 @@ public class XMLExtract extends Node {
 		return attribute.equals(XmlSaxParser.XML_ELEMENT) || attribute.equals(XmlSaxParser.XML_OUTPORT) || attribute.equals(XmlSaxParser.XML_PARENTKEY) || attribute.equals(XmlSaxParser.XML_GENERATEDKEY) || attribute.equals(XmlSaxParser.XML_XMLFIELDS) || attribute.equals(XmlSaxParser.XML_CLOVERFIELDS) || attribute.equals(XmlSaxParser.XML_SEQUENCEFIELD) || attribute.equals(XmlSaxParser.XML_SEQUENCEID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_ID) || attribute.equals(XmlSaxParser.XML_TEMPLATE_REF) || attribute.equals(XmlSaxParser.XML_TEMPLATE_DEPTH) || attribute.equals(XML_SKIP_ROWS_ATTRIBUTE) || attribute.equals(XML_NUMRECORDS_ATTRIBUTE) || attribute.equals(XML_TRIM_ATTRIBUTE) || attribute.equals(XML_VALIDATE_ATTRIBUTE) || attribute.equals(XML_XML_FEATURES_ATTRIBUTE) || attribute.equals(XmlSaxParser.XML_USE_PARENT_RECORD) || attribute.equals(XmlSaxParser.XML_IMPLICIT) || attribute.equals(XmlSaxParser.XML_INPUTFIELD) || attribute.equals(XmlSaxParser.XML_OUTPUTFIELD);
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/**
 	 * Set the input source containing the XML this will parse.
 	 */

@@ -193,11 +193,6 @@ public class SimpleGather extends Node {
 	}
 
 	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new BasicComponentTokenTracker(this);
 	}

@@ -153,7 +153,7 @@ public class ComponentFactory {
             //create instance of component
 			Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 			result = (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
-	        loadCommonAttributes(graph, result, nodeXML);
+	        loadCommonAttributes(graph, componentType, result, nodeXML);
 			return result;
 		} catch (Exception e) {
 			if (strict) {
@@ -176,12 +176,12 @@ public class ComponentFactory {
 		
 		result = new SimpleNode(xattribs.getString(Node.XML_ID_ATTRIBUTE, null), componentType, graph);
 
-		loadCommonAttributes(graph, result, nodeXML);
+		loadCommonAttributes(graph, componentType, result, nodeXML);
 		
 		return result;
 	}
 
-	private final static void loadCommonAttributes(TransformationGraph graph, Node component, org.w3c.dom.Node nodeXML) {
+	private final static void loadCommonAttributes(TransformationGraph graph, String componentType, Node component, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
         try {
 	        //nodeDistribution attribute parsing
@@ -197,7 +197,7 @@ public class ComponentFactory {
 			}
 			
 			//preset description to the node
-			component.setDescriptor(componentMap.get(component.getType()));
+			component.setDescriptor(componentMap.get(componentType));
         } catch (Exception e) {
         	throw createException(xattribs, e);
         }

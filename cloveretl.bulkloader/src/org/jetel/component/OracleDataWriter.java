@@ -732,11 +732,6 @@ public class OracleDataWriter extends BulkLoader {
         return status;
     }
     
-    @Override
-	public String getType(){
-        return COMPONENT_TYPE;
-    }
-
     public Append getAppend() {
         return append;
     }

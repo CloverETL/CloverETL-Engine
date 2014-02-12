@@ -189,7 +189,14 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return    The Type value
 	 *@since     April 4, 2002
 	 */
-	public abstract String getType();
+	public String getType() {
+		ComponentDescription descriptor = getDescriptor();
+		if (descriptor != null) {
+			return descriptor.getType();
+		} else {
+			return null;
+		}
+	}
 
 	/**
 	 *  Returns True if this Node is Leaf Node - i.e. only consumes data (has only

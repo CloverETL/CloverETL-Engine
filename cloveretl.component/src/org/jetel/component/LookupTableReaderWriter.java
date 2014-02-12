@@ -118,15 +118,6 @@ public class LookupTableReaderWriter extends Node {
 		this.freeLookupTable = freeLookupTable;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-
 	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;

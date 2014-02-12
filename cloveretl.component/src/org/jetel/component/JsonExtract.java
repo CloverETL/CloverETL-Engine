@@ -561,11 +561,6 @@ public class JsonExtract extends Node {
 				|| attribute.equals(XmlSaxParser.XML_IMPLICIT)|| attribute.equals(XmlSaxParser.XML_INPUTFIELD)|| attribute.equals(XmlSaxParser.XML_OUTPUTFIELD);
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/**
 	 * Set the input source containing the XML this will parse.
 	 */

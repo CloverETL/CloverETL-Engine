@@ -243,15 +243,6 @@ public class SpeedLimiter extends Node {
 		this.inputMappingCode = inputMapping;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-	
 	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new CopyComponentTokenTracker(this);
