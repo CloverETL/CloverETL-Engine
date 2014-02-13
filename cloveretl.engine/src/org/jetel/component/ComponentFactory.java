@@ -67,7 +67,7 @@ public class ComponentFactory {
         //register all components
         for(Extension extension : componentExtensions) {
             try {
-            	ComponentDescription description = new ComponentDescription(extension);
+            	ComponentDescription description = new ComponentDescriptionImpl(extension);
             	description.init();
                 registerComponent(description);
             } catch(Exception e) {

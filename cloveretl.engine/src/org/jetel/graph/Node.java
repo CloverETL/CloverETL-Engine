@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
 import org.jetel.component.ComponentDescription;
+import org.jetel.component.ComponentDescriptionImpl;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
@@ -190,12 +191,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@since     April 4, 2002
 	 */
 	public String getType() {
-		ComponentDescription descriptor = getDescriptor();
-		if (descriptor != null) {
-			return descriptor.getType();
-		} else {
-			return "!UNKNOWN!";
-		}
+		return getDescriptor().getType();
 	}
 
 	/**
@@ -1459,7 +1455,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	
     @Override
 	public ComponentDescription getDescriptor() {
-    	return (ComponentDescription) super.getDescriptor();
+    	ComponentDescription componentDescription = (ComponentDescription) super.getDescriptor();
+    	if (componentDescription == null) {
+    		componentDescription = new ComponentDescriptionImpl.MissingComponentDescription();
+    		setDescriptor(componentDescription);
+    	}
+    	return componentDescription;
     }
 
     /**

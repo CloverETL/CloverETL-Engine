@@ -18,7 +18,7 @@
  */
 package org.jetel.graph.dictionary;
 
-import org.jetel.data.GraphElementDescription;
+import org.jetel.data.GraphElementDescriptionImpl;
 import org.jetel.plugin.Extension;
 
 /**
@@ -27,7 +27,7 @@ import org.jetel.plugin.Extension;
  *
  * @created Jul 17, 2008
  */
-public class DictionaryTypeDescription extends GraphElementDescription {
+public class DictionaryTypeDescription extends GraphElementDescriptionImpl {
 
     public final static String EXTENSION_POINT_ID = "dictionaryType";
     

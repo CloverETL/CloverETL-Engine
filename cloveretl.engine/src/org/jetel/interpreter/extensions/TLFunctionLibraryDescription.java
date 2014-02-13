@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.PluginableItemDescription;
+import org.jetel.data.PluginableItemDescriptionImpl;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 
@@ -36,7 +36,7 @@ import org.jetel.plugin.PluginDescriptor;
  *
  * @created 29.5.2007
  */
-public class TLFunctionLibraryDescription extends PluginableItemDescription {
+public class TLFunctionLibraryDescription extends PluginableItemDescriptionImpl {
 
     private static Log logger = LogFactory.getLog(TLFunctionLibraryDescription.class);
 

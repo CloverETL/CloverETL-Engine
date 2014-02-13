@@ -21,9 +21,6 @@ package org.jetel.component;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -31,90 +28,36 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.jetel.data.GraphElementDescription;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.MetadataRepository;
-import org.jetel.plugin.Extension;
-import org.w3c.dom.NodeList;
 
 /**
  * This is description of a component type loaded from 'component' extension point.
  * 
  * @author Martin Zatopek
  */
-public class ComponentDescription extends GraphElementDescription {
+public interface ComponentDescription extends GraphElementDescription {
 
-    public final static String EXTENSION_POINT_ID = "component";
-    
-    private Component componentDesc;
-    
-    public ComponentDescription(Extension componentExtension) {
-        super(EXTENSION_POINT_ID, componentExtension);
-        
-	    NodeList xmlContent = getExtension().getXMLDefinition().getElementsByTagName("ETLComponent");
-        if (xmlContent.getLength() == 1) {
-        	try {
-			    JAXBContext context = JAXBContext.newInstance(Component.class);
-			    Unmarshaller m = context.createUnmarshaller();
-			    
-			    componentDesc = (Component) m.unmarshal(xmlContent.item(0));
-        	} catch (JAXBException e) {
-        		throw new JetelRuntimeException("Invalid component descrition in plugin " + getPluginDescriptor(), e);
-        	}
-        }
-    }
-
-    @Override
-    public String getType() {
-    	if (hasDescription()) {
-    		return componentDesc.getType();
-    	} else {
-    		return super.getType();
-    	}
-    }
-    
-    @Override
-    public String getClassName() {
-    	if (hasDescription()) {
-    		return componentDesc.getClassName();
-    	} else {
-    		return super.getClassName();
-    	}
-    }
+	public final static String EXTENSION_POINT_ID = "component";
 
     /**
      * @return class name of metadata provider or null if no provider has been specified.
      */
-    public String getMetadataProvider() {
-    	if (hasDescription()) {
-    		return componentDesc.getMetadataProvider();
-    	} else {
-    		return null;
-    	}
-    }
+    public String getMetadataProvider();
 
     /**
      * @return deep description which contains details about component, number of ports, attributes, ...
      */
-    public Component getDescription() {
-    	return componentDesc;
-    }
+    public Component getDescription();
     
     /**
      * @return deep description is optional (introduced in 3.6)
      */
-    public boolean hasDescription() {
-    	return componentDesc != null;
-    }
+    public boolean hasDescription();
     
     /**
      * @return true if this component propagates metadata from first input port to all output ports
      * @note identical with getDescription().isPassThrough()
      */
-    public boolean isPassThrough() {
-    	if (hasDescription()) {
-    		return getDescription().isPassThrough();
-    	} else {
-    		return false;
-    	}
-    }
+    public boolean isPassThrough();
     
     /**
      * Returns ID of metadata associated with given port.
@@ -122,19 +65,7 @@ public class ComponentDescription extends GraphElementDescription {
      * in plugin.xml
      * Metadata ID can be used to get real metadata from {@link MetadataRepository}. 
      */
-    public String getDefaultInputMetadataId(int portIndex) {
-    	if (hasDescription()) {
-	    	Ports inputPorts = componentDesc.getInputPorts();
-	    	Port port = inputPorts.getPort(portIndex);
-	    	if (port != null && port.getMetadata() != null) {
-	    		return port.getMetadata().getId();
-	    	} else {
-	    		return null;
-	    	}
-    	} else {
-    		return null;
-    	}
-    }
+    public String getDefaultInputMetadataId(int portIndex);
 
     /**
      * Returns ID of metadata associated with given port.
@@ -142,19 +73,7 @@ public class ComponentDescription extends GraphElementDescription {
      * in plugin.xml
      * Metadata ID can be used to get real metadata from {@link MetadataRepository}. 
      */
-    public String getDefaultOutputMetadataId(int portIndex) {
-    	if (hasDescription()) {
-	    	Ports outputPorts = componentDesc.getOutputPorts();
-	    	Port port = outputPorts.getPort(portIndex);
-	    	if (port != null && port.getMetadata() != null) {
-	    		return port.getMetadata().getId();
-	    	} else {
-	    		return null;
-	    	}
-    	} else {
-    		return null;
-    	}
-    }
+    public String getDefaultOutputMetadataId(int portIndex);
 
     @XmlRootElement(name = "ETLComponent")
     public static class Component {

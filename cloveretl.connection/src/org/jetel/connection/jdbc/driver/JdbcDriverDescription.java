@@ -29,7 +29,7 @@ import java.util.Properties;
 import org.jetel.connection.jdbc.specific.JdbcSpecificDescription;
 import org.jetel.connection.jdbc.specific.JdbcSpecificFactory;
 import org.jetel.data.Defaults;
-import org.jetel.data.PluginableItemDescription;
+import org.jetel.data.PluginableItemDescriptionImpl;
 import org.jetel.database.sql.JdbcDriver;
 import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
@@ -45,7 +45,7 @@ import org.jetel.util.string.StringUtils;
  *
  * @created 14.9.2007
  */
-public class JdbcDriverDescription extends PluginableItemDescription {
+public class JdbcDriverDescription extends PluginableItemDescriptionImpl {
     
     private final static String DATABASE_PARAMETER = "database";
 

@@ -18,10 +18,6 @@
  */
 package org.jetel.data;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 
 /**
@@ -32,45 +28,12 @@ import org.jetel.plugin.PluginDescriptor;
  * @author Martin Zatopek
  *
  */
-public class GraphElementDescription extends PluginableItemDescription {
+public interface GraphElementDescription extends PluginableItemDescription {
 
-    private final static String TYPE = "type";
-    private final static String CLASS = "className";
+    public String getClassName();
 
-    private String type;
+    public String getType();
     
-    private String className;
-    
-    private PluginDescriptor pluginDescriptor;
-    
-    public GraphElementDescription(String extensionPointId, Extension extension) {
-    	super(extension);
-    	
-        if(!extension.getPointId().equals(extensionPointId)) {
-            throw new IllegalArgumentException("Invalid extension point id (unexpected exception).");
-        }
-        this.type = extension.hasParameter(TYPE) ? extension.getParameter(TYPE).getString() : null;
-        this.className = extension.hasParameter(CLASS) ? extension.getParameter(CLASS).getString() : null;
-        this.pluginDescriptor = extension.getPlugin();
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public String getType() {
-        return type;
-    }
-    
-    public PluginDescriptor getPluginDescriptor() {
-        return pluginDescriptor;
-    }
-
-	@Override
-	protected List<String> getClassNames() {
-		List<String> result = new ArrayList<String>();
-		result.add(getClassName());
-		return result;
-	}
+    public PluginDescriptor getPluginDescriptor();
 
 }
