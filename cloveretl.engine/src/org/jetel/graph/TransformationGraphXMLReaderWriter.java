@@ -426,34 +426,9 @@ public class TransformationGraphXMLReaderWriter {
 		
 				NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
 				instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
-		
-		        //remove disabled components and their edges
-				TransformationGraphAnalyzer.disableNodesInPhases(graph);
-	
-				//remove component before SubGraphInput and after SubGraphOutput if necessary
-				if (runtimeContext.isSubJob()) {
-					try {
-						TransformationGraphAnalyzer.analyseSubGraph(graph);
-					} catch (Exception e) {
-						throwXMLConfigurationException("Sub-graph analysis failed.", e);
-					}
-				}
-				
-				//perform automatic metadata propagation
-				if (metadataPropagation) {
-					try {
-						TransformationGraphAnalyzer.analyseMetadataPropagation(graph);
-					} catch (Exception e) {
-						throw new JetelRuntimeException("Metadata propagation analysis failed.", e);
-					}
-				}
-	
-		        //analyze type of edges - specially buffered and phase edges
-		        try {
-		        	TransformationGraphAnalyzer.analyseEdgeTypes(graph);
-				} catch (Exception e) {
-					throwXMLConfigurationException("Edge type analysis failed.", e);
-				}
+
+				//finally analyse the graph
+				TransformationGraphAnalyzer.analyseGraph(graph, runtimeContext, metadataPropagation);
 			}
 
 	        return graph;

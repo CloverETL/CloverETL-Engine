@@ -148,6 +148,11 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private MetadataPropagationResolver metadataPropagationResolver;
 	
+	/**
+	 * Flag which indicates the graph has been already analysed by {@link TransformationGraphAnalyzer#analyseGraph(TransformationGraph, GraphRuntimeContext, boolean)}
+	 */
+	private boolean isAnalysed = false;
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -414,6 +419,11 @@ public final class TransformationGraph extends GraphElement {
 	        if(isInitialized()) return;
 			super.init();
 	
+			//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
+			if (!isAnalysed()) {
+				TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
+			}
+
 			//initialize dictionary
 			dictionary.init();
 			
@@ -1094,6 +1104,11 @@ public final class TransformationGraph extends GraphElement {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
+		//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
+		if (!isAnalysed()) {
+			TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
+		}
+
 		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
 		Context c = ContextProvider.registerGraph(this);
 		try {
@@ -1377,6 +1392,20 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	public void setMetadataPropagationResolver(MetadataPropagationResolver metadataPropagationResolver) {
 		this.metadataPropagationResolver = metadataPropagationResolver;
+	}
+
+	/**
+	 * @return true if the graph has been already analysed by {@link TransformationGraphAnalyzer#analyseGraph(TransformationGraph, GraphRuntimeContext, boolean)}
+	 */
+	public boolean isAnalysed() {
+		return isAnalysed;
+	}
+
+	/**
+	 * Sets flag which indicates the graph has been already analysed by {@link TransformationGraphAnalyzer#analyseGraph(TransformationGraph, GraphRuntimeContext, boolean)}
+	 */
+	public void setAnalysed(boolean isAnalysed) {
+		this.isAnalysed = isAnalysed;
 	}
 
 	@Override

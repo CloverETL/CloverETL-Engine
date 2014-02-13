@@ -42,6 +42,7 @@ import org.jetel.graph.analyse.GraphCycleInspector;
 import org.jetel.graph.analyse.SingleGraphProvider;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
 import org.jetel.util.GraphUtils;
 import org.jetel.util.SubGraphUtils;
@@ -64,6 +65,47 @@ public class TransformationGraphAnalyzer {
 
 	static PrintStream log = System.out;// default info messages to stdout
 
+	/**
+	 * Several pre-execution steps is performed in this graph analysis.
+	 * - disable nodes are removed from graph
+	 * - sub-graph related updates are performed
+	 * - automatic metadata propagation is performed
+	 * - correct edge types are detected
+	 */
+	public static void analyseGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata){
+        //remove disabled components and their edges
+		try {
+			TransformationGraphAnalyzer.disableNodesInPhases(graph);
+		} catch (GraphConfigurationException e) {
+			throw new JetelRuntimeException("Removing disable nodes failed.", e);
+		}
+
+		//remove component before SubGraphInput and after SubGraphOutput if necessary
+		if (runtimeContext.isSubJob()) {
+			try {
+				TransformationGraphAnalyzer.analyseSubGraph(graph);
+			} catch (Exception e) {
+				throw new JetelRuntimeException("Sub-graph analysis failed.", e);
+			}
+		}
+		
+		//perform automatic metadata propagation
+		if (propagateMetadata) {
+			try {
+				TransformationGraphAnalyzer.analyseMetadataPropagation(graph);
+			} catch (Exception e) {
+				throw new JetelRuntimeException("Metadata propagation analysis failed.", e);
+			}
+		}
+
+        //analyze type of edges - specially buffered and phase edges
+        try {
+        	TransformationGraphAnalyzer.analyseEdgeTypes(graph);
+		} catch (Exception e) {
+			throw new JetelRuntimeException("Edge type analysis failed.", e);
+		}
+	}
+	
 	/**
 	 * Performs automatic metadata propagation on the given graph.
 	 */
