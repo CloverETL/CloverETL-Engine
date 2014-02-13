@@ -652,8 +652,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         super.free();
         
         if (!isSharedEdgeBase()) {
-			//free edge base only for non-shared edges
-        	edge.free();
+			if (edge != null) {
+				// free edge base only for non-shared edges
+				edge.free();
+			}
         }
     }
 
