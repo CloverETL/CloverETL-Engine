@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.IGraphElement;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -242,6 +243,18 @@ public class ComponentFactory {
     public final static Node createComponent(TransformationGraph graph, String componentType, Properties properties) {
     	Document xmlDocument = XmlUtils.createDocumentFromProperties(TransformationGraphXMLReaderWriter.NODE_ELEMENT, properties);
     	return createComponent(graph, componentType, (Element) xmlDocument.getFirstChild());
+    }
+
+    /**
+     *  Method for creating various types of components based on component type, component id and attributes passed as {@link Properties}.
+     */
+    public final static Node createComponent(TransformationGraph graph, String componentType, String componentId, Properties properties) {
+    	if (properties == null) {
+    		properties = new Properties();
+    	}
+    	properties.setProperty(IGraphElement.XML_ID_ATTRIBUTE, componentId);
+    	
+    	return createComponent(graph, componentType, properties);
     }
 
     /**
