@@ -90,6 +90,7 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.cookie.CookieSpecProvider;
+import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.InputStreamEntity;
@@ -1184,8 +1185,11 @@ public class HttpConnector extends Node {
 	private CloseableHttpClient httpClient;
 
 	private RequestResponseCookieStore cookieStore;
-	
+
 	private HttpContext httpContext;
+	
+	private DefaultHttpRequestRetryHandler retryHandler;
+	
 
 	/**
 	 * OAuth consumer used to sign requests when OAuth is used.
@@ -1976,14 +1980,14 @@ public class HttpConnector extends Node {
 	 * @throws InterruptedException
 	 */
 	private HttpResponse buildAndSendRequest(HTTPRequestConfiguration configuration) throws Exception {
-		 initHTTPClient(configuration);
-		
-	    HttpRequestBase method = prepareMethod(configuration);
-		
-		 // sign the request before sending it
-		 if (oauthConsumer != null) {
-			 oauthConsumer.sign(method);
-		 }	  
+		initHTTPClient(configuration);
+
+		HttpRequestBase method = prepareMethod(configuration);
+
+		// sign the request before sending it
+		if (oauthConsumer != null) {
+			oauthConsumer.sign(method);
+		}
 		HttpResponse response = httpClient.execute(method, this.httpContext);
 		return response;
 	}
@@ -2712,7 +2716,11 @@ public class HttpConnector extends Node {
 					}
 				} else {
 					// the length is set to -1 (unknown), which enforces Transfer-Encoding: chunked
-					entity = new InputStreamEntity((InputStream) content, -1, contentType);
+					try {
+						entity = new BufferedHttpEntity(new InputStreamEntity((InputStream) content, -1, contentType));
+					} catch (IOException e) {
+						entity = new InputStreamEntity((InputStream) content, -1, contentType);
+					}
 				}
 			}
 			if (entity != null) {
@@ -2932,11 +2940,14 @@ public class HttpConnector extends Node {
 		HttpClientBuilder builder = HttpClientBuilder.create();
 
 		builder = builder.useSystemProperties();
+		if (this.retryHandler == null) {
+			this.retryHandler = new DefaultHttpRequestRetryHandler(0, false);
+		}
 
-		builder.setRetryHandler(new DefaultHttpRequestRetryHandler(3, false));
+		builder.setRetryHandler(this.retryHandler);
 
-		cookieStore = new RequestResponseCookieStore();		
-		
+		cookieStore = new RequestResponseCookieStore();
+
 		builder.addInterceptorLast(requestLoggingInterceptor);
 		builder.addInterceptorLast(cookieStore);
 		builder.addInterceptorLast(responseLoggingInterceptor);
@@ -2997,16 +3008,15 @@ public class HttpConnector extends Node {
 
 			builder.setTargetAuthenticationStrategy(TargetAuthenticationStrategy.INSTANCE);
 
-//			httpClient.setTargetAuthenticationHandler(new DefaultTargetAuthenticationHandler() {
-//
-//				@Override
-//				protected List<String> getAuthPreferences(HttpResponse response, HttpContext context) {
-//					return authPrefs;
-//				}
-//
-//			});
+			// httpClient.setTargetAuthenticationHandler(new DefaultTargetAuthenticationHandler() {
+			//
+			// @Override
+			// protected List<String> getAuthPreferences(HttpResponse response, HttpContext context) {
+			// return authPrefs;
+			// }
+			//
+			// });
 		}
-
 
 		// configure OAuth authentication
 		if (!StringUtils.isEmpty(consumerKeyToUse) && !StringUtils.isEmpty(consumerSecretToUse)) {
@@ -3018,20 +3028,15 @@ public class HttpConnector extends Node {
 			}
 		}
 
-		Registry<CookieSpecProvider> r = RegistryBuilder.<CookieSpecProvider>create()
-		        .register(CookieSpecs.BEST_MATCH,
-		            new BestMatchSpecFactory())
-		        .register(CookieSpecs.BROWSER_COMPATIBILITY,
-		            new BrowserCompatSpecFactory())
-		        .build();		
-		
+		Registry<CookieSpecProvider> r = RegistryBuilder.<CookieSpecProvider> create().register(CookieSpecs.BEST_MATCH, new BestMatchSpecFactory()).register(CookieSpecs.BROWSER_COMPATIBILITY, new BrowserCompatSpecFactory()).build();
+
 		builder.setDefaultCookieSpecRegistry(r);
-		
+
 		this.httpContext = new BasicHttpContext();
-		
-		httpContext.setAttribute(HttpClientContext.COOKIE_STORE, this.cookieStore); 
-		
-		httpClient = builder.build();	
+
+		httpContext.setAttribute(HttpClientContext.COOKIE_STORE, this.cookieStore);
+
+		httpClient = builder.build();
 
 	}
 
@@ -3138,7 +3143,7 @@ public class HttpConnector extends Node {
 				String name = field.getMetadata().getLabelOrName();
 				String value = field.getValue().toString();
 				BasicClientCookie basicClientCookie = new BasicClientCookie(name, value);
-				if(method.getURI()!=null) {
+				if (method.getURI() != null) {
 					basicClientCookie.setDomain(method.getURI().getHost());
 				}
 				basicClientCookie.setPath("/");
