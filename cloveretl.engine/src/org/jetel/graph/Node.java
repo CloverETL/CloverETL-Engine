@@ -194,7 +194,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		if (descriptor != null) {
 			return descriptor.getType();
 		} else {
-			return null;
+			return "!UNKNOWN!";
 		}
 	}
 
