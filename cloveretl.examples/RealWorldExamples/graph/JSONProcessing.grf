@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseType="Commercial" modified="Mon Jan 13 17:04:19 CET 2014" modifiedBy="User" name="graphXMLProcessing" revision="1.83" showComponentDetails="true">
+<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseType="Commercial" modified="Thu Feb 06 12:49:59 CET 2014" modifiedBy="User" name="graphXMLProcessing" revision="1.88" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="actor" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -118,16 +118,16 @@ function transform() {
   </actor>
 </actors>]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" guiName="Read Movies.json" guiX="40" guiY="327" id="READ_MOVIES_JSON" schema="${DATAIN_DIR}/others/movies.xsd" sourceUri="${DATAIN_DIR}/others/Movies.json" type="JSON_EXTRACT">
+<Node charset="UTF-8" enabled="enabled" guiName="Read Movies.json" guiX="40" guiY="327" id="READ_MOVIES_JSON" schema="${DATAIN_DIR}/others/json/Movies_json.xsd" sourceUri="${DATAIN_DIR}/others/Movies.json" type="JSON_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
-	<Mapping element="movies">
-		<Mapping element="movie" outPort="1">
-			<Mapping element="actor" outPort="0" parentKey="movie_id" generatedKey="movie_id"
-					xmlFields="{}-actor_id;{}first_name;{}last_name"
-					cloverFields="actor_id;first_name;last_name">
+		<Mapping element="movies">
+			<Mapping element="movie" outPort="1">
+				<Mapping element="actor" outPort="0" parentKey="movie_id" generatedKey="movie_id"
+						xmlFields="{}actor_id;{}first_name;{}last_name"
+						cloverFields="actor_id;first_name;last_name">
+				</Mapping>
 			</Mapping>
 		</Mapping>
-	</Mapping>
 </Mappings>
 ]]></attr>
 </Node>

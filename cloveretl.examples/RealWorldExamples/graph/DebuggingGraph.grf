@@ -13,8 +13,10 @@
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="326" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="100 records only" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="18" y="84">
 <attr name="text"><![CDATA[To avoid printing hundreds of useless messages, we are reading just the first 100 records.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="327" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="SimpleCopy" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="168" x="210" y="84">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="347" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="SimpleCopy" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="168" x="210" y="84">
 <attr name="text"><![CDATA[component can - apart from making an identical copy - slightly change the input records.
+
+
 
 
 

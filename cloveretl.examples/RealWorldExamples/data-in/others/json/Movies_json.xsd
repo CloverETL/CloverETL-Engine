@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="json_object" type="json_objectType"/>
+  <xs:complexType name="actorType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="actor_id"/>
+      <xs:element type="xs:string" name="first_name"/>
+      <xs:element type="xs:string" name="last_name"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="movieType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="movie_id"/>
+      <xs:element type="xs:string" name="title"/>
+      <xs:element type="xs:string" name="description"/>
+      <xs:element type="xs:string" name="release_year"/>
+      <xs:element type="xs:string" name="language"/>
+      <xs:element type="xs:string" name="length"/>
+      <xs:element type="xs:string" name="rating"/>
+      <xs:element type="xs:string" name="category"/>
+      <xs:element type="actorType" name="actor" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="moviesType">
+    <xs:sequence>
+      <xs:element type="movieType" name="movie" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="json_objectType">
+    <xs:sequence>
+      <xs:element type="moviesType" name="movies"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
