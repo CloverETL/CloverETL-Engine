@@ -3025,6 +3025,8 @@ public class HttpConnector extends Node {
 		            new BrowserCompatSpecFactory())
 		        .build();		
 		
+		builder.setDefaultCookieSpecRegistry(r);
+		
 		this.httpContext = new BasicHttpContext();
 		
 		httpContext.setAttribute(HttpClientContext.COOKIE_STORE, this.cookieStore); 
