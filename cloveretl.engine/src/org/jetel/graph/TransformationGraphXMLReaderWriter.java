@@ -428,7 +428,11 @@ public class TransformationGraphXMLReaderWriter {
 				instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
 
 				//finally analyse the graph
-				TransformationGraphAnalyzer.analyseGraph(graph, runtimeContext, metadataPropagation);
+				try {
+					TransformationGraphAnalyzer.analyseGraph(graph, runtimeContext, metadataPropagation);
+				} catch (Exception e) {
+					throwXMLConfigurationException("Graph analysis failed.", e);
+				}
 			}
 
 	        return graph;
