@@ -60,12 +60,14 @@
 
 
 
+
 Mapping in the component uses the "star" notation: 
 
 $0.* := $0.*;]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="209" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="210" x="211" y="637">
 <attr name="text"><![CDATA[
+
 
 
 

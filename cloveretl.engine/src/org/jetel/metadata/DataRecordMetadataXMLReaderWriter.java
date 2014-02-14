@@ -22,6 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.text.ParseException;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -772,6 +773,14 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
                     field.setShift(shiftVal);
                 }
 			}
+			 
+			try{
+				//delimited&mixed field still can have size;e.g. when extracted from DB, just for info
+				int sizeVal=getFieldSize(size);
+				if (sizeVal > 0) field.setSize(sizeVal);
+			}catch(NumberFormatException ex){
+					//ignore, if we don't get size, then it's not important
+			}
 			
             field.setEofAsDelimiter( Boolean.valueOf( eofAsDelimiter ).booleanValue() );
 			// set properties
@@ -886,7 +895,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	 * @since May 6, 2002
 	 */
 	private int getFieldSize(String fieldSizeStr) {
-		if (fieldSizeStr == null) {
+		if (StringUtils.isEmpty(fieldSizeStr)) {
 			return 0;
 		}
 		return Integer.parseInt(fieldSizeStr);

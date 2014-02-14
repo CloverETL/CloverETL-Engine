@@ -911,9 +911,14 @@ public abstract class AbstractCopySQLData implements CopySQLData {
 		public void setJetel(ResultSet resultSet) throws SQLException {
 			int i = resultSet.getInt(fieldSQL);
 			if (resultSet.wasNull()) {
-				((IntegerDataField) field).setValue((Object)null);
+				field.setValue((Object)null);
 			} else {
-				((IntegerDataField) field).setValue(i);
+				if(field instanceof LongDataField) { // INTEGER -> long compatibility (CLO-2408)
+					((LongDataField) field).setValue(i);
+				}else {
+					((IntegerDataField) field).setValue(i);
+				}
+				
 			}
 		}
 

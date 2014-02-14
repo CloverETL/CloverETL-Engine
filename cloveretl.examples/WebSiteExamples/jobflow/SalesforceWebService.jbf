@@ -58,8 +58,10 @@ To minimize the authentication attempts, we need to find a way to pass credentia
 
 The two provided steps extract data and update a field - again, using the WebServiceClient component]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="202" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Update Field" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="174" x="1048" y="304">
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="222" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Update Field" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="174" x="1048" y="304">
 <attr name="text"><![CDATA[
+
+
 
 
 
@@ -70,8 +72,10 @@ The two provided steps extract data and update a field - again, using the WebSer
 
 Calls update() Salesforce webservice to update description field ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="223" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Extract Contacts" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="174" x="825" y="304">
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="243" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Extract Contacts" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="174" x="825" y="304">
 <attr name="text"><![CDATA[
+
+
 
 
 
@@ -82,8 +86,10 @@ Calls update() Salesforce webservice to update description field ]]></attr>
 
 Calls retrieve() Salesforce webservice to extract contacts who have birthday in the last 90 days]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="375" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Login" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="193" x="399" y="304">
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="395" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Login" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="193" x="399" y="304">
 <attr name="text"><![CDATA[
+
+
 
 
 

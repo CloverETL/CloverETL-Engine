@@ -42,6 +42,8 @@ import org.jetel.util.formatter.ParseBooleanException;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
+
 /**
  * A class that represents metadata describing one particular data field.<br>
  * Handles encoding of characters.
@@ -646,14 +648,14 @@ public class DataFieldMetadata implements Serializable {
 	 * @return <code>true</code> if this data field is delimited, <code>false</code> otherwise
 	 */
 	public boolean isDelimited() {
-		return (size == 0);
+		return (getDataRecordMetadata().getParsingType() == DataRecordParsingType.DELIMITED || size == 0);
 	}
 
 	/**
 	 * @return <code>true</code> if this data field is fixed-length, <code>false</code> otherwise
 	 */
 	public boolean isFixed() {
-		return (size != 0);
+		return (this.getDataRecordMetadata().getParsingType()!=DataRecordParsingType.DELIMITED && size > 0);
 	}
 	
 	/**

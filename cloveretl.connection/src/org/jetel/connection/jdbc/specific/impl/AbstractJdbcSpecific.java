@@ -77,7 +77,12 @@ import org.jetel.util.string.StringUtils;
  */
 abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 
-    private final static Log logger = LogFactory.getLog(AbstractJdbcSpecific.class);
+    /**
+	 * 
+	 */
+	private static final String DEFAULT_CHAR_FIELD_SIZE = "80";
+
+	private final static Log logger = LogFactory.getLog(AbstractJdbcSpecific.class);
 
 	/** the SQL comments pattern conforming to the SQL standard */
 	//&&[^-?=-] part added due to issue 3472
@@ -202,7 +207,7 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 		case Types.VARBINARY :
 		case Types.VARCHAR :
 		case Types.CHAR :
-			return sqlType2str(sqlType) + "(" + (field.isFixed() ? String.valueOf(field.getSize()) : "80") + ")";
+			return sqlType2str(sqlType) + "(" + (field.getSize()>0 ? String.valueOf(field.getSize()) : DEFAULT_CHAR_FIELD_SIZE) + ")";
 		case Types.DECIMAL :
 			String base = sqlType2str(sqlType);
 			String prec = "";
