@@ -167,7 +167,7 @@ public class GraphCycleInspector {
 				throw new JetelRuntimeException("Oriented cycle found in the graph. " + theCycle);
 			}
 		}
-		if (g.getJobType().isJobflow()) {
+		if (!g.getJobType().isJobflow()) {
 			throw new JetelRuntimeException("Oriented cycle found in the graph. Cycles are available only in jobflows. " + theCycle);
 		}
 		if (!hasWhileCycle) {
