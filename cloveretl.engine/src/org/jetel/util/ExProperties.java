@@ -19,14 +19,11 @@
 package org.jetel.util;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  * This class is an alternative to standard properties
@@ -36,12 +33,17 @@ import java.util.Properties;
  * @author Pavel
  * 
  */
-public class ExProperties extends HashMap<String, ArrayList<String>> {
+public class ExProperties extends LinkedHashMap<String, ArrayList<String>> {
 
 	/**
 	 * Default is '|' character which is ignored when escaped (i.e. '\|')
 	 */
-	final static String VALUE_SEPARATOR_REGEX = "(?<!\\\\)\\|";
+	final static String VALUE_SEPARATOR_REGEX = "(?<!\\\\)\\|"; //$NON-NLS-1$
+
+	final static String KEY_SEPARATOR="="; //$NON-NLS-1$
+	final static String PROPERTY_SEPARATOR="\n"; //$NON-NLS-1$
+
+	final static String KEY_SEPARATOR_ENC="&#61;"; //$NON-NLS-1$
 
 	/**
 	 * Returns the implicit (first) value for `key`
@@ -124,118 +126,66 @@ public class ExProperties extends HashMap<String, ArrayList<String>> {
 		put(key, value, 0);
 	}
 
-	/**
-	 * Parse a string with encoded properties
-	 * 
-	 * @param s
-	 * @throws IOException
-	 */
-	public void fromString(String s) throws IOException {
-		Properties p = new Properties();
-		p.load(new ByteArrayInputStream(s.getBytes()));
-
-		String propName;
-		String[] parts;
-		ArrayList<String> values;
-		for (Enumeration enu = p.propertyNames(); enu.hasMoreElements();) {
-			propName = (String) enu.nextElement();
-
-			parts = ExProperties.parseAlternatives(p.getProperty(propName));
-
-			values = getValues(propName);
-			if (values == null) {
-				values = new ArrayList<String>();
-				super.put(propName, values);
-			}
-
-			for (String part : parts) {
-				values.add(deEscape(part));
-			}
-
-		}
-
-	}
-
 	public static String[] parseAlternatives(String s) {
 		return s != null ? s.split(VALUE_SEPARATOR_REGEX) : null;
 	}
 	
-	public void setProperties(String value) throws IOException{
-		Properties p = new Properties();
-		String propName="", propValue="";
-		String currentLine, prevLine="";
-		String[] parts;
-		ArrayList<String> values;
+	public void fromString(String value) throws IOException{
+		String propName="", propValue=""; //$NON-NLS-1$ //$NON-NLS-2$
+		String currentLine, prevLine=""; //$NON-NLS-1$
 		boolean multiline = false;
 		
 		BufferedReader reader = new BufferedReader(new StringReader(value));
-		while( (currentLine = reader.readLine()) !=null) {
-			if(currentLine.indexOf("=")==-1) {
-				propValue += "\n" + currentLine;
+		while ((currentLine = reader.readLine()) != null) {
+			if (currentLine.indexOf(KEY_SEPARATOR) < 0) { // current line does not contain =
+				// append value
+				propValue += "\n" + currentLine; //$NON-NLS-1$
 				multiline = true;
-			} 
-			if(prevLine!=null && ( (multiline || prevLine.indexOf("=")!=-1) && currentLine.indexOf("=")!=-1)) {
-					p.put(propName, propValue);
-					multiline = false;
-			} if(currentLine.indexOf("=")!=-1){
-				propName = currentLine.substring(0, currentLine.indexOf("="));
-				propValue = currentLine.substring(currentLine.indexOf("=")+1);
+			} else {  // current line contains =
+				// save last property
+                if (prevLine!=null && (multiline || prevLine.indexOf(KEY_SEPARATOR) >= 0)) {
+                    putProperty(propName, propValue);
+                    multiline = false;
+                } 
+                // load new property
+                String[] parts = currentLine.split(KEY_SEPARATOR, 2);
+                propName = parts[0];
+                propValue = parts.length > 1 ? parts[1] : ""; //$NON-NLS-1$
 			}
 			prevLine = currentLine;
 		}
-		if(prevLine.indexOf("=")!=-1){
-			p.put(propName, propValue);
-		}	
+        putProperty(propName, propValue);
+	}
 	
-		for (Enumeration enu = p.propertyNames(); enu.hasMoreElements();) {
-			propName = (String) enu.nextElement();
-			parts = ExProperties.parseAlternatives(p.getProperty(propName));
-			
-			values = getValues(propName);
-			if (values == null) {
-				values = new ArrayList<String>();
-				super.put(propName, values);
-			}
-
-			for (String part : parts) {
-				values.add(deEscape(part));
-			}
+	private void putProperty(String propName, String propValue) {
+		if (propName == null || propName.isEmpty()) {
+			return;
 		}
+        String[] parts = ExProperties.parseAlternatives(propValue);
+        
+        ArrayList<String> values = getValues(propName);
+        if (values == null) {
+            values = new ArrayList<String>();
+            super.put(propName, values);
+        }
+
+        if (parts != null) {
+            for (String part : parts) {
+                values.add(deEscape(part));
+            }
+        }
 	}
 	
 	@Override
 	public String toString() {
-//		return toProperties(new Properties()).toString();
-		
-		String tmpvalue;
-		
 		StringBuilder sb = new StringBuilder();
-		boolean first = true;
 		for (Map.Entry<String, ArrayList<String>> entry : entrySet()) {
-			if (! first) {
-				sb.append("&#10;");
-			}
 			sb.append(entry.getKey());
-			sb.append("=");
+			sb.append(KEY_SEPARATOR);
 			sb.append(getValuesAsString(entry.getKey()));
-			sb.append("\n");
+			sb.append(PROPERTY_SEPARATOR);
 		}
 		return sb.toString();
-	}
-
-	public Properties toProperties() {
-		return toProperties(new Properties());
-	}
-
-	public Properties toProperties(Properties p) {
-
-		StringBuilder sb;
-		for (Map.Entry<String, ArrayList<String>> entry : entrySet()) {
-			p.setProperty(entry.getKey(), getValuesAsString(entry.getKey()));
-		}
-
-		return p;
-
 	}
 
 	public String getValuesAsString(String key) {
@@ -267,20 +217,20 @@ public class ExProperties extends HashMap<String, ArrayList<String>> {
 			if (i > startIndex) {
 				sb.append("|");
 			}
-			sb.append(escape ? escape(values.get(i)) : values.get(i));
+			String value = values.get(i);
+			if (value != null) {
+                sb.append(escape ? escape(value) : value);
+			}
 		}
 		return atLeastSome ? sb.toString() : null;
 	}
 	
 	static String escape(String s) {
-		return s == null ? null : s.replaceAll("\\|", "\\\\|").replaceAll("\r\n", "\\\\r\\\\n").replaceAll("=", "&#61;");
+		return s == null ? null : s.replaceAll("\\|", "\\\\|").replaceAll("\r\n", "\\\\r\\\\n").replaceAll(KEY_SEPARATOR, KEY_SEPARATOR_ENC);
 	}
 
 	static String deEscape(String s) {
-		return s == null ? null : s.replaceAll("\\\\\\|", "|").replaceAll("\\\\r\\\\n", "\r\n").replaceAll("&#61;", "=");
+		return s == null ? null : s.replaceAll("\\\\\\|", "|").replaceAll("\\\\r\\\\n", "\r\n").replaceAll(KEY_SEPARATOR_ENC, KEY_SEPARATOR);
 	}
-
-
-	
 	
 }
