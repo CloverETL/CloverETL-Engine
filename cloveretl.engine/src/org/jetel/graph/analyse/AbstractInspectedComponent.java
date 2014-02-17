@@ -20,11 +20,13 @@ package org.jetel.graph.analyse;
 
 import java.util.Iterator;
 
-import org.jetel.enums.EdgeTypeEnum;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.util.HashCodeUtil;
+import org.jetel.util.SubGraphUtils;
 
 /**
  * Abstract implementation of {@link InspectedComponent}.
@@ -48,6 +50,11 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 	/** Internal iterator over all output ports - necessary for {@link #getNextComponent()} */
 	private Iterator<OutputPort> outputPorts;
 	
+	/**
+	 * This flag is used only SubJobInput/Output components in {@link #getNextComponent()} method
+	 */
+	private boolean nextComponentReturned = false;
+	
 	public AbstractInspectedComponent(Node component, Edge entryEdge) {
 		this.component = component;
 		this.entryEdge = entryEdge;
@@ -64,17 +71,36 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 	public InspectedComponent getNextComponent() {
 		InspectedComponent result;
 		
-		while (outputPorts.hasNext()) {
-			OutputPort outputPort = outputPorts.next();
-			if ((result = getNextComponent(outputPort)) != null) {
-				return result;
+		if (!SubGraphUtils.isSubJobInputOutputComponent(getComponent().getType())) {
+			//handling of regular components
+			while (outputPorts.hasNext()) {
+				OutputPort outputPort = outputPorts.next();
+				if ((result = getNextComponent(outputPort)) != null) {
+					return result;
+				}
 			}
-		}
-		
-		while (inputPorts.hasNext()) {
-			InputPort inputPort = inputPorts.next();
-			if ((result = getNextComponent(inputPort)) != null) {
-				return result;
+			
+			while (inputPorts.hasNext()) {
+				InputPort inputPort = inputPorts.next();
+				if ((result = getNextComponent(inputPort)) != null) {
+					return result;
+				}
+			}
+		} else {
+			//special handling of SubJobInput and SubJobOutput components
+			if (!nextComponentReturned) {
+				nextComponentReturned = true;
+				if (isEntryEdgeInputEdge()) {
+					OutputPort outputPort = component.getOutputPort(entryEdge.getInputPortNumber());
+					if (outputPort != null) {
+						return getNextComponent(outputPort);
+					}
+				} else {
+					InputPort inputPort = component.getInputPort(entryEdge.getOutputPortNumber());
+					if (inputPort != null) {
+						return getNextComponent(inputPort);
+					}
+				}
 			}
 		}
 		
@@ -96,15 +122,40 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 	}
 
 	protected boolean isOutputEdgeAllowed(Edge edge) {
-		if (entryEdge != edge
-				&& edge.getEdgeType() != EdgeTypeEnum.BUFFERED
-				&& edge.getEdgeType() != EdgeTypeEnum.PHASE_CONNECTION) {
+		//never return back to already visited path and do not use buffered edges - phase, buffered and buffered_fast_propagate
+		if (entryEdge != edge && !edge.getEdgeType().isBuffered()) {
 			return true;
 		} else {
 			return false;
 		}
 	}
 
+	/**
+	 * @return true if the entryEdge is connected to input port of this component
+	 */
+	private boolean isEntryEdgeInputEdge() {
+		if (entryEdge != null) {
+			return (entryEdge.getReader() == component);
+		} else {
+			throw new JetelRuntimeException("entryEdge is null");
+		}
+	}
+	
+	/**
+	 * @return port index of the entry edge
+	 */
+	public int getEntryEdgeIndex() {
+		if (entryEdge != null) {
+			if (isEntryEdgeInputEdge()) {
+				return entryEdge.getInputPortNumber();
+			} else {
+				return entryEdge.getOutputPortNumber();
+			}
+		} else {
+			throw new JetelRuntimeException("entryEdge is null");
+		}
+	}
+	
 	@Override
 	public Node getComponent() {
 		return component;
@@ -120,13 +171,26 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 		if (otherObj == null || !(otherObj.getClass().equals(this.getClass()))) {
 			return false;
 		}
-		InspectedComponent otherInspectedComponent = (InspectedComponent) otherObj;
-		return component == otherInspectedComponent.getComponent();
+		AbstractInspectedComponent otherInspectedComponent = (AbstractInspectedComponent) otherObj;
+		if (component == otherInspectedComponent.getComponent()) {
+			if (SubGraphUtils.isSubJobInputOutputComponent(component.getType())) {
+				//port index of entryEdge has to same for SubJobInput/Output components as well
+				return getEntryEdgeIndex() == otherInspectedComponent.getEntryEdgeIndex();
+			} else {
+				return true;
+			}
+		} else {
+			return false;
+		}
 	}
 	
 	@Override
 	public int hashCode() {
-		return component.hashCodeIdentity();
+		int hash = component.hashCodeIdentity();
+		if (SubGraphUtils.isSubJobInputOutputComponent(component.getType())) {
+			hash = HashCodeUtil.hash(hash, getEntryEdgeIndex());
+		}
+		return hash;
 	}
 	
 	@Override

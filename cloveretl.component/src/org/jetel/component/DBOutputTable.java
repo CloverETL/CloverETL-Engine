@@ -1350,11 +1350,6 @@ public class DBOutputTable extends Node {
 		return status;
     }
 
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
 	/**
 	 * @param maxErrors Maximum number of tolerated SQL errors during component run. Default: 0 (zero)
 	 */

@@ -69,7 +69,6 @@ import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthenticationStrategy;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.config.CookieSpecs;
@@ -102,16 +101,12 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.client.TargetAuthenticationStrategy;
-import org.apache.http.impl.conn.SingleClientConnManager;
 import org.apache.http.impl.cookie.BasicClientCookie;
-import org.apache.http.impl.cookie.BestMatchSpec;
 import org.apache.http.impl.cookie.BestMatchSpecFactory;
 import org.apache.http.impl.cookie.BrowserCompatSpecFactory;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.log4j.Level;
@@ -3739,11 +3734,6 @@ public class HttpConnector extends Node {
 
 	public void setStreaming(boolean streaming) {
 		this.streaming = streaming;
-	}
-
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
 	}
 
 	private void setRedirectErrorOutput(boolean redirectErrorOutput) {

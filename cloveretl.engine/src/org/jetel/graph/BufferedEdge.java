@@ -208,4 +208,9 @@ public class BufferedEdge extends EdgeBase {
     	return recordBuffer.getWriterWaitingTime();
     }
     
+    @Override
+    public void waitForEOF() throws InterruptedException {
+    	recordBuffer.waitForEOF();
+    }
+    
 }

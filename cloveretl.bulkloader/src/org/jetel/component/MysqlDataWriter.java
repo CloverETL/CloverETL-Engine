@@ -1003,11 +1003,6 @@ public class MysqlDataWriter extends BulkLoader {
 		return status;
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
     public void setLockTable(boolean lockTable) {
         this.lockTable = lockTable;
     }

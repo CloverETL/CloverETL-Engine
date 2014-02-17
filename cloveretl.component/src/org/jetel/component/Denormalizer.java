@@ -35,7 +35,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordComapratorAnyOrderType;
-import org.jetel.data.RecordKey;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -491,12 +490,6 @@ public class Denormalizer extends Node {
     	}
     }
 
-	
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
@@ -616,7 +609,7 @@ public class Denormalizer extends Node {
 		} else if (orderString.compareToIgnoreCase("auto") == 0) {
 			defaultOrder = Order.AUTO;
 		} else {
-			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + "unknown input order: '" + orderString + "'");				
+			throw new XMLConfigurationException(xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + "unknown input order: '" + orderString + "'");				
 		}
 		
 		String keyAttributeValue = xattribs.getString(XML_KEY_ATTRIBUTE, null);
@@ -629,7 +622,7 @@ public class Denormalizer extends Node {
 			try {
 				recordKeyTokens = KeyTokenizer.tokenizeRecordKey(keyAttributeValue);
 			} catch (JetelException e) {
-				throw new XMLConfigurationException(COMPONENT_TYPE + ": " + XML_KEY_ATTRIBUTE + " attribute cannot be parsed", e);
+				throw new XMLConfigurationException(XML_KEY_ATTRIBUTE + " attribute cannot be parsed", e);
 			}
 			
 			recordKeyTokensWithDefaultOrdering = setDefaultKeyOrdering(defaultOrder, recordKeyTokens);

@@ -193,14 +193,6 @@ public class DBFDataWriter extends Node {
 		throw new UnsupportedOperationException("Can't work with WritableByteChannel !");
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();

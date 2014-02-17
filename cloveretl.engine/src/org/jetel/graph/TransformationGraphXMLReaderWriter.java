@@ -53,7 +53,6 @@ import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
@@ -232,6 +231,14 @@ public class TransformationGraphXMLReaderWriter {
     private GraphRuntimeContext runtimeContext;
     
     private boolean strictParsing = true;
+
+    /** Should be metadata automatically propagated? */
+    private boolean metadataPropagation = true;
+    
+    /**
+     * Extract only graph parameters and dictionary.
+     */
+    private boolean onlyParamsAndDict = false;
     
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
@@ -394,33 +401,39 @@ public class TransformationGraphXMLReaderWriter {
 			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
 			instantiateDictionary(dictionaryElements);
 			
-			// handle all defined DB connections
-			NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
-			instantiateDBConnections(dbConnectionElements);
-	
-			// handle all defined DB connections
-			NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
-			instantiateSequences(sequenceElements);
-			
-			//create metadata
-			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
-			instantiateMetadata(metadataElements, metadata);
-	
-			// register all metadata (DataRecordMetadata) within transformation graph
-			graph.addDataRecordMetadata(metadata);
-	
-			// handle all defined lookup tables
-			NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
-			instantiateLookupTables(lookupsElements);
-	
-			NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
-			instantiatePhases(phaseElements);
-	
-			NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
-			instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
-	
-	        //remove disabled components and their edges
-			TransformationGraphAnalyzer.disableNodesInPhases(graph);
+			if (!onlyParamsAndDict) {
+				// handle all defined DB connections
+				NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
+				instantiateDBConnections(dbConnectionElements);
+		
+				// handle all defined DB connections
+				NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
+				instantiateSequences(sequenceElements);
+				
+				//create metadata
+				NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
+				instantiateMetadata(metadataElements, metadata);
+		
+				// register all metadata (DataRecordMetadata) within transformation graph
+				graph.addDataRecordMetadata(metadata);
+		
+				// handle all defined lookup tables
+				NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
+				instantiateLookupTables(lookupsElements);
+		
+				NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
+				instantiatePhases(phaseElements);
+		
+				NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
+				instantiateEdges(edgeElements, metadata, graph.isDebugMode(), graph.getDebugMaxRecords());
+
+				//finally analyse the graph
+				try {
+					TransformationGraphAnalyzer.analyseGraph(graph, runtimeContext, metadataPropagation);
+				} catch (Exception e) {
+					throwXMLConfigurationException("Graph analysis failed.", e);
+				}
+			}
 
 	        return graph;
 		} finally {
@@ -568,9 +581,9 @@ public class TransformationGraphXMLReaderWriter {
                 nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
 				if(!nodeEnabled.equalsIgnoreCase(EnabledEnum.DISABLED.toString()) 
                         && !nodeEnabled.equalsIgnoreCase(EnabledEnum.PASS_THROUGH.toString())) {
-				    graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i));
+					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i), isStrictParsing());
                 } else {
-                    graphNode = new SimpleNode(nodeID, nodeType);
+                    graphNode = ComponentFactory.createDummyComponent(graph, nodeType, nodeElements.item(i));
                 }
 				if (graphNode != null) {
                     phase.addNode(graphNode);
@@ -615,7 +628,8 @@ public class TransformationGraphXMLReaderWriter {
 		int fromPort;
 		int toPort;
 		org.jetel.graph.Edge graphEdge;
-		org.jetel.graph.Node graphNode;
+		org.jetel.graph.Node writerNode;
+		org.jetel.graph.Node readerNode;
 
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < edgeElements.getLength(); i++) {
@@ -677,8 +691,8 @@ public class TransformationGraphXMLReaderWriter {
 				throwXMLConfigurationException("Wrong definition of \"fromNode\" ["+fromNodeAttr+"] <Node>:<Port> at "+edgeID+" edge !");
 				continue;
 			}
-			graphNode = graph.getNodes().get(specNodePort[0]);
-			if (graphNode == null) {
+			writerNode = graph.getNodes().get(specNodePort[0]);
+			if (writerNode == null) {
 				throwXMLConfigurationException("Can't find node with ID: " + fromNodeAttr);
 				continue;
 			}
@@ -690,19 +704,19 @@ public class TransformationGraphXMLReaderWriter {
             }
             
 			// check whether port isn't already assigned
-			if (graphNode.getOutputPort(fromPort)!=null){
-				throwXMLConfigurationException("Output port ["+fromPort+"] of "+graphNode.getId()+" already assigned !");
+			if (writerNode.getOutputPort(fromPort)!=null){
+				throwXMLConfigurationException("Output port ["+fromPort+"] of " + writerNode.getId()+" already assigned !");
 				continue;
 			}
-			graphNode.addOutputPort(fromPort, graphEdge);
+			writerNode.addOutputPort(fromPort, graphEdge);
 			// assign edge to toNode
 			specNodePort = toNodeAttr.split(":");
 			if (specNodePort.length!=2){
 				throw new XMLConfigurationException("Wrong definition of \"toNode\" ["+toNodeAttr+"] <Node>:<Port> at edge: "+edgeID+" !");
 			}
 			// Node & port specified in form of: <nodeID>:<portNum>
-			graphNode = graph.getNodes().get(specNodePort[0]);
-			if (graphNode == null) {
+			readerNode = graph.getNodes().get(specNodePort[0]);
+			if (readerNode == null) {
 				throwXMLConfigurationException("Can't find node ID: " + toNodeAttr);
 				continue;
 			}
@@ -713,12 +727,12 @@ public class TransformationGraphXMLReaderWriter {
                 continue;
             }
 			// check whether port isn't already assigned
-			if (graphNode.getInputPort(toPort)!=null){
-				throwXMLConfigurationException("Input port ["+toPort+"] of "+graphNode.getId()+" already assigned !");
+			if (readerNode.getInputPort(toPort)!=null){
+				throwXMLConfigurationException("Input port ["+toPort+"] of " + readerNode.getId()+" already assigned !");
 				continue;
 			}
-			graphNode.addInputPort(toPort, graphEdge);
-
+			readerNode.addInputPort(toPort, graphEdge);
+			
             // register edge within graph
             graph.addEdge(graphEdge);
 			
@@ -1136,6 +1150,20 @@ public class TransformationGraphXMLReaderWriter {
 		this.strictParsing = strictParsing;
 	}
 
+	/**
+	 * Metadata propagation can be turned off by this method.
+	 */
+	public void setMetadataPropagation(boolean metadataPropagation) {
+		this.metadataPropagation = metadataPropagation;
+	}
+
+	/**
+	 * @param onlyParamsAndDict true if only graph parameters and dictionary should be extracted
+	 */
+	public void setOnlyParamsAndDict(boolean onlyParamsAndDict) {
+		this.onlyParamsAndDict = onlyParamsAndDict;
+	}
+	
 	@Deprecated
 	public Document getOutputXMLDocumentReference() {
 		return(this.outputXMLDocument);
@@ -1251,34 +1279,5 @@ public class TransformationGraphXMLReaderWriter {
 		return(true);
 	}
 
-    /**
-     * Simple implementation of Node, used for "disabled" and "pass through" nodes 
-     * by reading graph from xml. In next graph processing will be this nodes removed from graph.
-     */
-    private static class SimpleNode extends Node {
-    	private String type;
-    	
-        public SimpleNode(String id, String type) {
-            super(id);
-            this.type = type;
-        }
-
-        @Override
-		public String getType() { return type; }
-
-        @Override
-        public ConfigurationStatus checkConfig(ConfigurationStatus status) { return status; }
-
-        @Override
-		public Result execute() { return Result.FINISHED_OK; }
-
-        @Override
-		public void init() throws ComponentNotReadyException { }
-
-        @Override
-		public void free() {
-            
-        }
-    }
 }
 

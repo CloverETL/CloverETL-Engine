@@ -63,6 +63,11 @@ public class DynamicRecordBuffer {
     private TempFile tempFile;
     private LinkedList<TempFile> obsoleteTempFiles; //TODO should it be synchronized?
     
+    /**
+     * Monitor for {@link #waitForEOF()}
+     */
+    private final Object eofMonitor = new Object();
+    
 	private volatile boolean isClosed;  // indicates whether buffer has been closed - no more r&w can occure
 
 	private final static String TMP_FILE_PREFIX = "fbufdrb";
@@ -164,7 +169,7 @@ public class DynamicRecordBuffer {
 	 *@since                   September 17, 2002
 	 */
 	public void close() throws IOException {
-		isClosed = true;
+		closeTemporarily();
 		
 		for (TempFile tempFile : obsoleteTempFiles) {
 			try {
@@ -193,8 +198,19 @@ public class DynamicRecordBuffer {
 	 * @since Jan 11, 2008
 	 */
 	public void closeTemporarily() {
-		isClosed = true;
+		synchronized (eofMonitor) {
+			isClosed = true;
+			eofMonitor.notifyAll();
+		}
 	}	
+
+	public void waitForEOF() throws InterruptedException {
+		synchronized (eofMonitor) {
+			while (!isClosed) {
+				eofMonitor.wait();
+			}
+		}
+	}
 
 	public void preExecute() {
         readerWaitingTime = 0;

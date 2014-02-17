@@ -619,11 +619,6 @@ public class Dedup extends Node {
          return status;
      }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
 	public void setKeep(int keep) {
 		this.keep = keep;
 	}

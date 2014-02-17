@@ -26,16 +26,26 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.analyse.GraphCycleInspector;
+import org.jetel.graph.analyse.SingleGraphProvider;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
+import org.jetel.util.GraphUtils;
+import org.jetel.util.SubGraphUtils;
 
 /*
  *  import org.apache.log4j.Logger;
@@ -54,6 +64,166 @@ public class TransformationGraphAnalyzer {
 	static Log logger = LogFactory.getLog(TransformationGraphAnalyzer.class);
 
 	static PrintStream log = System.out;// default info messages to stdout
+
+	/**
+	 * Several pre-execution steps is performed in this graph analysis.
+	 * - disable nodes are removed from graph
+	 * - sub-graph related updates are performed
+	 * - automatic metadata propagation is performed
+	 * - correct edge types are detected
+	 */
+	public static void analyseGraph(TransformationGraph graph, GraphRuntimeContext runtimeContext, boolean propagateMetadata){
+        //remove disabled components and their edges
+		try {
+			TransformationGraphAnalyzer.disableNodesInPhases(graph);
+		} catch (GraphConfigurationException e) {
+			throw new JetelRuntimeException("Removing disable nodes failed.", e);
+		}
+
+		//remove component before SubGraphInput and after SubGraphOutput if necessary
+		if (runtimeContext.isSubJob()) {
+			try {
+				TransformationGraphAnalyzer.analyseSubGraph(graph);
+			} catch (Exception e) {
+				throw new JetelRuntimeException("Sub-graph analysis failed.", e);
+			}
+		}
+		
+		//perform automatic metadata propagation
+		if (propagateMetadata) {
+			try {
+				TransformationGraphAnalyzer.analyseMetadataPropagation(graph);
+			} catch (Exception e) {
+				throw new JetelRuntimeException("Metadata propagation analysis failed.", e);
+			}
+		}
+
+        //analyze type of edges - specially buffered and phase edges
+        try {
+        	TransformationGraphAnalyzer.analyseEdgeTypes(graph);
+		} catch (Exception e) {
+			throw new JetelRuntimeException("Edge type analysis failed.", e);
+		}
+	}
+	
+	/**
+	 * Performs automatic metadata propagation on the given graph.
+	 */
+	public static void analyseMetadataPropagation(TransformationGraph graph) {
+		//craete metatadata propagation resolver
+		MetadataPropagationResolver metadataPropagationResolver = new MetadataPropagationResolver(graph);
+		//analyse the graph
+		metadataPropagationResolver.analyseGraph();
+		//copy propagated metadata into transformation graph
+		for (Edge edge : graph.getEdges().values()) {
+			MVMetadata metadata = metadataPropagationResolver.getOrCreateMVEdge(edge).getMetadata();
+			if (metadata != null) {
+				edge.setMetadata(metadata.getModel());
+			}
+		}
+		//store complete resolver into graph for further usage (mainly in designer)
+		graph.setMetadataPropagationResolver(metadataPropagationResolver);
+	}
+
+	/**
+	 * Removes all components before SubGraphInput and after SubGraphOutput.
+	 */
+	public static void analyseSubGraph(TransformationGraph graph) {
+		for (Node component : graph.getNodes().values()) {
+			if (SubGraphUtils.isSubJobInputComponent(component.getType())) {
+				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
+				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
+				if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
+					throw new JetelRuntimeException("Invalid subgraph layout. A component preceding the SubGraphInput component is probably connected with a component following SubGraphInput.");
+				}
+				for (Node precedentNode : precedentNodes) {
+					precedentNode.setEnabled(EnabledEnum.DISABLED);
+				}
+			}
+			if (SubGraphUtils.isSubJobOutputComponent(component.getType())) {
+				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
+				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
+				if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
+					throw new JetelRuntimeException("Invalid subgraph layout. A component following the SubGraphOutput component is probably connected with a component preceding SubGraphOutput.");
+				}
+				for (Node followingNode : followingNodes) {
+					followingNode.setEnabled(EnabledEnum.DISABLED);
+				}
+			}
+		}
+		
+        //remove disabled components and their edges
+        try {
+			TransformationGraphAnalyzer.disableNodesInPhases(graph);
+		} catch (GraphConfigurationException e) {
+			throw new JetelRuntimeException("Failed to remove disabled/pass-through nodes from sub-graph.", e);
+		}
+	}
+
+	/**
+	 * Detects suitable type of edges for the given graph. Edge types are preset
+	 * directly to the graph instance.
+	 */
+	public static void analyseEdgeTypes(TransformationGraph graph) {
+		//detect empty graphs
+		if (graph.getNodes().isEmpty()) {
+			throw new JetelRuntimeException("Job without components cannot be executed.");
+		}
+
+		//first of all find the phase edges
+		analysePhaseEdges(graph);
+
+		//let's find cycles of relationships in the graph and interrupted them by buffered edges to avoid deadlocks
+		GraphCycleInspector graphCycleInspector = new GraphCycleInspector(new SingleGraphProvider(graph));
+		graphCycleInspector.inspectGraph();
+		
+		//update edge types around SubGraph components
+		//real edge is combination of parent graph edge type and sub-graph edge type
+		for (Node component : graph.getNodes().values()) {
+			if (component instanceof SubGraphComponent) {
+				SubGraphComponent subGraphComponent = (SubGraphComponent) component;
+				for (Entry<Integer, InputPort> inputPort : component.getInputPorts().entrySet()) {
+					Edge subGraphEdge = subGraphComponent.getSubGraphInputEdge(inputPort.getKey());
+					Edge parentGraphEdge = inputPort.getValue().getEdge();
+					//will be edge base shared between these two edges?
+					if (SubGraphUtils.isSubGraphInputEdgeShared(subGraphEdge, parentGraphEdge)) {
+						//so we need to combine both edge types to satisfy needs of both parent and sub-graph
+						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subGraphEdge.getEdgeType());
+						inputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
+					}
+				}
+				for (Entry<Integer, OutputPort> outputPort : component.getOutputPorts().entrySet()) {
+					Edge subGraphEdge = subGraphComponent.getSubGraphOutputEdge(outputPort.getKey());
+					Edge parentGraphEdge = outputPort.getValue().getEdge();
+					//will be edge base shared between these two edges?
+					if (SubGraphUtils.isSubGraphOutputEdgeShared(subGraphEdge, parentGraphEdge)) {
+						//so we need to combine both edge types to satisfy needs of both parent and sub-graph
+						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subGraphEdge.getEdgeType());
+						outputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
+					}
+				}
+			}
+		}
+	}
+
+	private static void analysePhaseEdges(TransformationGraph graph) {
+		Phase readerPhase;
+		Phase writerPhase;
+
+		// analyse edges (whether they need to be buffered and put them into proper phases
+		// edges connecting nodes from two different phases has to be put into both phases
+		for (Edge edge : graph.getEdges().values()) {
+			Node reader = edge.getReader(); //can be null for remote edges
+			Node writer = edge.getWriter(); //can be null for remote edges
+			readerPhase = reader != null ? reader.getPhase() : null;
+			writerPhase = writer != null ? writer.getPhase() : null;
+			if (readerPhase != writerPhase) {
+				// edge connecting two nodes belonging to different phases
+				// has to be buffered
+				edge.setEdgeType(EdgeTypeEnum.PHASE_CONNECTION);
+			}
+		}
+	}
 
 	/**
 	 * Apply disabled property of node to graph. Called in graph initial phase.

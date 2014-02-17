@@ -273,11 +273,6 @@ public class LookupJoin extends Node {
 		this.transformation = transform;
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-	
     @Override
     public void preExecute() throws ComponentNotReadyException {
     	super.preExecute();

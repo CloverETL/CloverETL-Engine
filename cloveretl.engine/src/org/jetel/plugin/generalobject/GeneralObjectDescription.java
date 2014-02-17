@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.PluginableItemDescription;
+import org.jetel.data.PluginableItemDescriptionImpl;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 
@@ -36,7 +36,7 @@ import org.jetel.plugin.PluginDescriptor;
  *
  * @created 27 Feb 2012
  */
-public class GeneralObjectDescription extends PluginableItemDescription {
+public class GeneralObjectDescription extends PluginableItemDescriptionImpl {
 
     private static Log logger = LogFactory.getLog(GeneralObjectDescription.class);
 

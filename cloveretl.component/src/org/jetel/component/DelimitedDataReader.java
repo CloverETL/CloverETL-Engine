@@ -386,11 +386,6 @@ public class DelimitedDataReader extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-    
      /**
      * @return Returns the skipRows.
      */

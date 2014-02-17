@@ -51,6 +51,11 @@ public class LRemoteEdge extends EdgeBase {
 	private long outputRecordsCounter;
 	private long outputBytesCounter;
 	private boolean eof;
+    
+	/**
+     * Monitor for {@link #waitForEOF()}
+     */
+	private final Object eofMonitor = new Object();
 	
 	/**
 	 * @param proxy
@@ -77,7 +82,9 @@ public class LRemoteEdge extends EdgeBase {
 
 		outputRecordsCounter = 0;
 		outputBytesCounter = 0;
-		eof = false;
+		synchronized (eofMonitor) {
+			eof = false;
+		}
 	}
 
 	@Override
@@ -145,13 +152,18 @@ public class LRemoteEdge extends EdgeBase {
 
 	@Override
 	public void eof() throws IOException, InterruptedException {
-		eof = true;
-		dataFormatter.close();
+    	synchronized (eofMonitor) {
+    		eof = true;
+    		dataFormatter.close();
+    		eofMonitor.notifyAll();
+    	}
 	}
 
 	@Override
 	public boolean isEOF() {
-		return eof;
+		synchronized (eofMonitor) {
+			return eof;
+		}
 	}
 
 	@Override
@@ -172,5 +184,14 @@ public class LRemoteEdge extends EdgeBase {
 	public void setOutputStream(OutputStream outputStream) {
 		dataFormatter.setDataTarget(outputStream);
 	}
+
+    @Override
+    public void waitForEOF() throws InterruptedException {
+    	synchronized (eofMonitor) {
+    		while (!eof) {
+    			eofMonitor.wait();
+    		}
+    	}
+    }
 
 }

@@ -18,7 +18,7 @@
  */
 package org.jetel.ctl;
 
-import org.jetel.data.GraphElementDescription;
+import org.jetel.data.GraphElementDescriptionImpl;
 import org.jetel.plugin.Extension;
 
 /**
@@ -27,7 +27,7 @@ import org.jetel.plugin.Extension;
  *
  * @created 17.12.2008
  */
-public class TLCompilerDescription extends GraphElementDescription {
+public class TLCompilerDescription extends GraphElementDescriptionImpl {
 
     public final static String EXTENSION_POINT_ID = "tlCompiler";
     

@@ -393,14 +393,6 @@ public class ExtSort extends Node {
     	this.numberOfTapes = numberOfTapes;
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.graph.Node#getType()
-     */
-    @Override
-	public String getType() {
-        return COMPONENT_TYPE;
-    }
-
 	public String getLocaleStr() {
 		return localeStr;
 	}

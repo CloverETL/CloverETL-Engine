@@ -142,14 +142,6 @@ public class CloverDataWriter extends Node {
 		formatter = new CloverDataFormatter(fileURL,saveIndex);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/**
 	 * This method saves metadata definition to fileName.fmt or
 	 * fileName.zip#METADATA/fileName.fmt

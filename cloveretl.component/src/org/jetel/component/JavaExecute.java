@@ -237,11 +237,6 @@ public class JavaExecute extends Node {
 		return javaExecute;
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-	
 	public String getCharset() {
 		return charset;
 	}

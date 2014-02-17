@@ -201,4 +201,29 @@ public class StreamUtils {
     	        dst.close();
     	}
     }
+    
+	/**
+	 * Tries to read as much as possible bytes to the given buffer from the given
+	 * channel. It is somehow blocking operation, even incoming data are not
+	 * ready in channel, operation tries to populate complete remaining bytes
+	 * in buffer. Only end of stream can cause the buffer is not completely populated.
+	 * @param channel source channel
+	 * @param buffer populated byte buffer
+	 * @return number of read bytes
+	 * @throws IOException
+	 */
+	public static int readBlocking(ReadableByteChannel channel, ByteBuffer buffer) throws IOException {
+		int result = 0;
+		int size;
+		
+		while ((size = channel.read(buffer)) != -1) {
+			result += size;
+			if (buffer.remaining() == 0) {
+				return result;
+			}
+		}
+		
+		return result != 0 ? result : -1;
+	}
+
 }

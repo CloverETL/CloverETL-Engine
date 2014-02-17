@@ -43,8 +43,8 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider.Context;
-import org.jetel.graph.analyse.GraphAnalyser;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.CloverPost;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.IAuthorityProxy;
@@ -142,6 +142,17 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private JobType jobType = JobType.ETL_GRAPH;
 
+	/**
+	 * This is result of automatic metadata propagation. Now it is cached only for designer purpose.
+	 * For example information about "no metadata" is stored in this resolver.
+	 */
+	private MetadataPropagationResolver metadataPropagationResolver;
+	
+	/**
+	 * Flag which indicates the graph has been already analysed by {@link TransformationGraphAnalyzer#analyseGraph(TransformationGraph, GraphRuntimeContext, boolean)}
+	 */
+	private boolean isAnalysed = false;
+	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
 	}
@@ -408,6 +419,11 @@ public final class TransformationGraph extends GraphElement {
 	        if(isInitialized()) return;
 			super.init();
 	
+			//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
+			if (!isAnalysed()) {
+				TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
+			}
+
 			//initialize dictionary
 			dictionary.init();
 			
@@ -460,13 +476,6 @@ public final class TransformationGraph extends GraphElement {
 				}
 			}
 
-	        // analyze graph's topology
-	        try {
-				GraphAnalyser.analyseGraph(this);
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "Graph analyse failed.", e);
-			}
-			
 			//initialization of all phases
 			//it is no more true --> phases have to be initialized separately and immediately before is run - in runtime after previous phase is finished
 			for (Phase phase : phases.values()) {
@@ -487,12 +496,12 @@ public final class TransformationGraph extends GraphElement {
 
 		//print out types of all edges
 		for (Edge edge : getEdges().values()) {
-			logger.debug("EdgeType [" + edge.getId() + "] : " + edge.getEdgeType());
+			logger.debug("EdgeType [" + edge.getId() + "] : " + (edge.isSharedEdgeBase() ? "shared " + EdgeTypeEnum.valueOf(edge.getEdgeBase()) : edge.getEdgeType()));
 		}
 
-		//check whehter the job type (etlGraph vs jobflow) of the graph is same as the job type in GraphRuntimeContext 
-    	if (getJobType() != getRuntimeContext().getJobType()) {
-    		throw new JetelRuntimeException("Inconsitent runtime setup. " +
+		//check whether the job type (etlGraph vs jobflow) of the graph matches the job type in GraphRuntimeContext 
+    	if (!getJobType().isSubTypeOf(getRuntimeContext().getJobType())) {
+    		throw new JetelRuntimeException("Inconsistent runtime setup. " +
 					"Internal graph nature (" + getJobType() + ") differs from runtime graph nature (" + getRuntimeContext().getJobType() + "). " +
 							"Probably internal graph nature does not correspond to graph file suffix.");
     	}
@@ -1095,6 +1104,11 @@ public final class TransformationGraph extends GraphElement {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
+		//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
+		if (!isAnalysed()) {
+			TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
+		}
+
 		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
 		Context c = ContextProvider.registerGraph(this);
 		try {
@@ -1154,14 +1168,14 @@ public final class TransformationGraph extends GraphElement {
 	        boolean hasSubGraphInput = false;
 	        boolean hasSubGraphOutput = false;
 	        for (Node component : getNodes().values()) {
-	        	if (SubGraphUtils.isSubGraphInput(component.getType())) {
+	        	if (SubGraphUtils.isSubJobInputComponent(component.getType())) {
 	        		if (hasSubGraphInput) {
 	        			status.add("Multiple SubGraphInput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
 	        		} else {
 	        			hasSubGraphInput = true;
 	        		}
 	        	}
-	        	if (SubGraphUtils.isSubGraphOutput(component.getType())) {
+	        	if (SubGraphUtils.isSubJobOutputComponent(component.getType())) {
 	        		if (hasSubGraphOutput) {
 	        			status.add("Multiple SubGraphOutput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
 	        		} else {
@@ -1363,6 +1377,35 @@ public final class TransformationGraph extends GraphElement {
 
 	public void setGuiVersion(String guiVersion) {
 		this.guiVersion = guiVersion;
+	}
+
+	/**
+	 * @return result of automatic metadata propagation
+	 */
+	public MetadataPropagationResolver getMetadataPropagationResolver() {
+		return metadataPropagationResolver;
+	}
+
+	/**
+	 * Sets result of automatic metadata propagation.
+	 * @param metadataPropagationResolver result object of automatic metadata propagation
+	 */
+	public void setMetadataPropagationResolver(MetadataPropagationResolver metadataPropagationResolver) {
+		this.metadataPropagationResolver = metadataPropagationResolver;
+	}
+
+	/**
+	 * @return true if the graph has been already analysed by {@link TransformationGraphAnalyzer#analyseGraph(TransformationGraph, GraphRuntimeContext, boolean)}
+	 */
+	public boolean isAnalysed() {
+		return isAnalysed;
+	}
+
+	/**
+	 * Sets flag which indicates the graph has been already analysed by {@link TransformationGraphAnalyzer#analyseGraph(TransformationGraph, GraphRuntimeContext, boolean)}
+	 */
+	public void setAnalysed(boolean isAnalysed) {
+		this.isAnalysed = isAnalysed;
 	}
 
 	@Override

@@ -155,7 +155,19 @@ public class BinaryDataFormatter extends AbstractFormatter {
         return recordSize + lengthSize;
 	}
 
-
+	/**
+	 * Writes the given integer to current data target.
+	 * @param value written integer
+	 * @return number of written bytes (4)
+	 * @throws IOException
+	 */
+	public int writeInt(int value) throws IOException {
+		if (buffer.remaining() < Integer.SIZE / 8) { // 4
+			flush();
+		}
+		buffer.putInt(value);
+		return Integer.SIZE / 8; // 4
+	}
 	
 	@Override
 	public int writeFooter() throws IOException {

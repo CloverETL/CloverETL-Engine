@@ -18,14 +18,14 @@
  */
 package org.jetel.data.sequence;
 
-import org.jetel.data.GraphElementDescription;
+import org.jetel.data.GraphElementDescriptionImpl;
 import org.jetel.plugin.Extension;
 
 /**
  * @author Martin Zatopek
  *
  */
-public class SequenceDescription extends GraphElementDescription {
+public class SequenceDescription extends GraphElementDescriptionImpl {
 
     public final static String EXTENSION_POINT_ID = "sequence";
     

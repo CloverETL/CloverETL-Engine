@@ -368,11 +368,6 @@ import org.w3c.dom.Element;
             return status;
         }
     
-    	@Override
-		public String getType(){
-    		return COMPONENT_TYPE;
-    	}
-    
     	public void setPrimeryKey(String[] key){
     		this.primaryKeys = key;
     	}

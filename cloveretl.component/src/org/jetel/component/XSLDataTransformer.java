@@ -455,11 +455,6 @@ public class XSLDataTransformer extends Node {
        }
 	
 	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-    
-	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new ReformatComponentTokenTracker(this);
 	}

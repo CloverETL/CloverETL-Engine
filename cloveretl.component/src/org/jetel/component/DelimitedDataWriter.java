@@ -356,11 +356,6 @@ public class DelimitedDataWriter extends Node {
 		return aDelimitedDataWriterNIO;
 	}
 
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
     /**
      * @return Returns the outputFieldNames.
      */

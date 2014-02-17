@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.jetel.util.string.StringUtils;
+import org.w3c.dom.Element;
 
 /**
  * This class represents extension point of engine.
@@ -39,10 +40,14 @@ public class Extension {
 
     private final PluginDescriptor plugin;
     
-    public Extension(String pointId, PluginDescriptor plugin) {
+    /** Complete XML of extension point. */
+    private final Element xmlElement;
+    
+    public Extension(String pointId, Element xmlElement, PluginDescriptor plugin) {
         this.pointId = pointId;
         this.parameters = new HashMap<String, ExtensionParameter>();
         this.plugin = plugin;
+        this.xmlElement = xmlElement;
     }
 
     public void addParameter(String key, ExtensionParameter parameter) {
@@ -105,6 +110,13 @@ public class Extension {
         return pointId;
     }
 
+    /**
+     * @return complete XML of extension point
+     */
+    public Element getXMLDefinition() {
+    	return xmlElement;
+    }
+    
     @Override
 	public String toString() {
         StringBuilder ret = new StringBuilder(getPointId() + " { ");

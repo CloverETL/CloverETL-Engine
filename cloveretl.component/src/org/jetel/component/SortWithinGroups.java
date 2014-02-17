@@ -193,11 +193,6 @@ public class SortWithinGroups extends Node {
 
         ComponentXMLAttributes componentAttributes = new ComponentXMLAttributes(xmlElement, transformationGraph);
 
-        if (!componentAttributes.getString(XML_TYPE_ATTRIBUTE).equalsIgnoreCase(COMPONENT_TYPE)) {
-            throw new XMLConfigurationException("The " + StringUtils.quote(XML_TYPE_ATTRIBUTE)
-                    + " attribute contains a value incompatible with this component!");
-        }
-
         String groupKey = componentAttributes.getString(XML_ATTRIBUTE_GROUP_KEY);
         String sortKey = componentAttributes.getString(XML_ATTRIBUTE_SORT_KEY);
 
@@ -269,11 +264,6 @@ public class SortWithinGroups extends Node {
             this.sortKeyFields = null;
             this.sortKeyOrdering = null;
         }
-    }
-
-    @Override
-    public String getType() {
-        return COMPONENT_TYPE;
     }
 
     public void setBufferCapacity(int bufferCapacity) {

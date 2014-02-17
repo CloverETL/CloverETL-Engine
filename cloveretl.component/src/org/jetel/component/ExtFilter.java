@@ -299,11 +299,6 @@ public class ExtFilter extends org.jetel.graph.Node {
 		this.filterClass = filterClass;
 	}
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
 	public RecordFilter getRecordFilter() {
 		return filter;
 	}

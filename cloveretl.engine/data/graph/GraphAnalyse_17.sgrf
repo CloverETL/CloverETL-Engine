@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="Kokon" created="Wed Oct 30 10:12:44 CET 2013" guiVersion="0.0.0.devel" id="1383124855822" licenseType="Commercial" modified="Wed Oct 30 14:57:35 CET 2013" modifiedBy="Kokon" name="GraphAnalyse_12" nature="subGraph" revision="1.18" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="field1" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="DataGenerator" guiX="49" guiY="124" id="DATA_GENERATOR" recordsNumber="1" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="DataGenerator" guiX="55" guiY="242" id="DATA_GENERATOR1" recordsNumber="1" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="485" guiY="141" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="475" guiY="242" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SubGraphInput" guiX="315" guiY="115" id="SUB_GRAPH_INPUT" type="SUB_GRAPH_INPUT"/>
+<Node enabled="enabled" guiName="Trash" guiX="707" guiY="171" id="TRASH" type="TRASH"/>
+<Edge fromNode="DATA_GENERATOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SUB_GRAPH_INPUT:0"/>
+<Edge fromNode="DATA_GENERATOR1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SUB_GRAPH_INPUT:1"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="TRASH:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" outPort="Port 0 (out)" toNode="TRASH:1"/>
+<Edge debugMode="false" fromNode="SUB_GRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY:0"/>
+<Edge fromNode="SUB_GRAPH_INPUT:1" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="SIMPLE_COPY1:0"/>
+</Phase>
+</Graph>

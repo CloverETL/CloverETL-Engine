@@ -1121,11 +1121,6 @@ public class MsSqlDataWriter extends BulkLoader {
 		return status;
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	private void setOwner(String owner) {
 		this.owner = owner;
 	}

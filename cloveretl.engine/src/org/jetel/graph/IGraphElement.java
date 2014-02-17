@@ -19,6 +19,7 @@
 package org.jetel.graph;
 
 import org.apache.log4j.Logger;
+import org.jetel.data.GraphElementDescription;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.util.property.PropertyRefResolver;
@@ -210,5 +211,16 @@ public interface IGraphElement {
      * @return property reference resolver populated with parameters of parent graph
      */
     public PropertyRefResolver getPropertyRefResolver();
+    
+    /**
+     * @return element type descriptor
+     */
+    public GraphElementDescription getDescriptor();
+    
+    /**
+     * Sets element type descriptor.
+     * @param description descriptor for type of this element
+     */
+    public void setDescriptor(GraphElementDescription descriptor);
     
 }

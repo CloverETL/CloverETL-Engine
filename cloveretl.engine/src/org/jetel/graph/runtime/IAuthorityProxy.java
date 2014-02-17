@@ -40,6 +40,8 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.StackTraceWrapperException;
 import org.jetel.exception.TempFileCreationException;
 import org.jetel.graph.ContextProvider;
+import org.jetel.graph.Edge;
+import org.jetel.graph.EdgeBase;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
@@ -434,38 +436,20 @@ public abstract class IAuthorityProxy {
 	public abstract long getRemoteEdgeRunId(String edgeId);
 
 	/**
-	 * Returns {@link OutputStream} where the parent graph can sent data records to a sub-graph.
-	 * @see SubGraph component
-	 * @param subGraphRunId runId of addressed sub-graph
-	 * @param inputPortIndex index of virtual remote port
-	 * @return stream where serialised data records can be written
+	 * SubGraphInput component uses this method to get {@link EdgeBase} from 
+	 * parent graph, which is shared between parent graph and sub-graph.
+	 * @param inputPortIndex
+	 * @return edge from parent graph
 	 */
-	public abstract OutputStream getSubGraphDataTarget(long subGraphRunId, int inputPortIndex) throws InterruptedException;
+	public abstract Edge getParentGraphSourceEdge(int inputPortIndex);
 
 	/**
-	 * Returns {@link InputStream} where the parent graph can get data records from a sub-graph.
-	 * @see SubGraph component
-	 * @param subGraphRunId runId of addressed sub-graph
-	 * @param outputPortIndex index of virtual remote port
-	 * @return stream where serialised data records can be read
+	 * SubGraphOutput component uses this method to get {@link EdgeBase} from 
+	 * parent graph, which is shared between parent graph and sub-graph.
+	 * @param inputPortIndex
+	 * @return edge from parent graph
 	 */
-	public abstract InputStream getSubGraphDataSource(long subGraphRunId, int outputPortIndex) throws InterruptedException;
-
-	/**
-	 * Returns {@link InputStream} where a sub-graph can get data records from parent graph.
-	 * @see SubGraphInput component
-	 * @param inputPortIndex index of virtual remote port
-	 * @return stream where serialised data records can be read
-	 */
-	public abstract InputStream getParentGraphDataSource(int inputPortIndex) throws InterruptedException;
-
-	/**
-	 * Returns {@link OutputStream} where a sub-graph can sent data records to parent graph.
-	 * @see SubGraphOutput component
-	 * @param outputPortIndex index of virtual remote port
-	 * @return stream where serialised data records can be written
-	 */
-	public abstract OutputStream getParentGraphDataTarget(int outputPortIndex) throws InterruptedException;
+	public abstract Edge getParentGraphTargetEdge(int outputPortIndex);
 
 	/**
 	 * Assigns proper portion of a file to current cluster node. It is used mainly by ParallelReader,

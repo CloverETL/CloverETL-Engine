@@ -220,11 +220,6 @@ public class DBJoin extends Node {
 	}
 
 	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-	
-	@Override
 	public Result execute() throws Exception {
 		//initialize in and out records
 		DataRecord[] outRecord = {DataRecordFactory.newRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};

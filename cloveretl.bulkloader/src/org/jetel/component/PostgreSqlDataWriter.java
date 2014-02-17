@@ -633,11 +633,6 @@ public class PostgreSqlDataWriter extends BulkLoader {
 		return status;
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	public void setCommandURL(String commandURL) {
 		this.commandURL = commandURL;
 	}

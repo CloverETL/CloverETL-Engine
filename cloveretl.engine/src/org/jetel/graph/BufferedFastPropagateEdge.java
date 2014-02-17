@@ -65,6 +65,11 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 	/** EOF annotation already read from this edge by reading thread. */
 	private volatile boolean eofReached;
 	
+    /**
+     * Monitor for {@link #waitForEOF()}
+     */
+	private final Object eofMonitor = new Object();
+	
     /** Number of processed bytes. For tracking purpose. */
     private long byteCounter;
     
@@ -171,7 +176,7 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 		}
 		//maybe EOF has been reached
 		if (result == CircularBufferQueue.EOF_DATA_RECORD) {
-			eofReached = true;
+			eofReached();
 			return null;
 		}
 		inputRecordCounter++;
@@ -202,7 +207,7 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 		}
 		//maybe EOF has been reached
 		if (result == CircularBufferQueue.EOF_CLOVER_BUFFER) {
-			eofReached = true;
+			eofReached();
 			return false;
 		}
 		inputRecordCounter++;
@@ -322,6 +327,22 @@ public class BufferedFastPropagateEdge extends EdgeBase {
 	@Override
 	public long getWriterWaitingTime() {
 		return writerWaitingTime / 1000000;
+	}
+
+	private void eofReached() {
+    	synchronized (eofMonitor) {
+    		eofReached = true;
+    		eofMonitor.notifyAll();
+    	}
+	}
+	
+	@Override
+	public void waitForEOF() throws InterruptedException {
+    	synchronized (eofMonitor) {
+    		while (!eofReached) {
+    			eofMonitor.wait();
+    		}
+    	}
 	}
 	
 }

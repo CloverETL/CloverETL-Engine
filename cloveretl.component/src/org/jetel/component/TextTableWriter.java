@@ -170,14 +170,6 @@ public class TextTableWriter extends Node {
 		formatterProvider.setMask(fields);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	@Override
 	public void preExecute() throws ComponentNotReadyException {
 		super.preExecute();

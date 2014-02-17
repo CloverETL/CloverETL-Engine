@@ -1782,11 +1782,6 @@ public class DB2DataWriter extends Node {
         return writer;
     }
 	
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	public char getColumnDelimiter() {
 		return columnDelimiter;
 	}
