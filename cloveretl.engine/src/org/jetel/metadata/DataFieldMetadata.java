@@ -648,14 +648,14 @@ public class DataFieldMetadata implements Serializable {
 	 * @return <code>true</code> if this data field is delimited, <code>false</code> otherwise
 	 */
 	public boolean isDelimited() {
-		return (getDataRecordMetadata().getParsingType() == DataRecordParsingType.DELIMITED || size == 0);
+		return (size == 0 || (getDataRecordMetadata()!=null && getDataRecordMetadata().getParsingType() == DataRecordParsingType.DELIMITED));
 	}
 
 	/**
 	 * @return <code>true</code> if this data field is fixed-length, <code>false</code> otherwise
 	 */
 	public boolean isFixed() {
-		return (this.getDataRecordMetadata().getParsingType()!=DataRecordParsingType.DELIMITED && size > 0);
+		return (size > 0 && getDataRecordMetadata()!=null && this.getDataRecordMetadata().getParsingType()!=DataRecordParsingType.DELIMITED);
 	}
 	
 	/**
