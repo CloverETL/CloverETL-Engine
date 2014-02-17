@@ -655,7 +655,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @return <code>true</code> if this data field is fixed-length, <code>false</code> otherwise
 	 */
 	public boolean isFixed() {
-		return (size > 0 && getDataRecordMetadata()!=null && this.getDataRecordMetadata().getParsingType()!=DataRecordParsingType.DELIMITED);
+		return (size > 0 && (getDataRecordMetadata()==null || this.getDataRecordMetadata().getParsingType()!=DataRecordParsingType.DELIMITED));
 	}
 	
 	/**
