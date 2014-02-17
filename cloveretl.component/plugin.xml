@@ -178,7 +178,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/readers/DelimitedDataReader" name="DelimitedDataReader"  type="DELIMITED_DATA_READER" defaultVisibility="etlGraph" className="org.jetel.component.DelimitedDataReader">
+	  <ETLComponent category="deprecated" iconPath="icons/readers/DelimitedDataReader" name="DelimitedDataReader"  type="DELIMITED_DATA_READER" defaultVisibility="false" className="org.jetel.component.DelimitedDataReader">
 	    <shortDescription>Reads data from delimited files.</shortDescription>
 	    <description>Reads data from delimited files and sends data records to all connected output ports.</description>
 	    <inputPorts>
@@ -230,7 +230,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/writers/DelimitedDataWriter" name="DelimitedDataWriter" type="DELIMITED_DATA_WRITER" defaultVisibility="etlGraph" className="org.jetel.component.DelimitedDataWriter">
+	  <ETLComponent category="deprecated" iconPath="icons/writers/DelimitedDataWriter" name="DelimitedDataWriter" type="DELIMITED_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.DelimitedDataWriter">
 	    <shortDescription>Writes data to delimited files.</shortDescription>
 	    <description>Receives data through connected input port and writes data records to delimited files based on input metadata.</description>
 	    <inputPorts>
@@ -503,7 +503,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/writers/FixedLengthDataWriter" name="FixLenDataWriter" type="FIXLEN_DATA_WRITER" defaultVisibility="etlGraph" className="org.jetel.component.FixLenDataWriter">
+	  <ETLComponent category="deprecated" iconPath="icons/writers/FixedLengthDataWriter" name="FixLenDataWriter" type="FIXLEN_DATA_WRITER" defaultVisibility="false" className="org.jetel.component.FixLenDataWriter">
 	    <shortDescription>Writes data to fixed length files.</shortDescription>
 	    <description>Receives data through connected input port and writes data records to fixed length files based on input metadata.</description>
 	    <inputPorts>
@@ -597,7 +597,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/readers/FixedLengthDataReader" name="FixLenDataReader" type="FIXLEN_DATA_READER" defaultVisibility="etlGraph" className="org.jetel.component.FixLenDataReader">
+	  <ETLComponent category="deprecated" iconPath="icons/readers/FixedLengthDataReader" name="FixLenDataReader" type="FIXLEN_DATA_READER" defaultVisibility="false" className="org.jetel.component.FixLenDataReader">
 	    <shortDescription>Reads data from fixed length files.</shortDescription>
 	    <description>Reads data from fixed length files and sends data records to all connected output ports.</description>
 	    <inputPorts>
@@ -677,7 +677,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/joiners/MergeJoin" name="MergeJoin"  type="MERGE_JOIN" defaultVisibility="etlGraph" className="org.jetel.component.MergeJoin">
+	  <ETLComponent category="deprecated" iconPath="icons/joiners/MergeJoin" name="MergeJoin"  type="MERGE_JOIN" defaultVisibility="false" className="org.jetel.component.MergeJoin">
 	    <shortDescription>Joins sorted data flows.</shortDescription>
 	    <description>Receives sorted data through all connected input ports, for each join key value contained in data records incoming through the first input port (drivers) searches corresponding data records incoming through the other port(s) (slaves) with the same key value. Every combination of driver and its corresponding slaves is sent to transformation class that joins them to form outgoing data flow. Resulting records are sent to connected output port. This component is deprecated and should not be used anymore, we suggest you work with ExtMergeJoin instead.</description>
 	    <inputPorts>
@@ -896,7 +896,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/joiners/HashJoin" name="HashJoin" type="HASH_JOIN" defaultVisibility="etlGraph" className="org.jetel.component.HashJoin">
+	  <ETLComponent category="deprecated" iconPath="icons/joiners/HashJoin" name="HashJoin" type="HASH_JOIN" defaultVisibility="false" className="org.jetel.component.HashJoin">
 	    <shortDescription>Joins unsorted data flows.</shortDescription>
 	    <description>Receives data through all connected input ports, for every connected slave input port (all input ports except the first) creates hash table from data records incoming through such slave input port (for this reason, number of incoming slave data records must be sufficiently small), for each join key value contained in data records incoming through the first input port (drivers) looks up every hash table and searches corresponding slave data records with the same key value. Every tuple of driver and its corresponding slaves is sent to transformation class that joins them to form outgoing data flow. Resulting records are sent to connected output port. This component is deprecated and should not be used anymore, we suggest you work with ExtHashJoin instead.</description>
 	    <inputPorts>
@@ -1584,7 +1584,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" iconPath="icons/transformers/KeyGenerator" name="KeyGenerator"  type="KEY_GEN" defaultVisibility="etlGraph" className="org.jetel.component.KeyGenerator">
+	  <ETLComponent category="deprecated" iconPath="icons/transformers/KeyGenerator" name="KeyGenerator"  type="KEY_GEN" defaultVisibility="false" className="org.jetel.component.KeyGenerator">
 	    <shortDescription>Generates new key field.</shortDescription>
 	    <description>Receives data through connected input port, generates one new field based on other specified fields, adds this new field to outgoing data records and sends them to all connected output ports.</description>
 	    <inputPorts>
@@ -2558,7 +2558,7 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="component">
-	  <ETLComponent category="deprecated" name="SpeedLimiter" type="SPEED_LIMITER" iconPath="icons/transformers/SpeedLimiter" passThrough="true" defaultVisibility="etlGraph" className="org.jetel.component.SpeedLimiter">
+	  <ETLComponent category="deprecated" name="SpeedLimiter" type="SPEED_LIMITER" iconPath="icons/transformers/SpeedLimiter" passThrough="true" defaultVisibility="false" className="org.jetel.component.SpeedLimiter">
 	    <shortDescription>Delays incoming records.</shortDescription>
 	    <description>Receives data through connected input port, delays each incoming data record by defined value of milliseconds and copies all data records to all connected output ports.</description>
 	    <inputPorts>
