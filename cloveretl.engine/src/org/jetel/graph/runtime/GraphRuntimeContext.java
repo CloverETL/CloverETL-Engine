@@ -97,7 +97,7 @@ public class GraphRuntimeContext {
 	private String jobUrl;
 	/** Is true if and only if the graph should be executed as sub-job, see SubGraph and SubJobflow components. */
 	private boolean isSubJob;
-	/** Only for subgraphs - component id, where this sub-graph has been executed. */
+	/** Only for subgraphs - component id, where this subgraph has been executed. */
 	private String parentSubGraphComponentId;
 	private IAuthorityProxy authorityProxy;
 	private MetadataProvider metadataProvider;
@@ -641,7 +641,7 @@ public class GraphRuntimeContext {
 	}
 
 	/**
-	 * @return component id of SubGraph component, where this sub-graph has been executed; null for non-sub-graph executions
+	 * @return component id of SubGraph component, where this subgraph has been executed; null for non-subgraph executions
 	 */
 	//TODO shouldn't be part of runtime context, it is not necessary to have this information here
 	//what about to move it to RuntimeEnvironment
@@ -650,8 +650,8 @@ public class GraphRuntimeContext {
 	}
 
 	/**
-	 * Shouldn't be set for non-sub-graph execution.
-	 * @param parentSubGraphComponentId component id of SubGraph component, where this sub-graph has been executed 
+	 * Shouldn't be set for non-subgraph execution.
+	 * @param parentSubGraphComponentId component id of SubGraph component, where this subgraph has been executed 
 	 */
 	public void setParentSubGraphComponentId(String parentSubGraphComponentId) {
 		this.parentSubGraphComponentId = parentSubGraphComponentId;

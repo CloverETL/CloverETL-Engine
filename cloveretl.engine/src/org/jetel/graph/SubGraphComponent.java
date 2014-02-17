@@ -24,9 +24,9 @@ import org.jetel.util.GraphUtils;
 /**
  * Only implementation of this interface is SubGraph component. This interface provides
  * input (output edges of SubGraphInput component) and output (input edges of SubGraphOutput component)
- * edges of executed sub-graph. These edges are used to decide whether they can share edge base with edges
+ * edges of executed subgraph. These edges are used to decide whether they can share edge base with edges
  * from parent graph. Moreover, if the edge base can be shared, edge types in parent graph needs to be
- * properly updated to satisfy needs from both parent graph and sub-graph.
+ * properly updated to satisfy needs from both parent graph and subgraph.
  * 
  * @see GraphUtils#combineEdges(EdgeTypeEnum, EdgeTypeEnum)
  * 
@@ -39,13 +39,13 @@ public interface SubGraphComponent {
 
 	/**
 	 * @param portIndex
-	 * @return input edge of executed sub-graph
+	 * @return input edge of executed subgraph
 	 */
 	public Edge getSubGraphInputEdge(int portIndex);
 
 	/**
 	 * @param portIndex
-	 * @return output edge of executed sub-graph
+	 * @return output edge of executed subgraph
 	 */
 	public Edge getSubGraphOutputEdge(int portIndex);
 	

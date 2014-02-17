@@ -21,7 +21,7 @@ package org.jetel.util;
 import org.jetel.graph.Edge;
 
 /**
- * Utility class for sub-graph related code.
+ * Utility class for subgraph related code.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
@@ -46,7 +46,7 @@ public class SubGraphUtils {
 	/** Type of SubJobflow component. */
 	public static final String SUB_JOBFLOW_TYPE = "SUB_JOBFLOW";
 
-    /** the name of an XML attribute used to pass a URL specified the executed sub-graph */
+    /** the name of an XML attribute used to pass a URL specified the executed subgraph */
     public static final String XML_JOB_URL_ATTRIBUTE = "jobURL";
 
 	/**

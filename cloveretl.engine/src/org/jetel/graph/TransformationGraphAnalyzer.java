@@ -68,7 +68,7 @@ public class TransformationGraphAnalyzer {
 	/**
 	 * Several pre-execution steps is performed in this graph analysis.
 	 * - disable nodes are removed from graph
-	 * - sub-graph related updates are performed
+	 * - subgraph related updates are performed
 	 * - automatic metadata propagation is performed
 	 * - correct edge types are detected
 	 */
@@ -85,7 +85,7 @@ public class TransformationGraphAnalyzer {
 			try {
 				TransformationGraphAnalyzer.analyseSubGraph(graph);
 			} catch (Exception e) {
-				throw new JetelRuntimeException("Sub-graph analysis failed.", e);
+				throw new JetelRuntimeException("Subgraph analysis failed.", e);
 			}
 		}
 		
@@ -156,7 +156,7 @@ public class TransformationGraphAnalyzer {
         try {
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
 		} catch (GraphConfigurationException e) {
-			throw new JetelRuntimeException("Failed to remove disabled/pass-through nodes from sub-graph.", e);
+			throw new JetelRuntimeException("Failed to remove disabled/pass-through nodes from subgraph.", e);
 		}
 	}
 
@@ -178,7 +178,7 @@ public class TransformationGraphAnalyzer {
 		graphCycleInspector.inspectGraph();
 		
 		//update edge types around SubGraph components
-		//real edge is combination of parent graph edge type and sub-graph edge type
+		//real edge is combination of parent graph edge type and subgraph edge type
 		for (Node component : graph.getNodes().values()) {
 			if (component instanceof SubGraphComponent) {
 				SubGraphComponent subGraphComponent = (SubGraphComponent) component;
@@ -187,7 +187,7 @@ public class TransformationGraphAnalyzer {
 					Edge parentGraphEdge = inputPort.getValue().getEdge();
 					//will be edge base shared between these two edges?
 					if (SubGraphUtils.isSubGraphInputEdgeShared(subGraphEdge, parentGraphEdge)) {
-						//so we need to combine both edge types to satisfy needs of both parent and sub-graph
+						//so we need to combine both edge types to satisfy needs of both parent and subgraph
 						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subGraphEdge.getEdgeType());
 						inputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
 					}
@@ -197,7 +197,7 @@ public class TransformationGraphAnalyzer {
 					Edge parentGraphEdge = outputPort.getValue().getEdge();
 					//will be edge base shared between these two edges?
 					if (SubGraphUtils.isSubGraphOutputEdgeShared(subGraphEdge, parentGraphEdge)) {
-						//so we need to combine both edge types to satisfy needs of both parent and sub-graph
+						//so we need to combine both edge types to satisfy needs of both parent and subgraph
 						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subGraphEdge.getEdgeType());
 						outputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
 					}

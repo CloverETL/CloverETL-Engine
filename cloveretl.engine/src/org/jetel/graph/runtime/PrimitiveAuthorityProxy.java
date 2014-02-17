@@ -510,12 +510,12 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public Edge getParentGraphSourceEdge(int inputPortIndex) {
-		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+		throw new UnsupportedOperationException("subgraphs are not avaible in standalone engine");
 	}
 
 	@Override
 	public Edge getParentGraphTargetEdge(int outputPortIndex) {
-		throw new UnsupportedOperationException("sub-graphs are not avaible in standalone engine");
+		throw new UnsupportedOperationException("subgraphs are not avaible in standalone engine");
 	}
 	
 }
