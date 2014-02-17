@@ -2100,8 +2100,8 @@ Sends all resulting records to all connected output ports.</description>
 	        <enumType>
 	          <item displayValue="Ascending" value="Asc" />
 	          <item displayValue="Descending" value="Desc" />
-	          <item displayValue="Ignore" value="Ignore" />
 	          <item displayValue="Auto" value="Auto" />
+	          <item displayValue="Ignore" value="Ignore" />
 	        </enumType>
 	      </property>
 	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
