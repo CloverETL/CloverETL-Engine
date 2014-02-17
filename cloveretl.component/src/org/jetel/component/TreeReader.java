@@ -31,9 +31,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.xml.transform.Transformer;
@@ -175,9 +173,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	private DataRecord outputRecords[];
 	private OutputPort outputPorts[];
 	private boolean recordReadWithException[];
-	private int sequenceId;
-	private Map<MappingContext, Sequence> sequences = new HashMap<MappingContext, Sequence>();
-
+	private String defaultSequenceId;
 	protected String fileURL;
 	protected String charset;
 	private SourceIterator sourceIterator;
@@ -439,7 +435,6 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	@Override
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
-		sequences.clear();
 	}
 
 	@Override
@@ -623,19 +618,23 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	@Override
 	public Sequence getSequence(MappingContext context) {
 
-		Sequence sequence = sequences.get(context);
-		if (sequence == null) {
-			if (context.getSequenceId() != null) {
-				sequence = getGraph().getSequence(context.getSequenceId());
+		if (context.getSequenceId() != null) {
+			Sequence result = getGraph().getSequence(context.getSequenceId());
+			if (result == null) {
+				throw new JetelRuntimeException("Could not find sequence: " + context.getSequenceId());
 			}
-			if (sequence == null) {
-				
-				String id = getType() + "Seq_" + sequenceId++;
-				sequence = SequenceFactory.createSequence(getGraph(), PrimitiveSequence.SEQUENCE_TYPE, new Object[] { id, getGraph(), context.getSequenceField() }, new Class[] { String.class, TransformationGraph.class, String.class });
+			return result;
+		} else {
+			if (defaultSequenceId == null) {
+				String id = getId() + "_DefaultSequence";
+				Sequence defaultSequence = SequenceFactory.createSequence(getGraph(), PrimitiveSequence.SEQUENCE_TYPE,
+						new Object[] {id, getGraph(), id}, new Class[] {String.class, TransformationGraph.class, String.class});
+				((PrimitiveSequence)defaultSequence).setStart(1);
+				getGraph().addSequence(defaultSequence);
+				defaultSequenceId = id;
 			}
-			sequences.put(context, sequence);
+			return getGraph().getSequence(defaultSequenceId);
 		}
-		return sequence;
 	}
 	
 	/**
