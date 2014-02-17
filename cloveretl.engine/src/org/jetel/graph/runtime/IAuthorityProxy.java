@@ -437,7 +437,7 @@ public abstract class IAuthorityProxy {
 
 	/**
 	 * SubGraphInput component uses this method to get {@link EdgeBase} from 
-	 * parent graph, which is shared between parent graph and sub-graph.
+	 * parent graph, which is shared between parent graph and subgraph.
 	 * @param inputPortIndex
 	 * @return edge from parent graph
 	 */
@@ -445,7 +445,7 @@ public abstract class IAuthorityProxy {
 
 	/**
 	 * SubGraphOutput component uses this method to get {@link EdgeBase} from 
-	 * parent graph, which is shared between parent graph and sub-graph.
+	 * parent graph, which is shared between parent graph and subgraph.
 	 * @param inputPortIndex
 	 * @return edge from parent graph
 	 */

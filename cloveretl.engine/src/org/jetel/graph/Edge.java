@@ -78,9 +78,9 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * of this edge. The edge base is only shared with other edge (from parent graph).
 	 * Some operations like {@link #preExecute()}, {@link #postExecute()} and {@link #free()}
 	 * are performed only by the real owner of the edge base.
-	 * This functionality is used for edges between parent graph and sub-graph.
+	 * This functionality is used for edges between parent graph and subgraph.
 	 * These edge couples can share edge base, which allows direct data passing
-	 * from parent graph to sub-graph and backward without special copy threads.
+	 * from parent graph to subgraph and backward without special copy threads.
 	 */
 	private boolean sharedEdgeBase = false;
 	
