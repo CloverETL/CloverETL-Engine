@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.naming.directory.InvalidAttributesException;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,6 +41,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
@@ -47,7 +50,9 @@ import org.xml.sax.SAXException;
  *
  */
 public class PluginDescriptor {
-    
+
+	private static final Pattern ABSOLUTE_PLUGIN_URL_PATTERN = Pattern.compile("clover:/plugin/([^/]*)/(.*)");
+
     static Log logger = LogFactory.getLog(Plugins.class);
 
     /**
@@ -299,11 +304,29 @@ public class PluginDescriptor {
      * @throws MalformedURLException
      */
     public URL getURL(String path) throws MalformedURLException {
-        return FileUtils.getFileURL(manifest, path);
+        Matcher matcher = ABSOLUTE_PLUGIN_URL_PATTERN.matcher(path);
+        if (matcher.matches()) {
+        	String pluginId = matcher.group(1);
+        	String relativePath = matcher.group(2);
+        	PluginDescriptor descriptor = Plugins.getPluginDescriptor(pluginId);
+        	if (descriptor != null) {
+        		return descriptor.getURL(relativePath);
+        	} else {
+        		throw new MalformedURLException("Invalid url '" + path + "'.");
+        	}
+        } else {
+        	return FileUtils.getFileURL(manifest, path);
+        }
     }
     
-    public Extension addExtension(String pointId) {
-        Extension ret = new Extension(pointId, this); 
+    /**
+     * Add new extension to this plugin.
+     * @param pointId extension point id
+     * @param xmlElement complete XML definition of extension
+     * @return
+     */
+    public Extension addExtension(String pointId, Element xmlElement) {
+        Extension ret = new Extension(pointId, xmlElement, this); 
         extensions.add(ret);
         return ret;
     }

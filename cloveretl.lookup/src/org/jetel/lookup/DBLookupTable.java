@@ -185,12 +185,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	@Override
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
-			try {
-				sqlConnection = connection.getConnection(getId(), OperationType.READ);
-			} catch (JetelException e) {
-				throw new ComponentNotReadyException("Can't connect to database", e);
-			}
-				}
+
+		try {
+			sqlConnection = connection.getConnection(getId(), OperationType.READ);
+		} catch (JetelException e) {
+			throw new ComponentNotReadyException("Can't connect to database", e);
+		}
+	}
     
     @Override
 	public void postExecute() throws ComponentNotReadyException {

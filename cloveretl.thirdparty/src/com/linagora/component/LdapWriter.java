@@ -328,15 +328,6 @@ public class LdapWriter extends Node {
         return status;
     }
 	
-	/**
-	 * return the type (identifier) of the
-	 * component
-	 */
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * @see org.jetel.graph.Node#reset()

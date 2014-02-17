@@ -38,6 +38,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecordNature;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.KeyFieldNamesUtils;
@@ -173,7 +174,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String COLLATOR_SENSITIVITY_ATTR = "collator_sensitivity";
 	private static final String NATURE_ATTR = "nature";
 	
-	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
+	/** Default encoding for XML representation of metadata. */
+	public static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
 	  private static final String XSL_FORMATER
   	= "<?xml version='1.0' encoding='"+DEFAULT_CHARACTER_ENCODING+"'?>"
@@ -268,6 +270,22 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			logger.error("parseRecordMetadata method call", ex);
 			return null;
 		}
+	}
+
+	/**
+	 * Parses {@link DataRecordMetadata} from given XML.
+	 * Root element of the input should be "Metadata" element.
+	 * @param xmlElement
+	 * @return metadata defined by given xml element
+	 */
+	public static DataRecordMetadata read(Element xmlElement) {
+		DataRecordMetadataXMLReaderWriter reader = new DataRecordMetadataXMLReaderWriter();
+		return reader.parseMetadata(xmlElement);
+	}
+
+	public static DataRecordMetadata readMetadata(InputStream input) {
+		DataRecordMetadataXMLReaderWriter reader = new DataRecordMetadataXMLReaderWriter();
+		return reader.read(input);
 	}
 
 	/**
@@ -468,6 +486,28 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		return parseRecordMetadata(document.getDocumentElement());
 	}
 	
+	/**
+	 * Parsers metadata from given xml.
+	 * Root element should be "Metadata" element.
+	 * @param element
+	 * @return
+	 */
+	public DataRecordMetadata parseMetadata(Element element) {
+		String id = element.getAttribute(ID);
+		if (!StringUtils.isEmpty(id)) {
+			NodeList childElements = element.getElementsByTagName(RECORD_ELEMENT);
+			if (childElements.getLength() == 1) {
+				DataRecordMetadata metadata = parseRecordMetadata(childElements.item(0));
+				metadata.setId(id);
+				return metadata;
+			} else {
+				throw new JetelRuntimeException("Invalid metadata (" + id + ") format.");
+			}
+		} else {
+			throw new JetelRuntimeException("Missing metadata ID.");
+		}
+		
+	}
 	public DataRecordMetadata parseRecordMetadata(org.w3c.dom.Node topNode) throws DOMException {
 		if (topNode == null || !RECORD_ELEMENT.equals(topNode.getNodeName())) {
 			throw new DOMException(DOMException.NOT_FOUND_ERR,

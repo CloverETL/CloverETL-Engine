@@ -406,11 +406,6 @@ public class DBFDataReader extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
     /**
      * @param skipRows The skipRows to set.
      */

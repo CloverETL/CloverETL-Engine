@@ -475,11 +475,6 @@ public class Reformat extends Node {
             return status;
        }
 
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
 	public String getCharset() {
 		return charset;
 	}

@@ -13,7 +13,6 @@
 		<library path="lib/saxon9-dom.jar"/>
 		<library path="lib/signpost-commonshttp4-1.2.1.2.jar"/>
 		<library path="lib/signpost-core-1.2.1.2.jar"/>
-		<library path="lib/commons-collections-3.2.1.jar" />
    	</runtime> 
 
 	<requires engine-version="0.0.0.devel">
@@ -23,88 +22,775 @@
 	</requires>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.DataReader"/>
-		<parameter id="type" value="DATA_READER"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/UniversalDataReader" name="UniversalDataReader"  type="DATA_READER" className="org.jetel.component.DataReader">
+	    <shortDescription>Reads data from flat files.</shortDescription>
+	    <description>Reads data from delimited or fixed length files and sends data records to first connected output port. If any error occurs, the report is sent to the second port if &quot;Data policy&quot; is set to &quot;Controlled&quot;.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" label="input"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="output"/>
+	      <singlePort name="1" label="logs">
+	        <Metadata id="UDR_ErrorPort"/>
+	      </singlePort>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only"/>
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+	        <enumType>
+	          <item displayValue="Strict" value="strict"/>
+	          <item displayValue="Controlled" value="controlled"/>
+	          <item displayValue="Lenient" value="lenient"/>
+	        </enumType>
+	      </property>
+	      <property category="deprecated" displayName="Skip first line" modifiable="true" name="skipFirstLine" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Trim strings" modifiable="true" name="trim" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Quoted strings" modifiable="true" name="quotedStrings" nullable="true" defaultHintProvider="quotedStringsFromOutputPortHint">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Quote character" modifiable="true" name="quoteCharacter" nullable="true" defaultHintProvider="quotedCharFromOutputPortHint">
+	        <singleType name="readerQuoteChar"/>
+	      </property>
+	      <property category="advanced" displayName="Skip leading blanks" modifiable="true" name="skipLeadingBlanks" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Skip trailing blanks" modifiable="true" name="skipTrailingBlanks" nullable="true" defaultHint="false (true for fixlen metadata)">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" defaultHint="0">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="numRecords" nullable="true">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records per source" modifiable="true" name="skipSourceRows" nullable="true" defaultHintProvider="skipSourceRows">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Max number of records per source" modifiable="true" name="numSourceRecords" nullable="true">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Max error count" modifiable="true" name="maxErrorCount" nullable="true" defaultHint="(unlimited)">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Treat multiple delimiters as one" modifiable="true" name="treatMultipleDelimitersAsOne" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Incremental file" modifiable="true" name="incrementalFile" nullable="true" required="incrementalKey">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="advanced" displayName="Incremental key" modifiable="true" name="incrementalKey" nullable="true" required="incrementalFile">
+	        <singleType name="string"/>
+	      </property>
+	      <property category="advanced" displayName="Verbose" modifiable="true" name="verbose" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Parser" modifiable="true" name="parser" nullable="true" defaultHint="Auto">
+	        <enumType>
+	          <item value="org.jetel.data.parser.SimpleDataParser" displayValue="org.jetel.data.parser.SimpleDataParser"/>
+	          <item value="org.jetel.data.parser.DataParser" displayValue="org.jetel.data.parser.DataParser"/>
+	          <item value="org.jetel.data.parser.CharByteDataParser" displayValue="org.jetel.data.parser.CharByteDataParser"/>
+	          <item value="org.jetel.data.parser.FixLenByteDataParser" displayValue="org.jetel.data.parser.FixLenByteDataParser"/>
+	        </enumType>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.DataWriter"/>
-		<parameter id="type" value="DATA_WRITER"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/UniversalDataWriter" name="UniversalDataWriter" type="DATA_WRITER" className="org.jetel.component.DataWriter">
+	    <shortDescription>Writes data to flat files.</shortDescription>
+	    <description>Receives data through connected input port and writes data records to delimited or fixed length files based on input metadata.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_or_directory" mandatory_existing_file="false" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Quoted strings" modifiable="true" name="quotedStrings" nullable="true" defaultHintProvider="quotedStringsFromInputPortHint">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Quote character" modifiable="true" name="quoteCharacter" nullable="true" defaultHintProvider="quotedCharFromInputPortHint">
+	        <singleType name="writerQuoteChar" />
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Write field names" modifiable="true" name="outputFieldNames" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Bytes per file" modifiable="true" name="bytesPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Exclude fields" modifiable="true" name="excludeFields" nullable="true">
+	        <singleType name="key" rightLabel="Exclude fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:" />
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true" defaultHint="Number file tag">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag" />
+	          <item displayValue="Key file tag" value="keyNameFileTag" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.DelimitedDataReader"/>
-		<parameter id="type" value="DELIMITED_DATA_READER"/>
+	  <ETLComponent category="deprecated" iconPath="icons/readers/DelimitedDataReader" name="DelimitedDataReader"  type="DELIMITED_DATA_READER" defaultVisibility="etlGraph" className="org.jetel.component.DelimitedDataReader">
+	    <shortDescription>Reads data from delimited files.</shortDescription>
+	    <description>Reads data from delimited files and sends data records to all connected output ports.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" label="input"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only"/>
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+	        <enumType>
+	          <item displayValue="Strict" value="strict"/>
+	          <item displayValue="Controlled" value="controlled"/>
+	          <item displayValue="Lenient" value="lenient"/>
+	        </enumType>
+	      </property>
+	      <property category="deprecated" displayName="Skip first line" modifiable="true" name="skipFirstLine" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Trim strings" modifiable="true" name="trim" nullable="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Skip leading blanks" modifiable="true" name="skipLeadingBlanks" nullable="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Skip trailing blanks" modifiable="true" name="skipTrailingBlanks" nullable="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" >
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="numRecords" nullable="true">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Incremental file" modifiable="true" name="incrementalFile" nullable="true" required="incrementalKey">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="advanced" displayName="Incremental key" modifiable="true" name="incrementalKey" nullable="true" required="incrementalFile">
+	        <singleType name="string"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.DelimitedDataWriter"/>
-		<parameter id="type" value="DELIMITED_DATA_WRITER"/>
+	  <ETLComponent category="deprecated" iconPath="icons/writers/DelimitedDataWriter" name="DelimitedDataWriter" type="DELIMITED_DATA_WRITER" defaultVisibility="etlGraph" className="org.jetel.component.DelimitedDataWriter">
+	    <shortDescription>Writes data to delimited files.</shortDescription>
+	    <description>Receives data through connected input port and writes data records to delimited files based on input metadata.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_only" mandatory_existing_file="false" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Write field names" modifiable="true" name="outputFieldNames" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Bytes per file" modifiable="true" name="bytesPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:"/>
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag" />
+	          <item displayValue="Key file tag" value="keyNameFileTag" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.SimpleCopy"/>
-	    <parameter id="type" value="SIMPLE_COPY"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/SimpleCopy" name="SimpleCopy"  type="SIMPLE_COPY" passThrough="true" className="org.jetel.component.SimpleCopy">
+	    <shortDescription>Copies data to output ports.</shortDescription>
+	    <description>Receives data through connected input port and copies data records to all connected output ports.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true">
+	      	<!--Metadata reference="out:0"/-->
+	      </singlePort>
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort name="0" required="true">
+	      	<!--Metadata reference="in:0"/-->
+	      </multiplePort>
+	    </outputPorts>
+	    <properties />
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Concatenate"/>
-	    <parameter id="type" value="CONCATENATE"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Concatenate" name="Concatenate" type="CONCATENATE" passThrough="true" className="org.jetel.component.Concatenate">
+	    <shortDescription>Concatenates data flows.</shortDescription>
+	    <description>Receives data through all connected input ports in turn. Gets all records from each input port, sends them to output port and continues with the next input port. Skips ports without incoming data. Terminates when all incoming records are received and sent to connected output port.</description>
+	    <inputPorts>
+	      <multiplePort required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties />
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.SimpleGather"/>
-	    <parameter id="type" value="SIMPLE_GATHER"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/SimpleGather" name="SimpleGather"  type="SIMPLE_GATHER" passThrough="true" className="org.jetel.component.SimpleGather">
+	    <shortDescription>Gathers data flows.</shortDescription>
+	    <description>Receives data incoming through all connected input ports in the order so that all records are gathered and send out through output port as soon as possible.</description>
+	    <inputPorts>
+	      <multiplePort required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true"/>
+	    </outputPorts>
+	    <properties />
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Reformat"/>
-	    <parameter id="type" value="REFORMAT"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Reformat" name="Reformat" type="REFORMAT" className="org.jetel.component.Reformat" passThrough="true">
+	    <shortDescription>Changes format, structure or content of records.</shortDescription>
+	    <description>Receives data through connected input port, transforms them in a user specified way, and sends such new outgoing data records to all connected output ports. Implements org.jetel.component.RecordTransform interface.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL" redundant="transformClass|transformURL">
+	        <singleType name="transform" />
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform" redundant="transform|transformClass">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL" redundant="transformURL|transform">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions" />
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.DBInputTable"/>
-	    <parameter id="type" value="DB_INPUT_TABLE"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/DBInputTable" name="DBInputTable" type="DB_INPUT_TABLE" className="org.jetel.component.DBInputTable">
+	    <shortDescription>Reads data from database using JDBC driver.</shortDescription>
+	    <description>Connects to database using JDBC driver, executes specified query on DB, extracts the rows returned by the query and sends them as data records to all connected output ports. Output metadata must precisely describe the structure of extracted rows.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
+	        <singleType name="connection" />
+	      </property>
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+			<singleType name="file" fields="input" dictionary="input" />
+	      </property>
+	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
+	        <singleType name="sqlQuery" type="select" outputPortName="0" />
+	      </property>
+	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+	        <enumType>
+	          <item displayValue="Strict" value="strict" />
+	          <item displayValue="Controlled" value="controlled" />
+	          <item displayValue="Lenient" value="lenient" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Print statements" modifiable="true" name="printStatements" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Fetch size" modifiable="true" name="fetchSize" nullable="true" defaultHint="20">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Incremental file" modifiable="true" name="incrementalFile" nullable="true" required="incrementalKey">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="Incremental key" modifiable="true" name="incrementalKey" nullable="true" required="incrementalFile">
+	        <singleType name="sqlIncrementalKey" />
+	      </property>
+	      <property category="advanced" displayName="Auto-commit" modifiable="true" name="autoCommit" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Sort"/>
-	    <parameter id="type" value="SORT"/>
+	  <ETLComponent category="deprecated" iconPath="icons/transformers/ExtSort" name="Sort" type="SORT" passThrough="true" defaultVisibility="false" className="org.jetel.component.Sort">
+	    <shortDescription>Sorts incoming data records.</shortDescription>
+	    <description>Receives data through connected input port, sorts data records according to specified sort key and sends them to all connected output ports. Sort key is name or combination of names of field(s) of incoming records. Sort order can be either Ascending (default) or Descending. This component is deprecated and should not be used anymore, we suggest you work with ExtSort instead.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Sort order" modifiable="true" name="sortOrder" nullable="true" defaultHint="Ascending">
+	        <singleType name="order" />
+	      </property>
+	      <property category="basic" displayName="Sort key" modifiable="true" name="sortKey" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0" rightLabel="Sort key:"/>
+	      </property>
+	      <property category="basic" displayName="Sorting locale" modifiable="true" name="locale" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Use internationalization" modifiable="true" name="useI18N" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.DBOutputTable"/>
-	    <parameter id="type" value="DB_OUTPUT_TABLE"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/DBOutputTable" name="DBOutputTable" type="DB_OUTPUT_TABLE" viewPlainData="false" viewGridData="false" className="org.jetel.component.DBOutputTable">
+	    <shortDescription>Loads data into database using JDBC driver.</shortDescription>
+	    <description>Receives data through connected input port, connects to database using JDBC driver, performs database operation and loads data records into specified DB table. Correspondence between input metadata and DB table columns must be defined.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" label="rejected" />
+	      <singlePort name="1" label="autogenerated" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
+	        <singleType name="connection" />
+	      </property>
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!dbTable,!sqlQuery" redundant="dbTable|sqlQuery">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!dbTable,!url" redundant="dbTable|url">
+			<singleType name="sqlQuery" type="insert" inputPortName="0" outputPortName="1" />
+	      </property>
+	      <property category="basic" displayName="DB table" modifiable="true" name="dbTable" nullable="true" required="!sqlQuery,!url" redundant="sqlQuery|url">
+	        <singleType name="table" />
+	      </property>
+	      <property category="basic" displayName="Field mapping" modifiable="true" name="fieldMap" nullable="true">
+	        <singleType name="dbCloverMapping" inputPortName="0" />
+	      </property>
+	      <property category="basic" displayName="Clover fields" modifiable="true" name="cloverFields" nullable="true">
+	        <singleType name="key" inputPortName="0" rightLabel="Clover fields:" />
+	      </property>
+	      <property category="basic" displayName="DB fields" modifiable="true" name="dbFields" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Query source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Batch mode" modifiable="true" name="batchMode" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Batch size" modifiable="true" name="batchSize" nullable="true" defaultHint="25">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Commit" modifiable="true" name="commit" nullable="true" defaultHint="100">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max error count" modifiable="true" name="maxErrors" nullable="true" defaultHint="0">
+	        <singleType name="int" />
+	      </property>
+		  <property category="advanced" displayName="Action on error" modifiable="true" name="errorAction" nullable="true" defaultHint="COMMIT">
+				<enumType>
+					<item displayValue="Commit" value="COMMIT" />
+					<item displayValue="Rollback" value="ROLLBACK" />
+				</enumType>
+		  </property>
+	      <property category="advanced" displayName="Atomic SQL query" modifiable="true" name="atomicSQL" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.FixLenDataWriter"/>
-	    <parameter id="type" value="FIXLEN_DATA_WRITER"/>
+	  <ETLComponent category="deprecated" iconPath="icons/writers/FixedLengthDataWriter" name="FixLenDataWriter" type="FIXLEN_DATA_WRITER" defaultVisibility="etlGraph" className="org.jetel.component.FixLenDataWriter">
+	    <shortDescription>Writes data to fixed length files.</shortDescription>
+	    <description>Receives data through connected input port and writes data records to fixed length files based on input metadata.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_only" mandatory_existing_file="false" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Write field names" modifiable="true" name="outputFieldNames" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Bytes per file" modifiable="true" name="bytesPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Field filler" modifiable="true" name="fieldFiller" nullable="true" defaultHint=" ">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Record filler" modifiable="true" name="recordFiller" nullable="true" defaultHint="=">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Left align" modifiable="true" name="leftAlign" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:"/>
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag" />
+	          <item displayValue="Key file tag" value="keyNameFileTag" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:"/>
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Dedup"/>
-	    <parameter id="type" value="DEDUP"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Dedup" name="Dedup" type="DEDUP" passThrough="true" className="org.jetel.component.Dedup">
+	    <shortDescription>Removes duplicate records.</shortDescription>
+	    <description>Receives sorted data records through connected input port and removes records that are in duplicate with a view to the specified key values. Keeps defined number of records from either the start (First) or the end (Last) of each group with the same key value. If desired, only unique records are kept. Dedup key is name or combination of names of field(s) of incoming records. Rejected records are sent to the optional second output port if connected.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="unique" />
+	      <singlePort name="1" required="false" label="duplicate" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Dedup key" modifiable="true" name="dedupKey" nullable="true">
+	        <singleType name="key" inputPortName="0" keyType="orderVerification" rightLabel="Dedup key:" />
+	      </property>
+	      <property category="basic" displayName="Keep" modifiable="true" name="keep" nullable="true" defaultHint="First">
+	        <singleType name="keep" />
+	      </property>
+	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Number of duplicates" modifiable="true" name="noDupRecord" nullable="true" defaultHint="1">
+	        <singleType name="int" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.FixLenDataReader"/>
-	    <parameter id="type" value="FIXLEN_DATA_READER"/>
+	  <ETLComponent category="deprecated" iconPath="icons/readers/FixedLengthDataReader" name="FixLenDataReader" type="FIXLEN_DATA_READER" defaultVisibility="etlGraph" className="org.jetel.component.FixLenDataReader">
+	    <shortDescription>Reads data from fixed length files.</shortDescription>
+	    <description>Reads data from fixed length files and sends data records to all connected output ports.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" label="input" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+	        <enumType>
+	          <item displayValue="Strict" value="strict" />
+	          <item displayValue="Controlled" value="controlled" />
+	          <item displayValue="Lenient" value="lenient" />
+	        </enumType>
+	      </property>
+	      <property category="deprecated" displayName="Skip first line" modifiable="true" name="skipFirstLine" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Trim strings" modifiable="true" name="trim" nullable="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Byte mode" modifiable="true" name="byteMode" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Skip leading blanks" modifiable="true" name="skipLeadingBlanks" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Skip trailing blanks" modifiable="true" name="skipTrailingBlanks" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Allow incomplete" modifiable="true" name="enableIncomplete" nullable="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Skip empty" modifiable="true" name="skipEmpty" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="numRecords" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Incremental file" modifiable="true" name="incrementalFile" nullable="true" required="incrementalKey">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="Incremental key" modifiable="true" name="incrementalKey" nullable="true" required="incrementalFile">
+	        <singleType name="string" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Merge"/>
-	    <parameter id="type" value="MERGE"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Merge" name="Merge" type="MERGE" passThrough="true" className="org.jetel.component.Merge">
+	    <shortDescription>Merges data flows.</shortDescription>
+	    <description>Receives sorted data through all connected input ports in turn. Gets all incoming records and sends them to connected output port sorted in the same way. Terminates when all incoming records are received and sent to connected output port.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	      <multiplePort required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Merge key" modifiable="true" name="mergeKey" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0" rightLabel="Merge key:"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.MergeJoin"/>
-	    <parameter id="type" value="MERGE_JOIN"/>
+	  <ETLComponent category="deprecated" iconPath="icons/joiners/MergeJoin" name="MergeJoin"  type="MERGE_JOIN" defaultVisibility="etlGraph" className="org.jetel.component.MergeJoin">
+	    <shortDescription>Joins sorted data flows.</shortDescription>
+	    <description>Receives sorted data through all connected input ports, for each join key value contained in data records incoming through the first input port (drivers) searches corresponding data records incoming through the other port(s) (slaves) with the same key value. Every combination of driver and its corresponding slaves is sent to transformation class that joins them to form outgoing data flow. Resulting records are sent to connected output port. This component is deprecated and should not be used anymore, we suggest you work with ExtMergeJoin instead.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="driver"/>
+	      <multiplePort required="true" label="slave"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
+	        <singleType name="mergeJoinKey"/>
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
+	        <singleType name="transform"/>
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
+	        <singleType name="class"/>
+	      </property>
+	      <property category="basic" displayName="Locale" modifiable="true" name="locale" nullable="true" defaultHint="none">
+	        <singleType name="locale"/>
+	      </property>
+	      <property category="basic" displayName="Case sensitive" modifiable="true" name="caseSensitive" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="basic" displayName="Left outer join" modifiable="true" name="leftOuterJoin" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Full outer join" modifiable="true" name="fullOuterJoin" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	     <property category="advanced" displayName="Ascending ordering of inputs" modifiable="true" name="ascendingInputs" nullable="true" defaultHint="true" >
+	        <singleType name="bool"/>
+	      </property>      
+	      <property category="deprecated" displayName="Slave override key" modifiable="true" name="slaveOverrideKey" nullable="true">
+			<singleType name="key" inputPortName="1" rightLabel="Slave override key:"/>
+	      </property>
+	      <property category="deprecated" displayName="Left outer" modifiable="true" name="leftOuterJoin" nullable="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="deprecated" displayName="Full outer" modifiable="true" name="fullOuterJoin" nullable="true">
+	        <singleType name="bool"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.MergeJoin"/>
-	    <parameter id="type" value="EXT_MERGE_JOIN"/>
+	  <ETLComponent category="joiners" iconPath="icons/joiners/MergeJoin" name="ExtMergeJoin"  type="EXT_MERGE_JOIN" className="org.jetel.component.MergeJoin">
+	    <shortDescription>Joins sorted data flows.</shortDescription>
+	    <description>Receives sorted data through all connected input ports, for each join key value contained in data records incoming through the first input port (drivers) searches corresponding data records incoming through the other port(s) (slaves) with the same key value. Every combination of driver and its corresponding slaves is sent to transformation class that joins them to form outgoing data flow. Resulting records are sent to connected output port.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="driver"/>
+	      <multiplePort required="true" label="slave"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
+	        <singleType name="mergeJoinKey" order="true"/>
+	      </property>
+	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="inner (if not set leftOuterJoin nor fullOuterJoin parameter)">
+	        <enumType>
+	          <item displayValue="Inner join" value="inner"/>
+	          <item displayValue="Left outer join" value="leftOuter"/>
+	          <item displayValue="Full outer join" value="fullOuter"/>
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
+	        <singleType name="transform"/>
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
+	        <singleType name="class"/>
+	      </property>
+	      <property category="deprecated" displayName="Locale" modifiable="true" name="locale" nullable="true" defaultHint="none">
+	        <singleType name="locale"/>
+	      </property>
+	      <property category="deprecated" displayName="Case sensitive" modifiable="true" name="caseSensitive" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions"/>
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="advanced" displayName="Allow slave duplicates" modifiable="true" name="slaveDuplicates" nullable="true" defaultHint="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="deprecated" displayName="Ascending ordering of inputs" modifiable="true" name="ascendingInputs" nullable="true" defaultHint="true" >
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="deprecated" displayName="Left outer" modifiable="true" name="leftOuterJoin" nullable="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="deprecated" displayName="Full outer" modifiable="true" name="fullOuterJoin" nullable="true">
+	        <singleType name="bool"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
@@ -113,168 +799,1581 @@
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Trash"/>
-	    <parameter id="type" value="TRASH"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/Trash" name="Trash"  type="TRASH"  viewPlainData="false" viewGridData="false" className="org.jetel.component.Trash">
+	    <shortDescription>Discards all data.</shortDescription>
+	    <description>Receives data through connected input port and discards it all. However, data can be written to specified file for debugging.</description>
+	    <inputPorts>
+	      <multiplePort required="true"/>
+	    </inputPorts>
+	    <outputPorts/>
+	    <properties>
+	      <property category="basic" displayName="Debug print" modifiable="true" name="debugPrint" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Debug file URL" modifiable="true" name="debugFilename" nullable="true">
+	        <singleType name="file" mandatory_existing_file="false"/>
+	      </property>
+	      <property category="basic" displayName="Debug append" modifiable="true" name="debugAppend" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="advanced" displayName="Print trash ID" modifiable="true" name="printTrashID" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Mode" modifiable="true" name="mode" nullable="true" defaultHint="Performance">
+	      	<enumType>
+	          <item displayValue="Performance" value="performance"/>
+	          <item displayValue="Validate records" value="validate_records"/>
+	        </enumType>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.DBExecute"/>
-	    <parameter id="type" value="DB_EXECUTE"/>
+	  <ETLComponent category="others" iconPath="icons/others/DBExecute" name="DBExecute" type="DB_EXECUTE" className="org.jetel.component.DBExecute">
+	    <shortDescription>Executes specified commands on database.</shortDescription>
+	    <description>Executes specified commands (SQL/DML) on specified database table. If using stored procedure, receives records through connected input port and sends return value and/or output parameters to connected output port.</description>
+		<inputPorts>
+		<singlePort name="0" label="input parameters" />
+		</inputPorts>
+		<outputPorts>
+		<singlePort name="0" label="procedure output" />
+		<singlePort name="1" label="error output" />
+		</outputPorts>
+	    <properties>
+	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
+	        <singleType name="connection" />
+	      </property>
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+			<singleType name="file" fields="input" dictionary="input" />
+	      </property>
+	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
+	        <singleType name="multiline" />
+	      </property>
+	      <property category="advanced" displayName="Query source charset" modifiable="true" name="charset" nullable="true">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="SQL statement delimiter" modifiable="true" name="sqlStatementDelimiter" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Print statements" modifiable="true" name="printStatements" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+			<property category="basic" displayName="Transaction set" modifiable="true" name="inTransaction" nullable="true" defaultHint="One set of statements">
+						<enumType>
+							<item displayValue="One statement" value="one" />
+							<item displayValue="One set of statements" value="set" />
+							<item displayValue="All statements" value="all" />
+							<item displayValue="Never commit" value="never_commit" />
+						</enumType>
+			</property>
+	      <property category="advanced" displayName="Call as stored procedure" modifiable="true" name="callStatement" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+			<property category="advanced" displayName="Query input parameters" modifiable="true" name="inParameters" nullable="true">
+			<singleType name="queryParameters" inputPortName="0" />
+			</property>
+			<property category="advanced" displayName="Query output parameters" modifiable="true" name="outParameters" nullable="true">
+			<singleType name="queryParameters" outputPortName="0" />
+			</property>
+			<property category="advanced" displayName="Result set output fields" modifiable="true" name="outputFields" nullable="true">
+			<singleType name="key" outputPortName="0" title="Result set output fields" leftLabel="Input fields:" rightLabel="Output fields:" />
+			</property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions" />
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.HashJoin"/>
-	    <parameter id="type" value="HASH_JOIN"/>
+	  <ETLComponent category="deprecated" iconPath="icons/joiners/HashJoin" name="HashJoin" type="HASH_JOIN" defaultVisibility="etlGraph" className="org.jetel.component.HashJoin">
+	    <shortDescription>Joins unsorted data flows.</shortDescription>
+	    <description>Receives data through all connected input ports, for every connected slave input port (all input ports except the first) creates hash table from data records incoming through such slave input port (for this reason, number of incoming slave data records must be sufficiently small), for each join key value contained in data records incoming through the first input port (drivers) looks up every hash table and searches corresponding slave data records with the same key value. Every tuple of driver and its corresponding slaves is sent to transformation class that joins them to form outgoing data flow. Resulting records are sent to connected output port. This component is deprecated and should not be used anymore, we suggest you work with ExtHashJoin instead.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="driver" />
+	      <multiplePort required="true" label="slave" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
+	        <singleType name="hashJoinKey" />
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
+	        <singleType name="transform" />
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="advanced" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Left outer join" modifiable="true" name="leftOuterJoin" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Allow slave duplicates" modifiable="true" name="slaveDuplicates" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Hash table size" modifiable="true" name="hashTableSize" nullable="true" defaultHintProvider="lookupInitialCapacity">
+	        <singleType name="int" />
+	      </property>
+	      <property category="deprecated" displayName="Slave override key" modifiable="true" name="slaveOverrideKey" nullable="true">
+			<singleType name="key" inputPortName="1" rightLabel="Slave override key:"/>
+	      </property>
+	      <property category="deprecated" displayName="Left outer" modifiable="true" name="leftOuterJoin" nullable="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="deprecated" displayName="Full outer" modifiable="true" name="fullOuterJoin" nullable="true">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.HashJoin"/>
-	    <parameter id="type" value="EXT_HASH_JOIN"/>
+	  <ETLComponent category="joiners" iconPath="icons/joiners/HashJoin" name="ExtHashJoin"  type="EXT_HASH_JOIN" className="org.jetel.component.HashJoin">
+	    <shortDescription>Joins unsorted data flows.</shortDescription>
+	    <description>Receives data through all connected input ports, for every connected slave input port (all input ports except the first) creates hash table from data records incoming through such slave input port (for this reason, number of incoming slave data records must be sufficiently small), for each join key value contained in data records incoming through the first input port (drivers) looks up every hash table and searches corresponding slave data records with the same key value. Every tuple of driver and its corresponding slaves is sent to transformation class that joins them to form outgoing data flow. Resulting records are sent to connected output port.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="driver"/>
+	      <multiplePort required="true" label="slave"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
+	        <singleType name="hashJoinKey"/>
+	      </property>
+	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="inner (if not set leftOuterJoin nor fullOuterJoin parameter)">
+	        <enumType>
+	          <item displayValue="Inner join" value="inner"/>
+	          <item displayValue="Left outer join" value="leftOuter"/>
+	          <item displayValue="Full outer join" value="fullOuter"/>
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
+	        <singleType name="transform"/>
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transformClass,!transform">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
+	        <singleType name="class"/>
+	      </property>
+	      <property category="advanced" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="advanced" displayName="Allow slave duplicates" modifiable="true" name="slaveDuplicates" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Hash table size" modifiable="true" name="hashTableSize" nullable="true" defaultHintProvider="lookupInitialCapacity">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions"/>
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="deprecated" displayName="Left outer" modifiable="true" name="leftOuterJoin" nullable="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="deprecated" displayName="Full outer" modifiable="true" name="fullOuterJoin" nullable="true">
+	        <singleType name="bool"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.CheckForeignKey"/>
-	    <parameter id="type" value="CHECK_FOREIGN_KEY"/>
+	  <ETLComponent category="others" iconPath="icons/others/CheckForeignKey" name="CheckForeignKey" type="CHECK_FOREIGN_KEY" defaultVisibility="etlGraph" className="org.jetel.component.CheckForeignKey">
+	    <shortDescription>Checks foreign key.</shortDescription>
+	    <description>Checks foreign key values against a table of primary key values. Duplicate primary keys are ignored. Invalid foreign key values are replaced by default foreign key value. Resulting foreign data records are sent to all connected output ports. Invalid data records are sent to the optional second output port if connected.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="foreign records" />
+	      <singlePort name="1" required="true" label="primary records" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="foreign records" />
+	      <singlePort name="1" label="invalid foreign records" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Foreign key" modifiable="true" name="foreignKey" nullable="true" required="true">
+	        <singleType name="joinKey" labels="Foreign key definition;Foreign key;Primary key;;Foreign key definition;Foreign key;Primary key;" />
+	      </property>
+	      <property category="basic" displayName="Default foreign key" modifiable="true" name="defaultForeignKey" nullable="true" required="true">
+	        <singleType name="recordPattern" outputPortName="0" />
+	      </property>
+	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Hash table size" modifiable="true" name="hashTableSize" nullable="true" defaultHintProvider="lookupInitialCapacity">
+	        <singleType name="int" />
+	      </property>
+	      <property category="deprecated" displayName="Primary key" modifiable="true" name="primaryKey" nullable="true">
+	        <singleType name="key" inputPortName="1" rightLabel="Primary key:"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.DBFDataReader"/>
-	    <parameter id="type" value="DBF_DATA_READER"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/DBFDataReader" name="DBFDataReader" type="DBF_DATA_READER" className="org.jetel.component.DBFDataReader">
+	    <shortDescription>Reads data from dBase files.</shortDescription>
+	    <description>Reads data from dBase files and sends data records to all connected output ports.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" label="input" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="DBFCharset">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+	        <enumType>
+	          <item displayValue="Strict" value="strict" />
+	          <item displayValue="Controlled" value="controlled" />
+	          <item displayValue="Lenient" value="lenient" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="numRecords" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records per source" modifiable="true" name="skipSourceRows" nullable="true" defaultHintProvider="skipSourceRows">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records per source" modifiable="true" name="numSourceRecords" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Incremental file" modifiable="true" name="incrementalFile" nullable="true" required="incrementalKey">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="Incremental key" modifiable="true" name="incrementalKey" nullable="true" required="incrementalFile">
+	        <singleType name="string" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.DBFDataWriter"/>
-	    <parameter id="type" value="DBF_DATA_WRITER"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/DBFDataWriter" name="DBFDataWriter" type="DBF_DATA_WRITER" className="org.jetel.component.DBFDataWriter">
+	    <shortDescription>Writes data to dBase files.</shortDescription>
+	    <description>Writes data from input port to dBase file(s). Handles Character/Number/Logical/Date dBase data types. Requires fixed-length metadata on input.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts />
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" mandatory_existing_file="false" selectionMode="file_only" />
+	      </property>
+	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="DBF type" modifiable="true" name="dbfType" nullable="true" defaultHint="0x03	FoxBASE+ / Dbase III plus, no memo">
+	        <enumType>
+	          <item displayValue="0x02	FoxBASE" value="0" />
+	          <item displayValue="0x03	FoxBASE+ / Dbase III plus, no memo" value="1" />
+	          <item displayValue="0x30	Visual FoxPro" value="2" />
+	          <item displayValue="0x31	Visual FoxPro, autoincrement enabled" value="3" />
+	          <item displayValue="0x32	Visual FoxPro with field type Varchar or Varbinary" value="4" />
+	          <item displayValue="0x43	dBASE IV SQL table files, no memo" value="5" />
+	          <item displayValue="0xFB	FoxBASE" value="6" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Exclude fields" modifiable="true" name="excludeFields" nullable="true">
+	        <singleType name="key" rightLabel="Exclude fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:" />
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag" />
+	          <item displayValue="Key file tag" value="keyNameFileTag" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:"/>
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.ExtFilter"/>
-	    <parameter id="type" value="EXT_FILTER"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/ExtFilter" name="ExtFilter"  type="EXT_FILTER" passThrough="true" className="org.jetel.component.ExtFilter">
+	    <shortDescription>Filters incoming data.</shortDescription>
+	    <description>Receives data records through connected input port, removes some of them depending on defined filter expression and sends the rest to the connected first output port. Rejected records are sent to the optional second output port if connected.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="accepted"/>
+	      <singlePort name="1" label="rejected"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Filter expression" modifiable="true" name="filterExpression" nullable="true" required="!filterClass">
+	        <singleType name="filter"/>
+	      </property>
+	      <property category="advanced" displayName="Filter class" modifiable="true" name="filterClass" nullable="true" required="!filterExpression">
+	        <singleType name="class" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.ExtSort"/>
-	    <parameter id="type" value="EXT_SORT"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/ExtSort" name="ExtSort"  type="EXT_SORT" passThrough="true" className="org.jetel.component.ExtSort">
+	    <shortDescription>Sorts incoming data.</shortDescription>
+	    <description>Receives data records through connected input port, sorts them according to specified sort key and sends them to all connected output ports. Sort key is name or combination of names of field(s) of incoming records. Sort order can be either Ascending (default) or Descending. Any number of records can be sorted. If internal buffer is full, external sorting is performed.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="deprecated" displayName="Sort order" modifiable="true" name="sortOrder" nullable="true" defaultHint="Ascending">
+	        <singleType name="order"/>
+	      </property>
+	      <property category="basic" displayName="Sort key" modifiable="true" name="sortKey" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0" keyType="ordered" rightLabel="Sort key:" />
+	      </property>
+	      <property category="deprecated" displayName="Sorting locale" modifiable="true" name="locale" nullable="true" defaultHint="none">
+	        <singleType name="locale"/>
+	      </property>
+	      <property category="deprecated" displayName="Case sensitive" modifiable="true" name="caseSensitive" nullable="true" defaultHint="(true)">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Buffer capacity" modifiable="true" name="bufferCapacity" nullable="true" defaultHintProvider="internalSortBufferCapacity">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="deprecated" displayName="Sorter initial capacity" modifiable="true" name="sorterInitialCapacity" nullable="true" defaultHintProvider="internalSortBufferCapacity">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Number of tapes" modifiable="true" name="numberOfTapes" nullable="true" defaultHint="6">
+	        <singleType name="int"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
     <extension point-id="component">
-        <parameter id="className" value="org.jetel.component.SortWithinGroups"/>
-        <parameter id="type" value="SORT_WITHIN_GROUPS"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/SortWithinGroups" name="SortWithinGroups" type="SORT_WITHIN_GROUPS" passThrough="true" className="org.jetel.component.SortWithinGroups">
+	    <shortDescription>Sorts incoming data in groups.</shortDescription>
+	    <description>Receives data records through connected input port, sorts them according to specified sort key within groups of data records. The groups are defined by previous sorting of the records by the group key, with each group consisting of records considered equal when sorting by the group key. Sends sorted data records to all connected output ports. Sort key (as well as group key) is name or combination of names of field(s) of incoming data records. Sort order of each data field can be either Ascending (default) or Descending. Can be different for different key fields. Any number of records can be sorted. If the internal buffer is full, external sorting is performed.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Group key" modifiable="true" name="groupKey" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0" rightLabel="Group key:"/>
+	      </property>
+	      <property category="basic" displayName="Sort key" modifiable="true" name="sortKey" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0" keyType="ordered" rightLabel="Sort key:" />
+	      </property>
+	      <property category="advanced" displayName="Buffer capacity" modifiable="true" name="bufferCapacity" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of tapes" modifiable="true" name="numberOfTapes" nullable="true" defaultHint="8">
+	        <singleType name="int" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
     </extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Partition"/>
-	    <parameter id="type" value="PARTITION"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Partition" name="Partition" type="PARTITION" passThrough="true" className="org.jetel.component.Partition">
+	    <shortDescription>Splits incoming data flow.</shortDescription>
+	    <description>Receives data through connected input port, splits incoming data flow into more flows and sends each of them to different connected output port.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Partition" modifiable="true" name="partitionSource" nullable="true">
+	        <singleType name="transformPartition" />
+	      </property>
+	      <property category="basic" displayName="Partition URL" modifiable="true" name="partitionURL" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Partition class" modifiable="true" name="partitionClass" nullable="true">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Ranges" modifiable="true" name="ranges" nullable="true">
+	        <singleType name="ranges" />
+	      </property>
+	      <property category="basic" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:"/>
+	      </property>
+	      <property category="advanced" displayName="Partition source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="deprecated" displayName="Locale" modifiable="true" name="locale" nullable="true">
+	        <singleType name="locale" />
+	      </property>
+	      <property category="deprecated" displayName="Use internationalization" modifiable="true" name="useI18N" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.DataIntersection"/>
-	    <parameter id="type" value="DATA_INTERSECTION"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/DataIntersection" name="DataIntersection" type="DATA_INTERSECTION" className="org.jetel.component.DataIntersection">
+	    <shortDescription>Intersects two data flows.</shortDescription>
+	    <description>Receives sorted data flows through both input ports, finds data records with the same key values, converts these records to outgoing records according to defined transformation and sends these resulting records to the second output port. Data records contained only in the first or second data flow are sent to the first or third output ports, respectively.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="set A" />
+	      <singlePort name="1" required="true" label="set B" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="only in A" />
+	      <singlePort name="1" required="true" label="in A &amp; B" />
+	      <singlePort name="2" required="true" label="only in B" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
+	        <singleType name="joinKey" labels="Join key;Set A key;Set B key;;;Set A key field;Set B key field" />
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
+	        <singleType name="transform" outputPortName="1" shiftPortIndexing="true"/>
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Allow key duplicates" modifiable="true" name="keyDuplicates" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions" />
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file" />
+	      </property>
+		  <property category="deprecated" displayName="Slave override key" modifiable="true" name="slaveOverrideKey" nullable="true">
+			<singleType name="key" inputPortName="1" rightLabel="Slave override key:" />
+		  </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Aggregate"/>
-	    <parameter id="type" value="AGGREGATE"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Aggregate" name="Aggregate" type="AGGREGATE" className="org.jetel.component.Aggregate">
+	    <shortDescription>Aggregates information about data.</shortDescription>
+	    <description>Receives data through connected input port, aggregates information about groups of adjacent records with the same aggregate key value, creates outgoing records from this information along with other input fields according to output metadata and sends these resulting records to all connected output ports. Can by used similarly as GROUP BY in SQL.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Aggregate key" modifiable="true" name="aggregateKey" nullable="true">
+	        <singleType name="key" inputPortName="0" rightLabel="Aggregate key:"/>
+	      </property>
+	      <property category="basic" displayName="Aggregation mapping" modifiable="true" name="mapping" nullable="true" required="true">
+	        <singleType name="aggregationMapping" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Sorted input" modifiable="true" name="sorted" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="deprecated" displayName="Old aggregation mapping" modifiable="true" name="aggregateFunctions" nullable="true" required="false">
+	        <singleType name="string" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.SystemExecute"/>
-	    <parameter id="type" value="SYS_EXECUTE"/>
+	  <ETLComponent category="others" iconPath="icons/others/SystemExecute" name="SystemExecute" type="SYS_EXECUTE" defaultVisibility="etlGraph" className="org.jetel.component.SystemExecute">
+	    <shortDescription>Executes system commands.</shortDescription>
+	    <description>Executes system commands and sends their outputs to the optional output port or writes it to output file. If command requires some data, it can be get through connected optional input port.</description>
+	    <inputPorts>
+	      <singlePort name="0" label="input for command" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" label="output of command" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="System command" modifiable="true" name="command" nullable="true" required="true">
+	        <singleType name="multiline" />
+	      </property>
+	      <property category="basic" displayName="Process input/output charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Output file URL" modifiable="true" name="outputFile" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Command interpreter" modifiable="true" name="interpreter" nullable="true" defaultHint="${}">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Working directory" modifiable="true" name="workingDirectory" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="Number of error lines" modifiable="true" name="capturedErrorLines" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Environment" modifiable="true" name="environment" nullable="false">
+	        <singleType name="environment" />
+	      </property>
+	      <property category="advanced" displayName="Timeout for producer/consumer workers (ms)" modifiable="true" name="workersTimeout" nullable="true" defaultHint="0 (unlimited)">
+	        <singleType name="interval" />
+	      </property>
+	      <property category="advanced" displayName="Ignore exit value" modifiable="true" name="ignoreExitValue" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.RunGraph"/>
-	    <parameter id="type" value="RUN_GRAPH"/>
+	  <ETLComponent category="others" iconPath="icons/others/RunGraph" name="RunGraph" type="RUN_GRAPH" passThrough="true" defaultVisibility="etlGraph" className="org.jetel.component.RunGraph">
+	    <shortDescription>Runs graphs in selected instance of Clover.</shortDescription>
+	    <description>Runs specified graph(s) in selected instance of Clover. Name(s) of at least one graph can be received through connected input port or name of one graph only can be set as attribute of this component. If graph name(s) is(are) received through connected input port, information about execution of the graph(s) is sent to the connected first output port (second output port is not connected). If graph name is set as attribute of the component, input port is not connected and information about execution of the graph is sent to connected output ports. It is sent to the first output port if it is successful or to the second if not.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" label="in regular mode: names of the graphs to be executed, otherwise nothing">
+	        <Metadata id="RunGraph_Input" />
+	      </singlePort>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false" label="regular mode: status messages, pipeline mode: an information record in case of successful termination, otherwise nothing">
+	        <Metadata id="RunGraph_Output" />
+	      </singlePort>
+		  <singlePort name="1" required="false" label="in pipeline mode an information record in case of an error, otherwise nothing">
+	        <Metadata id="RunGraph_Output" />
+		  </singlePort>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Graph URL" modifiable="true" name="graphName" nullable="true" openActionLabel="Open Graph">
+	        <singleType name="file" />
+	      </property>
+		  <property category="basic" displayName="The same JVM" modifiable="true" name="sameInstance" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Graph parameters to pass" modifiable="true" name="paramsToPass" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Alternative JVM command line" modifiable="true" name="alternativeJavaCmdLine" nullable="true" defaultHint="java -cp">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Log file URL" modifiable="true" name="logFile" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Append to log file" modifiable="true" name="logAppend" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+		  <property category="advanced" displayName="Graph execution class" modifiable="true" name="graphExecClass" nullable="true">
+	        <singleType name="string" />
+	      </property>
+		  <property category="advanced" displayName="Command line arguments" modifiable="true" name="cloverCmdLineArgs" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Ignore graph fail" modifiable="true" name="ignoreGraphFail" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.HttpConnector"/>
-		<parameter id="type" value="HTTP_CONNECTOR"/>
+	  <ETLComponent category="others" iconPath="icons/others/HTTPConnector" name="HTTPConnector" type="HTTP_CONNECTOR" className="org.jetel.component.HttpConnector">
+	    <shortDescription>HTTPConnector sends HTTP requests to a web server and receives responses.</shortDescription>
+	    <description>Receives an HTTP request through the connected input port, reads it from input file or directly from the graph and sends it to the HTTP server. Takes the response from the server and sends it out through the connected output port or writes it to the output file. Optionally also the output file URLs can be sent out through the connected output port.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false">
+	        <Metadata id="HTTPConnector_Attributes" />
+	      </singlePort>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false">
+	        <Metadata id="HTTPConnector_Result" />
+	      </singlePort>
+	      <singlePort name="1" required="false">
+	        <Metadata id="HTTPConnector_Error" />
+	      </singlePort>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="URL" modifiable="true" name="url" nullable="true">
+	        <singleType name="httpURL" />
+	      </property>
+	      <property category="basic" displayName="Request method" modifiable="true" name="requestMethod" nullable="true" defaultHint="GET">
+	        <enumType>
+	          <item displayValue="GET" value="GET" />
+	          <item displayValue="POST" value="POST" />
+	          <item displayValue="PUT" value="PUT" />
+	          <item displayValue="PATCH" value="PATCH" />
+	          <item displayValue="DELETE" value="DELETE" />
+	          <item displayValue="HEAD" value="HEAD" />
+	          <item displayValue="OPTIONS" value="OPTIONS" />
+	          <item displayValue="TRACE" value="TRACE" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Add input fields as parameters" modifiable="true" name="addInputFieldsAsParameters" nullable="true" required="false" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Add input fields as parameters to" modifiable="true" name="addInputFieldsAsParametersTo" nullable="true" required="false" defaultHint="QUERY">
+	        <enumType>
+	          <item displayValue="Body" value="BODY" />
+	          <item displayValue="Query" value="QUERY" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Ignored fields" modifiable="true" name="ignoredFields" nullable="true" required="false">
+	        <singleType name="key" title="Ignored fields" leftLabel="Fields:" rightLabel="Fields to ignore:" />
+	      </property>
+	      <property category="basic" displayName="Additional HTTP headers" modifiable="true" name="headerProperties" nullable="true">
+	        <singleType name="properties" />
+	      </property>
+	      <property category="basic" displayName="Multipart entities" modifiable="true" name="multipartEntities" nullable="true" required="false">
+	        <singleType name="key" title="Fields to use as multipart entities" leftLabel="Available fields:" rightLabel="Fields to use:" />
+	      </property>
+	      <property category="basic" displayName="Request/response charset" modifiable="true" name="charset" nullable="true">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Request content" modifiable="true" name="requestContent" nullable="true" required="false" redundant="inFileUrl">
+	        <singleType name="multiline" />
+	      </property>
+	      <property category="basic" displayName="Input file URL" modifiable="true" name="inFileUrl" nullable="true" required="false" redundant="inputField|outputField">
+	        <singleType name="file" />
+	      </property>
+          <property category="basic" displayName="Output file URL" modifiable="true" name="outFileUrl" nullable="true" required="false" redundant="inputField|outputField">
+            <singleType name="file" fields="output" mandatory_existing_file="false"/>
+          </property>
+	      <property category="basic" displayName="Append output" modifiable="true" name="appendOutput" nullable="true" required="false" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Input mapping" modifiable="true" name="inputMapping" nullable="true">
+	        <singleType name="httpConnectorInputMapping" />
+	      </property>
+	      <property category="basic" displayName="Output mapping" modifiable="true" name="standardOutputMapping" nullable="true">
+	        <singleType name="httpConnectorOutputMapping" outputPortName="0" />
+	      </property>
+	      <property category="basic" displayName="Error mapping" modifiable="true" name="errorOutputMapping" nullable="true">
+	        <singleType name="httpConnectorErrorMapping" outputPortName="1" />
+	      </property>
+	      <property category="basic" displayName="Redirect error output" modifiable="true" name="redirectErrorOutput" nullable="true" required="false" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Raw HTTP headers" modifiable="true" name="rawHeaders" nullable="true">
+	        <singleType name="multiline"/>
+	      </property>
+	      <property category="advanced" displayName="Request Cookies" modifiable="true" name="requestCookies" nullable="true" required="false">
+	        <singleType name="properties"/>
+	      </property>
+	      <property category="advanced" displayName="Response Cookies" modifiable="true" name="responseCookies" nullable="true" required="false">
+	        <singleType name="string"/>
+	      </property>
+	      <property category="advanced" displayName="Authentication method" modifiable="true" name="authenticationMethod" nullable="true" required="false" defaultHint="HTTP BASIC">
+	        <enumType>
+	          <item displayValue="HTTP BASIC" value="BASIC" />
+	          <item displayValue="HTTP DIGEST" value="DIGEST" />
+	          <item displayValue="ANY" value="ANY" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Username" modifiable="true" name="username" nullable="true" required="false">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Password" modifiable="true" name="password" nullable="true" required="false">
+	        <singleType name="password" />
+	      </property>
+	      <property category="advanced" displayName="OAuth Consumer key" modifiable="true" name="consumerKey" nullable="true" required="false">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="OAuth Consumer secret" modifiable="true" name="consumerSecret" nullable="true" required="false">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="OAuth Access Token" modifiable="true" name="oAuthAccessToken" nullable="true" required="false">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="OAuth Access Token secret" modifiable="true" name="oAuthAccessTokenSecret" nullable="true" required="false">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Store HTTP response to file" modifiable="true" name="responseAsFileName" nullable="true" required="false" defaultHint="false" redundant="inFileUrl">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Prefix for response files" modifiable="true" name="responseFilePrefix" nullable="true" required="false" default="http-response-">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Stream input file" modifiable="true" name="streaming" nullable="true" required="false" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="deprecated" displayName="URL from input field" modifiable="true" name="urlInputField" nullable="true">
+	        <singleType name="field" inputPortName="0" />
+	      </property>
+	      <property category="deprecated" displayName="Input field" modifiable="true" name="inputField" nullable="true" required="false" redundant="inFileUrl|outFileUrl">
+	        <singleType name="field" inputPortName="0" />
+	      </property>
+	      <property category="deprecated" displayName="Output field" modifiable="true" name="outputField" nullable="true" required="false" redundant="inFileUrl|outFileUrl">
+	        <singleType name="field" outputPortName="0" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.KeyGenerator"/>
-	    <parameter id="type" value="KEY_GEN"/>
+	  <ETLComponent category="deprecated" iconPath="icons/transformers/KeyGenerator" name="KeyGenerator"  type="KEY_GEN" defaultVisibility="etlGraph" className="org.jetel.component.KeyGenerator">
+	    <shortDescription>Generates new key field.</shortDescription>
+	    <description>Receives data through connected input port, generates one new field based on other specified fields, adds this new field to outgoing data records and sends them to all connected output ports.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Matching key" modifiable="true" name="keyExpression" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0" keyType="KeyGen" rightLabel="Matching key:"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.AproxMergeJoin"/>
-	    <parameter id="type" value="APROX_MERGE_JOIN"/>
+	  <ETLComponent category="joiners" iconPath="icons/joiners/ApproximativeJoin" name="ApproximativeJoin"  type="APROX_MERGE_JOIN" defaultVisibility="etlGraph" className="org.jetel.component.AproxMergeJoin">
+	    <shortDescription>Joins two similar data flows.</shortDescription>
+	    <description>Receives data through two input ports, for each matching key value contained in driver data records (port 0) searches corresponding slave data records (port 1) with the same key value. For every pair of driver and slave records conformity based on join key is computed as Levenstein distance. Pairs with conformity higher than specified value are joined to form outgoing data flow and these resulting records are sent to the first output port. Pairs with conformity less are joined to form outgoing data flow and these resulting records sent to the second output port. Driver records without slave are sent to the third output port if connected. Slave records without driver are sent to the fourth output port if connected.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" label="driver"/>
+	      <singlePort name="1" required="true" label="slave"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="joined with conformity &gt; limit"/>
+	      <singlePort name="1" required="true" label="joined with conformity &lt; limit"/>
+	      <singlePort name="2" label="driver with no matching slave"/>
+	      <singlePort name="3" label="slave with no matching driver"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
+	        <singleType name="aproximativeJoinKey"/>
+	      </property>
+	      <property category="basic" displayName="Matching key" modifiable="true" name="matchingKey" nullable="true" required="true">
+	        <singleType name="joinKey" size="1" labels="Matching key"/>
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
+	        <singleType name="transform" outputPortName="0"/>
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
+	        <singleType name="class"/>
+	      </property>
+	      <property category="basic" displayName="Transform for suspicious" modifiable="true" name="transformForSuspicious" nullable="true" required="!transformClassForSuspicious,!transformURLForSuspicious">
+	        <singleType name="transform" outputPortName="1"/>
+	      </property>
+	      <property category="basic" displayName="Transform URL for suspicious" modifiable="true" name="transformURLForSuspicious" nullable="true" required="!transformForSuspicious,!transformClassForSuspicious">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="Transform class for suspicious" modifiable="true" name="transformClassForSuspicious" nullable="true" required="!transformForSuspicious,!transformURLForSuspicious">
+	        <singleType name="class"/>
+	      </property>
+	      <property category="basic" displayName="Conformity limit (0,1)" modifiable="true" name="conformity" nullable="true" defaultHint="0.75">
+	        <singleType name="double" min="0" max="1"/>
+	      </property>
+	      <property category="deprecated" displayName="Locale" modifiable="true" name="locale" nullable="true" defaultHint="none">
+	        <singleType name="locale"/>
+	      </property>
+	      <property category="deprecated" displayName="Case sensitive" modifiable="true" name="caseSensitive" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions"/>
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="deprecated" displayName="Slave override key" modifiable="true" name="slaveOverrideKey" nullable="true">
+	        <singleType name="key" inputPortName="1" rightLabel="Slave override key:"/>
+	      </property>
+	      <property category="deprecated" displayName="Slave override matching key" modifiable="true" name="slaveMatchingOverride" nullable="true">
+	        <singleType name="key" inputPortName="1" rightLabel="Slave override matching key:"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.DBJoin"/>
-	    <parameter id="type" value="DBJOIN"/>
+	  <ETLComponent category="joiners" iconPath="icons/joiners/DBJoin" name="DBJoin" type="DBJOIN" className="org.jetel.component.DBJoin">
+	    <shortDescription>Joins incoming data flow with records from database table.</shortDescription>
+	    <description>Receives data through connected input port (drivers), connects to database, for each join key value contained in driver data records searches corresponding data records with the same key value in database table (slaves). Every pair of driver and slave records is sent to transformation class that joins them to form outgoing data flow. Resulting data records are sent to the first output port. Driver records without slave are sent to the second output port if connected and if inner join (default) is performed.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="joined records" />
+	      <singlePort name="1" label="skipped records" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0" keyDuplicates="true" rightLabel="Join key:"/>
+	      </property>
+	      <property category="basic" displayName="Left outer join" modifiable="true" name="leftOuterJoin" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="DB connection" modifiable="true" name="dbConnection" nullable="false" required="true">
+	        <singleType name="connection" />
+	      </property>
+	      <property category="basic" displayName="DB Metadata" modifiable="true" name="metadata" nullable="true">
+	        <singleType name="metadata" />
+	      </property>
+	      <property category="basic" displayName="Query URL" modifiable="true" name="url" nullable="true" required="!sqlQuery" redundant="sqlQuery">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="SQL query" modifiable="true" name="sqlQuery" nullable="true" required="!url" redundant="url">
+			<singleType name="sqlQuery" type="select" />
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true">
+	        <singleType name="transform" outputPortName="0" />
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="advanced" displayName="Cache size" modifiable="true" name="maxCached" nullable="true" defaultHint="100">
+	        <singleType name="int" min="0" />
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions" />
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.XLSReader"/>
-	    <parameter id="type" value="XLS_READER"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/XLSDataReader" name="XLSDataReader" type="XLS_READER" className="org.jetel.component.XLSReader">
+	    <shortDescription>Reads data from Excel files.</shortDescription>
+	    <description>Reads specified sheets of Excel files, converts their contents to data records and sends them to all connected output ports. Mapping of sheet columns to output metadata must be defined.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" label="input" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Type of parser" modifiable="true" name="parser" nullable="true" defaultHint="Auto">
+	        <enumType>
+	          <item displayValue="Auto" value="auto" />
+	          <item displayValue="XLS" value="XLS" />
+	          <item displayValue="XLSX" value="XLSX" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
+	      </property>
+	      <property category="basic" displayName="Sheet name" modifiable="true" name="sheetName" nullable="true" redundant="sheetNumber">
+	        <singleType name="xlsSheetName" />
+	      </property>
+	      <property category="basic" displayName="Sheet number" modifiable="true" name="sheetNumber" nullable="true" redundant="sheetName">
+	        <singleType name="string" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+	        <enumType>
+	          <item displayValue="Strict" value="strict" />
+	          <item displayValue="Controlled" value="controlled" />
+	          <item displayValue="Lenient" value="lenient" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Metadata row" modifiable="true" name="metadataRow" nullable="true" defaultHint="0">
+	        <singleType name="int" min="0" />
+	      </property>
+	      <property category="basic" displayName="Field mapping" modifiable="true" name="fieldMap" nullable="true">
+	        <singleType name="xlsMapping" />
+	      </property>
+	      <property category="deprecated" displayName="Start row" modifiable="true" name="startRow" nullable="true" redundant="skipRows|numRecords">
+	        <singleType name="int" min="1" />
+	      </property>
+	      <property category="deprecated" displayName="Final row" modifiable="true" name="finalRow" nullable="true" redundant="skipRows|numRecords">
+	        <singleType name="int" min="2" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" redundant="startRow|finalRow">
+	        <singleType name="int" min="1" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="numRecords" nullable="true" redundant="startRow|finalRow">
+	        <singleType name="int" min="1" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records per source" modifiable="true" name="skipSourceRows" nullable="true" defaultHintProvider="skipSourceRows">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records per source" modifiable="true" name="numSourceRecords" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records per spreadsheet" modifiable="true" name="skipSheetRows" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records per spreadsheet" modifiable="true" name="numSheetRecords" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max error count" modifiable="true" name="maxErrorCount" nullable="true" defaultHint="(unlimited)">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Incremental file" modifiable="true" name="incrementalFile" nullable="true" required="incrementalKey">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="Incremental key" modifiable="true" name="incrementalKey" nullable="true" required="incrementalFile">
+	        <singleType name="string" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.XLSWriter"/>
-	    <parameter id="type" value="XLS_WRITER"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/XLSDataWriter" name="XLSDataWriter"  type="XLS_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.XLSWriter">
+	    <shortDescription>Writes data to Excel files.</shortDescription>
+	    <description>Receives data through connected input port and writes data records to specified sheets of Excel files.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Type of formatter" modifiable="true" name="formatter" nullable="true" defaultHint="Auto">
+	        <enumType>
+	          <item displayValue="Auto" value="auto"/>
+	          <item displayValue="XLS" value="XLS"/>
+	          <item displayValue="XLSX" value="XLSX"/>
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_only" mandatory_existing_file="false"/>
+	      </property>
+	      <property category="basic" displayName="Sheet name" modifiable="true" name="sheetName" nullable="true" redundant="sheetNumber">
+	        <singleType name="string"/>
+	      </property>
+	      <property category="basic" displayName="Sheet number" modifiable="true" name="sheetNumber" nullable="true" redundant="sheetName">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="basic" displayName="Append to the sheet" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Remove all sheets" modifiable="true" name="removeSheets" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>      
+	      <property category="basic" displayName="Metadata row" modifiable="true" name="namesRow" nullable="true" defaultHint="0">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	       <property category="advanced" displayName="Disable temporary files (inMemory mode)" modifiable="true" name="inMemory" nullable="true" defaultHintProvider="xlsInMemory">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Start row" modifiable="true" name="firstDataRow" nullable="true" defaultHint="1">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Start column" modifiable="true" name="firstColumn" nullable="true" defaultHint="A">
+	        <singleType name="string"/>
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true" >
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Exclude fields" modifiable="true" name="excludeFields" nullable="true">
+	        <singleType name="key" rightLabel="Exclude fields:"/>
+	      </property>
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:"/>
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID"/>
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag"/>
+	          <item displayValue="Key file tag" value="keyNameFileTag"/>
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:"/>
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string"/>
+	      </property>
+	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>  
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.CloverDataWriter"/>
-	    <parameter id="type" value="CLOVER_WRITER"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/CloverDataWriter" name="CloverDataWriter" type="CLOVER_WRITER" className="org.jetel.component.CloverDataWriter">
+	    <shortDescription>Writes data to Clover files.</shortDescription>
+	    <description>Receives data through connected input port and writes data records to output files in internal binary Clover data format.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts />
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" mandatory_existing_file="false" selectionMode="file_only" />
+	      </property>
+	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Save metadata" modifiable="true" name="saveMetadata" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Compress level" modifiable="true" name="compressLevel" nullable="true">
+	        <singleType name="int" min="0" max="9" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="deprecated" displayName="Save index" modifiable="true" name="saveIndex" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.CloverDataReader"/>
-	    <parameter id="type" value="CLOVER_READER"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/CloverDataReader" name="CloverDataReader" type="CLOVER_READER" className="org.jetel.component.CloverDataReader">
+	    <shortDescription>Reads data from Clover files.</shortDescription>
+	    <description>Reads data from files written in internal binary Clover data format and sends data records to all connected output ports.</description>
+	    <inputPorts />
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" selectionMode="file_only" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" redundant="startRecord|finalRecord">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="numRecords" nullable="true" redundant="startRecord|finalRecord">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records per source" modifiable="true" name="skipSourceRows" nullable="true" defaultHint="0 (check skipSourceRows in output metadata)">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records per source" modifiable="true" name="numSourceRecords" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="deprecated" displayName="Index file URL" modifiable="true" name="indexFileURL" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="deprecated" displayName="Start record" modifiable="true" name="startRecord" nullable="true" redundant="skipRows|numRecords">
+	        <singleType name="int" />
+	      </property>
+	      <property category="deprecated" displayName="Final record" modifiable="true" name="finalRecord" nullable="true" redundant="skipRows|numRecords">
+	        <singleType name="int" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="type" value="STRUCTURE_WRITER"/>
-		<parameter id="className" value="org.jetel.component.StructureWriter"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/StructuredDataWriter" name="StructuredDataWriter" type="STRUCTURE_WRITER" className="org.jetel.component.StructureWriter">
+	    <shortDescription>Writes data to files in structured way.</shortDescription>
+	    <description>Receives data through connected input port(s) and writes data records to output files according to defined structure consisting of header, body and footer. Header and footer are optional.</description>
+	    <inputPorts>
+				<singlePort name="0" label="Body port" required="true" />
+				<singlePort name="1" label="Header port" />
+				<singlePort name="2" label="Footer port" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="output" dictionary="output" selectionMode="file_only" mandatory_existing_file="false" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Append" modifiable="true" name="append" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Body mask" modifiable="true" name="mask" nullable="true">
+	        <singleType name="xml" inputPortName="0" title="Create body mask" />
+	      </property>
+	      <property category="basic" displayName="Header mask" modifiable="true" name="header" nullable="true">
+					<singleType name="xml" inputPortName="1" title="Create header mask" />
+	      </property>
+	      <property category="basic" displayName="Footer mask" modifiable="true" name="footer" nullable="true">
+					<singleType name="xml" inputPortName="2" title="Create footer mask" />
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Bytes per file" modifiable="true" name="bytesPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="recordSkip" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" inputPortName="0" rightLabel="Partition key:" />
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true" defaultHint="Number file tag">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag" />
+	          <item displayValue="Key file tag" value="keyNameFileTag" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="NORMALIZER"/>
-		<parameter id="className" value="org.jetel.component.Normalizer"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Normalizer" name="Normalizer" type="NORMALIZER" className="org.jetel.component.Normalizer">
+	    <shortDescription>Normalizes data.</shortDescription>
+	    <description>Receives data through connected input port, splits each data record into more records and sends all resulting records to all connected output ports.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Normalize" modifiable="true" name="normalize" nullable="true" required="!normalizeClass,!normalizeURL">
+	        <singleType name="transformNormalize" />
+	      </property>
+	      <property category="basic" displayName="Normalize URL" modifiable="true" name="normalizeURL" nullable="true" required="!normalize,!normalizeClass">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Normalize class" modifiable="true" name="normalizeClass" nullable="true" required="!normalize,!normalizeURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Normalize source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions" />
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="DENORMALIZER"/>
-		<parameter id="className" value="org.jetel.component.Denormalizer"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Denormalizer" name="Denormalizer" type="DENORMALIZER" className="org.jetel.component.Denormalizer">
+	    <shortDescription>Denormalizes data.</shortDescription>
+	    <description>Denormalizes input records - ie composes one output record from several input records using user-specified transformation. One group is defined with the same value on the given field(s) or has the fixed size. The transformation is supposed to implement interface RecordDenormalize.
+Sends all resulting records to all connected output ports.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Key" modifiable="true" name="key" nullable="true" redundant="groupSize">
+	        <singleType name="key" inputPortName="0" rightLabel="Key:"/>
+	      </property>
+	      <property category="basic" displayName="Group size" modifiable="true" name="groupSize" nullable="true" redundant="key">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="basic" displayName="Denormalize" modifiable="true" name="denormalize" nullable="true" required="!denormalizeClass,!denormalizeURL">
+	        <singleType name="transformDenormalize" />
+	      </property>
+	      <property category="basic" displayName="Denormalize URL" modifiable="true" name="denormalizeURL" nullable="true" required="!denormalize,!denormalizeClass">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Denormalize class" modifiable="true" name="denormalizeClass" nullable="true" required="!denormalize,!denormalizeURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Sort order" modifiable="true" name="order" nullable="true" defaultHint="Auto">
+	        <enumType>
+	          <item displayValue="Ascending" value="Asc" />
+	          <item displayValue="Descending" value="Desc" />
+	          <item displayValue="Ignore" value="Ignore" />
+	          <item displayValue="Auto" value="Auto" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Denormalize source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="advanced" displayName="Allow incomplete last group" modifiable="true" name="incompleteGroupAllowed" nullable="true" defaultHint="false" redundant="!groupSize">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions" />
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="ROLLUP"/>
-		<parameter id="className" value="org.jetel.component.Rollup"/>
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Rollup" name="Rollup" type="ROLLUP" className="org.jetel.component.Rollup">
+	    <shortDescription>Executes a rollup transform.</shortDescription>
+	    <description>Receives data through connected input port, groups incoming records by their key values and lets user transformation arbitrarily create new data records from the group by aggregating, composing or splitting. Sends these new data records through the connected output port(s) as specified by the transformation. Rollup function is superset for (De)Normalizer components.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Group key" modifiable="true" name="groupKeyFields" nullable="true">
+	        <singleType name="key" inputPortName="0" rightLabel="Group key:" />
+	      </property>
+	      <property category="basic" displayName="Group accumulator" modifiable="true" name="groupAccumulatorMetadataId" nullable="true">
+	        <singleType name="metadata" />
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformUrl,!transformClassName">
+	        <singleType name="transformRollup" charsetAttributeName="transformUrlCharset" />
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformUrl" nullable="true" required="!transform,!transformClassName">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClassName" nullable="true" required="!transform,!transformUrl">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Transform source charset" modifiable="true" name="transformUrlCharset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Sorted input" modifiable="true" name="inputSorted" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="JMS_READER"/>
-		<parameter id="className" value="org.jetel.component.JmsReader"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/JMSReader" name="JMSReader" type="JMS_READER" className="org.jetel.component.JmsReader" viewPlainData="false" viewGridData="false">
+	    <shortDescription>Receives JMS messages.</shortDescription>
+	    <description>Receives JMS messages, converts them to data records and sends them to all connected output ports. Implements JmsMsg2DataRecord interface.</description>
+	    <inputPorts />
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	        <singleType name="jmsConnection" />
+	      </property>
+	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
+	        <singleType name="multilineEditableJava" />
+	      </property>
+	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Processor class" modifiable="true" name="processorClass" nullable="true">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="JMS message selector" modifiable="true" name="selector" nullable="true">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Processor source charset" modifiable="true" name="charset" nullable="true" defaultHint="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Message charset" modifiable="true" name="msgCharset" nullable="true" defaultHint="charsetDecoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="advanced" displayName="Max msg count" modifiable="true" name="maxMsgCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Timeout" modifiable="true" name="timeout" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Message body field" modifiable="true" name="bodyField" nullable="true" defaultHint="bodyField">
+	        <singleType name="field" outputPortName="0" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="JMS_WRITER"/>
-		<parameter id="className" value="org.jetel.component.JmsWriter"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/JMSWriter" name="JMSWriter" type="JMS_WRITER" className="org.jetel.component.JmsWriter" viewPlainData="false" viewGridData="false">
+	    <shortDescription>Sends out JMS messages.</shortDescription>
+	    <description>Receives data through connected input port, converts data records to JMS messages and sends them out. Implements DataRecord2JmsMsg interface.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts />
+	    <properties>
+	      <property category="basic" displayName="Jms connection" modifiable="true" name="connection" nullable="false" required="true">
+	        <singleType name="jmsConnection" />
+	      </property>
+	      <property category="basic" displayName="Processor code" modifiable="true" name="processorCode" nullable="true">
+	        <singleType name="multilineEditableJava" />
+	      </property>
+	      <property category="basic" displayName="Processor URL" modifiable="true" name="processorURL" nullable="true">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Processor class" modifiable="true" name="processorClass" nullable="true">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Processor source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="advanced" displayName="Message body field" modifiable="true" name="bodyField" nullable="true" defaultHint="bodyField">
+	        <singleType name="field" inputPortName="0" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="LOOKUP_JOIN"/>
-		<parameter id="className" value="org.jetel.component.LookupJoin"/>
+	  <ETLComponent category="joiners" iconPath="icons/joiners/LookUpJoin" name="LookupJoin"  type="LOOKUP_JOIN" className="org.jetel.component.LookupJoin">
+	    <shortDescription>Joins incoming data flow with records from lookup table.</shortDescription>
+	    <description>Receives data through connected input port (drivers), for each join key value contained in driver data records searches corresponding data records with the same key value in lookup table (slaves). Every pair of driver and slave records is sent to transformation class that joins them to form outgoing data flow. Resulting data records are sent to the first output port. Driver records without slave are sent to the second output port if connected and if inner join (default) is performed.</description>
+	    <inputPorts>`
+	      <singlePort name="0" required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" label="joined records"/>
+	      <singlePort name="1" label="skipped records"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0"  keyDuplicates="true" rightLabel="Join key:" />
+	      </property>
+	      <property category="basic" displayName="Left outer join" modifiable="true" name="leftOuterJoin" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Lookup table" modifiable="true" name="lookupTable" nullable="true" required="true">
+	        <singleType name="lookupTableID"/>
+	      </property>
+	      <property category="basic" displayName="Transform" modifiable="true" name="transform" nullable="true" required="!transformClass,!transformURL">
+	        <singleType name="transform" outputPortName="0"/>
+	      </property>
+	      <property category="basic" displayName="Transform URL" modifiable="true" name="transformURL" nullable="true" required="!transform,!transformClass">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="Transform class" modifiable="true" name="transformClass" nullable="true" required="!transform,!transformURL">
+	        <singleType name="class"/>
+	      </property>
+	      <property category="basic" displayName="Transform source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="advanced" displayName="Clear lookup table after finishing" modifiable="true" name="freeLookupTable" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="deprecated" displayName="Error actions" modifiable="true" name="errorActions" nullable="true">
+	        <singleType name="errorActions"/>
+	      </property>
+	      <property category="deprecated" displayName="Error log" modifiable="true" name="errorLog" nullable="true">
+	        <singleType name="file"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="LOOKUP_TABLE_READER_WRITER"/>
-		<parameter id="className" value="org.jetel.component.LookupTableReaderWriter"/>
+	  <ETLComponent category="others" iconPath="icons/others/LookupTableReaderWriter" name="LookupTableReaderWriter" type="LOOKUP_TABLE_READER_WRITER" className="org.jetel.component.LookupTableReaderWriter">
+	    <shortDescription>Reads data from lookup table or write data to lookup table.</shortDescription>
+	    <description>Receives data records through connected input port and writes them to specified lookup table (output port is not connected) or reads data records from lookup table and sends them out through all connected output ports (input port is not connected). Lookup table can also be updated before data records are read and sent out (both input port and output ports are connected).</description>
+	    <inputPorts>
+	      <singlePort name="0" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Lookup table" modifiable="true" name="lookupTable" nullable="true" required="true">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Clear lookup table after finishing" modifiable="true" name="freeLookupTable" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="DATA_GENERATOR"/>
-		<parameter id="className" value="org.jetel.component.DataGenerator"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/DataGenerator" name="DataGenerator" type="DATA_GENERATOR" viewPlainData="false" viewGridData="false" className="org.jetel.component.DataGenerator">
+	    <shortDescription>Generates data records.</shortDescription>
+	    <description>Generates data records according to defined pattern and sends them to all connected output ports.</description>
+	    <inputPorts />
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Generator" modifiable="true" name="generate" nullable="true" redundant="generateClass|generateURL">
+	        <singleType name="transformGenerator" input="key" />
+	      </property>
+	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true" redundant="generate|generateClass">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Generator class" modifiable="true" name="generateClass" nullable="true" redundant="generateURL|generate">
+	        <singleType name="class" />
+	      </property>
+	      <property category="basic" displayName="Generator source charset" modifiable="true" name="charset" nullable="true" redundant="generateClass" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Number of records to generate" modifiable="true" name="recordsNumber" nullable="true" required="true">
+	        <singleType name="dataGeneratorRecordNumber" />
+	      </property>
+	      <property category="deprecated" displayName="Record pattern" modifiable="true" name="pattern" nullable="true" redundant="generate|generateClass|generateURL">
+	        <singleType name="recordPattern" outputPortName="0" />
+	      </property>
+	      <property category="deprecated" displayName="Random fields" modifiable="true" name="randomFields" nullable="true" redundant="generate|generateClass|generateURL">
+	        <singleType name="key" outputPortName="0" keyType="random" rightLabel="Random fields:" />
+	      </property>
+	      <property category="deprecated" displayName="Sequence fields" modifiable="true" name="sequenceFields" nullable="true" redundant="generate|generateClass|generateURL">
+	        <singleType name="sequenceMapping" />
+	      </property>
+	      <property category="deprecated" displayName="Random seed" modifiable="true" name="randomSeed" nullable="true">
+	        <singleType name="long" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="SEQUENCE_CHECKER"/>
-		<parameter id="className" value="org.jetel.component.SequenceChecker"/>
+	  <ETLComponent category="others" iconPath="icons/others/SequenceChecker" name="SequenceChecker" type="SEQUENCE_CHECKER" passThrough="true" defaultVisibility="etlGraph" className="org.jetel.component.SequenceChecker">
+	    <shortDescription>Checks data sequence.</shortDescription>
+	    <description>Checks the sort order of incoming data records. If all records are sorted properly for a specified sort key, the component continues, otherwise it fails (thus aborting the graph). Sort key is name or combination of names of field(s) of incoming records. Sort order is either Ascending (default) or Descending, but it is always the same for all key fields. If the sort order is correct, the incoming records are sent out through output port(s) if connected.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="false"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="deprecated" displayName="Sort order" modifiable="true" name="sortOrder" nullable="true" defaultHint="Ascending">
+	        <singleType name="order"/>
+	      </property>
+	      <property category="basic" displayName="Sort key" modifiable="true" name="sortKey" nullable="true" required="true">
+	        <singleType name="key" inputPortName="0" keyType="ordered" rightLabel="Sort key:"/>
+	      </property>
+	      <property category="basic" displayName="Unique keys" modifiable="true" name="uniqueKeys" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="basic" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true" defaultHint="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="deprecated" displayName="Locale" modifiable="true" name="locale" nullable="true">
+	        <singleType name="string"/>
+	      </property>
+	      <property category="deprecated" displayName="Use internationalization" modifiable="true" name="useI18N" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
@@ -283,53 +2382,509 @@
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="XML_XPATH_READER"/>
-		<parameter id="className" value="org.jetel.component.XmlXPathReader"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLXPathReader" type="XML_XPATH_READER" className="org.jetel.component.XmlXPathReader" metadataProvider="org.jetel.component.tree.reader.TreeReaderErrMetadataProvider">
+	    <shortDescription>Reads data from XML files.</shortDescription>
+	    <description>Reads data from XML files, converts elements matched by XPath defined in mapping along with their direct children to data records and sends them into different connected output ports as defined by mapping.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+	        <enumType>
+	          <item displayValue="Strict" value="strict" />
+	          <item displayValue="Controlled" value="controlled" />
+	          <item displayValue="Lenient" value="lenient" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!mappingURL" redundant="mappingURL">
+	        <singleType name="multilineEditableXML" />
+	      </property>
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	        <singleType name="file" />
+	      </property>
+	      <property category="advanced" displayName="Xml features" modifiable="true" name="xmlFeatures" nullable="true">
+	        <singleType name="xmlFeatures" />
+	      </property>
+	      <property category="advanced" displayName="Skip mappings" modifiable="true" name="skipRows" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of mappings" modifiable="true" name="numRecords" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.XMLExtract"/>
-	    <parameter id="type" value="XML_EXTRACT"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLExtract" name="XMLExtract" type="XML_EXTRACT" className="org.jetel.component.XMLExtract">
+	    <shortDescription>Reads data from XML files.</shortDescription>
+	    <description>Reads data from XML files, converts elements matched by mapping along with their children to data records and sends them to different connected output ports as defined by mapping.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" label="input" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input XML">
+	        <singleType name="file" fields="input" dictionary="input" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!mappingURL" redundant="mappingURL">
+	        <singleType name="xmlMapping" />
+	      </property>
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Namespace Bindings" modifiable="true" name="namespaceBindings" nullable="true">
+	        <singleType name="properties" />
+	      </property>
+	      <property category="basic" displayName="XML Schema" modifiable="true" name="schema" nullable="true" required="false" defaultHint="none">
+	        <singleType name="xmlSchemaFile" fields="input" single_url="false" updateNamespaceBinding="true" namespaceBindingProperty="namespaceBindings" />
+	      </property>
+	      <property category="basic" displayName="Use nested nodes" modifiable="true" name="useNestedNodes" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Trim strings" modifiable="true" name="trim" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Validate" modifiable="true" name="validate" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="XML features" modifiable="true" name="xmlFeatures" nullable="true">
+	        <singleType name="xmlFeatures" />
+	      </property>
+	       <property category="advanced" displayName="Skip rows" modifiable="true" name="skipRows" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of rows to output" modifiable="true" name="numRecords" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.JsonExtract"/>
-	    <parameter id="type" value="JSON_EXTRACT"/>
+      <ETLComponent category="readers" iconPath="icons/readers/JSONExtract" name="JSONExtract" type="JSON_EXTRACT" className="org.jetel.component.JsonExtract">
+	    <shortDescription>Reads data from JSON files.</shortDescription>
+	    <description>Reads data from JSON files, converts elements matched by mapping along with their children to data records and sends them to different connected output ports as defined by mapping.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" label="input" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="sourceUri" nullable="true" required="true" openActionLabel="Open input JSON">
+	        <singleType name="file" fields="input" dictionary="input" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetDecoder">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!mappingURL" redundant="mappingURL">
+	        <singleType name="xmlMapping" />
+	      </property>
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Equivalent XML Schema" modifiable="true" name="schema" nullable="true" required="false" defaultHint="none">
+	        <singleType name="xmlSchemaFile" fields="input" single_url="false" updateNamespaceBinding="true" namespaceBindingProperty="namespaceBindings" />
+	      </property>
+	      <property category="basic" displayName="Use nested nodes" modifiable="true" name="useNestedNodes" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="basic" displayName="Trim strings" modifiable="true" name="trim" nullable="true" defaultHint="true">
+	        <singleType name="bool" />
+	      </property>
+	       <property category="advanced" displayName="Skip rows" modifiable="true" name="skipRows" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of rows to output" modifiable="true" name="numRecords" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.XmlReader"/>
-	    <parameter id="type" value="XML_READER"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/XMLXPathReader" name="XMLReader" type="XML_READER" defaultVisibility="etlGraph" className="org.jetel.component.XmlReader" metadataProvider="org.jetel.component.tree.reader.TreeReaderErrMetadataProvider">
+	    <shortDescription>Reads data from XML.</shortDescription>
+	    <description>Reads data from XML, converts properties matched by XPath defined in mapping along with their direct children to data records and sends them into different connected output ports as defined by mapping.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only" />
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHint="Auto">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="basic" displayName="Data policy" modifiable="true" name="dataPolicy" nullable="true" defaultHint="Strict">
+	        <enumType>
+	          <item displayValue="Strict" value="strict" />
+	          <item displayValue="Controlled" value="controlled" />
+	          <item displayValue="Lenient" value="lenient" />
+	        </enumType>
+	      </property>
+	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!mappingURL" redundant="mappingURL">
+	        <singleType name="xmlReaderMapping" />
+	      </property>
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Implicit mapping" modifiable="true" name="implicitMapping" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	      <property category="advanced" displayName="Xml features" modifiable="true" name="xmlFeatures" nullable="true">
+	        <singleType name="xmlFeatures" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.SpeedLimiter"/>
-	    <parameter id="type" value="SPEED_LIMITER"/>
+	  <ETLComponent category="deprecated" name="SpeedLimiter" type="SPEED_LIMITER" iconPath="icons/transformers/SpeedLimiter" passThrough="true" defaultVisibility="etlGraph" className="org.jetel.component.SpeedLimiter">
+	    <shortDescription>Delays incoming records.</shortDescription>
+	    <description>Receives data through connected input port, delays each incoming data record by defined value of milliseconds and copies all data records to all connected output ports.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Delay (ms)" modifiable="true" name="delay" nullable="true" required="!inputMapping">
+	        <singleType name="interval"/>
+	      </property>
+	      <property category="basic" displayName="Input mapping" modifiable="true" name="inputMapping" nullable="true" required="!delay">
+	        <singleType name="sleepInputMapping" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.SpeedLimiter"/>
-	    <parameter id="type" value="SLEEP"/>
+	  <ETLComponent category="jobControl" name="Sleep" type="SLEEP" iconPath="icons/jobControl/Sleep" passThrough="true" className="org.jetel.component.SpeedLimiter">
+	    <shortDescription>Delays incoming records.</shortDescription>
+	    <description>Receives data through connected input port, delays each incoming data record by defined value of milliseconds and copies all data records to all connected output ports.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="true" />
+	    </inputPorts>
+	    <outputPorts>
+	      <multiplePort required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Delay (ms)" modifiable="true" name="delay" nullable="true" required="!inputMapping">
+	        <singleType name="interval"/>
+	      </property>
+	      <property category="basic" displayName="Input mapping" modifiable="true" name="inputMapping" nullable="true" required="!delay">
+	        <singleType name="sleepInputMapping" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.JavaExecute"/>
-		<parameter id="type" value="JAVA_EXECUTE"/>
+	  <ETLComponent category="others" iconPath="icons/others/JavaExecute" name="JavaExecute" type="JAVA_EXECUTE" defaultVisibility="etlGraph" className="org.jetel.component.JavaExecute">
+	    <shortDescription>Executes Java transformations.</shortDescription>
+	    <description>Executes Java commands using runnable transformation.</description>
+	    <properties>
+	      <property category="basic" displayName="Runnable" modifiable="true" name="runnable" nullable="true" required="!runnableClass,!runnableURL">
+	        <singleType name="multilineEditableJava" />
+	      </property>
+	      <property category="basic" displayName="Runnable URL" modifiable="true" name="runnableURL" nullable="true" required="!runnableClass,!runnable">
+	        <singleType name="file" />
+	      </property>
+	      <property category="basic" displayName="Runnable class" modifiable="true" name="runnableClass" nullable="true" required="!runnable,!runnableURL">
+	        <singleType name="class" />
+	      </property>
+	      <property category="advanced" displayName="Runnable source charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetSource">
+	        <singleType name="charset" />
+	      </property>
+	      <property category="advanced" displayName="Properties" modifiable="true" name="properties" nullable="true">
+	        <singleType name="properties" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 	
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.XmlWriter"/>
-	    <parameter id="type" value="XML_WRITER"/>
+	  <ETLComponent category="deprecated" iconPath="icons/writers/XMLWriter" name="XMLWriter (deprecated)"  type="XML_WRITER" defaultVisibility="false" className="org.jetel.component.XmlWriter">
+	    <shortDescription>Writes data to XML files.</shortDescription>
+	    <description>Receives data through all connected input ports, converts data records to XML elements based on defined mapping and writes the resulting tree structure of elements to XML files.</description>
+	    <inputPorts>
+	      <multiplePort required="true"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileUrl" nullable="true" required="true">
+	        <singleType name="file" fields="output" dictionary="output" mandatory_existing_file="false"/>
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="Mapping of ports to XML structure" modifiable="true" name="mapping" required="!mappingURL" redundant="mappingURL">
+	        <singleType name="multilineEditableXML"/>
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Mappings per file" modifiable="true" name="recordsPerFile" nullable="true" required="false">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Number of skipped mappings" modifiable="true" name="recordSkip" nullable="true" required="false" defaultHint="0" >
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Max number of mappings" modifiable="true" name="recordCount" nullable="true" required="false">
+	        <singleType name="int"/>
+	      </property>
+	      <property category="advanced" displayName="Omit new lines wherever possible" modifiable="true" name="omitNewLines" nullable="true" defaultHint="false">
+		      <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Use root element" modifiable="true" name="useRootElement" nullable="true" defaultHint="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Add root info attributes" modifiable="true" name="rootInfoAttributes"  nullable="true" defaultHint="true">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Name of root element in output XML file" modifiable="true" name="rootElement" nullable="true" required="false"  defaultHint="root">
+	        <singleType name="string"/>
+	      </property>      
+	      <property category="advanced" displayName="Default namespace for root element" modifiable="true" name="rootDefaultNamespace" nullable="true" required="false">
+	        <singleType name="string"/>
+	      </property>      
+	      <property category="advanced" displayName="Namespaces for root element" modifiable="true" name="rootNamespaces" nullable="true" required="false">
+	        <singleType name="string"/>
+	      </property>      
+	      <property category="advanced" displayName="DTD publicId" modifiable="true" name="dtdPublicId" nullable="true" required="false">
+	        <singleType name="string"/>
+	      </property>      
+	      <property category="advanced" displayName="DTD systemId" modifiable="true" name="dtdSystemId" nullable="true" required="false">
+	        <singleType name="string"/>
+	      </property>      
+	      <property category="advanced" displayName="XSD schema location" modifiable="true" name="xsdSchemaLocation" nullable="true" required="false">
+	        <singleType name="string"/>
+	      </property>      
+	      <property category="advanced" displayName="Compress level" modifiable="true" name="compressLevel" nullable="true">
+	        <singleType name="int" min="0" max="9"/>
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
   
     <extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.ExtXmlWriter"/>
-	    <parameter id="type" value="EXT_XML_WRITER"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/XMLWriter" name="XMLWriter"  type="EXT_XML_WRITER" className="org.jetel.component.ExtXmlWriter">
+	    <shortDescription>Writes data to XML files.</shortDescription>
+	    <description>Receives data through all connected input ports, converts data records to XML elements based on defined mapping and writes the resulting tree structure of elements to XML files.</description>
+	    <inputPorts>
+	      <multiplePort required="false"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="output" dictionary="output" mandatory_existing_file="false"/>
+	      </property>
+	      <property category="basic" displayName="Charset" modifiable="true" name="charset" nullable="true" defaultHintProvider="charsetEncoder">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" required="!mappingURL" redundant="mappingURL">
+	        <singleType name="xmlWriterMapping"/>
+	      </property>
+	      <property category="basic" displayName="Mapping URL" modifiable="true" name="mappingURL" nullable="true" required="!mapping" redundant="mapping">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="XML Schema" modifiable="true" name="xmlSchemaURL" nullable="true" required="false" defaultHint="none">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Omit new lines wherever possible" modifiable="true" name="omitNewLines" nullable="true" defaultHint="false">
+		      <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Cache size (e.g. '300MB','1GB')" modifiable="true" name="cacheSize" nullable="true" defaultHint="auto">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Cache in Memory" modifiable="true" name="cacheInMemory" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Sorted input" modifiable="true" name="sortedInput" nullable="true" defaultHint="false">
+	        <singleType name="bool"/>
+	      </property>
+	      <property category="advanced" displayName="Sort keys" modifiable="true" name="sortKeys" nullable="true" required="false"  defaultHint="">
+	        <singleType name="sortKey"/>
+	      </property>
+	      <property category="advanced" displayName="Records per file" modifiable="true" name="recordsPerFile" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Max number of records" modifiable="true" name="recordCount" nullable="true">
+	        <singleType name="int" />
+	      </property>
+	      <property category="advanced" displayName="Partition key" modifiable="true" name="partitionKey" nullable="true" required="partition">
+	        <singleType name="key" xmlMapping="mapping" xmlMappingUrl="mappingURL" rightLabel="Partition key:"/>
+	      </property>
+	      <property category="advanced" displayName="Partition lookup table" modifiable="true" name="partition" nullable="true" required="partitionOutFields">
+	        <singleType name="lookupTableID" />
+	      </property>
+	      <property category="advanced" displayName="Partition file tag" modifiable="true" name="partitionFileTag" nullable="true">
+	        <enumType>
+	          <item displayValue="Number file tag" value="numberFileTag" />
+	          <item displayValue="Key file tag" value="keyNameFileTag" />
+	        </enumType>
+	      </property>
+	      <property category="advanced" displayName="Partition output fields" modifiable="true" name="partitionOutFields" nullable="true" required="partition">
+	        <singleType name="key" lookupMatadataProp="partition" rightLabel="Partition output fields:" />
+	      </property>
+	      <property category="advanced" displayName="Partition unassigned file name" modifiable="true" name="partitionUnassignedFileName" nullable="true" redundant="!partition">
+	        <singleType name="string" />
+	      </property>
+	      <property category="advanced" displayName="Partition key sorted" modifiable="true" name="partitionKeySorted" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.XSLDataTransformer"/>
-	    <parameter id="type" value="XSL_TRANSFORMER"/>
+	  <ETLComponent category="transformers" name="XSLTransformer"  type="XSL_TRANSFORMER" iconPath="icons/transformers/XSLTransformer" className="org.jetel.component.XSLDataTransformer">
+	    <shortDescription>Transforms data with XSLT.</shortDescription>
+	    <description>Changes / tranforms data record between one INPUT and one OUTPUT port.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="false"/>
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Xslt file" modifiable="true" name="xsltFile" nullable="true" required="!xslt">
+	        <singleType name="file"/>
+	      </property>
+	      <property category="basic" displayName="Xslt" modifiable="true" name="xslt" nullable="true" required="!xsltFile">
+	        <singleType name="multilineEditableXML"/>
+	      </property>
+	      <property category="basic" displayName="Mapping" modifiable="true" name="mapping" nullable="true" required="!xmlInputFile,!xmlOutputFile" redundant="xmlInputFile|xmlOutputFile">
+	        <singleType name="xsltMapping"/>
+	      </property>
+	      <property category="basic" displayName="XML input file or field" modifiable="true" name="xmlInputFile" nullable="true" required="!mapping" redundant="mapping">
+	        <singleType name="file" fields="input" dictionary="input" single_url="true"/>
+	      </property>
+	      <property category="basic" displayName="XML output file or field" modifiable="true" name="xmlOutputFile" nullable="true" required="!mapping" redundant="mapping">
+	        <singleType name="file" fields="output" dictionary="output" single_url="true"/>
+	      </property>
+	      <property category="advanced" displayName="Output charset" modifiable="true" name="charset" nullable="true" defaultHint="UTF-8">
+	        <singleType name="charset"/>
+	      </property>
+	      <property category="advanced" displayName="Create directories" modifiable="true" name="makeDirs" nullable="true" defaultHint="false">
+	        <singleType name="bool" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
+	</extension>
+	
+	<extension point-id="metadata">
+		<Metadata id="UDR_ErrorPort">
+	      <Record fieldDelimiter="|" name="ErrorPort" recordDelimiter="\n" type="delimited">
+	        <Field name="recordNo" type="long"/>
+	        <Field name="fieldNo" type="integer"/>
+	        <Field name="originalData" type="string"/>
+	        <Field name="errorMessage" type="string"/>
+	        <Field name="fileURL" type="string"/>
+	      </Record>
+	    </Metadata>
+	</extension>
+	
+	<extension point-id="metadata">
+		<Metadata id="HTTPConnector_Attributes">
+			<Record fieldDelimiter="|" name="Attributes" recordDelimiter="\n" type="delimited">
+				<Field name="URL" type="string" />
+				<Field name="requestMethod" type="string" />
+				<Field name="addInputFieldsAsParameters" type="boolean" />
+				<Field name="addInputFieldsAsParametersTo" type="string" />
+				<Field name="ignoredFields" type="string" />
+				<Field name="additionalHTTPHeaderProperties" type="string" />
+				<Field name="charset" type="string" />
+				<Field name="requestContent" type="string" />
+				<Field name="requestContentByte" type="byte" />
+				<Field name="inputFileUrl" type="string" />
+				<Field name="outputFileUrl" type="string" />
+				<Field name="appendOutput" type="boolean" />
+				<Field name="authenticationMethod" type="string" />
+				<Field name="username" type="string" />
+				<Field name="password" type="string" />
+				<Field name="consumerKey" type="string" />
+				<Field name="consumerSecret" type="string" />
+				<Field name="storeResponseToTempFile" type="boolean" />
+				<Field name="temporaryFilePrefix" type="string" />
+				<Field name="multipartEntities" type="string" />
+				<Field name="rawHTTPHeaders" containerType="list" type="string"/>
+			</Record>
+	 	</Metadata>	
+	</extension>
+	
+	<extension point-id="metadata">
+		<Metadata id="HTTPConnector_Result">
+			<Record fieldDelimiter="|" name="Result" recordDelimiter="\n" type="delimited">
+				<Field name="content" type="string" />
+				<Field name="contentByte" type="byte" />
+				<Field name="outputFilePath" type="string" />
+				<Field name="statusCode" type="integer" />
+				<Field name="header" containerType="map" type="string"/>
+				<Field name="rawHeaders" containerType="list" type="string"/>
+				<Field name="errorMessage" type="string" />
+			</Record>
+	 	</Metadata>	 	
+	</extension>
+
+	<extension point-id="metadata">
+		<Metadata id="HTTPConnector_Error">
+			<Record fieldDelimiter="|" name="Error" recordDelimiter="\n" type="delimited">
+				<Field name="errorMessage" type="string" />
+			</Record>
+	 	</Metadata>	 		
+	</extension>
+
+	<extension point-id="metadata">
+		<Metadata id="RunGraph_Input">
+			<Record fieldDelimiter="|" name="Input" recordDelimiter="\n" type="delimited">
+				<Field name="graphURL" type="string" />
+				<Field name="cloverCmdLineArgs" type="string" />
+			</Record>
+	 	</Metadata>	 		
+	</extension>
+
+	<extension point-id="metadata">
+		<Metadata id="RunGraph_Output">
+			<Record fieldDelimiter="|" name="Output" recordDelimiter="\n" type="delimited">
+				<Field name="graphURL" type="string" />
+		        <Field name="result" type="string"/>
+		        <Field name="description" type="string"/>
+				<Field name="message" type="string" />
+				<Field name="duration" type="long" />
+				<Field name="runId" type="long" />
+			</Record>
+	 	</Metadata>	 		
 	</extension>
 	
 </plugin>

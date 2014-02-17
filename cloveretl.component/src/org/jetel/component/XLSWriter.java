@@ -277,11 +277,6 @@ public class XLSWriter extends Node {
 		this.formatterProvider = new XLSFormatterProvider(append, removeSheets, charset);
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
     /**
      * Sets lookup table for data partition.
      * 

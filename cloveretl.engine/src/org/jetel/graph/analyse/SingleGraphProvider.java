@@ -50,7 +50,12 @@ public class SingleGraphProvider extends AbstractGraphProvider {
 	@Override
 	public BasicInspectedComponent getNextComponent() {
 		if (componentsIterator.hasNext()) {
-			return new BasicInspectedComponent(componentsIterator.next(), null);
+			Node nextComponent = componentsIterator.next();
+			if (isAllowedComponent(nextComponent)) {
+				return new BasicInspectedComponent(nextComponent, null);
+			} else {
+				return getNextComponent();
+			}
 		} else {
 			return null;
 		}

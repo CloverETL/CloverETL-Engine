@@ -47,7 +47,6 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
-import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
@@ -144,7 +143,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 
 		//create token tracker if graph is jobflow type
-		if (graph.getJobType() == JobType.JOBFLOW) {
+		if (graph.getJobType().isJobflow()) {
 			tokenTracker = new TokenTracker(graph);
 		}
 		
@@ -510,7 +509,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 			// gather graph tracking
 			//etl graphs are tracked only in regular intervals, jobflows are tracked more precise, whenever something happens
-			if (message == null || ContextProvider.getJobType() == JobType.JOBFLOW) {
+			if (message == null || ContextProvider.getJobType().isJobflow()) {
 				cloverJMX.gatherTrackingDetails();
 			}
 		}

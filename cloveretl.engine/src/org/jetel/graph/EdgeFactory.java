@@ -37,7 +37,7 @@ public class EdgeFactory {
 	 * Either regular {@link Edge} or {@link JobflowEdge} is returned based on {@link ContextProvider#getJobType()}.
 	 */
 	public static Edge newEdge(String id, DataRecordMetadata metadata, boolean debugMode) {
-    	if (ContextProvider.getJobType() == JobType.JOBFLOW) {
+    	if (ContextProvider.getJobType().isJobflow()) {
 			return new JobflowEdge(id, metadata, debugMode);
 		} else {
 			return new Edge(id, metadata, debugMode);
@@ -49,11 +49,7 @@ public class EdgeFactory {
 	 * Either regular {@link Edge} or {@link JobflowEdge} is returned based on {@link ContextProvider#getJobType()}.
 	 */
 	public static Edge newEdge(String id, DataRecordMetadata metadata) {
-    	if (ContextProvider.getJobType() == JobType.JOBFLOW) {
-			return new JobflowEdge(id, metadata);
-		} else {
-			return new Edge(id, metadata);
-		}
+		return newEdge(id, metadata, false);
     }
     
 	/**
@@ -71,22 +67,10 @@ public class EdgeFactory {
 	 * Either regular {@link Edge} or {@link JobflowEdge} is returned based on {@link ContextProvider#getJobType()}.
 	 */
 	public static Edge newEdge(String id, DataRecordMetadataStub metadataStub) {
-    	if (ContextProvider.getJobType() == JobType.JOBFLOW) {
+    	if (ContextProvider.getJobType().isJobflow()) {
 			return new JobflowEdge(id, metadataStub);
 		} else {
 			return new Edge(id, metadataStub);
-		}
-	}
-
-	/**
-	 * Returns appropriate edge implementation for given parameters.
-	 * Either regular {@link Edge} or {@link JobflowEdge} is returned based on {@link ContextProvider#getJobType()}.
-	 */
-	public static Edge newEdge(String id, DataRecordMetadataStub metadataStub, DataRecordMetadata metadata, boolean debugMode) {
-    	if (ContextProvider.getJobType() == JobType.JOBFLOW) {
-			return new JobflowEdge(id, metadataStub, metadata, debugMode);
-		} else {
-			return new Edge(id, metadataStub, metadata, debugMode);
 		}
 	}
 

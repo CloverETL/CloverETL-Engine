@@ -149,12 +149,7 @@ public class LdapReader extends Node {
 	 * Component type
 	 */
 	public final static String COMPONENT_TYPE = "LDAP_READER";
-	
-	
-	
-	/**
-	 * 
-	 */
+
 	private final static int OUTPUT_PORT = 0;
 	
 	private final static int INPUT_PORT = 0;
@@ -231,11 +226,6 @@ public class LdapReader extends Node {
 		this.passwd = passwd;
 	}
 	
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	@Override
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;

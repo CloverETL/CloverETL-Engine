@@ -126,7 +126,9 @@ public class TransformationGraphAnalyzerTest extends CloverTestCase {
 	public void testNodesTopologicalSorting_10() throws FileNotFoundException, XMLConfigurationException, GraphConfigurationException, MalformedURLException {
 		GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
 		runtimeContext.setContextURL(new File("data").toURI().toURL());
-		TransformationGraph graph = TransformationGraphXMLReaderWriter.loadGraph(new FileInputStream("data/graph/TopologicalSorting_10.grf"), runtimeContext);
+		TransformationGraphXMLReaderWriter graphReaderWriter = new TransformationGraphXMLReaderWriter(runtimeContext);
+		graphReaderWriter.setStrictParsing(false);
+		TransformationGraph graph = graphReaderWriter.read(new FileInputStream("data/graph/TopologicalSorting_10.grf"));
 		
 		List<Node> sortedNodes = TransformationGraphAnalyzer.nodesTopologicalSorting(new ArrayList<Node>(graph.getPhase(0).getNodes().values()));
 		checkSortedNodes(sortedNodes, "DATA_GENERATOR1", "DATA_GENERATOR", "LOOP1", "SIMPLE_COPY2", "SIMPLE_COPY1", "SIMPLE_COPY6", "SIMPLE_GATHER2", "LOOP", "SIMPLE_COPY", "TRASH", "SIMPLE_COPY3", "SIMPLE_GATHER", "TRASH1");

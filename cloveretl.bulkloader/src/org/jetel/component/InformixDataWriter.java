@@ -755,11 +755,6 @@ public class InformixDataWriter extends BulkLoader {
         return status;
     }
     
-    @Override
-	public String getType(){
-        return COMPONENT_TYPE;
-    }
-
     private void setCommand(String command) {
 		this.command = command;
 	}

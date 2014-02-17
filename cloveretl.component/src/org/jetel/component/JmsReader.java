@@ -309,11 +309,6 @@ public class JmsReader extends Node {
 		}
 	}
 	
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
 	/** Creates an instance according to XML specification.
 	 * @param graph
 	 * @param xmlElement

@@ -87,11 +87,6 @@ public class ExtXmlWriter extends TreeWriter {
 	}
 
 	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-	@Override
 	protected BaseTreeFormatterProvider createFormatterProvider(WritableMapping engineMapping, int maxPortIndex) {
 		return new XmlFormatterProvider(engineMapping, maxPortIndex, omitNewLines, charset, designMapping.getVersion());
 	}

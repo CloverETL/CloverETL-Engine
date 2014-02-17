@@ -96,6 +96,7 @@ import org.jetel.util.XmlUtils;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
 import org.jetel.util.property.RefResFlag;
+import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
@@ -151,7 +152,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 
 	protected static void readCommonAttributes(TreeReader treeReader, ComponentXMLAttributes xattribs)
 			throws XMLConfigurationException, AttributeNotFoundException {
-		treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, RefResFlag.URL));
+		treeReader.setFileURL(xattribs.getStringEx(XML_FILE_URL_ATTRIBUTE, null, RefResFlag.URL));
 		if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
 			treeReader.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 		}
@@ -161,11 +162,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE, null);
 		if (mappingURL != null) {
 			treeReader.setMappingURL(mappingURL);
-		} else if (mapping != null) {
-			treeReader.setMappingString(mapping);
 		} else {
-			// throw configuration exception
-			xattribs.getStringEx(XML_MAPPING_URL_ATTRIBUTE, RefResFlag.URL);
+			treeReader.setMappingString(mapping);
 		}
 
 		treeReader.setImplicitMapping(xattribs.getBoolean(XML_IMPLICIT_MAPPING_ATTRIBUTE, false));
@@ -228,6 +226,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		super.checkConfig(status);
 		if (!checkInputPorts(status, 0, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
 			return status;
+		}
+
+		if (StringUtils.isEmpty(this.getFileUrl())) {
+			status.add(new ConfigurationProblem("Missing required attribute 'File URL'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+		}
+
+		if (StringUtils.isEmpty(mappingURL) && StringUtils.isEmpty(mappingString)) {
+			status.add(new ConfigurationProblem("Missing required attribute 'Mapping'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
 
 		if (charset != null && !Charset.isSupported(charset)) {

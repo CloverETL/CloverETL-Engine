@@ -66,6 +66,44 @@ public class UnicodeBlanksTest extends TestCase {
 		}
 	}
 	
+	/**
+	 * Test the following invariant:
+	 * 
+	 * A "char" will never be both blank AND surrogate.
+	 * 
+	 * UnicodeBlanks implementation relies on this invariant, as it does only work with single chars and not code points.
+	 */
+	@Test
+	public void testBlankOrSurrogate() {
+		for (int i = Character.MIN_VALUE; i <= Character.MAX_VALUE; i++) {
+			char c = (char) i;
+			boolean isSurrogate = Character.isSurrogate(c);
+			boolean isBlank = UnicodeBlanks.isBlank(c);
+			
+			if (isSurrogate && isBlank) {
+				assertFalse("Character " + i + " is both surrogate and blank, therefore UnicodeBlank algorithm will not work properly for characters from Unicode supplementary plane", isSurrogate && isBlank);
+			}
+		}
+	}
+	
+	/**
+	 * Test the following invariant:
+	 * 
+	 * A supplementary char is never a blank char.
+	 * 
+	 * UnicodeBlanks implementation relies on this invariant, as it does only work with single chars and not code points.
+	 */
+	@Test
+	public void testSupplementaryNeverBlank() {
+		assertFalse(Character.isSupplementaryCodePoint(Character.MIN_SUPPLEMENTARY_CODE_POINT - 1));
+		assertFalse(Character.isSupplementaryCodePoint(Character.MAX_CODE_POINT + 1));
+		
+		for (int i = Character.MIN_SUPPLEMENTARY_CODE_POINT; i <= Character.MAX_CODE_POINT; i++) {
+			assertTrue(Character.isSupplementaryCodePoint(i));
+			assertFalse(UnicodeBlanks.isBlank(i));
+		}
+	}
+	
 	private static void test(String expected, String input) {
 		String trimmed = UnicodeBlanks.trim(input);
 		if (!expected.equals(trimmed)) {

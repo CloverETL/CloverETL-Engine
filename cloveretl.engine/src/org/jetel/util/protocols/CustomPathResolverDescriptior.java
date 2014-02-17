@@ -18,7 +18,7 @@
  */
 package org.jetel.util.protocols;
 
-import org.jetel.data.GraphElementDescription;
+import org.jetel.data.GraphElementDescriptionImpl;
 import org.jetel.plugin.Extension;
 
 /**
@@ -27,7 +27,7 @@ import org.jetel.plugin.Extension;
  *
  * @created Jun 21, 2012
  */
-public class CustomPathResolverDescriptior extends GraphElementDescription {
+public class CustomPathResolverDescriptior extends GraphElementDescriptionImpl {
 	
 	public final static String EXTENSION_POINT_ID = "urlResolver";
     

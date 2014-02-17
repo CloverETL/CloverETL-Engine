@@ -38,7 +38,9 @@ public enum JobType {
 	ETL_GRAPH("etlGraph", FileType.ETL_GRAPH),
 	/** This type represents jobflows */
 	JOBFLOW("jobflow", FileType.JOBFLOW),
-	PROFILER_JOB("profilerJob", FileType.PROFILER_JOB);
+	PROFILER_JOB("profilerJob", FileType.PROFILER_JOB),
+	SUB_GRAPH("subGraph", FileType.SUB_GRAPH, ETL_GRAPH),
+	SUB_JOBFLOW("subJobflow", FileType.SUB_JOBFLOW, JOBFLOW);
 
 	/** This type is used in case the type is not specified in different way. */
 	public static final JobType DEFAULT = ETL_GRAPH;
@@ -48,10 +50,11 @@ public enum JobType {
 	/** Associated file type. */
 	private FileType fileType;
 	
+	private JobType parent;
+	
 	private JobType(String id, FileType fileType) {
 		this.id = id;
 		this.fileType = fileType;
-		
 	}
 
 	/** 
@@ -61,6 +64,11 @@ public enum JobType {
 	 * - e.g. JSF may sometimes call toString() in some cases instead of name(). */ 
 	public String getName() {
 		return this.name();
+	}
+	
+	private JobType(String id, FileType fileType, JobType parent) {
+		this(id, fileType);
+		this.parent = parent;
 	}
 	
 	@Override
@@ -73,6 +81,51 @@ public enum JobType {
 	 */
 	public FileType getFileType() {
 		return fileType;
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is a sub-type of the given job type (or the type itself).
+	 * 
+	 * @param parentType
+	 * @return
+	 */
+	public boolean isSubTypeOf(JobType parentType) {
+		return (this == parentType) || ((parent != null) && parent.isSubTypeOf(parentType));
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #ETL_GRAPH} or {@link #SUB_GRAPH}.
+	 * 
+	 * @return <code>true</code> for {@link #ETL_GRAPH} or {@link #SUB_GRAPH}
+	 */
+	public boolean isGraph() {
+		return this.isSubTypeOf(ETL_GRAPH);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #JOBFLOW} or {@link #SUB_JOBFLOW}.
+	 * 
+	 * @return <code>true</code> for {@link #JOBFLOW} or {@link #SUB_JOBFLOW}
+	 */
+	public boolean isJobflow() {
+		return this.isSubTypeOf(JOBFLOW);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the current job type
+	 * is {@link #PROFILER_JOB}.
+	 * 
+	 * @return <code>true</code> for {@link #PROFILER_JOB}
+	 */
+	public boolean isProfilerJob() {
+		return this.isSubTypeOf(PROFILER_JOB);
+	}
+	
+	public JobType getBaseType() {
+		return (parent == null) ? this : parent.getBaseType();
 	}
 
 	/**
@@ -91,7 +144,7 @@ public enum JobType {
 	}
 	
 	/**
-	 * Detection of job type based on file name of graph or jobflow.
+	 * Detection of job type based on file name.
 	 */
 	public static JobType fromFileName(String fileName) {
 		if (StringUtils.isEmpty(fileName)) {
@@ -105,5 +158,20 @@ public enum JobType {
 		}
 		throw new IllegalArgumentException("unknown job type associated with file name " + fileName);
 	}
-	
+
+	/**
+	 * Detection of job type based on file name extension.
+	 */
+	public static JobType fromFileExtension(String fileExtension) {
+		if (StringUtils.isEmpty(fileExtension)) {
+			return DEFAULT;
+		}
+		for (JobType jobType : values()) {
+			if (fileExtension.equalsIgnoreCase(jobType.fileType.getExtension())) {
+				return jobType;
+			}
+		}
+		throw new IllegalArgumentException("unknown job type associated with file extension " + fileExtension);
+	}
+
 }

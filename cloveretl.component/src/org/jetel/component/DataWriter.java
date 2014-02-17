@@ -441,16 +441,9 @@ public class DataWriter extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
-
     public int getBytesPerFile() {
         return bytesPerFile;
     }
-
 
     public void setBytesPerFile(int bytesPerFile) {
         this.bytesPerFile = bytesPerFile;

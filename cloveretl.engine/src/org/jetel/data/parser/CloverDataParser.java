@@ -40,7 +40,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
-import org.jetel.graph.JobType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
@@ -262,7 +261,7 @@ public class CloverDataParser extends AbstractParser {
         
         //is the current transformation jobflow?
         isJobflow = ContextProvider.getRuntimeContext() != null
-        		&& ContextProvider.getRuntimeContext().getJobType() == JobType.JOBFLOW;
+        		&& ContextProvider.getRuntimeContext().getJobType().isJobflow();
         
         //in case the input file has been created by clover 3.4 or 3.3 and current job type is jobflow
         //special de-serialisation needs to be used, see CLO-1382

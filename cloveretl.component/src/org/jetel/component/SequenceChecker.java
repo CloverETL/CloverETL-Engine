@@ -315,11 +315,6 @@ public class SequenceChecker extends Node {
             return status;
        }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
 	public void setEqualNULL(boolean equalNULL) {
 	    this.equalNULL = equalNULL;
 	}

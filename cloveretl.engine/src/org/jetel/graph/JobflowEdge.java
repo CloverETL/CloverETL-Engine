@@ -84,10 +84,11 @@ public class JobflowEdge extends Edge {
 	@Override
 	public void writeRecordDirect(CloverBuffer record) throws IOException, InterruptedException {
 		lastWrittenToken.deserialize(record);
+		record.rewind();
 		getWriter().getTokenTracker().writeToken(getOutputPortNumber(), lastWrittenToken);
 		
 		getWriter().setResultCode(Result.WAITING, Result.RUNNING);
-		super.writeRecord(lastWrittenToken);
+		super.writeRecordDirect(record);
 		getWriter().setResultCode(Result.RUNNING, Result.WAITING);
 	}
 	

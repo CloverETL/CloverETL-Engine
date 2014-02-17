@@ -49,6 +49,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.joinKey.JoinKeyUtils;
@@ -151,7 +153,7 @@ import org.w3c.dom.Element;
  * @since       April 29, 2005
  * @created     29. April 2005
  */
-public class DataIntersection extends Node {
+public class DataIntersection extends Node implements MetadataProvider {
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DATA_INTERSECTION";
@@ -667,7 +669,7 @@ public class DataIntersection extends Node {
 
 		intersection = new DataIntersection(
                 xattribs.getString(XML_ID_ATTRIBUTE),
-                xattribs.getString(XML_JOINKEY_ATTRIBUTE),
+                xattribs.getString(XML_JOINKEY_ATTRIBUTE, null),
                 xattribs.getStringEx(XML_TRANSFORM_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF), 
                 xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
                 xattribs.getStringEx(XML_TRANSFORMURL_ATTRIBUTE, null, RefResFlag.URL));
@@ -730,6 +732,9 @@ public class DataIntersection extends Node {
 
 		//join key checking
 		if (joinKeys == null) {
+			if (StringUtils.isEmpty(joinKey)) {
+				status.add("Missing required join key attribute.", Severity.ERROR, this, Priority.NORMAL, XML_JOINKEY_ATTRIBUTE);
+			}
 			try {
 				String[][][] tmp = JoinKeyUtils.parseHashJoinKey(joinKey, getInMetadata());
 				joinKeys = tmp[A_INDEX][0];
@@ -770,11 +775,6 @@ public class DataIntersection extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-    
     public void setEqualNULLs(boolean equal){
         this.equalNULLs=equal;
     }
@@ -793,6 +793,36 @@ public class DataIntersection extends Node {
 
 	public void setSlaveDuplicates(boolean slaveDuplicates) {
 		this.keyDuplicates = slaveDuplicates;
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 0) {
+			if (getOutputPort(0) != null) {
+				return metadataPropagationResolver.findMetadata(getOutputPort(0).getEdge());
+			}
+		}
+		if (portIndex == 1) {
+			if (getOutputPort(2) != null) {
+				return metadataPropagationResolver.findMetadata(getOutputPort(2).getEdge());
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 0) {
+			if (getInputPort(0) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
+			}
+		}
+		if (portIndex == 2) {
+			if (getInputPort(1) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(1).getEdge());
+			}
+		}
+		return null;
 	}
 
 }

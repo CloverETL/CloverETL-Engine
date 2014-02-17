@@ -604,13 +604,6 @@ public class RunGraph extends Node{
 		outPortErr = getOutputPort(ERR_OUTPUT_PORT);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#getType()
-	 */
-	@Override public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
 	private boolean isPipelineMode() {
 		if (graphName != null) {
 			return true;

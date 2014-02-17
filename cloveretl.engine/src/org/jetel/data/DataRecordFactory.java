@@ -19,6 +19,7 @@
 package org.jetel.data;
 
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * Class for factorisation of {@link DataRecord} object. Constructors of {@link DataRecord} are deprecated.
@@ -70,6 +71,13 @@ public final class DataRecordFactory {
     private static DataRecordMetadata createEmptyMetadata(String name) {
     	DataRecordMetadata result = new DataRecordMetadata(name);
     	return result;
+    }
+    
+    /**
+     * @return direct {@link CloverBuffer} suitable to handle a serialised data record
+     */
+    public static CloverBuffer newRecordCloverBuffer() {
+    	return CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
     }
     
 }

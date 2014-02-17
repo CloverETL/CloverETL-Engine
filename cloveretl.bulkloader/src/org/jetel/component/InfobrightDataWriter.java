@@ -580,11 +580,6 @@ public class InfobrightDataWriter extends Node {
 		logger.warn(this.getId() + " finished with error. The current transaction has been rolled back.");
 	}
 
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException, AttributeNotFoundException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         InfobrightDataWriter loader;

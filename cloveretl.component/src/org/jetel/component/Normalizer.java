@@ -345,12 +345,6 @@ public class Normalizer extends Node {
     	}
     }
 	
-	
-	@Override
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);

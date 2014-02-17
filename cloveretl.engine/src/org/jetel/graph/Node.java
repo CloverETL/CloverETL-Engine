@@ -31,6 +31,8 @@ import java.util.concurrent.CyclicBarrier;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.MDC;
+import org.jetel.component.ComponentDescription;
+import org.jetel.component.ComponentDescriptionImpl;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
@@ -188,7 +190,9 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	 *@return    The Type value
 	 *@since     April 4, 2002
 	 */
-	public abstract String getType();
+	public String getType() {
+		return getDescriptor().getType();
+	}
 
 	/**
 	 *  Returns True if this Node is Leaf Node - i.e. only consumes data (has only
@@ -437,7 +441,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 
         //initialise component token tracker if necessary
         if (getGraph() != null
-        		&& getGraph().getJobType() == JobType.JOBFLOW
+        		&& getGraph().getJobType().isJobflow()
         		&& getGraph().getRuntimeContext().isTokenTracking()) {
         	tokenTracker = createComponentTokenTracker();
         } else {
@@ -1449,4 +1453,27 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 		return true;
 	}
 	
+    @Override
+	public ComponentDescription getDescriptor() {
+    	ComponentDescription componentDescription = (ComponentDescription) super.getDescriptor();
+    	if (componentDescription == null) {
+    		componentDescription = new ComponentDescriptionImpl.MissingComponentDescription();
+    		setDescriptor(componentDescription);
+    	}
+    	return componentDescription;
+    }
+
+    /**
+     * This method blocks current thread until all input and output edges are
+     * complete - last record is read, EOF indicator is reached.
+     */
+    protected void waitForEdgesEOF() throws InterruptedException {
+    	for (InputPort inputPort : getInPorts()) {
+    		inputPort.getEdge().waitForEOF();;
+    	}
+    	for (OutputPort outputPort : getOutPorts()) {
+    		outputPort.getEdge().waitForEOF();
+    	}
+    }
+    
 }

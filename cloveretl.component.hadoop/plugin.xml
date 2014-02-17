@@ -22,13 +22,56 @@
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.hadoop.component.HadoopWriter"/>
-		<parameter id="type" value="HADOOP_WRITER"/>
+	  <ETLComponent category="writers" iconPath="icons/writers/HDFSWriter" name="HadoopWriter" type="HADOOP_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.hadoop.component.HadoopWriter">
+	    <shortDescription>Writes Hadoop/HDFS Sequence Files.</shortDescription>
+	    <description>Writes key-value sequences to Hadoop/HDFS Sequence File; copies key &amp; value from fields of input data records writes them to HDFS.</description>
+	    <outputPorts>
+	    </outputPorts>
+	    <inputPorts>
+	      <singlePort name="0" required="true"/>
+	    </inputPorts>
+	    <properties>
+	      <property category="basic" displayName="Hadoop connection" modifiable="true" name="connectionId" nullable="false" required="true">
+	        <singleType name="hadoopConnection"/>
+	      </property>
+	     <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only"/>
+	      </property>
+	      <property category="basic" displayName="Key field" modifiable="true" name="keyField" nullable="true" required="true">
+	        <singleType name="field" inputPortName="0" />
+	      </property>
+	      <property category="basic" displayName="Value field" modifiable="true" name="valueField" nullable="true" required="true">
+	        <singleType name="field" inputPortName="0" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.hadoop.component.HadoopReader"/>
-		<parameter id="type" value="HADOOP_READER"/>
+	  <ETLComponent category="readers" iconPath="icons/readers/HDFSReader" name="HadoopReader" type="HADOOP_READER" viewPlainData="false" className="org.jetel.hadoop.component.HadoopReader">
+	    <shortDescription>Reads Hadoop/HDFS Sequence Files.</shortDescription>
+	    <description>Reads key-value sequences from Hadoop/HDFS Sequence File; copies key &amp; value on to output data fields and sends the record to the first output port.</description>
+	    <inputPorts>
+	      <singlePort name="0" required="false"/>
+	    </inputPorts>
+	    <outputPorts>
+	      <singlePort name="0" required="true" />
+	    </outputPorts>
+	    <properties>
+	      <property category="basic" displayName="Hadoop connection" modifiable="true" name="connectionId" nullable="false" required="true">
+	        <singleType name="hadoopConnection"/>
+	      </property>
+	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
+	        <singleType name="file" fields="input" dictionary="input" selectionMode="file_only"/>
+	      </property>
+	      <property category="basic" displayName="Key field" modifiable="true" name="keyField" nullable="true" required="true">
+	        <singleType name="field" outputPortName="0" />
+	      </property>
+	      <property category="basic" displayName="Value field" modifiable="true" name="valueField" nullable="true" required="true">
+	        <singleType name="field" outputPortName="0" />
+	      </property>
+	    </properties>
+	  </ETLComponent>
 	</extension>
 
 	<extension point-id="urlResolver">

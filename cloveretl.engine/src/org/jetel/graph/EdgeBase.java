@@ -194,6 +194,13 @@ public abstract class EdgeBase {
     public abstract void free();
     
 	public abstract boolean hasData();
+	
+    /**
+     * Current thread is block until EOF on the edge is reached - last
+     * record is read.
+     */
+	public abstract void waitForEOF() throws InterruptedException;
+	
 }
 /*
  *  end class Edge

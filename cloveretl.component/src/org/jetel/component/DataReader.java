@@ -578,11 +578,6 @@ public class DataReader extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
 	public void setFileURL(String fileURL){
 		this.fileURL = fileURL;
 	}

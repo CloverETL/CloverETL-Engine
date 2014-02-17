@@ -254,11 +254,6 @@ public class AggregateOld extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-	
 	public void setEqualNULLs(boolean equal){
 	    this.equalNULLs=equal;
 	}

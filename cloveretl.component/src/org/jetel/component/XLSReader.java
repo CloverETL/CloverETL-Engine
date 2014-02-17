@@ -276,11 +276,6 @@ public class XLSReader extends Node {
         this.charset = charset;
     }
 
-    @Override
-    public String getType() {
-        return COMPONENT_TYPE;
-    }
-
     public void setParserType(XLSType parserType) {
         this.parserType = parserType;
     }

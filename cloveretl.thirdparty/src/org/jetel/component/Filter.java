@@ -200,11 +200,6 @@ public class Filter extends Node {
         return status;
     }
     
-    @Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
     /*
      * (non-Javadoc)
      * @see org.jetel.graph.Node#reset()

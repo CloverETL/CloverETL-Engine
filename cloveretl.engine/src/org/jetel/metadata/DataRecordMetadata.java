@@ -35,6 +35,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DataRecordNature;
 import org.jetel.data.Defaults;
+import org.jetel.data.GraphElementDescription;
 import org.jetel.data.RecordKey;
 import org.jetel.data.Token;
 import org.jetel.exception.ComponentNotReadyException;
@@ -1159,7 +1160,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		//verify job type - has to be same as job type of parent graph
 		TransformationGraph parentGraph = getGraph();
 		if (parentGraph != null) {
-			if (parentGraph.getJobType() == JobType.JOBFLOW && getNature() != DataRecordNature.TOKEN) {
+			if (parentGraph.getJobType().isJobflow() && getNature() != DataRecordNature.TOKEN) {
 				status.add(new ConfigurationProblem("Invalid metadata '" + name + "'. Token metadata nature is required.",
 						Severity.ERROR, this, Priority.NORMAL));
 			}
@@ -1492,6 +1493,10 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		return hashCode;
 	}
 
+    public int hashCodeIdentity() {
+    	return super.hashCode();
+    }
+
 	@Override
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
@@ -1820,6 +1825,16 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	public PropertyRefResolver getPropertyRefResolver() {
 		throw new UnsupportedOperationException();
 	}
-	
+
+	@Override
+	public GraphElementDescription getDescriptor() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setDescriptor(GraphElementDescription descriptor) {
+		throw new UnsupportedOperationException();
+	}
+
 }
 

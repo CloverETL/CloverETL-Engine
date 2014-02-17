@@ -529,11 +529,6 @@ public class DBInputTable extends Node {
         return status;
     }
 	
-	@Override
-	public String getType(){
-		return COMPONENT_TYPE;
-	}
-
 	public void setFetchSize(int fetchSize){
 	    this.fetchSize=fetchSize;
 	}
