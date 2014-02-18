@@ -95,10 +95,10 @@ public class GraphRuntimeContext {
 	private ClassLoader classLoader;
 	private JobType jobType;
 	private String jobUrl;
-	/** Is true if and only if the graph should be executed as sub-job, see SubGraph and SubJobflow components. */
+	/** Is true if and only if the graph should be executed as sub-job, see Subgraph and Subjobflow components. */
 	private boolean isSubJob;
 	/** Only for subgraphs - component id, where this subgraph has been executed. */
-	private String parentSubGraphComponentId;
+	private String parentSubgraphComponentId;
 	private IAuthorityProxy authorityProxy;
 	private MetadataProvider metadataProvider;
 	
@@ -156,7 +156,7 @@ public class GraphRuntimeContext {
 		ret.jobType = getJobType();
 		ret.jobUrl = getJobUrl();
 		ret.isSubJob = isSubJob();
-		ret.parentSubGraphComponentId = getParentSubGraphComponentId();
+		ret.parentSubgraphComponentId = getParentSubgraphComponentId();
 		ret.authorityProxy = getAuthorityProxy();
 		ret.executionType = getExecutionType();
 		ret.metadataProvider = getMetadataProvider();
@@ -627,7 +627,7 @@ public class GraphRuntimeContext {
 	}
 
 	/**
-	 * @return true if and only if the graph is executed as an sub-job, see SubGraph and SubJobflow components.
+	 * @return true if and only if the graph is executed as an sub-job, see Subgraph and Subjobflow components.
 	 */
 	public boolean isSubJob() {
 		return isSubJob;
@@ -641,20 +641,20 @@ public class GraphRuntimeContext {
 	}
 
 	/**
-	 * @return component id of SubGraph component, where this subgraph has been executed; null for non-subgraph executions
+	 * @return component id of Subgraph component, where this subgraph has been executed; null for non-subgraph executions
 	 */
 	//TODO shouldn't be part of runtime context, it is not necessary to have this information here
 	//what about to move it to RuntimeEnvironment
-	public String getParentSubGraphComponentId() {
-		return parentSubGraphComponentId;
+	public String getParentSubgraphComponentId() {
+		return parentSubgraphComponentId;
 	}
 
 	/**
 	 * Shouldn't be set for non-subgraph execution.
-	 * @param parentSubGraphComponentId component id of SubGraph component, where this subgraph has been executed 
+	 * @param parentSubgraphComponentId component id of Subgraph component, where this subgraph has been executed 
 	 */
-	public void setParentSubGraphComponentId(String parentSubGraphComponentId) {
-		this.parentSubGraphComponentId = parentSubGraphComponentId;
+	public void setParentSubgraphComponentId(String parentSubgraphComponentId) {
+		this.parentSubgraphComponentId = parentSubgraphComponentId;
 	}
 
 	/**

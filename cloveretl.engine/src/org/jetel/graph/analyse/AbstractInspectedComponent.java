@@ -26,7 +26,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.util.HashCodeUtil;
-import org.jetel.util.SubGraphUtils;
+import org.jetel.util.SubgraphUtils;
 
 /**
  * Abstract implementation of {@link InspectedComponent}.
@@ -71,7 +71,7 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 	public InspectedComponent getNextComponent() {
 		InspectedComponent result;
 		
-		if (!SubGraphUtils.isSubJobInputOutputComponent(getComponent().getType())) {
+		if (!SubgraphUtils.isSubJobInputOutputComponent(getComponent().getType())) {
 			//handling of regular components
 			while (outputPorts.hasNext()) {
 				OutputPort outputPort = outputPorts.next();
@@ -173,7 +173,7 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 		}
 		AbstractInspectedComponent otherInspectedComponent = (AbstractInspectedComponent) otherObj;
 		if (component == otherInspectedComponent.getComponent()) {
-			if (SubGraphUtils.isSubJobInputOutputComponent(component.getType())) {
+			if (SubgraphUtils.isSubJobInputOutputComponent(component.getType())) {
 				//port index of entryEdge has to same for SubJobInput/Output components as well
 				return getEntryEdgeIndex() == otherInspectedComponent.getEntryEdgeIndex();
 			} else {
@@ -187,7 +187,7 @@ public abstract class AbstractInspectedComponent implements InspectedComponent {
 	@Override
 	public int hashCode() {
 		int hash = component.hashCodeIdentity();
-		if (SubGraphUtils.isSubJobInputOutputComponent(component.getType())) {
+		if (SubgraphUtils.isSubJobInputOutputComponent(component.getType())) {
 			hash = HashCodeUtil.hash(hash, getEntryEdgeIndex());
 		}
 		return hash;

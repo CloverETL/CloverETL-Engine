@@ -697,7 +697,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	}
 
 	/**
-	 * @return true if this edge shares edge base with parent graph - see SubGraph component
+	 * @return true if this edge shares edge base with parent graph - see Subgraph component
 	 */
 	public EdgeBase getEdgeBase() {
 		return edge;
@@ -714,7 +714,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	}
 	
 	/**
-	 * Input and output edges of SubGraphInput/Output components can share EdgeBase with parent graph.
+	 * Input and output edges of SubgraphInput/Output components can share EdgeBase with parent graph.
 	 * This is important to known, that the EdgeBase is shared. So EdgeBase
 	 * initialisation, pre-execution, post-execution and freeing is not performed
 	 * in this edge.

@@ -45,7 +45,7 @@ import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
 import org.jetel.util.GraphUtils;
-import org.jetel.util.SubGraphUtils;
+import org.jetel.util.SubgraphUtils;
 
 /*
  *  import org.apache.log4j.Logger;
@@ -80,10 +80,10 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disable nodes failed.", e);
 		}
 
-		//remove component before SubGraphInput and after SubGraphOutput if necessary
+		//remove component before SubgraphInput and after SubgraphOutput if necessary
 		if (runtimeContext.isSubJob()) {
 			try {
-				TransformationGraphAnalyzer.analyseSubGraph(graph);
+				TransformationGraphAnalyzer.analyseSubgraph(graph);
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Subgraph analysis failed.", e);
 			}
@@ -126,25 +126,25 @@ public class TransformationGraphAnalyzer {
 	}
 
 	/**
-	 * Removes all components before SubGraphInput and after SubGraphOutput.
+	 * Removes all components before SubgraphInput and after SubgraphOutput.
 	 */
-	public static void analyseSubGraph(TransformationGraph graph) {
+	public static void analyseSubgraph(TransformationGraph graph) {
 		for (Node component : graph.getNodes().values()) {
-			if (SubGraphUtils.isSubJobInputComponent(component.getType())) {
+			if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
 				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
 				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
 				if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
-					throw new JetelRuntimeException("Invalid subgraph layout. A component preceding the SubGraphInput component is probably connected with a component following SubGraphInput.");
+					throw new JetelRuntimeException("Invalid subgraph layout. A component preceding the SubgraphInput component is probably connected with a component following SubgraphInput.");
 				}
 				for (Node precedentNode : precedentNodes) {
 					precedentNode.setEnabled(EnabledEnum.DISABLED);
 				}
 			}
-			if (SubGraphUtils.isSubJobOutputComponent(component.getType())) {
+			if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
 				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
 				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
 				if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
-					throw new JetelRuntimeException("Invalid subgraph layout. A component following the SubGraphOutput component is probably connected with a component preceding SubGraphOutput.");
+					throw new JetelRuntimeException("Invalid subgraph layout. A component following the SubgraphOutput component is probably connected with a component preceding SubgraphOutput.");
 				}
 				for (Node followingNode : followingNodes) {
 					followingNode.setEnabled(EnabledEnum.DISABLED);
@@ -177,28 +177,28 @@ public class TransformationGraphAnalyzer {
 		GraphCycleInspector graphCycleInspector = new GraphCycleInspector(new SingleGraphProvider(graph));
 		graphCycleInspector.inspectGraph();
 		
-		//update edge types around SubGraph components
+		//update edge types around Subgraph components
 		//real edge is combination of parent graph edge type and subgraph edge type
 		for (Node component : graph.getNodes().values()) {
-			if (component instanceof SubGraphComponent) {
-				SubGraphComponent subGraphComponent = (SubGraphComponent) component;
+			if (component instanceof SubgraphComponent) {
+				SubgraphComponent subgraphComponent = (SubgraphComponent) component;
 				for (Entry<Integer, InputPort> inputPort : component.getInputPorts().entrySet()) {
-					Edge subGraphEdge = subGraphComponent.getSubGraphInputEdge(inputPort.getKey());
+					Edge subgraphEdge = subgraphComponent.getSubgraphInputEdge(inputPort.getKey());
 					Edge parentGraphEdge = inputPort.getValue().getEdge();
 					//will be edge base shared between these two edges?
-					if (SubGraphUtils.isSubGraphInputEdgeShared(subGraphEdge, parentGraphEdge)) {
+					if (SubgraphUtils.isSubgraphInputEdgeShared(subgraphEdge, parentGraphEdge)) {
 						//so we need to combine both edge types to satisfy needs of both parent and subgraph
-						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subGraphEdge.getEdgeType());
+						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
 						inputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
 					}
 				}
 				for (Entry<Integer, OutputPort> outputPort : component.getOutputPorts().entrySet()) {
-					Edge subGraphEdge = subGraphComponent.getSubGraphOutputEdge(outputPort.getKey());
+					Edge subgraphEdge = subgraphComponent.getSubgraphOutputEdge(outputPort.getKey());
 					Edge parentGraphEdge = outputPort.getValue().getEdge();
 					//will be edge base shared between these two edges?
-					if (SubGraphUtils.isSubGraphOutputEdgeShared(subGraphEdge, parentGraphEdge)) {
+					if (SubgraphUtils.isSubgraphOutputEdgeShared(subgraphEdge, parentGraphEdge)) {
 						//so we need to combine both edge types to satisfy needs of both parent and subgraph
-						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subGraphEdge.getEdgeType());
+						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
 						outputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
 					}
 				}
