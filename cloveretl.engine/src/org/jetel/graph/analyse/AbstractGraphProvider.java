@@ -20,7 +20,7 @@ package org.jetel.graph.analyse;
 
 import org.jetel.graph.Node;
 import org.jetel.util.ClusterUtils;
-import org.jetel.util.SubGraphUtils;
+import org.jetel.util.SubgraphUtils;
 
 
 /**
@@ -40,7 +40,7 @@ public abstract class AbstractGraphProvider implements GraphProvider {
 	 */
 	protected boolean isAllowedComponent(Node component) {
 		return !ClusterUtils.isRemoteEdgeComponent(component.getType())
-				&& !SubGraphUtils.isSubJobInputOutputComponent(component.getType());
+				&& !SubgraphUtils.isSubJobInputOutputComponent(component.getType());
 	}
 	
 }

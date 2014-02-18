@@ -28,39 +28,39 @@ import org.jetel.graph.Edge;
  *
  * @created 12.4.2013
  */
-public class SubGraphUtils {
+public class SubgraphUtils {
 
-	/** Type of SubGraphInput component. */
-	public static final String SUB_GRAPH_INPUT_TYPE = "SUB_GRAPH_INPUT";
-	/** Type of SubGraphOutput component. */
-	public static final String SUB_GRAPH_OUTPUT_TYPE = "SUB_GRAPH_OUTPUT";
+	/** Type of SubgraphInput component. */
+	public static final String SUBGRAPH_INPUT_TYPE = "SUBGRAPH_INPUT";
+	/** Type of SubgraphOutput component. */
+	public static final String SUBGRAPH_OUTPUT_TYPE = "SUBGRAPH_OUTPUT";
 
-	/** Type of SubJobflowInput component. */
-	public static final String SUB_JOBFLOW_INPUT_TYPE = "SUB_JOBFLOW_INPUT";
-	/** Type of SubJobflowOutput component. */
-	public static final String SUB_JOBFLOW_OUTPUT_TYPE = "SUB_JOBFLOW_OUTPUT";
+	/** Type of SubjobflowInput component. */
+	public static final String SUBJOBFLOW_INPUT_TYPE = "SUBJOBFLOW_INPUT";
+	/** Type of SubjobflowOutput component. */
+	public static final String SUBJOBFLOW_OUTPUT_TYPE = "SUBJOBFLOW_OUTPUT";
 
-	/** Type of SubGraph component. */
-	public static final String SUB_GRAPH_TYPE = "SUB_GRAPH";
+	/** Type of Subgraph component. */
+	public static final String SUBGRAPH_TYPE = "SUBGRAPH";
 
-	/** Type of SubJobflow component. */
-	public static final String SUB_JOBFLOW_TYPE = "SUB_JOBFLOW";
+	/** Type of Subjobflow component. */
+	public static final String SUBJOBFLOW_TYPE = "SUBJOBFLOW";
 
     /** the name of an XML attribute used to pass a URL specified the executed subgraph */
     public static final String XML_JOB_URL_ATTRIBUTE = "jobURL";
 
 	/**
-	 * @return true if and only if the given component type is SubGraphInput or SubJobflowInput component.
+	 * @return true if and only if the given component type is SubgraphInput or SubjobflowInput component.
 	 */
 	public static boolean isSubJobInputComponent(String componentType) {
-		return SUB_GRAPH_INPUT_TYPE.equals(componentType) || SUB_JOBFLOW_INPUT_TYPE.equals(componentType);
+		return SUBGRAPH_INPUT_TYPE.equals(componentType) || SUBJOBFLOW_INPUT_TYPE.equals(componentType);
 	}
 
 	/**
-	 * @return true if and only if the given component type is SubGraphOutput or SubJobflowOutput component.
+	 * @return true if and only if the given component type is SubgraphOutput or SubjobflowOutput component.
 	 */
 	public static boolean isSubJobOutputComponent(String componentType) {
-		return SUB_GRAPH_OUTPUT_TYPE.equals(componentType) || SUB_JOBFLOW_OUTPUT_TYPE.equals(componentType);
+		return SUBGRAPH_OUTPUT_TYPE.equals(componentType) || SUBJOBFLOW_OUTPUT_TYPE.equals(componentType);
 	}
 
 	/**
@@ -71,36 +71,36 @@ public class SubGraphUtils {
 	}
 	
 	/**
-	 * @return true if and only if the given component type is SubGraph od SubJobflow component.
+	 * @return true if and only if the given component type is Subgraph od Subjobflow component.
 	 */
 	public static boolean isSubJobComponent(String componentType) {
-		return SUB_GRAPH_TYPE.equals(componentType) || SUB_JOBFLOW_TYPE.equals(componentType);
+		return SUBGRAPH_TYPE.equals(componentType) || SUBJOBFLOW_TYPE.equals(componentType);
 	}
 
 	/**
-	 * Checks whether output edge of SubGraphInput component can share EdgeBase
+	 * Checks whether output edge of SubgraphInput component can share EdgeBase
 	 * with corresponding edge in parent graph. In regular cases, it is possible and
 	 * highly recommended due performance gain. But in case edge debugging is turned on,
 	 * sharing is not possible.
-	 * @param subGraphEdge an output edge from SubGraphInput component
+	 * @param subgraphEdge an output edge from SubgraphInput component
 	 * @param parentGraphEdge corresponding edge from parent graph
 	 * @return true if and only if the edge base from parentEdge can be shared with localEdge
 	 */
-	public static boolean isSubGraphInputEdgeShared(Edge subGraphEdge, Edge parentGraphEdge) {
-		return subGraphEdge.getGraph().getRuntimeContext().isSubJob() && !subGraphEdge.isDebugMode();
+	public static boolean isSubgraphInputEdgeShared(Edge subgraphEdge, Edge parentGraphEdge) {
+		return subgraphEdge.getGraph().getRuntimeContext().isSubJob() && !subgraphEdge.isDebugMode();
 	}
 
 	/**
-	 * Checks whether input edge of SubGraphOutput component can share EdgeBase
+	 * Checks whether input edge of SubgraphOutput component can share EdgeBase
 	 * with corresponding edge in parent graph. In regular cases, it is possible and
 	 * highly recommended due performance gain. But in case edge debugging is turned on,
 	 * sharing is not possible.
-	 * @param subGraphEdge an input edge from SubGraphOutput component
+	 * @param subgraphEdge an input edge from SubgraphOutput component
 	 * @param parentEdge corresponding edge from parent graph
 	 * @return true if and only if the edge base from parentEdge can be shared with localEdge
 	 */
-	public static boolean isSubGraphOutputEdgeShared(Edge subGraphEdge, Edge parentGraphEdge) {
-		return subGraphEdge.getGraph().getRuntimeContext().isSubJob() && !parentGraphEdge.isDebugMode();
+	public static boolean isSubgraphOutputEdgeShared(Edge subgraphEdge, Edge parentGraphEdge) {
+		return subgraphEdge.getGraph().getRuntimeContext().isSubJob() && !parentGraphEdge.isDebugMode();
 	}
 	
 }

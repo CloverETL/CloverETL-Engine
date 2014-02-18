@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Kokon" created="Wed Oct 30 10:12:44 CET 2013" guiVersion="0.0.0.devel" id="1383124855822" licenseType="Commercial" modified="Wed Oct 30 11:15:47 CET 2013" modifiedBy="Kokon" name="GraphAnalyse_12" nature="subGraph" revision="1.7" showComponentDetails="true">
+<Graph author="Kokon" created="Wed Oct 30 10:12:44 CET 2013" guiVersion="0.0.0.devel" id="1383124855822" licenseType="Commercial" modified="Wed Oct 30 11:15:47 CET 2013" modifiedBy="Kokon" name="GraphAnalyse_12" nature="subgraph" revision="1.7" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -15,12 +15,12 @@
 <Node enabled="enabled" guiName="SimpleCopy" guiX="354" guiY="296" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiName="SimpleCopy" guiX="380" guiY="115" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiName="SimpleGather" guiX="554" guiY="186" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
-<Node enabled="enabled" guiName="SubGraphInput" guiX="129" guiY="107" id="SUB_GRAPH_INPUT" type="SUB_GRAPH_INPUT"/>
-<Node enabled="enabled" guiName="SubGraphOutput" guiX="739" guiY="94" id="SUB_GRAPH_OUTPUT" type="SUB_GRAPH_OUTPUT"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="129" guiY="107" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT"/>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="739" guiY="94" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT"/>
 <Edge fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER:0"/>
 <Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_GATHER:1"/>
-<Edge fromNode="SIMPLE_GATHER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SUB_GRAPH_OUTPUT:0"/>
-<Edge debugMode="false" fromNode="SUB_GRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
-<Edge fromNode="SUB_GRAPH_INPUT:1" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_COPY:0"/>
+<Edge fromNode="SIMPLE_GATHER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:0"/>
+<Edge debugMode="false" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
+<Edge fromNode="SUBGRAPH_INPUT:1" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_COPY:0"/>
 </Phase>
 </Graph>

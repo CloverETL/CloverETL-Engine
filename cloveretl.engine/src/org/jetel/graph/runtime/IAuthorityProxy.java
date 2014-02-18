@@ -436,7 +436,7 @@ public abstract class IAuthorityProxy {
 	public abstract long getRemoteEdgeRunId(String edgeId);
 
 	/**
-	 * SubGraphInput component uses this method to get {@link EdgeBase} from 
+	 * SubgraphInput component uses this method to get {@link EdgeBase} from 
 	 * parent graph, which is shared between parent graph and subgraph.
 	 * @param inputPortIndex
 	 * @return edge from parent graph
@@ -444,7 +444,7 @@ public abstract class IAuthorityProxy {
 	public abstract Edge getParentGraphSourceEdge(int inputPortIndex);
 
 	/**
-	 * SubGraphOutput component uses this method to get {@link EdgeBase} from 
+	 * SubgraphOutput component uses this method to get {@link EdgeBase} from 
 	 * parent graph, which is shared between parent graph and subgraph.
 	 * @param inputPortIndex
 	 * @return edge from parent graph

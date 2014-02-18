@@ -406,7 +406,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public RunStatus executeGraph(String graphUrl, GraphRuntimeContext runtimeContext) {
-		throw new UnsupportedOperationException("This graph execution type is available only in CloverETL Server environment!");
+		throw new UnsupportedOperationException("Subgraph execution is available only in CloverETL Server environment!");
 	}
 
 	@Override

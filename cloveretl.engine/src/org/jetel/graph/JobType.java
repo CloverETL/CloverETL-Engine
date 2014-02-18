@@ -39,8 +39,8 @@ public enum JobType {
 	/** This type represents jobflows */
 	JOBFLOW("jobflow", FileType.JOBFLOW),
 	PROFILER_JOB("profilerJob", FileType.PROFILER_JOB),
-	SUB_GRAPH("subGraph", FileType.SUB_GRAPH, ETL_GRAPH),
-	SUB_JOBFLOW("subJobflow", FileType.SUB_JOBFLOW, JOBFLOW);
+	SUBGRAPH("subgraph", FileType.SUBGRAPH, ETL_GRAPH),
+	SUBJOBFLOW("subjobflow", FileType.SUBJOBFLOW, JOBFLOW);
 
 	/** This type is used in case the type is not specified in different way. */
 	public static final JobType DEFAULT = ETL_GRAPH;
@@ -96,9 +96,9 @@ public enum JobType {
 	
 	/**
 	 * Returns <code>true</code> if the current job type
-	 * is {@link #ETL_GRAPH} or {@link #SUB_GRAPH}.
+	 * is {@link #ETL_GRAPH} or {@link #SUBGRAPH}.
 	 * 
-	 * @return <code>true</code> for {@link #ETL_GRAPH} or {@link #SUB_GRAPH}
+	 * @return <code>true</code> for {@link #ETL_GRAPH} or {@link #SUBGRAPH}
 	 */
 	public boolean isGraph() {
 		return this.isSubTypeOf(ETL_GRAPH);
@@ -106,9 +106,9 @@ public enum JobType {
 	
 	/**
 	 * Returns <code>true</code> if the current job type
-	 * is {@link #JOBFLOW} or {@link #SUB_JOBFLOW}.
+	 * is {@link #JOBFLOW} or {@link #SUBJOBFLOW}.
 	 * 
-	 * @return <code>true</code> for {@link #JOBFLOW} or {@link #SUB_JOBFLOW}
+	 * @return <code>true</code> for {@link #JOBFLOW} or {@link #SUBJOBFLOW}
 	 */
 	public boolean isJobflow() {
 		return this.isSubTypeOf(JOBFLOW);

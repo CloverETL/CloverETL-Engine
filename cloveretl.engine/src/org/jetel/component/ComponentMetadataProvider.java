@@ -24,8 +24,8 @@ import org.jetel.graph.Node;
  * This metadata provider extends regular {@link MetadataProvider},
  * so engine component is available for provider.
  * This provider can be referenced by plugin.xml in 'component'
- * extension point, see for example SubGraphInput component description
- * (SubGraphInput$PortToPortMetadataProvider).
+ * extension point, see for example SubgraphInput component description
+ * (SubgraphInput$PortToPortMetadataProvider).
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
