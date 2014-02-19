@@ -111,6 +111,7 @@ public class EdgeDebugWriter {
 	    	}
 	    	
 	    	formatter = new BinaryDataFormatter(outputChannel);
+	    	formatter.setUnitarySerialization(true);
 	    	formatter.init(metadata);
 	
 	        if (debugMaxRecords > 0 && debugLastRecords) {

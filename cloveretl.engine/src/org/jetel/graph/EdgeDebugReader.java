@@ -82,6 +82,7 @@ public class EdgeDebugReader {
     	}
     	
     	parser = new BinaryDataParser(metadata);
+    	parser.setUnitaryDeserialization(true);
     	parser.init();
     	parser.setDataSource(inputChannel);
     }

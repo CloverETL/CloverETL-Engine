@@ -80,6 +80,9 @@ public class BinaryDataParser extends AbstractParser {
 
 	private long processedBytes;
 	
+	/** Which kind of data record deserialisation should be used? */
+	private boolean unitaryDeserialization = false;
+
 	public BinaryDataParser(DataRecordMetadata metadata) {
 		this.metadata = metadata;
 	}
@@ -104,6 +107,22 @@ public class BinaryDataParser extends AbstractParser {
 		setDataSource(file);
 	}
 	
+	/**
+	 * Sets the parser to deserialise the given data records using {@link DataRecord#deserializeUnitary(CloverBuffer)}
+	 * method.
+	 * Regular deserialisation is used by default.
+	 */
+	public void setUnitaryDeserialization(boolean unitaryDeserialization) {
+		this.unitaryDeserialization = unitaryDeserialization;
+	}
+	
+	/**
+	 * @return true if unitary deserialisation of data records will be used
+	 */
+	public boolean getUnitaryDeserialization() {
+		return unitaryDeserialization;
+	}
+
 	public int getBufferLimit() {
 		return bufferLimit;
 	}
@@ -159,7 +178,11 @@ public class BinaryDataParser extends AbstractParser {
 				}
 			}
 
-			record.deserialize(buffer);
+			if (unitaryDeserialization) {
+				record.deserializeUnitary(buffer);
+			} else {
+				record.deserialize(buffer);
+			}
 			
 			return record;
 		} catch (IOException e) {
