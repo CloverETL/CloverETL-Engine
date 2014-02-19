@@ -183,16 +183,19 @@ public class ComponentFactory {
 	}
 
 	private final static void loadCommonAttributes(TransformationGraph graph, String componentType, Node component, org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+		ComponentXMLAttributes xattribs = null;
+		if (nodeXML != null) {
+			xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
+		}
         try {
 	        //nodeDistribution attribute parsing
 			//it is the easiest way how to add new common attribute for all nodes
-			if (xattribs.exists(Node.XML_ALLOCATION_ATTRIBUTE)) {
+			if (xattribs != null && xattribs.exists(Node.XML_ALLOCATION_ATTRIBUTE)) {
 				EngineComponentAllocation nodeAllocation = EngineComponentAllocation.fromString(xattribs.getString(Node.XML_ALLOCATION_ATTRIBUTE));
 				component.setAllocation(nodeAllocation);
 			}
 			//name attribute parsing
-			if (xattribs.exists(Node.XML_NAME_ATTRIBUTE)) {
+			if (xattribs != null && xattribs.exists(Node.XML_NAME_ATTRIBUTE)) {
 				String nodeName = xattribs.getString(Node.XML_NAME_ATTRIBUTE);
 				component.setName(nodeName);
 			}
@@ -205,8 +208,8 @@ public class ComponentFactory {
 	}
 
 	private final static RuntimeException createException(ComponentXMLAttributes xattribs, Exception cause) {
-		String id = xattribs.getString(Node.XML_ID_ATTRIBUTE, null); 
-		String name = xattribs.getString(Node.XML_NAME_ATTRIBUTE, null); 
+		String id = xattribs != null ? xattribs.getString(Node.XML_ID_ATTRIBUTE, null) : null; 
+		String name = xattribs != null ? xattribs.getString(Node.XML_NAME_ATTRIBUTE, null) : null; 
         return new RuntimeException("Can't create component " + GraphElement.identifiersToString(id, name) + ".", cause);
 	}
 	
@@ -229,7 +232,9 @@ public class ComponentFactory {
         try {
             //create instance of component
             Constructor<? extends Node> constructor = tClass.getConstructor(parametersType);
-            return constructor.newInstance(constructorParameters);
+            Node result = constructor.newInstance(constructorParameters);
+            loadCommonAttributes(graph, componentType, result, null);
+            return result;
         } catch(InvocationTargetException e) {
             throw new RuntimeException("Can't create component of type '" + componentType + "'.", e.getTargetException());
         } catch(Exception e) {
