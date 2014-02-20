@@ -67,12 +67,12 @@
 		<FlatFile outputFile="data-out/Movies_list.html" supposedFile="supposed-out/Movies_list.html"/>
 	</FunctionalTest>
 
-	<FunctionalTest ident="ValidateData" graphFile="graph/ValidateData.grf" excludedContainers="glassfish2,websphere7">
+	<FunctionalTest ident="ValidateData" graphFile="graph/ValidateData.grf" excludedContainers="glassfish2,websphere7,jetty9">
 		<FlatFile outputFile="data-out/invalid_contacts.csv" supposedFile="supposed-out/invalid_contacts.csv"/>
 	</FunctionalTest>
 	
 	<!-- Different JavaMail version -> different error message -->
-	<FunctionalTest ident="ValidateData_v2" graphFile="graph/ValidateData.grf" excludedContainers="tomcat6,jetty9,weblogic10,weblogic12,jboss6,jboss7" excludedEtlEnvironment="engine,cluster">
+	<FunctionalTest ident="ValidateData_v2" graphFile="graph/ValidateData.grf" excludedContainers="tomcat6,weblogic10,weblogic12,jboss6,jboss7" excludedEtlEnvironment="engine,cluster">
 		<FlatFile outputFile="data-out/invalid_contacts.csv" supposedFile="supposed-out/invalid_contacts_v2.csv"/>
 	</FunctionalTest>
 
