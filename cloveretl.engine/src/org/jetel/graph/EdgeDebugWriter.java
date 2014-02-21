@@ -41,7 +41,6 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.string.StringUtils;
 
 /**
  * This class writes data records to an {@link OutputStream}, the data records can be read by {@link EdgeDebugReader}.
@@ -75,7 +74,7 @@ public class EdgeDebugWriter {
     private RingRecordBuffer ringRecordBuffer;
     private DataRecord recordOrdinal;
     private RecordFilter filter;
-    private DataRecord filterTmpRecord;
+    private DataRecord tempRecord;
     private Sampler sampler;
 
     private Edge parentEdge; //can be null
@@ -101,10 +100,8 @@ public class EdgeDebugWriter {
     
     public void init() {
     	try {
-	    	if (!StringUtils.isEmpty(filterExpression)) {
-		    	filterTmpRecord = DataRecordFactory.newRecord(metadata);
-		    	filterTmpRecord.init();
-	    	}
+	    	tempRecord = DataRecordFactory.newRecord(metadata);
+	    	tempRecord.init();
 	    	
 	    	if (outputChannel == null) {
 	    		outputChannel = FileUtils.getWritableChannel(getContextURL(), debugFile, false);
@@ -187,25 +184,24 @@ public class EdgeDebugWriter {
 		}
     }
     
-    private boolean isValid(CloverBuffer record) {
-    	filterTmpRecord.deserialize(record);
-		record.rewind();
-		return isValid(filterTmpRecord);
-    }
-    
     public void writeRecord(CloverBuffer byteBuffer) throws IOException, InterruptedException {
         recordsCounter++;
 
+        tempRecord.deserialize(byteBuffer);
+        byteBuffer.rewind();
+
         if (recordsCounter >= debugStartRecord) {
 	        if (ringRecordBuffer != null) {
-	        	if (checkRecordToWrite(byteBuffer)) {
+	        	if (checkRecordToWrite(tempRecord)) {
 	                recordOrdinal.getField(0).setValue(recordsCounter);
 	        		ringRecordBuffer.pushRecord(recordOrdinal);
 	        		ringRecordBuffer.pushRecord(byteBuffer);
 	        	}
-	        } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(byteBuffer)) {
+	        } else if (checkNoOfDebuggedRecords() && checkRecordToWrite(tempRecord)) {
 	        	formatter.writeInt(recordsCounter);
-	        	formatter.write(byteBuffer);
+	        	//write the deserialized record instead of raw data record
+	        	//the raw data record could be a token, but only regular records should be written
+	        	formatter.write(tempRecord); 
 	        	flushIfNeeded();
 	        	debuggedRecords++;
 	        }
@@ -220,10 +216,6 @@ public class EdgeDebugWriter {
     	}
     }
     
-    private boolean checkRecordToWrite(CloverBuffer byteBuffer) {
-    	return ((filter == null || isValid(byteBuffer)) && (sampler == null || sampler.sample()));
-    }
-
     private boolean checkNoOfDebuggedRecords() {
     	return (debugMaxRecords == 0 || debuggedRecords < debugMaxRecords);
     }
