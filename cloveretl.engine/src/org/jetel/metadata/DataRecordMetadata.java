@@ -44,6 +44,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
@@ -53,8 +54,6 @@ import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
 import org.jetel.util.string.QuotingDecoder;
 import org.jetel.util.string.StringUtils;
-
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
 
 /**
  * A class that represents metadata describing a data record.
@@ -141,7 +140,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private String collatorSensitivity = null;
 	
 	/**
-	 * Metadadata nature should correspond with graph nature, see {@link #checkConfig(ConfigurationStatus)}.
+	 * Metadata nature should correspond with graph nature, see {@link #checkConfig(ConfigurationStatus)}.
 	 * Different implementations of DataRecord are used for various natures.
 	 * Nature {@link DataRecordNature#DATA_RECORD} is represented by {@link DataRecord}.
 	 * Nature {@link DataRecordNature#TOKEN} is represented by {@link Token}.
@@ -1586,7 +1585,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	}
 	
 	/**
-	 * Sets metadadata nature which should correspond with graph job type, see {@link #checkConfig(ConfigurationStatus)}.
+	 * Sets metadata nature which should correspond with graph job type, see {@link #checkConfig(ConfigurationStatus)}.
 	 * Different implementations of DataRecord are used for various natures.<br>
 	 * Nature {@link JobType#ETL_GRAPH} is represented by {@link DataRecord}.<br>
 	 * Nature {@link JobType#JOBFLOW} is represented by {@link Token}.<br>
@@ -1605,8 +1604,12 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	public DataRecordNature getNature() {
 		if (getGraph() != null) {
 			return DataRecordNature.fromJobType(getGraph().getJobType());
+		} else if (nature != null) {
+			return nature;
+		} else if (ContextProvider.getGraph() != null) {
+			return DataRecordNature.fromJobType(ContextProvider.getGraph().getJobType());
 		} else {
-			return nature != null ? nature : DataRecordNature.DEFAULT;
+			return DataRecordNature.DEFAULT;
 		}
 	}
 	
