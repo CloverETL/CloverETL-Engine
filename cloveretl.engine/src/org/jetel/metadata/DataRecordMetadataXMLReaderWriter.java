@@ -312,8 +312,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		    Transformer t = tf.newTransformer(formSrc);
 	        t.transform(new DOMSource(doc), new StreamResult(outStream));
         } catch (Exception e) {
-            e.printStackTrace();
-            return;
+            throw new JetelRuntimeException(e);
         }
 	}
 	
