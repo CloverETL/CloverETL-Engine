@@ -23,7 +23,7 @@
 
 	<extension point-id="component">
 	  <ETLComponent category="readers" iconPath="icons/readers/UniversalDataReader" name="UniversalDataReader"  type="DATA_READER" className="org.jetel.component.DataReader">
-	    <shortDescription>Reads data from flat files.</shortDescription>
+	    <shortDescription>Reads data from flat files (CSV, fixed-length).</shortDescription>
 	    <description>Reads data from delimited or fixed length files and sends data records to first connected output port. If any error occurs, the report is sent to the second port if &quot;Data policy&quot; is set to &quot;Controlled&quot;.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" label="input"/>
@@ -107,7 +107,7 @@
 
 	<extension point-id="component">
 	  <ETLComponent category="writers" iconPath="icons/writers/UniversalDataWriter" name="UniversalDataWriter" type="DATA_WRITER" className="org.jetel.component.DataWriter">
-	    <shortDescription>Writes data to flat files.</shortDescription>
+	    <shortDescription>Writes data to flat files (CSV, fixed-lenght).</shortDescription>
 	    <description>Receives data through connected input port and writes data records to delimited or fixed length files based on input metadata.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="true" />
@@ -1725,7 +1725,7 @@
 
 	<extension point-id="component">
 	  <ETLComponent category="readers" iconPath="icons/readers/XLSDataReader" name="XLSDataReader" type="XLS_READER" className="org.jetel.component.XLSReader" defaultVisibility="false">
-	    <shortDescription>Reads data from Excel files.</shortDescription>
+	    <shortDescription>Reads data from Excel files (.xls, .xlsx).</shortDescription>
 	    <description>Reads specified sheets of Excel files, converts their contents to data records and sends them to all connected output ports. Mapping of sheet columns to output metadata must be defined.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false" label="input" />
@@ -1805,7 +1805,7 @@
 	
 	<extension point-id="component">
 	  <ETLComponent category="writers" iconPath="icons/writers/XLSDataWriter" name="XLSDataWriter"  type="XLS_WRITER" viewPlainData="false" viewGridData="false" className="org.jetel.component.XLSWriter" defaultVisibility="false">
-	    <shortDescription>Writes data to Excel files.</shortDescription>
+	    <shortDescription>Writes data to Excel files (.xls, .xlsx).</shortDescription>
 	    <description>Receives data through connected input port and writes data records to specified sheets of Excel files.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="true"/>
