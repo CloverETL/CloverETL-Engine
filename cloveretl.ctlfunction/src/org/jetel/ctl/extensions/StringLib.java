@@ -766,7 +766,7 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	// JOIN
-	@TLFunctionAnnotation("Concatenets list elements into a string using delimiter.")
+	@TLFunctionAnnotation("Concatenates list elements into a string using delimiter.")
 	public static final <E> String join(TLFunctionCallContext context, String delimiter, List<E> values) {
 		if (delimiter == null){
 			delimiter ="";
