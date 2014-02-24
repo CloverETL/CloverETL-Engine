@@ -29,6 +29,7 @@ import org.jetel.exception.CompoundException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.SerializableException;
 import org.jetel.exception.StackTraceWrapperException;
+import org.jetel.exception.UserAbortException;
 import org.jetel.logger.SafeLogUtils;
 import org.jetel.util.string.StringUtils;
 
@@ -193,7 +194,8 @@ public class ExceptionUtils {
 		}
 		
 		//do not report exception message that is mentioned already in parent exception message
-		if (message != null && lastMessage != null && lastMessage.contains(message)) {
+		//unless it is User abort e.g. from Fail component - never suppress this
+		if (message != null && lastMessage != null && lastMessage.contains(message) && !(t instanceof UserAbortException)) {
 			message = null;
 		}
 		
