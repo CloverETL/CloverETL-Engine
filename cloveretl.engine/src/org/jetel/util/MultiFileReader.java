@@ -430,12 +430,16 @@ public class MultiFileReader {
         //use parser to get next record
         DataRecord rec;
         try {
-        	while ((rec = parser.getNext(record)) == null && (nextL3Source() || nextSource()));
-        } catch(JetelException e) {
-            autoFilling.incGlobalCounter();
-            autoFilling.incSourceCounter();
-            autoFilling.incL3Counter();
-            throw e;
+            try {
+                while ((rec = parser.getNext(record)) == null && (nextL3Source() || nextSource()));
+            } catch(JetelException e) {
+                autoFilling.incGlobalCounter();
+                autoFilling.incSourceCounter();
+                autoFilling.incL3Counter();
+                throw e;
+            } 
+        } catch (RuntimeException ex) {
+        	throw new RuntimeException("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
         }
         autoFilling.setLastUsedAutoFillingFields(rec);
         
@@ -463,10 +467,14 @@ public class MultiFileReader {
         //use parser to get next record
         DataRecord rec;
         try {
-            while((rec = parser.getNext()) == null && nextSource());
-        } catch(JetelException e) {
-            autoFilling.incGlobalCounter();
-            throw e;
+            try {
+                while((rec = parser.getNext()) == null && nextSource());
+            } catch(JetelException e) {
+                autoFilling.incGlobalCounter();
+                throw e;
+            }
+        } catch (RuntimeException ex) {
+        	throw new RuntimeException("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
         }
         autoFilling.setAutoFillingFields(rec);
         
