@@ -18,6 +18,7 @@
  */
 package com.linagora.ldap;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -35,8 +36,10 @@ import org.jetel.data.MapDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.string.CloverString;
 import org.jetel.util.string.StringUtils;
@@ -112,6 +115,8 @@ public class LdapFormatter {
 	private String multiSeparator = null; //'null' means no multi-values are expected
 	
 	private Jetel2LdapString string2attribute;
+	private int dnFieldIdx;
+	private int[] ignoreFields;
 	
 	/**
 	 * A logger (log4j) for the class
@@ -147,10 +152,11 @@ public class LdapFormatter {
 		
 		this.metadata = metadata;
 		
-		char dn_type = this.metadata.getFieldType(LDAP_DN_DISTINGUISHED_NAME);
-		if(dn_type != DataFieldMetadata.STRING_FIELD) {
+		DataFieldMetadata dnField = this.metadata.getField(LDAP_DN_DISTINGUISHED_NAME);
+		if(dnField == null || dnField.getDataType()!=DataFieldType.STRING) {
 			throw new BadDataFormatException("Metadata MUST have a \"dn\" field of type string.");
 		}
+		dnFieldIdx = dnField.getNumber();
 		
 		/* 
 		 * create a new LdapManager to do related actions
@@ -217,14 +223,14 @@ public class LdapFormatter {
 	 */
 	public void write(DataRecord record) throws NamingException, BadDataFormatException {
 		boolean dn_exists = false;
-		String dn = record.getField(LDAP_DN_DISTINGUISHED_NAME).toString();
+		String dn = record.getField(dnFieldIdx).toString();
 		
 		if(StringUtils.isEmpty(dn)) {
 			if(logger.isDebugEnabled()) {
 				logger.debug("<LdapFormatter> guilty record: ");
 				logger.debug("<LdapFormatter> " + record.toString());
 			}
-			throw new BadDataFormatException("Metadatas MUST have a \"dn\" field (non empty).");
+			throw new BadDataFormatException("Empty \"dn\" field.");
 		}
 		
 		/*
@@ -249,6 +255,10 @@ public class LdapFormatter {
 		for (int i = 0; i < transMap.length; i++) {
 			// TODO Labels:
 			//String attrId = this.metadata.getField(i).getLabelOrName();
+			
+			//check ignore fields list/ skip if so
+			if (isIgnored(i)) continue;
+			
 			String attrId = this.metadata.getField(i).getName();
 			if(!attrId.equalsIgnoreCase(LDAP_DN_DISTINGUISHED_NAME)) { //ignore dn as an attribute
 				Attribute attr = new BasicAttribute(attrId);
@@ -273,8 +283,7 @@ public class LdapFormatter {
 			}
 		}
 		
-		try {
-			switch (this.action) {
+		switch (this.action) {
 			case REPLACE_ATTRIBUTES:
 				/*
 				 * Update an existing entry
@@ -320,20 +329,10 @@ public class LdapFormatter {
 				ldapManager.deleteAttributes(dn,attrs);
 				break;
 			default:
-				throw new JetelException (
+				throw new JetelRuntimeException (
 						"Unknown specified action :"
 						+ this.action +" ");
 			}
-		} catch (Exception e) {
-			if(logger.isDebugEnabled()) {
-				logger.debug("<LdapFormatter> guilty record: ");
-				logger.debug("<LdapFormatter> " + record.toString());
-			}
-			throw new BadDataFormatException (
-					"Error when trying to update Ldap directory entry :"
-					+ dn + " ", e);
-		}
-		
 	}
 	
 	public void close() {
@@ -399,6 +398,28 @@ public class LdapFormatter {
 
 	public void setMultiValueSeparator(String multiSeparator) {
 		this.multiSeparator = multiSeparator;
+	}
+
+	/**
+	 * @return the ignoreFields
+	 */
+	public int[] getIgnoreFields() {
+		return ignoreFields;
+	}
+
+	/**
+	 * @param ignoreFields the ignoreFields to set
+	 */
+	public void setIgnoreFields(int[] ignoreFields) {
+		this.ignoreFields = ignoreFields;
+	}
+	
+	private boolean isIgnored(int idx){
+		if (ignoreFields==null) return false;
+		for(int i=0;i<ignoreFields.length;i++){
+			if (idx==ignoreFields[i]) return true;
+		}
+		return false;
 	}
 
 }
