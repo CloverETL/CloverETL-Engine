@@ -635,7 +635,14 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 				String id = getId() + "_DefaultSequence";
 				Sequence defaultSequence = SequenceFactory.createSequence(getGraph(), PrimitiveSequence.SEQUENCE_TYPE,
 						new Object[] {id, getGraph(), id}, new Class[] {String.class, TransformationGraph.class, String.class});
-				((PrimitiveSequence)defaultSequence).setStart(1);
+				try {
+					PrimitiveSequence ps = (PrimitiveSequence)defaultSequence;
+					ps.setGraph(getGraph());
+					ps.init();
+					ps.setStart(1);
+				} catch (ComponentNotReadyException e) {
+					throw new JetelRuntimeException(e);
+				}
 				getGraph().addSequence(defaultSequence);
 				defaultSequenceId = id;
 			}
