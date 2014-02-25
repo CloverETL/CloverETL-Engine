@@ -21,6 +21,7 @@ package org.jetel.util;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.Date;
 import java.util.Iterator;
@@ -439,7 +440,12 @@ public class MultiFileReader {
                 throw e;
             } 
         } catch (RuntimeException ex) {
-        	throw new RuntimeException("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+        	try {
+				throw ex.getClass().getConstructor(RuntimeException.class).newInstance("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				throw ex;
+			}
         }
         autoFilling.setLastUsedAutoFillingFields(rec);
         
@@ -474,7 +480,12 @@ public class MultiFileReader {
                 throw e;
             }
         } catch (RuntimeException ex) {
-        	throw new RuntimeException("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+        	try {
+				throw ex.getClass().getConstructor(RuntimeException.class).newInstance("Error when parsing source: " + channelIterator.getCurrentFileName(), ex);
+			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+					| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+				throw ex;
+			}
         }
         autoFilling.setAutoFillingFields(rec);
         
