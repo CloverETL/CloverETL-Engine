@@ -5,9 +5,9 @@
 
 	<runtime>
 		<library path="bin/"/>
-		<library path="lib/httpclient-4.2.jar"/>
-		<library path="lib/httpcore-4.2.jar"/>
-		<library path="lib/httpmime-4.2.jar"/>
+		<library path="lib/httpclient-4.2.2.jar"/>
+		<library path="lib/httpcore-4.2.2.jar"/>
+		<library path="lib/httpmime-4.2.2.jar"/>
 		<library path="lib/jdbm-2.4.jar" />
 		<library path="lib/saxon9.jar"/>
 		<library path="lib/saxon9-dom.jar"/>
