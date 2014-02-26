@@ -433,7 +433,7 @@ public class StringLib extends TLFunctionLibrary {
 	public static final List<String> split(TLFunctionCallContext context, String input, String regex) {
 		if (input == null){
 			List<String> tmp = new ArrayList<String>();
-			tmp.add(null);
+//			tmp.add(null); // CLO-3097 - return an empty list
 			return tmp;
 		}
 		final Pattern p = ((TLRegexpCache)context.getCache()).getCachedPattern(context, regex);
