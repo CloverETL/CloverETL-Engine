@@ -5363,9 +5363,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("split1", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
 		check("test_empty", Arrays.asList(""));
 		check("test_empty2", Arrays.asList("","a","a"));
-		List<String> tmp = new ArrayList<String>();
-		tmp.add(null);
-		check("test_null", tmp);
+		check("test_null", Collections.emptyList());
 	}
 	
 	public void test_stringlib_split_expect_error(){
