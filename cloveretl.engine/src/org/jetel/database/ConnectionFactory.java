@@ -18,7 +18,6 @@
  */
 package org.jetel.database;
 
-//import org.w3c.dom.Node;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
