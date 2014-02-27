@@ -111,6 +111,7 @@ public class TargetFile {
 	private ByteArrayOutputStream bbOutputStream;
 
 	private int compressLevel = -1;
+	private boolean mkDir;
 
 	private boolean storeRawData = true;
 	private boolean objectDictionaryInitialized = false;
@@ -171,6 +172,9 @@ public class TargetFile {
     }
 
     private void processRegularFileURL() throws ComponentNotReadyException, IOException {
+        if (mkDir) {
+        	FileUtils.createParentDirs(contextURL, fileURL);
+        }
     	initUrl();
     	if (fileURL != null && (after.indexOf(MultiOutFile.NUM_CHAR) != -1 && before.startsWith("zip:"))) {
     		throw new ComponentNotReadyException("File url must not contain wildcard in inzip filename");
@@ -596,6 +600,13 @@ public class TargetFile {
             if (fileName != null) {
             	fName = addUnassignedName(fName);
             }
+            if (mkDir) {
+            	try {
+					FileUtils.createParentDirs(contextURL, fName);
+				} catch (ComponentNotReadyException e) {
+					throw new IOException(e);
+				}
+            }
             
 			boolean exceptionThrown = false;
 			try {
@@ -724,6 +735,10 @@ public class TargetFile {
 
 	public void setStoreRawData(boolean storeRawData) {
 		this.storeRawData  = storeRawData;
+	}
+	
+	public void setMkDir(boolean mkDir) {
+		this.mkDir = mkDir;
 	}
 
 }
