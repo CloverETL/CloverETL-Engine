@@ -298,6 +298,9 @@ public class DBInputTable extends Node {
 			SQLDataParser parser = null;
 			if (sqlQuery != null) {
 				// we have only single query
+				if (printStatements) {
+					logger.info("Executing statement: " + sqlQuery);
+				}
 				parser = processSqlQuery(sqlQuery);
 			} else {
 				// process queries from file or input port
