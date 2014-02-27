@@ -375,9 +375,6 @@ public class JmsReader extends Node {
 			super(Thread.currentThread().getName() + ".Interruptor");			
 		}
 		
-		/**
-		 * @see java.lan.Thread#run()
-		 */
 		@Override
 		public void run() {
 			while (JmsReader.this.runIt && Interruptor.this.runIt) {
