@@ -200,9 +200,12 @@ public class DataFormatter extends AbstractFormatter {
 		if (writer == null || !writer.isOpen()) {
 			return;
 		}
-		flush();
-		writer.close();
-		writer = null;
+		try {
+			flush();
+		} finally {
+			writer.close();
+			writer = null;
+		}
 	}
 
 	@Override

@@ -225,7 +225,11 @@ public class CloverDataWriter extends Node {
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
-  		formatter.close(); //indirectly closes out    		
+  		try {
+			formatter.close(); //indirectly closes out
+		} catch (IOException e) {
+			throw new ComponentNotReadyException(e);
+		}
     }
     
 	@Override

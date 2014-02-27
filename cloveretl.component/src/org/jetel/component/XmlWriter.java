@@ -68,6 +68,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -273,18 +274,17 @@ public class XmlWriter extends Node {
 		TransformerHandler th = null;
 			
 		@Override
-		public void close() {
+		public void close() throws IOException {
 			if (os == null) {
 				return;
 			}
 
-			try{
+			try {
 				flush();
+			} finally {
 				os.close();
-			}catch(IOException ex){
-				ex.printStackTrace();
+				os = null;
 			}
-			os = null;
 		}
 
 		@Override
@@ -311,7 +311,11 @@ public class XmlWriter extends Node {
 		 */
 		@Override
 		public void setDataTarget(Object outputDataTarget) {
-			close();
+			try {
+				close();
+			} catch (IOException e) {
+				throw new JetelRuntimeException(e);
+			}
 			WritableByteChannel channel = null;
 			if (outputDataTarget instanceof WritableByteChannel){
 				channel = (WritableByteChannel)outputDataTarget;

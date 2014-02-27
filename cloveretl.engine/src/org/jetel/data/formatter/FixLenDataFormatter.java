@@ -36,6 +36,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -266,7 +267,11 @@ public class FixLenDataFormatter extends AbstractFormatter {
      */
     @Override
 	public void setDataTarget(Object out) {
-        close();
+        try {
+			close();
+		} catch (IOException e) {
+			throw new JetelRuntimeException(e);
+		}
 
         if (out == null) {
             writer = null;
@@ -350,19 +355,19 @@ public class FixLenDataFormatter extends AbstractFormatter {
 
 	/**
 	 *  Description of the Method
+	 * @throws IOException 
 	 */
 	@Override
-	public void close() {
+	public void close() throws IOException {
 		if (writer == null || !writer.isOpen()) {
 			return;
 		}
 		try {
 			flushBuffer();
+		} finally {
 			writer.close();
-		} catch (IOException ex) {
-			ex.printStackTrace();
+			writer = null;
 		}
-		writer = null;
 	}
 
 
