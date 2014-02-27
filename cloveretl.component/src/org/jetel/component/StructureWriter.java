@@ -41,6 +41,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -696,7 +697,11 @@ public class StructureWriter extends Node {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}finally{
-				formatter.close();
+				try {
+					formatter.close();
+				} catch (IOException e) {
+					throw new JetelRuntimeException(e);
+				}
 			}
 		}
 		

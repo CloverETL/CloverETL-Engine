@@ -37,6 +37,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.CloverDataParser;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.metadata.DataRecordMetadata;
@@ -209,7 +210,11 @@ public class CloverDataFormatter extends AbstractFormatter {
     @Override
 	public void reset() {
 		if (isOpen) {
-			close();
+			try {
+				close();
+			} catch (IOException e) {
+				throw new JetelRuntimeException(e);
+			}
 		}
 	}
 	
@@ -284,16 +289,12 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
 	@Override
-	public void close() {
+	public void close() throws IOException {
 		if (!isOpen) return;
-		try {
-			if (writer.isOpen()) {
-				writer.close();
-			}
-			isOpen = false;
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (writer.isOpen()) {
+			writer.close();
 		}
+		isOpen = false;
 	}
 	
 	/**

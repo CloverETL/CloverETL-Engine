@@ -89,8 +89,11 @@ public class XmlFormatter extends TreeFormatter {
 			return;
 		}
 		
-		flush();
-		writer.close();
+		try {
+			flush();
+		} finally {
+			writer.close();
+		}
 		writer = null;
 	}
 

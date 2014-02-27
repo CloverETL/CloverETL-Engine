@@ -31,12 +31,8 @@ public class XSLTFormatter extends AbstractFormatter {
 	private WritableByteChannel writableByteChannel;
 	
 	@Override
-	public void close() {
-		try {
-			writableByteChannel.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void close() throws IOException {
+		writableByteChannel.close();
 	}
 	
 	@Override
