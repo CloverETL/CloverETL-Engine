@@ -54,6 +54,7 @@ public final class MultiParentClassLoader extends ClassLoader {
 			return null;
 		};
 		
+		@Override
 		public Enumeration<URL> getResources(String resName) throws IOException {
 			return new Enumeration<URL>() {
 				
