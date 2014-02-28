@@ -175,11 +175,29 @@ public class JdbcDriverImpl implements JdbcDriver {
     }
 
     private void prepareClassLoader() throws ComponentNotReadyException {
-    	ClassLoader parent = null;
-    	if (ContextProvider.getGraph() != null && ContextProvider.getGraph().getRuntimeContext() != null) {
-    		parent = ContextProvider.getGraph().getRuntimeContext().getClassLoader();
+    	
+    	if (driverLibraries != null && driverLibraries.length > 0) {
+    		/*
+    		 *  paths to driver JARs specified, so create URL class loader and use system class loader as its parent,
+    		 *  that prevents package sealing violation and LinkageErrors if there were the same driver
+    		 *  present more than once (this happens e.g. with Oracle JDBC driver in server environment)
+    		 */
+    		classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, ClassLoader.getSystemClassLoader(), true);
+    	} else {
+    		/*
+    		 * no class path so we suppose that the driver is either provided by runtime class loader or
+    		 * is present on application classpath
+    		 */
+    		if (ContextProvider.getGraph() != null) {
+    			ClassLoader runtimeClassLoader = ContextProvider.getGraph().getRuntimeContext().getClassLoader();
+    			if (runtimeClassLoader != null) {
+    				classLoader = new MultiParentClassLoader(runtimeClassLoader, Thread.currentThread().getContextClassLoader());
+    			}
+    		}
+    		if (classLoader == null) {
+    			classLoader = Thread.currentThread().getContextClassLoader();
+    		}
     	}
-    	classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, parent, true);
     }
     
     private void prepareDriver() throws ComponentNotReadyException {
