@@ -18,11 +18,16 @@
  */
 package org.jetel.util.classloader;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jetel.plugin.PluginClassLoader;
@@ -37,6 +42,70 @@ import org.jetel.plugin.PluginClassLoader;
  */
 public final class MultiParentClassLoader extends ClassLoader {
 
+	public static final ClassLoader NULL_CLASS_LOADER = new ClassLoader(null) {
+		
+		@Override
+		protected Class<?> loadClass(String className, boolean resolveClass) throws ClassNotFoundException {
+			throw new ClassNotFoundException(className);
+		};
+		
+		@Override
+		public URL getResource(String resName) {
+			return null;
+		};
+		
+		public Enumeration<URL> getResources(String resName) throws IOException {
+			return new Enumeration<URL>() {
+				
+				@Override
+				public boolean hasMoreElements() {
+					return false;
+				}
+				
+				@Override
+				public URL nextElement() {
+					throw new NoSuchElementException();
+				};
+			};
+		};
+	};
+	
+	protected static class EnumerationChain<T> implements Enumeration<T> {
+		
+		private Enumeration<T> enums[];
+		private int index = 0;
+		
+		public EnumerationChain(Enumeration<T> ... enums) {
+			if (enums == null) {
+				throw new NullPointerException();
+			}
+			this.enums = enums;
+		}
+		
+		@Override
+		public boolean hasMoreElements() {
+			return next();
+		}
+		
+		@Override
+		public T nextElement() {
+			if (!next()) {
+				throw new NoSuchElementException();
+			}
+			return (T)enums[index].nextElement();
+		}
+		
+		private boolean next() {
+			while (index < enums.length) {
+				if (enums[index] != null && enums[index].hasMoreElements()) {
+					return true;
+				}
+				index++;
+			}
+			return false;
+		}
+	}
+	
 	private final ClassLoader parents[];
 	
 	/**
@@ -45,7 +114,7 @@ public final class MultiParentClassLoader extends ClassLoader {
 	 * @param parents
 	 */
 	public MultiParentClassLoader(ClassLoader ... parents) {
-		super(null);
+		super(NULL_CLASS_LOADER);
 		if (parents == null) {
 			throw new NullPointerException("parents");
 		}
@@ -88,5 +157,27 @@ public final class MultiParentClassLoader extends ClassLoader {
 			}
 		}
 		throw new ClassNotFoundException(name);
+	}
+	
+	@Override
+	protected URL findResource(String resName) {
+		for (ClassLoader parent : parents) {
+			URL url = parent.getResource(resName);
+			if (url != null) {
+				return url;
+			}
+		}
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	protected Enumeration<URL> findResources(String resName) throws IOException {
+		
+		List<Enumeration<URL>> enums = new LinkedList<Enumeration<URL>>();
+		for (ClassLoader parent : parents) {
+			enums.add(parent.getResources(resName));
+		}
+		return new EnumerationChain<URL>(enums.toArray(new Enumeration[enums.size()]));
 	}
 }
