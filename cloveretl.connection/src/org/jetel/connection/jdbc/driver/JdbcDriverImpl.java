@@ -32,6 +32,7 @@ import org.jetel.database.sql.JdbcSpecific;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -174,7 +175,7 @@ public class JdbcDriverImpl implements JdbcDriver {
     }
 
     private void prepareClassLoader() throws ComponentNotReadyException {
-    	ClassLoader parent = null;
+    	ClassLoader parent = MultiParentClassLoader.NULL_CLASS_LOADER;
     	if (ContextProvider.getGraph() != null && ContextProvider.getGraph().getRuntimeContext() != null) {
     		parent = ContextProvider.getGraph().getRuntimeContext().getClassLoader();
     	}
