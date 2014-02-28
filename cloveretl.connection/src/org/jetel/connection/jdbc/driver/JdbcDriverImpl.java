@@ -175,7 +175,7 @@ public class JdbcDriverImpl implements JdbcDriver {
     }
 
     private void prepareClassLoader() throws ComponentNotReadyException {
-    	ClassLoader parent = MultiParentClassLoader.NULL_CLASS_LOADER;
+    	ClassLoader parent = null;
     	if (ContextProvider.getGraph() != null && ContextProvider.getGraph().getRuntimeContext() != null) {
     		parent = ContextProvider.getGraph().getRuntimeContext().getClassLoader();
     	}
