@@ -272,7 +272,12 @@ public class GraphUtils {
 	 * This method derives from two edge types an edge type which should satisfy needs from both.
 	 */
 	public static EdgeTypeEnum combineEdges(EdgeTypeEnum edgeType1, EdgeTypeEnum edgeType2) {
-		return getEdgeCombinations()[edgeType1.ordinal()][edgeType2.ordinal()];
+		EdgeTypeEnum result = getEdgeCombinations()[edgeType1.ordinal()][edgeType2.ordinal()];
+		if (result != null) {
+			return result;
+		} else {
+			throw new IllegalArgumentException("unexpected edge types for combination " + edgeType1 + " " + edgeType2);
+		}
 	}
 	
 }

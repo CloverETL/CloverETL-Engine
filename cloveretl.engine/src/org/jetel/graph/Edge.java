@@ -338,8 +338,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     }
 
     /**
-     * Current thread is block until EOF on the edge is reached - last
-     * record is read.
+     * Current thread is block until EOF on the edge is reached.
      */
     public void waitForEOF() throws InterruptedException {
     	edge.waitForEOF();
@@ -680,11 +679,12 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	/**
 	 * Sets specific {@link EdgeBase} instance which is used as real edge algorithm.
 	 * By default, the {@link EdgeBase} instance is created in initialisation time
-	 * based on {@link EdgeTypeEnum}.
+	 * based on {@link EdgeTypeEnum}. Edge type is automatically updated as well.
 	 * @param edge
 	 */
 	public void setEdge(EdgeBase edge) {
 		this.edge = edge;
+		this.edgeType = EdgeTypeEnum.valueOf(edge);
 	}
 
 	/**

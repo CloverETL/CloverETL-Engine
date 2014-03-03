@@ -26,8 +26,10 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -101,6 +103,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	private GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         runtimeContext.setRunId(runId);
+        runtimeContext.setParentRunId(givenRuntimeContext.getRunId());
         runtimeContext.setLogLevel(Level.ALL);
         runtimeContext.setLogLocation(givenRuntimeContext.getLogLocation());
         if (runtimeContext.getLogLocation() != null) {
@@ -516,6 +519,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public Edge getParentGraphTargetEdge(int outputPortIndex) {
 		throw new UnsupportedOperationException("subgraphs are not avaible in standalone engine");
+	}
+
+	@Override
+	public Map<String, String> getAuthorityConfiguration() {
+		return Collections.emptyMap();
 	}
 	
 }

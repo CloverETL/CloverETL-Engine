@@ -18,6 +18,7 @@
  */
 package org.jetel.util;
 
+import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.graph.Edge;
 
 /**
@@ -71,7 +72,7 @@ public class SubgraphUtils {
 	}
 	
 	/**
-	 * @return true if and only if the given component type is Subgraph od Subjobflow component.
+	 * @return true if and only if the given component type is Subgraph or Subjobflow component.
 	 */
 	public static boolean isSubJobComponent(String componentType) {
 		return SUBGRAPH_TYPE.equals(componentType) || SUBJOBFLOW_TYPE.equals(componentType);
@@ -81,26 +82,31 @@ public class SubgraphUtils {
 	 * Checks whether output edge of SubgraphInput component can share EdgeBase
 	 * with corresponding edge in parent graph. In regular cases, it is possible and
 	 * highly recommended due performance gain. But in case edge debugging is turned on,
-	 * sharing is not possible.
+	 * sharing is not possible. Remote and phase edges cannot be shared as well.
 	 * @param subgraphEdge an output edge from SubgraphInput component
 	 * @param parentGraphEdge corresponding edge from parent graph
 	 * @return true if and only if the edge base from parentEdge can be shared with localEdge
 	 */
 	public static boolean isSubgraphInputEdgeShared(Edge subgraphEdge, Edge parentGraphEdge) {
-		return subgraphEdge.getGraph().getRuntimeContext().isSubJob() && !subgraphEdge.isDebugMode();
+		return subgraphEdge.getGraph().getRuntimeContext().isSubJob()
+				&& !subgraphEdge.isDebugMode()
+				&& subgraphEdge.getEdgeType() != EdgeTypeEnum.L_REMOTE
+				&& subgraphEdge.getEdgeType() != EdgeTypeEnum.PHASE_CONNECTION;
 	}
 
 	/**
 	 * Checks whether input edge of SubgraphOutput component can share EdgeBase
 	 * with corresponding edge in parent graph. In regular cases, it is possible and
 	 * highly recommended due performance gain. But in case edge debugging is turned on,
-	 * sharing is not possible.
+	 * sharing is not possible. Phase edges cannot be shared as well.
 	 * @param subgraphEdge an input edge from SubgraphOutput component
 	 * @param parentEdge corresponding edge from parent graph
 	 * @return true if and only if the edge base from parentEdge can be shared with localEdge
 	 */
 	public static boolean isSubgraphOutputEdgeShared(Edge subgraphEdge, Edge parentGraphEdge) {
-		return subgraphEdge.getGraph().getRuntimeContext().isSubJob() && !parentGraphEdge.isDebugMode();
+		return subgraphEdge.getGraph().getRuntimeContext().isSubJob()
+				&& !parentGraphEdge.isDebugMode()
+				&& subgraphEdge.getEdgeType() != EdgeTypeEnum.PHASE_CONNECTION;
 	}
 	
 }

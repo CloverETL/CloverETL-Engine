@@ -45,7 +45,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	private long readCounter;
     private long writeByteCounter;
     private long readByteCounter;
-	private boolean isReadMode;
+	private volatile boolean isReadMode;
 	private boolean wasInitialized;
 
 	private volatile boolean isEmpty;
@@ -161,7 +161,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		    readCounter++;
 		    return record;
 		} else {
-			setEmpty();
+			isEmpty = true;
 		    return null;
 		}
 		
@@ -188,7 +188,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		    readCounter++;
 		    return true;
 		} else {
-			setEmpty();
+			isEmpty = true;
 		    return false;
 		}
 	}
@@ -247,9 +247,12 @@ public class PhaseConnectionEdge extends EdgeBase {
 	    // as writer closes the
 	    // port/edge - no more data is to be written, flush
 	    // the buffer of the data tape, we will start reading data
-        dataTape.flush(false);
-        dataTape.rewind();
-	    isReadMode=true;
+    	synchronized (eofMonitor) {
+	        dataTape.flush(false);
+    	    dataTape.rewind();
+	    	isReadMode=true;
+    		eofMonitor.notifyAll();
+    	}
 	}
 
 	@Override
@@ -275,17 +278,10 @@ public class PhaseConnectionEdge extends EdgeBase {
         return isEmpty;
     }
     
-    private void setEmpty() {
-    	synchronized (eofMonitor) {
-    		isEmpty = true;
-    		eofMonitor.notifyAll();
-    	}
-    }
-    
     @Override
     public void waitForEOF() throws InterruptedException {
     	synchronized (eofMonitor) {
-    		while (!isEmpty) {
+    		while (!isReadMode) {
     			eofMonitor.wait();
     		}
     	}

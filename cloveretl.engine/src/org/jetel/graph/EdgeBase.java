@@ -50,6 +50,13 @@ public abstract class EdgeBase {
 	}
 
 	/**
+	 * @return graph edge, where this edge base is used
+	 */
+	public Edge getProxy() {
+		return proxy;
+	}
+	
+	/**
 	 *  Description of the Method
 	 *
 	 *@exception  IOException  Description of Exception
@@ -196,8 +203,7 @@ public abstract class EdgeBase {
 	public abstract boolean hasData();
 	
     /**
-     * Current thread is block until EOF on the edge is reached - last
-     * record is read.
+     * Current thread is block until EOF on the edge is reached.
      */
 	public abstract void waitForEOF() throws InterruptedException;
 	

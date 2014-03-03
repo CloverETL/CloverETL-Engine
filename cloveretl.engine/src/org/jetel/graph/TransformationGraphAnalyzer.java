@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -44,7 +43,6 @@ import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
-import org.jetel.util.GraphUtils;
 import org.jetel.util.SubgraphUtils;
 
 /*
@@ -179,31 +177,32 @@ public class TransformationGraphAnalyzer {
 		
 		//update edge types around Subgraph components
 		//real edge is combination of parent graph edge type and subgraph edge type
-		for (Node component : graph.getNodes().values()) {
-			if (component instanceof SubgraphComponent) {
-				SubgraphComponent subgraphComponent = (SubgraphComponent) component;
-				for (Entry<Integer, InputPort> inputPort : component.getInputPorts().entrySet()) {
-					Edge subgraphEdge = subgraphComponent.getSubgraphInputEdge(inputPort.getKey());
-					Edge parentGraphEdge = inputPort.getValue().getEdge();
-					//will be edge base shared between these two edges?
-					if (SubgraphUtils.isSubgraphInputEdgeShared(subgraphEdge, parentGraphEdge)) {
-						//so we need to combine both edge types to satisfy needs of both parent and subgraph
-						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
-						inputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
-					}
-				}
-				for (Entry<Integer, OutputPort> outputPort : component.getOutputPorts().entrySet()) {
-					Edge subgraphEdge = subgraphComponent.getSubgraphOutputEdge(outputPort.getKey());
-					Edge parentGraphEdge = outputPort.getValue().getEdge();
-					//will be edge base shared between these two edges?
-					if (SubgraphUtils.isSubgraphOutputEdgeShared(subgraphEdge, parentGraphEdge)) {
-						//so we need to combine both edge types to satisfy needs of both parent and subgraph
-						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
-						outputPort.getValue().getEdge().setEdgeType(combinedEdgeType);
-					}
-				}
-			}
-		}
+		//this is turned off - parent graph is not changed according child graph, at least for now
+//		for (Node component : graph.getNodes().values()) {
+//			if (component instanceof SubgraphComponent) {
+//				SubgraphComponent subgraphComponent = (SubgraphComponent) component;
+//				for (Entry<Integer, InputPort> inputPort : component.getInputPorts().entrySet()) {
+//					Edge subgraphEdge = subgraphComponent.getSubgraphInputEdge(inputPort.getKey());
+//					Edge parentGraphEdge = inputPort.getValue().getEdge();
+//					//will be edge base shared between these two edges?
+//					if (SubgraphUtils.isSubgraphInputEdgeShared(subgraphEdge, parentGraphEdge)) {
+//						//so we need to combine both edge types to satisfy needs of both parent and subgraph
+//						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
+//						parentGraphEdge.setEdgeType(combinedEdgeType);
+//					}
+//				}
+//				for (Entry<Integer, OutputPort> outputPort : component.getOutputPorts().entrySet()) {
+//					Edge subgraphEdge = subgraphComponent.getSubgraphOutputEdge(outputPort.getKey());
+//					Edge parentGraphEdge = outputPort.getValue().getEdge();
+//					//will be edge base shared between these two edges?
+//					if (SubgraphUtils.isSubgraphOutputEdgeShared(subgraphEdge, parentGraphEdge)) {
+//						//so we need to combine both edge types to satisfy needs of both parent and subgraph
+//						EdgeTypeEnum combinedEdgeType = GraphUtils.combineEdges(parentGraphEdge.getEdgeType(), subgraphEdge.getEdgeType());
+//						parentGraphEdge.setEdgeType(combinedEdgeType);
+//					}
+//				}
+//			}
+//		}
 	}
 
 	private static void analysePhaseEdges(TransformationGraph graph) {
