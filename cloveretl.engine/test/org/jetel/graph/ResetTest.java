@@ -4,8 +4,13 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 
 import junit.framework.Test;
@@ -63,6 +68,11 @@ public class ResetTest extends CloverTestCase {
 		"graphDBExecuteSybase.grf",
 		"graphLdapReaderWriter.grf"
 	};
+	
+	private final static Map<String, List<String>> CLASSPATHS = new HashMap<String, List<String>>();
+	static {
+		CLASSPATHS.put("rpc-literal-service-test.grf", Collections.singletonList("lib/rpc-literal-test.jar"));
+	}
 		
 	private final static String GRAPHS_DIR = "graph";
 	private final static String TRANS_DIR = "trans";
@@ -213,7 +223,6 @@ public class ResetTest extends CloverTestCase {
 				}
 			};
 			
-			@SuppressWarnings("unchecked")
 			Collection<File> filesCollection = org.apache.commons.io.FileUtils.listFiles(graphsDir, fileFilter, dirFilter);
 			File[] graphFiles = filesCollection.toArray(new File[0]);			
 			Arrays.sort(graphFiles);
@@ -289,7 +298,14 @@ public class ResetTest extends CloverTestCase {
 		
 		// for scenarios graphs, add the TRANS dir to the classpath
 		if (basePath.contains("cloveretl.test.scenarios")) {
-			runtimeContext.setRuntimeClassPath(new URL[] {FileUtils.getFileURL(FileUtils.appendSlash(baseAbsolutePath) + TRANS_DIR + "/")});
+			List<URL> classpath = new ArrayList<URL>();
+			classpath.add(FileUtils.getFileURL(FileUtils.appendSlash(baseAbsolutePath) + TRANS_DIR + "/"));
+			if (CLASSPATHS.containsKey(graphFile.getName())) {
+				for (String path : CLASSPATHS.get(graphFile.getName())) {
+					classpath.add(FileUtils.getFileURL(runtimeContext.getContextURL(), path));
+				}
+			}
+			runtimeContext.setRuntimeClassPath(classpath.toArray(new URL[classpath.size()]));
 			runtimeContext.setCompileClassPath(runtimeContext.getRuntimeClassPath());
 		}
 
@@ -358,6 +374,5 @@ public class ResetTest extends CloverTestCase {
 			}
 		}
 	}
-	
 }
 
