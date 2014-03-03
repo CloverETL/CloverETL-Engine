@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -586,4 +587,9 @@ public abstract class IAuthorityProxy {
 		return text;
 	}
 
+	/**
+	 * @return meta information about runtime authority
+	 */
+	public abstract Map<String, String> getAuthorityConfiguration();
+	
 }

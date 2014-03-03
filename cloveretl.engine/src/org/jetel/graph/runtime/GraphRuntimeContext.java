@@ -53,6 +53,7 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_TOKEN_TRACKING = true;
 	
 	private long runId;
+	private Long parentRunId;
 	private String executionGroup;
 	private boolean daemon;
 	private String logLocation;
@@ -131,6 +132,8 @@ public class GraphRuntimeContext {
 	public GraphRuntimeContext createCopy() {
 		GraphRuntimeContext ret = new GraphRuntimeContext();
 		
+		ret.runId = runId;
+		ret.parentRunId = parentRunId;
 		ret.additionalProperties = new Properties();
 		ret.additionalProperties.putAll(getAdditionalProperties());
 		ret.logLevel = getLogLevel();
@@ -167,6 +170,8 @@ public class GraphRuntimeContext {
 	public Properties getAllProperties() {
 		Properties prop = new Properties();
 		
+		prop.setProperty("runId", Long.toString(getRunId()));
+		prop.setProperty("parentRunId", String.valueOf(getParentRunId()));
 		prop.setProperty("additionProperties", String.valueOf(getAdditionalProperties()));
 		prop.setProperty("logLevel", String.valueOf(getLogLevel()));
 		prop.setProperty("trackingInterval", Integer.toString(getTrackingInterval()));
@@ -376,6 +381,20 @@ public class GraphRuntimeContext {
 	 */
 	public void setRunId(long runId) {
 		this.runId = runId;
+	}
+
+	/**
+	 * @return runId of parent graph or null if the graph is on top level of execution tree
+	 */
+	public Long getParentRunId() {
+		return parentRunId;
+	}
+
+	/**
+	 * @param runId runId of parent graph or null if the graph is on top level of execution tree
+	 */
+	public void setParentRunId(Long parentRunId) {
+		this.parentRunId = parentRunId;
 	}
 
 	/**
