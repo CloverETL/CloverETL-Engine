@@ -20,23 +20,19 @@ package org.jetel.graph.modelview;
 
 import java.util.List;
 
-import org.jetel.graph.IGraphElement;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * This is general view to a metadata. Two implementations are expected
- * - wrapper for engine and gui metadata.
- * 
- * This model view is used by {@link MetadataPropagationResolver} and allows 
- * unified implementation for both engine and gui model.
+ * This is general model view to a record metadata.
+ * This model view is used by {@link MetadataPropagationResolver}.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 19. 9. 2013
  */
-public interface MVMetadata {
+public interface MVMetadata extends MVGraphElement {
 
 	/**
 	 * This high priority is used when metadata is defined directly on edge.
@@ -51,7 +47,13 @@ public interface MVMetadata {
 	/**
 	 * @return wrapped metadata, either DataRecordMetadata or GraphMetadata
 	 */
+	@Override
 	public DataRecordMetadata getModel();
+	
+	/**
+	 * @return deep copy of this instance
+	 */
+	public MVMetadata duplicate();
 	
 	/**
 	 * Priority of metadata is used to decide which metadata should be used.
@@ -72,19 +74,19 @@ public interface MVMetadata {
 	 * Origin path is list of graph elements which were used for automatic metadata propagation for this metadata.
 	 * @param graphElement
 	 */
-	public void addToOriginPath(IGraphElement graphElement);
+	public void addToOriginPath(MVGraphElement graphElement);
 
 	/**
 	 * Appends the given graph elements to metadata origin path.
 	 * Origin path is list of graph elements which were used for automatic metadata propagation for this metadata.
 	 * @param graphElement
 	 */
-	public void addToOriginPath(List<IGraphElement> graphElement);
+	public void addToOriginPath(List<MVGraphElement> graphElement);
 	
 	/**
 	 * Origin path is list of graph elements which were used for automatic metadata propagation for this metadata.
 	 * @return origin path for this metadata
 	 */
-	public List<IGraphElement> getOriginPath();
+	public List<MVGraphElement> getOriginPath();
 	
 }

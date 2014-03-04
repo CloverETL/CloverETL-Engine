@@ -83,10 +83,7 @@ public class MVEngineEdge implements MVEdge {
 				return propagatedMetadata;
 			} else {
 				MVMetadata metadata = metadataPropagationResolver.getOrCreateMVMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
-//				List<IGraphElement> originPath = engineEdge.getMetadataOriginPath();
-//				if (originPath != null) {
-//					metadata.addToOriginPath(originPath.subList(1, originPath.size())); //the last element in path is this edge, which will be appended later again
-//				}
+				metadata.addToOriginPath(this);
 				return metadata;
 			}
 		} else {

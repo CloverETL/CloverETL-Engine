@@ -21,7 +21,7 @@ package org.jetel.graph.modelview.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jetel.graph.IGraphElement;
+import org.jetel.graph.modelview.MVGraphElement;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -39,7 +39,7 @@ public class MVEngineMetadata implements MVMetadata {
 	
 	private int priority;
 	
-	private List<IGraphElement> originPath;
+	private List<MVGraphElement> originPath;
 	
 	MVEngineMetadata(DataRecordMetadata metadata) {
 		this(metadata, LOW_PRIORITY);
@@ -48,12 +48,21 @@ public class MVEngineMetadata implements MVMetadata {
 	MVEngineMetadata(DataRecordMetadata metadata, int priority) {
 		this.metadata = metadata;
 		this.priority = priority;
-		originPath = new ArrayList<IGraphElement>();
+		originPath = new ArrayList<MVGraphElement>();
 	}
 
 	@Override
 	public DataRecordMetadata getModel() {
 		return metadata;
+	}
+	
+	@Override
+	public MVMetadata duplicate() {
+		MVEngineMetadata result = new MVEngineMetadata(metadata, priority);
+		if (originPath != null) {
+			result.originPath = new ArrayList<MVGraphElement>(originPath);
+		}
+		return result;
 	}
 	
 	@Override
@@ -67,21 +76,21 @@ public class MVEngineMetadata implements MVMetadata {
 	}
 
 	@Override
-	public void addToOriginPath(IGraphElement graphElement) {
+	public void addToOriginPath(MVGraphElement graphElement) {
 		if (graphElement != null) { 
 			originPath.add(0, graphElement);
 		}
 	}
 
 	@Override
-	public void addToOriginPath(List<IGraphElement> originPath) {
+	public void addToOriginPath(List<MVGraphElement> originPath) {
 		if (originPath != null) {
 			this.originPath.addAll(0, originPath);
 		}
 	}
 
 	@Override
-	public List<IGraphElement> getOriginPath() {
+	public List<MVGraphElement> getOriginPath() {
 		return originPath;
 	}
 	

@@ -121,14 +121,15 @@ public class MetadataPropagationResolver {
 		if (!edge.hasMetadata()) {
 			edge.setPropagatedMetadata(null); //to avoid recursive search
 			MVMetadata metadata = findMetadataInternal(edge);
-//			if (metadata != null) {
-//				//construct metadata origin path
-//				metadata.addToOriginPath(edge.getModel());
-//			}
+			if (metadata != null) {
+				//construct metadata origin path
+				metadata.addToOriginPath(edge);
+			}
 			edge.unsetPropagatedMetadata();
 			return metadata;
 		} else {
-			return edge.getMetadata();
+			MVMetadata metadata = edge.getMetadata();
+			return metadata != null ? metadata.duplicate() : null; //duplicate has to be returned due metadata origin path construction
 		}
 	}
 
@@ -179,7 +180,7 @@ public class MetadataPropagationResolver {
 		if (result != null) {
 			if (originComponent != null) {
 				//construct metadata origin
-				result.addToOriginPath(originComponent.getModel());
+				result.addToOriginPath(originComponent);
 			} else {
 				throw new IllegalStateException();
 			}
