@@ -75,13 +75,14 @@ public class TransformationGraphAnalyzer {
 		try {
 			TransformationGraphAnalyzer.disableNodesInPhases(graph);
 		} catch (GraphConfigurationException e) {
-			throw new JetelRuntimeException("Removing disable nodes failed.", e);
+			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
-		//remove component before SubgraphInput and after SubgraphOutput if necessary
-		if (runtimeContext.isSubJob()) {
+		boolean removeSubgraphDebugNodes = runtimeContext.isSubJob();
+		boolean layoutChecking = runtimeContext.getJobType() == JobType.SUBGRAPH || runtimeContext.getJobType() == JobType.SUBJOBFLOW;
+		if (removeSubgraphDebugNodes || layoutChecking) {
 			try {
-				TransformationGraphAnalyzer.analyseSubgraph(graph);
+				TransformationGraphAnalyzer.analyseSubgraph(graph, removeSubgraphDebugNodes, layoutChecking);
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Subgraph analysis failed.", e);
 			}
@@ -124,35 +125,46 @@ public class TransformationGraphAnalyzer {
 	}
 
 	/**
-	 * Removes all components before SubgraphInput and after SubgraphOutput.
+	 * Checks layout and removes all components before SubgraphInput and after SubgraphOutput.
+	 * This could be split into two methods for better clarity, but we would perform component search operations twice.
 	 */
-	public static void analyseSubgraph(TransformationGraph graph) {
+	public static void analyseSubgraph(TransformationGraph graph, boolean removeDebugNodes, boolean layoutChecking) {
 		for (Node component : graph.getNodes().values()) {
 			if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
 				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
-				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
-				if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
-					throw new JetelRuntimeException("Invalid subgraph layout. A component preceding the SubgraphInput component is probably connected with a component following SubgraphInput.");
+				if (layoutChecking) {
+					List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
+					if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
+						throw new JetelRuntimeException("Invalid subgraph layout. A component preceding the SubgraphInput component is probably connected with a component following SubgraphInput.");
+					}
 				}
-				for (Node precedentNode : precedentNodes) {
-					precedentNode.setEnabled(EnabledEnum.DISABLED);
+				if (removeDebugNodes) {
+					for (Node precedentNode : precedentNodes) {
+						precedentNode.setEnabled(EnabledEnum.DISABLED);
+					}
 				}
 			}
 			if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
 				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
-				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
-				if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
-					throw new JetelRuntimeException("Invalid subgraph layout. A component following the SubgraphOutput component is probably connected with a component preceding SubgraphOutput.");
+				if (layoutChecking) {
+					List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
+					if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
+						throw new JetelRuntimeException("Invalid subgraph layout. A component following the SubgraphOutput component is probably connected with a component preceding SubgraphOutput.");
+					}
 				}
-				for (Node followingNode : followingNodes) {
-					followingNode.setEnabled(EnabledEnum.DISABLED);
+				if (removeDebugNodes) {
+					for (Node followingNode : followingNodes) {
+						followingNode.setEnabled(EnabledEnum.DISABLED);
+					}
 				}
 			}
 		}
 		
         //remove disabled components and their edges
         try {
-			TransformationGraphAnalyzer.disableNodesInPhases(graph);
+        	if (removeDebugNodes) {
+        		TransformationGraphAnalyzer.disableNodesInPhases(graph);
+        	}
 		} catch (GraphConfigurationException e) {
 			throw new JetelRuntimeException("Failed to remove disabled/pass-through nodes from subgraph.", e);
 		}
