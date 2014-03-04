@@ -178,11 +178,11 @@ public class JdbcDriverImpl implements JdbcDriver {
     	
     	if (driverLibraries != null && driverLibraries.length > 0) {
     		/*
-    		 *  paths to driver JARs specified, so create URL class loader and use system class loader as its parent,
+    		 *  paths to driver JARs specified, so create URL class loader and use specific class loader as its parent,
     		 *  that prevents package sealing violation and LinkageErrors if there were the same driver
     		 *  present more than once (this happens e.g. with Oracle JDBC driver in server environment)
     		 */
-    		classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, ClassLoader.getSystemClassLoader(), true);
+    		classLoader = ContextProvider.getAuthorityProxy().getClassLoader(driverLibraries, getJdbcSpecific().getDriverClassLoaderParent(), true);
     	} else {
     		/*
     		 * no class path so we suppose that the driver is either provided by runtime class loader or
