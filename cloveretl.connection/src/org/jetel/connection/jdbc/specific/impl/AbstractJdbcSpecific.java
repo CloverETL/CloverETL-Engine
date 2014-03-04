@@ -637,4 +637,12 @@ abstract public class AbstractJdbcSpecific implements JdbcSpecific {
 	public String getCreateTableSuffix(DataRecordMetadata metadata) {
 		return "";
 	}
+	
+	@Override
+	public ClassLoader getDriverClassLoaderParent() {
+		/*
+		 * return system classloader, for in most cases only classes from java.sql.* are needed
+		 */
+		return ClassLoader.getSystemClassLoader();
+	}
 }
