@@ -22,22 +22,20 @@ import org.jetel.graph.Edge;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
 /**
- * This is general view to a edge. Two implementations are expected
- * - wrapper for engine and gui edge.
- * 
- * This model view is used by {@link MetadataPropagationResolver} and allows 
- * unified implementation for both engine and gui model.
+ * This is general model view to an edge.
+ * This model view is used by {@link MetadataPropagationResolver}.
  * 
  * @author Kokon (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 27. 8. 2013
  */
-public interface MVEdge {
+public interface MVEdge extends MVGraphElement {
 
 	/**
 	 * @return engine edge
 	 */
+	@Override
 	public Edge getModel();
 	
 	/**
