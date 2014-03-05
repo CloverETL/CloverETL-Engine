@@ -71,6 +71,11 @@ public class MVEngineMetadata implements MVMetadata {
 	}
 	
 	@Override
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
+	
+	@Override
 	public void setId(String id) {
 		metadata.setId(id);
 	}

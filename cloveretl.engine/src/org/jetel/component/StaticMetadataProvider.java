@@ -48,7 +48,7 @@ public class StaticMetadataProvider implements MetadataProvider, Serializable {
 	@Override
 	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex < outputMetadata.length && outputMetadata[portIndex] != null) {
-			return metadataPropagationResolver.getOrCreateMVMetadata(outputMetadata[portIndex]);
+			return metadataPropagationResolver.createMVMetadata(outputMetadata[portIndex]);
 		} else {
 			return null;
 		}
@@ -57,7 +57,7 @@ public class StaticMetadataProvider implements MetadataProvider, Serializable {
 	@Override
 	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex < inputMetadata.length && inputMetadata[portIndex] != null) {
-			return metadataPropagationResolver.getOrCreateMVMetadata(inputMetadata[portIndex]);
+			return metadataPropagationResolver.createMVMetadata(inputMetadata[portIndex]);
 		} else {
 			return null;
 		}

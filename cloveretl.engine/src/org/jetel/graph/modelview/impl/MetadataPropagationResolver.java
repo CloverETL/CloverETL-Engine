@@ -228,7 +228,7 @@ public class MetadataPropagationResolver {
 	 * @param metadata wrapped metadata
 	 * @return model view wrapper for the given metadata
 	 */
-	public MVMetadata getOrCreateMVMetadata(DataRecordMetadata metadata) {
+	public MVMetadata createMVMetadata(DataRecordMetadata metadata) {
 		return new MVEngineMetadata(metadata);
 	}
 
@@ -238,7 +238,7 @@ public class MetadataPropagationResolver {
 	 * @param priority metadata priority
 	 * @return model view wrapper for the given metadata
 	 */
-	public MVMetadata getOrCreateMVMetadata(DataRecordMetadata metadata, int priority) {
+	public MVMetadata createMVMetadata(DataRecordMetadata metadata, int priority) {
 		return new MVEngineMetadata(metadata, priority);
 	}
 	
