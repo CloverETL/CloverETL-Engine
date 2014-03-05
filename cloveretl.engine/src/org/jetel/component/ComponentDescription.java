@@ -77,6 +77,7 @@ public interface ComponentDescription extends GraphElementDescription {
 
     @XmlRootElement(name = "ETLComponent")
     public static class Component {
+    	private String name;
     	private String type;
 		private String className;
 		private String metadataProvider;
@@ -91,6 +92,13 @@ public interface ComponentDescription extends GraphElementDescription {
     	public Ports getOutputPorts() {
     		return outputPorts;
     	}
+    	@XmlAttribute
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
     	@XmlAttribute
 		public String getType() {
 			return type;
