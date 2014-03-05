@@ -129,8 +129,12 @@ public class TransformationGraphAnalyzer {
 	 * This could be split into two methods for better clarity, but we would perform component search operations twice.
 	 */
 	public static void analyseSubgraph(TransformationGraph graph, boolean removeDebugNodes, boolean layoutChecking) {
-		for (Node component : graph.getNodes().values()) {
+		Collection<Node> nodes = graph.getNodes().values();
+		Integer startPhase = null;
+		Integer endPhase = null;
+		for (Node component : nodes) {
 			if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
+				startPhase = component.getPhaseNum();
 				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
 				if (layoutChecking) {
 					List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
@@ -145,6 +149,7 @@ public class TransformationGraphAnalyzer {
 				}
 			}
 			if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
+				endPhase = component.getPhaseNum();
 				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
 				if (layoutChecking) {
 					List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
@@ -160,13 +165,23 @@ public class TransformationGraphAnalyzer {
 			}
 		}
 		
-        //remove disabled components and their edges
-        try {
-        	if (removeDebugNodes) {
-        		TransformationGraphAnalyzer.disableNodesInPhases(graph);
-        	}
-		} catch (GraphConfigurationException e) {
-			throw new JetelRuntimeException("Failed to remove disabled/pass-through nodes from subgraph.", e);
+		if (removeDebugNodes) {
+			if (endPhase != null || startPhase != null) {
+				for (Node component : nodes) {
+					if (startPhase != null && component.getPhaseNum() < startPhase) {
+						component.setEnabled(EnabledEnum.DISABLED);
+					}
+					else if (endPhase != null && component.getPhaseNum() > endPhase) {
+						component.setEnabled(EnabledEnum.DISABLED);
+					}
+				}
+			}
+		
+			try {
+				TransformationGraphAnalyzer.disableNodesInPhases(graph);
+			} catch (GraphConfigurationException e) {
+				throw new JetelRuntimeException("Failed to remove disabled/pass-through nodes from subgraph.", e);
+			}
 		}
 	}
 
