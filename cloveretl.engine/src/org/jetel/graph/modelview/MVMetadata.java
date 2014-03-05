@@ -42,8 +42,13 @@ public interface MVMetadata extends MVGraphElement {
 	/**
 	 * This is default priority.
 	 */
-	public static final int LOW_PRIORITY = 1;
-	
+	public static final int LOW_PRIORITY = 5;
+
+	/**
+	 * This is lowest possible priority. It is used for example to propagate metadata through Reformat component.
+	 */
+	public static final int ZERO_PRIORITY = 0;
+
 	/**
 	 * @return wrapped metadata, either DataRecordMetadata or GraphMetadata
 	 */
@@ -63,6 +68,15 @@ public interface MVMetadata extends MVGraphElement {
 	 * @return metadata priority
 	 */
 	public int getPriority();
+	
+	/**
+	 * Priority of metadata is used to decide which metadata should be used.
+	 * Metadata decision for an edge - look left, look right and take metadata
+	 * with higher priority.
+	 * @see MetadataPropagationResolver
+	 * @param priority new priority
+	 */
+	public void setPriority(int priority);
 	
 	/**
 	 * Sets metadata identifier.

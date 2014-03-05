@@ -80,9 +80,16 @@ public class MVEngineEdge implements MVEdge {
 	public MVMetadata getMetadata() {
 		if (hasMetadata()) {
 			if (hasPropagatedMetadata) {
-				return propagatedMetadata;
+				if (propagatedMetadata != null) {
+					//duplicate is returned since propagated metadata can be changed
+					//by propagation process - for example Reformat propagates metadata
+					//from input to output ports, but priority of this metadata is decreased to ZERO level
+					return propagatedMetadata.duplicate();
+				} else {
+					return null;
+				}
 			} else {
-				MVMetadata metadata = metadataPropagationResolver.getOrCreateMVMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
+				MVMetadata metadata = metadataPropagationResolver.createMVMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
 				metadata.addToOriginPath(this);
 				return metadata;
 			}

@@ -42,6 +42,8 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.tracker.ComponentTokenTracker;
 import org.jetel.graph.runtime.tracker.ReformatComponentTokenTracker;
 import org.jetel.util.SynchronizeUtils;
@@ -161,7 +163,7 @@ import org.w3c.dom.Element;
  * @author      dpavlis
  * @since       April 4, 2002
  */
-public class Reformat extends Node {
+public class Reformat extends Node implements MetadataProvider {
 
 	public static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	public static final String XML_TRANSFORM_ATTRIBUTE = "transform";
@@ -484,11 +486,6 @@ public class Reformat extends Node {
 	}
 
 	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-	}
-
-	@Override
     public synchronized void free() {
         super.free();
     }
@@ -496,6 +493,25 @@ public class Reformat extends Node {
 	@Override
 	protected ComponentTokenTracker createComponentTokenTracker() {
 		return new ReformatComponentTokenTracker(this);
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		//no metadata are propagated from output ports to input ports
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		//metadata from input port are propagated from input port to output port with lowest priority
+		if (getInputPort(0) != null) {
+			MVMetadata metadata = metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
+			if (metadata != null) {
+				metadata.setPriority(MVMetadata.ZERO_PRIORITY);
+			}
+			return metadata;
+		}
+		return null;
 	}
 
 }

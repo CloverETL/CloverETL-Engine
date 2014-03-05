@@ -112,7 +112,7 @@ public class MVEngineComponent implements MVComponent {
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
 		String metadataId = engineComponent.getDescriptor().getDefaultOutputMetadataId(portIndex);
 		if (MetadataRepository.contains(metadataId)) {
-			return metadataPropagationResolver.getOrCreateMVMetadata(MetadataRepository.getMetadata(metadataId));
+			return metadataPropagationResolver.createMVMetadata(MetadataRepository.getMetadata(metadataId));
 		}
 		return null;
 	}
@@ -130,7 +130,7 @@ public class MVEngineComponent implements MVComponent {
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
 		String metadataId = engineComponent.getDescriptor().getDefaultInputMetadataId(portIndex);
 		if (MetadataRepository.contains(metadataId)) {
-			return metadataPropagationResolver.getOrCreateMVMetadata(MetadataRepository.getMetadata(metadataId));
+			return metadataPropagationResolver.createMVMetadata(MetadataRepository.getMetadata(metadataId));
 		}
 		return null;
 	}

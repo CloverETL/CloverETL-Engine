@@ -333,7 +333,7 @@
 	</extension>
 
 	<extension point-id="component">
-	  <ETLComponent category="transformers" iconPath="icons/transformers/Reformat" name="Reformat" type="REFORMAT" className="org.jetel.component.Reformat" passThrough="true">
+	  <ETLComponent category="transformers" iconPath="icons/transformers/Reformat" name="Reformat" type="REFORMAT" className="org.jetel.component.Reformat">
 	    <shortDescription>Changes format, structure or content of records.</shortDescription>
 	    <description>Receives data through connected input port, transforms them in a user specified way, and sends such new outgoing data records to all connected output ports. Implements org.jetel.component.RecordTransform interface.</description>
 	    <inputPorts>
