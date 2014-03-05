@@ -28,6 +28,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataRepository;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.string.StringUtils;
@@ -109,12 +110,9 @@ public class MVEngineComponent implements MVComponent {
 			}
 		}
 
-		//no dynamic metadata found, let's use statical metadata from component descriptor 
+		//no dynamic metadata found, let's use static metadata from component descriptor 
 		String metadataId = engineComponent.getDescriptor().getDefaultOutputMetadataId(portIndex);
-		if (MetadataRepository.contains(metadataId)) {
-			return metadataPropagationResolver.createMVMetadata(MetadataRepository.getMetadata(metadataId));
-		}
-		return null;
+		return getStaticMetadata(metadataId, metadataPropagationResolver);
 	}
 
 	@Override
@@ -129,10 +127,22 @@ public class MVEngineComponent implements MVComponent {
 		}
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
 		String metadataId = engineComponent.getDescriptor().getDefaultInputMetadataId(portIndex);
+		return getStaticMetadata(metadataId, metadataPropagationResolver);
+	}
+	
+	/**
+	 * @return metadata from static metadata repository
+	 */
+	private MVMetadata getStaticMetadata(String metadataId, MetadataPropagationResolver metadataPropagationResolver) {
 		if (MetadataRepository.contains(metadataId)) {
-			return metadataPropagationResolver.createMVMetadata(MetadataRepository.getMetadata(metadataId));
+			//get static metadata from repository and create duplicate
+			DataRecordMetadata metadata = MetadataRepository.getMetadata(metadataId).duplicate();
+			//update metadata name to be more descriptive
+			metadata.setName(engineComponent.getDescriptor().getDescription().getName() + "_" + metadata.getName());
+			return metadataPropagationResolver.createMVMetadata(metadata);
+		} else {
+			return null;
 		}
-		return null;
 	}
 	
 	@Override

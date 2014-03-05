@@ -31,7 +31,7 @@
 	    <outputPorts>
 	      <singlePort name="0" required="true" label="output"/>
 	      <singlePort name="1" label="logs">
-	        <Metadata id="UDR_ErrorPort"/>
+	        <Metadata id="UniversalDataReader_Error"/>
 	      </singlePort>
 	    </outputPorts>
 	    <properties>
@@ -1455,12 +1455,12 @@
 	    <description>Receives an HTTP request through the connected input port, reads it from input file or directly from the graph and sends it to the HTTP server. Takes the response from the server and sends it out through the connected output port or writes it to the output file. Optionally also the output file URLs can be sent out through the connected output port.</description>
 	    <inputPorts>
 	      <singlePort name="0" required="false">
-	        <Metadata id="HTTPConnector_Attributes" />
+	        <Metadata id="HTTPConnector_Request" />
 	      </singlePort>
 	    </inputPorts>
 	    <outputPorts>
 	      <singlePort name="0" required="false">
-	        <Metadata id="HTTPConnector_Result" />
+	        <Metadata id="HTTPConnector_Response" />
 	      </singlePort>
 	      <singlePort name="1" required="false">
 	        <Metadata id="HTTPConnector_Error" />
@@ -2804,8 +2804,8 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="metadata">
-		<Metadata id="UDR_ErrorPort">
-	      <Record fieldDelimiter="|" name="ErrorPort" recordDelimiter="\n" type="delimited">
+		<Metadata id="UniversalDataReader_Error">
+	      <Record fieldDelimiter="|" name="Error" recordDelimiter="\n" type="delimited">
 	        <Field name="recordNo" type="long"/>
 	        <Field name="fieldNo" type="integer"/>
 	        <Field name="originalData" type="string"/>
@@ -2816,8 +2816,8 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="metadata">
-		<Metadata id="HTTPConnector_Attributes">
-			<Record fieldDelimiter="|" name="Attributes" recordDelimiter="\n" type="delimited">
+		<Metadata id="HTTPConnector_Request">
+			<Record fieldDelimiter="|" name="Request" recordDelimiter="\n" type="delimited">
 				<Field name="URL" type="string" />
 				<Field name="requestMethod" type="string" />
 				<Field name="addInputFieldsAsParameters" type="boolean" />
@@ -2844,8 +2844,8 @@ Sends all resulting records to all connected output ports.</description>
 	</extension>
 	
 	<extension point-id="metadata">
-		<Metadata id="HTTPConnector_Result">
-			<Record fieldDelimiter="|" name="Result" recordDelimiter="\n" type="delimited">
+		<Metadata id="HTTPConnector_Response">
+			<Record fieldDelimiter="|" name="Response" recordDelimiter="\n" type="delimited">
 				<Field name="content" type="string" />
 				<Field name="contentByte" type="byte" />
 				<Field name="outputFilePath" type="string" />
