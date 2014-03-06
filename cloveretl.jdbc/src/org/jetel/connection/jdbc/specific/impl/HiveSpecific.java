@@ -51,8 +51,7 @@ public class HiveSpecific extends AbstractJdbcSpecific {
 	
 	@Override
 	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
-		return new HiveConnection(dbConnection, connection, operationType);
-		
+		return new HiveConnection(dbConnection, connection, operationType);	
 	}
 	
 	@Override
@@ -98,4 +97,12 @@ public class HiveSpecific extends AbstractJdbcSpecific {
 		return sb.toString();
 	}
 	
+	@Override
+	public ClassLoader getDriverClassLoaderParent() {
+		/*
+		 * Hive drivers depend on log4j & commons-logging, that are part of the clover classpath,
+		 * so return class that has access to that classpath
+		 */
+		return Thread.currentThread().getContextClassLoader();
+	}
 }
