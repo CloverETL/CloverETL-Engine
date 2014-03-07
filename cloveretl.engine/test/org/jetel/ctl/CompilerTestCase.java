@@ -5361,29 +5361,73 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	public void test_stringlib_split() {
 		doCompile("test_stringlib_split");
 		check("split1", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+		check("split2", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+		check("split3", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+
+		// limit
+		check("limit1", Arrays.asList("The quick brown fox jumps over the lazy dog"));
+		check("limit2", Arrays.asList("The quick br", "wn fox jumps over the lazy dog"));
+		check("limit3", Arrays.asList("The quick br", "wn f", "x jumps over the lazy dog"));
+		check("limit4", Arrays.asList("The quick br", "wn f", "", " jumps over the lazy dog"));
+		check("limit20", Arrays.asList("The quick br", "wn f", "", " jumps " , "ver the lazy d", "g"));
+		
 		check("test_empty", Arrays.asList(""));
 		check("test_empty2", Arrays.asList("","a","a"));
-		check("test_null", Collections.emptyList());
+		check("test_empty3", Arrays.asList(""));
+		check("test_empty4", Arrays.asList("","a","a"));
+		check("test_empty5", Arrays.asList(""));
+		check("test_empty6", Arrays.asList("","a","a", "")); // regex is an empty string => trailing empty string
+		
+		check("test_null", Collections.EMPTY_LIST);
+		
+		check("removeTrailing1", Collections.EMPTY_LIST);
+		check("removeTrailing2", Collections.EMPTY_LIST);
+		check("removeTrailing3", Arrays.asList("", "a", "", "b"));
+		check("removeTrailing4", Arrays.asList("", "a", "", "b"));
+
+		check("keepTrailing1", Arrays.asList("", "", "", "", ""));
+		check("keepTrailing2", Arrays.asList("", "a", "", "b", "", "", ""));
 	}
 	
 	public void test_stringlib_split_expect_error(){
-		//test: regexp null - test1
+		//test: regexp null literal 1
 		try {
 			doCompile("function integer transform(){string[] s = split('aaa',null); return 0;}","test_stringlib_split_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
-		//test: regexp null - test2
+		//test: regexp null literal 2
 		try {
 			doCompile("function integer transform(){string[] s = split('',null); return 0;}","test_stringlib_split_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
-		//test: regexp null - test3
+		//test: regexp null literal 3
 		try {
 			doCompile("function integer transform(){string[] s = split(null,null); return 0;}","test_stringlib_split_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: regexp null variable
+		try {
+			doCompile("function integer transform(){string regexp = null; string[] s = split(null,regexp); return 0;}","test_stringlib_split_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: limit null
+		try {
+			doCompile("function integer transform(){split('a','a',null); return 0;}","test_stringlib_split_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: limit null variable
+		try {
+			doCompile("function integer transform(){integer limit = null; split('a','a',limit); return 0;}","test_stringlib_split_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -5534,6 +5578,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("isDate25", false);
 		check("isDate26", true);
 		check("isDate27", true);
+
+		check("isDecimal", false);
+		check("isDecimal1", false);
+		check("isDecimal2", true);
+		check("isDecimal3", true);
+		check("isDecimal4", false);
+		check("isDecimal5", true);
+		check("isDecimal6", true);
+		check("isDecimal7", false);
+		check("isDecimal8", false);
 	}	
 	public void test_stringlib_empty_strings() {
 		String[] expressions = new String[] {
@@ -5686,6 +5740,11 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("index_empty2", 0);
 		check("index_empty3", 0);
 		check("index_empty4", -1);
+		
+		check("nullInput1", -1);
+		check("nullInput2", -1);
+		check("nullInputVariable1", -1);
+		check("nullInputVariable2", -1);
 	}
 	
 	public void test_stringlib_indexOf_expect_error(){
@@ -5703,20 +5762,20 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
-		//test: first arg is null - test1
-		try {
-			doCompile("integer index;function integer transform() {index = indexOf(null,'a'); return 0;}","test_stringlib_indexOf_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		//test: first arg is null - test2
-		try {
-			doCompile("integer index;function integer transform() {index = indexOf(null,''); return 0;}","test_stringlib_indexOf_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
+//		//test: first arg is null - test1
+//		try {
+//			doCompile("integer index;function integer transform() {index = indexOf(null,'a'); return 0;}","test_stringlib_indexOf_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
+//		//test: first arg is null - test2
+//		try {
+//			doCompile("integer index;function integer transform() {index = indexOf(null,''); return 0;}","test_stringlib_indexOf_expect_error");
+//			fail();
+//		} catch (Exception e) {
+//			// do nothing
+//		}
 		//test: both args are null
 		try {
 			doCompile("integer index;function integer transform() {index = indexOf(null,null); return 0;}","test_stringlib_indexOf_expect_error");
@@ -5724,8 +5783,79 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		//test: third arg is null
+		try {
+			doCompile("integer index;function integer transform() {index = indexOf('a','a',null); return 0;}","test_stringlib_indexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
+	public void test_stringlib_lastIndexOf() {
+        doCompile("test_stringlib_lastIndexOf");
+		check("index1", 9);
+		check("index2", 9);
+		check("index3", 3);
+		check("index4", 12);
+		check("index5", 12);
+//		check("index6", -1);
+//		check("index7", -1);
+		check("index8", 0);
+		check("index9", 0);
+		check("index10", -1);
+		
+		check("nullLiteral1", -1);
+		check("nullLiteral2", -1);
+		check("nullVariable1", -1);
+		check("nullVariable2", -1);
+	}
+	
+	public void test_stringlib_lastIndexOf_expect_error() {
+		//test: fromIndex is null - test1
+		try {
+			doCompile("integer index;function integer transform() {index = lastIndexOf('hello world','b', null); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: fromIndex is null - test2
+		try {
+			doCompile("integer index;function integer transform() {integer from = null;index = lastIndexOf('hello world','b', from); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null searchStr - test1
+		try {
+			doCompile("integer index;function integer transform() {index = lastIndexOf('hello world',null); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null variable searchStr - test2
+		try {
+			doCompile("integer index;function integer transform() {string searchStr = null;index = lastIndexOf('hello world',searchStr); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null searchStr - test3
+		try {
+			doCompile("integer index;function integer transform() {index = lastIndexOf('hello world',null,0); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null variable searchStr - test4
+		try {
+			doCompile("integer index;function integer transform() {string searchStr = null;index = lastIndexOf('hello world',searchStr,0); return 0;}","test_stringlib_lastIndexOf_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
 	public void test_stringlib_removeDiacritic(){
         doCompile("test_stringlib_removeDiacritic");
         check("test","tescik");
@@ -5866,6 +5996,733 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 
+	}
+	
+//	public void test_stringlib_capitalizeWords() {
+//		doCompile("test_stringlib_capitalizeWords");
+//		
+//		check("word", "Word");
+//		check("twoWords", "Two Words");
+//		check("sentence", "A Full Sentence.");
+//		check("clock", "8 O'clock");
+//		check("underscore", "Do _not_ Capitalize Me");
+//		check("titleCase", "A Full Sentence");
+//		
+//		check("slovak", "\u010Cerven\u00FD \u013Dadoborec");
+//		check("russian", "\u041F\u0440\u043E\u043B\u0435\u0442\u0430\u0440\u0438\u0438 \u0412\u0441\u0435\u0445 \u0421\u0442\u0440\u0430\u043D, \u0421\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C!");
+//		check("japanese", "\u673A\u306E\u4E0A\u306B\u306F\u30B1\u30FC\u30AD\u304C\u3042\u308A\u307E\u3059\u3002");
+//		check("german", "\u00DCberwald");
+//		
+//		check("nullValue", null);
+//		check("emptyString", "");
+//	}
+//	
+//	public void test_stringlib_uncapitalizeWords() {
+//		doCompile("test_stringlib_uncapitalizeWords");
+//		
+//		check("leaveMe", "lEAVE mE aLONE");
+//		check("correct", "this is correct");
+//		check("clock", "7 o'Clock");
+//		
+//		check("russian", "\u043F\u0440\u043E\u043B\u0435\u0442\u0430\u0440\u0438\u0438 \u0432\u0441\u0435\u0445 \u0441\u0442\u0440\u0430\u043D, \u0441\u043E\u0435\u0434\u0438\u043D\u044F\u0439\u0442\u0435\u0441\u044C!");
+//		check("japanese", "\u673A\u306E\u4E0A\u306B\u306F\u30B1\u30FC\u30AD\u304C\u3042\u308A\u307E\u3059\u3002");
+//		check("german", "\u00FCberwald");
+//		
+//		check("nullValue", null);
+//		check("emptyString", "");
+//	}
+	
+	public void test_stringlib_startsWith() {
+		doCompile("test_stringlib_startsWith");
+		
+		check("b1", true);
+		check("b2", false);
+		check("b3", true);
+		
+		check("b4", false);
+		check("b5", false);
+		
+		check("b6", false);
+		check("b7", true);
+	}
+	
+	public void test_stringlib_startsWith_expect_error() {
+		// null literal prefix
+		try {
+			doCompile("function integer transform(){startsWith('bla bla',null);return 0;}","test_stringlib_startsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// null variable prefix
+		try {
+			doCompile("function integer transform(){string prefix = null; startsWith('bla bla',prefix);return 0;}","test_stringlib_startsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// both nulls
+		try {
+			doCompile("function integer transform(){startsWith(null,null);return 0;}","test_stringlib_startsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_endsWith() {
+		doCompile("test_stringlib_endsWith");
+		
+		check("b1", true);
+		check("b2", false);
+		check("b3", true);
+		
+		check("b4", false);
+		check("b5", false);
+		
+		check("b6", false);
+		check("b7", true);
+	}
+	
+	public void test_stringlib_endsWith_expect_error() {
+		// null literal prefix
+		try {
+			doCompile("function integer transform(){endsWith('bla bla',null);return 0;}","test_stringlib_endsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// null variable prefix
+		try {
+			doCompile("function integer transform(){string prefix = null; endsWith('bla bla',prefix);return 0;}","test_stringlib_endsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// both nulls
+		try {
+			doCompile("function integer transform(){endsWith(null,null);return 0;}","test_stringlib_endsWith_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_lpad() {
+		doCompile("test_stringlib_lpad");
+		
+		check("result1", "---abc");
+		check("result2", "abc");
+		check("result3", "   abc");
+		check("result4", "abc");
+		
+		check("result5", null);
+		check("result6", null);
+		
+		check("result7", "xxx ");
+		check("result8", "    ");
+		
+		check("zeroLength1", "abc");
+		check("zeroLength2", "abc");
+	}
+
+	public void test_stringlib_lpad_expect_error() {
+		//test: null filler
+		try {
+			doCompile("string test;function integer transform() {test = lpad(null, 10, null);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null filler variable
+		try {
+			doCompile("string test;function integer transform() {string filler = null; test = lpad(null, 10, filler);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: illegal filler length
+		try {
+			doCompile("string test;function integer transform() {test = lpad('x', 10, 'filler');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 1
+		try {
+			doCompile("function integer transform() {lpad(null, -1, ' ');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 2
+		try {
+			doCompile("function integer transform() {lpad(null, -1);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 3
+		try {
+			doCompile("function integer transform() {lpad('abc', -1, ' ');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 4
+		try {
+			doCompile("function integer transform() {lpad('abc', -1);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 1
+		try {
+			doCompile("string test;function integer transform() {test = lpad('x', null);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 1 (variable)
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = lpad('x', input);return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 2
+		try {
+			doCompile("string test;function integer transform() {test = lpad('x', null, '-');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 2 (variable)
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = lpad('x', input, '-');return 0;}","test_stringlib_lpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_rpad() {
+		doCompile("test_stringlib_rpad");
+		
+		check("result1", "abc---");
+		check("result2", "abc");
+		check("result3", "abc   ");
+		check("result4", "abc");
+		
+		check("result5", null);
+		check("result6", null);
+		
+		check("result7", " xxx");
+		check("result8", "    ");
+		
+		check("zeroLength1", "abc");
+		check("zeroLength2", "abc");
+	}
+
+	public void test_stringlib_rpad_expect_error() {
+		//test: null filler
+		try {
+			doCompile("string test;function integer transform() {test = rpad(null, 10, null);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null filler variable
+		try {
+			doCompile("string test;function integer transform() {string filler = null; test = rpad(null, 10, filler);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: illegal filler length
+		try {
+			doCompile("string test;function integer transform() {test = rpad('x', 10, 'filler');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 1
+		try {
+			doCompile("function integer transform() {rpad(null, -1, ' ');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 2
+		try {
+			doCompile("function integer transform() {rpad(null, -1);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 3
+		try {
+			doCompile("function integer transform() {rpad('abc', -1, ' ');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: negative target length 4
+		try {
+			doCompile("function integer transform() {rpad('abc', -1);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 1
+		try {
+			doCompile("string test;function integer transform() {test = rpad('x', null);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+			e.printStackTrace();
+		}
+		//test: null target length 1 (variable)
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = rpad('x', input);return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 2
+		try {
+			doCompile("string test;function integer transform() {test = rpad('x', null, '-');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null target length 2 (variable)
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = rpad('x', input, '-');return 0;}","test_stringlib_rpad_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_concatWithSeparator() {
+		doCompile("test_stringlib_concatWithSeparator");
+		
+		check("result1", "a,b,c");
+		check("result2", "a, b, c");
+		check("result3", "ab");
+		check("result4", "x, y, z");
+		
+		check("blank", "");
+		check("variables", "a, b, c");
+		
+		check("oneElement", "a");
+	}
+
+	public void test_stringlib_concatWithSeparator_expect_error() {
+		//test: null separator
+		try {
+			doCompile("string test;function integer transform() {test = concatWithSeparator(null, 'a', 'b');return 0;}","test_stringlib_concatWithSeparator_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_escapeUrlFragment() {
+		doCompile("test_stringlib_escapeUrlFragment");
+		
+		String expected = "nothing_interesting";
+		check("noCharset", expected);
+		
+		check("utf8", "%C5%BElu%C5%A5ou%C4%8Dk%C3%BD_k%C5%AF%C5%88_%C3%BAp%C4%9Bl_%C4%8F%C3%A1belsk%C3%A9_%C3%B3dy");
+		check("cp1250", "%9Elu%9Dou%E8k%FD_k%F9%F2_%FAp%ECl_%EF%E1belsk%E9_%F3dy");
+		// UTF-8
+		check("defaultCharset", "%C5%BElu%C5%A5ou%C4%8Dk%C3%BD_k%C5%AF%C5%88_%C3%BAp%C4%9Bl_%C4%8F%C3%A1belsk%C3%A9_%C3%B3dy");
+		
+		check("keyValue", "name%3Dvalue");
+		check("keyValueSpace", "name%3Dlong+value");
+		
+		check("emptyString", "");
+		check("nullValue1", null);
+		check("nullValue2", null);
+	}
+
+	public void test_stringlib_escapeUrlFragment_expect_error() {
+		//test: null literal encoding
+		try {
+			doCompile("function integer transform() {escapeUrlFragment('test', null);return 0;}","test_stringlib_escapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null variable encoding
+		try {
+			doCompile("function integer transform() {string encoding = null; escapeUrlFragment('test', encoding);return 0;}","test_stringlib_escapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: empty encoding
+		try {
+			doCompile("function integer transform() {escapeUrlFragment('test', '');return 0;}","test_stringlib_escapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: Unsupported encoding
+		try {
+			doCompile("string test;function integer transform() {test = escapeUrlFragment('test', 'not a charset');return 0;}","test_stringlib_escapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_unescapeUrlFragment() {
+		doCompile("test_stringlib_unescapeUrlFragment");
+		
+		String expected = "nothing_interesting";
+		check("noCharset", expected);
+		
+		String kun = "\u017Elu\u0165ou\u010Dk\u00FD_k\u016F\u0148_\u00FAp\u011Bl_\u010F\u00E1belsk\u00E9_\u00F3dy";
+		check("utf8", kun);
+		check("cp1250", kun);
+		check("defaultCharset", kun);
+		
+		check("keyValue", "name=value");
+		check("keyValueSpace1", "name=long value");
+		check("keyValueSpace2", "name=long value");
+		
+		check("emptyString", "");
+		check("nullValue1", null);
+		check("nullValue2", null);
+	}
+
+	public void test_stringlib_unescapeUrlFragment_expect_error() {
+		//test: null literal encoding
+		try {
+			doCompile("function integer transform() {unescapeUrlFragment('%20', null);return 0;}","test_stringlib_unescapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: null variable encoding
+		try {
+			doCompile("function integer transform() {string encoding = null; unescapeUrlFragment('%20', encoding);return 0;}","test_stringlib_unescapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: empty encoding
+		try {
+			doCompile("function integer transform() {unescapeUrlFragment('%20', '');return 0;}","test_stringlib_unescapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		//test: Unsupported encoding
+		try {
+			doCompile("string test;function integer transform() {test = unescapeUrlFragment('%20', 'not a charset');return 0;}","test_stringlib_unescapeUrlFragment_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_codePointToChar() {
+		doCompile("test_stringlib_codePointToChar");
+		
+		check("a", "a");
+		check("c_caron", "\u010D");
+		check("Ryo", "\u826F");
+		check("S", "\uD835\uDD4A"); // double-struck S
+	}
+
+	public void test_stringlib_codePointToChar_expect_error() {
+		//test: negative code point
+		try {
+			doCompile("string test;function integer transform() {test = codePointToChar(-1);return 0;}","test_stringlib_codePointToChar_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null
+		try {
+			doCompile("string test;function integer transform() {test = codePointToChar(null);return 0;}","test_stringlib_codePointToChar_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("string test;function integer transform() {integer input = null;test = codePointToChar(input);return 0;}","test_stringlib_codePointToChar_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public void test_stringlib_codePointAt() {
+		doCompile("test_stringlib_codePointAt");
+		
+		check("russian", 0x0445);
+		check("slovak", (int) 'd');
+		
+		List<Integer> japanese = (List<Integer>) getVariable("japanese");
+		StringBuilder sb = new StringBuilder(japanese.size());
+		for (Integer i: japanese) {
+			sb.appendCodePoint(i);
+		}
+		assertEquals(sb.toString(), "\u673A\u306E\u4E0A\u306B\u306F\u30B1\u30FC\u30AD\u304C\u3042\u308A\u307E\u3059\u3002");
+
+		List<Integer> equation = (List<Integer>) getVariable("equation");
+		StringBuilder actualEquation = new StringBuilder(equation.size());
+		for (Integer i: equation) {
+			actualEquation.appendCodePoint(i);
+		}
+		StringBuilder expectedEquation = new StringBuilder(); // A = {x, y} (in mathematical script)
+		expectedEquation.appendCodePoint(0x01D49C).append(" = {").appendCodePoint(0x01D465).append(", ").appendCodePoint(0x01D4CE).append("}");
+		assertEquals(expectedEquation.toString(), actualEquation.toString());
+	}
+
+	public void test_stringlib_codePointAt_expect_error() {
+		//test: negative index
+		try {
+			doCompile("integer test;function integer transform() {test = 'abc'.codePointAt(-1);return 0;}","test_stringlib_codePointAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: index out of bounds
+		try {
+			doCompile("integer test;function integer transform() {test = 'abc'.codePointAt(3);return 0;}","test_stringlib_codePointAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null
+		try {
+			doCompile("integer test;function integer transform() {test = 'abc'.codePointAt(null);return 0;}","test_stringlib_codePointAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("integer test;function integer transform() {integer input = null;test = 'abc'.codePointAt(input);return 0;}","test_stringlib_codePointAt_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_codePointLength() {
+		doCompile("test_stringlib_codePointLength");
+		
+		check("maxJapanese", 1);
+
+		check("equation", Arrays.asList("\uD835\uDC9C", "\uD835\uDC65", "\uD835\uDCCE"));
+	}
+
+	public void test_stringlib_codePointLength_expect_error() {
+		//test: null
+		try {
+			doCompile("integer test;function integer transform() {test = codePointLength(null);return 0;}","test_stringlib_codePointLength_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("integer test;function integer transform() {integer input = null;test = codePointLength(input);return 0;}","test_stringlib_codePointLength_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_isValidCodePoint() {
+		doCompile("test_stringlib_isValidCodePoint");
+		
+		check("negative", false);
+		check("minCodePoint", true);
+		check("maxCodePoint", true);
+		check("tooHigh", false);
+
+		check("a", true);
+		check("c_caron", true);
+		check("Ryo", true);
+		check("S", true);
+	}
+
+	public void test_stringlib_isValidCodePoint_expect_error() {
+		//test: null
+		try {
+			doCompile("boolean test;function integer transform() {test = isValidCodePoint(null);return 0;}","test_stringlib_codePointLength_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("boolean test;function integer transform() {integer input = null;test = isValidCodePoint(input);return 0;}","test_stringlib_codePointLength_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_unicodeNormalize() {
+		doCompile("test_stringlib_unicodeNormalize");
+		
+		check("nullValue1", null);
+		check("nullValue2", null);
+		check("emptyString", "");
+		
+		check("nfd", "A\u030AA\u030AA\u030A\u0132c\u030Cc\u030C");
+		check("nfc", "\u00C5\u00C5\u00C5\u0132\u010D\u010D");
+		check("nfkd", "A\u030AA\u030AA\u030AIJc\u030Cc\u030C");
+		check("nfkc", "\u00C5\u00C5\u00C5IJ\u010D\u010D");
+
+		check("NFD", "A\u030AA\u030AA\u030A\u0132c\u030Cc\u030C");
+		check("NFC", "\u00C5\u00C5\u00C5\u0132\u010D\u010D");
+		check("NFKD", "A\u030AA\u030AA\u030AIJc\u030Cc\u030C");
+		check("NFKC", "\u00C5\u00C5\u00C5IJ\u010D\u010D");
+	}
+
+	public void test_stringlib_unicodeNormalize_expect_error() {
+		//test: null
+		try {
+			doCompile("function integer transform() {unicodeNormalize('sample input', null);return 0;}","test_stringlib_unicodeNormalize_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("function integer transform() {string input = null;unicodeNormalize('sample input', input);return 0;}","test_stringlib_unicodeNormalize_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: invalid algorithm
+		try {
+			doCompile("function integer transform() {string input = 'not a valid algorithm';unicodeNormalize('sample input', input);return 0;}","test_stringlib_unicodeNormalize_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_stringlib_isUnicodeNormalized() {
+		doCompile("test_stringlib_isUnicodeNormalized");
+		
+		check("nullValue1", true);
+		check("nullValue2", true);
+		check("emptyString", true);
+		
+		check("nfd", true);
+		check("nfc", true);
+		check("nfkd", true);
+		check("nfkc", true);
+
+		check("NFD", true);
+		check("NFC", true);
+		check("NFKD", true);
+		check("NFKC", true);
+		
+		Boolean[] results = new Boolean[8];
+		Arrays.fill(results, Boolean.FALSE);
+		check("results", Arrays.asList(results));
+	}
+
+	public void test_stringlib_isUnicodeNormalized_expect_error() {
+		//test: null
+		try {
+			doCompile("function integer transform() {isUnicodeNormalized('sample input', null);return 0;}","test_stringlib_isUnicodeNormalized_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("function integer transform() {string input = null;isUnicodeNormalized('sample input', input);return 0;}","test_stringlib_isUnicodeNormalized_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: invalid algorithm
+		try {
+			doCompile("function integer transform() {string input = 'not a valid algorithm';isUnicodeNormalized('sample input', input);return 0;}","test_stringlib_isUnicodeNormalized_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	private void checkEqualVariables(String var1, String var2) {
+		Object value1 = getVariable(var1);
+		Object value2 = getVariable(var2);
+		assertEquals("Variables '" + var1 + "' and '" + var2 + "' have different values", value1, value2);
+	}
+
+	public void test_stringlib_contains() {
+		doCompile("test_stringlib_contains");
+		
+		check("contains1", true);
+		check("contains2", true);
+		check("contains3", false);
+		check("contains4", true);
+
+		check("contains_empty1", false);
+		check("contains_empty2", true);
+		
+		check("contains_null1", false);
+		check("contains_null2", false);
+		
+		check("self", true);
+		
+		// check consistency with indexOf()
+		for (int i = 1; i <= 4; i++) {
+			checkEqualVariables("contains" + i, "indexOf" + i);
+		}
+		for (int i = 1; i <= 2; i++) {
+			checkEqualVariables("contains_empty" + i, "indexOf_empty" + i);
+		}
+		for (int i = 1; i <= 2; i++) {
+			checkEqualVariables("contains_null" + i, "indexOf_null" + i);
+		}
+	}
+
+	public void test_stringlib_contains_expect_error() {
+		//test: null
+		try {
+			doCompile("function integer transform() {contains('sample input', null);return 0;}","test_stringlib_contains_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		//test: null variable
+		try {
+			doCompile("function integer transform() {string input = null;contains('sample input', input);return 0;}","test_stringlib_contains_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
 //-------------------------- MathLib Tests ------------------------
