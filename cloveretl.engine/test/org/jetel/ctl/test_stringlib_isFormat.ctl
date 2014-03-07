@@ -57,6 +57,16 @@ boolean isDate25;
 boolean isDate26;
 boolean isDate27;
 
+boolean isDecimal;
+boolean isDecimal1;
+boolean isDecimal2;
+boolean isDecimal3;
+boolean isDecimal4;
+boolean isDecimal5;
+boolean isDecimal6;
+boolean isDecimal7;
+boolean isDecimal8;
+
 function integer transform() {
 	test='test';
 	isBlank=isBlank(test);
@@ -133,5 +143,20 @@ function integer transform() {
 	isDate25=isDate('17/11/1990', null); // expected result - false
 	isDate26 = isDate('2013-12-12', null, null);
 	isDate27 = isDate('2013-12-12', null, null, null);	
+
+	isDecimal=isDecimal('t1');
+	isDecimal1=isDecimal('1g');
+	isDecimal2=isDecimal('1');
+	printErr(str2integer('1'));
+	isDecimal3=isDecimal('-382.334');
+	printErr(str2double('-382.334'));
+	isDecimal4=isDecimal('+332e2');
+	isDecimal5=isDecimal('8982.8992e-2');
+	printErr(str2double('8982.8992e-2'));
+	isDecimal6=isDecimal('-7888873.2E3');
+	printErr(str2decimal('-7888873.2E3'));
+	isDecimal7=isDecimal(nullValue);
+	isDecimal8=isDecimal(blank);
+
 	return 0;
 }

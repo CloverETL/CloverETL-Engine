@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +66,7 @@ public class StringLib extends TLFunctionLibrary {
 			"isInteger".equals(functionName) ? new IsIntegerFunction() : //$NON-NLS-1$
 			"isLong".equals(functionName) ? new IsLongFunction() : //$NON-NLS-1$
 			"isDate".equals(functionName) ? new IsDateFunction() : //$NON-NLS-1$
+			"isDecimal".equals(functionName) ? new IsDecimalFunction() : //$NON-NLS-1$
 			"removeDiacritic".equals(functionName) ? new RemoveDiacriticFunction() : //$NON-NLS-1$
 			"removeBlankSpace".equals(functionName) ? new RemoveBlankSpaceFunction() : //$NON-NLS-1$
 			"removeNonPrintable".equals(functionName) ? new RemoveNonPrintableFunction() : //$NON-NLS-1$
@@ -431,20 +433,52 @@ public class StringLib extends TLFunctionLibrary {
 
 	@TLFunctionAnnotation("Splits the string around regular expression matches")
 	public static final List<String> split(TLFunctionCallContext context, String input, String regex) {
-		if (input == null){
-			List<String> tmp = new ArrayList<String>();
-//			tmp.add(null); // CLO-3097 - return an empty list
-			return tmp;
-		}
-		final Pattern p = ((TLRegexpCache)context.getCache()).getCachedPattern(context, regex);
-		final String[] strArray = p.split(input);
-		final List<String> list = new ArrayList<String>();
-		for (String item : strArray) {
-			list.add(item);
-		}
-		return list;
+		return split(context, input, regex, 0);
 	}
 
+	/**
+	 * <p>Splits this string around matches of the given regular expression.</p>
+	 * 
+	 * <p> The array returned by this method contains each substring of the input that is terminated by another substring
+	 * that matches the given expression or is terminated by the end of the string.
+	 * The substrings in the array are in the order in which they occur the input. If the expression does not match
+	 * any part of the input then the resulting array has just one element, namely the input string.</p>
+	 * <p>The limit parameter controls the number of times the pattern is applied and therefore affects the length
+	 * of the resulting array. If the limit is greater than zero then the pattern will be applied at most limit - 1 times,
+	 * the array's length will be no greater than limit, and the array's last entry will contain all input beyond
+	 * the last matched delimiter. If limit is non-positive then the pattern will be applied as many times as possible
+	 * and the array can have any length.
+	 * If limit is zero then the pattern will be applied as many times as possible, the array can have any length,
+	 * and trailing empty strings will be discarded.</p> 
+	 * 
+	 * @param context function call context.
+	 * @param input input string to split. May be null.
+	 * @param regex regular expression specifying the delimiters. Cannot be null.
+	 * @param limit the result threshold as described above.
+	 * 
+	 * @return the array of strings obtained by splitting input string around matches of the given regular expression.
+	 *         null input string results in an empty array. This function never returns null.
+	 * 
+	 * @see String#split(String, int)
+	 */
+	@TLFunctionAnnotation("Split string around matches of given regular expression.")
+	public static final List< String > split(TLFunctionCallContext context, String input, String regex, Integer limit) {
+		
+		if (regex == null) {
+			throw new IllegalArgumentException("Null regular expression is not allowed.");
+		}
+		
+		List< String > result = new ArrayList< String >();
+		if (input == null) {
+			return result;
+		}
+		
+		final Pattern pattern = ((TLRegexpCache) context.getCache()).getCachedPattern(context, regex);
+		Collections.addAll(result, pattern.split(input, limit));
+		
+		return result;
+	}
+	
 	class SplitFunction implements TLFunctionPrototype {
 
 		@Override
@@ -454,9 +488,24 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			final String regex = stack.popString();
-			final String input = stack.popString();
-			stack.push(split(context, input, regex));
+			// Stack layout: [limit,] regexp, input
+			int limit = 0;
+			String regexp = null;
+			String input = null;
+			
+			switch (context.getParams().length) {
+			case 3:
+				limit = stack.popInt();
+				// no break here
+			case 2:
+				regexp = stack.popString();
+				input = stack.popString();
+				break;
+			default:
+				throw new IllegalArgumentException("Unsupported number of arguments for split function (" + context.getParams().length + " parameters found).");
+			}
+			
+			stack.push(split(context, input, regexp, limit));
 		}
 
 	}
@@ -535,6 +584,33 @@ public class StringLib extends TLFunctionLibrary {
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			stack.push(isNumber(context, stack.popString()));
+		}
+	}
+
+	// IS DECIMAL
+	/**
+	 * Test if given string represents a decimal number (same as {@link #isNumber(TLFunctionCallContext, String)}).
+	 * 
+	 * @param context function call context
+	 * @param value value to parse
+	 * 
+	 * @return <code>true</code> if provided string is a valid decimal number according to the default format,
+	 * 			<code>false</code> otherwise or if the string is <code>null</code>.
+	 */
+	@TLFunctionAnnotation("Test if string represents a decimal number.")
+	public static boolean isDecimal(TLFunctionCallContext context, String value) {
+		return StringUtils.isNumber(value);
+	}
+	
+	public class IsDecimalFunction implements TLFunctionPrototype {
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			stack.push(isDecimal(context, stack.popString()));
+		}
+
+		@Override
+		public void init(TLFunctionCallContext context) {
 		}
 	}
 
@@ -832,7 +908,13 @@ public class StringLib extends TLFunctionLibrary {
 	}
 
 	@TLFunctionAnnotation("Returns the first occurence of a specified string")
-	public static final Integer indexOf(TLFunctionCallContext context, String input, String pattern, int from) {
+	public static final Integer indexOf(TLFunctionCallContext context, String input, String pattern, Integer from) {
+		if (pattern == null) {
+			throw new NullPointerException("Search string is null");
+		}
+		if (input == null) {
+			return -1;
+		}
 		return StringUtils.indexOf(input, pattern, from);
 	}
 
