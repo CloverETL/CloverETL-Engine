@@ -11,6 +11,15 @@ string emptyString;
 string nullValue1;
 string nullValue2;
 
+string emailAddressLogin1;
+string emailAddressLogin2;
+
+string hashLogin1;
+string hashLogin2;
+
+string plusLogin1;
+string plusLogin2;
+
 function integer transform() {
 	noCharset = escapeUrlFragment("nothing_interesting");
 	
@@ -26,6 +35,16 @@ function integer transform() {
 	nullValue1 = escapeUrlFragment(null);
 	string value = null;
 	nullValue2 = escapeUrlFragment(value);
+	
+	// CLO-2367
+	emailAddressLogin1 = escapeUrlFragment("http://some.user@gooddata.com:password@secure.bestdata.com");
+	emailAddressLogin2 = "http://" + escapeUrlFragment("some.user@gooddata.com") + ":password@secure.bestdata.com";
+	
+	hashLogin1 = escapeUrlFragment("http://ac#dsds.dsz:password@server.goooddata.com/nice");
+	hashLogin2 = "http://" + escapeUrlFragment("ac#dsds.dsz") + ":password@server.goooddata.com/nice";
+	
+	plusLogin1 = escapeUrlFragment("http://ac%+dsds.dsz:password@server.goooddata.com/nice");
+	plusLogin2 = "http://" + escapeUrlFragment("ac%+dsds.dsz") + ":password@server.goooddata.com/nice";
 	
 	return 0;
 }
