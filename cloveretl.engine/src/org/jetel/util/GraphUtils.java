@@ -53,7 +53,7 @@ public class GraphUtils {
 		phase.addNode(insertedComponent);
 		
 		//create the left artificial edge
-		Edge leftEdge = EdgeFactory.newEdge(edge.getId() + "_inserted", edge);
+		Edge leftEdge = EdgeFactory.newEdge(edge.getId() + "_inserted", edge.getMetadata());
 		Node writer = edge.getWriter();
 		Node reader = insertedComponent;
 		writer.addOutputPort(edge.getOutputPortNumber(), leftEdge);

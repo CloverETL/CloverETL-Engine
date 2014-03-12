@@ -27,6 +27,7 @@ import org.jetel.component.MetadataProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
+import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.MetadataRepository;
@@ -49,23 +50,31 @@ public class MVEngineComponent implements MVComponent {
 
 	private Map<Integer, MVEdge> outputEdges;
 	
-	MVEngineComponent(Node engineComponent, MetadataPropagationResolver metadataPropagationResolver) {
+	private MVGraph parentMVGraph;
+	
+	MVEngineComponent(Node engineComponent, MVGraph parentMVGraph) {
 		this.engineComponent = engineComponent;
+		this.parentMVGraph = parentMVGraph;
 
 		inputEdges = new LinkedHashMap<Integer, MVEdge>();
 		for (Entry<Integer, org.jetel.graph.InputPort> entry : engineComponent.getInputPorts().entrySet()) {
-			inputEdges.put(entry.getKey(), metadataPropagationResolver.getOrCreateMVEdge(entry.getValue().getEdge()));
+			inputEdges.put(entry.getKey(), parentMVGraph.getMVEdge(entry.getValue().getEdge().getId()));
 		}
 		
 		outputEdges = new LinkedHashMap<Integer, MVEdge>();
 		for (Entry<Integer, org.jetel.graph.OutputPort> entry : engineComponent.getOutputPorts().entrySet()) {
-			outputEdges.put(entry.getKey(), metadataPropagationResolver.getOrCreateMVEdge(entry.getValue().getEdge()));
+			outputEdges.put(entry.getKey(), parentMVGraph.getMVEdge(entry.getValue().getEdge().getId()));
 		}
 	}
 
 	@Override
 	public Node getModel() {
 		return engineComponent;
+	}
+	
+	@Override
+	public void reset() {
+		//DO NOTHING
 	}
 	
 	@Override
@@ -112,7 +121,7 @@ public class MVEngineComponent implements MVComponent {
 
 		//no dynamic metadata found, let's use static metadata from component descriptor 
 		String metadataId = engineComponent.getDescriptor().getDefaultOutputMetadataId(portIndex);
-		return getStaticMetadata(metadataId, metadataPropagationResolver);
+		return getStaticMetadata(metadataId);
 	}
 
 	@Override
@@ -127,19 +136,19 @@ public class MVEngineComponent implements MVComponent {
 		}
 		//no dynamic metadata found, let's use statical metadata from component descriptor 
 		String metadataId = engineComponent.getDescriptor().getDefaultInputMetadataId(portIndex);
-		return getStaticMetadata(metadataId, metadataPropagationResolver);
+		return getStaticMetadata(metadataId);
 	}
 	
 	/**
 	 * @return metadata from static metadata repository
 	 */
-	private MVMetadata getStaticMetadata(String metadataId, MetadataPropagationResolver metadataPropagationResolver) {
+	private MVMetadata getStaticMetadata(String metadataId) {
 		if (MetadataRepository.contains(metadataId)) {
 			//get static metadata from repository and create duplicate
 			DataRecordMetadata metadata = MetadataRepository.getMetadata(metadataId).duplicate();
 			//update metadata name to be more descriptive
 			metadata.setName(engineComponent.getDescriptor().getDescription().getName() + "_" + metadata.getName());
-			return metadataPropagationResolver.createMVMetadata(metadata);
+			return parentMVGraph.createMVMetadata(metadata);
 		} else {
 			return null;
 		}

@@ -120,7 +120,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * from otherGraph to thisGraph. 
 	 * @param otherEdge
 	 */
-	public void copySettingsFrom(Edge otherEdge) {
+	void copySettingsFrom(Edge otherEdge) {
 		this.metadata = otherEdge.metadata;
 		this.metadataStub = otherEdge.metadataStub;
 		this.debugMode = otherEdge.debugMode;
