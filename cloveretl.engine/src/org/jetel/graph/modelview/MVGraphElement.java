@@ -19,6 +19,7 @@
 package org.jetel.graph.modelview;
 
 import org.jetel.graph.IGraphElement;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 
 /**
  * This is general model view to a graph element.
@@ -35,5 +36,10 @@ public interface MVGraphElement {
 	 * @return graph element model
 	 */
 	public IGraphElement getModel();
+	
+	/**
+	 * Resets recursively all graph elements in this model view. 
+	 */
+	public void reset();
 	
 }

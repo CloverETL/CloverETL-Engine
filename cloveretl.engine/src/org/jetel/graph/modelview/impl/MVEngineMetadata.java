@@ -57,6 +57,11 @@ public class MVEngineMetadata implements MVMetadata {
 	}
 	
 	@Override
+	public void reset() {
+		//DO NOTHING
+	}
+	
+	@Override
 	public MVMetadata duplicate() {
 		MVEngineMetadata result = new MVEngineMetadata(metadata, priority);
 		if (originPath != null) {
