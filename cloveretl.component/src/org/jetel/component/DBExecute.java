@@ -355,8 +355,6 @@ public class DBExecute extends Node {
 					}
 				}
         	}
-        }else{
-        	errorActions.put(Integer.MIN_VALUE, ErrorAction.DEFAULT_ERROR_ACTION);
         }
 	}
 
@@ -512,7 +510,7 @@ public class DBExecute extends Node {
 				action = ErrorAction.DEFAULT_ERROR_ACTION;
 			}
 		}
-		if (action == ErrorAction.CONTINUE) {
+		if (action == ErrorAction.CONTINUE || (errorActions.isEmpty() && errRecord != null)) {
 			if (errRecord != null) {
 				if (inRecord != null) {
 					errRecord.copyFieldsByName(inRecord);
