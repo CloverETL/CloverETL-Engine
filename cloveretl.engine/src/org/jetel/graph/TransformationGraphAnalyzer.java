@@ -223,11 +223,6 @@ public class TransformationGraphAnalyzer {
 	 * directly to the graph instance.
 	 */
 	public static void analyseEdgeTypes(TransformationGraph graph) {
-		//detect empty graphs
-		if (graph.getNodes().isEmpty()) {
-			throw new JetelRuntimeException("Job without components cannot be executed.");
-		}
-
 		//first of all find the phase edges
 		analysePhaseEdges(graph);
 

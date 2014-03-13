@@ -21,16 +21,10 @@ package org.jetel.graph.runtime;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
-
-import javax.management.ListenerNotFoundException;
-import javax.management.Notification;
 
 import org.jetel.graph.runtime.jmx.CloverJMX;
 import org.jetel.graph.runtime.jmx.NodeTracking;
-import org.jetel.graph.runtime.jmx.PhaseTracking;
 import org.jetel.graph.runtime.jmx.PortTracking;
-import org.jetel.graph.runtime.jmx.TrackingUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -58,7 +52,8 @@ public class GraphTrackingLogger extends TrackingLogger {
      * @param  phaseNo   Description of the Parameter
      * @since            July 30, 2002
      */
-    private void printProcessingStatus(boolean finalTracking) {
+	@Override
+	protected void printProcessingStatus(boolean finalTracking) {
         //StringBuilder strBuf=new StringBuilder(120);
         if (finalTracking)
             logger.info("----------------------** Final tracking Log for phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum() + "] **---------------------");
@@ -135,53 +130,5 @@ public class GraphTrackingLogger extends TrackingLogger {
         }
         logger.info("---------------------------------** End of Log **--------------------------------");
     }
-
-	/**  Outputs summary info about executed phases */
-	private void printPhasesSummary() {
-		logger.info("-----------------------** Summary of Phases execution **---------------------");
-		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
-		for (PhaseTracking phaseDetail : cloverJMX.getGraphTracking().getPhaseTracking()) {
-			if(phaseDetail != null) {
-    			Object nodeInfo[] = { Integer.valueOf(phaseDetail.getPhaseNum()), 
-    					phaseDetail.getResult().message(),
-    					TrackingUtils.convertTime(phaseDetail.getExecutionTime(), TimeUnit.SECONDS),
-                        phaseDetail.getMemoryUtilization() >> 10};
-    			int nodeSizes[] = {-18, -24, 12, 18};
-    			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
-			}
-		}
-		logger.info("------------------------------** End of Summary **---------------------------");
-	}
-
-	@Override
-	public void handleNotification(Notification notification, Object handback) {
-		if(notification.getType().equals(CloverJMX.GRAPH_STARTED)) {
-			//printProcessingStatus(false);
-		} else if(notification.getType().equals(CloverJMX.TRACKING_UPDATED)) {
-			printProcessingStatus(false);
-		} else if(notification.getType().equals(CloverJMX.PHASE_FINISHED)) {
-			printProcessingStatus(true);
-			logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
-					+ "] successfully finished - elapsed time(sec): "
-					+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
-		} else if(notification.getType().equals(CloverJMX.PHASE_ABORTED)) {
-			logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
-					+ "] was aborted - elapsed time(sec): "
-					+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
-		} else if(notification.getType().equals(CloverJMX.PHASE_ERROR)) {
-				logger.info("Execution of phase [" + cloverJMX.getGraphTracking().getRunningPhaseTracking().getPhaseNum()
-						+ "] finished with error - elapsed time(sec): "
-						+ TrackingUtils.convertTime(cloverJMX.getGraphTracking().getExecutionTime(), TimeUnit.SECONDS));
-		} else if(notification.getType().equals(CloverJMX.GRAPH_FINISHED)
-				|| notification.getType().equals(CloverJMX.GRAPH_ABORTED)
-				|| notification.getType().equals(CloverJMX.GRAPH_ERROR)) {
-			printPhasesSummary();
-			try {
-				cloverJMX.removeNotificationListener(this);
-			} catch (ListenerNotFoundException e) {
-				logger.warn("Unexpected error while graph logging will be ignored.");
-			}
-		}
-	}
 
 }
