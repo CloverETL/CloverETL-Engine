@@ -18,15 +18,10 @@
  */
 package org.jetel.graph.modelview.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import org.jetel.graph.Edge;
-import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
+import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -42,19 +37,13 @@ import org.jetel.metadata.DataRecordMetadata;
 public class MetadataPropagationResolver {
 	
 	/** Analysed graph */
-	private TransformationGraph graph;
-	
-	/** Cache for edge model view (MV) entities. */
-	private Map<IdentityHashKey<Edge>, MVEdge> mvEdges = new HashMap<>();
-
-	/** Cache for component model view (MV) entities. */
-	private Map<IdentityHashKey<Node>, MVComponent> mvComponents = new HashMap<>();
+	private MVGraph mvGraph;
 	
 	/**
 	 * Creates resolver for automatic metadata propagation on the given graph.
 	 */
-	public MetadataPropagationResolver(TransformationGraph graph) {
-		this.graph = graph;
+	public MetadataPropagationResolver(MVGraph mvGraph) {
+		this.mvGraph = mvGraph;
 	}
 	
 	/**
@@ -66,9 +55,9 @@ public class MetadataPropagationResolver {
 		findAllNoMetadata();
 
 		//go through all edges and search metadata if necessary
-		for (Edge edge : graph.getEdges().values()) {
-			MVEdge mvEdge = getOrCreateMVEdge(edge);
-			MVMetadata mvMetadata = findMetadata(edge);
+		for (Edge edge : mvGraph.getModel().getEdges().values()) {
+			MVEdge mvEdge = mvGraph.getMVEdge(edge.getId());
+			MVMetadata mvMetadata = findMetadata(mvEdge);
 			mvEdge.setPropagatedMetadata(mvMetadata);
 		}
 	}
@@ -81,37 +70,30 @@ public class MetadataPropagationResolver {
 	 */
 	private void findAllNoMetadata() {
 		//go through all edges without direct metadata
-		Map<Edge, MVMetadata> noMetadatas = new HashMap<>();
-		for (Edge edge : graph.getEdges().values()) {
-			MVEdge mvEdge = getOrCreateMVEdge(edge);
+		for (Edge edge : mvGraph.getModel().getEdges().values()) {
+			MVEdge mvEdge = mvGraph.getMVEdge(edge.getId());
 			if (mvEdge.hasMetadataDirect()) {
 				//set virtual no metadata on the edge
 				mvEdge.setPropagatedMetadata(null);
 				//find the "no metadata"
 				MVMetadata noMetadata = findMetadataInternal(mvEdge);
 				//remember the result
-				noMetadatas.put(edge, noMetadata);
+				mvEdge.setNoMetadata(noMetadata);
 				//reset the resolver for next iteration
 				reset();
 			}
 		}
-		
-		//apply the results
-		for (Entry<Edge, MVMetadata> entry : noMetadatas.entrySet()) {
-			getOrCreateMVEdge(entry.getKey()).setNoMetadata(entry.getValue());
-		}
 	}
 	
 	private void reset() {
-		mvEdges.clear();
-		mvComponents.clear();
+		mvGraph.reset();
 	}
 	
 	/**
 	 * @return suggested metadata for given edge
 	 */
 	public MVMetadata findMetadata(Edge edge) {
-		return findMetadata(getOrCreateMVEdge(edge));
+		return findMetadata(mvGraph.getMVEdgeRecursive(edge));
 	}
 
 	/**
@@ -188,84 +170,24 @@ public class MetadataPropagationResolver {
 		
 		return result;
 	}
-	
-	/**
-	 * Creates new model view instance for given edge or return 
-	 * previously created instance from a cache.
-	 * @param edge wrapped edge
-	 * @return model view wrapper for the given edge
-	 */
-	public MVEdge getOrCreateMVEdge(Edge edge) {
-		IdentityHashKey<Edge> key = IdentityHashKey.create(edge);
-		if (!mvEdges.containsKey(key)) {
-			MVEdge mvEdge = new MVEngineEdge(edge, this);
-			mvEdges.put(key, mvEdge);
-			return mvEdge;
-		} else {
-			return mvEdges.get(key);
-		}
-	}
 
 	/**
-	 * Creates new model view instance for given component or return 
-	 * previously created instance from a cache.
-	 * @param component wrapped component
-	 * @return model view wrapper for the given component
-	 */
-	public MVComponent getOrCreateMVComponent(Node component) {
-		IdentityHashKey<Node> key = IdentityHashKey.create(component);
-		if (!mvComponents.containsKey(key)) {
-			MVComponent mvComponent = new MVEngineComponent(component, this);
-			mvComponents.put(key, mvComponent);
-			return mvComponent;
-		} else {
-			return mvComponents.get(key);
-		}
-	}
-
-	/**
-	 * Creates new model view instance for given metadata.
-	 * @param metadata wrapped metadata
-	 * @return model view wrapper for the given metadata
+	 * @param metadata
+	 * @return MV representation of the given metadata
 	 */
 	public MVMetadata createMVMetadata(DataRecordMetadata metadata) {
-		return new MVEngineMetadata(metadata);
+		return mvGraph.createMVMetadata(metadata);
 	}
 
 	/**
-	 * Creates new model view instance for given metadata.
-	 * @param metadata wrapped metadata
-	 * @param priority metadata priority
-	 * @return model view wrapper for the given metadata
+	 * @param edge
+	 * @return MV representation of the given edge
 	 */
-	public MVMetadata createMVMetadata(DataRecordMetadata metadata, int priority) {
-		return new MVEngineMetadata(metadata, priority);
-	}
-	
-	/**
-	 * This is simple class which wraps an object and the wrapper can
-	 * be used in collections to change the object hashCode() and equals()
-	 * methods to 'identity' manner.
-	 */
-	private static class IdentityHashKey<T> {
-		private T key;
-		
-		public static <T> IdentityHashKey<T> create(T key) {
-			return new IdentityHashKey<>(key);
-		}
-		
-		public IdentityHashKey(T key) {
-			this.key = key;
-		}
-		
-		@Override
-		public int hashCode() {
-			return System.identityHashCode(key);
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			return obj instanceof IdentityHashKey && ((IdentityHashKey<?>) obj).key == key;
+	public MVEdge getMVEdge(Edge edge) {
+		if (edge != null) {
+			return mvGraph.getMVEdgeRecursive(edge);
+		} else {
+			return null;
 		}
 	}
 	

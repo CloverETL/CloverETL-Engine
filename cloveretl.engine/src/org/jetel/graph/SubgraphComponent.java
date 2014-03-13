@@ -38,6 +38,17 @@ import org.jetel.util.GraphUtils;
 public interface SubgraphComponent {
 
 	/**
+	 * @return URL of executed subgraph
+	 */
+	public String getSubgraphURL();
+	
+	/**
+	 * @return subgraph instance without metadata propagation
+	 * (this instance is dedicated for further automatic metadata propagation) 
+	 */
+	public TransformationGraph getSubgraphNoMetadataPropagation();
+	
+	/**
 	 * @param portIndex
 	 * @return input edge of executed subgraph
 	 */
