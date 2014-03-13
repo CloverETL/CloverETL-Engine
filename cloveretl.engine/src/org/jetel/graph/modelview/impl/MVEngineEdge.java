@@ -22,6 +22,7 @@ import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
+import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
 
 /**
@@ -42,11 +43,11 @@ public class MVEngineEdge implements MVEdge {
 	
 	private boolean hasPropagatedMetadata = false;
 
-	private MetadataPropagationResolver metadataPropagationResolver;
+	private MVGraph parentMVGraph;
 	
-	MVEngineEdge(Edge engineEdge, MetadataPropagationResolver metadataPropagationResolver) {
+	MVEngineEdge(Edge engineEdge, MVGraph parentMVGraph) {
 		this.engineEdge = engineEdge;
-		this.metadataPropagationResolver = metadataPropagationResolver;
+		this.parentMVGraph = parentMVGraph;
 	}
 	
 	@Override
@@ -55,15 +56,21 @@ public class MVEngineEdge implements MVEdge {
 	}
 	
 	@Override
+	public void reset() {
+		propagatedMetadata = null;
+		hasPropagatedMetadata = false;
+	}
+	
+	@Override
 	public MVComponent getReader() {
 		Node reader = engineEdge.getReader();
-		return (reader != null) ? metadataPropagationResolver.getOrCreateMVComponent(reader) : null;
+		return (reader != null) ? parentMVGraph.getMVComponent(reader.getId()) : null;
 	}
 
 	@Override
 	public MVComponent getWriter() {
 		Node writer = engineEdge.getWriter();
-		return (writer != null) ? metadataPropagationResolver.getOrCreateMVComponent(writer) : null;
+		return (writer != null) ? parentMVGraph.getMVComponent(writer.getId()) : null;
 	}
 
 	@Override
@@ -89,7 +96,7 @@ public class MVEngineEdge implements MVEdge {
 					return null;
 				}
 			} else {
-				MVMetadata metadata = metadataPropagationResolver.createMVMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
+				MVMetadata metadata = parentMVGraph.createMVMetadata(engineEdge.getMetadata(), MVMetadata.HIGH_PRIORITY);
 				metadata.addToOriginPath(this);
 				return metadata;
 			}

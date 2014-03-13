@@ -6346,6 +6346,16 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("emptyString", "");
 		check("nullValue1", null);
 		check("nullValue2", null);
+		
+		// CLO-2367
+		check("emailAddressLogin1", "http%3A%2F%2Fsome.user%40gooddata.com%3Apassword%40secure.bestdata.com");
+		check("emailAddressLogin2", "http://some.user%40gooddata.com:password@secure.bestdata.com");
+
+		check("hashLogin1", "http%3A%2F%2Fac%23dsds.dsz%3Apassword%40server.goooddata.com%2Fnice");
+		check("hashLogin2", "http://ac%23dsds.dsz:password@server.goooddata.com/nice");
+		
+		check("plusLogin1", "http%3A%2F%2Fac%25%2Bdsds.dsz%3Apassword%40server.goooddata.com%2Fnice");
+		check("plusLogin2", "http://ac%25%2Bdsds.dsz:password@server.goooddata.com/nice");
 	}
 
 	public void test_stringlib_escapeUrlFragment_expect_error() {

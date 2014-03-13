@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -39,7 +40,10 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.analyse.GraphCycleInspector;
 import org.jetel.graph.analyse.SingleGraphProvider;
+import org.jetel.graph.modelview.MVComponent;
+import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MVEngineGraph;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
@@ -90,8 +94,12 @@ public class TransformationGraphAnalyzer {
 		
 		//perform automatic metadata propagation
 		if (propagateMetadata) {
+			//create model view for the graph
+			MVGraph mvGraph = new MVEngineGraph(graph);
+			//first analyse subgraphs calling hierarchy - cannot be recursive
+			TransformationGraphAnalyzer.analyseSubgraphCallingHierarchy(mvGraph);
 			try {
-				TransformationGraphAnalyzer.analyseMetadataPropagation(graph);
+				TransformationGraphAnalyzer.analyseMetadataPropagation(mvGraph);
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Metadata propagation analysis failed.", e);
 			}
@@ -106,22 +114,47 @@ public class TransformationGraphAnalyzer {
 	}
 	
 	/**
+	 * Check whether subgraph calling hierarchy of the given graph is not recursive.
+	 * @param graph
+	 */
+	private static void analyseSubgraphCallingHierarchy(MVGraph graph) {
+		analyseSubgraphCallingHierarchy(graph, null, new ArrayList<String>());
+	}
+	
+	private static void analyseSubgraphCallingHierarchy(MVGraph graph, MVComponent causedComponent, List<String> urlStack) {
+		boolean topLevel = urlStack.isEmpty();
+		String url = graph.getModel().getRuntimeContext().getJobUrl();
+		if (urlStack.contains(url)) {
+			throw new JetelRuntimeException("Recursive subgraph hierarchy detected in " + url);
+		} else {
+			urlStack.add(url);
+		}
+		for (Entry<MVComponent, MVGraph> subgraph : graph.getMVSubgraphs().entrySet()) {
+			if (topLevel) {
+				causedComponent = subgraph.getKey();
+			}
+			analyseSubgraphCallingHierarchy(subgraph.getValue(), causedComponent, urlStack);
+		}
+		urlStack.remove(url);
+	}
+
+	/**
 	 * Performs automatic metadata propagation on the given graph.
 	 */
-	public static void analyseMetadataPropagation(TransformationGraph graph) {
+	private static void analyseMetadataPropagation(MVGraph mvGraph) {
 		//craete metatadata propagation resolver
-		MetadataPropagationResolver metadataPropagationResolver = new MetadataPropagationResolver(graph);
+		MetadataPropagationResolver metadataPropagationResolver = new MetadataPropagationResolver(mvGraph);
 		//analyse the graph
 		metadataPropagationResolver.analyseGraph();
 		//copy propagated metadata into transformation graph
-		for (Edge edge : graph.getEdges().values()) {
-			MVMetadata metadata = metadataPropagationResolver.getOrCreateMVEdge(edge).getMetadata();
+		for (Edge edge : mvGraph.getModel().getEdges().values()) {
+			MVMetadata metadata = metadataPropagationResolver.getMVEdge(edge).getMetadata();
 			if (metadata != null) {
 				edge.setMetadata(metadata.getModel());
 			}
 		}
 		//store complete resolver into graph for further usage (mainly in designer)
-		graph.setMetadataPropagationResolver(metadataPropagationResolver);
+		mvGraph.getModel().setMetadataPropagationResolver(metadataPropagationResolver);
 	}
 
 	/**
