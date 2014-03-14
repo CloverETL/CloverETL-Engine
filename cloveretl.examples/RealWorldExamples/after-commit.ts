@@ -13,15 +13,6 @@
 		<RegEx expression="# 3 *\|Venezuela *\|46" occurences="1"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="DataSelectionAdvancedIBM" graphFile="graph/DataSelectionAdvanced.grf" excludedContainers="tomcat6,jetty9,glassfish3,weblogic10,weblogic12,jboss6,jboss7" excludedEtlEnvironment="engine,cluster">
-		<FlatFile outputFile="data-out/NumberOfCustomers.out" supposedFile="supposed-out/NumberOfCustomersIBM.out"/>
-		<FlatFile outputFile="data-tmp/had_duplicate_records.txt" supposedFile="supposed-out/had_duplicate_records.txt"/>
-		<RegEx expression="# 4 *\|Argentina *\|16" occurences="1"/>
-		<RegEx expression="# 1 *\|Spain *\|23" occurences="1"/>
-		<RegEx expression="# 3 *\|Brazil *\|83" occurences="1"/>
-		<RegEx expression="# 2 *\|Venezuela *\|46" occurences="1"/>
-	</FunctionalTest>
-	
 	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false">
 		<ExcludeRegEx ident="error"/>
 		<RegEx expression="Exception raised by user: O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="4"/>
