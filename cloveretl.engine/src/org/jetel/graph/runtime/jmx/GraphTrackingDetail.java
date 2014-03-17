@@ -261,7 +261,12 @@ public class GraphTrackingDetail implements GraphTracking {
 	}
 
 	void graphFinished() {
-		result = lastPhaseResult;
+		if (lastPhaseResult != null) {
+			result = lastPhaseResult;
+		} else {
+			//for empty graphs
+			result = graph.getWatchDog().getStatus();
+		}
 		
 		endTime = System.currentTimeMillis();
 	}

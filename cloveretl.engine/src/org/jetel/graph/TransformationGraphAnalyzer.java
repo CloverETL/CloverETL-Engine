@@ -157,64 +157,265 @@ public class TransformationGraphAnalyzer {
 		mvGraph.getModel().setMetadataPropagationResolver(metadataPropagationResolver);
 	}
 
-	/**
-	 * Checks layout and removes all components before SubgraphInput and after SubgraphOutput.
-	 * This could be split into two methods for better clarity, but we would perform component search operations twice.
-	 */
-	public static void analyseSubgraph(TransformationGraph graph, boolean removeDebugNodes, boolean layoutChecking) {
-		Collection<Node> nodes = graph.getNodes().values();
-		Integer startPhase = null;
-		Integer endPhase = null;
-		for (Node component : nodes) {
-			if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
-				startPhase = component.getPhaseNum();
-				List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
-				if (layoutChecking) {
-					List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
-					if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
-						throw new JetelRuntimeException("Invalid subgraph layout. A component preceding the SubgraphInput component is probably connected with a component following SubgraphInput.");
+	private static final class SubgraphAnalyzer {
+		private final TransformationGraph subgraph;
+
+		public SubgraphAnalyzer(TransformationGraph subgraph) {
+			this.subgraph = subgraph;
+		}
+		
+		public SubgraphAnalysisResult analyzeForRuntime() {
+			return analyze(false);
+		}
+		
+		public SubgraphAnalysisResult analyzeForValidation() {
+			return analyze(true);
+		}
+		
+		private SubgraphAnalysisResult analyze(boolean layoutChecking) {
+			SubgraphAnalysisResult result = new SubgraphAnalysisResult();
+			
+			result.setSubgraph(subgraph);
+			Collection<Node> nodes = subgraph.getNodes().values();
+			for (Node component : nodes) {
+				if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
+					result.setSubgraphInput(component);
+					result.setSubgraphInputPrecedentNodes(TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null));
+					if (layoutChecking) {
+						result.setSubgraphInputFollowingNodes(TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null));
 					}
 				}
-				if (removeDebugNodes) {
-					for (Node precedentNode : precedentNodes) {
-						precedentNode.setEnabled(EnabledEnum.DISABLED);
+				if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
+					result.setSubgraphOutput(component);
+					result.setSubgraphOutputFollowingNodes(TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null));
+					if (layoutChecking) {
+						result.setSubgraphOutputPrecedentNodes(TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null));
 					}
 				}
 			}
-			if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
-				endPhase = component.getPhaseNum();
-				List<Node> followingNodes = TransformationGraphAnalyzer.findFollowingNodesRecursive(component, null);
-				if (layoutChecking) {
-					List<Node> precedentNodes = TransformationGraphAnalyzer.findPrecedentNodesRecursive(component, null);
-					if (!CollectionUtils.intersection(precedentNodes, followingNodes).isEmpty()) {
-						throw new JetelRuntimeException("Invalid subgraph layout. A component following the SubgraphOutput component is probably connected with a component preceding SubgraphOutput.");
+			
+			sortComponents(result, nodes);
+			
+			return result;
+		}
+
+		private void sortComponents(SubgraphAnalysisResult result, Collection<Node> nodes) {
+			Set<Node> debugInputNodes = new HashSet<>();
+			Set<Node> debugOutputNodes = new HashSet<>();
+			Set<Node> activeNodes = new HashSet<>();
+			if (result.getSubgraphInputPrecedentNodes() != null) {
+				debugInputNodes.addAll(result.getSubgraphInputPrecedentNodes());
+			}
+			if (result.getSubgraphOutputFollowingNodes() != null) {
+				debugOutputNodes.addAll(result.getSubgraphOutputFollowingNodes());
+			}
+			int beginPhase = result.getSubgraphInput() != null ? result.getSubgraphInput().getPhaseNum() : Integer.MIN_VALUE;
+			int endPhase = result.getSubgraphOutput() != null ? result.getSubgraphOutput().getPhaseNum() : Integer.MAX_VALUE;
+			for (Node component : nodes) {
+				if (component == result.getSubgraphInput() || component == result.getSubgraphOutput()) {
+					continue;
+				}
+				if (component.getPhaseNum() < beginPhase && !debugInputNodes.contains(component)) {
+					debugInputNodes.add(component);
+				}
+				else if (component.getPhaseNum() > endPhase && !debugOutputNodes.contains(component)) {
+					debugOutputNodes.add(component);
+				}
+				else {
+					activeNodes.add(component);
+				}
+			}
+			result.setDebugInputNodes(debugInputNodes);
+			result.setDebugOutputNodes(debugOutputNodes);
+			result.setActiveNodes(activeNodes);
+		}
+	}
+	
+	private static class SubgraphAnalysisValidationException extends Exception {
+		private static final long serialVersionUID = -8502212649423859074L;
+
+		public SubgraphAnalysisValidationException(String message) {
+			super(message);
+		}
+	}
+	
+	private static class SubgraphAnalysisResult {
+		private TransformationGraph subgraph;
+		private Node subgraphInput;
+		private Node subgraphOutput;
+		
+		private List<Node> subgraphInputPrecedentNodes;
+		private List<Node> subgraphInputFollowingNodes;
+		
+		private List<Node> subgraphOutputPrecedentNodes;
+		private List<Node> subgraphOutputFollowingNodes;
+		private Set<Node> debugInputNodes;
+		private Set<Node> debugOutputNodes;
+		private Set<Node> activeNodes;
+		
+		public TransformationGraph getSubgraph() {
+			return subgraph;
+		}
+		public void setSubgraph(TransformationGraph subgraph) {
+			this.subgraph = subgraph;
+		}
+		public Node getSubgraphInput() {
+			return subgraphInput;
+		}
+		public Set<Node> getActiveNodes() {
+			return activeNodes;
+		}
+		public void setActiveNodes(Set<Node> activeNodes) {
+			this.activeNodes = activeNodes;
+		}
+		public Set<Node> getDebugInputNodes() {
+			return debugInputNodes;
+		}
+		public void setDebugInputNodes(Set<Node> debugInputNodes) {
+			this.debugInputNodes = debugInputNodes;
+		}
+		public Set<Node> getDebugOutputNodes() {
+			return debugOutputNodes;
+		}
+		public void setDebugOutputNodes(Set<Node> debugOutputNodes) {
+			this.debugOutputNodes = debugOutputNodes;
+		}
+		public void setSubgraphInput(Node subgraphInput) {
+			this.subgraphInput = subgraphInput;
+		}
+		public Node getSubgraphOutput() {
+			return subgraphOutput;
+		}
+		public void setSubgraphOutput(Node subgraphOutput) {
+			this.subgraphOutput = subgraphOutput;
+		}
+		public List<Node> getSubgraphInputPrecedentNodes() {
+			return subgraphInputPrecedentNodes;
+		}
+		public void setSubgraphInputPrecedentNodes(List<Node> subgraphInputPrecedentNodes) {
+			this.subgraphInputPrecedentNodes = subgraphInputPrecedentNodes;
+		}
+		public List<Node> getSubgraphInputFollowingNodes() {
+			return subgraphInputFollowingNodes;
+		}
+		public void setSubgraphInputFollowingNodes(List<Node> subgraphInputFollowingNodes) {
+			this.subgraphInputFollowingNodes = subgraphInputFollowingNodes;
+		}
+		public List<Node> getSubgraphOutputPrecedentNodes() {
+			return subgraphOutputPrecedentNodes;
+		}
+		public void setSubgraphOutputPrecedentNodes(List<Node> subgraphOutputPrecedentNodes) {
+			this.subgraphOutputPrecedentNodes = subgraphOutputPrecedentNodes;
+		}
+		public List<Node> getSubgraphOutputFollowingNodes() {
+			return subgraphOutputFollowingNodes;
+		}
+		public void setSubgraphOutputFollowingNodes(List<Node> subgraphOutputFollowingNodes) {
+			this.subgraphOutputFollowingNodes = subgraphOutputFollowingNodes;
+		}
+		public void validate() throws SubgraphAnalysisValidationException {
+			if (subgraphInputFollowingNodes != null && subgraphInputPrecedentNodes != null) {
+				if (!CollectionUtils.intersection(subgraphInputFollowingNodes, subgraphInputPrecedentNodes).isEmpty()) {
+					throw new SubgraphAnalysisValidationException("A component preceding the SubgraphInput component is probably connected with a component following SubgraphInput.");
+				}
+			}
+			if (subgraphOutputFollowingNodes != null && subgraphOutputPrecedentNodes != null) {
+				if (!CollectionUtils.intersection(subgraphOutputFollowingNodes, subgraphOutputPrecedentNodes).isEmpty()) {
+					throw new SubgraphAnalysisValidationException("A component following the SubgraphOutput component is probably connected with a component preceding SubgraphOutput.");
+				}
+			}
+			if (subgraphInputPrecedentNodes != null && subgraphOutput != null && subgraphInputPrecedentNodes.contains(subgraphOutput)) {
+				throw new SubgraphAnalysisValidationException("SubgraphOutput is connected to a component preceding SubgraphInput");
+			}
+			if (subgraphOutputFollowingNodes != null && subgraphInput != null && subgraphOutputFollowingNodes.contains(subgraphInput)) {
+				throw new SubgraphAnalysisValidationException("SubgraphInput is connected to a component following SubgraphOutput");
+			}
+			for (Edge edge : getSubgraph().getEdges().values()) {
+				Node reader = edge.getReader();
+				Node writer = edge.getWriter();
+				
+				if (reader == subgraphInput || reader == subgraphOutput || writer == subgraphInput || writer == subgraphOutput) {
+					continue;
+				}
+				
+				if (reader != null && writer != null) {
+					validateEdge(reader, writer);
+					validateEdge(writer, reader);
+				}
+			}
+			if (subgraphInput != null) {
+				for (Node node : subgraphInputPrecedentNodes) {
+					if (node.getPhaseNum() > subgraphInput.getPhaseNum()) {
+						throw new SubgraphAnalysisValidationException(String.format("Component %s is connected to debugging input components but is in phase %d", node.getName(), node.getPhaseNum()));
 					}
 				}
-				if (removeDebugNodes) {
-					for (Node followingNode : followingNodes) {
-						followingNode.setEnabled(EnabledEnum.DISABLED);
+			}
+			if (subgraphOutput != null) {
+				for (Node node : subgraphOutputFollowingNodes) {
+					if (subgraphOutput.getPhaseNum() > node.getPhaseNum()) {
+						throw new SubgraphAnalysisValidationException(String.format("Component %s is connected to debugging output components but is in phase %d", node.getName(), node.getPhaseNum()));
 					}
 				}
 			}
 		}
+		private void validateEdge(Node componentA, Node componentB) throws SubgraphAnalysisValidationException {
+			if (debugInputNodes.contains(componentA) && !debugInputNodes.contains(componentB)) {
+				throw new SubgraphAnalysisValidationException(String.format("Debugging input component %s is connected to %s which is not a debugging input component.",
+						componentA.getName(), componentB.getName()));
+			}
+			if (debugOutputNodes.contains(componentA) && !debugOutputNodes.contains(componentB)) {
+				throw new SubgraphAnalysisValidationException(String.format("Debugging output component %s is connected to %s which is not a debugging output component.",
+						componentA.getName(), componentB.getName()));
+			}
+		}
+		public Integer getStartPhase() {
+			return subgraphInput != null ? subgraphInput.getPhaseNum() : null;
+		}
+		public Integer getEndPhase() {
+			return subgraphOutput != null ? subgraphOutput.getPhaseNum() : null;
+		}
+		public boolean isActivePhase(int phaseNum) {
+			if (getStartPhase() != null && phaseNum < getStartPhase()) {
+				return false;
+			}
+			if (getEndPhase() != null && getEndPhase() < phaseNum) {
+				return false;
+			}
+			return true;
+		}
+	}
+	
+	/**
+	 * Checks subgraph layout and removes all components before SubgraphInput and after SubgraphOutput.
+	 */
+	public static void analyseSubgraph(TransformationGraph graph, boolean removeDebugNodes, boolean layoutChecking) {
+		SubgraphAnalyzer analyzer = new SubgraphAnalyzer(graph);
+		SubgraphAnalysisResult analysisResult = layoutChecking ? analyzer.analyzeForValidation() : analyzer.analyzeForRuntime();
+		if (layoutChecking) {
+			try {
+				analysisResult.validate();
+			} catch (SubgraphAnalysisValidationException e) {
+				throw new JetelRuntimeException("Invalid subgraph layout.", e);
+			}
+		}
 		
 		if (removeDebugNodes) {
-			if (endPhase != null || startPhase != null) {
-				for (Node component : nodes) {
-					if (startPhase != null && component.getPhaseNum() < startPhase) {
-						component.setEnabled(EnabledEnum.DISABLED);
-					}
-					else if (endPhase != null && component.getPhaseNum() > endPhase) {
-						component.setEnabled(EnabledEnum.DISABLED);
-					}
-				}
-			}
-		
-			try {
-				TransformationGraphAnalyzer.disableNodesInPhases(graph);
-			} catch (GraphConfigurationException e) {
-				throw new JetelRuntimeException("Failed to remove disabled/pass-through nodes from subgraph.", e);
-			}
+			removeDebugNodes(graph, analysisResult);
+		}
+	}
+
+	private static void removeDebugNodes(TransformationGraph graph, SubgraphAnalysisResult analysisResult) {
+		for (Node node : analysisResult.getDebugInputNodes()) {
+			node.setEnabled(EnabledEnum.DISABLED);
+		}
+		for (Node node : analysisResult.getDebugOutputNodes()) {
+			node.setEnabled(EnabledEnum.DISABLED);
+		}
+
+		try {
+			TransformationGraphAnalyzer.disableNodesInPhases(graph);
+		} catch (GraphConfigurationException e) {
+			throw new JetelRuntimeException("Failed to remove disabled/pass-through nodes from subgraph.", e);
 		}
 	}
 
@@ -223,11 +424,6 @@ public class TransformationGraphAnalyzer {
 	 * directly to the graph instance.
 	 */
 	public static void analyseEdgeTypes(TransformationGraph graph) {
-		//detect empty graphs
-		if (graph.getNodes().isEmpty()) {
-			throw new JetelRuntimeException("Job without components cannot be executed.");
-		}
-
 		//first of all find the phase edges
 		analysePhaseEdges(graph);
 
