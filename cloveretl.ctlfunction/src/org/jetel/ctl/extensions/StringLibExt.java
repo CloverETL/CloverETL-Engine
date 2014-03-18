@@ -491,39 +491,6 @@ public class StringLibExt extends TLFunctionLibraryExt {
 	}
 	
 	/**
-	 * <p>Returns a substring beginning at specified position and extending to the end of the string.</p>
-	 * 
-	 * <p>Function gracefully handles null values. Null input results into null output.</p>
-	 * 
-	 * @param context function call context
-	 * @param input input string. May be null.
-	 * @param beginIndex the beginning index of the resulting substring. Value is inclusive. Negative values result in
-	 *        whole input being returned, values larger then the length of the input result in empty string.
-	 * 
-	 * @return the specified substring.
-	 * 
-	 * @see String#substring(int)
-	 */
-	@TLFunctionAnnotation("Returns a substring beginning at specified position and extending to the end of the string.")
-	@CTL2FunctionDeclaration(impl = SubstringFunction.class)
-	public static final String substring(TLFunctionCallContext context, String input, Integer beginIndex) {
-		
-		if (input == null) {
-			return null;
-		}
-		
-		if (beginIndex < 0) {
-			return input;
-		}
-		
-		if (beginIndex > input.length()) {
-			return "";
-		}
-		
-		return input.substring(beginIndex);
-	}
-	
-	/**
 	 * <p>Concatenate list of strings into one string separating non-blank elements with separators.</p>
 	 * 
 	 * <p>Example:
@@ -797,21 +764,6 @@ public class StringLibExt extends TLFunctionLibraryExt {
 			
 		}
 		
-		@Override
-		public void init(TLFunctionCallContext context) {
-		}
-	}
-	
-	public class SubstringFunction implements TLFunctionPrototype {
-
-		@Override
-		public void execute(Stack stack, TLFunctionCallContext context) {
-			// Stack layout: beginIndex, input
-			int beginIndex = stack.popInt();
-			String input = stack.popString();
-			stack.push(substring(context, input, beginIndex));
-		}
-
 		@Override
 		public void init(TLFunctionCallContext context) {
 		}

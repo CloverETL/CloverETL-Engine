@@ -183,10 +183,62 @@ public class StringLib extends TLFunctionLibrary {
 
 	// SUBSTRING
 	@TLFunctionAnnotation("Returns a substring of a given string")
-	public static final String substring(TLFunctionCallContext context, String input, int from, int length) {
-		return input.substring(from, from+length);
+	public static final String substring(TLFunctionCallContext context, String input, Integer beginIndex, Integer length) {
+		if (beginIndex < 0) {
+			throw new IllegalArgumentException("Begin index is negative");
+		}
+		
+		if (length < 0) {
+			throw new IllegalArgumentException("Length is negative");
+		}
+		
+		if (input == null) {
+			return null;
+		}
+		
+		if (beginIndex > input.length()) {
+			return "";
+		}
+		
+		int endIndex = beginIndex + length;
+		if (endIndex > input.length()) {
+			return input.substring(beginIndex);
+		}
+		
+		return input.substring(beginIndex, endIndex);
 	}
 
+	/**
+	 * <p>Returns a substring beginning at specified position and extending to the end of the string.</p>
+	 * 
+	 * <p>Function gracefully handles null values. Null input results in null output.</p>
+	 * 
+	 * @param context function call context
+	 * @param input input string. May be null.
+	 * @param beginIndex the beginning index of the resulting substring. Value is inclusive. 
+	 * 		Only non-negative values are allowed. Values larger then the length of the input result in empty string.
+	 * 
+	 * @return the specified substring.
+	 * 
+	 * @see String#substring(int)
+	 */
+	@TLFunctionAnnotation("Returns a substring beginning at specified position and extending to the end of the string.")
+	public static final String substring(TLFunctionCallContext context, String input, Integer beginIndex) {
+		if (beginIndex < 0) {
+			throw new IllegalArgumentException("Begin index is negative");
+		}
+		
+		if (input == null) {
+			return null;
+		}
+		
+		if (beginIndex > input.length()) {
+			return "";
+		}
+		
+		return input.substring(beginIndex);
+	}
+	
 	class SubstringFunction implements TLFunctionPrototype {
 
 		@Override
@@ -195,10 +247,23 @@ public class StringLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			final int length = stack.popInt();
-			final int from = stack.popInt();
-			final String input = stack.popString();
-			stack.push(substring(context, input, from, length));
+			switch (context.getParams().length) {
+				case 3: {
+					final int length = stack.popInt();
+					final int from = stack.popInt();
+					final String input = stack.popString();
+					stack.push(substring(context, input, from, length));
+					break;
+				}
+				case 2: {
+					final int from = stack.popInt();
+					final String input = stack.popString();
+					stack.push(substring(context, input, from));
+					break;
+				}
+				default:
+					throw new TransformLangExecutorRuntimeException("Unsupported number of arguments: " + stack.length());
+			}
 		}
 	}
 
