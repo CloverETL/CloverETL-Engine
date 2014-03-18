@@ -5436,24 +5436,35 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	
 	public void test_stringlib_substring() {
 		doCompile("test_stringlib_substring");
+		
 		check("subs", "UICk ");
 		check("test1", "");
 		check("test_empty", "");
+		check("nullLiteral", null);
+		check("nullVariable", null);
+		
+		check("subs2", "UICk !!$  broWn fox 	juMPS over the lazy DOG	");
+		check("test2", "aaa");
+		check("test3", "");
+		check("test_empty2", "");
+		check("nullLiteral2", null);
+		check("nullVariable2", null);
+
+		check("result1", "abcdefghi");
+		check("result2", "fghi");
+		check("result3", "");
+		check("result4", "");
+		check("result5", "");
+		check("result6", "abcdefghi");
+		check("result7", "");
+		check("result8", "f");
+		check("result9", "fghi");
+		check("result10", "");
+		check("result11", "i");
+		check("result12", "i");
 	}
 	
 	public void test_stringlib_substring_expect_error(){
-		try {
-			doCompile("function integer transform(){string test = substring('arabela',4,19);return 0;}","test_stringlib_substring_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
-		try {
-			doCompile("function integer transform(){string test = substring('arabela',15,3);return 0;}","test_stringlib_substring_expect_error");
-			fail();
-		} catch (Exception e) {
-			// do nothing
-		}
 		try {
 			doCompile("function integer transform(){string test = substring('arabela',2,-3);return 0;}","test_stringlib_substring_expect_error");
 			fail();
@@ -5467,31 +5478,43 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring('',0,7);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring(null,2,-3);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring('',7,7);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring(null,-5,7);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring(null,0,0);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring('arabela',-5);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring(null,0,4);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring(null,-5);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
 		try {
-			doCompile("function integer transform(){string test = substring(null,1,4);return 0;}","test_stringlib_substring_expect_error");
+			doCompile("function integer transform(){string test = substring('arabela',null);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring('arabela',null,5);return 0;}","test_stringlib_substring_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){string test = substring('arabela',5,null);return 0;}","test_stringlib_substring_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
