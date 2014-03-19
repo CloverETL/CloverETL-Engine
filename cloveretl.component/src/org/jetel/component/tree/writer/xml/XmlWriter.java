@@ -420,7 +420,7 @@ public class XmlWriter extends TreeWriterBase implements NamespaceWriter, Attrib
 				flushBuffer();
 				outStreamWriter.write(data, offset, length);
 			} else {
-				if (buffer.length + buffer.length > Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) {
+				if (buffer.length + length > Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE) {
 					flushBuffer();
 				}
 				buffer.append(data, offset, length);
