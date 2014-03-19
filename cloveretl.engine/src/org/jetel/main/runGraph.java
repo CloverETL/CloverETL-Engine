@@ -43,6 +43,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.JobType;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
@@ -352,6 +353,7 @@ public class runGraph {
         runtimeContext.setDebugDirectory(debugDirectory);
         runtimeContext.setContextURL(contextURL);
         runtimeContext.setLogLevel(logLevel);
+        runtimeContext.setJobType(JobType.fromFileName(graphFileName));
         try {
 			runtimeContext.setJobUrl(FileUtils.getFileURL(contextURL, graphFileName).toString());
 		} catch (MalformedURLException e1) {
