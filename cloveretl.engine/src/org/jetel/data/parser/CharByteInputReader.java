@@ -162,6 +162,14 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 			if(metadata == null) {
 				continue;
 			}
+			
+			int lastNonAutoFilledField;
+			for (lastNonAutoFilledField = metadata.getNumFields() - 1; lastNonAutoFilledField >= 0; lastNonAutoFilledField--) {
+				if (!metadata.getField(lastNonAutoFilledField).isAutoFilled()) {
+					break;
+				}
+			}
+
 			for (DataFieldMetadata field : metadata.getFields()) {
 				if (field.isAutoFilled()) {
 					continue;
@@ -172,6 +180,10 @@ public abstract class CharByteInputReader implements ICharByteInputReader {
 					needCharInput = true;
 				}
 				maxBackShift = Math.max(maxBackShift, -field.getShift());				
+			}
+
+			if (metadata.isSpecifiedRecordDelimiter() && !metadata.getField(lastNonAutoFilledField).isDelimited()) {
+				needCharInput = true;
 			}
 		}
 

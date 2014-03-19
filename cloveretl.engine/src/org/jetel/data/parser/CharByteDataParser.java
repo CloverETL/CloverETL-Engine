@@ -1352,6 +1352,7 @@ public class CharByteDataParser extends AbstractTextParser {
 			inputReader.mark();
 			int ichr;
 			char chr;
+			boolean delimiterFound = false;
 			while (true) {
 				ichr = inputReader.readChar();
 				if (ichr == CharByteInputReader.BLOCKED_BY_MARK) {
@@ -1361,15 +1362,21 @@ public class CharByteDataParser extends AbstractTextParser {
 					throw new BadDataFormatException("Decoding of input into char data failed while looking for obligatory delimiter");
 				}
 				if (ichr == CharByteInputReader.END_OF_INPUT) {
-					if (acceptEofAsDelim && delimPatterns.getMatchLength() == 0) {
-						return false; // indicates end of input before one single character was read
+					if (delimiterFound) {
+						inputReader.revert();
+						return true;
 					} else {
-						throw new BadDataFormatException("End of input encountered instead of the field delimiter");
+						if (acceptEofAsDelim && delimPatterns.getMatchLength() == 0) {
+							return false; // indicates end of input before one single character was read
+						} else {
+							throw new BadDataFormatException("End of input encountered instead of the field delimiter");
+						}
 					}
 				}
 				chr = (char) ichr;
 				boolean withoutFail = delimPatterns.update(chr);
 				if (delimPatterns.isPattern(delimId)) {
+					delimiterFound = true;
 					// we are trying to match longest possible delimiter
 					if (matchLongerDelimiter && withoutFail) {
 						inputReader.mark();
@@ -1377,6 +1384,9 @@ public class CharByteDataParser extends AbstractTextParser {
 					} else {
 						return true;
 					}
+				} else if (delimiterFound) {
+					inputReader.revert();
+					return true;
 				} else if (delimPatterns.isPattern(DEFAULT_FIELD_DELIMITER_IDENTIFIER)) {
 					throw new BadDataFormatException("Unexpected field delimiter found - record probably contains too many fields");
 				} else if (delimPatterns.isPattern(RECORD_DELIMITER_IDENTIFIER)) {
