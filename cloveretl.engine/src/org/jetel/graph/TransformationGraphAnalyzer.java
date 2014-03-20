@@ -82,11 +82,13 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
-		boolean removeSubgraphDebugNodes = runtimeContext.isSubJob();
-		boolean layoutChecking = runtimeContext.getJobType() == JobType.SUBGRAPH || runtimeContext.getJobType() == JobType.SUBJOBFLOW;
-		if (removeSubgraphDebugNodes || layoutChecking) {
+		boolean subJobRuntime = runtimeContext.isSubJob();
+		boolean subJobFile = runtimeContext.getJobType() == JobType.SUBGRAPH || runtimeContext.getJobType() == JobType.SUBJOBFLOW || graph.getJobType() == JobType.SUBGRAPH || graph.getJobType() == JobType.SUBJOBFLOW;
+		if (subJobRuntime || subJobFile) {
 			try {
-				TransformationGraphAnalyzer.analyseSubgraph(graph, removeSubgraphDebugNodes, layoutChecking);
+				boolean removeDebugNodes = subJobRuntime;
+				boolean layoutChecking = subJobFile;
+				TransformationGraphAnalyzer.analyseSubgraph(graph, removeDebugNodes, layoutChecking);
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Subgraph analysis failed.", e);
 			}
