@@ -44,6 +44,8 @@ public class ErrorReporter {
 	final static int MAX_VALUE_LENGTH = 512; // CLO-2658: decreased from 2048
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	
+	final static String NULL_STR_CONST = "null";
+	
 	TransformLangExecutorRuntimeException runtimeException;
 	String sourceCode;
 	Stack stack;
@@ -211,6 +213,8 @@ public class ErrorReporter {
 			return process((CLVFFieldAccessExpression) node);
 		} else if (node instanceof CLVFArrayAccessExpression) {
 			return process((CLVFArrayAccessExpression) node);
+		} else if (node instanceof CLVFMemberAccessExpression){
+			return process((CLVFMemberAccessExpression)node);
 		}
 		
 		return process((SimpleNode) node);
@@ -227,7 +231,7 @@ public class ErrorReporter {
 		if (identifiers.add(node.getName())) {
 			Object value = (stack != null) ? stack.getVariable(node.getBlockOffset(), node.getVariableOffset()) : "(value not available)";
 			if (node.getType().isPrimitive() || value==null){
-				err.format("variable \"%s\" (%s) -> %s%n",node.getName(),node.getType(),maxstr(value==null ? "null" : value.toString()));
+				err.format("variable \"%s\" (%s) -> %s%n",node.getName(),node.getType(),maxstr(value==null ? NULL_STR_CONST : value.toString()));
 			} else {
 				err.format("variable \"%s\" (%s) :%n",node.getName(),node.getType());
 				err.println(maxstr(value.toString()));
@@ -270,7 +274,7 @@ public class ErrorReporter {
 				? outputRecords[node.getRecordId()] : inputRecords[node.getRecordId()];
 		if (node.getFieldId() != null) {
 			final DataField field = record.getField(node.getFieldId());
-			err.format("field: \"%s\" -> %s%n",node.getFieldName(),field.toString());
+			err.format("field: \"%s\" (%s) -> %s%n",node.getFieldName(),field.getMetadata().getDataType().getName(),field.isNull() ? NULL_STR_CONST : field.toString());
 		} else { //accessing the whole record
 			err.format("record: \"%s\"%n",node.getRecordName());
 			err.println(record.toString());
@@ -282,6 +286,34 @@ public class ErrorReporter {
 		//err.print("array: ");
 		process(node.jjtGetChild(0));
 		process(node.jjtGetChild(1));
+		return null;
+	}
+	
+	String process(CLVFMemberAccessExpression node){
+		final SimpleNode firstChild = (SimpleNode) node.jjtGetChild(0);
+		if( firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE){
+			err.format("dictionary entry: \"%s\" -> %s%n",node.getName(),"..unknown value..");
+			process(firstChild);
+		}else if (firstChild.getId() == TransformLangParserTreeConstants.JJTIDENTIFIER){
+			//probably record
+			if (node.isWildcard()) {
+				process(node.jjtGetChild(0));
+				
+			}else{
+				CLVFIdentifier identifier = (CLVFIdentifier) firstChild;
+				Object value = (stack != null) ? stack.getVariable(identifier.getBlockOffset(), identifier.getVariableOffset()) : "(value not available)";
+				if (value instanceof DataRecord){
+					DataField field=((DataRecord)value).getField(node.getFieldId());
+					// record name in identifier.getName()
+					err.format("field: \"%s\" (%s) -> %s%n",node.getName(),field.getMetadata().getDataType().getName(), field.isNull() ? NULL_STR_CONST  : field.toString());
+				}else{
+					err.format("record \"%s\" -> %s%n",identifier.getName(),value.toString());
+				}
+			
+			}
+		}else{
+			process(firstChild);
+		}
 		return null;
 	}
 	
