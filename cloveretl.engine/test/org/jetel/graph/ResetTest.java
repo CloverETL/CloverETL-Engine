@@ -212,7 +212,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
-							&& !file.getName().equals("EmailReader_BadDataFormatException.grf"); // ok, is to fail
+							&& !file.getName().equals("EmailReader_BadDataFormatException.grf") // ok, is to fail
+							&& !file.getName().equals("PhaseOrderCheck.grf"); // ok, is to fail
 					
 				}
 			};
