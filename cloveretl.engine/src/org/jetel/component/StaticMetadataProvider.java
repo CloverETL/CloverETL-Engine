@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.io.Serializable;
 
+import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.metadata.DataRecordMetadata;
@@ -37,10 +38,13 @@ public class StaticMetadataProvider implements MetadataProvider, Serializable {
 	
 	private static final long serialVersionUID = -8436473524226111583L;
 	
+	private Node relatedComponent;
+	
 	private DataRecordMetadata[] inputMetadata;
 	private DataRecordMetadata[] outputMetadata;
 
-	public StaticMetadataProvider(DataRecordMetadata[] inputMetadata, DataRecordMetadata[] outputMetadata) {
+	public StaticMetadataProvider(Node relatedComponent, DataRecordMetadata[] inputMetadata, DataRecordMetadata[] outputMetadata) {
+		this.relatedComponent = relatedComponent;
 		this.inputMetadata = inputMetadata;
 		this.outputMetadata = outputMetadata;
 	}
@@ -48,7 +52,7 @@ public class StaticMetadataProvider implements MetadataProvider, Serializable {
 	@Override
 	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex < outputMetadata.length && outputMetadata[portIndex] != null) {
-			return metadataPropagationResolver.createMVMetadata(outputMetadata[portIndex]);
+			return metadataPropagationResolver.createMVMetadata(outputMetadata[portIndex], relatedComponent, "output_" + portIndex);
 		} else {
 			return null;
 		}
@@ -57,7 +61,7 @@ public class StaticMetadataProvider implements MetadataProvider, Serializable {
 	@Override
 	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
 		if (portIndex < inputMetadata.length && inputMetadata[portIndex] != null) {
-			return metadataPropagationResolver.createMVMetadata(inputMetadata[portIndex]);
+			return metadataPropagationResolver.createMVMetadata(inputMetadata[portIndex], relatedComponent, "input_" + portIndex);
 		} else {
 			return null;
 		}

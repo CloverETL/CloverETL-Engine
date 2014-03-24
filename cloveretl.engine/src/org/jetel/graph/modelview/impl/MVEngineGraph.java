@@ -41,7 +41,7 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class MVEngineGraph implements MVGraph {
 
-	private TransformationGraph graph;
+	private TransformationGraph engineGraph;
 	
 	private Map<String, MVComponent> mvComponents;
 
@@ -49,15 +49,26 @@ public class MVEngineGraph implements MVGraph {
 
 	private Map<MVComponent, MVGraph> mvSubgraphs;
 	
-	public MVEngineGraph(TransformationGraph graph) {
-		this.graph = graph;
+	private MVComponent parentMVSubgraphComponent;
+	
+	public MVEngineGraph(TransformationGraph graph, MVComponent parentMVSubgraphComponent) {
+		if (graph == null) {
+			throw new IllegalArgumentException("MVEngineGraph init failed");
+		}
+		this.engineGraph = graph;
+		this.parentMVSubgraphComponent = parentMVSubgraphComponent;
 		this.mvComponents = new HashMap<>();
 		this.mvEdges = new HashMap<>();
 	}
 	
 	@Override
 	public TransformationGraph getModel() {
-		return graph;
+		return engineGraph;
+	}
+	
+	@Override
+	public String getId() {
+		return engineGraph.getId();
 	}
 	
 	@Override
@@ -74,7 +85,7 @@ public class MVEngineGraph implements MVGraph {
 
 	@Override
 	public MVComponent getMVComponent(String componentId) {
-		Node component = graph.getNodes().get(componentId);
+		Node component = engineGraph.getNodes().get(componentId);
 		if (component != null) {
 			if (!mvComponents.containsKey(componentId)) {
 				MVComponent mvComponent = new MVEngineComponent(component, this);
@@ -92,11 +103,11 @@ public class MVEngineGraph implements MVGraph {
 	public Map<MVComponent, MVGraph> getMVSubgraphs() {
 		if (mvSubgraphs == null) {
 			mvSubgraphs = new HashMap<>();
-			for (Node component : graph.getNodes().values()) {
+			for (Node component : engineGraph.getNodes().values()) {
 				if (component instanceof SubgraphComponent) {
 					TransformationGraph engineSubgraph = ((SubgraphComponent) component).getSubgraphNoMetadataPropagation();
 					if (engineSubgraph != null) { //can be null if the subgraph component is not correctly defined - invalid subgraph URL 
-						MVGraph mvSubgraph = new MVEngineGraph(engineSubgraph);
+						MVGraph mvSubgraph = new MVEngineGraph(engineSubgraph, getMVComponent(component.getId()));
 						mvSubgraphs.put(getMVComponent(component.getId()), mvSubgraph);
 					}
 				}
@@ -107,7 +118,7 @@ public class MVEngineGraph implements MVGraph {
 
 	@Override
 	public MVEdge getMVEdge(String edgeId) {
-		Edge edge = graph.getEdges().get(edgeId);
+		Edge edge = engineGraph.getEdges().get(edgeId);
 		if (edge != null) {
 			if (!mvEdges.containsKey(edgeId)) {
 				MVEdge mvEdge = new MVEngineEdge(edge, this);
@@ -122,12 +133,12 @@ public class MVEngineGraph implements MVGraph {
 	}
 	
 	@Override
-	public MVEdge getMVEdgeRecursive(Edge edge) {
-		if (edge.getGraph() == graph) {
-			return getMVEdge(edge.getId());
+	public MVEdge getMVEdgeRecursive(Edge engineEdge) {
+		if (engineEdge.getGraph() == engineGraph) {
+			return getMVEdge(engineEdge.getId());
 		} else {
 			for (MVGraph mvSubgraph : getMVSubgraphs().values()) {
-				MVEdge mvEdge = mvSubgraph.getMVEdgeRecursive(edge);
+				MVEdge mvEdge = mvSubgraph.getMVEdgeRecursive(engineEdge);
 				if (mvEdge != null) {
 					return mvEdge;
 				}
@@ -135,15 +146,35 @@ public class MVEngineGraph implements MVGraph {
 			return null;
 		}
 	}
-	
+
+	@Override
+	public MVGraph getMVGraphRecursive(TransformationGraph engineGraph) {
+		if (this.engineGraph == engineGraph) {
+			return this;
+		} else {
+			for (MVGraph mvSubgraph : getMVSubgraphs().values()) {
+				MVGraph mvGraph = mvSubgraph.getMVGraphRecursive(engineGraph);
+				if (mvGraph != null) {
+					return mvGraph;
+				}
+			}
+			return null;
+		}
+	}
+
 	@Override
 	public MVMetadata createMVMetadata(DataRecordMetadata metadata) {
-		return new MVEngineMetadata(metadata);
+		return createMVMetadata(metadata, MVMetadata.DEFAULT_PRIORITY);
 	}
 
 	@Override
 	public MVMetadata createMVMetadata(DataRecordMetadata metadata, int priority) {
-		return new MVEngineMetadata(metadata, priority);
+		return new MVEngineMetadata(metadata, this, priority);
+	}
+
+	@Override
+	public MVComponent getParentMVSubgraphComponent() {
+		return parentMVSubgraphComponent;
 	}
 
 }
