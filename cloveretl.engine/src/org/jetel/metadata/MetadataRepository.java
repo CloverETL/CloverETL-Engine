@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.Node;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.string.StringUtils;
@@ -90,11 +91,13 @@ public class MetadataRepository {
 	}
 	
 	/**
-	 * @param metadataId
-	 * @param componentType
+	 * @param metadataId identifier of registered metadata
+	 * @param component associated component
 	 * @return metadata instance associated with given id and component type.
 	 */
-	public static DataRecordMetadata getMetadata(String metadataId, String componentType) {
+	public static DataRecordMetadata getMetadata(String metadataId, Node component) {
+		String componentType = component.getType();
+		String componentName = component.getDescriptor().getDescription() != null ? component.getDescriptor().getDescription().getName() : componentType;
 		String resultedMetadataId = getMetadataId(metadataId, componentType);
 		if (metadataCache.containsKey(resultedMetadataId)) {
 			return metadataCache.get(resultedMetadataId);
@@ -103,7 +106,7 @@ public class MetadataRepository {
 			if (registeredMetadata != null) {
 				DataRecordMetadata metadata = registeredMetadata.duplicate();
 				metadata.setId(resultedMetadataId);
-				metadata.setName(getMetadataName(metadata.getName(), componentType));
+				metadata.setName(getMetadataName(metadata.getName(), componentName));
 				metadataCache.put(resultedMetadataId, metadata);
 				return metadata;
 			} else {
