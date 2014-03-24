@@ -151,7 +151,7 @@ public class MVEngineComponent implements MVComponent {
 	 * @return metadata from static metadata repository
 	 */
 	private MVMetadata getStaticMetadata(String metadataId) {
-		DataRecordMetadata metadata = MetadataRepository.getMetadata(metadataId, engineComponent.getDescriptor().getDescription().getName());
+		DataRecordMetadata metadata = MetadataRepository.getMetadata(metadataId, engineComponent);
 		if (metadata != null) {
 			return parentMVGraph.createMVMetadata(metadata);
 		} else {
