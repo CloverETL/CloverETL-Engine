@@ -53,6 +53,9 @@ public class MVEngineComponent implements MVComponent {
 	private MVGraph parentMVGraph;
 	
 	MVEngineComponent(Node engineComponent, MVGraph parentMVGraph) {
+		if (engineComponent == null || parentMVGraph == null) {
+			throw new IllegalArgumentException("MVEngineComponent init failed");
+		}
 		this.engineComponent = engineComponent;
 		this.parentMVGraph = parentMVGraph;
 
@@ -70,6 +73,11 @@ public class MVEngineComponent implements MVComponent {
 	@Override
 	public Node getModel() {
 		return engineComponent;
+	}
+	
+	@Override
+	public String getId() {
+		return engineComponent.getId();
 	}
 	
 	@Override
@@ -143,17 +151,19 @@ public class MVEngineComponent implements MVComponent {
 	 * @return metadata from static metadata repository
 	 */
 	private MVMetadata getStaticMetadata(String metadataId) {
-		if (MetadataRepository.contains(metadataId)) {
-			//get static metadata from repository and create duplicate
-			DataRecordMetadata metadata = MetadataRepository.getMetadata(metadataId).duplicate();
-			//update metadata name to be more descriptive
-			metadata.setName(engineComponent.getDescriptor().getDescription().getName() + "_" + metadata.getName());
+		DataRecordMetadata metadata = MetadataRepository.getMetadata(metadataId, engineComponent.getDescriptor().getDescription().getName());
+		if (metadata != null) {
 			return parentMVGraph.createMVMetadata(metadata);
 		} else {
 			return null;
 		}
 	}
 	
+	@Override
+	public MVGraph getParentMVGraph() {
+		return parentMVGraph;
+	}
+
 	@Override
 	public int hashCode() {
 		return engineComponent.hashCodeIdentity();

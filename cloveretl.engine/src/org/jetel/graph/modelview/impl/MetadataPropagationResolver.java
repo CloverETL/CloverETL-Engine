@@ -19,6 +19,8 @@
 package org.jetel.graph.modelview.impl;
 
 import org.jetel.graph.Edge;
+import org.jetel.graph.IGraphElement;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
@@ -172,11 +174,32 @@ public class MetadataPropagationResolver {
 	}
 
 	/**
-	 * @param metadata
-	 * @return MV representation of the given metadata
+	 * Creates MV model for given metadata.
+	 * @param metadata wrapped metadata instance
+	 * @param relatedGraphElement graph element which request this operation (it is necessary to detect logical parent graph of the metadata)
+	 * @param identification string identifier of the metadata - should be unique in the scope of the relatedGraphElement
+	 * @return MV model for given metadata
 	 */
-	public MVMetadata createMVMetadata(DataRecordMetadata metadata) {
-		return mvGraph.createMVMetadata(metadata);
+	public MVMetadata createMVMetadata(DataRecordMetadata metadata, IGraphElement relatedGraphElement, String identification) {
+		return createMVMetadata(metadata, relatedGraphElement, identification, MVMetadata.DEFAULT_PRIORITY);
+	}
+
+	/**
+	 * Creates MV model for given metadata.
+	 * @param metadata wrapped metadata instance
+	 * @param relatedGraphElement graph element which request this operation (it is necessary to detect logical parent graph of the metadata)
+	 * @param identification string identifier of the metadata - should be unique in the scope of the relatedGraphElement
+	 * @param priority priority of the metadata
+	 * @return MV model for given metadata
+	 */
+	public MVMetadata createMVMetadata(DataRecordMetadata metadata, IGraphElement relatedGraphElement, String identification, int priority) {
+		TransformationGraph parentEngineGraph = metadata.getGraph();
+		if (parentEngineGraph == null) {
+			parentEngineGraph = relatedGraphElement.getGraph();
+			metadata.setId("__dynamic_metadata_" + relatedGraphElement.getId() + "_" + (identification != null ? identification : metadata.getName()));
+		}
+		MVGraph parentMVGraph = mvGraph.getMVGraphRecursive(parentEngineGraph);
+		return new MVEngineMetadata(metadata, parentMVGraph, priority);
 	}
 
 	/**
@@ -189,6 +212,13 @@ public class MetadataPropagationResolver {
 		} else {
 			return null;
 		}
+	}
+	
+	/**
+	 * @return root graph for this metadata propagation
+	 */
+	public MVGraph getRootMVGraph() {
+		return mvGraph;
 	}
 	
 }

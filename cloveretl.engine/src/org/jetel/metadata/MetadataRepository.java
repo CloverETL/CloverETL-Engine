@@ -44,8 +44,20 @@ public class MetadataRepository {
 
     public final static String EXTENSION_POINT_ID = "metadata";
 
-	public static Map<String, DataRecordMetadata> metadataRepository = new HashMap<String, DataRecordMetadata>();
+	/**
+	 * This map contains metadata registered in all plugin.xml 
+	 */
+	private static Map<String, DataRecordMetadata> registeredMetadata = new HashMap<String, DataRecordMetadata>();
+
+	/**
+	 * This map contains provided metadata by this repository, where registered metadata are duplicated
+	 * with updated identifier according requested component type, see {@link #getMetadata(String, String)}.
+	 */
+	private static Map<String, DataRecordMetadata> metadataCache = new HashMap<String, DataRecordMetadata>();
 	
+	/**
+	 * Loads all metadata from all plugin.xml
+	 */
 	public static void init() {
         //ask plugin framework for metadata
         List<Extension> extensions = Plugins.getExtensions(EXTENSION_POINT_ID);
@@ -61,10 +73,10 @@ public class MetadataRepository {
         }
 	}
 	
-	public static void registerMetadata(DataRecordMetadata metadata) {
+	private static void registerMetadata(DataRecordMetadata metadata) {
 		if (!StringUtils.isEmpty(metadata.getId())) {
-			if (!metadataRepository.containsKey(metadata.getId())) {
-				metadataRepository.put(metadata.getId(), metadata);
+			if (!registeredMetadata.containsKey(metadata.getId())) {
+				registeredMetadata.put(metadata.getId(), metadata);
 			} else {
 				throw new JetelRuntimeException("Metadata with ID '" + metadata.getId() + "' are already registered in repository."); 
 			}
@@ -73,20 +85,46 @@ public class MetadataRepository {
 		}
 	}
 
-	public static boolean contains(String metadataId) {
-		return metadataRepository.containsKey(metadataId);
-	}
-
-	/**
-	 * @param metadataId
-	 * @return
-	 */
-	public static DataRecordMetadata getMetadata(String metadataId) {
-		return metadataRepository.get(metadataId);
+	private static DataRecordMetadata getRegisteredMetadata(String registeredMetadataId) {
+		return registeredMetadata.get(registeredMetadataId);
 	}
 	
-	public static List<DataRecordMetadata> getAllMetadata() {
-		return new ArrayList<DataRecordMetadata>(metadataRepository.values());
+	/**
+	 * @param metadataId
+	 * @param componentType
+	 * @return metadata instance associated with given id and component type.
+	 */
+	public static DataRecordMetadata getMetadata(String metadataId, String componentType) {
+		String resultedMetadataId = getMetadataId(metadataId, componentType);
+		if (metadataCache.containsKey(resultedMetadataId)) {
+			return metadataCache.get(resultedMetadataId);
+		} else {
+			DataRecordMetadata registeredMetadata = getRegisteredMetadata(metadataId);
+			if (registeredMetadata != null) {
+				DataRecordMetadata metadata = registeredMetadata.duplicate();
+				metadata.setId(resultedMetadataId);
+				metadata.setName(getMetadataName(metadata.getName(), componentType));
+				metadataCache.put(resultedMetadataId, metadata);
+				return metadata;
+			} else {
+				return null;
+			}
+		}
+	}
+	
+	private static String getMetadataId(String registeredMetadataId, String componentType) {
+		return "__static_metadata_" + componentType + "_" + registeredMetadataId;
+	}
+	
+	private static String getMetadataName(String rawMetadataId, String componentType) {
+		return componentType + "_" + rawMetadataId;
+	}
+	
+	/**
+	 * @return all registered metadata
+	 */
+	public static List<DataRecordMetadata> getAllRegisteredMetadata() {
+		return new ArrayList<DataRecordMetadata>(registeredMetadata.values());
 	}
 	
 }

@@ -97,7 +97,7 @@ public class TransformationGraphAnalyzer {
 		//perform automatic metadata propagation
 		if (propagateMetadata) {
 			//create model view for the graph
-			MVGraph mvGraph = new MVEngineGraph(graph);
+			MVGraph mvGraph = new MVEngineGraph(graph, null);
 			//first analyse subgraphs calling hierarchy - cannot be recursive
 			TransformationGraphAnalyzer.analyseSubgraphCallingHierarchy(mvGraph);
 			try {

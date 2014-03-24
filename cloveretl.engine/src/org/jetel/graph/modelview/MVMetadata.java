@@ -50,6 +50,11 @@ public interface MVMetadata extends MVGraphElement {
 	public static final int ZERO_PRIORITY = 0;
 
 	/**
+	 * Default metadata priority.
+	 */
+	public static final int DEFAULT_PRIORITY = LOW_PRIORITY;
+
+	/**
 	 * @return wrapped metadata, either DataRecordMetadata or GraphMetadata
 	 */
 	@Override
@@ -79,11 +84,6 @@ public interface MVMetadata extends MVGraphElement {
 	public void setPriority(int priority);
 	
 	/**
-	 * Sets metadata identifier.
-	 */
-	public void setId(String id);
-	
-	/**
 	 * Appends the given graph element to metadata origin path.
 	 * Origin path is list of graph elements which were used for automatic metadata propagation for this metadata.
 	 * @param graphElement
@@ -102,5 +102,10 @@ public interface MVMetadata extends MVGraphElement {
 	 * @return origin path for this metadata
 	 */
 	public List<MVGraphElement> getOriginPath();
+	
+	/**
+	 * @return parent graph for this metadata
+	 */
+	public MVGraph getParentMVGraph();
 	
 }
