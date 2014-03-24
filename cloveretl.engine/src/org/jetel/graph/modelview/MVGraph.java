@@ -60,7 +60,13 @@ public interface MVGraph extends MVGraphElement {
 	 * @param edge requested edge
 	 * @return MV representation of the requested edge; the edge can be also from a subgraph 
 	 */
-	public MVEdge getMVEdgeRecursive(Edge edge);
+	public MVEdge getMVEdgeRecursive(Edge engineEdge);
+
+	/**
+	 * @param engineGraph
+	 * @return MV representation of the requested graph; the model is searched recursively in graph hierarchy 
+	 */
+	public MVGraph getMVGraphRecursive(TransformationGraph engineGraph);
 
 	/**
 	 * @param metadata
@@ -74,5 +80,10 @@ public interface MVGraph extends MVGraphElement {
 	 * @return newly created MV representation of given metadata 
 	 */
 	public MVMetadata createMVMetadata(DataRecordMetadata metadata, int priority);
+	
+	/**
+	 * @return model for subgraph component from parent graph, which represents this graph or null for top-level graphs
+	 */
+	public MVComponent getParentMVSubgraphComponent();
 	
 }

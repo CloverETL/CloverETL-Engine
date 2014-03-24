@@ -85,7 +85,7 @@ public class TreeReaderErrMetadataProvider extends AbstractMultiMetadataProvider
 		if (portIndex == component.getOutPorts().size() - 1) {
 			List<MVMetadata> result = new ArrayList<>();
 			for (DataRecordMetadata metadata : allMetadata) {
-				result.add(metadataPropagationResolver.createMVMetadata(metadata));
+				result.add(metadataPropagationResolver.createMVMetadata(metadata, component, null));
 			}
 			return result;
 		} else {

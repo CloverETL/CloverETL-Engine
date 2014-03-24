@@ -26,7 +26,10 @@ import org.jetel.component.RemoteEdgeComponent;
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.metadata.DataRecordMetadata;
@@ -638,7 +641,13 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
-        //TODO
+        
+        //check phase order
+        if (reader.getPhaseNum() < writer.getPhaseNum()) {
+        	status.add(new ConfigurationProblem("Invalid phase order", Severity.ERROR, reader, Priority.NORMAL));
+        	status.add(new ConfigurationProblem("Invalid phase order", Severity.ERROR, writer, Priority.NORMAL));
+        }
+        
         return status;
     }
 
