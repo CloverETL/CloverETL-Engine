@@ -72,10 +72,14 @@ public abstract class PortData {
 				}
 			}
 		} else {
-			if (hint == null && hasNullKeyOnly(keys)) {
-				return new StreamedSimplePortData(inPort, keys);
+			if (hasNullKeyOnly(keys)) {
+				return new StreamedSimplePortData(inPort, keys, hint);
 			} else {
-				return new StreamedPortData(inPort, keys, hint);
+				if (inMemory) {
+					return new InternalStreamedPortData(inPort, keys, hint);
+				} else {
+					return new StreamedPortData(inPort, keys, hint);
+				}
 			}
 		}
 	}
@@ -126,10 +130,10 @@ public abstract class PortData {
 	public void preExecute() throws ComponentNotReadyException {
 	}
 	
-	public void postExecute() throws ComponentNotReadyException {		
+	public void postExecute() throws ComponentNotReadyException {
 	}
 	
-	public void free() {		
+	public void free() {
 	}
 	
 	public void setSharedCache(CacheRecordManager sharedCache) {
@@ -147,10 +151,6 @@ public abstract class PortData {
 	}
 	
 	private int[] resolveKey(DataRecordMetadata metadata, List<String> key) {
-		int[] resolvedKey = new int[key.size()];
-		for (int i = 0; i < key.size(); i++) {
-			resolvedKey[i] = metadata.getFieldPosition(key.get(i));
-		}
-		return resolvedKey;
+		return metadata.fieldsIndices(key.toArray(new String[key.size()]));
 	}
 }
