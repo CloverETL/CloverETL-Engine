@@ -82,11 +82,13 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
-		boolean removeSubgraphDebugNodes = runtimeContext.isSubJob();
-		boolean layoutChecking = runtimeContext.getJobType() == JobType.SUBGRAPH || runtimeContext.getJobType() == JobType.SUBJOBFLOW;
-		if (removeSubgraphDebugNodes || layoutChecking) {
+		boolean subJobRuntime = runtimeContext.isSubJob();
+		boolean subJobFile = runtimeContext.getJobType() == JobType.SUBGRAPH || runtimeContext.getJobType() == JobType.SUBJOBFLOW || graph.getJobType() == JobType.SUBGRAPH || graph.getJobType() == JobType.SUBJOBFLOW;
+		if (subJobRuntime || subJobFile) {
 			try {
-				TransformationGraphAnalyzer.analyseSubgraph(graph, removeSubgraphDebugNodes, layoutChecking);
+				boolean removeDebugNodes = subJobRuntime;
+				boolean layoutChecking = subJobFile;
+				TransformationGraphAnalyzer.analyseSubgraph(graph, removeDebugNodes, layoutChecking);
 			} catch (Exception e) {
 				throw new JetelRuntimeException("Subgraph analysis failed.", e);
 			}
@@ -95,7 +97,7 @@ public class TransformationGraphAnalyzer {
 		//perform automatic metadata propagation
 		if (propagateMetadata) {
 			//create model view for the graph
-			MVGraph mvGraph = new MVEngineGraph(graph);
+			MVGraph mvGraph = new MVEngineGraph(graph, null);
 			//first analyse subgraphs calling hierarchy - cannot be recursive
 			TransformationGraphAnalyzer.analyseSubgraphCallingHierarchy(mvGraph);
 			try {
@@ -472,7 +474,7 @@ public class TransformationGraphAnalyzer {
 			Node writer = edge.getWriter(); //can be null for remote edges
 			readerPhase = reader != null ? reader.getPhase() : null;
 			writerPhase = writer != null ? writer.getPhase() : null;
-			if (readerPhase != writerPhase) {
+			if (readerPhase.getPhaseNum() > writerPhase.getPhaseNum()) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
 				edge.setEdgeType(EdgeTypeEnum.PHASE_CONNECTION);

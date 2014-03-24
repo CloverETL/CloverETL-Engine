@@ -46,6 +46,9 @@ public class MVEngineEdge implements MVEdge {
 	private MVGraph parentMVGraph;
 	
 	MVEngineEdge(Edge engineEdge, MVGraph parentMVGraph) {
+		if (engineEdge == null || parentMVGraph == null) {
+			throw new IllegalArgumentException("MVEngineEdge init failed");
+		}
 		this.engineEdge = engineEdge;
 		this.parentMVGraph = parentMVGraph;
 	}
@@ -53,6 +56,11 @@ public class MVEngineEdge implements MVEdge {
 	@Override
 	public Edge getModel() {
 		return engineEdge;
+	}
+	
+	@Override
+	public String getId() {
+		return engineEdge.getId();
 	}
 	
 	@Override

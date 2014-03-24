@@ -70,4 +70,9 @@ public interface MVComponent extends MVGraphElement {
 	 */
 	public MVMetadata getDefaultInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver);
 	
+	/**
+	 * @return parent graph of this component
+	 */
+	public MVGraph getParentMVGraph();
+
 }

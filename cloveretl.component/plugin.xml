@@ -2082,7 +2082,7 @@ Sends all resulting records to all connected output ports.</description>
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="Key" modifiable="true" name="key" nullable="true" redundant="groupSize">
-	        <singleType name="key" inputPortName="0" rightLabel="Key:"/>
+	        <singleType name="key" inputPortName="0" keyType="orderVerification" rightLabel="Key:" />
 	      </property>
 	      <property category="basic" displayName="Group size" modifiable="true" name="groupSize" nullable="true" redundant="key">
 	        <singleType name="int"/>

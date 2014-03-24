@@ -21,6 +21,7 @@ package org.jetel.graph.modelview.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVGraphElement;
 import org.jetel.graph.modelview.MVMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -41,12 +42,18 @@ public class MVEngineMetadata implements MVMetadata {
 	
 	private List<MVGraphElement> originPath;
 	
-	MVEngineMetadata(DataRecordMetadata metadata) {
-		this(metadata, LOW_PRIORITY);
+	private MVGraph parentMVGraph;
+	
+	MVEngineMetadata(DataRecordMetadata metadata, MVGraph parentMVGraph) {
+		this(metadata, null, DEFAULT_PRIORITY);
 	}
 	
-	MVEngineMetadata(DataRecordMetadata metadata, int priority) {
+	MVEngineMetadata(DataRecordMetadata metadata, MVGraph parentMVGraph, int priority) {
+		if (metadata == null) {
+			throw new IllegalArgumentException("MVEngineMetadata init failed");
+		}
 		this.metadata = metadata;
+		this.parentMVGraph = parentMVGraph;
 		this.priority = priority;
 		originPath = new ArrayList<MVGraphElement>();
 	}
@@ -63,7 +70,7 @@ public class MVEngineMetadata implements MVMetadata {
 	
 	@Override
 	public MVMetadata duplicate() {
-		MVEngineMetadata result = new MVEngineMetadata(metadata, priority);
+		MVEngineMetadata result = new MVEngineMetadata(metadata, parentMVGraph, priority);
 		if (originPath != null) {
 			result.originPath = new ArrayList<MVGraphElement>(originPath);
 		}
@@ -81,10 +88,10 @@ public class MVEngineMetadata implements MVMetadata {
 	}
 	
 	@Override
-	public void setId(String id) {
-		metadata.setId(id);
+	public String getId() {
+		return metadata.getId();
 	}
-
+	
 	@Override
 	public void addToOriginPath(MVGraphElement graphElement) {
 		if (graphElement != null) { 
@@ -107,6 +114,11 @@ public class MVEngineMetadata implements MVMetadata {
 	@Override
 	public String toString() {
 		return metadata.toString();
+	}
+	
+	@Override
+	public MVGraph getParentMVGraph() {
+		return parentMVGraph;
 	}
 	
 }

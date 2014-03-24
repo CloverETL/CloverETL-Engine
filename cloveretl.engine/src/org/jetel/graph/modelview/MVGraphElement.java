@@ -38,6 +38,11 @@ public interface MVGraphElement {
 	public IGraphElement getModel();
 	
 	/**
+	 * @return identifier of this graph element
+	 */
+	public String getId();
+	
+	/**
 	 * Resets recursively all graph elements in this model view. 
 	 */
 	public void reset();
