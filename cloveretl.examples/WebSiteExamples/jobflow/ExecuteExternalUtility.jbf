@@ -1,36 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Tue Jul 31 12:42:20 CEST 2012" guiVersion="0.0.0.devel" id="1343731451896" licenseType="Commercial" modified="Mon Jan 13 16:49:33 CET 2014" modifiedBy="User" name="example09_A" nature="jobflow" revision="1.77" showComponentDetails="true">
+<Graph author="Wesley" created="Tue Jul 31 12:42:20 CEST 2012" guiVersion="4.0.0.M1" id="1343731451896" licenseType="Commercial" modified="Tue Mar 25 14:13:07 CET 2014" modifiedBy="User" name="example09_A" nature="jobflow" revision="1.88" showComponentDetails="true">
 <Global>
-<Metadata id="ExecuteScript_RunResult">
-<Record fieldDelimiter="|" name="ExecuteScript_RunResult" recordDelimiter="\n" type="delimited">
-<Field name="stdOut" type="string"/>
-<Field name="errOut" type="string"/>
-<Field name="startTime" type="date"/>
-<Field name="endTime" type="date"/>
-<Field name="duration" type="long"/>
-<Field name="exitValue" type="long"/>
-<Field name="reachedTimeout" type="boolean"/>
-<Field name="errException" type="string"/>
-<Field name="errMessage" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="ListFiles_Result">
-<Record fieldDelimiter="|" name="ListFiles_Result" recordDelimiter="\n" type="delimited">
-<Field name="uri" type="string"/>
-<Field name="name" type="string"/>
-<Field name="canRead" type="boolean"/>
-<Field name="canWrite" type="boolean"/>
-<Field name="canExecute" type="boolean"/>
-<Field name="isDirectory" type="boolean"/>
-<Field name="isFile" type="boolean"/>
-<Field name="isHidden" type="boolean"/>
-<Field name="lastModified" type="date"/>
-<Field name="size" type="long"/>
-<Field name="result" type="boolean"/>
-<Field name="errorMessage" type="string"/>
-<Field name="listTarget" type="string"/>
-</Record>
-</Metadata>
 <Metadata id="Metadata0">
 <Record fieldDelimiter="|" name="recordName" recordDelimiter="\n" type="delimited">
 <Field name="filePath" type="string"/>
@@ -83,7 +53,7 @@ Check server OS and decide which external command to execute]]></attr>
 
 // Transforms input record into output record.
 function integer transform() {
-	$out.0.filePath = toAbsolutePath($in.0.uri);
+	$out.0.filePath = toAbsolutePath($in.0.URL);
 	$out.0.fileName = $in.0.name;
 
 	return OK;
@@ -240,7 +210,7 @@ function integer transform() {
 </Node>
 <Node enabled="enabled" guiName="Job Complete" guiX="863" guiY="304" id="JOB_COMPLETE1" type="SUCCESS"/>
 <Node enabled="enabled" guiName="Job Complete" guiX="863" guiY="399" id="JOB_COMPLETE2" type="SUCCESS"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/ExecuteExternalUtility" guiName="List Files" guiX="17" guiY="304" id="LIST_FILES" type="LIST_FILES">
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/ExecuteExternalUtility" guiName="List Files" guiX="17" guiY="304" id="LIST_FILES" target="${DATAIN_09_DIR}" type="LIST_FILES">
 <attr name="standardOutputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -256,7 +226,7 @@ function integer transform() {
 	$out.0.size = $in.1.size;
 	$out.0.result = $in.1.result;
 	$out.0.errorMessage = $in.1.errorMessage;
-	$out.0.uri = $in.1.URL;
+	$out.0.URL = $in.1.URL;
 
 	return OK;
 }
@@ -279,7 +249,6 @@ function integer transform() {
 // Called to return a user-defined error message when an error occurs.
 // function string getMessage() {}
 ]]></attr>
-<attr name="target"><![CDATA[${DATAIN_09_DIR}]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Select by OS" guiX="389" guiY="304" id="SELECT_BY_OS" type="CONDITION">
 <attr name="filterExpression"><![CDATA[//#CTL2
@@ -287,10 +256,10 @@ lowerCase(getJavaProperties()["os.name"]).indexOf("win") >= 0
 ]]></attr>
 </Node>
 <Edge debugMode="true" fromNode="FORMAT_FILE_PATH:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SELECT_BY_OS:0"/>
-<Edge debugMode="true" fromNode="GET_MD5_SIGNATURE_UNIX1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="ExecuteScript_RunResult" outPort="Port 0 (out)" toNode="JOB_COMPLETE2:0"/>
-<Edge debugMode="true" fromNode="GET_MD5_SIGNATURE_WINDOWS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="ExecuteScript_RunResult" outPort="Port 0 (out)" toNode="JOB_COMPLETE1:0"/>
-<Edge debugMode="true" fromNode="LIST_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ListFiles_Result" outPort="Port 0 (out)" toNode="FORMAT_FILE_PATH:0"/>
-<Edge debugMode="true" fromNode="SELECT_BY_OS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (true)" toNode="GET_MD5_SIGNATURE_WINDOWS:0"/>
-<Edge debugMode="true" fromNode="SELECT_BY_OS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (false)" toNode="GET_MD5_SIGNATURE_UNIX1:0"/>
+<Edge debugMode="true" fromNode="GET_MD5_SIGNATURE_UNIX1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="JOB_COMPLETE2:0"/>
+<Edge debugMode="true" fromNode="GET_MD5_SIGNATURE_WINDOWS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="JOB_COMPLETE1:0"/>
+<Edge debugMode="true" fromNode="LIST_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="FORMAT_FILE_PATH:0"/>
+<Edge debugMode="true" fromNode="SELECT_BY_OS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (true)" toNode="GET_MD5_SIGNATURE_WINDOWS:0"/>
+<Edge debugMode="true" fromNode="SELECT_BY_OS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 1 (false)" toNode="GET_MD5_SIGNATURE_UNIX1:0"/>
 </Phase>
 </Graph>

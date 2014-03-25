@@ -1,22 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="0.0.0.devel" id="1343742976656" licenseType="Commercial" modified="Mon Jan 13 16:49:40 CET 2014" modifiedBy="User" name="example01_A" nature="jobflow" revision="1.80" showComponentDetails="true">
+<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="4.0.0.M1" id="1343742976656" licenseType="Commercial" modified="Tue Mar 25 13:52:04 CET 2014" modifiedBy="User" name="example01_A" nature="jobflow" revision="1.87" showComponentDetails="true">
 <Global>
-<Metadata id="CopyFiles_Result1">
-<Record fieldDelimiter="|" name="CopyFiles_Result" recordDelimiter="\n" type="delimited">
-<Field name="sourceURL" type="string"/>
-<Field name="targetURL" type="string"/>
-<Field name="resultURL" type="string"/>
-<Field name="result" type="boolean"/>
-<Field name="errorMessage" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="DeleteFiles_Result">
-<Record fieldDelimiter="|" name="DeleteFiles_Result" recordDelimiter="\n" type="delimited">
-<Field name="fileURL" type="string"/>
-<Field name="result" type="boolean"/>
-<Field name="errorMessage" type="string"/>
-</Record>
-</Metadata>
 <Metadata id="ExecuteGraph_RunStatus" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
 <Field eofAsDelimiter="false" name="runId" nullable="true" shift="0" size="0" type="long"/>
@@ -30,22 +14,6 @@
 <Field eofAsDelimiter="false" name="errComponent" nullable="true" shift="0" size="0" type="string"/>
 <Field eofAsDelimiter="false" name="errComponentType" nullable="true" shift="0" size="0" type="string"/>
 <Field eofAsDelimiter="false" name="dtFileInfo" nullable="true" shift="0" size="0" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="ListFiles_Result">
-<Record fieldDelimiter="|" name="ListFiles_Result" recordDelimiter="\n" type="delimited">
-<Field name="URL" type="string"/>
-<Field name="name" type="string"/>
-<Field name="canRead" type="boolean"/>
-<Field name="canWrite" type="boolean"/>
-<Field name="canExecute" type="boolean"/>
-<Field name="isDirectory" type="boolean"/>
-<Field name="isFile" type="boolean"/>
-<Field name="isHidden" type="boolean"/>
-<Field format="yyyy-MM-dd HH:mm:ss" name="lastModified" type="date"/>
-<Field name="size" type="long"/>
-<Field name="result" type="boolean"/>
-<Field name="errorMessage" type="string"/>
 </Record>
 </Metadata>
 <GraphParameters>
@@ -209,8 +177,8 @@ function integer transform() {
 
 // Transforms input record into output record.
 function integer transform() {
-	$out.0.result = $in.0.result;
-	$out.0.errorMessage = $in.0.errorMessage;
+	$out.0.result = $in.1.result;
+	$out.0.errorMessage = $in.1.errorMessage;
 	$out.0.URL = $in.1.URL;
 	$out.0.name = $in.1.name;
 	$out.0.canRead = $in.1.canRead;
@@ -315,10 +283,10 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="COPY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="CopyFiles_Result1" outPort="Port 0 (out)" toNode="LIST_FILES0:0"/>
-<Edge debugMode="true" fromNode="DELETE_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="DeleteFiles_Result" outPort="Port 0 (out)" toNode="FILE_PROCESSING_COMPLETE:0"/>
-<Edge debugMode="true" fromNode="LIST_FILES0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ListFiles_Result" outPort="Port 0 (out)" toNode="ONLY_FILES:0"/>
-<Edge fromNode="ONLY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="ListFiles_Result" outPort="Port 0 (true)" toNode="PROCESS_EACH_FILE:0"/>
+<Edge debugMode="true" fromNode="COPY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="LIST_FILES0:0"/>
+<Edge debugMode="true" fromNode="DELETE_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="FILE_PROCESSING_COMPLETE:0"/>
+<Edge debugMode="true" fromNode="LIST_FILES0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="ONLY_FILES:0"/>
+<Edge fromNode="ONLY_FILES:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (true)" toNode="PROCESS_EACH_FILE:0"/>
 <Edge debugMode="true" fromNode="PROCESS_EACH_FILE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="DELETE_FILES:0"/>
 </Phase>
 </Graph>
