@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Commercial" modified="Mon Jan 13 16:48:42 CET 2014" modifiedBy="User" name="CreditCards" revision="1.120" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="4.0.0.M1" id="1279697274740" licenseType="Commercial" modified="Tue Mar 25 11:23:12 CET 2014" modifiedBy="User" name="CreditCards" revision="1.122" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
@@ -303,19 +303,19 @@ function integer getOutputPort() {
 ]]></attr>
 </Node>
 <Node aggregateKey="customer_id" enabled="enabled" guiName="Sum Transactions by Customer" guiX="856" guiY="706" id="SUM_TRANSACTIONS_BY_CUSTOMER" mapping="$customer_id:=$customer_id;$customer_last_name:=first($customer_last_name);$customer_first_name:=first($customer_first_name);$amount:=sum($amount);$currency:=&quot;€&quot;;" type="AGGREGATE"/>
-<Edge debugMode="false" fromNode="AMOUNT_400K:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="SORT_AMOUNT_DESCENDING:0"/>
+<Edge debugMode="false" fromNode="AMOUNT_400K:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="SORT_AMOUNT_DESCENDING:0"/>
 <Edge debugMode="true" fromNode="CONVERT_CURRENCY:0" guiBendpoints="1004:731|1004:992|331:992|331:1235" guiLocks="1022|349|745" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SPLIT_RECORD_BY_LOGIC:0"/>
 <Edge debugMode="true" fromNode="FORMAT_FIELDS:0" guiBendpoints="717:688|717:387" guiLocks="753|null|null" guiRouter="Manual" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (out)" toNode="CONVERT_CURRENCY:1"/>
-<Edge fromNode="FORMAT_FIELDS_FOR_OUTPUT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="MISSING_CUSTOMER_ID:0"/>
+<Edge fromNode="FORMAT_FIELDS_FOR_OUTPUT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" outPort="Port 0 (out)" toNode="MISSING_CUSTOMER_ID:0"/>
 <Edge debugMode="false" fromNode="LOAD_CUSTOMER_DETAILS:0" guiBendpoints="401:268|401:188" guiLocks="452|null|null" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:1"/>
 <Edge debugMode="true" fromNode="LOAD_ONLINE_EXCHANGE_RATES1:0" guiBendpoints="17:0|17:-104|363:-104|363:-69" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="FORMAT_FIELDS:0"/>
 <Edge debugMode="false" fromNode="LOAD_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (output)" toNode="SORT_TRANSACTIONS:0"/>
 <Edge debugMode="true" fromNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:0" guiBendpoints="39:0|39:119" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="CONVERT_CURRENCY:0"/>
-<Edge debugMode="false" fromNode="SORT_AMOUNT_DESCENDING:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="RISKY_CUSTOMERS1:0"/>
-<Edge debugMode="true" fromNode="SORT_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (out)" toNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:0"/>
-<Edge debugMode="true" fromNode="SPLIT_RECORD_BY_LOGIC:0" guiBendpoints="1304:729|1304:881" guiLocks="1304|237|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="FORMAT_FIELDS_FOR_OUTPUT:0"/>
-<Edge debugMode="false" fromNode="SPLIT_RECORD_BY_LOGIC:1" guiBendpoints="1179:383|1179:578" guiLocks="1215|307|null" guiRouter="Manual" id="Edge9" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 1 (out)" toNode="INCORRECT_CURRENCY:0"/>
-<Edge debugMode="true" fromNode="SPLIT_RECORD_BY_LOGIC:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="SUM_TRANSACTIONS_BY_CUSTOMER:0"/>
+<Edge debugMode="false" fromNode="SORT_AMOUNT_DESCENDING:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" outPort="Port 0 (out)" toNode="RISKY_CUSTOMERS1:0"/>
+<Edge debugMode="true" fromNode="SORT_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" outPort="Port 0 (out)" toNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:0"/>
+<Edge debugMode="true" fromNode="SPLIT_RECORD_BY_LOGIC:0" guiBendpoints="1304:729|1304:881" guiLocks="1304|237|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="FORMAT_FIELDS_FOR_OUTPUT:0"/>
+<Edge debugMode="false" fromNode="SPLIT_RECORD_BY_LOGIC:1" guiBendpoints="1179:383|1179:578" guiLocks="1215|307|null" guiRouter="Manual" id="Edge9" inPort="Port 0 (Body port)" outPort="Port 1 (out)" toNode="INCORRECT_CURRENCY:0"/>
+<Edge debugMode="true" fromNode="SPLIT_RECORD_BY_LOGIC:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 2 (out)" toNode="SUM_TRANSACTIONS_BY_CUSTOMER:0"/>
 <Edge debugMode="true" fromNode="SUM_TRANSACTIONS_BY_CUSTOMER:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="AMOUNT_400K:0"/>
 </Phase>
 </Graph>
