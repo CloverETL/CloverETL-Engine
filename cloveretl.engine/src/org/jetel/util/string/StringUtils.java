@@ -1634,7 +1634,28 @@ public class StringUtils {
 		if (str == null){
 			return null;
 		}
-		return str.replaceAll("[\\p{C}]+", ""); // CLO-1814 - previously "[^\\p{Print}]+"
+		
+		// CLO-1814, see comments on the issue
+		StringBuilder sb = new StringBuilder(str.length());
+		for (int i = 0; i < str.length(); i++) {
+			int codePoint = str.codePointAt(i);
+			switch (Character.getType(codePoint))
+		    {
+		        case Character.CONTROL:     // \p{Cc}
+		        case Character.FORMAT:      // \p{Cf}
+		        case Character.PRIVATE_USE: // \p{Co}
+		        case Character.SURROGATE:   // \p{Cs}
+		        case Character.UNASSIGNED:  // \p{Cn}
+		            break; // skip
+		        default:
+		            sb.appendCodePoint(codePoint);
+		            break;
+		    }
+		}
+		
+		return sb.toString();
+		// also removes low-surrogates
+//		return str.replaceAll("[\\p{C}]", ""); // CLO-1814 - previously "[^\\p{Print}]+"
 	}
 	
 	/**
