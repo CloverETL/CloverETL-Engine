@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Thu Jul 15 14:15:28 CEST 2010" guiVersion="0.0.0.devel" id="1279197992165" licenseType="Commercial" modified="Mon Jan 13 17:04:12 CET 2014" modifiedBy="User" name="graphJoining_Aggregating" revision="1.76" showComponentDetails="true">
+<Graph author="Petr" created="Thu Jul 15 14:15:28 CEST 2010" guiVersion="4.0.0.M1" id="1279197992165" licenseType="Commercial" modified="Tue Mar 25 14:39:43 CET 2014" modifiedBy="User" name="graphJoining_Aggregating" revision="1.77" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/categories.fmt" id="Metadata5"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
@@ -156,19 +156,19 @@ function getOutputPort() {
 <Node debugPrint="true" enabled="enabled" guiName="no customer order" guiX="587" guiY="474" id="TRASH2" type="TRASH"/>
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/Report.xlsx" guiName="Customers report" guiX="1166" guiY="496" id="XLS_WRITER0" namesRow="1" removeSheets="true" sheetName="Customers" type="XLS_WRITER"/>
 <Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="XLS_WRITER0:0"/>
-<Edge debugMode="true" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="PARTITION0:0"/>
+<Edge debugMode="true" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (only in A)" toNode="PARTITION0:0"/>
 <Edge debugMode="true" fromNode="DATA_INTERSECTION0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 1 (in A &amp; B)" toNode="AGGREGATE0:0"/>
-<Edge debugMode="true" fromNode="DATA_INTERSECTION0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (only in B)" toNode="TRASH2:0"/>
+<Edge debugMode="true" fromNode="DATA_INTERSECTION0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 2 (only in B)" toNode="TRASH2:0"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE0:0"/>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="MERGE0:1"/>
 <Edge fromNode="DATA_READER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="EXT_SORT0:0"/>
 <Edge fromNode="DATA_READER3:0" guiBendpoints="191:663|191:726" guiLocks="370|null|null" guiRouter="Manual" id="Edge12" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:0"/>
 <Edge fromNode="DATA_READER4:0" guiBendpoints="190:772|190:744" guiLocks="369|null|null" guiRouter="Manual" id="Edge13" inPort="Port 1 (slave)" metadata="Metadata5" outPort="Port 0 (output)" toNode="EXT_HASH_JOIN0:1"/>
 <Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (out)" toNode="XLS_WRITER1:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (set B)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
-<Edge debugMode="true" fromNode="MERGE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (set A)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
-<Edge debugMode="false" fromNode="PARTITION0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="false" fromNode="PARTITION0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (set B)" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
+<Edge debugMode="true" fromNode="MERGE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge16" inPort="Port 0 (set A)" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
+<Edge debugMode="false" fromNode="PARTITION0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="PARTITION0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${DATAOUT_DIR}/Report.xlsx" guiName="Products report" guiX="749" guiY="804" id="XLS_WRITER1" namesRow="1" sheetName="Products" type="XLS_WRITER">

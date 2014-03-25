@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="krivanekm" created="Fri May 20 11:52:48 CEST 2011" guiVersion="0.0.0.devel" id="1305887240084" licenseType="Commercial" modified="Mon Jan 13 17:04:39 CET 2014" modifiedBy="User" name="PackageDelivery" revision="1.78" showComponentDetails="true">
+<Graph author="krivanekm" created="Fri May 20 11:52:48 CEST 2011" guiVersion="4.0.0.M1" id="1305887240084" licenseType="Commercial" modified="Tue Mar 25 14:48:49 CET 2014" modifiedBy="User" name="PackageDelivery" revision="1.79" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="in_batch" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -308,7 +308,7 @@ function integer transform() {
 <Edge debugMode="true" fromNode="COMPLEX_DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:0"/>
 <Edge debugMode="true" fromNode="COMPLEX_DATA_READER0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 1 (out)" toNode="AGGREGATE0:0"/>
 <Edge debugMode="true" fromNode="COMPLEX_DATA_READER0:2" guiBendpoints="217:179|217:323" guiLocks="217|null|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 2 (out)" toNode="AGGREGATE1:0"/>
-<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (accepted)" toNode="TRASH1:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="TRASH1:0"/>
 <Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
 </Phase>
 </Graph>

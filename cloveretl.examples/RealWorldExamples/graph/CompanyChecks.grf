@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="0.0.0.devel" id="1224141158838" licenseType="Commercial" modified="Mon Jan 13 17:02:18 CET 2014" modifiedBy="User" name="CompanyChecks" revision="1.146" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 28 14:48:33 CEST 2010" guiVersion="4.0.0.M1" id="1224141158838" licenseType="Commercial" modified="Tue Mar 25 14:34:29 CET 2014" modifiedBy="User" name="CompanyChecks" revision="1.148" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="companyData" previewAttachmentCharset="ISO-8859-1" recordSize="469" type="delimited">
@@ -189,12 +189,12 @@ function transform() {
 </Node>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
 <Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="200:686|200:702" guiLocks="200|null|null" guiRouter="Manual" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
-<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (accepted)" toNode="DB_OUTPUT_TABLE0:0"/>
-<Edge debugMode="true" fromNode="EXT_FILTER0:1" guiBendpoints="680:500|680:592|207:592|207:684" guiLocks="680|207|592" guiRouter="Manual" id="Edge3" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 1 (rejected)" toNode="EXT_MERGE_JOIN0:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="DB_OUTPUT_TABLE0:0"/>
+<Edge debugMode="true" fromNode="EXT_FILTER0:1" guiBendpoints="680:500|680:592|207:592|207:684" guiLocks="680|207|592" guiRouter="Manual" id="Edge3" inPort="Port 0 (driver)" outPort="Port 1 (rejected)" toNode="EXT_MERGE_JOIN0:0"/>
 <Edge debugMode="false" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="66:0|66:2" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="700:699|700:774" guiLocks="700|null|null" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (out)" toNode="DB_OUTPUT_TABLE2:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 2 (out)" toNode="DB_OUTPUT_TABLE3:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="66:0|66:2" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="700:699|700:774" guiLocks="700|null|null" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="DB_OUTPUT_TABLE2:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 2 (out)" toNode="DB_OUTPUT_TABLE3:0"/>
 <Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
 </Phase>
 </Graph>
