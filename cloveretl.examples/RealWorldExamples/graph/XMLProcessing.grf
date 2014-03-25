@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="0.0.0.devel" id="1278077546166" licenseType="Commercial" modified="Mon Jan 13 17:05:21 CET 2014" modifiedBy="User" name="graphXMLProcessing" revision="1.72" showComponentDetails="true">
+<Graph author="Petr" created="Fri Jul 02 14:49:13 CEST 2010" guiVersion="4.0.0.M1" id="1278077546166" licenseType="Commercial" modified="Tue Mar 25 14:51:23 CET 2014" modifiedBy="User" name="graphXMLProcessing" revision="1.73" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata5" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter=";" name="actor" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -117,13 +117,13 @@ function transform() {
 </Mappings>
 ]]></attr>
 </Node>
-<Edge fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (unique)" toNode="EXT_XML_WRITER0:0"/>
+<Edge fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 0 (unique)" toNode="EXT_XML_WRITER0:0"/>
 <Edge debugMode="true" fromNode="EXT_HASH_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_XML_WRITER0:1"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
-<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="403:321|403:339" guiLocks="403|null|null" guiRouter="Manual" id="Edge2" inPort="Port 1 (slave)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
-<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (Body port)" metadata="Metadata0" outPort="Port 1 (out)" toNode="STRUCTURE_WRITER0:0"/>
-<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
-<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="408:236|408:321" guiLocks="408|null|null" guiRouter="Manual" id="Edge4" inPort="Port 0 (driver)" metadata="Metadata5" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="403:321|403:339" guiLocks="403|null|null" guiRouter="Manual" id="Edge2" inPort="Port 1 (slave)" outPort="Port 0 (out)" toNode="EXT_HASH_JOIN0:1"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (Body port)" outPort="Port 1 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="SIMPLE_COPY1:1" guiBendpoints="408:236|408:321" guiLocks="408|null|null" guiRouter="Manual" id="Edge4" inPort="Port 0 (driver)" outPort="Port 1 (out)" toNode="EXT_HASH_JOIN0:0"/>
 <Edge debugMode="true" fromNode="XML_EXTRACT0:0" guiBendpoints="214:290|214:222" guiLocks="214|null|null" guiRouter="Manual" id="Edge1" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="SIMPLE_COPY1:0"/>
 <Edge debugMode="true" fromNode="XML_EXTRACT0:1" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_COPY0:0"/>
 </Phase>
