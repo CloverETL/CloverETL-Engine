@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="0.0.0.devel" id="1343736408315" licenseType="Commercial" modified="Mon Jan 13 16:50:07 CET 2014" modifiedBy="User" name="example08_A" nature="jobflow" revision="1.51" showComponentDetails="true">
+<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="4.0.0.M1" id="1343736408315" licenseType="Commercial" modified="Tue Mar 25 13:54:03 CET 2014" modifiedBy="User" name="example08_A" nature="jobflow" revision="1.52" showComponentDetails="true">
 <Global>
 <Metadata id="ExecuteGraph_RunStatus">
 <Record fieldDelimiter="|" name="ExecuteGraph_RunStatus" recordDelimiter="\n" recordSize="-1" type="delimited">
@@ -353,10 +353,10 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Edge fromNode="CHECK_IF_SET:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (true)" toNode="LOG_INTO_SALESFORCE:0"/>
-<Edge fromNode="CHECK_IF_SET:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (false)" toNode="CREDENTIALS_MISSING:0"/>
+<Edge fromNode="CHECK_IF_SET:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (true)" toNode="LOG_INTO_SALESFORCE:0"/>
+<Edge fromNode="CHECK_IF_SET:1" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 1 (false)" toNode="CREDENTIALS_MISSING:0"/>
 <Edge fromNode="GET_FORCE_COM_CREDENTIALS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CHECK_IF_SET:0"/>
-<Edge debugMode="true" fromNode="LOGIN_SUCCESSFULL:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (true)" toNode="RETRIEVE_CONTACTS:0"/>
+<Edge debugMode="true" fromNode="LOGIN_SUCCESSFULL:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (true)" toNode="RETRIEVE_CONTACTS:0"/>
 <Edge debugMode="true" fromNode="LOGIN_SUCCESSFULL:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 1 (false)" toNode="SEND_EMAIL_IF_FAILED:0"/>
 <Edge debugMode="true" fromNode="LOG_INTO_SALESFORCE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="LOGIN_SUCCESSFULL:0"/>
 <Edge debugMode="true" fromNode="RETRIEVE_CONTACTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="ExecuteGraph_RunStatus" outPort="Port 0 (out)" toNode="UPDATE_DETAILS:0"/>

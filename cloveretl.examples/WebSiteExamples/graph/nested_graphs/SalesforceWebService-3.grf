@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="0.0.0.devel" id="1343740977688" licenseType="Commercial" modified="Mon Jan 13 16:54:14 CET 2014" modifiedBy="User" name="example08_3" revision="1.17" showComponentDetails="true">
+<Graph author="Wesley" created="Tue Jul 31 13:22:30 CEST 2012" guiVersion="4.0.0.M1" id="1343740977688" licenseType="Commercial" modified="Tue Mar 25 13:54:53 CET 2014" modifiedBy="User" name="example08_3" revision="1.18" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="recordName1" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -220,8 +220,8 @@ incl=http://www.w3.org/2004/08/xop/include]]></attr>
 </Mappings>
 ]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="EVALUATE_DESCRIPTION_FIELD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge23" inPort="Port 0 (request)" metadata="Metadata5" outPort="Port 0 (accepted)" toNode="UPDATE_DESCRIPTION_FIELD:0"/>
-<Edge debugMode="true" fromNode="EVALUATE_DESCRIPTION_FIELD:1" guiBendpoints="" guiRouter="Manhattan" id="Edge24" inPort="Port 0 (request)" metadata="Metadata5" outPort="Port 1 (rejected)" toNode="UPDATE_DESCRIPTION_FIELD1:0"/>
+<Edge debugMode="true" fromNode="EVALUATE_DESCRIPTION_FIELD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge23" inPort="Port 0 (request)" outPort="Port 0 (accepted)" toNode="UPDATE_DESCRIPTION_FIELD:0"/>
+<Edge debugMode="true" fromNode="EVALUATE_DESCRIPTION_FIELD:1" guiBendpoints="" guiRouter="Manhattan" id="Edge24" inPort="Port 0 (request)" outPort="Port 1 (rejected)" toNode="UPDATE_DESCRIPTION_FIELD1:0"/>
 <Edge debugMode="true" fromNode="GET_SALESFORCE_CREDENTIAL1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge22" inPort="Port 0 (request)" metadata="Metadata0" outPort="Port 0 (out)" toNode="RETRIEVE_A_CONTACT:0"/>
 <Edge debugMode="true" fromNode="RETRIEVE_A_CONTACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge21" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (response)" toNode="EVALUATE_DESCRIPTION_FIELD:0"/>
 <Edge debugMode="true" fromNode="UPDATE_DESCRIPTION_FIELD:0" guiBendpoints="" guiRouter="Manhattan" id="Edge25" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (response)" toNode="TRASH11:0"/>
