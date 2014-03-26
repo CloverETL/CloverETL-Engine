@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="0.0.0.devel" id="1280121426438" licenseType="Commercial" modified="Mon Jan 13 17:05:15 CET 2014" modifiedBy="User" name="graphWritingTextData" revision="1.51" showComponentDetails="true">
+<Graph author="lucie" created="Mon Jul 26 05:37:30 CEST 2010" guiVersion="4.0.0.M1" id="1280121426438" licenseType="Commercial" modified="Tue Mar 25 14:50:53 CET 2014" modifiedBy="User" name="graphWritingTextData" revision="1.52" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers_short.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
@@ -140,15 +140,15 @@ function integer transform() {
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/customers2/customers$.xml" footer="&lt;/dataset&gt;" guiName="by records per file" guiX="698" guiY="520" header="&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#13;&#10;&lt;dataset&gt;" id="STRUCTURE_WRITER0" makeDirs="true" mask="&lt; customers&gt;&#10;&#9;&lt;customerID&gt;$customerID&lt;/customerID&gt;&#10;&#9;&lt;firstname&gt;$firstname&lt;/firstname&gt;&#10;&#9;&lt;lastname&gt;$lastname&lt;/lastname&gt;&#10;&#9;&lt;address1&gt;$address1&lt;/address1&gt;&#10;&#9;&lt;address2&gt;$address2&lt;/address2&gt;&#10;&#9;&lt;city&gt;$city&lt;/city&gt;&#10;&#9;&lt;state&gt;$state&lt;/state&gt;&#10;&#9;&lt;zip&gt;$zip&lt;/zip&gt;&#10;&#9;&lt;country&gt;$country&lt;/country&gt;&#10;&#9;&lt;region&gt;$region&lt;/region&gt;&#10;&#9;&lt;email&gt;$email&lt;/email&gt;&#10;&#9;&lt;phone&gt;$phone&lt;/phone&gt;&#10;&#9;&lt;creditcardtype&gt;$creditcardtype&lt;/creditcardtype&gt;&#10;&#9;&lt;creditcard&gt;$creditcard&lt;/creditcard&gt;&#10;&#9;&lt;creditcardexpiration&gt;$creditcardexpiration&lt;/creditcardexpiration&gt;&#10;&#9;&lt;username&gt;$username&lt;/username&gt;&#10;&#9;&lt;password&gt;$password&lt;/password&gt;&#10;&#9;&lt;age&gt;$age&lt;/age&gt;&#10;&#9;&lt;income&gt;$income&lt;/income&gt;&#10;&#9;&lt;gender&gt;$gender&lt;/gender&gt;&#10;&lt;/customers&gt;&#10;" recordsPerFile="${FULL_FILE}" type="STRUCTURE_WRITER">
 <attr name="guiDescription"><![CDATA[The number of records per file is stored in FULL_FILE parameter.]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="CONCATENATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="true" fromNode="CONCATENATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="183:480|183:538" guiLocks="183|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="CONCATENATE0:0"/>
 <Edge fromNode="DATA_READER1:0" guiBendpoints="183:577|183:556" guiLocks="183|null|null" guiRouter="Manual" id="Edge1" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="CONCATENATE0:1"/>
 <Edge fromNode="DATA_READER2:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:0"/>
 <Edge fromNode="DATA_READER3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SIMPLE_GATHER0:1"/>
 <Edge fromNode="DATA_READER4:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT1:0"/>
-<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (Body port)" metadata="Metadata0" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (Body port)" outPort="Port 0 (out)" toNode="STRUCTURE_WRITER0:0"/>
 <Edge debugMode="true" fromNode="REFORMAT1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="true" fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_GATHER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
 </Phase>
 </Graph>

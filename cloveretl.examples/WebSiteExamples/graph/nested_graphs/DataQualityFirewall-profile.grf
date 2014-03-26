@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Jaro" created="Fri Jul 20 16:07:43 CEST 2012" guiVersion="0.0.0.devel" id="1342794061574" licenseType="Commercial" modified="Mon Jan 13 16:53:38 CET 2014" modifiedBy="User" name="profile_incoming" revision="1.35" showComponentDetails="true">
+<Graph author="Jaro" created="Fri Jul 20 16:07:43 CEST 2012" guiVersion="4.0.0.M1" id="1342794061574" licenseType="Commercial" modified="Tue Mar 25 13:54:20 CET 2014" modifiedBy="User" name="profile_incoming" revision="1.36" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/employees.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -179,7 +179,7 @@ function integer transform() {
 <Node enabled="enabled" guiName="Trash" guiX="489" guiY="172" id="TRASH0" type="TRASH"/>
 <Edge debugMode="true" fromNode="CHECK_PROFILING_RESULTS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="FAIL_FOR_BAD_DATA1:0"/>
 <Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="PROFILER_PROBE0:0"/>
-<Edge debugMode="true" fromNode="PROFILER_PROBE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (copy of input)" toNode="TRASH0:0"/>
+<Edge debugMode="true" fromNode="PROFILER_PROBE0:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" outPort="Port 0 (copy of input)" toNode="TRASH0:0"/>
 <Edge debugMode="true" fromNode="PROFILER_PROBE0:1" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (results)" toNode="CHECK_PROFILING_RESULTS:0"/>
 </Phase>
 </Graph>

@@ -77,15 +77,28 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	protected EdgeBase edge;
 
 	/**
-	 * True if and only if the edge base ({@link #edge}) is not under complete control
-	 * of this edge. The edge base is only shared with other edge (from parent graph).
+	 * True if the edge base ({@link #edge}) is not under complete control
+	 * of this edge. The edge base is shared with other edge (from parent graph).
 	 * Some operations like {@link #preExecute()}, {@link #postExecute()} and {@link #free()}
 	 * are performed only by the real owner of the edge base.
 	 * This functionality is used for edges between parent graph and subgraph.
 	 * These edge couples can share edge base, which allows direct data passing
 	 * from parent graph to subgraph and backward without special copy threads.
+	 * This is true if sharing is caused by writer component.
 	 */
-	private boolean sharedEdgeBase = false;
+	private boolean sharedEdgeBaseFromWriter = false;
+	
+	/**
+	 * True if the edge base ({@link #edge}) is not under complete control
+	 * of this edge. The edge base is shared with other edge (from parent graph).
+	 * Some operations like {@link #preExecute()}, {@link #postExecute()} and {@link #free()}
+	 * are performed only by the real owner of the edge base.
+	 * This functionality is used for edges between parent graph and subgraph.
+	 * These edge couples can share edge base, which allows direct data passing
+	 * from parent graph to subgraph and backward without special copy threads.
+	 * This is true if sharing is caused by reader component.
+	 */
+	private boolean sharedEdgeBaseFromReader = false;
 	
 	/**
 	 *  Constructor for the EdgeStub object
@@ -715,13 +728,23 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	/**
 	 * The edge has got {@link EdgeBase} via {@link #setEdge(EdgeBase)} and
 	 * this edge is not owner of the given edge base, so some operations above EdgeBase
-	 * are not performed in this edge.
+	 * are not performed in this edge. This sharing is caused by writer component
 	 * @param sharedEdgeBase
 	 */
-	public void setSharedEdgeBase(boolean sharedEdgeBase) {
-		this.sharedEdgeBase = sharedEdgeBase;
+	public void setSharedEdgeBaseFromWriter(boolean sharedEdgeBaseFromWriter) {
+		this.sharedEdgeBaseFromWriter = sharedEdgeBaseFromWriter;
 	}
-	
+
+	/**
+	 * The edge has got {@link EdgeBase} via {@link #setEdge(EdgeBase)} and
+	 * this edge is not owner of the given edge base, so some operations above EdgeBase
+	 * are not performed in this edge. This sharing is caused by reader component.
+	 * @param sharedEdgeBase
+	 */
+	public void setSharedEdgeBaseFromReader(boolean sharedEdgeBaseFromReader) {
+		this.sharedEdgeBaseFromReader = sharedEdgeBaseFromReader;
+	}
+
 	/**
 	 * Input and output edges of SubgraphInput/Output components can share EdgeBase with parent graph.
 	 * This is important to known, that the EdgeBase is shared. So EdgeBase
@@ -729,9 +752,23 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * in this edge.
 	 */
 	public boolean isSharedEdgeBase() {
-		return sharedEdgeBase;
+		return sharedEdgeBaseFromWriter || sharedEdgeBaseFromReader;
 	}
-	
+
+	/**
+	 * @return true if this edge is shared and this sharing is caused by writer component
+	 */
+	public boolean isSharedEdgeBaseFromWriter() {
+		return sharedEdgeBaseFromWriter;
+	}
+
+	/**
+	 * @return true if this edge is shared and this sharing is caused by reader component
+	 */
+	public boolean isSharedEdgeBaseFromReader() {
+		return sharedEdgeBaseFromReader;
+	}
+
 	@Override
 	public String toString() {
 		return getId();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Commercial" modified="Mon Jan 13 16:48:49 CET 2014" modifiedBy="User" name="EmailValidation" revision="1.60" showComponentDetails="true">
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="4.0.0.M1" id="1227892536666" licenseType="Commercial" modified="Tue Mar 25 11:23:49 CET 2014" modifiedBy="User" name="EmailValidation" revision="1.61" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="input_record" recordDelimiter="\r\n" type="delimited">
@@ -90,15 +90,15 @@ Talk to the SMPT server and try to verify the address]]></attr>
 <Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_accept.txt" guiName="Accepted" guiX="813" guiY="695" id="DATA_WRITER4" type="DATA_WRITER"/>
 <Node charset="utf-8" enabled="enabled" fileURL="${DATAOUT_DIR}/emails_smtp_reject.txt" guiName="Rejected" guiX="813" guiY="787" id="DATA_WRITER5" type="DATA_WRITER"/>
 <Node enabled="enabled" guiName="Replicate List [3x]" guiX="190" guiY="462" id="REPLICATE_LIST_3X" type="SIMPLE_COPY"/>
-<Edge debugMode="false" fromNode="CHECK_EMAIL_DOMAIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER2:0"/>
+<Edge debugMode="false" fromNode="CHECK_EMAIL_DOMAIN:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" toNode="DATA_WRITER2:0"/>
 <Edge debugMode="false" fromNode="CHECK_EMAIL_DOMAIN:1" guiBendpoints="714:497|714:556" guiLocks="714|850|null" guiRouter="Manual" id="Edge8" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER3:0"/>
-<Edge debugMode="false" fromNode="CHECK_EMAIL_SYNTAX:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="CHECK_EMAIL_SYNTAX:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" toNode="DATA_WRITER0:0"/>
 <Edge debugMode="false" fromNode="CHECK_EMAIL_SYNTAX:1" guiBendpoints="706:326|706:340" guiLocks="706|745|null" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER1:0"/>
-<Edge debugMode="false" fromNode="CHECK_SMTP_VALIDITY:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted records)" toNode="DATA_WRITER4:0"/>
+<Edge debugMode="false" fromNode="CHECK_SMTP_VALIDITY:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (in)" outPort="Port 0 (accepted records)" toNode="DATA_WRITER4:0"/>
 <Edge debugMode="false" fromNode="CHECK_SMTP_VALIDITY:1" guiBendpoints="686:681|686:783" guiLocks="686|844|null" guiRouter="Manual" id="Edge10" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 1 (rejected records)" toNode="DATA_WRITER5:0"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="33:0|33:130|-173:130|-173:196" guiLocks="null|null|null" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REPLICATE_LIST_3X:0"/>
-<Edge fromNode="REPLICATE_LIST_3X:0" guiBendpoints="506:562|506:566" guiLocks="506|263|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CHECK_EMAIL_SYNTAX:0"/>
-<Edge fromNode="REPLICATE_LIST_3X:1" guiBendpoints="299:286|299:230" guiLocks="300|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 1 (out)" toNode="CHECK_EMAIL_DOMAIN:0"/>
-<Edge fromNode="REPLICATE_LIST_3X:2" guiBendpoints="395:356|395:802" guiLocks="387|485|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (input records)" metadata="Metadata0" outPort="Port 2 (out)" toNode="CHECK_SMTP_VALIDITY:0"/>
+<Edge fromNode="REPLICATE_LIST_3X:0" guiBendpoints="506:562|506:566" guiLocks="506|263|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (input records)" outPort="Port 0 (out)" toNode="CHECK_EMAIL_SYNTAX:0"/>
+<Edge fromNode="REPLICATE_LIST_3X:1" guiBendpoints="299:286|299:230" guiLocks="300|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (input records)" outPort="Port 1 (out)" toNode="CHECK_EMAIL_DOMAIN:0"/>
+<Edge fromNode="REPLICATE_LIST_3X:2" guiBendpoints="395:356|395:802" guiLocks="387|485|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (input records)" outPort="Port 2 (out)" toNode="CHECK_SMTP_VALIDITY:0"/>
 </Phase>
 </Graph>

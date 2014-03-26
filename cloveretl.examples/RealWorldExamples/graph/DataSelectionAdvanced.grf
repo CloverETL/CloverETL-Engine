@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Thu Jul 01 14:14:48 CEST 2010" guiVersion="0.0.0.devel" id="1277991711576" licenseType="Commercial" modified="Mon Jan 13 17:03:37 CET 2014" modifiedBy="User" name="graphAccessingDataSources" revision="1.90" showComponentDetails="true">
+<Graph author="Petr" created="Thu Jul 01 14:14:48 CEST 2010" guiVersion="4.0.0.M1" id="1277991711576" licenseType="Commercial" modified="Tue Mar 25 14:35:19 CET 2014" modifiedBy="User" name="graphAccessingDataSources" revision="1.91" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/orders_with_autofilling.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata2"/>
@@ -96,11 +96,11 @@ The following  can be mapped to output fields:
 <Node enabled="enabled" guiName="ExtSort" guiX="473" guiY="482" id="EXT_SORT0" sortKey="OrderID(a);ShipCountry(a)" type="EXT_SORT"/>
 <Node debugPrint="true" enabled="enabled" guiName="prints to stdout" guiX="996" guiY="482" id="TRASH1" type="TRASH"/>
 <Edge debugMode="true" fromNode="AGGREGATE1:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="TRASH1:0"/>
-<Edge debugMode="true" fromNode="CONCATENATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
+<Edge debugMode="true" fromNode="CONCATENATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="EXT_SORT0:0"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="266:391|266:489" guiLocks="254|null|null" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="CONCATENATE0:0"/>
-<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (unique)" toNode="AGGREGATE1:0"/>
-<Edge fromNode="DEDUP0:1" guiBendpoints="838:513|838:564|815:564|815:616" guiLocks="826|803|573" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 1 (duplicate)" toNode="DATA_WRITER0:0"/>
-<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
+<Edge debugMode="true" fromNode="DEDUP0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (in)" outPort="Port 0 (unique)" toNode="AGGREGATE1:0"/>
+<Edge fromNode="DEDUP0:1" guiBendpoints="838:513|838:564|815:564|815:616" guiLocks="826|803|573" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" outPort="Port 1 (duplicate)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="EXT_SORT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DEDUP0:0"/>
 </Phase>
 <Phase number="2">
 <Node aggregateKey="ShipCountry" enabled="enabled" guiName="how many from?" guiX="636" guiY="739" id="AGGREGATE2" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>

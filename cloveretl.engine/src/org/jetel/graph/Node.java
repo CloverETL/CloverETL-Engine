@@ -529,7 +529,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
             	} else if (checkEofOnInputPorts()) { // true by default
 	            	//check whether all input ports are already closed
 	            	for (InputPort inputPort : getInPorts()) {
-	            		if (!inputPort.isEOF()) {
+	            		//if the edge base of the input port is not shared due this component and some data records are still in input port, report an error
+	            		if (!inputPort.getEdge().isSharedEdgeBaseFromReader() && !inputPort.isEOF()) {
 	            			setResultCode(Result.ERROR);
 	            			Message<ErrorMsgBody> msg = Message.createErrorMessage(this,
 	            					new ErrorMsgBody(Result.ERROR.code(), Result.ERROR.message(), createNodeException(new JetelRuntimeException("Component has finished and input port " + inputPort.getInputPortNumber() + " still contains some unread records."))));
