@@ -50,10 +50,11 @@ import org.xml.sax.helpers.DefaultHandler;
 public class JsonSaxParser extends SAXParser {
 	
 	
-	private static final String NAMESPACE_URI = "";
-	private static final String XML_NAME_OBJECT = "json_object";
-	private static final String XML_NAME_ARRAY = "json_array";
-	private static final String XML_ARRAY_DEPTH = "arrayDepth";
+	private static final String NAMESPACE_URI = ""; //$NON-NLS-1$
+	private static final String XML_NAME_OBJECT = "json_object"; //$NON-NLS-1$
+	private static final String XML_NAME_ARRAY = "json_array"; //$NON-NLS-1$
+	private static final String XML_ARRAY_DEPTH = "arrayDepth"; //$NON-NLS-1$
+	public static final String XML_ARRAY_ELEM = "arrayElem"; //$NON-NLS-1$
 	
 	private static final JsonFactory JSON_FACTORY = new JsonFactory();
 	private static final Attributes EMPTY_ATTRIBUTES = new AttributesImpl();
@@ -61,6 +62,8 @@ public class JsonSaxParser extends SAXParser {
 	private DefaultHandler handler;
 	
 	private boolean xmlEscapeChars=false;
+
+	private boolean modifierCompatible = false; // if the parser should add additional code for schema tweaking
 	
 	@Override
 	public org.xml.sax.Parser getParser() throws SAXException {
@@ -189,6 +192,9 @@ public class JsonSaxParser extends SAXParser {
 				String name = names.getLast();
 				int top = depthCounter.pollLast();
 				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(top));
+				if (modifierCompatible) {
+                    attributesImpl.addAttribute("", XML_ARRAY_ELEM, XML_ARRAY_ELEM, "CDATA", XML_ARRAY_ELEM);
+				}
 				top++;
 				depthCounter.add(top);
 				handler.startElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name), attributesImpl);
@@ -197,14 +203,20 @@ public class JsonSaxParser extends SAXParser {
 			break;
 		}
 		case START_OBJECT: {
+			AttributesImpl attributesImpl = new AttributesImpl();
+
 			if (names.isEmpty()) {
 				names.add(XML_NAME_OBJECT);
 			} else if (tokens.peekLast() == JsonToken.FIELD_NAME) {
 				// named object - remove field token
 				tokens.removeLast();
+			} else if (tokens.peekLast() == JsonToken.START_ARRAY) {
+				// add nested element
+				if (modifierCompatible) {
+                    attributesImpl.addAttribute("", XML_ARRAY_ELEM, XML_ARRAY_ELEM, "CDATA", XML_ARRAY_ELEM);
+				}
 			}
 			tokens.add(token);
-			AttributesImpl attributesImpl = new AttributesImpl();
 			String name = names.getLast();
 			if (!depthCounter.isEmpty()) {
 				int top = depthCounter.peekLast();
@@ -271,6 +283,9 @@ public class JsonSaxParser extends SAXParser {
 				AttributesImpl attributesImpl = new AttributesImpl();
 				String name = names.getLast();
 				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(depthCounter.peekLast()));
+				if (modifierCompatible) {
+                    attributesImpl.addAttribute("", XML_ARRAY_ELEM, XML_ARRAY_ELEM, "CDATA", XML_ARRAY_ELEM);
+				}
 				
 				handler.startElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name), attributesImpl);
 				processScalarValue(parser);
@@ -306,17 +321,16 @@ public class JsonSaxParser extends SAXParser {
 		@Override
 		public void startElement (String uri, String localName, String qName, Attributes attributes) throws SAXException {
 			try {
-				out.append("<").append(localName);
-				//check if there is array depth attribute
-				if (attributes.getLength() == 1) {
+				out.append("<").append(localName); //$NON-NLS-1$
+				for (int i = 0; i < attributes.getLength(); i++) {
 					//write attribute value
-					out.append(" ");
-					out.append(attributes.getLocalName(0));
-					out.append("=\"");
-					out.append(attributes.getValue(0));
-					out.append("\"");
+					out.append(" "); //$NON-NLS-1$
+					out.append(attributes.getLocalName(i));
+					out.append("=\""); //$NON-NLS-1$
+					out.append(attributes.getValue(i));
+					out.append("\""); //$NON-NLS-1$
 				}
-				out.append(">");
+				out.append(">"); //$NON-NLS-1$
 			} catch (IOException e) {
 				new SAXException(e);
 			}
@@ -326,7 +340,7 @@ public class JsonSaxParser extends SAXParser {
 		@Override
 		 public void endElement (String uri, String localName, String qName) throws SAXException{
 			try {
-				out.append("</").append(localName).append(">");
+				out.append("</").append(localName).append(">");  //$NON-NLS-1$//$NON-NLS-2$
 			} catch (IOException e) {
 				new SAXException(e);
 			}
@@ -362,5 +376,14 @@ public class JsonSaxParser extends SAXParser {
 		}
 		return name;
 	}
+	
+	/**
+	 * Set whether the parser should add additional attributes to the output xml (that will be used by XMLSchemaModifier)
+	 * @param modifierCompatible
+	 */
+	public void setModifierCompatible(boolean modifierCompatible) {
+		this.modifierCompatible = modifierCompatible;
+	}
+	
 	
 }
