@@ -1119,7 +1119,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setQuotedStrings(quotedStrings);
 		dataRecordMetadata.setRecordSize(recordSize);
 		//nature of duplicate is preserve
-		dataRecordMetadata.setNature(getNature());
+		dataRecordMetadata.setNature(nature);
 
 		for (DataFieldMetadata field : fields) {
 			dataRecordMetadata.addField(field.duplicate());
