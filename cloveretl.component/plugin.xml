@@ -2312,19 +2312,19 @@ Sends all resulting records to all connected output ports.</description>
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
-	      <property category="basic" displayName="Generator" modifiable="true" name="generate" nullable="true" redundant="generateClass|generateURL">
+	      <property category="basic" displayName="Generator" modifiable="true" name="generate" nullable="true">
 	        <singleType name="transformGenerator" input="key" />
 	      </property>
-	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true" redundant="generate|generateClass">
+	      <property category="basic" displayName="Generator URL" modifiable="true" name="generateURL" nullable="true">
 	        <singleType name="file" />
 	      </property>
-	      <property category="basic" displayName="Generator class" modifiable="true" name="generateClass" nullable="true" redundant="generateURL|generate">
+	      <property category="basic" displayName="Generator class" modifiable="true" name="generateClass" nullable="true">
 	        <singleType name="class" />
 	      </property>
 	      <property category="basic" displayName="Generator source charset" modifiable="true" name="charset" nullable="true" redundant="generateClass" defaultHintProvider="charsetSource">
 	        <singleType name="charset" />
 	      </property>
-	      <property category="basic" displayName="Number of records to generate" modifiable="true" name="recordsNumber" nullable="true" required="true">
+	      <property category="basic" displayName="Number of records to generate" modifiable="true" name="recordsNumber" nullable="true" defaultHint="1">
 	        <singleType name="dataGeneratorRecordNumber" />
 	      </property>
 	      <property category="deprecated" displayName="Record pattern" modifiable="true" name="pattern" nullable="true" redundant="generate|generateClass|generateURL">
