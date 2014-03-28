@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Wed Mar 26 16:14:22 CET 2014" guiVersion="4.0.0.M1" id="1395847301084" licenseType="Commercial" modified="Fri Mar 28 15:57:27 CET 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.2" showComponentDetails="true">
+<Global>
+<Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
+<Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Customers" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipFirstLine="true" type="delimited">
+<Field name="Id" type="integer"/>
+<Field name="LastName" type="string"/>
+<Field name="FirstName" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="transaction_joined" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customer_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="customer_last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="customer_first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="transaction_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" length="12" name="amount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="currency" nullable="true" shift="0" size="0" type="integer"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="195" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="189" x="222" y="155">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Sort transactions by customer ID]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="61" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="LoadTransactions Subgraph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="361" x="50" y="43">
+<attr name="text"><![CDATA[Loads information about customers and their transactions.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="DebugOutput" guiX="918" guiY="276" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers.csv" guiName="Load Customer Details" guiX="50" guiY="371" id="LOAD_CUSTOMER_DETAILS" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/transactions.csv" guiName="Load Transactions" guiX="50" guiY="183" id="LOAD_TRANSACTIONS" type="DATA_READER"/>
+<Node enabled="enabled" guiName="Match Transactions with Customer" guiX="483" guiY="183" id="MATCH_TRANSACTIONS_WITH_CUSTOMER" joinKey="$CustomerId(a)#$Id(a);" joinType="leftOuter" type="EXT_MERGE_JOIN">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$0.transaction_id = $0.TransactionId;
+	$0.customer_id = $1.Id;
+	$0.amount = $0.Amount;
+	$0.currency = $0.CurrencyId;
+	$0.customer_last_name = $1.LastName;
+	$0.customer_first_name = $1.FirstName;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Sort Transactions" guiX="253" guiY="183" id="SORT_TRANSACTIONS" sortKey="CustomerId(a)" type="FAST_SORT"/>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="804" guiY="181" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT"/>
+<Edge debugMode="true" fromNode="LOAD_CUSTOMER_DETAILS:0" guiBendpoints="401:268|401:188" guiLocks="452|null|null" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:1"/>
+<Edge debugMode="true" fromNode="LOAD_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (output)" toNode="SORT_TRANSACTIONS:0"/>
+<Edge debugMode="true" fromNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:0" guiBendpoints="39:0|39:119" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:0"/>
+<Edge debugMode="true" fromNode="SORT_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" metadata="Metadata6" outPort="Port 0 (out)" toNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:0"/>
+<Edge fromNode="SUBGRAPH_OUTPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DEBUG_OUTPUT:0"/>
+</Phase>
+</Graph>

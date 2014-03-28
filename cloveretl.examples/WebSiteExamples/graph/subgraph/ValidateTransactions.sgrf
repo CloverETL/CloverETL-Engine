@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Wed Mar 26 11:06:38 CET 2014" guiVersion="4.0.0.M1" id="1395828988971" licenseType="Commercial" modified="Fri Mar 28 15:58:14 CET 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.3" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter=";" name="Customers" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" skipFirstLine="true" type="delimited">
+<Field name="Id" type="integer"/>
+<Field name="LastName" type="string"/>
+<Field name="FirstName" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="transaction_with_currency" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="customer_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="customer_last_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="customer_first_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="transaction_id" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" length="12" name="amount" nullable="true" scale="2" shift="0" size="0" type="decimal"/>
+<Field eofAsDelimiter="false" name="currency" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note21" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1121" y="478">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Output a list of risky customers]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note14" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1124" y="270">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+Output a list of unsupported currency]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="204" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1121" y="50">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Output ttransactions with bad customer IDs]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="80" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="ValidateTransactions subgraph" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="302" x="50" y="72">
+<attr name="text"><![CDATA[Validates financtial transactions.]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Amount &gt; 400k" guiX="769" guiY="495" id="AMOUNT_400K" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[$0.amount > 400000]]></attr>
+</Node>
+<Node enabled="enabled" guiName="DebugInput" guiX="50" guiY="317" id="DEBUG_INPUT" recordsNumber="0" type="DATA_GENERATOR">
+<attr name="generate"><![CDATA[//#CTL2
+
+// Generates output record.
+function integer generate() {
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the generate. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if generate() throws an exception.
+// function integer generateOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Format Fields for Output" guiX="929" guiY="78" id="FORMAT_FIELDS_FOR_OUTPUT" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	 $0.* = $0.*;
+
+	return 0;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Incorrect Currency" guiX="1151" guiY="291" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="INCORRECT_CURRENCY" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiName="Missing Customer ID" guiX="1147" guiY="75" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="MISSING_CUSTOMER_ID" mask="&lt;tr&gt;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;td&gt;$currency&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Risky Customers" guiX="1151" guiY="500" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="RISKY_CUSTOMERS1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node enabled="enabled" guiName="Sort Amount [Descending]" guiX="924" guiY="495" id="SORT_AMOUNT_DESCENDING" sortKey="amount(d)" type="FAST_SORT"/>
+<Node enabled="enabled" guiName="Split Record by Logic" guiX="351" guiY="291" id="SPLIT_RECORD_BY_LOGIC" type="PARTITION">
+<attr name="partitionSource"><![CDATA[//#CTL2
+// This transformation partitions input records into multiple output ports.
+
+// Returns the number of the output port where the input record will be sent.
+function integer getOutputPort() {
+	if (isnull($customer_id)) return 0;
+	if (isNumber($currency)) return 1;
+  return 2;
+}
+
+// Called during component initialization, partitionCount is the number of output ports.
+// function void init(integer partitionCount) {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources.
+// All resources allocated within this method should be released by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if getOutputPort() throws an exception.
+// function integer getOutputPortOnError(string errorMessage, string stackTrace) {
+// }
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="223" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT"/>
+<Node aggregateKey="customer_id" enabled="enabled" guiName="Sum Transactions by Customer" guiX="530" guiY="495" id="SUM_TRANSACTIONS_BY_CUSTOMER" mapping="$customer_id:=$customer_id;$customer_last_name:=first($customer_last_name);$customer_first_name:=first($customer_first_name);$amount:=sum($amount);$currency:=&quot;€&quot;;" type="AGGREGATE"/>
+<Edge debugMode="true" fromNode="AMOUNT_400K:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (accepted)" toNode="SORT_AMOUNT_DESCENDING:0"/>
+<Edge fromNode="DEBUG_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SUBGRAPH_INPUT:0"/>
+<Edge fromNode="FORMAT_FIELDS_FOR_OUTPUT:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="MISSING_CUSTOMER_ID:0"/>
+<Edge debugMode="true" fromNode="SORT_AMOUNT_DESCENDING:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 0 (out)" toNode="RISKY_CUSTOMERS1:0"/>
+<Edge debugMode="true" fromNode="SPLIT_RECORD_BY_LOGIC:0" guiBendpoints="1304:729|1304:881" guiLocks="1304|237|null" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="FORMAT_FIELDS_FOR_OUTPUT:0"/>
+<Edge debugMode="true" fromNode="SPLIT_RECORD_BY_LOGIC:1" guiBendpoints="733:323|733:309" guiLocks="733|307|null" guiRouter="Manual" id="Edge9" inPort="Port 0 (Body port)" metadata="Metadata3" outPort="Port 1 (out)" toNode="INCORRECT_CURRENCY:0"/>
+<Edge debugMode="true" fromNode="SPLIT_RECORD_BY_LOGIC:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 2 (out)" toNode="SUM_TRANSACTIONS_BY_CUSTOMER:0"/>
+<Edge debugMode="true" fromNode="SUBGRAPH_INPUT:0" guiBendpoints="1004:731|1004:992|331:992|331:1235" guiLocks="1022|349|745" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SPLIT_RECORD_BY_LOGIC:0"/>
+<Edge debugMode="true" fromNode="SUM_TRANSACTIONS_BY_CUSTOMER:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="AMOUNT_400K:0"/>
+</Phase>
+</Graph>
