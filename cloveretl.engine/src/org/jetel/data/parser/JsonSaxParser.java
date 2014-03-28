@@ -55,7 +55,7 @@ public class JsonSaxParser extends SAXParser {
 	private static final String XML_NAME_ARRAY = "json_array"; //$NON-NLS-1$
 	private static final String XML_ARRAY_DEPTH = "arrayDepth"; //$NON-NLS-1$
 	public static final String XML_ARRAY_ELEM = "arrayElem"; //$NON-NLS-1$
-	
+
 	private static final JsonFactory JSON_FACTORY = new JsonFactory();
 	private static final Attributes EMPTY_ATTRIBUTES = new AttributesImpl();
 	
@@ -63,7 +63,11 @@ public class JsonSaxParser extends SAXParser {
 	
 	private boolean xmlEscapeChars=false;
 
-	private boolean modifierCompatible = false; // if the parser should add additional code for schema tweaking
+    // if the parser should add additional code for schema tweaking
+	private boolean modifierCompatible = false; 
+
+    // just some string that is unlikely to appear in the input JSON 
+	public static final String XML_ELEM_SUFFIX = "__clj2x-sfx_"; //$NON-NLS-1$ 
 	
 	@Override
 	public org.xml.sax.Parser getParser() throws SAXException {
@@ -161,6 +165,10 @@ public class JsonSaxParser extends SAXParser {
 		
 	}
 	
+	private String addNameSuffix(String name, int depth) {
+        return name + XML_ELEM_SUFFIX + depth; 
+	}
+	
 	protected void processToken(final JsonToken token, JsonParser parser, Deque<JsonToken> tokens, Deque<String> names, Deque<Integer> depthCounter) 
 		throws JsonParseException, IOException, SAXException {
 		
@@ -194,6 +202,9 @@ public class JsonSaxParser extends SAXParser {
 				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(top));
 				if (modifierCompatible) {
                     attributesImpl.addAttribute("", XML_ARRAY_ELEM, XML_ARRAY_ELEM, "CDATA", XML_ARRAY_ELEM);
+                    if (top > 0) {
+                    	name = addNameSuffix(name, top);
+                    }
 				}
 				top++;
 				depthCounter.add(top);
@@ -222,6 +233,9 @@ public class JsonSaxParser extends SAXParser {
 				int top = depthCounter.peekLast();
 				if (top > 0) {
 					attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(top));
+					if (modifierCompatible) {
+						name = addNameSuffix(name, top);
+					}
 				}
 			}
 			depthCounter.add(Integer.valueOf(0));
@@ -238,6 +252,12 @@ public class JsonSaxParser extends SAXParser {
 				top--;
 			}
 			depthCounter.add(top);
+
+			if (modifierCompatible) {
+                if (top > 0) {
+                	name = addNameSuffix(name, top);
+                }
+			}
 			
 			if (names.size() == 1) {
 				handler.endElement(NAMESPACE_URI, normalizeElementName(names.getFirst()), normalizeElementName(names.getFirst()));
@@ -256,7 +276,13 @@ public class JsonSaxParser extends SAXParser {
 			tokens.removeLast();
 			// end current object
 			String name = names.getLast();
+
 			depthCounter.pollLast();
+			if (modifierCompatible) {
+                if (depthCounter.peekLast() > 0) {
+                	name = addNameSuffix(name, depthCounter.peekLast());
+                }
+			}
 			handler.endElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name));
 			if (tokens.isEmpty() || tokens.peekLast() != JsonToken.START_ARRAY) {
 				// remove name if not inside array
@@ -285,6 +311,9 @@ public class JsonSaxParser extends SAXParser {
 				attributesImpl.addAttribute("", XML_ARRAY_DEPTH, XML_ARRAY_DEPTH, "CDATA", String.valueOf(depthCounter.peekLast()));
 				if (modifierCompatible) {
                     attributesImpl.addAttribute("", XML_ARRAY_ELEM, XML_ARRAY_ELEM, "CDATA", XML_ARRAY_ELEM);
+                    if (depthCounter.peekLast() > 0) {
+                    	name = addNameSuffix(name, depthCounter.peekLast());
+                    }
 				}
 				
 				handler.startElement(NAMESPACE_URI, normalizeElementName(name), normalizeElementName(name), attributesImpl);
@@ -378,12 +407,15 @@ public class JsonSaxParser extends SAXParser {
 	}
 	
 	/**
-	 * Set whether the parser should add additional attributes to the output xml (that will be used by XMLSchemaModifier)
+	 * Set whether the parser should add additional attributes and element name suffixes to the output XML, so the
+	 * schema generated from the output XML can be processed by XMLSchemaModifier
+	 * 
+	 * @see com.cloveretl.gui.editors.tree.xml.reader.XMLSchemaModifier
+	 * 
 	 * @param modifierCompatible
 	 */
 	public void setModifierCompatible(boolean modifierCompatible) {
 		this.modifierCompatible = modifierCompatible;
 	}
-	
 	
 }
