@@ -27,11 +27,12 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.Result;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ExceptionUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.string.StringUtils;
@@ -208,8 +209,6 @@ public class ExtDataGenerator extends DataGenerator {
 			return;
 		super.init();
 
-		verifyAutofilling(getOutMetadataArray()[0]);
-
 		if (generatorClass == null) {
 			generatorClass = getTransformFactory().createTransform();
 		}
@@ -221,12 +220,25 @@ public class ExtDataGenerator extends DataGenerator {
 		autoFilling.setFilename(getId());
 		autoFilling.addAutoFillingFields(getOutMetadataArray()[0]);
 	}
+	
+	public static class NullRecordGenerator extends DataRecordGenerate {
+		@Override
+		public int generate(DataRecord[] outputRecords) throws TransformException {
+			for (DataRecord r : outputRecords) {
+				r.setToNull();
+			}
+			return RecordTransform.ALL;
+		}
+	}
 
 	private TransformFactory<RecordGenerate> getTransformFactory() {
     	TransformFactory<RecordGenerate> transformFactory = TransformFactory.createTransformFactory(RecordGenerateDescriptor.newInstance());
     	transformFactory.setTransform(generatorSource);
     	transformFactory.setTransformClass(generatorClassName);
     	transformFactory.setTransformUrl(generatorURL);
+    	if (StringUtils.isEmpty(generatorClassName) && StringUtils.isEmpty(generatorSource) && StringUtils.isEmpty(generatorURL)) {
+    		transformFactory.setTransformClass(NullRecordGenerator.class.getName());
+    	}
     	transformFactory.setCharset(charset);
     	transformFactory.setComponent(this);
     	transformFactory.setOutMetadata(getOutMetadata());
@@ -239,30 +251,6 @@ public class ExtDataGenerator extends DataGenerator {
 		}
 	}
 	
-	/**
-	 * Verifies autofilling.
-	 * @throws ComponentNotReadyException
-	 */
-	private void verifyAutofilling(DataRecordMetadata outMetadata) throws ComponentNotReadyException {
-
-		// if no generator then verify and prepare autofilling
-		if (generatorSource == null && generatorClassName == null && generatorURL == null && generatorClass == null) {
-			boolean isAutoFilling = false;
-			for (DataFieldMetadata fMetadata : outMetadata.getFields()) {
-				if (fMetadata.isAutoFilled()) {
-					isAutoFilling = true;
-				}
-			}
-			if (!isAutoFilling)
-				throw new ComponentNotReadyException("Attribute/property not found: " + XML_GENERATE_ATTRIBUTE);
-		}
-	}
-	
-	@Override
-	public synchronized void reset() throws ComponentNotReadyException {
-		super.reset();
-	}
-
 	@Override
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
@@ -271,20 +259,21 @@ public class ExtDataGenerator extends DataGenerator {
 			return status;
 		}
 
-		try {
-			verifyAutofilling(getOutMetadata().get(0));
-
-			if (generatorClass == null) {
-				getTransformFactory().checkConfig(status);
+		if (StringUtils.isEmpty(generatorClassName) && StringUtils.isEmpty(generatorSource) && StringUtils.isEmpty(generatorURL)) {
+			status.add(new ConfigurationProblem("No generator specified, empty records will be generated", Severity.WARNING, this, Priority.NORMAL, XML_GENERATE_ATTRIBUTE));
+			DataRecordMetadata metadata = getOutputPort(0).getMetadata();
+			for (DataFieldMetadata fieldMetadata : metadata) {
+				if (!fieldMetadata.isNullable() && !fieldMetadata.isDefaultValueSet()) {
+					status.add(new ConfigurationProblem("No generator specified, and field '" + fieldMetadata.getName() + "' cannot be set to null", Severity.ERROR, this, Priority.NORMAL, XML_GENERATE_ATTRIBUTE));
+					break;
+				}
 			}
-		} catch (ComponentNotReadyException e) {
-			ConfigurationProblem problem = new ConfigurationProblem(ExceptionUtils.getMessage(e), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-
-			if (!StringUtils.isEmpty(e.getAttributeName())) {
-				problem.setAttributeName(e.getAttributeName());
-			}
-			status.add(problem);
 		}
+
+		if (generatorClass == null) {
+			getTransformFactory().checkConfig(status);
+		}
+		
 		return status;
 	}
 
