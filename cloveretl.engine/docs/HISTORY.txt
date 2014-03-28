@@ -7,11 +7,11 @@ REL-4-0-0-M1
 
 * Subgraphs
 * Automatic metadata propagation
-* Updated internal libraries
-* Dropped support of Java 1.6
 - FIXES:
 	- UniversalDataReader logging improved
 - COMPATIBILITY:
+	- Dropped support of Java 1.6
+	- Updated internal libraries to newer versions
 	- split() returns empty list if input is null
 	- indexOf() accepts null value
 	 
