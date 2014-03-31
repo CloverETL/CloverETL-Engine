@@ -194,9 +194,14 @@ public class MetadataPropagationResolver {
 	 */
 	public MVMetadata createMVMetadata(DataRecordMetadata metadata, IGraphElement relatedGraphElement, String identification, int priority) {
 		TransformationGraph parentEngineGraph = metadata.getGraph();
-		if (parentEngineGraph == null) {
-			parentEngineGraph = relatedGraphElement.getGraph();
-			metadata.setId("__dynamic_metadata_" + relatedGraphElement.getId() + "_" + (identification != null ? identification : metadata.getName()));
+		if (parentEngineGraph == null) { //dynamic metadata
+			if (relatedGraphElement != null) {
+				parentEngineGraph = relatedGraphElement.getGraph();
+				//shouldn't be the metadata duplicated ???
+				metadata.setId("__dynamic_metadata_" + relatedGraphElement.getId() + "_" + (identification != null ? identification : metadata.getName()));
+			} else {
+				metadata.setId("__dynamic_metadata_" + (identification != null ? identification : metadata.getName()));
+			}
 		}
 		MVGraph parentMVGraph = mvGraph.getMVGraphRecursive(parentEngineGraph);
 		return new MVEngineMetadata(metadata, parentMVGraph, priority);
