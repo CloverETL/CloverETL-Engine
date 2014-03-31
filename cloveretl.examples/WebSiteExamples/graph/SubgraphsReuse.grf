@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="4.0.0.M1" id="1227892536666" licenseType="Commercial" modified="Wed Mar 26 18:08:09 CET 2014" modifiedBy="User" name="EmailValidation" revision="1.65" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata0">
+<Record name="input_record" recordDelimiter="\r\n" type="delimited">
+<Field name="email" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="output_record" recordDelimiter="\r" type="delimited">
+<Field name="email" type="string"/>
+<Field name="status" type="integer"/>
+<Field name="error" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Graylisting Note" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="239" x="702" y="72">
+<attr name="text"><![CDATA[EmailFilter comes with an anti-graylisting feature that performs retries after predefined time periods (usually in minutes or tens of minutes)
+
+Thus, SMTP and MAIL level might take excessively long times due to EmailFilter waiting for a retry - this behavior is normal.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="A. Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="246" x="12" y="72">
+<attr name="text"><![CDATA[We need to check a file with e-mail addresses for correct syntax, proper domains, and even try to validate them using SMTP verify.
+
+Validation of the e-mail addresses is implemented in a subgraph. The subgraph can be configured for different validation types, output files etc.]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="60" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Re-using Graphs As Components" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="929" x="12" y="13">
+<attr name="text"><![CDATA[This example shows how a subgraph can be used similarly to a component - it is re-used multiple times and configured in each case.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="How it works" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="446" x="257" y="72">
+<attr name="text"><![CDATA[Each subgraph is configured via its "Input parameters" property. You can set graph parameters and dictionary values in the property to configure the subgraph.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="559" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="E-mail Validation" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="187" x="433" y="265">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Simple format check
+
+
+
+
+
+
+
+
+
+
+
+
+Check domain existence and MX record
+
+
+
+
+
+
+
+
+
+
+
+
+Talk to the SMPT server and try to verify the address]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/emails.txt" guiName="Load Emails" guiX="12" guiY="303" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" guiName="EmailValidator" guiX="453" guiY="303" id="EMAIL_VALIDATION" jobURL="${GRAPH_DIR}/subgraph/EmailValidator.sgrf" type="SUBGRAPH">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.LEVEL_OF_INSPECTION = "SYNTAX";
+	$out.0.ACCEPTED_FILE = "${DATAOUT_DIR}/emails_syntax_accept.txt";
+	$out.0.REJECTED_FILE = "${DATAOUT_DIR}/emails_syntax_reject.txt";
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="EmailValidator" guiX="453" guiY="462" id="EMAIL_VALIDATION1" jobURL="${GRAPH_DIR}/subgraph/EmailValidator.sgrf" type="SUBGRAPH">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.LEVEL_OF_INSPECTION = "DOMAIN";
+	$out.0.ACCEPTED_FILE = "${DATAOUT_DIR}/emails_domain_accept.txt";
+	$out.0.REJECTED_FILE = "${DATAOUT_DIR}/emails_domain_reject.txt";
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="EmailValidator" guiX="453" guiY="645" id="EMAIL_VALIDATION2" jobURL="${GRAPH_DIR}/subgraph/EmailValidator.sgrf" type="SUBGRAPH">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.LEVEL_OF_INSPECTION = "SMTP";
+	$out.0.ACCEPTED_FILE = "${DATAOUT_DIR}/emails_smtp_accept.txt";
+	$out.0.REJECTED_FILE = "${DATAOUT_DIR}/emails_smtp_reject.txt";
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Replicate List [3x]" guiX="190" guiY="462" id="REPLICATE_LIST_3X" type="SIMPLE_COPY"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="33:0|33:130|-173:130|-173:196" guiLocks="null|null|null" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REPLICATE_LIST_3X:0"/>
+<Edge fromNode="REPLICATE_LIST_3X:0" guiBendpoints="506:562|506:566" guiLocks="506|263|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EMAIL_VALIDATION:0"/>
+<Edge fromNode="REPLICATE_LIST_3X:1" guiBendpoints="299:286|299:230" guiLocks="300|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EMAIL_VALIDATION1:0"/>
+<Edge fromNode="REPLICATE_LIST_3X:2" guiBendpoints="554:510|554:313" guiLocks="387|485|null" guiRouter="Manual" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (out)" toNode="EMAIL_VALIDATION2:0"/>
+</Phase>
+</Graph>

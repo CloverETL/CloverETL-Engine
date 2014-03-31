@@ -7,27 +7,11 @@ REL-4-0-0-M1
 
 * Subgraphs
 * Automatic metadata propagation
-* Updated internal libraries
-* Dropped support of Java 1.6
-* Updated set of supported application containers
-	- Apache Tomcat 6
-	- Jetty 9
-	- Weblogic 11g
-	- Weblogic 12c
-	- JBoss 6 
-	- JBoss 7
- 	- Glassfish 3
- 	- Websphere 8.5
-* Updated set of supported databases for CloverETL Server
-* Dropped support of Sybase
-* Support for MySQL 5.6
-* Usability graph editor improvements
-	 - autoscrolling of canvas while dragging
-	 - palette filtering
 - FIXES:
-	- incorrect name of Designer update site
 	- UniversalDataReader logging improved
 - COMPATIBILITY:
+	- Dropped support of Java 1.6
+	- Updated internal libraries to newer versions
 	- split() returns empty list if input is null
 	- indexOf() accepts null value
 	 
