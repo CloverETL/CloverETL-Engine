@@ -971,6 +971,7 @@ public class DataParser extends AbstractTextParser {
         if(cfg.getMetadata().isSpecifiedRecordDelimiter()) {
 			for(skipped = 0; skipped < count; skipped++) {
 				if(!findFirstRecordDelimiter()) {
+					logger.warn("End of input reached while skipping records");
 				    break;
                 }
 				recordBuffer.clear();
@@ -978,6 +979,7 @@ public class DataParser extends AbstractTextParser {
 		} else {
 			for(skipped = 0; skipped < count; skipped++) {
 				if(!findEndOfRecord(0)) {
+					logger.warn("End of input reached while skipping records");
 				    break;
                 }
 				recordBuffer.clear();
