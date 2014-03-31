@@ -32,6 +32,7 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
+import org.jetel.util.string.TagName;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -53,6 +54,8 @@ public class JsonSaxParser extends SAXParser {
 	private static final String NAMESPACE_URI = ""; //$NON-NLS-1$
 	private static final String XML_NAME_OBJECT = "json_object"; //$NON-NLS-1$
 	private static final String XML_NAME_ARRAY = "json_array"; //$NON-NLS-1$
+	private static final String XML_NAME_EMPTY = "UNNAMED"; //$NON-NLS-1$
+	private static final String XML_NAME_INVALID = "__INVALID_ELEMENT_NAME"; //$NON-NLS-1$
 	private static final String XML_ARRAY_DEPTH = "arrayDepth"; //$NON-NLS-1$
 	public static final String XML_ARRAY_ELEM = "arrayElem"; //$NON-NLS-1$
 
@@ -388,20 +391,21 @@ public class JsonSaxParser extends SAXParser {
 	}
 	
 	private static String normalizeElementName(String name) {
-		if(!XMLChar.isValidName(name)) {
-			if(name==null || name.trim().length()==0) {
-				name = "UNNAMED";
-			}
-			if(name.indexOf(' ')>=0) {
-			  name = name.replaceAll(" ", "_");
-			}
-			if(!XMLChar.isValidName(name)) {
-				name = "_"+name;
-			}
-			if(!XMLChar.isValidName(name)) {
-				return "__INVALID_ELEMENT_NAME";
-			}
-			
+		if (name == null || name.trim().length() == 0) {
+			return XML_NAME_EMPTY;
+		}
+		if (name.indexOf(' ') >= 0) {
+			name = name.replaceAll(" ", "_");  //$NON-NLS-1$//$NON-NLS-2$
+		}
+		name = TagName.encode(name, false);
+
+		if (!XMLChar.isValidName(name)) {
+			name = "_" + name; //$NON-NLS-1$
+		}
+
+		if (!XMLChar.isValidName(name)) {
+			// should not happen
+			return XML_NAME_INVALID;
 		}
 		return name;
 	}
