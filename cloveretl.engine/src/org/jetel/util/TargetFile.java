@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -373,6 +374,13 @@ public class TargetFile {
         setOutput();
 
         bytes = records = 0;
+        
+        if (appendData && byteChannel instanceof java.nio.channels.SeekableByteChannel) {
+        	SeekableByteChannel seekableByteChannel = (SeekableByteChannel) byteChannel;
+        	if (seekableByteChannel.size() > 0) {
+        		formatter.setAppendTargetNotEmpty(true);
+        	}
+        }
 
         formatter.writeHeader();
     }
@@ -711,6 +719,7 @@ public class TargetFile {
 
     public void setAppendData(boolean appendData) {
         this.appendData = appendData;
+        this.formatter.setAppend(appendData);
     }
 
 	public void setUseChannel(boolean useChannel) {

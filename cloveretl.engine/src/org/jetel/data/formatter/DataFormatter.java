@@ -362,6 +362,9 @@ public class DataFormatter extends AbstractFormatter {
 
 	@Override
 	public int writeHeader() throws IOException {
+		if (append && appendTargetNotEmpty) {
+			return 0;
+		}
 		if (header == null && sHeader != null) {
 	    	try {
 				header = CloverBuffer.wrap(sHeader.getBytes(encoder.charset().name()));
