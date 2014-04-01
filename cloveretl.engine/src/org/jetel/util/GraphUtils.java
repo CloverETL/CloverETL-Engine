@@ -114,7 +114,7 @@ public class GraphUtils {
 	 */
 	public static TransformationGraph duplicateGraph(TransformationGraph templateGraph) {
 		TransformationGraph graph = new TransformationGraph(templateGraph.getId());
-		graph.setJobType(templateGraph.getJobType());
+		graph.setStaticJobType(templateGraph.getStaticJobType());
 		
 		try {
 			for (Phase templatePhase : templateGraph.getPhases()) {

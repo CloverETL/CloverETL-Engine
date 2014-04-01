@@ -44,6 +44,8 @@ import org.jetel.util.ExceptionUtils;
  */
 public class TokenTracker {
 
+	private TransformationGraph graph;
+	
 	private List<TokenTrackerSerializer> serializers = new ArrayList<TokenTrackerSerializer>();
 	
 	private TokenContent tokenContent;
@@ -53,6 +55,8 @@ public class TokenTracker {
 	private long tokenSequence = 1;
 	
 	public TokenTracker(TransformationGraph graph) {
+		this.graph = graph;
+		
 		serializers.add(new Log4jTokenTrackerSerializer(graph));
 		
 		tokenContent = new TokenContent();
@@ -64,7 +68,7 @@ public class TokenTracker {
 	 * Token was created in a component.
 	 */
 	public synchronized void initToken(Node component, Token token) {
-		token.setTokenId(tokenSequence++);
+		token.setTokenId(nextTokenId());
 		tokenContent.setToken(token);
 		
 		for (TokenTrackerSerializer serializer : serializers) {
@@ -165,4 +169,15 @@ public class TokenTracker {
 		}
 	}
 
+	/**
+	 * @return next token ID, sequence is shared with parent jobflow 
+	 */
+	public synchronized long nextTokenId() {
+		if (graph.getRuntimeContext().isSubJob()) {
+			return graph.getAuthorityProxy().getNextTokenIdFromParentJob();
+		} else {
+			return tokenSequence++; 
+		}
+	}
+	
 }

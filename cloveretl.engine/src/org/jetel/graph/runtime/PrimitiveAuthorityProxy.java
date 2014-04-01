@@ -526,4 +526,9 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		return Collections.emptyMap();
 	}
 	
+	@Override
+	public long getNextTokenIdFromParentJob() {
+		throw new UnsupportedOperationException("token ID sequence is not available for local execution");
+	}
+	
 }
