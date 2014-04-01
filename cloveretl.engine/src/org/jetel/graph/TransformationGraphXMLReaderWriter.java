@@ -381,7 +381,7 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setLicenseType(grfAttributes.getString(LICENSE_TYPE_ATTRIBUTE, null));
 	        graph.setLicenseCode(grfAttributes.getString(LICENSE_CODE_ATTRIBUTE, null));
 	        graph.setGuiVersion(grfAttributes.getString(GUI_VERSION_ATTRIBUTE, null));
-	        graph.setJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
+	        graph.setStaticJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
 	
 			// handle all defined graph parameters - old-fashion
 			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);

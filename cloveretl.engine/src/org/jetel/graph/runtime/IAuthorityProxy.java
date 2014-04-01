@@ -592,4 +592,13 @@ public abstract class IAuthorityProxy {
 	 */
 	public abstract Map<String, String> getAuthorityConfiguration();
 	
+	/**
+	 * Token ID sequence is shared among complete jobflow hierarchy.
+	 * For example token created in subgraph/subjobflow must share token ID
+	 * sequence to keep token flow monitoring understandable.
+	 * 
+	 * @return next token ID from parent jobflow
+	 */
+	public abstract long getNextTokenIdFromParentJob();
+	
 }

@@ -235,15 +235,39 @@ public final class TransformationGraph extends GraphElement {
     }
     
     /**
-     * Sets 'jobflow' type for this transformation graph.
-     * The graph can be driven in slightly different way in case jobflow run.  
+     * Sets static JobType for this transformation graph.
+     * Static JobType is a JobType derived from type of file from which
+     * the graph has been created. This static JobType can be different from
+     * runtime JobType in {@link GraphRuntimeContext#getJobType()}.
+     * For example subgraph (*.sgrf) executed from a jobflow has static JobType
+     * {@link JobType#SUBGRAPH} but runtime JobType is {@link JobType#SUBJOBFLOW}.
      */
-    public void setJobType(JobType jobType) {
+    public void setStaticJobType(JobType jobType) {
     	this.jobType = jobType;
     }
     
+    /**
+     * Returns runtime job type. Can be different from static JobType ({@link #getStaticJobType()}).
+     */
     @Override
     public JobType getJobType() {
+    	GraphRuntimeContext runtimeContext = getRuntimeContext();
+    	if (runtimeContext != null) {
+    		return runtimeContext.getJobType();
+    	} else {
+    		return jobType;
+    	}
+    }
+
+    /**
+     * Gets static JobType for this transformation graph.
+     * Static JobType is a JobType derived from type of file from which
+     * the graph has been created. This static JobType can be different from
+     * runtime JobType in {@link GraphRuntimeContext#getJobType()}.
+     * For example subgraph (*.sgrf) executed from a jobflow has static JobType
+     * {@link JobType#SUBGRAPH} but runtime JobType is {@link JobType#SUBJOBFLOW}.
+     */
+    public JobType getStaticJobType() {
     	return jobType;
     }
     
@@ -495,19 +519,8 @@ public final class TransformationGraph extends GraphElement {
 		super.preExecute();
 
 		//print out types of all edges
-		for (Edge edge : getEdges().values()) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("EdgeType [" + edge.getId() + "] : " + (edge.isSharedEdgeBase() ? "shared " + EdgeTypeEnum.valueOf(edge.getEdgeBase()) + " [" + edge.getEdgeBase().getProxy().getId() + "]" : edge.getEdgeType()));
-			}
-		}
-
-		//check whether the job type (etlGraph vs jobflow) of the graph matches the job type in GraphRuntimeContext 
-    	if (!getJobType().isSubTypeOf(getRuntimeContext().getJobType())) {
-    		throw new JetelRuntimeException("Inconsistent runtime setup. " +
-					"Internal graph nature (" + getJobType() + ") differs from runtime graph nature (" + getRuntimeContext().getJobType() + "). " +
-							"Probably internal graph nature does not correspond to graph file suffix.");
-    	}
-
+		printEdgesInfo();
+		
 		//pre-execute initialization of dictionary
 		dictionary.preExecute();
 		
@@ -1316,6 +1329,26 @@ public final class TransformationGraph extends GraphElement {
         } while (i != num);
         return null;
     }
+
+	private void printEdgesInfo() {
+		if (logger.isDebugEnabled()) {
+			for (Edge edge : getEdges().values()) {
+				StringBuilder edgeLabel = new StringBuilder();
+				if (edge instanceof JobflowEdge) {
+					edgeLabel.append("JobflowEdge");
+				} else {
+					edgeLabel.append("GraphEdge");
+				}
+				edgeLabel.append(" [" + edge.getId() + "] : ");
+				if (edge.isSharedEdgeBase()) {
+					edgeLabel.append("shared " + EdgeTypeEnum.valueOf(edge.getEdgeBase()) + " [" + edge.getEdgeBase().getProxy().getId() + "]");
+				} else {
+					edgeLabel.append(edge.getEdgeType());
+				}
+				logger.debug(edgeLabel);
+			}
+		}
+	}
 
 	public String getAuthor() {
 		return author;

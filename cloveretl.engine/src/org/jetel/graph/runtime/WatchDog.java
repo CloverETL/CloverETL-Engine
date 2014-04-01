@@ -202,6 +202,8 @@ public class WatchDog implements Callable<Result>, CloverPost {
 						logger.trace("rename thread " + originalThreadName + " to " + newThreadName);
 			  	t.setName(newThreadName);
 	    		
+			  	logger.debug("Job execution type: " + getGraphRuntimeContext().getJobType());
+			  	
 	    		//print graph properties
 	    		logger.info("Job parameters: " + graph.getGraphParameters());
 	    		

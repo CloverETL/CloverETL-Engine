@@ -174,4 +174,11 @@ public enum JobType {
 		throw new IllegalArgumentException("unknown job type associated with file extension " + fileExtension);
 	}
 
+	/**
+	 * @return true for {@link JobType#SUBGRAPH} and {@link JobType#SUBJOBFLOW}; false otherwise
+	 */
+	public boolean isSubJob() {
+		return parent != null;
+	}
+
 }
