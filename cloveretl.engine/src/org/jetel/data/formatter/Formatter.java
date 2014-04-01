@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.io.Flushable;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -125,6 +126,11 @@ public interface Formatter extends Closeable, Flushable {
      * @param append <code>true</code> if append mode of writing is used; <code>false</code> otherwise
      */
     public void setAppend(boolean append);
+
+	/**
+	 * @param informs the formatter that appending to a non-empty file is being performed
+	 */
+	public void setAppendTargetNotEmpty(boolean b);
     
 }
 /*
