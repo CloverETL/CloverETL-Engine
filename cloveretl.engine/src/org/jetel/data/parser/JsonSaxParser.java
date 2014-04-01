@@ -391,21 +391,23 @@ public class JsonSaxParser extends SAXParser {
 	}
 	
 	private static String normalizeElementName(String name) {
-		if (name == null || name.trim().length() == 0) {
-			return XML_NAME_EMPTY;
-		}
-		if (name.indexOf(' ') >= 0) {
-			name = name.replaceAll(" ", "_");  //$NON-NLS-1$//$NON-NLS-2$
-		}
-		name = TagName.encode(name, false);
+		if(!XMLChar.isValidName(name) || name.contains(":")) { //$NON-NLS-1$
+            if (name.trim().length() == 0) {
+                return XML_NAME_EMPTY;
+            }
+            if (name.indexOf(' ') >= 0) {
+                name = name.replaceAll(" ", "_");  //$NON-NLS-1$//$NON-NLS-2$
+            }
+            name = TagName.encode(name, false);
 
-		if (!XMLChar.isValidName(name)) {
-			name = "_" + name; //$NON-NLS-1$
-		}
+            if (!XMLChar.isValidName(name)) {
+                name = "_" + name; //$NON-NLS-1$
+            }
 
-		if (!XMLChar.isValidName(name)) {
-			// should not happen
-			return XML_NAME_INVALID;
+            if (!XMLChar.isValidName(name)) {
+                // should not happen
+                return XML_NAME_INVALID;
+            }
 		}
 		return name;
 	}
