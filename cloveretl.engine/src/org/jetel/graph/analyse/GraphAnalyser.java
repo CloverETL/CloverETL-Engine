@@ -62,7 +62,7 @@ public class GraphAnalyser {
 			Node writer = edge.getWriter(); //can be null for remote edges
 			readerPhase = reader != null ? reader.getPhase() : null;
 			writerPhase = writer != null ? writer.getPhase() : null;
-			if (readerPhase != writerPhase) {
+			if (readerPhase.getPhaseNum() > writerPhase.getPhaseNum()) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
 				edge.setEdgeType(EdgeTypeEnum.PHASE_CONNECTION);
