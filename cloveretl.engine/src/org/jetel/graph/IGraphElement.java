@@ -194,10 +194,11 @@ public interface IGraphElement {
     public boolean firstRun();
     
     /**
-     * Returns kind of parent graph - {@link JobType#ETL_GRAPH} or {@link JobType#JOBFLOW}.
-     * The transformation graph can be driven in slightly different way in case jobflow run.  
+     * Returns runtime job type for current graph - {@link JobType#ETL_GRAPH}, {@link JobType#JOBFLOW} or
+     * {@link JobType#SUBGRAPH}.
+     * The transformation graph can be driven in slightly different way in case jobflow run for example.  
      */
-    public JobType getJobType();
+    public JobType getRuntimeJobType();
 
     /**
      * @return dedicated logger for this graph element

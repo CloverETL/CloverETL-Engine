@@ -143,7 +143,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 		}
 
 		//create token tracker if graph is jobflow type
-		if (graph.getJobType().isJobflow()) {
+		if (graph.getRuntimeJobType().isJobflow()) {
 			tokenTracker = new TokenTracker(graph);
 		}
 		
@@ -517,7 +517,7 @@ public class WatchDog implements Callable<Result>, CloverPost {
 
 			// gather graph tracking
 			//etl graphs are tracked only in regular intervals, jobflows are tracked more precise, whenever something happens
-			if (message == null || ContextProvider.getJobType().isJobflow()) {
+			if (message == null || ContextProvider.getRuntimeJobType().isJobflow()) {
 				cloverJMX.gatherTrackingDetails();
 			}
 		}

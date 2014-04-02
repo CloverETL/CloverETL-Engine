@@ -260,7 +260,7 @@ public class EdgeDebugWriter {
     
     private boolean isJobflow() {
     	if (getGraph() != null) {
-    		return getGraph().getJobType().isJobflow();
+    		return getGraph().getRuntimeJobType().isJobflow();
     	} else {
     		return false;
     	}

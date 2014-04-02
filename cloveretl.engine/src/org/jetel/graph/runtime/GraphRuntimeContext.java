@@ -96,8 +96,6 @@ public class GraphRuntimeContext {
 	private ClassLoader classLoader;
 	private JobType jobType;
 	private String jobUrl;
-	/** Is true if and only if the graph should be executed as sub-job, see Subgraph and Subjobflow components. */
-	private boolean isSubJob;
 	/** Only for subgraphs - component id, where this subgraph has been executed. */
 	private String parentSubgraphComponentId;
 	private IAuthorityProxy authorityProxy;
@@ -120,7 +118,6 @@ public class GraphRuntimeContext {
 		dictionaryContent = new DictionaryValuesContainer();
 		clusterNodeId = null;
 		jobType = JobType.DEFAULT;
-		isSubJob = false;
 		authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
 		locale = null;
 		timeZone = null;
@@ -158,7 +155,6 @@ public class GraphRuntimeContext {
 		ret.classLoader = getClassLoader();
 		ret.jobType = getJobType();
 		ret.jobUrl = getJobUrl();
-		ret.isSubJob = isSubJob();
 		ret.parentSubgraphComponentId = getParentSubgraphComponentId();
 		ret.authorityProxy = getAuthorityProxy();
 		ret.executionType = getExecutionType();
@@ -643,20 +639,6 @@ public class GraphRuntimeContext {
 	 */
 	public void setJobUrl(String jobUrl) {
 		this.jobUrl = jobUrl;
-	}
-
-	/**
-	 * @return true if and only if the graph is executed as an sub-job, see Subgraph and Subjobflow components.
-	 */
-	public boolean isSubJob() {
-		return isSubJob;
-	}
-
-	/**
-	 * Sets the graph execution to sub-job mode.
-	 */
-	public void setSubJob(boolean isSubJob) {
-		this.isSubJob = isSubJob;
 	}
 
 	/**

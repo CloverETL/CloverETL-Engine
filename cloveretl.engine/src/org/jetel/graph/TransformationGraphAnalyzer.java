@@ -82,8 +82,8 @@ public class TransformationGraphAnalyzer {
 			throw new JetelRuntimeException("Removing disabled nodes failed.", e);
 		}
 
-		boolean subJobRuntime = runtimeContext.isSubJob();
-		boolean subJobFile = runtimeContext.getJobType() == JobType.SUBGRAPH || runtimeContext.getJobType() == JobType.SUBJOBFLOW || graph.getJobType() == JobType.SUBGRAPH || graph.getJobType() == JobType.SUBJOBFLOW;
+		boolean subJobRuntime = runtimeContext.getJobType().isSubJob();
+		boolean subJobFile = runtimeContext.getJobType().isSubJob() || graph.getStaticJobType().isSubJob();
 		if (subJobRuntime || subJobFile) {
 			try {
 				boolean removeDebugNodes = subJobRuntime;
@@ -113,6 +113,8 @@ public class TransformationGraphAnalyzer {
 		} catch (Exception e) {
 			throw new JetelRuntimeException("Edge type analysis failed.", e);
 		}
+        
+        graph.setAnalysed(true);
 	}
 	
 	/**

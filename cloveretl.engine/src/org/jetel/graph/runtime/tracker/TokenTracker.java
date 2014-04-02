@@ -173,7 +173,7 @@ public class TokenTracker {
 	 * @return next token ID, sequence is shared with parent jobflow 
 	 */
 	public synchronized long nextTokenId() {
-		if (graph.getRuntimeContext().isSubJob()) {
+		if (graph.getRuntimeJobType().isSubJob()) {
 			return graph.getAuthorityProxy().getNextTokenIdFromParentJob();
 		} else {
 			return tokenSequence++; 
