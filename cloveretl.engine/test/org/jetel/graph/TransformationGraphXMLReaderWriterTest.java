@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.jetel.test.CloverTestCase;
+import org.jetel.util.JAXBContextProvider;
 
 /**
  * @author Kokon (info@cloveretl.com)
@@ -54,7 +55,7 @@ public class TransformationGraphXMLReaderWriterTest extends CloverTestCase {
 		ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
 		
 		
-	    JAXBContext context = JAXBContext.newInstance(DummyGraphParameters.class);
+	    JAXBContext context = JAXBContextProvider.getInstance().getContext(DummyGraphParameters.class);
 	    Unmarshaller m = context.createUnmarshaller();
 	    
 	    DummyGraphParameters result = (DummyGraphParameters) m.unmarshal(is);
