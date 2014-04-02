@@ -13,7 +13,8 @@
 		<RegEx expression="# 3 *\|Venezuela *\|46" occurences="1"/>
 	</FunctionalTest>
 	
-	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false">
+	<!-- excluded on websphere85 because of CLO-3267 -->
+	<FunctionalTest ident="DebuggingGraph" graphFile="graph/DebuggingGraph.grf" assertion="false" excludedContainers="websphere85">
 		<ExcludeRegEx ident="error"/>
 		<RegEx expression="Exception raised by user: O is not a valid gender\. Go to record No\. 5820 and replace with \'M\' or \'F\'\." occurences="4"/>
 	</FunctionalTest>
