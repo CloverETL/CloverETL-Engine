@@ -971,7 +971,10 @@ public class TransformationGraphXMLReaderWriter {
         		}
         		instantiateGraphParametersFile(graph.getGraphParameters(), fileURL);
 	        } else if (propertyElement.hasAttribute("name")) {
-	        	graph.getGraphParameters().addGraphParameter(propertyElement.getAttribute("name"), propertyElement.getAttribute("value"));
+	        	String name = propertyElement.getAttribute("name");
+	        	if (isValidGraphParameterName(name)) { //obsolete parameters with invalid names are ignored
+	        		graph.getGraphParameters().addGraphParameter(name, propertyElement.getAttribute("value"));
+	        	}
 	        } else {
 	        	throwXMLConfigurationException("Invalid property definition :" + propertyElement);
 	        }
@@ -1008,7 +1011,13 @@ public class TransformationGraphXMLReaderWriter {
         try {
         	inStream = FileUtils.getInputStream(runtimeContext.getContextURL(), fileURL);
             graphProperties.load(inStream);
-            return graphProperties;
+            TypedProperties result = new TypedProperties();
+            for (String name : graphProperties.stringPropertyNames()) {
+            	if (isValidGraphParameterName(name)) { //obsolete parameters with invalid names are ignored
+            		result.setProperty(name, graphProperties.getProperty(name));
+            	}
+            }
+            return result;
         } catch(MalformedURLException e) {
         	throwXMLConfigurationException("Wrong URL/filename of file specified: " + fileURL, e);
         } finally {
@@ -1023,6 +1032,13 @@ public class TransformationGraphXMLReaderWriter {
     	return null;
     }
 
+	/**
+	 * Validation of obsolete graph parameters. Obsolete graph parameters
+	 * should be validated by this method and invalid ones shouldn't be used at all.
+	 */
+	public static boolean isValidGraphParameterName(String name) {
+		return !StringUtils.isEmpty(name) && StringUtils.isValidObjectName(name);
+	}
 
 	private void instantiateDictionary(NodeList dictionaryElements) throws  XMLConfigurationException {
 		final Dictionary dictionary = graph.getDictionary();
