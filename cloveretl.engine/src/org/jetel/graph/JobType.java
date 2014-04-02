@@ -73,7 +73,7 @@ public enum JobType {
 	
 	@Override
 	public String toString() {
-		return id;
+		return name();
 	}
 	
 	/**
@@ -136,7 +136,7 @@ public enum JobType {
 			return DEFAULT;
 		}
 		for (JobType jobType : values()) {
-			if (jobTypeId.equals(jobType.id)) {
+			if (jobTypeId.equals(jobType.id) || jobTypeId.equals(jobType.name())) {
 				return jobType;
 			}
 		}
