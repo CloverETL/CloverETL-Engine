@@ -208,6 +208,8 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("TypedProperties_CLO-1997.grf") // server test
 							&& !file.getName().equals("EmptySubGraph.grf") // server test
 							&& !file.getName().equals("ParallelReader_HDFS.grf") // cluster test
+							&& !file.getName().equals("SubgraphsReuse.grf") // contains subgraphs
+							&& !file.getName().equals("SubgraphsSimplifyingGraph.grf") // contains subgraphs
 							&& !file.getName().equals("graphHTTPConnector.grf") // external service is unstable
 							&& !file.getName().equals("CLO-2214_pre_post_execute_race_condition.grf") // ok, is to fail
 							&& !file.getName().equals("EmptyGraph.grf") // ok, is to fail
