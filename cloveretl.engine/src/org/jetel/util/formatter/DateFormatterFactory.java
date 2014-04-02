@@ -37,8 +37,11 @@ public final class DateFormatterFactory {
 	
 	public static DateFormatter getFormatter(String formatString, Locale locale, String timeZoneId) {
 		TimeZoneProvider timeZoneProvider = new TimeZoneProvider(timeZoneId);
-		if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JODA) {
+		final DataFieldFormatType formatType = DataFieldFormatType.getFormatType(formatString);
+		if (formatType == DataFieldFormatType.JODA) {
 			return new JodaDateFormatter(DataFieldFormatType.JODA.getFormat(formatString), locale, timeZoneProvider.getJodaTimeZone());
+		} else if (formatType == DataFieldFormatType.ISO_8601) {
+			return Iso8601DateFormatter.valueOf(DataFieldFormatType.ISO_8601.getFormat(formatString));
 		} else {
 			TimeZone tz = timeZoneProvider.getJavaTimeZone();
 			if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {
