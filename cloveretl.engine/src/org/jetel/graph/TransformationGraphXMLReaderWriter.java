@@ -65,6 +65,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.metadata.MetadataFactory;
+import org.jetel.util.JAXBContextProvider;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -1240,7 +1241,7 @@ public class TransformationGraphXMLReaderWriter {
 	
 	public void writeGraphParameters(GraphParameters graphParameters, OutputStream os) {
 		try {
-		    JAXBContext context = JAXBContext.newInstance(GraphParameters.class);
+		    JAXBContext context = JAXBContextProvider.getInstance().getContext(GraphParameters.class);
 		    Marshaller m = context.createMarshaller();
 		    m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 		    

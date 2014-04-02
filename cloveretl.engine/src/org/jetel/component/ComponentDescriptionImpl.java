@@ -28,6 +28,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.metadata.MetadataRepository;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
+import org.jetel.util.JAXBContextProvider;
 import org.w3c.dom.NodeList;
 
 /**
@@ -45,7 +46,7 @@ public class ComponentDescriptionImpl extends GraphElementDescriptionImpl implem
 	    NodeList xmlContent = getExtension().getXMLDefinition().getElementsByTagName("ETLComponent");
         if (xmlContent.getLength() == 1) {
         	try {
-			    JAXBContext context = JAXBContext.newInstance(Component.class);
+			    JAXBContext context = JAXBContextProvider.getInstance().getContext(Component.class);
 			    Unmarshaller m = context.createUnmarshaller();
 			    
 			    componentDesc = (Component) m.unmarshal(xmlContent.item(0));
