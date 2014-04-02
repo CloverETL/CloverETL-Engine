@@ -55,7 +55,7 @@ public abstract class TrackingLogger implements NotificationListener {
     
     public static void track(CloverJMX cloverJMX) {
     	TrackingLogger trackingLogger = null;
-    	if (ContextProvider.getJobType().isGraph()) {
+    	if (ContextProvider.getRuntimeJobType().isGraph()) {
     		trackingLogger = new GraphTrackingLogger(cloverJMX);
     	} else {
     		trackingLogger = new JobflowTrackingLogger(cloverJMX);

@@ -21,10 +21,12 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -248,9 +250,11 @@ public final class TransformationGraph extends GraphElement {
     
     /**
      * Returns runtime job type. Can be different from static JobType ({@link #getStaticJobType()}).
+     * For example *.sgrf file executed as root job, has static job type {@link JobType#SUBGRAPH},
+     * but runtime jobtype is {@link JobType#ETL_GRAPH}.
      */
     @Override
-    public JobType getJobType() {
+    public JobType getRuntimeJobType() {
     	GraphRuntimeContext runtimeContext = getRuntimeContext();
     	if (runtimeContext != null) {
     		return runtimeContext.getJobType();
@@ -1179,24 +1183,26 @@ public final class TransformationGraph extends GraphElement {
 	            phase.checkConfig(status);
 	        }
 	        
-	        //SubgraphInput and SubgraphOutput components can be present only one instance in the graph
-	        boolean hasSubgraphInput = false;
-	        boolean hasSubgraphOutput = false;
+	        //only single instance of SubgraphInput and SubgraphOutput component is allowed in transformation graph
+	        List<Node> subgraphInputComponents = new ArrayList<>();
+	        List<Node> subgraphOutputComponents = new ArrayList<>();
 	        for (Node component : getNodes().values()) {
 	        	if (SubgraphUtils.isSubJobInputComponent(component.getType())) {
-	        		if (hasSubgraphInput) {
-	        			status.add("Multiple SubgraphInput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
-	        		} else {
-	        			hasSubgraphInput = true;
-	        		}
+	        		subgraphInputComponents.add(component);
 	        	}
 	        	if (SubgraphUtils.isSubJobOutputComponent(component.getType())) {
-	        		if (hasSubgraphOutput) {
-	        			status.add("Multiple SubgraphOutput component detected in the graph.", Severity.ERROR, component, Priority.NORMAL);
-	        		} else {
-	        			hasSubgraphOutput = true;
-	        		}
+	        		subgraphOutputComponents.add(component);
 	        	}
+	        }
+	        if (subgraphInputComponents.size() > 1) {
+	    		for (Node subgraphInputComponent : subgraphInputComponents) {
+	    			status.add("Multiple SubgraphInput component detected in the graph.", Severity.ERROR, subgraphInputComponent, Priority.NORMAL);
+	    		}
+	        }
+	        if (subgraphOutputComponents.size() > 1) {
+	    		for (Node subgraphOutputComponent : subgraphOutputComponents) {
+	    			status.add("Multiple SubgraphOutput component detected in the graph.", Severity.ERROR, subgraphOutputComponent, Priority.NORMAL);
+	    		}
 	        }
 	        
 	        return status;

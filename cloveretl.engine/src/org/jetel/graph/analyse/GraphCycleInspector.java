@@ -25,7 +25,6 @@ import java.util.Stack;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
-import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -167,7 +166,7 @@ public class GraphCycleInspector {
 				throw new JetelRuntimeException("Oriented cycle found in the graph. " + theCycle);
 			}
 		}
-		if (!g.getJobType().isJobflow()) {
+		if (!g.getRuntimeJobType().isJobflow()) {
 			throw new JetelRuntimeException("Oriented cycle found in the graph. Cycles are available only in jobflows. " + theCycle);
 		}
 		if (!hasWhileCycle) {
@@ -179,12 +178,12 @@ public class GraphCycleInspector {
 	 * @return
 	 */
 	private void setEdgeAsBuffered(Edge edge) {
-		if (edge.getGraph().getJobType().isGraph()) {
+		if (edge.getGraph().getRuntimeJobType().isGraph()) {
 			edge.setEdgeType(EdgeTypeEnum.BUFFERED);
-		} else if (edge.getGraph().getJobType().isJobflow()) {
+		} else if (edge.getGraph().getRuntimeJobType().isJobflow()) {
 			edge.setEdgeType(EdgeTypeEnum.BUFFERED_FAST_PROPAGATE);
 		} else {
-			throw new JetelRuntimeException("unexpected job type " + edge.getGraph().getJobType());
+			throw new JetelRuntimeException("unexpected job type " + edge.getGraph().getRuntimeJobType());
 		}
 	}
 

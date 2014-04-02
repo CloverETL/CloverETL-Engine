@@ -258,8 +258,8 @@ public abstract class GraphElement implements IGraphElement {
     }
     
     @Override
-	public JobType getJobType() {
-        return getGraph() != null ? getGraph().getJobType() : JobType.DEFAULT;
+	public JobType getRuntimeJobType() {
+        return getGraph() != null ? getGraph().getRuntimeJobType() : JobType.DEFAULT;
     }
 
     @Override

@@ -145,6 +145,8 @@ public enum JobType {
 	
 	/**
 	 * Detection of job type based on file name.
+	 * For example, for *.grf is returned {@link #ETL_GRAPH}
+	 * and for *.sgrf is returned {@link #SUBGRAPH}.
 	 */
 	public static JobType fromFileName(String fileName) {
 		if (StringUtils.isEmpty(fileName)) {
@@ -159,6 +161,17 @@ public enum JobType {
 		throw new IllegalArgumentException("unknown job type associated with file name " + fileName);
 	}
 
+	/**
+	 * This is identical with {@link #fromFileName(String)#getBaseType()}.
+	 * For example, for both *.grf and *.sgrf is returned {@link #ETL_GRAPH}.
+	 * 
+	 * @param fileName
+	 * @return base job type of job type derived from file name
+	 */
+	public static JobType baseTypeFromFileName(String fileName) {
+		return fromFileName(fileName).getBaseType();
+	}
+	
 	/**
 	 * Detection of job type based on file name extension.
 	 */
