@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <GraphParameters>
-<GraphParameter name="PROJECT" value="."/>
-<GraphParameter name="CONN_DIR" value="${PROJECT}/conn"/>
-<GraphParameter name="DATAIN_DIR" value="${PROJECT}/data-in"/>
-<GraphParameter name="DATAOUT_DIR" value="${PROJECT}/data-out"/>
-<GraphParameter name="DATATMP_DIR" value="${PROJECT}/data-tmp"/>
-<GraphParameter name="GRAPH_DIR" value="${PROJECT}/graph"/>
-<GraphParameter name="LIB_DIR" value="${PROJECT}/lib"/>
-<GraphParameter name="LOOKUP_DIR" value="${PROJECT}/lookup"/>
-<GraphParameter name="META_DIR" value="${PROJECT}/meta"/>
-<GraphParameter name="SEQ_DIR" value="${PROJECT}/seq"/>
-<GraphParameter name="TRANS_DIR" value="${PROJECT}/trans"/>
+<GraphParameter description="Project root path" name="PROJECT" value="."/>
+<GraphParameter description="Default folder for external connections" name="CONN_DIR" value="${PROJECT}/conn"/>
+<GraphParameter description="Default folder for input data files" name="DATAIN_DIR" value="${PROJECT}/data-in"/>
+<GraphParameter description="Default folder for output data files" name="DATAOUT_DIR" value="${PROJECT}/data-out"/>
+<GraphParameter description="Default folder for temporary data files" name="DATATMP_DIR" value="${PROJECT}/data-tmp"/>
+<GraphParameter description="Default folder for transformation graphs (grf)" name="GRAPH_DIR" value="${PROJECT}/graph"/>
+<GraphParameter description="Default folder for transformation subgraphs (sgrf)" name="SUBGRAPH_DIR" value="${GRAPH_DIR}/subgraph"/>
+<GraphParameter description="Default folder for jobflows (jbf)" name="JOBFLOW_DIR" value="${PROJECT}/jobflow"/>
+<GraphParameter description="Default folder for external lookup tables" name="LOOKUP_DIR" value="${PROJECT}/lookup"/>
+<GraphParameter description="Default folder for external metadata (fmt)" name="META_DIR" value="${PROJECT}/meta"/>
+<GraphParameter description="Default folder for data profiler jobs (cpj)" name="PROFILE_DIR" value="${PROJECT}/profile"/>
+<GraphParameter description="Default folder for external sequences (seq)" name="SEQ_DIR" value="${PROJECT}/seq"/>
+<GraphParameter description="Default folder for java and CTL transformations" name="TRANS_DIR" value="${PROJECT}/trans"/>
 </GraphParameters>
