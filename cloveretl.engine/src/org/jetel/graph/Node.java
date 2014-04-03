@@ -1470,7 +1470,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      */
     protected void waitForEdgesEOF() throws InterruptedException {
     	for (InputPort inputPort : getInPorts()) {
-    		inputPort.getEdge().waitForEOF();;
+    		inputPort.getEdge().waitForEOF();
     	}
     	for (OutputPort outputPort : getOutPorts()) {
     		outputPort.getEdge().waitForEOF();
