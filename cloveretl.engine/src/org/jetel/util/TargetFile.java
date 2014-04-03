@@ -377,7 +377,7 @@ public class TargetFile {
         
         if (appendData && byteChannel instanceof java.nio.channels.SeekableByteChannel) {
         	SeekableByteChannel seekableByteChannel = (SeekableByteChannel) byteChannel;
-        	if (seekableByteChannel.size() > 0) {
+        	if (seekableByteChannel.isOpen() && seekableByteChannel.size() > 0) {
         		formatter.setAppendTargetNotEmpty(true);
         	}
         }
