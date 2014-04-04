@@ -719,9 +719,6 @@ public class TargetFile {
 
     public void setAppendData(boolean appendData) {
         this.appendData = appendData;
-        if (formatter != null) {
-            formatter.setAppend(appendData);
-        }
     }
 
 	public void setUseChannel(boolean useChannel) {
