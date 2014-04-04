@@ -35,6 +35,7 @@ public class DataFormatterProvider implements SharedFormatterProvider {
 	private String charSet;
 	private boolean quotedStrings;
 	private Character quoteChar;
+	private boolean append;
 	
 	private String[] excludedFieldNames;
 
@@ -58,6 +59,7 @@ public class DataFormatterProvider implements SharedFormatterProvider {
 		formatter.setExcludedFieldNames(excludedFieldNames);
 		formatter.setQuotedStrings(quotedStrings);
 		formatter.setQuoteChar(quoteChar);
+		formatter.setAppend(append);
 	}
 
 	/**
@@ -124,6 +126,14 @@ public class DataFormatterProvider implements SharedFormatterProvider {
 
 	public void setExcludedFieldNames(String[] excludedFieldNames) {
 		this.excludedFieldNames = excludedFieldNames;
+	}
+	
+	public boolean getAppend() {
+		return append;
+	}
+	
+	public void setAppend(boolean append) {
+		this.append = append;
 	}
 
 }

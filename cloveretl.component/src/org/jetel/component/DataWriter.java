@@ -223,6 +223,7 @@ public class DataWriter extends Node {
 			formatterProvider.setQuotedStrings(quotedStrings);
 			formatterProvider.setQuoteChar(quoteChar);
 		}
+		formatterProvider.setAppend(appendData);
 		
 		initLookupTable();
 
