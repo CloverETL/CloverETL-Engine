@@ -166,7 +166,7 @@ public class GraphUtils {
 		ComponentMockup component = new ComponentMockup(templateComponent.getId(), templateComponent.getType());
 		component.setName(templateComponent.getName());
 		component.setEnabled(templateComponent.getEnabled());
-		component.setAllocation(templateComponent.getAllocation().duplicate());
+		component.setAllocation(templateComponent.getAllocation());
 		component.setUsedUrls(templateComponent.getUsedUrls());
 		phase.addNode(component);
 	}

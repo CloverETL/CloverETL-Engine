@@ -163,7 +163,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         phase = null;
         setResultCode(Result.N_A); // result is not known yet
         childThreads = new ArrayList<Thread>();
-        allocation = EngineComponentAllocation.createBasedOnNeighbours();
+        allocation = EngineComponentAllocation.createNeighboursAllocation();
 	}
 
 	/**
@@ -464,7 +464,7 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         	}
 			//non empty allocation is not allowed in non-cluster environment
 			EngineComponentAllocation allocation = getAllocation();
-			if (allocation != null && !allocation.isInferedFromNeighbours()) {
+			if (allocation != null && !allocation.isNeighboursAllocation()) {
 				throw new JetelRuntimeException("Component allocation cannot be specified in non-cluster environment.");
 			}
         }

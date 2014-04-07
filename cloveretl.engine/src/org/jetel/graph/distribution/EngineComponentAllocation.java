@@ -18,197 +18,316 @@
  */
 package org.jetel.graph.distribution;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 import org.jetel.data.Defaults;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.util.string.StringUtils;
 
-
 /**
- * @author Martin Zatopek (info@cloveretl.com)
- *         (c) (c) Javlin, a.s. (www.javlin.eu) (www.cloveretl.com)
+ * This class represents type of allocation of a single component.
+ * Currently supported allocations:
+ * 		- derived from neigbours
+ * 		- derived from a component
+ * 		- derived from a partitioned sandbox
+ * 		- derived from a number requested partitions
+ * 		- allocation on all available cluster nodes
+ * 		- allocation on list of specified cluster nodes
+ * 
+ * @author Kokon (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
  *
- * @created 11.1.2010
+ * @created 4. 4. 2014
  */
-public class EngineComponentAllocation {
-
-	public static final String SANDBOX_PREFIX = "sandbox:";
-
-	public static final String CLUSTER_NODES_PREFIX = "clusterNodes:";
+public abstract class EngineComponentAllocation {
 	
-	public static final String COMPONENT_PREFIX = "component:";
-
-	public static final String INFERRED_FROM_NEIGHBOURS_PREFIX = "neighbours:";
-
-	public static final String NUMBER_PREFIX = "number:";
+	/** List of allocation parsers. See {@link #fromString(String)} */
+	private static List<AllocationParser> allocationParsers = new ArrayList<>();
 	
-	private static final EngineComponentAllocation INFERED_FROM_NEIGHBOURS;
-	
-	static {
-		INFERED_FROM_NEIGHBOURS = new EngineComponentAllocation();
-		INFERED_FROM_NEIGHBOURS.setNeighbours(true);
-	}
-	
-	private boolean neighbours;
-
-	private String sandboxId;
-	
-	private String componentId;
-	
-	private List<String> clusterNodes;
-
-	private Integer number;
-	
-	public static EngineComponentAllocation createBasedOnNeighbours() {
-		return INFERED_FROM_NEIGHBOURS;
+	/**
+	 * Adds new factory which creates allocation from a string representation.
+	 * @param allocationParser
+	 */
+	public static void addAllocationParser(AllocationParser allocationParser) {
+		allocationParsers.add(allocationParser);
 	}
 
-	public static EngineComponentAllocation createBasedOnSandbox(String sandboxId) {
-		if (StringUtils.isEmpty(sandboxId)) {
-			throw new IllegalArgumentException("Sandbox id cannot be empty.");
-		}
-		EngineComponentAllocation componentAllocation = new EngineComponentAllocation();
-		componentAllocation.setSandboxId(sandboxId);
-		return componentAllocation;
-	}
-
-	public static EngineComponentAllocation createBasedOnComponentId(String componentId) {
-		if (StringUtils.isEmpty(componentId)) {
-			throw new IllegalArgumentException("Component id cannot be empty.");
-		}
-		EngineComponentAllocation componentAllocation = new EngineComponentAllocation();
-		componentAllocation.setComponentId(componentId);
-		return componentAllocation;
-	}
-
-	public static EngineComponentAllocation createBasedOnClusterNodes(List<String> clusterNodes) {
-		if (clusterNodes == null || clusterNodes.size() == 0) {
-			throw new IllegalArgumentException("Cluster nodes cannot be empty array.");
-		}
-		EngineComponentAllocation componentAllocation = new EngineComponentAllocation();
-		componentAllocation.setClusterNodes(clusterNodes);
-		return componentAllocation;
-	}
-
-	public static EngineComponentAllocation createBasedOnNumber(int number) {
-		if (number <= 0) {
-			throw new IllegalArgumentException("Number of workers has to be positive.");
-		}
-		EngineComponentAllocation componentAllocation = new EngineComponentAllocation();
-		componentAllocation.setNumber(number);
-		return componentAllocation;
-	}
-
-	public static EngineComponentAllocation fromString(String rawAllocation) throws JetelException {
-		if (rawAllocation.startsWith(SANDBOX_PREFIX)) {
-			String sandboxId = rawAllocation.substring(SANDBOX_PREFIX.length());
-			if (StringUtils.isEmpty(sandboxId)) {
-				throw new JetelException("Ivalid component allocation format: " + rawAllocation + ".");
+	/**
+	 * Creates an allocation from given string representation.
+	 * @param rawAllocation string representation of requested allocation
+	 * @return component allocation from the given string representation
+	 */
+	public static EngineComponentAllocation fromString(String rawAllocation) {
+		if (!StringUtils.isEmpty(rawAllocation)) {
+			for (AllocationParser allocationParser : allocationParsers) {
+				EngineComponentAllocation engineComponentAllocation = allocationParser.parse(rawAllocation);
+				if (engineComponentAllocation != null) {
+					return engineComponentAllocation;
+				}
 			}
-			return EngineComponentAllocation.createBasedOnSandbox(sandboxId);
-		} else if (rawAllocation.startsWith(COMPONENT_PREFIX)) {
-			String componentId = rawAllocation.substring(COMPONENT_PREFIX.length());
-			if (StringUtils.isEmpty(componentId)) {
-				throw new JetelException("Ivalid component allocation format: " + rawAllocation + ".");
-			}
-			return EngineComponentAllocation.createBasedOnComponentId(componentId);
-		} else if (rawAllocation.startsWith(CLUSTER_NODES_PREFIX)) {
-			String clusterNodeIds = rawAllocation.substring(CLUSTER_NODES_PREFIX.length());
-			if (StringUtils.isEmpty(clusterNodeIds)) {
-				throw new JetelException("Ivalid component allocation format: " + rawAllocation + ".");
-			}
-			return EngineComponentAllocation.createBasedOnClusterNodes(Arrays.asList(clusterNodeIds.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX)));
-		} else if (rawAllocation.startsWith(NUMBER_PREFIX)) {
-			String numberStr = rawAllocation.substring(NUMBER_PREFIX.length());
-			try {
-				int number = Integer.valueOf(numberStr);
-				return EngineComponentAllocation.createBasedOnNumber(number);
-			} catch (NumberFormatException e) {
-				throw new JetelException("Ivalid component allocation format: " + rawAllocation + ".");
-			}
-		} else if (rawAllocation.startsWith(INFERRED_FROM_NEIGHBOURS_PREFIX)) {
-			return INFERED_FROM_NEIGHBOURS;
+			throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation);
+		} else {
+			throw new JetelRuntimeException("Empty component allocation.");
 		}
-		throw new JetelException("Ivalid component allocation format: " + rawAllocation);
+	}
+
+	private EngineComponentAllocation() {
+	}
+
+	/**
+	 * Returns string representation of this component allocation.
+	 */
+	@Override
+	public String toString() {
+		throw new UnsupportedOperationException();
 	}
 	
 	/**
-	 * Only private constructor. 
+	 * This is factory which creates a component allocation from a given string allocation representation.
+	 * @see EngineComponentAllocation#fromString(String)
 	 */
-	private EngineComponentAllocation() {
-		//DO NOTHING
+	protected static abstract class AllocationParser {
+		public abstract EngineComponentAllocation parse(String rawAllocation);
 	}
 	
-	public boolean isInferedFromNeighbours() {
-		return neighbours;
-	}
-	
-	public boolean isInferedFromSandbox() {
-		return sandboxId != null;
-	}
-	
-	public boolean isInferedFromComponent() {
-		return componentId != null;
-	}
-	
-	public boolean isInferedFromClusterNodes() {
-		return clusterNodes != null;
-	}
+	////////////////
+	//all allocation
+	public static class AllClusterNodesEngineComponentAllocation extends EngineComponentAllocation {
+		public final static String PREFIX = "allClusterNodes:";
+		
+		public static AllClusterNodesEngineComponentAllocation INSTANCE = new AllClusterNodesEngineComponentAllocation(); 
 
-	public boolean isInferedFromNumber() {
-		return number != null;
-	}
-
-	//GETTERS & SETTERS
-	
-	private void setNeighbours(boolean neighbours) {
-		this.neighbours = neighbours;
-	}
-
-	public String getSandboxId() {
-		return sandboxId;
-	}
-
-	private void setSandboxId(String sandboxId) {
-		this.sandboxId = sandboxId;
-	}
-
-	public String getComponentId() {
-		return componentId;
-	}
-
-	private void setComponentId(String componentId) {
-		this.componentId = componentId;
-	}
-
-	public List<String> getClusterNodes() {
-		return clusterNodes;
-	}
-
-	private void setClusterNodes(List<String> clusterNodes) {
-		this.clusterNodes = clusterNodes;
-	}
-
-	public Integer getNumber() {
-		return number;
-	}
-	
-	private void setNumber(int number) {
-		this.number = number;
-	}
-
-	@Override
-	public String toString() {
-		if (isInferedFromSandbox()) {
-			return SANDBOX_PREFIX + sandboxId;
+		private AllClusterNodesEngineComponentAllocation() {
 		}
-		if (isInferedFromClusterNodes()) {
+		
+		@Override
+		public String toString() {
+			return PREFIX;
+		}
+	}
+
+	static {
+		addAllocationParser(new AllocationParser() {
+			@Override
+			public EngineComponentAllocation parse(String rawAllocation) {
+				return rawAllocation.equals(AllClusterNodesEngineComponentAllocation.PREFIX) ? AllClusterNodesEngineComponentAllocation.INSTANCE : null;
+			}
+		});
+	}
+
+	/**
+	 * @return component allocation instance which is spread on all available cluster nodes
+	 */
+	public static AllClusterNodesEngineComponentAllocation createAllClusterNodesAllocation() {
+		return AllClusterNodesEngineComponentAllocation.INSTANCE;
+	}
+	
+	/**
+	 * Converts this allocation to {@link AllClusterNodesEngineComponentAllocation}.
+	 * Can be called only if {@link #isAllClusterNodesAllocation()}.
+	 */
+	public AllClusterNodesEngineComponentAllocation toAllClusterNodesAllocation() {
+		return (AllClusterNodesEngineComponentAllocation) this;
+	}
+
+	/**
+	 * @return true if this allocation is {@link AllClusterNodesEngineComponentAllocation}; false otherwise
+	 */
+	public boolean isAllClusterNodesAllocation() {
+		return this instanceof AllClusterNodesEngineComponentAllocation;
+	}
+
+	//////////////////////
+	//neighbour allocation
+	public static class NeighboursEngineComponentAllocation extends EngineComponentAllocation {
+		public final static String PREFIX = "neighbours:";
+
+		public static NeighboursEngineComponentAllocation INSTANCE = new NeighboursEngineComponentAllocation(); 
+
+		private NeighboursEngineComponentAllocation() {
+		}
+
+		@Override
+		public String toString() {
+			return PREFIX;
+		}
+	}
+
+	static {
+		addAllocationParser(new AllocationParser() {
+			@Override
+			public EngineComponentAllocation parse(String rawAllocation) {
+				return rawAllocation.equals(NeighboursEngineComponentAllocation.PREFIX) ? NeighboursEngineComponentAllocation.INSTANCE : null;
+			}
+		});
+	}
+
+	/**
+	 * @return component allocation instance which inherits allocation from neighbouring components
+	 */
+	public static NeighboursEngineComponentAllocation createNeighboursAllocation() {
+		return NeighboursEngineComponentAllocation.INSTANCE;
+	}
+	
+	/**
+	 * Converts this allocation to {@link NeighboursEngineComponentAllocation}.
+	 * Can be called only if {@link #isNeighboursAllocation()}.
+	 */
+	public NeighboursEngineComponentAllocation toNeighboursAllocation() {
+		return (NeighboursEngineComponentAllocation) this;
+	}
+
+	/**
+	 * @return true if this allocation is {@link NeighboursEngineComponentAllocation}; false otherwise
+	 */
+	public boolean isNeighboursAllocation() {
+		return this instanceof NeighboursEngineComponentAllocation;
+	}
+
+	///////////////////
+	//number allocation
+	public static class NumberEngineComponentAllocation extends EngineComponentAllocation {
+		public final static String PREFIX = "number:";
+
+		private int number;
+		
+		private NumberEngineComponentAllocation(int number) {
+			this.number = number;
+		}
+		
+		public int getNumber() {
+			return number;
+		}
+
+		@Override
+		public String toString() {
+			return PREFIX + number;
+		}
+	}
+
+	static {
+		addAllocationParser(new AllocationParser() {
+			@Override
+			public EngineComponentAllocation parse(String rawAllocation) {
+				if (rawAllocation.startsWith(NumberEngineComponentAllocation.PREFIX)) {
+					String numberStr = rawAllocation.substring(NumberEngineComponentAllocation.PREFIX.length());
+					try {
+						int number = Integer.valueOf(numberStr);
+						return EngineComponentAllocation.createNumberAllocation(number);
+					} catch (NumberFormatException e) {
+						throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation + ".");
+					}
+				} else {
+					return null;
+				}
+			}
+		});
+	}
+
+	/**
+	 * @return component allocation instance which sits on specified number of cluster nodes
+	 */
+	public static NumberEngineComponentAllocation createNumberAllocation(int number) {
+		return new NumberEngineComponentAllocation(number);
+	}
+	
+	/**
+	 * Converts this allocation to {@link NumberEngineComponentAllocation}.
+	 * Can be called only if {@link #isNumberAllocation()}.
+	 */
+	public NumberEngineComponentAllocation toNumberAllocation() {
+		return (NumberEngineComponentAllocation) this;
+	}
+
+	/**
+	 * @return true if this allocation is {@link NumberEngineComponentAllocation}; false otherwise
+	 */
+	public boolean isNumberAllocation() {
+		return this instanceof NumberEngineComponentAllocation;
+	}
+
+	////////////////////
+	//sandbox allocation
+	public static class SandboxEngineComponentAllocation extends EngineComponentAllocation {
+		public final static String PREFIX = "sandbox:";
+
+		private String sandboxId;
+		
+		private SandboxEngineComponentAllocation(String sandboxId) {
+			this.sandboxId = sandboxId;
+		}
+		
+		public String getSandboxId() {
+			return sandboxId;
+		}
+
+		@Override
+		public String toString() {
+			return PREFIX + sandboxId;
+		}
+	}
+
+	static {
+		addAllocationParser(new AllocationParser() {
+			@Override
+			public EngineComponentAllocation parse(String rawAllocation) {
+				if (rawAllocation.startsWith(SandboxEngineComponentAllocation.PREFIX)) {
+					String sandboxId = rawAllocation.substring(SandboxEngineComponentAllocation.PREFIX.length());
+					if (StringUtils.isEmpty(sandboxId)) {
+						throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation + ".");
+					}
+					return EngineComponentAllocation.createSandboxAllocation(sandboxId);
+				} else {
+					return null;
+				}
+			}
+		});
+	}
+
+	/**
+	 * @return component allocation instance which is inherited from locations of a partitioned sandbox
+	 */
+	public static SandboxEngineComponentAllocation createSandboxAllocation(String sandbox) {
+		return new SandboxEngineComponentAllocation(sandbox);
+	}
+	
+	/**
+	 * Converts this allocation to {@link SandboxEngineComponentAllocation}.
+	 * Can be called only if {@link #isSandboxAllocation()}.
+	 */
+	public SandboxEngineComponentAllocation toSandboxAllocation() {
+		return (SandboxEngineComponentAllocation) this;
+	}
+
+	/**
+	 * @return true if this allocation is {@link SandboxEngineComponentAllocation}; false otherwise
+	 */
+	public boolean isSandboxAllocation() {
+		return this instanceof SandboxEngineComponentAllocation;
+	}
+
+	//////////////////////////
+	//cluster nodes allocation
+	public static class ClusterNodesEngineComponentAllocation extends EngineComponentAllocation {
+		public final static String PREFIX = "clusterNodes:";
+
+		private List<String> clusterNodes;
+		
+		private ClusterNodesEngineComponentAllocation(List<String> clusterNodes) {
+			this.clusterNodes = clusterNodes;
+		}
+		
+		public List<String> getClusterNodes() {
+			return clusterNodes;
+		}
+	
+		@Override
+		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			sb.append(CLUSTER_NODES_PREFIX);
+			sb.append(PREFIX);
 			if (clusterNodes != null) {
 				for (Iterator<String> i = clusterNodes.iterator(); i.hasNext();) {
 					sb.append(i.next());
@@ -219,26 +338,105 @@ public class EngineComponentAllocation {
 			}
 			return sb.toString();
 		}
-		if (isInferedFromComponent()) {
-			return COMPONENT_PREFIX + componentId;
-		}
+	}
 
-		if (isInferedFromNumber()) {
-			return NUMBER_PREFIX + number;
+	static {
+		addAllocationParser(new AllocationParser() {
+			@Override
+			public EngineComponentAllocation parse(String rawAllocation) {
+				if (rawAllocation.startsWith(ClusterNodesEngineComponentAllocation.PREFIX)) {
+					String clusterNodeIds = rawAllocation.substring(ClusterNodesEngineComponentAllocation.PREFIX.length());
+					if (StringUtils.isEmpty(clusterNodeIds)) {
+						throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation + ".");
+					}
+					return EngineComponentAllocation.createClusterNodesAllocation(Arrays.asList(clusterNodeIds.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX)));
+				} else {
+					return null;
+				}
+			}
+		});
+	}
+
+	/**
+	 * @return component allocation instance which sits on specified cluster nodes
+	 */
+	public static ClusterNodesEngineComponentAllocation createClusterNodesAllocation(List<String> clusterNodes) {
+		return new ClusterNodesEngineComponentAllocation(clusterNodes);
+	}
+	
+	/**
+	 * Converts this allocation to {@link ClusterNodesEngineComponentAllocation}.
+	 * Can be called only if {@link #isClusterNodesAllocation()}.
+	 */
+	public ClusterNodesEngineComponentAllocation toClusterNodesAllocation() {
+		return (ClusterNodesEngineComponentAllocation) this;
+	}
+
+	/**
+	 * @return true if this allocation is {@link ClusterNodesEngineComponentAllocation}; false otherwise
+	 */
+	public boolean isClusterNodesAllocation() {
+		return this instanceof ClusterNodesEngineComponentAllocation;
+	}
+
+	//////////////////////
+	//component allocation
+	public static class ComponentEngineComponentAllocation extends EngineComponentAllocation {
+		public final static String PREFIX = "component:";
+
+		private String componentId;
+		
+		private ComponentEngineComponentAllocation(String componentId) {
+			this.componentId = componentId;
 		}
 		
-		if (isInferedFromNeighbours()) {
-			return INFERRED_FROM_NEIGHBOURS_PREFIX;
+		public String getComponentId() {
+			return componentId;
 		}
-		throw new JetelRuntimeException("Unexpected component allocation.");
-	}
-	
-	public EngineComponentAllocation duplicate() {
-		try {
-			return EngineComponentAllocation.fromString(this.toString());
-		} catch (JetelException e) {
-			throw new JetelRuntimeException(e);
+
+		@Override
+		public String toString() {
+			return PREFIX + componentId;
 		}
 	}
+
+	static {
+		addAllocationParser(new AllocationParser() {
+			@Override
+			public EngineComponentAllocation parse(String rawAllocation) {
+				if (rawAllocation.startsWith(ComponentEngineComponentAllocation.PREFIX)) {
+					String componentId = rawAllocation.substring(ComponentEngineComponentAllocation.PREFIX.length());
+					if (StringUtils.isEmpty(componentId)) {
+						throw new JetelRuntimeException("Ivalid component allocation format: " + rawAllocation + ".");
+					}
+					return EngineComponentAllocation.createComponentAllocation(componentId);
+				} else {
+					return null;
+				}
+			}
+		});
+	}
+
+	/**
+	 * @return component allocation instance which is derived from allocation of a specified component
+	 */
+	public static ComponentEngineComponentAllocation createComponentAllocation(String component) {
+		return new ComponentEngineComponentAllocation(component);
+	}
 	
+	/**
+	 * Converts this allocation to {@link ComponentEngineComponentAllocation}.
+	 * Can be called only if {@link #isComponentAllocation()}.
+	 */
+	public ComponentEngineComponentAllocation toComponentAllocation() {
+		return (ComponentEngineComponentAllocation) this;
+	}
+
+	/**
+	 * @return true if this allocation is {@link ComponentEngineComponentAllocation}; false otherwise
+	 */
+	public boolean isComponentAllocation() {
+		return this instanceof ComponentEngineComponentAllocation;
+	}
+
 }
