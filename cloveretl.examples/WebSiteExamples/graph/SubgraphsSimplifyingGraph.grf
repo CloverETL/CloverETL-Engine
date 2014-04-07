@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="4.0.0.M1" id="1279697274740" licenseType="Commercial" modified="Wed Mar 26 18:00:29 CET 2014" modifiedBy="User" name="CreditCards" revision="1.131" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="4.0.0.M1" id="1279697274740" licenseType="Commercial" modified="Wed Apr 02 17:17:57 CEST 2014" modifiedBy="User" name="CreditCards" revision="1.124" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
@@ -53,35 +53,85 @@
 <GraphParameter name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="139" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="270" x="686" y="131">
-<attr name="text"><![CDATA["Load Online Exchange Rates" reads data from internet. If you don't have your computer connected to internet, you can read eurofxref-daily.xml placed in data-in directory. To do that, set parameter RATES_FILE to ${DATAIN_DIR}/eurofxref-daily.xml]]></attr>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="195" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="189" x="228" y="265">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Sort transactions by customer ID]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="139" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="343" x="56" y="131">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="204" id="Note12" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title=" " titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1068" y="265">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Output ttransactions with bad customer IDs]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note14" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1071" y="485">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+Output a list of unsupported currency]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note21" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1071" y="693">
+<attr name="text"><![CDATA[
+
+
+
+
+
+
+
+
+Output a list of risky customers]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="139" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Notes" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="270" x="686" y="93">
+<attr name="text"><![CDATA[The subraph reads data from internet. If you don't have your computer connected to internet, you can read eurofxref-daily.xml placed in data-in directory. To do that, set the subgraph's parameter RATES_FILE to ${DATAIN_DIR}/eurofxref-daily.xml]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="139" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="343" x="56" y="93">
 <attr name="text"><![CDATA[This examples joins multiple sources and checks for incorrect transactions (missing IDs, incorrect currencies) and identifies suspiciously high transactions.
 
-Blocks of business logic are wrapped as subgraphs to simplify the graphs. The subgraphs can be used similarly as a component.]]></attr>
+The complex logic is packaged as a subgraph to simplify the top level graph.]]></attr>
 </Note>
-<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="89" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Simplifying Complex Graphs" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="900" x="56" y="43">
+<Note alignment="2" backgroundColorB="64" backgroundColorG="64" backgroundColorR="64" enabled="true" folded="false" height="89" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Simplifying Complex Graphs" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="13" width="900" x="56" y="5">
 <attr name="text"><![CDATA[This example shows how subgraphs can  be used to simplify complex graphs. It performs the same task as CreditCardFraudDetection graph, but is easier to understand and maintain.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="139" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Highlights" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="289" x="398" y="131">
-<attr name="text"><![CDATA[The subgraphs were created from the original complex graph via subgraph wrapping - just select a few components, right-click on them and select "Wrap As Subgraph".]]></attr>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="139" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Highlights" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="289" x="398" y="93">
+<attr name="text"><![CDATA[The subgraph was created from the original complex graph via subgraph wrapping - just select a few components, right-click on them and select "Wrap As Subgraph".]]></attr>
 </Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiName="ValidateTransactions" guiX="630" guiY="293" id="BUBUBU" jobURL="${GRAPH_DIR}/subgraph/ValidateTransactions.sgrf" type="SUBGRAPH"/>
-<Node enabled="enabled" guiName="Convert Currency" guiX="374" guiY="293" id="CONVERT_CURRENCY" joinKey="$currency=$id" joinType="leftOuter" type="EXT_HASH_JOIN">
+<Node enabled="enabled" guiName="DetectRiskyTransactions" guiX="767" guiY="293" id="DETECT_RISKY_TRANSACTIONS" jobURL="${SUBGRAPH_DIR}/DetectRiskyTransactions.sgrf" type="SUBGRAPH"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Incorrect Currency" guiX="1101" guiY="506" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="INCORRECT_CURRENCY" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/customers.csv" guiName="Load Customer Details" guiX="56" guiY="481" id="LOAD_CUSTOMER_DETAILS" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/transactions.csv" guiName="Load Transactions" guiX="56" guiY="293" id="LOAD_TRANSACTIONS" type="DATA_READER"/>
+<Node enabled="enabled" guiName="Match Transactions with Customer" guiX="489" guiY="293" id="MATCH_TRANSACTIONS_WITH_CUSTOMER" joinKey="$CustomerId(a)#$Id(a);" joinType="leftOuter" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
 function integer transform() {
-	$0.customer_id = $0.customer_id;
-	$0.customer_last_name = $0.customer_last_name;
-	$0.customer_first_name = $0.customer_first_name;
-	$0.transaction_id = $0.transaction_id;
-	$0.amount = $0.amount  / $1.rate : $amount;
-	$0.currency = nvl($1.currency,toString($0.currency));
+	$0.transaction_id = $0.TransactionId;
+	$0.customer_id = $1.Id;
+	$0.amount = $0.Amount;
+	$0.currency = $0.CurrencyId;
+	$0.customer_last_name = $1.LastName;
+	$0.customer_first_name = $1.FirstName;
 
 	return 0;
 }
@@ -105,10 +155,15 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="GetCurrencies" guiX="56" guiY="429" id="GET_CURRENCIES" jobURL="${GRAPH_DIR}/subgraph/GetCurrencies.sgrf" type="SUBGRAPH"/>
-<Node enabled="enabled" guiName="LoadTransactions" guiX="56" guiY="293" id="LOAD_TRANSACTIONS1" jobURL="${GRAPH_DIR}/subgraph/LoadTransactions.sgrf" type="SUBGRAPH"/>
-<Edge debugMode="true" fromNode="CONVERT_CURRENCY:0" guiBendpoints="1004:731|1004:992|331:992|331:1235" guiLocks="1022|349|745" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="BUBUBU:0"/>
-<Edge debugMode="true" fromNode="GET_CURRENCIES:0" guiBendpoints="717:688|717:387" guiLocks="753|null|null" guiRouter="Manhattan" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata4" outPort="Port 0 (out)" toNode="CONVERT_CURRENCY:1"/>
-<Edge debugMode="true" fromNode="LOAD_TRANSACTIONS1:0" guiBendpoints="39:0|39:119" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (driver)" metadata="Metadata1" outPort="Port 0 (out)" toNode="CONVERT_CURRENCY:0"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiName="Missing Customer ID" guiX="1094" guiY="290" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="MISSING_CUSTOMER_ID" mask="&lt;tr&gt;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;td&gt;$currency&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Risky Customers" guiX="1101" guiY="715" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="RISKY_CUSTOMERS1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node enabled="enabled" guiName="Sort Transactions" guiX="259" guiY="293" id="SORT_TRANSACTIONS" sortKey="CustomerId(a)" type="FAST_SORT"/>
+<Edge fromNode="DETECT_RISKY_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" outPort="Port 0 (out)" toNode="MISSING_CUSTOMER_ID:0"/>
+<Edge debugMode="false" fromNode="DETECT_RISKY_TRANSACTIONS:1" guiBendpoints="1179:383|1179:578" guiLocks="1215|307|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (Body port)" outPort="Port 1 (out)" toNode="INCORRECT_CURRENCY:0"/>
+<Edge debugMode="false" fromNode="DETECT_RISKY_TRANSACTIONS:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge13" inPort="Port 0 (Body port)" outPort="Port 2 (out)" toNode="RISKY_CUSTOMERS1:0"/>
+<Edge debugMode="false" fromNode="LOAD_CUSTOMER_DETAILS:0" guiBendpoints="401:268|401:188" guiLocks="452|null|null" guiRouter="Manual" id="Edge3" inPort="Port 1 (slave)" metadata="Metadata7" outPort="Port 0 (output)" toNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:1"/>
+<Edge debugMode="false" fromNode="LOAD_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata6" outPort="Port 0 (output)" toNode="SORT_TRANSACTIONS:0"/>
+<Edge debugMode="true" fromNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:0" guiBendpoints="39:0|39:119" guiLocks="null|null|null" guiRouter="Manual" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DETECT_RISKY_TRANSACTIONS:0"/>
+<Edge debugMode="true" fromNode="SORT_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (driver)" outPort="Port 0 (out)" toNode="MATCH_TRANSACTIONS_WITH_CUSTOMER:0"/>
 </Phase>
 </Graph>
