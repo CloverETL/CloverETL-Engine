@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="4.0.0.M1" id="1279697274740" licenseType="Commercial" modified="Wed Apr 02 17:17:57 CEST 2014" modifiedBy="User" name="CreditCards" revision="1.124" showComponentDetails="true">
+<Graph author="avackova" created="Wed Jul 21 09:24:12 CEST 2010" guiVersion="0.0.0.devel" id="1279697274740" licenseType="Commercial" modified="Mon Apr 07 11:20:14 CEST 2014" modifiedBy="User" name="CreditCards" revision="1.125" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/Transactions.fmt" id="Metadata6"/>
 <Metadata id="Metadata7" previewAttachment="${DATAIN_DIR}/customers.csv" previewAttachmentCharset="ISO-8859-1">
@@ -75,10 +75,13 @@ Sort transactions by customer ID]]></attr>
 
 
 
+
 Output ttransactions with bad customer IDs]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note14" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1071" y="485">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="191" id="Note14" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1068" y="487">
 <attr name="text"><![CDATA[
+
+
 
 
 
@@ -88,8 +91,9 @@ Output ttransactions with bad customer IDs]]></attr>
 
 Output a list of unsupported currency]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note21" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1071" y="693">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="184" id="Note21" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="." titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="181" x="1068" y="692">
 <attr name="text"><![CDATA[
+
 
 
 
@@ -118,7 +122,7 @@ The complex logic is packaged as a subgraph to simplify the top level graph.]]><
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiName="DetectRiskyTransactions" guiX="767" guiY="293" id="DETECT_RISKY_TRANSACTIONS" jobURL="${SUBGRAPH_DIR}/DetectRiskyTransactions.sgrf" type="SUBGRAPH"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Incorrect Currency" guiX="1101" guiY="506" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="INCORRECT_CURRENCY" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-currency.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Incorrect Currency" guiX="1098" guiY="507" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Transactions with missing currency&lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot;  border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="INCORRECT_CURRENCY" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/id&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/customers.csv" guiName="Load Customer Details" guiX="56" guiY="481" id="LOAD_CUSTOMER_DETAILS" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/transactions.csv" guiName="Load Transactions" guiX="56" guiY="293" id="LOAD_TRANSACTIONS" type="DATA_READER"/>
 <Node enabled="enabled" guiName="Match Transactions with Customer" guiX="489" guiY="293" id="MATCH_TRANSACTIONS_WITH_CUSTOMER" joinKey="$CustomerId(a)#$Id(a);" joinType="leftOuter" type="EXT_MERGE_JOIN">
@@ -156,7 +160,7 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/missing-customer.html" footer="&lt;/table&gt;&#10;&lt;/body&gt;&#10;&lt;/html&gt;" guiName="Missing Customer ID" guiX="1094" guiY="290" header="&lt;html&gt;&#10;&lt;body&gt;&#10;&lt;h3&gt;Transactions with missing customer&lt;/h3&gt;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#10;&lt;tr&gt;&#10;&lt;th&gt;Transaction&lt;/th&gt;&#10;&lt;th&gt;Amount&lt;/th&gt;&#10;&lt;th&gt;Currency&lt;/th&gt;&#10;&lt;/tr&gt;" id="MISSING_CUSTOMER_ID" mask="&lt;tr&gt;&#10;&lt;td&gt;$transaction_id&lt;/td&gt;&#10;&lt;td&gt;$amount&lt;/td&gt;&#10;&lt;td&gt;$currency&lt;/td&gt;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Risky Customers" guiX="1101" guiY="715" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="RISKY_CUSTOMERS1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/risky-customer.html" footer="&lt;/table&gt;&#13;&#10;&lt;/body&gt;&#13;&#10;&lt;/html&gt;" guiName="Risky Customers" guiX="1098" guiY="714" header="&lt;html&gt;&#13;&#10;&lt;body&gt;&#13;&#10;&lt;h3&gt;Customers with suspicious transaction total (over EUR 400 000) &lt;/h3&gt;&#13;&#10;&lt;table cellpadding=&quot;5&quot; cellspacing=&quot;0&quot; border=&quot;1&quot;&gt;&#13;&#10;&lt;tr&gt;&#13;&#10;&lt;th&gt;Customer&lt;/th&gt;&#13;&#10;&lt;th&gt;Amount&lt;/th&gt;&#13;&#10;&lt;th&gt;Currency&lt;/th&gt;&#13;&#10;&lt;th&gt;Full Name&lt;/th&gt;&#13;&#10;&lt;/tr&gt;&#13;&#10;" id="RISKY_CUSTOMERS1" mask="&lt;tr&gt;&#13;&#10;&lt;td&gt;$customer_id&lt;/td&gt;&#13;&#10;&lt;td&gt;$amount&lt;/td&gt;&#13;&#10;&lt;td&gt;$currency&lt;/td&gt;&#13;&#10;&lt;td&gt;$customer_first_name $customer_last_name&lt;/td&gt;&#13;&#10;&lt;/tr&gt;" type="STRUCTURE_WRITER"/>
 <Node enabled="enabled" guiName="Sort Transactions" guiX="259" guiY="293" id="SORT_TRANSACTIONS" sortKey="CustomerId(a)" type="FAST_SORT"/>
 <Edge fromNode="DETECT_RISKY_TRANSACTIONS:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (Body port)" outPort="Port 0 (out)" toNode="MISSING_CUSTOMER_ID:0"/>
 <Edge debugMode="false" fromNode="DETECT_RISKY_TRANSACTIONS:1" guiBendpoints="1179:383|1179:578" guiLocks="1215|307|null" guiRouter="Manhattan" id="Edge9" inPort="Port 0 (Body port)" outPort="Port 1 (out)" toNode="INCORRECT_CURRENCY:0"/>
