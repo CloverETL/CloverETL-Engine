@@ -1114,6 +1114,21 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
         outPortsSize = outPortsArray.length;
     }
     
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+    	status = super.checkConfig(status);
+    	
+    	//component allocation is limited for jobflows
+    	if (!getGraph().getRuntimeJobType().isGraph()) {
+    		if (!getAllocation().isNeighboursAllocation()
+    				&& (!getAllocation().isClusterNodesAllocation() || getAllocation().toClusterNodesAllocation().getClusterNodes().size() != 1)) {
+        		status.add("Invalid component allocation. Only single worker allocation can be specified in jobflow.", Severity.ERROR, this, Priority.NORMAL);
+    		}
+    	}
+    	
+    	return status;
+    }
+    
     /**
      * Checks number of input ports, whether is in the given interval.
      * @param status
