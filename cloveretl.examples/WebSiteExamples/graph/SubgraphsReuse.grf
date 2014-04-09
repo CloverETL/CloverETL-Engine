@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="4.0.0.M1" id="1227892536666" licenseType="Commercial" modified="Wed Mar 26 18:08:09 CET 2014" modifiedBy="User" name="EmailValidation" revision="1.65" showComponentDetails="true">
+<Graph author="avackova" created="Fri Jul 30 09:24:17 CEST 2010" guiVersion="0.0.0.devel" id="1227892536666" licenseType="Commercial" modified="Mon Apr 07 11:20:35 CEST 2014" modifiedBy="User" name="EmailValidation" revision="1.67" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata0">
 <Record name="input_record" recordDelimiter="\r\n" type="delimited">
@@ -32,49 +32,12 @@ Validation of the e-mail addresses is implemented in a subgraph. The subgraph ca
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="174" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="How it works" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="446" x="257" y="72">
 <attr name="text"><![CDATA[Each subgraph is configured via its "Input parameters" property. You can set graph parameters and dictionary values in the property to configure the subgraph.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="559" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="E-mail Validation" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="187" x="433" y="265">
-<attr name="text"><![CDATA[
-
-
-
-
-
-
-
-
-Simple format check
-
-
-
-
-
-
-
-
-
-
-
-
-Check domain existence and MX record
-
-
-
-
-
-
-
-
-
-
-
-
-Talk to the SMPT server and try to verify the address]]></attr>
-</Note>
+<Note alignment="1" backgroundColorB="96" backgroundColorG="255" backgroundColorR="96" enabled="true" folded="false" height="516" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="E-mail Validation" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="288" x="433" y="265"/>
 <Dictionary/>
 </Global>
 <Phase number="0">
 <Node charset="utf-8" enabled="enabled" fileURL="${DATAIN_DIR}/emails.txt" guiName="Load Emails" guiX="12" guiY="303" id="DATA_READER0" type="DATA_READER"/>
-<Node enabled="enabled" guiName="EmailValidator" guiX="453" guiY="303" id="EMAIL_VALIDATION" jobURL="${GRAPH_DIR}/subgraph/EmailValidator.sgrf" type="SUBGRAPH">
+<Node enabled="enabled" guiName="Simple format check" guiX="453" guiY="303" id="EMAIL_VALIDATION" jobURL="${GRAPH_DIR}/subgraph/EmailValidator.sgrf" type="SUBGRAPH">
 <attr name="inputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -105,7 +68,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="EmailValidator" guiX="453" guiY="462" id="EMAIL_VALIDATION1" jobURL="${GRAPH_DIR}/subgraph/EmailValidator.sgrf" type="SUBGRAPH">
+<Node enabled="enabled" guiName="Check domain existence and MX record" guiX="452" guiY="433" id="EMAIL_VALIDATION1" jobURL="${GRAPH_DIR}/subgraph/EmailValidator.sgrf" type="SUBGRAPH">
 <attr name="inputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -136,7 +99,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="EmailValidator" guiX="453" guiY="645" id="EMAIL_VALIDATION2" jobURL="${GRAPH_DIR}/subgraph/EmailValidator.sgrf" type="SUBGRAPH">
+<Node enabled="enabled" guiName="Talk to the SMTP server to verify email" guiX="453" guiY="558" id="EMAIL_VALIDATION2" jobURL="${GRAPH_DIR}/subgraph/EmailValidator.sgrf" type="SUBGRAPH">
 <attr name="inputMapping"><![CDATA[//#CTL2
 
 // Transforms input record into output record.
@@ -167,7 +130,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Replicate List [3x]" guiX="190" guiY="462" id="REPLICATE_LIST_3X" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="Replicate List [3x]" guiX="191" guiY="440" id="REPLICATE_LIST_3X" type="SIMPLE_COPY"/>
 <Edge fromNode="DATA_READER0:0" guiBendpoints="33:0|33:130|-173:130|-173:196" guiLocks="null|null|null" guiRouter="Manual" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REPLICATE_LIST_3X:0"/>
 <Edge fromNode="REPLICATE_LIST_3X:0" guiBendpoints="506:562|506:566" guiLocks="506|263|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EMAIL_VALIDATION:0"/>
 <Edge fromNode="REPLICATE_LIST_3X:1" guiBendpoints="299:286|299:230" guiLocks="300|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="EMAIL_VALIDATION1:0"/>
