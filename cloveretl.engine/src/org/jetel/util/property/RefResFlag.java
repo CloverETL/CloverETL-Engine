@@ -60,7 +60,7 @@ public class RefResFlag {
 	 * Everything is turned off - only secure parameters are turned on.
 	 * Regular parameters are resolved all the time.
 	 */
-	public static final RefResFlag SECURE_PARAMATERS = ALL_OFF.resolveSecureParameters(true);
+	public static final RefResFlag SECURE_PARAMATERS = SPEC_CHARACTERS_OFF.resolveSecureParameters(true);
 
 	/**
 	 * Special flag for URL resolution. Only ctl expressions and secure parameters are resolved. 
