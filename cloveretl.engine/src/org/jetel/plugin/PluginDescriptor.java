@@ -82,7 +82,13 @@ public class PluginDescriptor {
      * (current classloader is preferred for class name resolution).
      */
     private boolean greedyClassLoader = false;
-    
+
+    /**
+     * Engine plugins are lazy activated by default. This behaviour can be changed
+     * using this attribute.
+     */
+    private boolean lazyActivated = true;
+
     /**
 	 * List of package prefixes which are excluded from greedy/regular class loading. i.e. "java." "javax." "sun.misc." etc.
 	 * Prevents GreedyClassLoader from loading standard java interfaces and classes from third-party libs.
@@ -105,7 +111,7 @@ public class PluginDescriptor {
     private List<String> nativeLibraries;
 
     /**
-     * List of all imlemented extensions points by this plugin.
+     * List of all implemented extensions points by this plugin.
      */
     private List<Extension> extensions;
 
@@ -207,7 +213,15 @@ public class PluginDescriptor {
     public void setGreedyClassLoader(boolean greedyClassLoader) {
     	this.greedyClassLoader = greedyClassLoader;
     }
-    
+
+    public boolean isLazyActivated() {
+    	return lazyActivated;
+    }
+
+    public void setLazyActivated(boolean lazyActivated) {
+    	this.lazyActivated = lazyActivated;
+    }
+
     public String[] getExcludedPackages() {
     	return excludedPackages;
     }
