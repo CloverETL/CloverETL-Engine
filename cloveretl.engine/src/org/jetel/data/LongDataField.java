@@ -456,7 +456,7 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 
 	@Override
 	public void fromString(CharSequence seq) {
-		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValues())) {
 			setNull(true);
 			return;
 		}

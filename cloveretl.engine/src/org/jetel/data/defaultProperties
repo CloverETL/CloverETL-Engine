@@ -94,6 +94,7 @@ OracleConnection.ROW_PREFETCH = 100
 #****************************************************************************
 
 DataFormatter.DELIMITER_DELIMITERS_REGEX = \\\\\\|
+DataFormatter.DELIMITER_DELIMITERS = \\\\|
 			
 # ; or | or : , but not := - this is ASSIGN_SIGN
 Component.KEY_FIELDS_DELIMITER_REGEX = \\s*([|;]|\:(?\!\=))\\s*

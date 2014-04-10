@@ -20,7 +20,9 @@ package org.jetel.metadata;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -41,8 +43,6 @@ import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.formatter.ParseBooleanException;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
-
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 /**
  * A class that represents metadata describing one particular data field.<br>
@@ -110,8 +110,8 @@ public class DataFieldMetadata implements Serializable {
 	private Boolean trim;
 	/** Fields can assume null value by default. */
 	private boolean nullable = true;
-	/** String value that is considered as null (in addition to null itself). */
-	private String nullValue = null;
+	/** String values that are considered as null (in addition to null itself). */
+	private List<String> nullValues = null;
 
 	/** The default value. */
 	private Object defaultValue;
@@ -830,24 +830,61 @@ public class DataFieldMetadata implements Serializable {
 	 * @param nullValue the string value to be considered as null, or <code>null</code> if an empty string should be used
 	 */
 	public void setNullValue(String nullValue) {
-		this.nullValue = nullValue;
+		if (nullValue != null) {
+			setNullValues(Arrays.asList(nullValue));
+		} else {
+			nullValues = null;
+		}
 	}
 
 	/**
-	 * @return the string value that is considered as <code>null</code>, never returns <code>null</code>
+	 * Sets list of string value that will be considered as <code>null</code> (in addition to <code>null</code> itself).
+	 *
+	 * @param nullValues the list of string values to be considered as null, or <code>null</code> if an empty string should be used
 	 */
-	public String getNullValue() {
-		if (nullValue != null) {
-			return nullValue;
+	public void setNullValues(List<String> nullValues) {
+		for (String nullValue : nullValues) {
+			Objects.requireNonNull(nullValue);
 		}
-
-		if (dataRecordMetadata != null) {
-			return dataRecordMetadata.getNullValue();
-		}
-
-		return DataRecordMetadata.DEFAULT_NULL_VALUE;
+		this.nullValues = nullValues;
 	}
 
+	/**
+	 * @return the first string value that is considered as <code>null</code>, never returns <code>null</code>
+	 */
+	public String getNullValue() {
+		if (nullValues != null) {
+			if (nullValues.size() > 0) {
+				return nullValues.get(0);
+			} else {
+				return null;
+			}
+		} else if (dataRecordMetadata != null) {
+			return dataRecordMetadata.getNullValue();
+		} else if (DataRecordMetadata.DEFAULT_NULL_VALUES.size() > 0) {
+			return DataRecordMetadata.DEFAULT_NULL_VALUES.get(0);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * @return list of string values that are considered as <code>null</code>, never returns <code>null</code>
+	 */
+	public List<String> getNullValues() {
+		if (nullValues != null) {
+			return nullValues;
+		} else if (dataRecordMetadata != null) {
+			return dataRecordMetadata.getNullValues();
+		} else {
+			return DataRecordMetadata.DEFAULT_NULL_VALUES;
+		}
+	}
+	
+	public List<String> getNullValuesOnField() {
+		return nullValues;
+	}
+	
 	/**
 	 * Sets the default value.
 	 *

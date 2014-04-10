@@ -18,8 +18,8 @@
  */
 package org.jetel.util.string;
 
-import java.text.CollationElementIterator;
 import java.text.RuleBasedCollator;
+import java.util.List;
 
 /**
  * Miscelaneous comparison utilities
@@ -132,7 +132,24 @@ end of deprecated code */
 		}
     	return true;
     }
-	
+
+	/**
+	 * Compares the given {@link CharSequence} with a list of {@link CharSequence}.
+	 * CharSequence <code>a</code> is equal to the list if at least one of the
+	 * CharSequences in the list is equal to Charsequence <code>a</code>.
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static boolean equals(CharSequence a, List<? extends CharSequence> b) {
+		for (CharSequence pattern : b) {
+			if (equals(a, pattern)) {
+				return true;
+			}
+		}
+		return false;
+    }
+
 	/**
 	 * Compares two CharSequences for equality ignoring letters' case
 	 * 
