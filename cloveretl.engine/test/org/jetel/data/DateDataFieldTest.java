@@ -19,6 +19,11 @@
 
 package org.jetel.data;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -26,6 +31,7 @@ import java.util.GregorianCalendar;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldFormatType;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -306,4 +312,53 @@ public void test_1_DateDataField() {
 		aDateDataField1.setToDefaultValue();
 		assertEquals("",aDateDataField1.toString());
 	}
+	
+	public void testFromStringNullValue() {
+		DataFieldMetadata fieldMetadata = new DataFieldMetadata("field", DataFieldType.DATE, ";");
+		DateDataField field = new DateDataField(fieldMetadata);
+
+		field.setValue(new Date().getTime());
+		field.fromString("");
+		assertTrue(field.isNull());
+
+		fieldMetadata.setNullValues(Arrays.asList("abc", "", "xxx"));
+
+		field.setValue(new Date().getTime());
+		field.fromString("abc");
+		assertTrue(field.isNull());
+
+		field.setValue(new Date().getTime());
+		field.fromString("");
+		assertTrue(field.isNull());
+
+		field.setValue(new Date().getTime());
+		field.fromString("xxx");
+		assertTrue(field.isNull());
+	}
+
+	public void testFromByteByfferNullValue() throws CharacterCodingException, UnsupportedEncodingException {
+		DataFieldMetadata fieldMetadata = new DataFieldMetadata("field", DataFieldType.DATE, ";");
+		DateDataField field = new DateDataField(fieldMetadata);
+
+		CharsetDecoder decoder = Charset.forName("US-ASCII").newDecoder();
+		
+		field.setValue(new Date().getTime());
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer(""), decoder);
+		assertTrue(field.isNull());
+
+		fieldMetadata.setNullValues(Arrays.asList("abc", "", "xxx"));
+
+		field.setValue(new Date().getTime());
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("abc"), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue(new Date().getTime());
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer(""), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue(new Date().getTime());
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("xxx"), decoder);
+		assertTrue(field.isNull());
+	}
+
 }

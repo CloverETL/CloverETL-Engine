@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -76,7 +77,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private static final long serialVersionUID = 7032218607804024730L;
 	
 	/** The default string value that is considered as null. */
-	public static final String DEFAULT_NULL_VALUE = "";
+	public static final List<String> DEFAULT_NULL_VALUES = Arrays.asList("");
 	
 	public static final String EMPTY_NAME = "_";
 
@@ -131,7 +132,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private String dateFormatStr = null;
 
 	/** String value that is considered as null (in addition to null itself). */
-	private String nullValue = DEFAULT_NULL_VALUE;
+	private List<String> nullValues = DEFAULT_NULL_VALUES;
 
 	/**
 	 * Default collator sensitivity for string fields. Can be overridden by DataFieldMetadata.
@@ -1090,14 +1091,42 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * should be used
 	 */
 	public void setNullValue(String nullValue) {
-		this.nullValue = (nullValue != null) ? nullValue : DEFAULT_NULL_VALUE;
+		setNullValues(Arrays.asList(nullValue));
+	}
+
+	/**
+	 * Sets list of string values that will be considered as <code>null</code> (in addition to <code>null</code> itself).
+	 *
+	 * @param nullValues list of string value to be considered as null, or <code>null</code> if the default null value
+	 * should be used
+	 */
+	public void setNullValues(List<String> nullValues) {
+		if (nullValues != null) {
+			for (String nullValue : nullValues) {
+				Objects.requireNonNull(nullValue);
+			}
+			this.nullValues = nullValues;
+		} else {
+			this.nullValues = Collections.emptyList();
+		}
 	}
 
 	/**
 	 * @return the string value that is considered as <code>null</code>, never returns <code>null</code>
 	 */
 	public String getNullValue() {
-		return nullValue;
+		if (nullValues.size() > 0) {
+			return nullValues.get(0);
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * @return list of string values that are considered as <code>null</code>, never returns <code>null</code>
+	 */
+	public List<String> getNullValues() {
+		return nullValues;
 	}
 
 	/**

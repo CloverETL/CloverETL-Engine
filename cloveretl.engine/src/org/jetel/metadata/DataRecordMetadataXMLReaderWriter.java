@@ -22,7 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
-import java.text.ParseException;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -38,6 +38,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecordNature;
+import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.GraphParameters;
 import org.jetel.graph.TransformationGraph;
@@ -360,6 +361,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         if (record.getKeyFieldNames() != null && !record.getKeyFieldNames().isEmpty()) {
         	metadataElement.setAttribute(KEY_FIELD_NAMES_ATTR, KeyFieldNamesUtils.getFieldNamesAsString(record.getKeyFieldNames()));
         }
+
+        if (record.getNullValues() != DataRecordMetadata.DEFAULT_NULL_VALUES) {
+        	metadataElement.setAttribute(NULL_VALUE_ATTR, StringUtils.join(record.getNullValues(), Defaults.DataFormatter.DELIMITER_DELIMITERS));
+        }
         
 
 		Properties prop = record.getRecordProperties();
@@ -428,8 +433,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				fieldElement.setAttribute(NULLABLE_ATTR,
 				        String.valueOf(field.isNullable()));
 
-				if (!StringUtils.isEmpty(field.getNullValue())) {
-					fieldElement.setAttribute(NULL_VALUE_ATTR, field.getNullValue());
+				if (field.getNullValuesOnField() != null) {
+					fieldElement.setAttribute(NULL_VALUE_ATTR, StringUtils.join(field.getNullValuesOnField(), Defaults.DataFormatter.DELIMITER_DELIMITERS));
 				}
 
 				// output field properties - if anything defined
@@ -603,7 +608,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			recordMetadata.setTimeZoneStr(recTimeZoneStr);
 		}
 		if (recNullValue != null) {
-			recordMetadata.setNullValue(recNullValue);
+			recordMetadata.setNullValues(Arrays.asList(recNullValue.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX, -1)));
 		}
 		recordMetadata.setRecordProperties(recordProperties);
 		if(!StringUtils.isEmpty(recordDelimiter)) {
@@ -807,7 +812,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			}
 
 			if (nullValue != null) {
-				field.setNullValue(nullValue);
+				field.setNullValues(Arrays.asList(nullValue.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX, -1)));
 			}
 
 			// set localeStr if defined

@@ -23,9 +23,11 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
+import java.util.List;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -375,7 +377,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 * @since            11.12.2006
      */
 	public void fromString(CharSequence seq, String charset) {
-		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValues())) {
 			setNull(true);
 			return;
 		}
@@ -394,7 +396,19 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		prepareBuf(dataBuffer);
 		dataBuffer.get(value);
-		setNull(Arrays.equals(value, metadata.getNullValue().getBytes(decoder.charset())));
+		setNull(isNullValue(value, metadata.getNullValues(), decoder.charset()));
+	}
+
+	/**
+	 * @return true if the given value is one of the passed nullValues
+	 */
+	protected static boolean isNullValue(byte[] value, List<String> nullValues, Charset charset) {
+		for (String nullValue : nullValues) {
+			if (Arrays.equals(value, nullValue.getBytes(charset))) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

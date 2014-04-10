@@ -278,7 +278,7 @@ public class StringDataField extends DataField implements CharSequence{
 
 	@Override
 	public void fromString(CharSequence seq) {
-		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValues())) {
 			setValue((CharSequence) null);
 			return;
 		}

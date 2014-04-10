@@ -19,7 +19,14 @@
 
 package org.jetel.data;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.util.Arrays;
+
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -51,7 +58,7 @@ public class ByteDataFieldTest extends CloverTestCase {
 	}
 
 	protected ByteDataField instantiateDataField() {
-		return new ByteDataField(new DataFieldMetadata("byte", DataFieldMetadata.BYTE_FIELD, (short) 10));
+		return new ByteDataField(new DataFieldMetadata("byte", DataFieldType.BYTE, (short) 10));
 	}
 
 	/**
@@ -209,4 +216,71 @@ public class ByteDataFieldTest extends CloverTestCase {
 		//		anIntegerDataField1.setToDefaultValue();
 		//		assertEquals("",anIntegerDataField1.toString());
 	}
+	
+	public void testFromStringNullValue() throws UnsupportedEncodingException {
+		DataFieldMetadata fieldMetadata = new DataFieldMetadata("field", DataFieldType.BYTE, ";");
+		ByteDataField field = new ByteDataField(fieldMetadata);
+
+		field.setValue((byte) 10);
+		field.fromString("");
+		assertTrue(field.isNull());
+
+		field.setValue((byte) 10);
+		field.fromString("abc");
+		assertTrue(field.isNull() == false);
+		assertTrue(new String(field.getValue(), "US-ASCII").equals("abc"));
+		
+		fieldMetadata.setNullValues(Arrays.asList("abc", "", "xxx"));
+
+		field.setValue((byte) 10);
+		field.fromString("abc");
+		assertTrue(field.isNull());
+
+		field.setValue((byte) 10);
+		field.fromString("");
+		assertTrue(field.isNull());
+
+		field.setValue((byte) 10);
+		field.fromString("xxx");
+		assertTrue(field.isNull());
+
+		field.setValue((byte) 10);
+		field.fromString("yyy");
+		assertTrue(!field.isNull());
+	}
+
+	public void testFromByteByfferNullValue() throws CharacterCodingException, UnsupportedEncodingException {
+		ByteDataField field = instantiateDataField();
+		DataFieldMetadata fieldMetadata = field.getMetadata();
+
+		CharsetDecoder decoder = Charset.forName("US-ASCII").newDecoder();
+		
+		field.setValue((byte) 10);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer(""), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue((byte) 10);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("abc"), decoder);
+		assertTrue(field.isNull() == false);
+		assertTrue(new String(field.getValue(), "US-ASCII").equals("abc"));
+		
+		fieldMetadata.setNullValues(Arrays.asList("abc", "", "xxx"));
+
+		field.setValue((byte) 10);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("abc"), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue((byte) 10);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer(""), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue((byte) 10);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("xxx"), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue((byte) 10);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("yyy"), decoder);
+		assertTrue(!field.isNull());
+	}
+
 }

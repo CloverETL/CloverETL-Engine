@@ -19,13 +19,17 @@
 
 package org.jetel.data;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Arrays;
 
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.test.CloverTestCase;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -375,4 +379,71 @@ public void test_1_NumericDataField() {
 		aNumericDataField1.setToDefaultValue();
 		assertTrue(aNumericDataField1.isNull());
 	}
+	
+	public void testFromStringNullValue() {
+		DataFieldMetadata fieldMetadata = new DataFieldMetadata("field", DataFieldType.NUMBER, ";");
+		NumericDataField field = new NumericDataField(fieldMetadata);
+
+		field.setValue(123);
+		field.fromString("");
+		assertTrue(field.isNull());
+
+		field.setValue(123);
+		field.fromString("456");
+		assertTrue(field.isNull() == false);
+		assertTrue(field.getValue() == 456);
+		
+		fieldMetadata.setNullValues(Arrays.asList("abc", "", "xxx"));
+
+		field.setValue(123);
+		field.fromString("abc");
+		assertTrue(field.isNull());
+
+		field.setValue(123);
+		field.fromString("");
+		assertTrue(field.isNull());
+
+		field.setValue(123);
+		field.fromString("xxx");
+		assertTrue(field.isNull());
+
+		field.setValue(123);
+		field.fromString("456");
+		assertTrue(!field.isNull());
+	}
+
+	public void testFromByteByfferNullValue() throws CharacterCodingException, UnsupportedEncodingException {
+		DataFieldMetadata fieldMetadata = new DataFieldMetadata("field", DataFieldType.NUMBER, ";");
+		NumericDataField field = new NumericDataField(fieldMetadata);
+
+		CharsetDecoder decoder = Charset.forName("US-ASCII").newDecoder();
+		
+		field.setValue(123);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer(""), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue(123);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("456"), decoder);
+		assertTrue(field.isNull() == false);
+		assertTrue(field.getValue() == 456);
+		
+		fieldMetadata.setNullValues(Arrays.asList("abc", "", "xxx"));
+
+		field.setValue(123);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("abc"), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue(123);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer(""), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue(123);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("xxx"), decoder);
+		assertTrue(field.isNull());
+
+		field.setValue(123);
+		field.fromByteBuffer(BooleanDataFieldTest.getCloverBuffer("456"), decoder);
+		assertTrue(!field.isNull());
+	}
+
 }

@@ -516,6 +516,7 @@ public final class Defaults {
 			DEFAULT_CHARSET_ENCODER = getStringProperties("DataFormatter.DEFAULT_CHARSET_ENCODER", "ISO-8859-1");
 			FIELD_BUFFER_LENGTH = getIntProperties("DataFormatter.FIELD_BUFFER_LENGTH", 512);
 			DELIMITER_DELIMITERS_REGEX = getStringProperties("DataFormatter.DELIMITER_DELIMITERS_REGEX", "\\\\\\|");
+			DELIMITER_DELIMITERS = getStringProperties("DataFormatter.DELIMITER_DELIMITERS", "\\\\|");
 		}
 
 		/**
@@ -534,6 +535,12 @@ public final class Defaults {
 		 * This regular expression is used by data parser when parsing field delimiters out of metadata XML file.<br>
 		 */
 		public static String DELIMITER_DELIMITERS_REGEX;// = "\\\\\\|";
+
+		/**
+		 * Same as {@link #DELIMITER_DELIMITERS_REGEX}, but this is not regular expression,
+		 * just a string representation of delimiter of delimiters  
+		 */
+		public static String DELIMITER_DELIMITERS;// = "\\\\|";
 	}
 
 	/**

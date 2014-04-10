@@ -209,7 +209,7 @@ public class BooleanDataField extends DataField implements Comparable<Object> {
 
 	@Override
 	public void fromString(CharSequence seq) {
-		if (seq == null || Compare.equals(seq, metadata.getNullValue())) {
+		if (seq == null || Compare.equals(seq, metadata.getNullValues())) {
 		    setNull(true);
 			return;
 		}

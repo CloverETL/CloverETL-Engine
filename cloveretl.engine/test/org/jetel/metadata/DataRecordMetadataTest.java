@@ -19,6 +19,9 @@
 
 package org.jetel.metadata;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.test.CloverTestCase;
 
@@ -299,4 +302,32 @@ public class DataRecordMetadataTest extends CloverTestCase {
 		assertNotNull(metadata.getFieldByLabel("políčko"));
 	}
 
+	public void testNullValues() {
+		DataRecordMetadata metadata = new DataRecordMetadata("record");
+		
+		assertTrue(metadata.getNullValues().size() == 1);
+		assertTrue(metadata.getNullValues().get(0).equals(""));
+		assertTrue(metadata.getNullValue().equals(""));
+
+		metadata.setNullValues(Collections.<String>emptyList());
+		
+		assertTrue(metadata.getNullValues().size() == 0);
+		assertTrue(metadata.getNullValue() == null);
+
+		metadata.setNullValues(Arrays.asList("xxx", "abc"));
+
+		assertTrue(metadata.getNullValues().size() == 2);
+		assertTrue(metadata.getNullValues().get(0).equals("xxx"));
+		assertTrue(metadata.getNullValues().get(1).equals("abc"));
+		assertTrue(metadata.getNullValue().equals("xxx"));
+
+		metadata.setNullValues(Arrays.asList("xxx", ""));
+
+		assertTrue(metadata.getNullValues().size() == 2);
+		assertTrue(metadata.getNullValues().get(0).equals("xxx"));
+		assertTrue(metadata.getNullValues().get(1).equals(""));
+		assertTrue(metadata.getNullValue().equals("xxx"));
+
+	}
+	
 }
