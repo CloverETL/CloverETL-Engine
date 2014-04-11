@@ -843,8 +843,10 @@ public class DataFieldMetadata implements Serializable {
 	 * @param nullValues the list of string values to be considered as null, or <code>null</code> if an empty string should be used
 	 */
 	public void setNullValues(List<String> nullValues) {
-		for (String nullValue : nullValues) {
-			Objects.requireNonNull(nullValue);
+		if (nullValues != null) {
+			for (String nullValue : nullValues) {
+				Objects.requireNonNull(nullValue);
+			}
 		}
 		this.nullValues = nullValues;
 	}
