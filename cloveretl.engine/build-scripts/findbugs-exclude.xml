@@ -34,6 +34,9 @@
      <Match>
        <Package name="~org\.slf4j.*" />
      </Match>
+     <Match>
+       <Package name="~org\.hsqldb.*" />
+     </Match>
 
      <Match>
      	<Bug code="PZLA" />
