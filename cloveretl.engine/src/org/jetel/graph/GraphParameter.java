@@ -43,7 +43,11 @@ public class GraphParameter {
 	
 	private String value;
 	
+	private String label;
+	
 	private boolean secure;
+	
+	private boolean isPublic;
 	
 	private String description;
 	
@@ -82,6 +86,22 @@ public class GraphParameter {
 	}
 	
 	/**
+	 * Human-readable name of the parameter. Used for public subgraph parameters.
+	 * @return the label
+	 */
+	@XmlAttribute(name="label")
+	public String getLabel() {
+		return label;
+	}
+	
+	/**
+	 * @param label the label to set
+	 */
+	public void setLabel(String label) {
+		this.label = label;
+	}
+	
+	/**
 	 * @return true if this parameter is considered as secured;
 	 * special value resolution is used for secure parameters,
 	 * see {@link IAuthorityProxy#getSecureParamater(String, String)}
@@ -97,6 +117,22 @@ public class GraphParameter {
 	 */
 	public void setSecure(boolean secure) {
 		this.secure = secure;
+	}
+	
+	/**
+	 * @return true if this parameter is public.
+	 */
+	@XmlAttribute(name="public")
+	public boolean isPublic() {
+		return isPublic;
+	}
+	
+	/**
+	 * Marks this parameter as public parameter.
+	 * @param isPublic the isPublic to set
+	 */
+	public void setPublic(boolean isPublic) {
+		this.isPublic = isPublic;
 	}
 
 	/**
