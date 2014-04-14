@@ -807,11 +807,6 @@ public class StringUtilsTest extends CloverTestCase {
 		input = "   ";
 		assertEquals(input, StringUtils.removeNonPrintable(input));
 		
-		// CLO-1814:
-		// U+1F604: SMILING FACE WITH OPEN MOUTH AND SMILING EYES
-		input = "\uD83D\uDE04";
-		assertEquals(input, StringUtils.removeNonPrintable(input));
-		
 		// standalone high surrogate
 		input = "\uD835";
 		assertEquals("", StringUtils.removeNonPrintable(input));
@@ -820,9 +815,16 @@ public class StringUtilsTest extends CloverTestCase {
 		input = "\uDC65";
 		assertEquals("", StringUtils.removeNonPrintable(input));
 		
+		// CLO-1814:
 		// A = {x, y} in mathematical script, non-BMP plane
 		input = "\uD835\uDC9C = {\uD835\uDC65, \uD835\uDCCE}";
 		assertEquals(input, StringUtils.removeNonPrintable(input));
+
+		if (!System.getProperty("java.version").startsWith("1.6")) {
+			// U+1F604: SMILING FACE WITH OPEN MOUTH AND SMILING EYES
+			input = "\uD83D\uDE04";
+			assertEquals(input, StringUtils.removeNonPrintable(input));
+		}
 	}
 	
 	public void testRemoveNewLineChars() {
