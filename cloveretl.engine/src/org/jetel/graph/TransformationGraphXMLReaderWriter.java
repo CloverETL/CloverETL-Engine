@@ -39,6 +39,10 @@ import javax.xml.bind.Marshaller;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.XMLEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -197,6 +201,8 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String DICTIONARY_ENTRY_REQUIRED = "required";
 	private final static String DICTIONARY_ENTRY_CONTENT_TYPE = "contentType";
 	
+	public final static String ID_ATTRIBUTE = "id";
+	public final static String NAME_ATTRIBUTE = "name";
 	public final static String AUTHOR_ATTRIBUTE = "author";
 	public final static String REVISION_ATTRIBUTE = "revision";
 	public final static String CREATED_ATTRIBUTE = "created";
@@ -306,16 +312,50 @@ public class TransformationGraphXMLReaderWriter {
 	 * @throws XMLConfigurationException
 	 */
 	public String readId(InputStream in) throws XMLConfigurationException {
-		Document document = prepareDocument(in);
-
-		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
-		String id = ((Element)graphElement.item(0)).getAttribute("id");
-		
-		if(StringUtils.isEmpty(id)) {
-			id = ((Element)graphElement.item(0)).getAttribute("name");
+//		Document document = prepareDocument(in);
+//
+//		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
+//		String id = ((Element)graphElement.item(0)).getAttribute("id");
+//		
+//		if(StringUtils.isEmpty(id)) {
+//			id = ((Element)graphElement.item(0)).getAttribute("name");
+//		}
+//		
+//		return id;
+		try {
+			return readIdStax(in);
+		} catch (XMLStreamException e) {
+			throw new XMLConfigurationException(e);
 		}
+	}
+	
+	private String readIdStax(InputStream in) throws XMLStreamException {
 		
-		return id;
+		XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(in);
+		try {
+			while (reader.hasNext()) {
+				int event = reader.next();
+				if (event == XMLEvent.START_ELEMENT && GRAPH_ELEMENT.equals(reader.getLocalName())) {
+					final int count = reader.getAttributeCount();
+					for (int i = 0; i < count; ++i) {
+						if (ID_ATTRIBUTE.equals(reader.getAttributeLocalName(i))) {
+							String id = reader.getAttributeValue(i);
+							if (!StringUtils.isEmpty(id)) {
+								return id;
+							}
+						}
+					}
+					for (int i = 0; i < count; ++i) {
+						if (NAME_ATTRIBUTE.equals(reader.getAttributeLocalName(i))) {
+							return reader.getAttributeValue(i);
+						}
+					}
+				}
+			}
+			return null;
+		} finally {
+			reader.close();
+		}
 	}
 	
 	public TransformationGraph read(InputStream in) throws XMLConfigurationException, GraphConfigurationException {
