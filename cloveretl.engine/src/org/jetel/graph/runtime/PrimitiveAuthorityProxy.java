@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -425,21 +426,8 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	@Override
 	public File newTempDir(String label, int allocationHint) throws TempFileCreationException {
-		/*
-		 * TODO as soon as Java 1.7 will be required, use built-in facility.
-		 * Tracked under JIRA CLO-226 (https://bug.javlin.eu/browse/CLO-226)
-		 */
 		try {
-			File tmp = File.createTempFile(label, "");
-			if (!tmp.exists()) {
-				throw new IOException("Temporary file does no exist: " + tmp.getAbsolutePath());
-			}
-			if (!tmp.delete()) {
-				throw new IOException("Temporary directory could not be created.");
-			}
-			if (!tmp.mkdir()) {
-				throw new IOException("Temporary directory could not be created.");
-			}
+			File tmp = Files.createTempDirectory(label).toFile(); // CLO-226
 			logNewTempFile(tmp);
 			return tmp;
 		} catch (IOException e) {
