@@ -59,7 +59,7 @@ public interface MVEdge extends MVGraphElement {
 	public boolean hasMetadataDirect();
 	
 	/**
-	 * @return specific metadat assigned to this edge
+	 * @return specific metadata assigned to this edge
 	 */
 	public MVMetadata getMetadata();
 	
