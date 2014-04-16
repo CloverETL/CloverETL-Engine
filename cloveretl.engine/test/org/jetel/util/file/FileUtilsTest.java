@@ -19,6 +19,7 @@
 package org.jetel.util.file;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -232,6 +233,9 @@ public class FileUtilsTest extends CloverTestCase {
 		fileURL = FileUtils.getFileURL(new URL("jar:file:/clover-executor/clover-executor-86.0.0-SNAPSHOT.jar!/com/gooddata/clover"), "/home/test");
 		assertEquals(new URL("file:/home/test"), fileURL);
 
+		fileURL = FileUtils.getFileURL(new URL("jar:file:/clover-executor/clover-executor-86.0.0-SNAPSHOT.jar!/com/gooddata/clover/"), "home/test");
+		assertEquals(new URL("jar:file:/clover-executor/clover-executor-86.0.0-SNAPSHOT.jar!/com/gooddata/clover/home/test"), fileURL);
+		
 		fileURL = FileUtils.getFileURL(new URL("http://www.cloveret.com/clover"), "/home/test");
 		assertEquals(new URL("file:/home/test"), fileURL);
 
@@ -358,5 +362,285 @@ public class FileUtilsTest extends CloverTestCase {
 		assertEquals("", FileUtils.removeTrailingSlash(""));
 		assertEquals("c:/project", FileUtils.removeTrailingSlash("c:/project/"));
 		assertEquals("c:/project", FileUtils.removeTrailingSlash("c:/project"));
+	}
+	
+	public void testGetAbsoluteURL() throws IOException {
+		// context URL is absolute file URL
+		URL contextUrl = new URL("file:/C:/somedir/subdir/");
+		String input;
+		String result;
+		
+		input = "C:/Project/dir";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("file:/C:/Project/dir", result);
+		
+		input = "ftp://test:test@ftp.javlin.eu/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+		
+		input = "./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("file:/C:/somedir/subdir/data-in/file.txt", result);
+		
+		input = "sandbox://mysandbox/dir/myfile.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+
+		input = "./data-in/file.txt;./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("file:/C:/somedir/subdir/data-in/file.txt;file:/C:/somedir/subdir/data-in/file.txt", result);
+		
+		input = "zip:(./data-in/file.zip)#dir/myfile.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("zip:(file:/C:/somedir/subdir/data-in/file.zip)#dir/myfile.txt", result);
+
+		input = "./data-in/*.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("file:/C:/somedir/subdir/data-in/*.txt", result);
+		
+		input = "./data-in/?es?.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("file:/C:/somedir/subdir/data-in/?es?.txt", result);
+		
+		input = "./path/filename$.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("file:/C:/somedir/subdir/path/filename$.out", result);
+
+		input = "./path/filename#.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("file:/C:/somedir/subdir/path/filename#.out", result);
+
+		input = "./path/filename%20space.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("file:/C:/somedir/subdir/path/filename%20space.out", result);
+
+		// context URL is sandbox URL
+		contextUrl = FileUtils.getFileURL("sandbox://mysandbox/dir/");
+		input = "./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("sandbox://mysandbox/dir/data-in/file.txt", result);
+		
+		input = "./data-in/file.txt;./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("sandbox://mysandbox/dir/data-in/file.txt;sandbox://mysandbox/dir/data-in/file.txt", result);
+		
+		input = "zip:(./data-in/file.zip)#dir/myfile.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("zip:(sandbox://mysandbox/dir/data-in/file.zip)#dir/myfile.txt", result);
+
+		input = "./data-in/*.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("sandbox://mysandbox/dir/data-in/*.txt", result);
+		
+		input = "./data-in/?es?.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("sandbox://mysandbox/dir/data-in/?es?.txt", result);
+		
+		input = "./path/filename$.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("sandbox://mysandbox/dir/path/filename$.out", result);
+
+		input = "./path/filename#.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("sandbox://mysandbox/dir/path/filename#.out", result);
+
+		input = "./path/filename%20space.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("sandbox://mysandbox/dir/path/filename%20space.out", result);
+
+		// context URL is null
+		contextUrl = null;
+		String realContext = FileUtils.appendSlash(new File(".").getCanonicalFile().toURI().toString());
+		
+		input = "./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/file.txt", result);
+		
+		input = "sandbox://mysandbox/dir/myfile.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+
+		input = "./data-in/file.txt;./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/file.txt;" + realContext + "data-in/file.txt", result);
+		
+		input = "zip:(./data-in/file.zip)#dir/myfile.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("zip:(" + realContext + "data-in/file.zip)#dir/myfile.txt", result);
+
+		input = "./data-in/*.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/*.txt", result);
+		
+		input = "./data-in/?es?.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/?es?.txt", result);
+		
+		input = "./path/filename$.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "path/filename$.out", result);
+
+		input = "./path/filename#.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "path/filename#.out", result);
+
+		input = "./path/filename%20space.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "path/filename%20space.out", result);
+
+//		{
+//			// SFTP relative path starting with a slash
+//			URL context = FileUtils.getFileURL("sftp://localhost/home/user/");
+//			
+//			input = "/var/log/mongodb/mongo.log";
+//			result = FileUtils.getAbsoluteURL(context, input);
+//			assertEquals("sftp://localhost/var/log/mongodb/mongo.log", result);
+//			
+//			input = "var/log/mongodb/mongo.log";
+//			result = FileUtils.getAbsoluteURL(context, input);
+//			assertEquals("sftp://localhost/home/user/var/log/mongodb/mongo.log", result);
+//		}
+//		
+//		{
+//			// FTP relative path starting with a slash
+//			URL context = FileUtils.getFileURL("ftp://localhost/home/user/");
+//			
+//			input = "/var/log/mongodb/mongo.log";
+//			result = FileUtils.getAbsoluteURL(context, input);
+//			assertEquals("ftp://localhost/var/log/mongodb/mongo.log", result);
+//			
+//			input = "var/log/mongodb/mongo.log";
+//			result = FileUtils.getAbsoluteURL(context, input);
+//			assertEquals("ftp://localhost/home/user/var/log/mongodb/mongo.log", result);
+//		}
+		
+		// paths starting with a slash are considered absolute (even on Windows, a bug in FileUtils.getFileURL())
+		input = "/home/krivanekm";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("file:/home/krivanekm", result);
+
+		input = "/home/krivanekm";
+		result = FileUtils.getAbsoluteURL(FileUtils.getFileURL("sandbox://mysandbox/"), input);
+		assertEquals("file:/home/krivanekm", result);
+
+		contextUrl = FileUtils.getFileURL("/home/user/");
+		input = "path/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		if (PlatformUtils.isWindowsPlatform()) {
+			String rc = FileUtils.appendSlash(new File("/home/user").getCanonicalFile().toURI().toString());
+			assertEquals(rc + input, result);
+		} else {
+			assertEquals("file:/home/krivanekm", result);
+		}
+
+		// context URL is relative file URL of the current working directory
+		contextUrl = FileUtils.getFileURL(".");
+
+		input = "./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/file.txt", result);
+		
+		input = "sandbox://mysandbox/dir/myfile.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+
+		input = "./data-in/file.txt;./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/file.txt;" + realContext + "data-in/file.txt", result);
+		
+		input = "zip:(./data-in/file.zip)#dir/myfile.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("zip:(" + realContext + "data-in/file.zip)#dir/myfile.txt", result);
+
+		input = "./data-in/*.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/*.txt", result);
+		
+		input = "./data-in/?es?.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/?es?.txt", result);
+		
+		input = "./path/filename$.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "path/filename$.out", result);
+
+		input = "./path/filename#.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "path/filename#.out", result);
+
+		input = "./path/filename%20space.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "path/filename%20space.out", result);
+
+		// context URL is relative (non-existing) file URL
+		contextUrl = FileUtils.getFileURL("graph");
+		realContext = FileUtils.appendSlash(new File("graph").getCanonicalFile().toURI().toString());
+
+		input = "./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/file.txt", result);
+		
+		input = "sandbox://mysandbox/dir/myfile.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+
+		input = "./data-in/file.txt;./data-in/file.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/file.txt;" + realContext + "data-in/file.txt", result);
+		
+		input = "zip:(./data-in/file.zip)#dir/myfile.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("zip:(" + realContext + "data-in/file.zip)#dir/myfile.txt", result);
+
+		input = "./data-in/*.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/*.txt", result);
+		
+		input = "./data-in/?es?.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "data-in/?es?.txt", result);
+		
+		input = "./path/filename$.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "path/filename$.out", result);
+
+		input = "./path/filename#.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "path/filename#.out", result);
+
+		input = "./path/filename%20space.out";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(realContext + "path/filename%20space.out", result);
+
+		// standard in/out
+		input = "-";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+		
+		// port
+		input = "port:$0.fieldName:discrete";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+		
+		// dictionary
+		input = "dict:entryName:source";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+
+		// proxy
+		input = "http:(proxy://juzr:heslou@koule:3128)//www.google.com";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+
+		// zip http proxy wildcards
+		input = "zip:(http:(proxy://juzr:heslou@koule:3128)//www.google.com/path/*.zip)#entry/fil?.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals(input, result);
+		
+		// zip http proxy wildcards context
+		contextUrl = FileUtils.getFileURL("http:(proxy://juzr:heslou@koule:3128)//www.google.com/");
+		input = "zip:(./path/*.zip)#entry/fil?.txt";
+		result = FileUtils.getAbsoluteURL(contextUrl, input);
+		assertEquals("zip:(http:(proxy://juzr:heslou@koule:3128)//www.google.com/path/*.zip)#entry/fil?.txt", result);
 	}
 }
