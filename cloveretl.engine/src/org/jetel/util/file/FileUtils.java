@@ -311,9 +311,7 @@ public class FileUtils {
     	
     	// standard url
         try {
-        	if( fileURL.startsWith("/") ){
-                return new URL(fileURL);
-        	} else {
+        	if( !fileURL.startsWith("/") ){
         		return getStandardUrlWeblogicHack(contextURL, fileURL);
         	}
         } catch(MalformedURLException ex) {}
@@ -2326,6 +2324,56 @@ public class FileUtils {
 		return fileURL != null && (fileURL.contains(";") || fileURL.contains("*") || fileURL.contains("?"));
 	}
 	
+	/**
+	 * Converts fileURL to absolute URL.
+	 * Preserves wildcards and escape sequences.
+	 * Handles multiple URLs separated with a semicolon.
+	 * Handles nested URLs. 
+	 * 
+	 * Examples:
+	 * 	"sandbox://sandboxname/" + "data-in/file.txt"					= "sandbox://sandboxname/data-in/file.txt"
+	 *  null + "data-in/file.txt"										= "file:/C:/Current/Working/Directory/data-in/file.txt"
+	 *  "sandbox://sandboxname/" + "zip:(data-in/archive.zip)#file.txt" = "zip:(sandbox://sandboxname/data-in/archive.zip)#file.txt"
+	 *  "C:/some/dir" + "data-in/*.txt"									= "file:/C:/some/dir/data-in/*.txt"
+	 *  
+	 * @param contextURL
+	 * @param fileURL
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getAbsoluteURL(URL contextURL, String fileURL) throws IOException {
+		// fix context URL to be absolute
+		if (contextURL == null) {
+			contextURL = new File(".").toURI().toURL();
+		}
+		if (contextURL.getProtocol().equals(FILE_PROTOCOL)) {
+			File workingDirectory = convertUrlToFile(contextURL);
+			if (!workingDirectory.isAbsolute()) {
+				URI uri = workingDirectory.toURI();
+				// we assume the context URL is a directory
+				String path = FileUtils.appendSlash(uri.toString());
+				uri = URI.create(path);
+				contextURL = uri.toURL();
+			}
+		}
+
+		// recursion for semicolon-separated URLs
+		String[] parts = fileURL.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+		if (parts.length > 1) {
+			String[] results = new String[parts.length];
+			for (int i = 0; i < parts.length; i++) {
+				results[i] = getAbsoluteURL(contextURL, parts[i]);
+			}
+			return StringUtils.join(Arrays.asList(results), ";");
+		}
+		
+		if (STD_CONSOLE.equals(fileURL)) {
+			return fileURL;
+		}
+		
+		URL url = FileUtils.getFileURL(contextURL, fileURL);
+		return url.toString();
+	}
 }
 
 /*
