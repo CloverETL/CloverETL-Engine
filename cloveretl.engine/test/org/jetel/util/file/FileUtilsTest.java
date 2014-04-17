@@ -370,9 +370,11 @@ public class FileUtilsTest extends CloverTestCase {
 		String input;
 		String result;
 		
-		input = "C:/Project/dir";
-		result = FileUtils.getAbsoluteURL(contextUrl, input);
-		assertEquals("file:/C:/Project/dir", result);
+		if (PlatformUtils.isWindowsPlatform()) {
+			input = "C:/Project/dir";
+			result = FileUtils.getAbsoluteURL(contextUrl, input);
+			assertEquals("file:/C:/Project/dir", result);
+		}
 		
 		input = "ftp://test:test@ftp.javlin.eu/file.txt";
 		result = FileUtils.getAbsoluteURL(contextUrl, input);
@@ -530,7 +532,7 @@ public class FileUtilsTest extends CloverTestCase {
 			String rc = FileUtils.appendSlash(new File("/home/user").getCanonicalFile().toURI().toString());
 			assertEquals(rc + input, result);
 		} else {
-			assertEquals("file:/home/krivanekm", result);
+			assertEquals("file:/home/user/" + input, result);
 		}
 
 		// context URL is relative file URL of the current working directory
