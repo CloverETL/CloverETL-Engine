@@ -1916,6 +1916,19 @@ public class FileUtils {
 	}
 	
 	/**
+	 * Removes "./" sequence from the beginning of a path
+	 * @param path
+	 * @return
+	 */
+	public static String removeInitialDotDir(String path) {
+		if (path != null && path.startsWith("./")) {
+			return path.substring(2);
+		} else {
+			return path;
+		}
+	}
+	
+	/**
 	 * Parses address and returns true if the address contains a server.
 	 * 
 	 * @param input
