@@ -51,6 +51,11 @@ public class SubgraphUtils {
     public static final String XML_JOB_URL_ATTRIBUTE = "jobURL";
 
 	/**
+	 * Prefix of custom attributes of Subgraph component.
+	 */
+	public static final String CUSTOM_SUBGRAPH_ATTRIBUTE_PREFIX = "__";
+
+	/**
 	 * @return true if and only if the given component type is SubgraphInput or SubjobflowInput component.
 	 */
 	public static boolean isSubJobInputComponent(String componentType) {
@@ -108,6 +113,31 @@ public class SubgraphUtils {
 				&& subgraphEdge.getGraph().getRuntimeJobType().isGraph() //jobflows do not share edges to avoid distorted logging of token tracked 
 				&& !parentGraphEdge.isDebugMode()
 				&& !SubgraphUtils.isSubJobInputComponent(subgraphEdge.getWriter().getType()); //edges directly interconnect SubgraphInput and SubgraphOutput cannot be share from both sides
+	}
+	
+	/**
+	 * Checks whether the given attribute name has "__foo" format,
+	 * which is indication of custom subgraph attribute
+	 * @return true if the given name of an attribute is custom subgraph attribute (prefixed with double underscores)  
+	 */
+	public static boolean isCustomSubgraphAttribute(String attributeName) {
+		return attributeName.startsWith(CUSTOM_SUBGRAPH_ATTRIBUTE_PREFIX);
+	}
+	
+	/**
+	 * Converts the given name of custom subgraph attribute to name of respective
+	 * public graph parameter.
+	 */
+	public static String getPublicGraphParameterName(String customSubgraphAttribute) {
+		return customSubgraphAttribute.substring(CUSTOM_SUBGRAPH_ATTRIBUTE_PREFIX.length());
+	}
+
+	/**
+	 * Converts the given name of public graph parameter to respective
+	 * name of custom subgraph attribute.
+	 */
+	public static String getCustomSubgraphAttribute(String publicGraphParameterName) {
+		return CUSTOM_SUBGRAPH_ATTRIBUTE_PREFIX + publicGraphParameterName;
 	}
 	
 }
