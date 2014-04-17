@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
 
@@ -257,6 +258,18 @@ public abstract class GraphElement implements IGraphElement {
     	return jobType;
     }
 
+    /**
+     * @return authority proxy for parent graph or a default authority proxy
+     */
+    protected IAuthorityProxy getAuthorityProxy() {
+    	TransformationGraph graph = getGraph();
+    	if (graph != null) {
+    		return graph.getAuthorityProxy();
+    	} else {
+    		return ContextProvider.getAuthorityProxy();
+    	}
+    }
+    
     @Override
     public String toString() {
     	return identifiersToString(getId(), getName());
