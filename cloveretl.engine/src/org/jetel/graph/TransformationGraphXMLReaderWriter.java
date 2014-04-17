@@ -214,6 +214,11 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String JOB_TYPE_ATTRIBUTE = "nature";
 	public final static String SHOW_COMPONENT_DETAILS_ATTRIBUTE = "showComponentDetails";
 	
+	private final static String GRAPH_PARAMETER_NAME_ATTRIBUTE = "name";
+	private final static String GRAPH_PARAMETER_VALUE_ATTRIBUTE = "value";
+	private final static String GRAPH_PARAMETER_SECURE_ATTRIBUTE = "secure";
+	private final static String GRAPH_PARAMETER_PUBLIC_ATTRIBUTE = "public";
+	private final static String GRAPH_PARAMETER_LABEL_ATTRIBUTE = "label";
 	
 	private final static int ALLOCATE_MAP_SIZE=64;
 	/**
@@ -882,17 +887,25 @@ public class TransformationGraphXMLReaderWriter {
 	 * @throws XMLConfigurationException 
 	 */
 	private void instantiateGraphParameter(GraphParameters graphParameters, Element graphParameter) throws XMLConfigurationException {
-		String name = graphParameter.getAttribute("name");
-		String value = graphParameter.getAttribute("value");
+		String name = graphParameter.getAttribute(GRAPH_PARAMETER_NAME_ATTRIBUTE);
+		String value = graphParameter.getAttribute(GRAPH_PARAMETER_VALUE_ATTRIBUTE);
 		//value may be actually overridden by additional graph parameters defined in graph runtime context
 		value = getGraphParameterValue(name, value);
     	GraphParameter gp = graphParameters.addGraphParameter(name, value);
-    	if (graphParameter.hasAttribute("secure")) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(graphParameter);
+
+    	ComponentXMLAttributes attributes = new ComponentXMLAttributes(graphParameter);
+    	if (graphParameter.hasAttribute(GRAPH_PARAMETER_SECURE_ATTRIBUTE)) {
 			try {
-				gp.setSecure(attributes.getBoolean("secure", false));
+				gp.setSecure(attributes.getBoolean(GRAPH_PARAMETER_SECURE_ATTRIBUTE, false));
 			} catch (Exception e) {
 				throwXMLConfigurationException("Secure attribute of a graph parameter is not valid boolean value.", e);
+			}
+    	}
+    	if (graphParameter.hasAttribute(GRAPH_PARAMETER_PUBLIC_ATTRIBUTE)) {
+			try {
+				gp.setPublic(attributes.getBoolean(GRAPH_PARAMETER_PUBLIC_ATTRIBUTE, false));
+			} catch (Exception e) {
+				throwXMLConfigurationException("Public attribute of a graph parameter is not valid boolean value.", e);
 			}
     	}
 	}

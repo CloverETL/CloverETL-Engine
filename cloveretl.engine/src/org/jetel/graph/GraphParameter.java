@@ -23,6 +23,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.string.StringUtils;
 
 /**
  * This class represents single graph parameter - name-value pair, which is
@@ -92,6 +93,17 @@ public class GraphParameter {
 	@XmlAttribute(name="label")
 	public String getLabel() {
 		return label;
+	}
+	
+	/**
+	 * @return label or name if label is empty
+	 */
+	public String getLabelOrName() {
+		if (!StringUtils.isEmpty(label)) {
+			return label;
+		} else {
+			return name;
+		}
 	}
 	
 	/**
