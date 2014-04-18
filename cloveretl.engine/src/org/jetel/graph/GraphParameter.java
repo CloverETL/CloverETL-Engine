@@ -50,6 +50,8 @@ public class GraphParameter {
 	
 	private boolean isPublic;
 	
+	private boolean isRequired;
+	
 	private String description;
 	
 	public GraphParameter() {
@@ -145,6 +147,22 @@ public class GraphParameter {
 	 */
 	public void setPublic(boolean isPublic) {
 		this.isPublic = isPublic;
+	}
+
+	/**
+	 * @return true if this parameter is required.
+	 */
+	@XmlAttribute(name="required")
+	public boolean isRequired() {
+		return isRequired;
+	}
+	
+	/**
+	 * Marks this parameter as required parameter.
+	 * @param isRequired the isRequired to set
+	 */
+	public void setRequired(boolean isRequired) {
+		this.isRequired = isRequired;
 	}
 
 	/**

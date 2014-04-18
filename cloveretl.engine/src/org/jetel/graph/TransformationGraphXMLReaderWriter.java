@@ -218,6 +218,7 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String GRAPH_PARAMETER_VALUE_ATTRIBUTE = "value";
 	private final static String GRAPH_PARAMETER_SECURE_ATTRIBUTE = "secure";
 	private final static String GRAPH_PARAMETER_PUBLIC_ATTRIBUTE = "public";
+	private final static String GRAPH_PARAMETER_REQUIRED_ATTRIBUTE = "required";
 	private final static String GRAPH_PARAMETER_LABEL_ATTRIBUTE = "label";
 	
 	private final static int ALLOCATE_MAP_SIZE=64;
@@ -894,20 +895,26 @@ public class TransformationGraphXMLReaderWriter {
     	GraphParameter gp = graphParameters.addGraphParameter(name, value);
 
     	ComponentXMLAttributes attributes = new ComponentXMLAttributes(graphParameter);
-    	if (graphParameter.hasAttribute(GRAPH_PARAMETER_SECURE_ATTRIBUTE)) {
-			try {
-				gp.setSecure(attributes.getBoolean(GRAPH_PARAMETER_SECURE_ATTRIBUTE, false));
-			} catch (Exception e) {
-				throwXMLConfigurationException("Secure attribute of a graph parameter is not valid boolean value.", e);
-			}
-    	}
-    	if (graphParameter.hasAttribute(GRAPH_PARAMETER_PUBLIC_ATTRIBUTE)) {
-			try {
-				gp.setPublic(attributes.getBoolean(GRAPH_PARAMETER_PUBLIC_ATTRIBUTE, false));
-			} catch (Exception e) {
-				throwXMLConfigurationException("Public attribute of a graph parameter is not valid boolean value.", e);
-			}
-    	}
+    	//label
+    	gp.setLabel(attributes.getString(GRAPH_PARAMETER_LABEL_ATTRIBUTE, null));
+    	//isSecure
+		try {
+			gp.setSecure(attributes.getBoolean(GRAPH_PARAMETER_SECURE_ATTRIBUTE, false));
+		} catch (Exception e) {
+			throwXMLConfigurationException("Secure attribute of a graph parameter is not valid boolean value.", e);
+		}
+		//isPublic
+		try {
+			gp.setPublic(attributes.getBoolean(GRAPH_PARAMETER_PUBLIC_ATTRIBUTE, false));
+		} catch (Exception e) {
+			throwXMLConfigurationException("Public attribute of a graph parameter is not valid boolean value.", e);
+		}
+		//isRequired
+		try {
+			gp.setRequired(attributes.getBoolean(GRAPH_PARAMETER_REQUIRED_ATTRIBUTE, false));
+		} catch (Exception e) {
+			throwXMLConfigurationException("Required attribute of a graph parameter is not valid boolean value.", e);
+		}
 	}
 
 	/**
