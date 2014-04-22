@@ -19,10 +19,12 @@
 package org.jetel.graph;
 
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.util.SubgraphUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -35,7 +37,7 @@ import org.jetel.util.string.StringUtils;
  * @created 2.8.2013
  */
 @XmlRootElement(name = "GraphParameter")
-@XmlType(propOrder = { "description", "secure", "value", "name" })
+@XmlType(propOrder = { "name", "value", "secure", "description", "componentReference", "singleType" })
 public class GraphParameter {
 
 	public static final String HIDDEN_SECURE_PARAMETER = "*****";
@@ -46,13 +48,17 @@ public class GraphParameter {
 	
 	private String label;
 	
-	private boolean secure;
+	private boolean secure = false;
 	
-	private boolean isPublic;
+	private boolean isPublic = false;
 	
-	private boolean isRequired;
+	private boolean isRequired = false;
 	
 	private String description;
+	
+	private SingleType singleType;
+
+	private ComponentReference componentReference;
 	
 	public GraphParameter() {
 		
@@ -77,7 +83,7 @@ public class GraphParameter {
 	}
 	
 	public void setValue(String value) {
-		this.value = value;
+		this.value = (value != null) ? value : "";
 	}
 	
 	/**
@@ -182,4 +188,99 @@ public class GraphParameter {
 		this.description = description;
 	}
 
+	@XmlElement(name="singleType")
+	public SingleType getSingleType() {
+		return singleType;
+	}
+
+//	public SingleType getSingleTypeRecursive(TransformationGraph graph) {
+//		if (singleType != null) {
+//			return singleType;
+//		} else if (componentReference != null) {
+//			Node component = graph.getNodes().get(componentReference.getComponentId());
+//			if (component != null) {
+//				if (!SubgraphUtils.isSubJobComponent(component.getType())) {
+//					component.getDescriptor().getDescription().getAttributes().get
+//				} else {
+//					
+//				}
+//			} else {
+//				
+//			}
+//		}
+//	}
+	
+	public void setSingleType(SingleType singleType) {
+		this.singleType = singleType;
+	}
+
+	public void setSingleType(String singleTypeName) {
+		this.singleType = new SingleType(singleTypeName);
+	}
+
+	@XmlElement(name="componentReference")
+	public ComponentReference getComponentReference() {
+		return componentReference;
+	}
+
+	public void setComponentReference(ComponentReference componentReference) {
+		this.componentReference = componentReference;
+	}
+
+	public void setComponentReference(String referencedComponentId, String referencedAttributeName) {
+		this.componentReference = new ComponentReference(referencedComponentId, referencedAttributeName);
+	}
+
+	public static class SingleType {
+		private String name;
+
+		public SingleType() {
+		}
+
+		public SingleType(String name) {
+			this.name = name;
+		}
+		
+		@XmlAttribute(name="name")
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+	}
+	
+	@XmlType(propOrder = { "referencedComponentId", "referencedAttributeName" })
+	public static class ComponentReference {
+		private String componentId;
+		private String attributeName;
+
+		public ComponentReference() {
+		}
+
+		public ComponentReference(String componentId, String attributeName) {
+			this.componentId = componentId;
+			this.attributeName = attributeName;
+		}
+		
+		@XmlAttribute(name="referencedComponent")
+		public String getComponentId() {
+			return componentId;
+		}
+
+		public void setComponentId(String componentId) {
+			this.componentId = componentId;
+		}
+
+		@XmlAttribute(name="referencedProperty")
+		public String getAttributeName() {
+			return attributeName;
+		}
+
+		public void setAttributeName(String attributeName) {
+			this.attributeName = attributeName;
+		}
+	}
+	
 }
