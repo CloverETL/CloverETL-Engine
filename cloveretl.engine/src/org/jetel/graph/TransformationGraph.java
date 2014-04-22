@@ -1278,6 +1278,7 @@ public final class TransformationGraph extends GraphElement {
 		return dictionary;
 	}
 	
+    @Override
     public IAuthorityProxy getAuthorityProxy() {
     	return getRuntimeContext().getAuthorityProxy();
     }
