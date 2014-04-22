@@ -49,7 +49,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
@@ -124,7 +123,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private Destination destination = null;
 	private URL[] librariesUrls = null;
 	private URL contextURL;
-	private GreedyURLClassLoader loader;
+	private ClassLoader loader;
 	
 	private ConnectionFactory factory = null;
 	private Context initCtx = null;
@@ -222,7 +221,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 					// Save the class loader so that you can restore it later
 					prevCl = Thread.currentThread().getContextClassLoader();
 					// Create the class loader by using the given URL
-					loader = new GreedyURLClassLoader(librariesUrls, this.getClass().getClassLoader());
+					loader = getAuthorityProxy().createClassLoader(librariesUrls, this.getClass().getClassLoader(), true);
 					// InitialContext uses thread Class-Loader
 					Thread.currentThread().setContextClassLoader(loader);
 				}

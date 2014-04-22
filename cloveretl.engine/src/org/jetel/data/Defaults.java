@@ -254,6 +254,7 @@ public final class Defaults {
         INCREMENTAL_STORE_KEY = getStringProperties("INCREMENTAL_STORE_KEY", "incremental_store");
         PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING = getStringProperties("PACKAGES_EXCLUDED_FROM_GREEDY_CLASS_LOADING", "java.;javax.;sun.misc.");
         USE_DIRECT_MEMORY = getBooleanProperties("USE_DIRECT_MEMORY", true);
+        USE_DYNAMIC_COMPILER = getBooleanProperties("USE_DYNAMIC_COMPILER", true);
         MAX_MAPPED_FILE_TRANSFER_SIZE = getIntProperties("MAX_MAPPED_FILE_TRANSFER_SIZE", 8388608);
         CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE = getLongProperties("CLOVER_BUFFER_DIRECT_MEMORY_LIMIT_SIZE", MemoryUtils.getDirectMemorySize() / 2);
         
@@ -364,7 +365,18 @@ public final class Defaults {
 	 * Since direct memory is out of control java virtual machine, try to turn off 
 	 * usage of direct memory in case OutOfMemory exception occurs. 
 	 */
-	public static boolean USE_DIRECT_MEMORY;
+	public static boolean USE_DIRECT_MEMORY;// = true;
+	
+	/**
+	 * Clover engine can use dynamic compiler functionality for runtime compilation
+	 * of user-defined java code, for example transformation of Reformat component can
+	 * be specified by a java code and this code is automatically compiled be engine and
+	 * used for records transformation. Also 'compiled' mode of CLT2 code is actually backed
+	 * by dynamic compilation of java code. This functionality is powerful
+	 * but potential security issue. Setting this attribute to false, administrator can
+	 * turn off dynamic compiler at all.
+	 */
+	public static boolean USE_DYNAMIC_COMPILER;// = true;
 	
 	/**
 	 * Maximal size of direct memory used by clover buffers. By default,
