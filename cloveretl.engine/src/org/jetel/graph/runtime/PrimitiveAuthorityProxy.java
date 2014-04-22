@@ -58,6 +58,7 @@ import org.jetel.main.runGraph;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
 import org.jetel.util.bytes.SeekableByteChannel;
+import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.file.FileUtils;
 
@@ -473,6 +474,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
 		return ClassLoaderUtils.createClassLoader(urls, parent, greedy);
+	}
+	
+	@Override
+	public ClassLoader createMultiParentClassLoader(ClassLoader... parents) {
+		return new MultiParentClassLoader(parents);
 	}
 	
 	@Override

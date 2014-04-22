@@ -1192,10 +1192,6 @@ public final class TransformationGraph extends GraphElement {
 		return dictionary;
 	}
 	
-    public IAuthorityProxy getAuthorityProxy() {
-    	return getRuntimeContext().getAuthorityProxy();
-    }
-
     /**
      * @return memory tracker associated with this graph
      */

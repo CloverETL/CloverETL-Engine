@@ -24,9 +24,7 @@ import static org.jetel.ctl.TransformLangParserTreeConstants.JJTFUNCTIONDECLARAT
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTIMPORTSOURCE;
 import static org.jetel.ctl.TransformLangParserTreeConstants.JJTRETURNSTATEMENT;
 
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
@@ -56,11 +54,8 @@ import org.jetel.interpreter.ASTnode.CLVFDirectMapping;
 import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.plugin.PluginDescriptor;
 import org.jetel.util.CodeParser;
-import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.compile.ClassLoaderUtils;
-import org.jetel.util.compile.DynamicCompiler;
 import org.jetel.util.compile.DynamicJavaClass;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.PropertyRefResolver;
@@ -411,15 +406,6 @@ public class RecordTransformFactory {
     	}
     }
     
-    private static ClassLoader getCTLLibsClassLoader() {
-    	
-    	Set<ClassLoader> loaders = new LinkedHashSet<ClassLoader>();
-    	for (PluginDescriptor plugin : DynamicCompiler.getCTLRelatedPlugins()) {
-    		loaders.add(plugin.getClassLoader());
-    	}
-    	return new MultiParentClassLoader(loaders.toArray(new ClassLoader[loaders.size()]));
-    }
-
     /**
      * @param logger
      * @param className
