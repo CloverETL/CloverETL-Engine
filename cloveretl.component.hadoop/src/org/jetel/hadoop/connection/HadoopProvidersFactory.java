@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.graph.ContextProvider;
 import org.jetel.hadoop.component.IHadoopSequenceFileFormatter;
 import org.jetel.hadoop.component.IHadoopSequenceFileParser;
 import org.jetel.hadoop.service.AbstractHadoopConnectionData;
@@ -48,7 +49,6 @@ import org.jetel.hadoop.service.mapreduce.HadoopMapReduceConnectionData;
 import org.jetel.hadoop.service.mapreduce.HadoopMapReduceInfoService;
 import org.jetel.hadoop.service.mapreduce.HadoopMapReduceJob;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.classloader.GreedyURLClassLoader;
 
 /**
  * <p> Static factory class for instantiating providers for Hadoop services of required Hadoop API version. It also
@@ -255,7 +255,7 @@ public final class HadoopProvidersFactory {
 		ClassLoader classLoader = classLoaderCache.get(classPathSet);
 		
 		if (classLoader == null) {
-			classLoader = new GreedyURLClassLoader(libraries.toArray(new URL[0]), HadoopProvidersFactory.class.getClassLoader());
+			classLoader = ContextProvider.getAuthorityProxy().createClassLoader(libraries.toArray(new URL[0]), HadoopProvidersFactory.class.getClassLoader(), true); 
 			classLoaderCache.put(classPathSet, classLoader);
 			
 			LOG.debug("  using new classloader with classpath: " + libraries);
