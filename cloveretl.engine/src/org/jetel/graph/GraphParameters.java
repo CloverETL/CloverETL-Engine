@@ -26,6 +26,7 @@ import java.util.Properties;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
@@ -50,13 +51,32 @@ public class GraphParameters {
 	 * SynchronizedMap wouldn't be sufficient, since it doesn't synchronize iteration.  */
 	private final Map<String, GraphParameter> parameters = new LinkedHashMap<String, GraphParameter>();
 	
+	@XmlTransient
+	private TransformationGraph parentGraph;
+	
 	public GraphParameters() {
 	}
 
+	public GraphParameters(TransformationGraph parentGraph) {
+		this.parentGraph = parentGraph;
+	}
+	
 	public GraphParameters(Properties properties) {
 		addProperties(properties);
 	}
 
+	public void setParentGraph(TransformationGraph parentGraph) {
+		this.parentGraph = parentGraph;
+	}
+	
+	/**
+	 * @return parent transformation graph or null
+	 */
+	@XmlTransient
+	public TransformationGraph getParentGraph() {
+		return parentGraph;
+	}
+	
 	/**
 	 * @param name name of searched parameter
 	 * @return true if parameter with given name is in this parameters container
@@ -79,7 +99,7 @@ public class GraphParameters {
 			if (result != null) {
 				return result;
 			} else {
-				return new GraphParameter(name, null);
+				return new GraphParameter(name, null, this);
 			}
 		}
 	}
@@ -119,6 +139,7 @@ public class GraphParameters {
 		}
 		synchronized (parameters) {
 			if (!parameters.containsKey(graphParameter.getName())) {
+				graphParameter.setParentGraphParameters(this);
 				parameters.put(graphParameter.getName(), graphParameter);
 				return true;
 			} else {
@@ -222,7 +243,12 @@ public class GraphParameters {
 	 */
 	public void clear() {
 		synchronized (parameters) {
+			List<GraphParameter> oldGraphParameters = getAllGraphParameters();
 			parameters.clear();
+			//clear references to parent GraphParameters
+			for (GraphParameter oldGraphParameter : oldGraphParameters) {
+				oldGraphParameter.setParentGraphParameters(null);
+			}
 		}
 	}
 	

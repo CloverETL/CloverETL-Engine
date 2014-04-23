@@ -899,7 +899,7 @@ public class TransformationGraphXMLReaderWriter {
 			GraphParameter gp = (GraphParameter) GRAPH_PARAMETER_UNMARSHALLER.unmarshal(graphParameter);
 			gp.setValue(getGraphParameterValue(gp.getName(), gp.getValue()));
 		    graphParameters.addGraphParameter(gp);
-		} catch (JAXBException e) {
+		} catch (Exception e) {
 			throw new JetelRuntimeException("Deserialisation of graph parameters failed.", e);
 		}
 	}

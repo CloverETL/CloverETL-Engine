@@ -21,8 +21,11 @@ package org.jetel.graph;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
+import org.jetel.component.ComponentDescription.Attribute;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.SubgraphUtils;
 import org.jetel.util.string.StringUtils;
@@ -42,6 +45,8 @@ public class GraphParameter {
 
 	public static final String HIDDEN_SECURE_PARAMETER = "*****";
 	
+	private static final SingleType DEFAULT_SINGLE_TYPE = new SingleType("string");
+	
 	private String name;
 	
 	private String value;
@@ -60,6 +65,9 @@ public class GraphParameter {
 
 	private ComponentReference componentReference;
 	
+	@XmlTransient
+	private GraphParameters parentGraphParameters;
+	
 	public GraphParameter() {
 		
 	}
@@ -67,6 +75,21 @@ public class GraphParameter {
 	public GraphParameter(String name, String value) {
 		this.name = name;
 		this.value = value;
+	}
+
+	GraphParameter(String name, String value, GraphParameters parentGraphParameters) {
+		this.name = name;
+		this.value = value;
+		this.parentGraphParameters = parentGraphParameters;
+	}
+
+	void setParentGraphParameters(GraphParameters parentGraphParameters) {
+		this.parentGraphParameters = parentGraphParameters;
+	}
+	
+	@XmlTransient
+	public TransformationGraph getParentGraph() {
+		return parentGraphParameters != null ? parentGraphParameters.getParentGraph() : null;
 	}
 	
 	public void setName(String name) {
@@ -193,22 +216,63 @@ public class GraphParameter {
 		return singleType;
 	}
 
-//	public SingleType getSingleTypeRecursive(TransformationGraph graph) {
-//		if (singleType != null) {
-//			return singleType;
-//		} else if (componentReference != null) {
-//			Node component = graph.getNodes().get(componentReference.getComponentId());
-//			if (component != null) {
-//				if (!SubgraphUtils.isSubJobComponent(component.getType())) {
-//					component.getDescriptor().getDescription().getAttributes().get
-//				} else {
-//					
-//				}
-//			} else {
-//				
-//			}
-//		}
-//	}
+	/**
+	 * Returns single type of this graph parameter. Reference type definition is recursively resolved.
+	 * If no single type is defined, 'string' type is returned as default.
+	 */
+	public SingleType getSingleTypeRecursive() {
+		if (singleType != null) {
+			//single type defined
+			return singleType;
+		} else if (componentReference != null) {
+			//type is defined by component reference
+			if (getParentGraph() != null) {
+				//graph is available
+				Node component = getParentGraph().getNodes().get(componentReference.getComponentId());
+				if (component != null) {
+					//referenced component is available
+					if (!SubgraphUtils.isSubJobComponent(component.getType())) {
+						//referenced component is regular component
+						Attribute attribute = component.getDescriptor().getDescription().getAttributes().getAttribute(componentReference.getAttributeName());
+						if (attribute != null) {
+							//referenced attribute found
+							if (attribute.getSingleType() != null) {
+								//referenced attribute is single type - let's return this single type
+								return new SingleType(attribute.getSingleType().getName());
+							} else {
+								throw new JetelRuntimeException("Graph parameter '" + getName() + "' references non-single type attribute '" + componentReference + "'.");
+							}
+						} else {
+							throw new JetelRuntimeException("Graph parameter '" + getName() + "' references unknown attribute '" + componentReference + "'.");
+						}
+					} else {
+						//referenced component is Subgraph component
+						SubgraphComponent subgraphComponent = (SubgraphComponent) component;
+						TransformationGraph subgraph = subgraphComponent.getSubgraphNoMetadataPropagation();
+						String graphParameterName = SubgraphUtils.getPublicGraphParameterName(componentReference.getAttributeName());
+						if (subgraph.getGraphParameters().hasGraphParameter(graphParameterName)) {
+							//referenced public subgraph parameter found
+							GraphParameter subgraphGraphParameter = subgraph.getGraphParameters().getGraphParameter(graphParameterName);
+							try {
+								//recursive search of single type
+								return subgraphGraphParameter.getSingleTypeRecursive();
+							} catch (Exception e) {
+								throw new JetelRuntimeException("Graph parameter '" + getName() + "' reference resolution failed (" + componentReference + ").");
+							}
+						} else {
+							throw new JetelRuntimeException("Graph parameter '" + getName() + "' references unknown attribute '" + componentReference + "'.");
+						}
+					}
+				} else {
+					throw new JetelRuntimeException("Graph parameter '" + getName() + "' references unknown component '" + componentReference.getComponentId() + "'.");
+				}
+			} else {
+				throw new JetelRuntimeException("Graph parameter '" + getName() + "' cannot provide referenced type. Unknown parent graph.");
+			}
+		} else {
+			return DEFAULT_SINGLE_TYPE;
+		}
+	}
 	
 	public void setSingleType(SingleType singleType) {
 		this.singleType = singleType;
@@ -252,7 +316,7 @@ public class GraphParameter {
 		}
 	}
 	
-	@XmlType
+	@XmlType(propOrder = { "componentId", "attributeName" })
 	public static class ComponentReference {
 		private String componentId;
 		private String attributeName;
@@ -281,6 +345,11 @@ public class GraphParameter {
 
 		public void setAttributeName(String attributeName) {
 			this.attributeName = attributeName;
+		}
+		
+		@Override
+		public String toString() {
+			return componentId + "." + attributeName;
 		}
 	}
 	
