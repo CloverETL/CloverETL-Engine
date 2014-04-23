@@ -176,7 +176,7 @@ public final class TransformationGraph extends GraphElement {
 		sequences = new LinkedHashMap<String,Sequence> ();
 		lookupTables = new LinkedHashMap<String,LookupTable> ();
 		dataRecordMetadata = new LinkedHashMap<String,Object> ();
-		graphParameters = new GraphParameters();
+		graphParameters = new GraphParameters(this);
 		dictionary = new Dictionary(this);
 		memoryTracker = new MemoryTracker();
 		initialRuntimeContext = new GraphRuntimeContext();
