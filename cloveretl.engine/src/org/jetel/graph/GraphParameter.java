@@ -231,6 +231,7 @@ public class GraphParameter {
 		this.componentReference = new ComponentReference(referencedComponentId, referencedAttributeName);
 	}
 
+	@XmlType
 	public static class SingleType {
 		private String name;
 
@@ -251,7 +252,7 @@ public class GraphParameter {
 		}
 	}
 	
-	@XmlType(propOrder = { "referencedComponentId", "referencedAttributeName" })
+	@XmlType
 	public static class ComponentReference {
 		private String componentId;
 		private String attributeName;
