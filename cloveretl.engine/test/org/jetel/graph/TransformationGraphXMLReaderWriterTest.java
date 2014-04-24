@@ -70,42 +70,42 @@ public class TransformationGraphXMLReaderWriterTest extends CloverTestCase {
 		assertTrue(result.parameters.get(0).name.equals("key1"));
 		assertTrue(result.parameters.get(0).value.equals("value1"));
 		assertTrue(result.parameters.get(0).secure == false);
-		assertTrue(result.parameters.get(0).simpleType == null);
+		assertTrue(result.parameters.get(0).singleType == null);
 		assertTrue(result.parameters.get(0).componentReference == null);
 
 		assertTrue(result.parameters.get(1).name.equals("key2"));
 		assertTrue(result.parameters.get(1).value.equals(""));
 		assertTrue(result.parameters.get(1).secure == false);
-		assertTrue(result.parameters.get(1).simpleType == null);
+		assertTrue(result.parameters.get(1).singleType == null);
 		assertTrue(result.parameters.get(1).componentReference == null);
 
 		assertTrue(result.parameters.get(2).name.equals("key3"));
 		assertTrue(result.parameters.get(2).value == null);
 		assertTrue(result.parameters.get(2).secure == false);
-		assertTrue(result.parameters.get(2).simpleType == null);
+		assertTrue(result.parameters.get(2).singleType == null);
 		assertTrue(result.parameters.get(2).componentReference == null);
 
 		assertTrue(result.parameters.get(3).name.equals("key4"));
 		assertTrue(result.parameters.get(3).value.equals("value4"));
 		assertTrue(result.parameters.get(3).secure == true);
-		assertTrue(result.parameters.get(3).simpleType == null);
+		assertTrue(result.parameters.get(3).singleType == null);
 		assertTrue(result.parameters.get(3).componentReference == null);
 
 		assertTrue(result.parameters.get(4).name.equals("key5"));
 		assertTrue(result.parameters.get(4).value.equals("value5"));
-		assertTrue(result.parameters.get(4).simpleType.name.equals("fileURL"));
+		assertTrue(result.parameters.get(4).singleType.name.equals("fileURL"));
 		assertTrue(result.parameters.get(4).componentReference == null);
 
 		assertTrue(result.parameters.get(5).name.equals("key6"));
 		assertTrue(result.parameters.get(5).value.equals("value6"));
-		assertTrue(result.parameters.get(5).simpleType == null);
+		assertTrue(result.parameters.get(5).singleType == null);
 		assertTrue(result.parameters.get(5).componentReference.referencedComponent.equals("component1"));
 		assertTrue(result.parameters.get(5).componentReference.referencedProperty.equals("fileURL"));
 		
 		assertTrue(result.parameters.get(6).name.equals("key7"));
 		assertTrue(result.parameters.get(6).value.equals("value7"));
 		assertTrue(result.parameters.get(6).secure == false);
-		assertTrue(result.parameters.get(6).simpleType == null);
+		assertTrue(result.parameters.get(6).singleType == null);
 		assertTrue(result.parameters.get(6).componentReference == null);
 		assertTrue(result.parameters.get(6).isPublic == true);
 		assertTrue(result.parameters.get(6).required == false);
@@ -113,7 +113,7 @@ public class TransformationGraphXMLReaderWriterTest extends CloverTestCase {
 		assertTrue(result.parameters.get(7).name.equals("key8"));
 		assertTrue(result.parameters.get(7).value.equals("value8"));
 		assertTrue(result.parameters.get(7).secure == false);
-		assertTrue(result.parameters.get(7).simpleType == null);
+		assertTrue(result.parameters.get(7).singleType == null);
 		assertTrue(result.parameters.get(7).componentReference == null);
 		assertTrue(result.parameters.get(7).isPublic == false);
 		assertTrue(result.parameters.get(7).required == true);
@@ -138,13 +138,13 @@ public class TransformationGraphXMLReaderWriterTest extends CloverTestCase {
 		public boolean isPublic;
 		@XmlAttribute(name="required")
 		public boolean required;
-		@XmlElement(name="simpleType")
-		public SimpleType simpleType;
+		@XmlElement(name="singleType")
+		public SingleType singleType;
 		@XmlElement(name="componentReference")
 		public ComponentReference componentReference;
 	}
 	
-	public static class SimpleType {
+	public static class SingleType {
 		@XmlAttribute(name="name")
 		public String name;
 	}
