@@ -117,9 +117,9 @@ public class SimpleGather extends Node {
 	public Result execute() throws Exception {
 		//ETL Graphs and jobflows use different implementations (CLO-3538)
 		JobType runtimeJobType = getGraph().getRuntimeContext().getJobType();
-		if (runtimeJobType == JobType.ETL_GRAPH) {
+		if (runtimeJobType.isGraph()) {
 			return executeInETLGraph();
-		} else if (runtimeJobType == JobType.JOBFLOW) {
+		} else if (runtimeJobType.isJobflow()) {
 			return executeInJobflow();
 		} else {
 			throw new JetelRuntimeException("Unexpected job type for SimpleGather component - " + runtimeJobType);
