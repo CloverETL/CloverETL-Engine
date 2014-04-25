@@ -7906,6 +7906,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("millisecMin", 0);
 		check("nullRet1", null);
 		check("nullRet2", null);
+
+		check("week1", 6);
+		check("week2", 7);
 	}
 	
 	public void test_convertlib_date2num_expect_error(){
