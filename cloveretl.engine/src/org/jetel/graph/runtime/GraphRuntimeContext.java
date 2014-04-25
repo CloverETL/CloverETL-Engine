@@ -110,7 +110,7 @@ public class GraphRuntimeContext {
 		dictionaryContent = new DictionaryValuesContainer();
 		clusterNodeId = null;
 		jobType = JobType.DEFAULT;
-		authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
+		setAuthorityProxy(AuthorityProxyFactory.createDefaultAuthorityProxy());
 		executionType = ExecutionType.MULTI_THREAD_EXECUTION;
 	}
 	

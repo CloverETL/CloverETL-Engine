@@ -97,7 +97,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		sequence.free();
 	}
 	
-	private GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
+	protected GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         runtimeContext.setRunId(runId);
         runtimeContext.setLogLevel(Level.ALL);
