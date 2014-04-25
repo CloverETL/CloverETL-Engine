@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="javlin" created="Fri Jan 10 10:51:41 CET 2014" guiVersion="0.0.0.devel" id="1389347741386" licenseType="Commercial" modified="Thu Apr 24 15:15:50 CEST 2014" modifiedBy="sedlacek" name="Twitter" revision="1.69" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata1">
+<Record fieldDelimiter="|" name="Trends" recordDelimiter="\n" type="delimited">
+<Field name="name" type="string"/>
+<Field name="query" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="Tweets" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
+<Field name="tweet_text" type="string"/>
+<Field name="created" type="string"/>
+<Field name="author" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record fieldDelimiter="|" name="TwitterResponse" recordDelimiter="\n" type="delimited">
+<Field name="content" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter name="OAUTH_API_KEY"/>
+<GraphParameter name="OAUTH_API_KEY_SECRET"/>
+<GraphParameter name="OAUTH_ACCESS_TOKEN"/>
+<GraphParameter name="OAUTH_ACCESS_TOKEN_SECRET"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="96" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Query for Twitter trends" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="344" x="9" y="212">
+<attr name="text"><![CDATA[Rest API is used to query for current trends. Request is performed using HTTPConnector component. JSONReader is used to parse resulting JSON]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="97" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Find tweets" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="322" x="365" y="211">
+<attr name="text"><![CDATA[HTTPConnector calls Twitter REST API to search tweets related to previously received trends. Again, JSONReaders parses resposne JSON.]]></attr>
+</Note>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="98" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Store results" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="183" x="694" y="210">
+<attr name="text"><![CDATA[Store results into CSV file]]></attr>
+</Note>
+<Note alignment="2" backgroundColorB="0" backgroundColorG="0" backgroundColorR="0" enabled="true" folded="false" height="39" id="Note3" textColorB="255" textColorG="255" textColorR="255" textFontSize="10" title="Example of using Twitter REST API" titleColorB="255" titleColorG="255" titleColorR="255" titleFontSize="12" width="868" x="9" y="-1"/>
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="165" id="Note4" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Instructions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="12" width="868" x="9" y="37">
+<attr name="text"><![CDATA[In order for the example to work, you would need a valid Twitter OAuth credentials.
+- log in to https://apps.twitter.com/
+- create new application
+- create your access token in API Keys section
+- use API Key, API Key Secret, Access Token, Access Token Secret in parameters of this graph
+
+For detailed informations about usage of Twitter REST API in CloverETL visit our blogpost at:
+
+	http://www.cloveretl.com/blog/querying-twitter-in-cloveretl/]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Extract Trends" guiX="191" guiY="315" id="EXTRACT_TRENDS" schema="${META_DIR}/port_0_content_source.xsd" sourceUri="port:$0.content:stream" type="JSON_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="json_array">
+		<Mapping element="json_array">
+			<Mapping element="trends" outPort="0"
+					xmlFields="{}name;{}query"
+					cloverFields="name;query">
+
+			</Mapping>
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Extract Tweets" guiX="544" guiY="315" id="EXTRACT_TWEETS" sourceUri="port:$0.content:stream" trim="false" type="JSON_EXTRACT" useNestedNodes="false">
+<attr name="mapping"><![CDATA[<Mappings>
+
+<Mapping element="json_object">
+			<Mapping element="statuses" outPort="0"
+					xmlFields="{}text;{}created_at"
+					cloverFields="tweet_text;created">
+				<Mapping element="user" useParentRecord="true"
+						xmlFields="{}name"
+						cloverFields="author">
+				</Mapping>						
+			</Mapping>
+</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Query for trends" guiX="21" guiY="315" id="QUERY_FOR_TRENDS" type="HTTP_CONNECTOR" url="https://api.twitter.com/1.1/trends/place.json?id=1">
+<attr name="guiDescription"><![CDATA[https://api.twitter.com/1.1/trends/place.json?id=1]]></attr>
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	
+	if(getParamValue("OAUTH_API_KEY")=="") {
+		raiseError("Consumer key cannot be empty. Set value for 'OAUTH_CONSUMER_KEY' parameter.");
+	}
+	if(getParamValue("OAUTH_API_KEY_SECRET")=="") {
+		raiseError("Consumer secret cannot be empty. Set value for 'OAUTH_CONSUMER_SECRET' parameter.");
+	}
+	if(getParamValue("OAUTH_ACCESS_TOKEN")=="") {
+		raiseError("Access token cannot be empty. Set value for 'OAUTH_ACCESS_TOKEN' parameter.");
+	}
+	if(getParamValue("OAUTH_ACCESS_TOKEN_SECRET")=="") {
+		raiseError("Access token secret cannot be empty. Set value for 'OAUTH_ACCESS_TOKEN_SECRET' parameter.");
+	}
+	
+	$out.0.consumerKey = getParamValue("OAUTH_API_KEY");
+	$out.0.consumerSecret = getParamValue("OAUTH_API_KEY_SECRET");
+	$out.0.oAuthAccessToken = getParamValue("OAUTH_ACCESS_TOKEN");
+	$out.0.oAuthAccessTokenSecret = getParamValue("OAUTH_ACCESS_TOKEN_SECRET");
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.content = $in.1.content;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Search for tweets" guiX="374" guiY="315" id="SEARCH_FOR_TWEETS" type="HTTP_CONNECTOR">
+<attr name="inputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	printLog(info,"Searching for tweets related to "+$in.0.name);
+
+	$out.0.URL = "https://api.twitter.com/1.1/search/tweets.json?q=" + $in.0.query + "&count=100";
+	$out.0.consumerKey = getParamValue("OAUTH_API_KEY");
+	$out.0.consumerSecret = getParamValue("OAUTH_API_KEY_SECRET");
+	$out.0.oAuthAccessToken = getParamValue("OAUTH_ACCESS_TOKEN");
+	$out.0.oAuthAccessTokenSecret = getParamValue("OAUTH_ACCESS_TOKEN_SECRET");
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.content = $in.1.content;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAOUT_DIR}/Twitter_result.csv" guiName="UniversalDataWriter" guiX="703" guiY="315" id="UNIVERSAL_DATA_WRITER" type="DATA_WRITER"/>
+<Edge debugMode="false" fromNode="EXTRACT_TRENDS:0" guiBendpoints="458:95|458:193|32:193|32:301" guiLocks="458|32|193" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="SEARCH_FOR_TWEETS:0"/>
+<Edge debugMode="false" fromNode="EXTRACT_TWEETS:0" guiBendpoints="688:399|688:503|19:503|19:546" guiLocks="688|19|491" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="UNIVERSAL_DATA_WRITER:0"/>
+<Edge debugMode="true" fromNode="QUERY_FOR_TRENDS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (input)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXTRACT_TRENDS:0"/>
+<Edge debugMode="false" fromNode="SEARCH_FOR_TWEETS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (input)" metadata="Metadata0" outPort="Port 0 (out)" toNode="EXTRACT_TWEETS:0"/>
+</Phase>
+</Graph>
