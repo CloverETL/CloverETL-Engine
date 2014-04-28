@@ -561,6 +561,12 @@ public abstract class IAuthorityProxy {
 	public abstract ClassLoader getClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
 
 	public abstract ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy);
+
+	/**
+	 * Creates new classloader with multiple parent classloaders.
+	 * @return multi-parent classloader based on the given parent classloaders
+	 */
+	public abstract ClassLoader createMultiParentClassLoader(ClassLoader... parents);
 	
 	public abstract boolean isClusterEnabled();
 	
