@@ -60,6 +60,8 @@ import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
 import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.classloader.GreedyURLClassLoader;
+import org.jetel.util.classloader.MultiParentClassLoader;
+import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -97,7 +99,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 		sequence.free();
 	}
 	
-	private GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
+	protected GraphRuntimeContext prepareRuntimeContext(GraphRuntimeContext givenRuntimeContext, long runId) {
         GraphRuntimeContext runtimeContext = new GraphRuntimeContext();
         runtimeContext.setRunId(runId);
         runtimeContext.setLogLevel(Level.ALL);
@@ -500,6 +502,11 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         		return new URLClassLoader(urls, parent);
         	}
         }
+	}
+	
+	@Override
+	public ClassLoader createMultiParentClassLoader(ClassLoader... parents) {
+		return new MultiParentClassLoader(parents);
 	}
 	
 	@Override

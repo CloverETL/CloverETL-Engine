@@ -35,8 +35,11 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.LoadClassException;
+import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
-import org.jetel.util.classloader.MultiParentClassLoader;
+import org.jetel.graph.runtime.IAuthorityProxy;
+import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
+import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.string.StringUtils;
@@ -150,7 +153,7 @@ public class ClassLoaderUtils {
 	 */
 	/*
 	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths) {
-		return new GreedyURLClassLoader(libraryPaths, parentCl);
+		return (GreedyURLClassLoader) ContextProvider.getAuthorityProxy().createClassLoader(libraryPaths, parentCl, true);
 	}*/
 	
 	/**
@@ -165,8 +168,11 @@ public class ClassLoaderUtils {
 		parentClassLoaders.addAll(DynamicCompiler.getCTLLibsClassLoaders());
 		
 		ClassLoader parentClassLoader = new MultiParentClassLoader(parentClassLoaders.toArray(new ClassLoader[0]));
+		IAuthorityProxy authorityProxy = node.getAuthorityProxy();
+		
+		ClassLoader parentClassLoader = authorityProxy.createMultiParentClassLoader(classLoaders.toArray(new ClassLoader[0]));
 		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
-		return node.getGraph().getAuthorityProxy().createClassLoader(runtimeClasspath, parentClassLoader, true);
+		return authorityProxy.createClassLoader(node.getGraph().getRuntimeContext().getRuntimeClassPath(), parentClassLoader, true);
 	}
 
 	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) {
@@ -180,7 +186,7 @@ public class ClassLoaderUtils {
 
 					@Override
 					public ClassLoader run() {
-						return new URLClassLoader(urls, Thread.currentThread().getContextClassLoader());
+						return ContextProvider.getAuthorityProxy().createClassLoader(urls, Thread.currentThread().getContextClassLoader(), false);
 					}
 				});
 			} catch (MalformedURLException e) {
@@ -193,7 +199,10 @@ public class ClassLoaderUtils {
 		return classLoader;
 	}
 
-	/*
+	/**
+	 * Should not be called by user code.
+	 * Use {@link IAuthorityProxy#createClassLoader(URL[], ClassLoader, boolean)} instead.
+	 */
 	public static ClassLoader createClassLoader(List<URL> urls, ClassLoader parent, boolean greedy) {
 		URL[] urlsArray = null;
 		if (urls != null)
@@ -201,7 +210,10 @@ public class ClassLoaderUtils {
 		return createClassLoader(urls == null ? null : urls.toArray(urlsArray), parent, greedy);
 	}*/
 	
-	/*
+	/**
+	 * Should not be called by user code.
+	 * Use {@link IAuthorityProxy#createClassLoader(URL[], ClassLoader, boolean)} instead.
+	 */
 	public static ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
 		if (parent == null) {
 			parent = PrimitiveAuthorityProxy.class.getClassLoader();
