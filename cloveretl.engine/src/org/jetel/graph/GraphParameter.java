@@ -61,6 +61,8 @@ public class GraphParameter {
 	
 	private String description;
 	
+	private String category;
+	
 	private SingleType singleType;
 
 	private ComponentReference componentReference;
@@ -209,6 +211,15 @@ public class GraphParameter {
 	 */
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	@XmlAttribute(name="category")
+	public String getCategory() {
+		return category;
+	}
+	
+	public void setCategory(String category) {
+		this.category = category;
 	}
 
 	@XmlElement(name="singleType")
