@@ -49,10 +49,8 @@ import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.dictionary.SerializedDictionaryValue;
 import org.jetel.graph.dictionary.UnsupportedDictionaryOperation;
-import org.jetel.graph.runtime.AuthorityProxyFactory;
 import org.jetel.graph.runtime.EngineInitializer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
-import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.graph.runtime.IThreadManager;
 import org.jetel.graph.runtime.SimpleThreadManager;
 import org.jetel.graph.runtime.WatchDog;
@@ -490,8 +488,6 @@ public class runGraph {
 			graph.getDictionary().setValue(key, dictContainer.getValue(key));
 		}
 		
-		IAuthorityProxy authorityProxy = AuthorityProxyFactory.createDefaultAuthorityProxy();
-		runtimeContext.setAuthorityProxy(authorityProxy);
         IThreadManager threadManager = new SimpleThreadManager();
         WatchDog watchDog = new WatchDog(graph, runtimeContext);
         threadManager.initWatchDog(watchDog);

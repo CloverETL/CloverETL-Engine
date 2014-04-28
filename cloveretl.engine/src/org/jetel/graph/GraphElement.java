@@ -258,10 +258,10 @@ public abstract class GraphElement implements IGraphElement {
     /**
      * @return authority proxy for parent graph or a default authority proxy
      */
-    protected IAuthorityProxy getAuthorityProxy() {
+    public IAuthorityProxy getAuthorityProxy() {
     	TransformationGraph graph = getGraph();
     	if (graph != null) {
-    		return graph.getAuthorityProxy();
+        	return graph.getRuntimeContext().getAuthorityProxy();
     	} else {
     		return ContextProvider.getAuthorityProxy();
     	}

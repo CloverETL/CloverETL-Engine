@@ -18,6 +18,9 @@ integer millisecMin;
 integer nullRet1;
 integer nullRet2;
 
+integer week1;
+integer week2;
+
 function integer transform() {
 	inputDate = 1987-05-12;
 	minDate = zeroDate();
@@ -38,6 +41,10 @@ function integer transform() {
 	millisecMin = date2num(minDate, millisec);
 	nullRet1 = date2num(null,second);
 	nullRet2 = date2num(null,minute, "sk");
+
+	week1 = date2num(long2date(1391900400000L), week, "cs.CZ");
+	week2 = date2num(long2date(1391986800000L), week, "cs.CZ");
+	
 	return 0;
 }
 
