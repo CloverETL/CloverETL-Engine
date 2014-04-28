@@ -29,6 +29,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -167,11 +168,9 @@ public class ClassLoaderUtils {
 		parentClassLoaders.add(node.getClass().getClassLoader());
 		parentClassLoaders.addAll(DynamicCompiler.getCTLLibsClassLoaders());
 		
-		ClassLoader parentClassLoader = new MultiParentClassLoader(parentClassLoaders.toArray(new ClassLoader[0]));
 		IAuthorityProxy authorityProxy = node.getAuthorityProxy();
 		
-		ClassLoader parentClassLoader = authorityProxy.createMultiParentClassLoader(classLoaders.toArray(new ClassLoader[0]));
-		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
+		ClassLoader parentClassLoader = authorityProxy.createMultiParentClassLoader(parentClassLoaders.toArray(new ClassLoader[0]));
 		return authorityProxy.createClassLoader(node.getGraph().getRuntimeContext().getRuntimeClassPath(), parentClassLoader, true);
 	}
 
@@ -208,7 +207,7 @@ public class ClassLoaderUtils {
 		if (urls != null)
 			urlsArray = new URL[urls.size()];
 		return createClassLoader(urls == null ? null : urls.toArray(urlsArray), parent, greedy);
-	}*/
+	}
 	
 	/**
 	 * Should not be called by user code.
@@ -227,7 +226,7 @@ public class ClassLoaderUtils {
         		return new URLClassLoader(urls, parent);
         	}
         }
-	}*/
+	}
 
 	/**
 	 * Convert the given classpath in string form to array of URLs, which
