@@ -38,7 +38,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPCmd;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
@@ -66,6 +69,8 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 	private FileManager manager = FileManager.getInstance();
 	
 	private ConnectionPool pool = ConnectionPool.getInstance();
+	
+	private static final Log log = LogFactory.getLog(PooledFTPOperationHandler.class);
 	
 	@Override
 	public int getPriority(Operation operation) {
@@ -270,7 +275,57 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		return StringUtils.isEmpty(result) ? URIUtils.PATH_SEPARATOR : result;
 	}
 	
+	/**
+	 * Implementation using the MLST command, if available. 
+	 * 
+	 * @param targetUri
+	 * @param ftp
+	 * @return
+	 */
 	private Info info(URI targetUri, FTPClient ftp) {
+		try {
+			if (ftp.hasFeature(FTPCmd.MLST.getCommand())) {
+				// Pure-FTPd does not understand .. and . in the path, hence we use URI.normalize()
+				String path = getPath(targetUri.normalize());
+				FTPFile file = ftp.mlistFile(path);
+				if (file != null) {
+					return new FTPInfo(file, null, targetUri);
+				} else {
+					return null;
+				}
+			}
+		} catch (IOException ioe) {
+			log.debug(MessageFormat.format("File metadata reading failed: {0}", targetUri), ioe);
+		}
+		
+		return infoFallback(targetUri, ftp);
+	}
+	
+	/**
+	 * If available, lists directory contents using the MLSD command.
+	 * Otherwise uses LIST command.
+	 * 
+	 * @param path
+	 * @param ftp
+	 * @return
+	 * @throws IOException
+	 */
+	private FTPFile[] listFiles(String path, FTPClient ftp) throws IOException {
+		if (ftp.hasFeature(FTPCmd.MLSD.getCommand())) {
+			return ftp.mlistDir(path);
+		} else {
+			return ftp.listFiles(path);
+		}
+	}
+	
+	/**
+	 * Legacy fallback implementation using the LIST command.
+	 * 
+	 * @param targetUri
+	 * @param ftp
+	 * @return
+	 */
+	private Info infoFallback(URI targetUri, FTPClient ftp) {
 		if (getPath(targetUri.normalize()).equals(URIUtils.PATH_SEPARATOR)) {
 			FTPFile root = new FTPFile();
 			root.setType(FTPFile.DIRECTORY_TYPE);
@@ -304,7 +359,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 					}
 				}
 			} catch (IOException ioe) {
-				ioe.printStackTrace();
+				log.warn(MessageFormat.format("File metadata reading failed: {0}", targetUri), ioe);
 			}
 			
 		}
@@ -315,8 +370,8 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		if (connection != null) {
 			try {
 				pool.returnObject(connection.getAuthority(), connection);
-			} catch(Exception ex) {
-				ex.printStackTrace();
+			} catch (Exception ex) {
+				log.debug("Failed to return FTP connection to the pool", ex);
 			}
 		}
 	}
@@ -337,14 +392,13 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 	}
 	
 	private boolean createFile(FTPClient ftp, String path) throws IOException {
-		System.out.println("Creating " + path);
+		log.debug(MessageFormat.format("Creating {0}", path));
 		ftp.storeFile(path, new ByteArrayInputStream(new byte[0]));
 		int replyCode = ftp.getReplyCode();
 		boolean result = FTPReply.isPositiveCompletion(replyCode) || FTPReply.isPositiveIntermediate(replyCode) || FTPReply.isPositivePreliminary(replyCode);
 		if (!result) {
 			result = FTPReply.isPositiveCompletion(replyCode);
-
-			System.err.println("Failed to create " + path + ": " + ftp.getReplyString());
+			log.debug(MessageFormat.format("Failed to create {0}: {1}", path, ftp.getReplyString()));
 		}
 		return result;
 	}
@@ -559,7 +613,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		if (!rootInfo.isDirectory()) {
 			return Arrays.asList(rootInfo);
 		} else {
-			FTPFile[] files = ftp.listFiles(getPath(parentUri));
+			FTPFile[] files = listFiles(getPath(parentUri), ftp);
 			List<Info> result = new ArrayList<Info>(files.length);
 			for (FTPFile file: files) {
 				if ((file != null) && !file.getName().equals(URIUtils.CURRENT_DIR_NAME) && !file.getName().equals(URIUtils.PARENT_DIR_NAME)) {
