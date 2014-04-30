@@ -186,17 +186,14 @@ public class JsonSaxParser extends SAXParser {
 			names.add(lastName);
 			tokens.add(token);
 			
-			if (!depthCounter.isEmpty()) {
-				
-				// when the child field is equal to the field of its parent object (e.g. { "a": {"a": 5}})
-				if (lastName != null && lastName.equals(lastButOneName)) {
-                    int top = depthCounter.peekLast();
-                    depthCounter.add(top + 1);
-				} else {
-					// starting from 0 if the fields differ
-                    depthCounter.add(0);
-				}
-			}
+            // when the child field is equal to the field of its parent object (e.g. { "a": {"a": 5}})
+            if (!depthCounter.isEmpty() && lastName != null && lastName.equals(lastButOneName)) {
+                int top = depthCounter.peekLast();
+                depthCounter.add(top + 1);
+            } else {
+                // starting from 0 if the fields differ
+                depthCounter.add(0);
+            }
 
 			break;
 		}
