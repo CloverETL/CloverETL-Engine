@@ -23,13 +23,11 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,8 +37,6 @@ import org.jetel.exception.LoadClassException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.Node;
 import org.jetel.graph.runtime.IAuthorityProxy;
-import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
-import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.SandboxUrlUtils;
 import org.jetel.util.string.StringUtils;
@@ -145,19 +141,6 @@ public class ClassLoaderUtils {
 	}
 
 	/**
-	 * Returns instance of GreedyURLClassLoader able to load classes from specified locations.
-	 * 
-	 * @see GreedyURLClassLoader
-	 * @param contextURL
-	 * @param libraryPaths
-	 * @return
-	 */
-	/*
-	public static GreedyURLClassLoader createClassLoader(ClassLoader parentCl, URL contextURL, URL[] libraryPaths) {
-		return (GreedyURLClassLoader) ContextProvider.getAuthorityProxy().createClassLoader(libraryPaths, parentCl, true);
-	}*/
-	
-	/**
 	 * Answers class loader composed of the node's plugin classloader and current runtime context
 	 * class loader.
 	 * @param node
@@ -169,9 +152,10 @@ public class ClassLoaderUtils {
 		parentClassLoaders.addAll(DynamicCompiler.getCTLLibsClassLoaders());
 		
 		IAuthorityProxy authorityProxy = node.getAuthorityProxy();
-		
+
 		ClassLoader parentClassLoader = authorityProxy.createMultiParentClassLoader(parentClassLoaders.toArray(new ClassLoader[0]));
-		return authorityProxy.createClassLoader(node.getGraph().getRuntimeContext().getRuntimeClassPath(), parentClassLoader, true);
+		URL[] runtimeClasspath = node.getGraph().getRuntimeContext().getRuntimeClassPath();
+		return authorityProxy.createClassLoader(runtimeClasspath, parentClassLoader, true);
 	}
 
 	public static ClassLoader createURLClassLoader(URL contextUrl, String classpath) {
@@ -196,36 +180,6 @@ public class ClassLoaderUtils {
 		}
 
 		return classLoader;
-	}
-
-	/**
-	 * Should not be called by user code.
-	 * Use {@link IAuthorityProxy#createClassLoader(URL[], ClassLoader, boolean)} instead.
-	 */
-	public static ClassLoader createClassLoader(List<URL> urls, ClassLoader parent, boolean greedy) {
-		URL[] urlsArray = null;
-		if (urls != null)
-			urlsArray = new URL[urls.size()];
-		return createClassLoader(urls == null ? null : urls.toArray(urlsArray), parent, greedy);
-	}
-	
-	/**
-	 * Should not be called by user code.
-	 * Use {@link IAuthorityProxy#createClassLoader(URL[], ClassLoader, boolean)} instead.
-	 */
-	public static ClassLoader createClassLoader(URL[] urls, ClassLoader parent, boolean greedy) {
-		if (parent == null) {
-			parent = PrimitiveAuthorityProxy.class.getClassLoader();
-		}
-        if (urls == null || urls.length == 0) {
-        	return parent;
-        } else {
-        	if (greedy) {
-        		return new GreedyURLClassLoader(urls, parent);
-        	} else {
-        		return new URLClassLoader(urls, parent);
-        	}
-        }
 	}
 
 	/**
