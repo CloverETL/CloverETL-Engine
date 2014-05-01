@@ -123,6 +123,9 @@ public class GraphParameter {
 	
 	public void setValue(String value) {
 		this.value = (value != null) ? value : "";
+		if (value != null) {
+			this.dynamicValue = null; 
+		}
 	}
 	
 	/**
@@ -163,6 +166,9 @@ public class GraphParameter {
 	public void setDynamicValue(String dynamicValue) {
 		if (dynamicValue != null && !dynamicValue.isEmpty()) {
 			this.dynamicValue = GraphParameterDynamicValueProvider.create(this, dynamicValue);
+		}
+		else {
+			this.dynamicValue = null;
 		}
 	}
 	
