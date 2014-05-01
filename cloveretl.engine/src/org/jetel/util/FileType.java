@@ -102,5 +102,13 @@ public enum FileType {
 	public String getName() {
 		return UtilMessages.getString("FileType." + this.toString()); //$NON-NLS-1$
 	}
+	
+	/**
+	 * Returns <code>true</code> when the file type is ETL Graph or Jobflow.
+	 * @return <code>true</code> for {@link #ETL_GRAPH} and {@link #JOBFLOW}
+	 */
+	public boolean isGraph() {
+		return this == ETL_GRAPH || this == JOBFLOW;
+	}
 
 }
