@@ -18,6 +18,8 @@
  */
 package org.jetel.graph.parameter;
 
+import java.text.MessageFormat;
+
 import org.jetel.component.TransformFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -101,7 +103,9 @@ public class GraphParameterDynamicValueProvider {
 		}
 		try {
 			if (recursionFlag) {
-				throw new JetelRuntimeException("Cyclic reference in graph parameter " + graphParameter.getName() + " dynamic value");
+				throw new JetelRuntimeException(MessageFormat.format(
+						"Infinite recursion detected when resolving dynamic value for graph parameter ''{0}''",
+						graphParameter.getName()));
 			}
 			
 			recursionFlag = true;

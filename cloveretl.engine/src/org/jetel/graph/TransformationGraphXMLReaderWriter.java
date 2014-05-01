@@ -246,19 +246,8 @@ public class TransformationGraphXMLReaderWriter {
      */
     private boolean onlyParamsAndDict = false;
     
-    private static Marshaller GRAPH_PARAMETERS_MARSHALLER;
-    private static Unmarshaller GRAPH_PARAMETER_UNMARSHALLER;
-    
-    static {
-    	try {
-    		GRAPH_PARAMETERS_MARSHALLER = JAXBContextProvider.getInstance().getContext(GraphParameters.class).createMarshaller();
-		    GRAPH_PARAMETERS_MARSHALLER.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
-
-		    GRAPH_PARAMETER_UNMARSHALLER = JAXBContextProvider.getInstance().getContext(GraphParameter.class).createUnmarshaller();
-		} catch (JAXBException e) {
-			throw new JetelRuntimeException("Invalid GraphParameters marshalling.", e);
-		}
-    }
+    private final Marshaller graphParameterMarshaller;
+    private final Unmarshaller graphParameterUnmarshaller;
     
     /**
      * Instantiates transformation graph from a given input stream and presets a given properties.
@@ -281,6 +270,16 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	public TransformationGraphXMLReaderWriter(GraphRuntimeContext runtimeContext) {
 		this.runtimeContext = runtimeContext;
+		
+		try {
+			graphParameterMarshaller = JAXBContextProvider.getInstance().getContext(GraphParameters.class).createMarshaller();
+			graphParameterMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+			
+			graphParameterUnmarshaller = JAXBContextProvider.getInstance().getContext(GraphParameter.class).createUnmarshaller();
+		}
+		catch (JAXBException e) {
+			throw new JetelRuntimeException(e);
+		}
 	}
 
 	private static Document prepareDocument(InputStream in) throws XMLConfigurationException {
@@ -896,7 +895,7 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	private void instantiateGraphParameter(GraphParameters graphParameters, Element graphParameter) throws XMLConfigurationException {
 		try {
-			GraphParameter gp = (GraphParameter) GRAPH_PARAMETER_UNMARSHALLER.unmarshal(graphParameter);
+			GraphParameter gp = (GraphParameter) graphParameterUnmarshaller.unmarshal(graphParameter);
 			gp.setValue(getGraphParameterValue(gp.getName(), gp.getValue()));
 		    graphParameters.addGraphParameter(gp);
 			gp.init();
@@ -1289,7 +1288,7 @@ public class TransformationGraphXMLReaderWriter {
 	
 	public void writeGraphParameters(GraphParameters graphParameters, OutputStream os) {
 		try {
-		    GRAPH_PARAMETERS_MARSHALLER.marshal(graphParameters, os);
+			graphParameterMarshaller.marshal(graphParameters, os);
 		} catch (JAXBException e) {
 			throw new JetelRuntimeException("Serialisation of graph parameters failed.", e);
 		}

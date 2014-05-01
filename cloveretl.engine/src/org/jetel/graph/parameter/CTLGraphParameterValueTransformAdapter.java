@@ -43,15 +43,12 @@ public class CTLGraphParameterValueTransformAdapter extends CTLAbstractTransform
 	
 	@Override
 	public void init() throws ComponentNotReadyException {
+		super.init();
+		
 		getParameterValueFunction = executor.getFunction(GET_PARAMETER_VALUE_FUNCTION_NAME);
 		
 		if (getParameterValueFunction == null) {
 			throw new ComponentNotReadyException(GET_PARAMETER_VALUE_FUNCTION_NAME + " is not defined");
-		}
-		
-		CLVFFunctionDeclaration initFunction = executor.getFunction(INIT_FUNCTION_NAME);
-		if (initFunction != null) {
-			executor.executeFunction(initFunction, NO_ARGUMENTS, NO_DATA_RECORDS, NO_DATA_RECORDS);
 		}
 	}
 
