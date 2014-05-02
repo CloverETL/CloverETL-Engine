@@ -636,7 +636,7 @@ public class TransformationGraphXMLReaderWriter {
                         && !nodeEnabled.equalsIgnoreCase(EnabledEnum.PASS_THROUGH.toString())) {
 					graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i), isStrictParsing());
                 } else {
-                    graphNode = ComponentFactory.createDummyComponent(graph, nodeType, nodeElements.item(i));
+                    graphNode = ComponentFactory.createDummyComponent(graph, nodeType, null, nodeElements.item(i));
                 }
 				if (graphNode != null) {
                     phase.addNode(graphNode);

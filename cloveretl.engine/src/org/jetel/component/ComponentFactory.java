@@ -160,7 +160,7 @@ public class ComponentFactory {
 			if (strict) {
 				throw createException(xattribs, e);
 			} else {
-				return createDummyComponent(graph, componentType, nodeXML);
+				return createDummyComponent(graph, componentType, tClass, nodeXML);
 			}
 		}
 	}
@@ -171,11 +171,28 @@ public class ComponentFactory {
 	 * @param nodeXML xml definition
 	 * @return dummy component implementation which provides only component id, name, type and component description
 	 */
-	public final static Node createDummyComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
+	public final static Node createDummyComponent(TransformationGraph graph, String componentType, Class<? extends Node> componentClass, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes((Element) nodeXML, graph);
-		Node result;
+		String componentId = xattribs.getString(Node.XML_ID_ATTRIBUTE, null);
+		Node result = null;
 		
-		result = new SimpleNode(xattribs.getString(Node.XML_ID_ATTRIBUTE, null), componentType, graph);
+		if (componentClass != null) {
+			try {
+				//create instance of requested component using constructor
+				//component attributes are not passed into component, just correct instance is created
+				//correct instance is better than a dummy implementation, since for example
+				//metadata propagation of some components can be easily evaluated even without
+				//correct settings (LookupJoin component)
+				Constructor<? extends Node> constructor = componentClass.getConstructor(String.class);
+				result = constructor.newInstance(componentId);
+			} catch (Exception e) {
+				//DO NOTHING
+			}
+		}
+
+		if (result == null) {
+			result = new SimpleNode(componentId, componentType, graph);
+		}
 
 		loadCommonAttributes(graph, componentType, result, nodeXML);
 		
