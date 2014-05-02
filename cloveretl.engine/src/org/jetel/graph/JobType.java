@@ -57,6 +57,10 @@ public enum JobType {
 		this.fileType = fileType;
 	}
 
+	public String getId() {
+		return id;
+	}
+	
 	/** 
 	 * Getter which returns response of name() method. 
 	 * This getter is useful when the JobType is used as placeholder 
