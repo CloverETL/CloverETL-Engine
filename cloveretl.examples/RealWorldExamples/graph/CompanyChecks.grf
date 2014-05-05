@@ -51,8 +51,9 @@
 
 - You will find Derby distribution under lib/derby in this project]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="205" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="253" x="215" y="428">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="232" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="253" x="215" y="428">
 <attr name="text"><![CDATA[
+
 
 
 
@@ -65,8 +66,9 @@ Mapping in the component uses the "star" notation:
 
 $0.* := $0.*;]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="209" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="210" x="211" y="637">
+<Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="229" id="Note10" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Mapping" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="210" x="215" y="672">
 <attr name="text"><![CDATA[
+
 
 
 
@@ -91,25 +93,25 @@ DELETE FROM validated;]]></attr>
 <Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/companies.txt" guiName="Companies" guiX="48" guiY="457" id="DATA_READER0" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Load in Companies from our in-house database]]></attr>
 </Node>
-<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/res.txt" guiName="Company Status" guiX="44" guiY="666" id="DATA_READER1" type="DATA_READER">
+<Node charset="UTF-8" enabled="enabled" fileURL="${DATAIN_DIR}/res.txt" guiName="Company Status" guiX="48" guiY="701" id="DATA_READER1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Read 'Companies in Liquidation' file]]></attr>
 </Node>
 <Node dbConnection="Connection0" dbTable="checksumfailures" enabled="enabled" guiName="Invalid Checksums" guiX="743" guiY="460" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE">
 <attr name="guiDescription"><![CDATA[Write bad IDs to DB table]]></attr>
 </Node>
-<Node dbConnection="Connection0" enabled="enabled" guiName="Unknown Liq Status" guiX="739" guiY="665" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE">
+<Node dbConnection="Connection0" enabled="enabled" guiName="Unknown Liq Status" guiX="743" guiY="700" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE">
 <attr name="sqlQuery"><![CDATA[INSERT INTO UNSELECTEDIC (IC, COMPANY, ZIP, CITY, DISTRICT, STREET, SCORE)
 VALUES ($ic, $company, $zip, $city, $district, $street, $score)]]></attr>
 </Node>
-<Node dbConnection="Connection0" dbTable="inliquidation" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiName="In Liquidation" guiX="739" guiY="754" id="DB_OUTPUT_TABLE2" type="DB_OUTPUT_TABLE"/>
-<Node dbConnection="Connection0" enabled="enabled" guiName="Operational" guiX="739" guiY="845" id="DB_OUTPUT_TABLE3" type="DB_OUTPUT_TABLE">
+<Node dbConnection="Connection0" dbTable="inliquidation" enabled="enabled" fieldMap="$ic:=ic;$company:=company;$zip:=zip;$city:=city;$district:=district;$street:=street;$score:=score;" guiName="In Liquidation" guiX="743" guiY="789" id="DB_OUTPUT_TABLE2" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="Connection0" enabled="enabled" guiName="Operational" guiX="743" guiY="880" id="DB_OUTPUT_TABLE3" type="DB_OUTPUT_TABLE">
 <attr name="sqlQuery"><![CDATA[INSERT INTO VALIDATED VALUES ($ic, $company, $zip, $city, $district, $street, $score)]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Filter bad Checksums" guiX="488" guiY="460" id="EXT_FILTER0" type="EXT_FILTER">
 <attr name="guiDescription"><![CDATA[Filter out any bad IDs]]></attr>
 <attr name="filterExpression"><![CDATA[$0.score > 0]]></attr>
 </Node>
-<Node ascendingInputs="true" enabled="enabled" guiName="Merge List" guiX="248" guiY="666" id="EXT_MERGE_JOIN0" joinKey="$ic;#$ico;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
+<Node ascendingInputs="true" enabled="enabled" guiName="Merge List" guiX="252" guiY="701" id="EXT_MERGE_JOIN0" joinKey="$ic;#$ico;#" joinType="leftOuter" type="EXT_MERGE_JOIN">
 <attr name="transform"><![CDATA[//#TL
 
 // Transforms input record into output record.
@@ -137,7 +139,7 @@ function transform() {
 ]]></attr>
 <attr name="guiDescription"><![CDATA[Merge it with our customer data]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Partition Results" guiX="484" guiY="667" id="PARTITION0" partitionKey="score" ranges="&lt;1,1&gt;;&lt;3,3&gt;;&lt;0,0&gt;;" type="PARTITION">
+<Node enabled="enabled" guiName="Partition Results" guiX="488" guiY="702" id="PARTITION0" partitionKey="score" ranges="&lt;1,1&gt;;&lt;3,3&gt;;&lt;0,0&gt;;" type="PARTITION">
 <attr name="guiDescription"><![CDATA[Output each customer into one of the 3 DB tables on the right, depending on Liquidation status of the customer]]></attr>
 </Node>
 <Node enabled="enabled" guiName="Calculate Checksum" guiX="244" guiY="457" id="REFORMAT0" type="REFORMAT">
@@ -188,12 +190,12 @@ function transform() {
 <attr name="guiDescription"><![CDATA[Validate Company ID of customer]]></attr>
 </Node>
 <Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="REFORMAT0:0"/>
-<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="200:686|200:702" guiLocks="200|null|null" guiRouter="Manual" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
+<Edge debugMode="true" fromNode="DATA_READER1:0" guiBendpoints="200:686|200:702" guiLocks="204|null|null" guiRouter="Manual" id="Edge5" inPort="Port 1 (slave)" metadata="Metadata2" outPort="Port 0 (output)" toNode="EXT_MERGE_JOIN0:1"/>
 <Edge debugMode="true" fromNode="EXT_FILTER0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="DB_OUTPUT_TABLE0:0"/>
 <Edge debugMode="true" fromNode="EXT_FILTER0:1" guiBendpoints="680:500|680:592|207:592|207:684" guiLocks="680|207|592" guiRouter="Manual" id="Edge3" inPort="Port 0 (driver)" outPort="Port 1 (rejected)" toNode="EXT_MERGE_JOIN0:0"/>
 <Edge debugMode="false" fromNode="EXT_MERGE_JOIN0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge4" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="PARTITION0:0"/>
 <Edge debugMode="true" fromNode="PARTITION0:0" guiBendpoints="66:0|66:2" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="DB_OUTPUT_TABLE1:0"/>
-<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="700:699|700:774" guiLocks="700|null|null" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="DB_OUTPUT_TABLE2:0"/>
+<Edge debugMode="true" fromNode="PARTITION0:1" guiBendpoints="700:699|700:774" guiLocks="704|null|null" guiRouter="Manual" id="Edge7" inPort="Port 0 (in)" outPort="Port 1 (out)" toNode="DB_OUTPUT_TABLE2:0"/>
 <Edge debugMode="true" fromNode="PARTITION0:2" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (in)" outPort="Port 2 (out)" toNode="DB_OUTPUT_TABLE3:0"/>
 <Edge debugMode="true" fromNode="REFORMAT0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="EXT_FILTER0:0"/>
 </Phase>
