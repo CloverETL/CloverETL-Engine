@@ -16,6 +16,24 @@ REL-4-0-0-M1
 	- indexOf() accepts null value
 	 
 
+
+REL-3-5-1
+---------
+
+* Print loaded engine plugins to log
+- FIXES:
+	- SimpleGather performance regression
+	- XMLDataWriter behaves inconsistently with long strings
+	- Debug files are always created when running graph via RunGraph
+	- Pivot produces wrong data for string key
+	- Vertica meta-function execution fails
+	- DBExecute does not report on error port
+- COMPATIBILITY:
+	- When parsing deprecated format of parameters, ignore those with invalid names
+	- CTL2: function removeNonPrintable() incorrectly removes also all non-ASCII characters (unicode)
+	- CTL code in parameter value does not work when used as a DB password
+
+
 REL-3-5-0
 ---------
 

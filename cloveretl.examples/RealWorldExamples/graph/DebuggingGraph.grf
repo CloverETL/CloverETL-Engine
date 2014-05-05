@@ -13,8 +13,10 @@
 <Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="326" id="Note1" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="100 records only" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="160" x="18" y="84">
 <attr name="text"><![CDATA[To avoid printing hundreds of useless messages, we are reading just the first 100 records.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="347" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="SimpleCopy" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="168" x="210" y="84">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="464" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="SimpleCopy" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="168" x="210" y="84">
 <attr name="text"><![CDATA[component can - apart from making an identical copy - slightly change the input records.
+
+
 
 
 
@@ -40,16 +42,16 @@ metadata!]]></attr>
 
 Moreover, you can specify the log level (debug, info, warn, error, fatal) where the message appears.]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="224" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Note on interrupting the graph run" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="312" x="487" y="650">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="224" id="Note6" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Note on interrupting the graph run" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="312" x="487" y="721">
 <attr name="text"><![CDATA[Correct records are written in a file till a bad record appears and the raised error stops the graph executing]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="225" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="File with incorrect records" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="184" x="37" y="650">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="225" id="Note7" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="File with incorrect records" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="184" x="37" y="721">
 <attr name="text"><![CDATA[The file is read, all the records are sent out to the next component]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="225" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Using raiseErr()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="155" x="265" y="650">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="225" id="Note8" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Using raiseErr()" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="155" x="265" y="721">
 <attr name="text"><![CDATA[Check the data and throw an error that causes the graph to fail]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="150" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Debugging data on edges, Debug properties" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="927" x="18" y="482">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="150" id="Note9" textColorB="0" textColorG="0" textColorR="0" textFontSize="10" title="Debugging data on edges, Debug properties" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="927" x="18" y="553">
 <attr name="text"><![CDATA[You can inspect data flowing through edges. Just right click the edge you want to inspect and select Enable Debug - you will see a small bug icon. After running the graph, you can right-click the debugged edge and use View data to see the actual data that went through the edge. Moreover, you can set filters on both the edge (keeping just the data that correspond with the filter) or on View data - just filter your view on the stored debug data
 
 We have already switched some of the edges to Debug mode for you - look for the bug icon.]]></attr>
@@ -114,13 +116,13 @@ function integer transform() {
 <Edge debugFilterExpression="$0.age&gt; 25 AND $0.age&lt; 35 " debugLastRecords="false" debugMaxRecords="33" debugMode="true" debugSampleData="true" fromNode="SIMPLE_COPY0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
 </Phase>
 <Phase number="1">
-<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.csv" guiName="read bad records" guiX="55" guiY="756" id="DATA_READER1" trim="false" type="DATA_READER">
+<Node dataPolicy="lenient" enabled="enabled" fileURL="${DATAIN_DIR}/delimited/customers_region_BAD.csv" guiName="read bad records" guiX="55" guiY="827" id="DATA_READER1" trim="false" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Reads file with incorrect records]]></attr>
 </Node>
-<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixedCorrect.txt" guiName="incomplete file" guiX="579" guiY="756" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER">
+<Node enabled="enabled" fileURL="${DATATMP_DIR}/CustomersFixedCorrect.txt" guiName="incomplete file" guiX="579" guiY="827" id="DATA_WRITER1" outputFieldNames="true" type="DATA_WRITER">
 <attr name="guiDescription"><![CDATA[Writes correct records to a file]]></attr>
 </Node>
-<Node enabled="enabled" guiName="raise error" guiX="278" guiY="756" id="REFORMAT1" type="REFORMAT">
+<Node enabled="enabled" guiName="raise error" guiX="278" guiY="827" id="REFORMAT1" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer count=0;
 // Transforms input record into output record.
