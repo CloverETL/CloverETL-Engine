@@ -47,7 +47,7 @@ public abstract class CTLGraphParameterValueTransform extends CTLAbstractTransfo
 	protected abstract String getParameterValueDelegate() throws ComponentNotReadyException, TransformException;
 	
 	@Override
-	public String getParameterValue() throws TransformException {
+	public String getValue() throws TransformException {
 		String result;
 		try {
 			result = getParameterValueDelegate();
