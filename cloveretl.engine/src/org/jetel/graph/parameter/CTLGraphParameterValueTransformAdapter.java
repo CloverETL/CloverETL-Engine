@@ -53,7 +53,7 @@ public class CTLGraphParameterValueTransformAdapter extends CTLAbstractTransform
 	}
 
 	@Override
-	public String getParameterValue() {
+	public String getValue() {
 		Object parameterValue = executor.executeFunction(getParameterValueFunction, NO_ARGUMENTS, NO_DATA_RECORDS, NO_DATA_RECORDS);
 		
 		if (parameterValue == null || !(parameterValue instanceof String)) {

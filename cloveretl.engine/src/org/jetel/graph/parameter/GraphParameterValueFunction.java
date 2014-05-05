@@ -30,7 +30,7 @@ import org.jetel.exception.TransformException;
  */
 public interface GraphParameterValueFunction extends Transform {
 
-	public static final String GET_PARAMETER_VALUE_FUNCTION_NAME = "getParameterValue";
+	public static final String GET_PARAMETER_VALUE_FUNCTION_NAME = "getValue";
 	public static final String INIT_FUNCTION_NAME = "init";
 	
 	/**
@@ -45,6 +45,6 @@ public interface GraphParameterValueFunction extends Transform {
 	 * @return
 	 * @throws TransformException 
 	 */
-	public String getParameterValue() throws TransformException;
+	public String getValue() throws TransformException;
 
 }

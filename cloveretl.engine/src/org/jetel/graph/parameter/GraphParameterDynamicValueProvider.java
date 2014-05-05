@@ -109,7 +109,7 @@ public class GraphParameterDynamicValueProvider {
 			}
 			
 			recursionFlag = true;
-			String parameterValue = transform.getParameterValue();
+			String parameterValue = transform.getValue();
 			recursionFlag = false;
 			
 			return parameterValue;
