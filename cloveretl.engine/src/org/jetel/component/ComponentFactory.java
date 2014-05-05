@@ -186,7 +186,12 @@ public class ComponentFactory {
 				Constructor<? extends Node> constructor = componentClass.getConstructor(String.class);
 				result = constructor.newInstance(componentId);
 			} catch (Exception e) {
-				//DO NOTHING
+				try {
+					Constructor<? extends Node> constructor = componentClass.getConstructor(String.class, TransformationGraph.class);
+					result = constructor.newInstance(componentId, graph);
+				} catch (Exception e1) {
+					//DO NOTHING
+				}
 			}
 		}
 

@@ -31,16 +31,30 @@ public enum PolicyType {
     STRICT, CONTROLLED, LENIENT;
     
     public static PolicyType valueOfIgnoreCase(String strPolicy) {
-        if(strPolicy == null) {
-            return STRICT;
+        if (strPolicy == null) {
+            return STRICT; //default value
         }
         
-        for(PolicyType pt : PolicyType.values()) {
-            if(strPolicy.equalsIgnoreCase(pt.toString())) {
+        for (PolicyType pt : PolicyType.values()) {
+            if (strPolicy.equalsIgnoreCase(pt.toString())) {
                 return pt;
             }
         }
         
-        return STRICT; //default value
+        throw new JetelRuntimeException("Unknown policy type: " + strPolicy);
     }
+    
+    public static boolean isPolicyType(String strPolicy) {
+    	if (strPolicy == null) {
+    		return true;
+    	} else {
+            for (PolicyType pt : PolicyType.values()) {
+                if (strPolicy.equalsIgnoreCase(pt.toString())) {
+                    return true;
+                }
+            }
+            return false;
+    	}
+    }
+    
 }
