@@ -49,7 +49,7 @@ public class PooledFTPOperationHandlerTest extends FTPOperationHandlerTest {
 
 	@Override
 	public void testCanPerform() {
-//		assertTrue(handler.canPerform(Operation.copy(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
+//		assertTrue(handler.canPerform(Operation.copy(PooledFTPOperationHandler.FTP_SCHEME, PooledFTPOperationHandler.FTP_SCHEME)));
 		assertTrue(handler.canPerform(Operation.move(PooledFTPOperationHandler.FTP_SCHEME, PooledFTPOperationHandler.FTP_SCHEME)));
 		assertTrue(handler.canPerform(Operation.delete(PooledFTPOperationHandler.FTP_SCHEME)));
 		assertTrue(handler.canPerform(Operation.create(PooledFTPOperationHandler.FTP_SCHEME)));
