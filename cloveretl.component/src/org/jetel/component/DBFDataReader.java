@@ -31,6 +31,8 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
@@ -126,7 +128,8 @@ public class DBFDataReader extends Node {
 	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
     private MultiFileReader reader;
-    private PolicyType policyType; // default value set in fromXML()
+    private String policyTypeStr;
+    private PolicyType policyType = PolicyType.STRICT;
 	private String fileURL;
     private int skipRows=-1; // do not skip rows by default
     private int numRecords = -1;
@@ -258,6 +261,9 @@ public class DBFDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
+		
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
 		prepareMultiFileReader();
 	}
 
@@ -268,7 +274,7 @@ public class DBFDataReader extends Node {
 		} else {
 			parser = new DBFDataParser(metadata, charset);
 		}
-		parser.setExceptionHandler(exceptionHandler);
+		parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 		
 		TransformationGraph graph = getGraph();
 
@@ -325,9 +331,6 @@ public class DBFDataReader extends Node {
 		}
 		if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 			dbfDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
-		} else {
-			// default policy type
-			dbfDataReader.setPolicyType(PolicyType.STRICT);
 		}
         if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
         	dbfDataReader.setSkipRows(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
@@ -351,20 +354,6 @@ public class DBFDataReader extends Node {
 		return dbfDataReader;
 	}
 
-
-	/**
-	
-
-	/**
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 *
-	 * @param  handler
-	 */
-	private void setExceptionHandler(IParserExceptionHandler handler) {
-		exceptionHandler = handler;
-	}
-
-
 	/**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
@@ -375,6 +364,12 @@ public class DBFDataReader extends Node {
         	return status;
         }
         
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
@@ -431,19 +426,9 @@ public class DBFDataReader extends Node {
 		this.numSourceRecords = Math.max(numSourceRecords, 0);
 	}
     
-    public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    public void setPolicyType(String policyTypeStr) {
+        this.policyTypeStr = policyTypeStr;
     }
-
-	/**
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 *
-	 * @param  handler
-	 */
-	public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
-        setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
-	}
 
     public void setIncrementalFile(String incrementalFile) {
     	this.incrementalFile = incrementalFile;

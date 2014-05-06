@@ -74,6 +74,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
@@ -176,6 +178,7 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 	protected String charset;
 	private SourceIterator sourceIterator;
 
+	private String policyTypeStr;
 	private PolicyType policyType;
 
 	private String mappingString;
@@ -224,6 +227,12 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 			return status;
 		}
 
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
 		if (StringUtils.isEmpty(this.getFileUrl())) {
 			status.add(new ConfigurationProblem("Missing required attribute 'File URL'", ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
 		}
@@ -251,6 +260,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		}
 		super.init();
 		
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
 		this.parserProvider = getTreeReaderParserProvider();
 
 		recordProviderReceiverInit();
@@ -494,8 +505,8 @@ public abstract class TreeReader extends Node implements DataRecordProvider, Dat
 		this.charset = charset;
 	}
 
-	public void setPolicyType(String strPolicyType) {
-		policyType = PolicyType.valueOfIgnoreCase(strPolicyType);
+	public void setPolicyType(String policyTypeStr) {
+		this.policyTypeStr = policyTypeStr;
 	}
 
 	public void setMappingString(String mappingString) {

@@ -18,6 +18,9 @@
  */
 package org.jetel.graph;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -25,7 +28,10 @@ import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlType;
 
 import org.jetel.component.ComponentDescription.Attribute;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.graph.parameter.GraphParameterAttributeNode;
+import org.jetel.graph.parameter.GraphParameterDynamicValueProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.SubgraphUtils;
 import org.jetel.util.string.StringUtils;
@@ -40,7 +46,7 @@ import org.jetel.util.string.StringUtils;
  * @created 2.8.2013
  */
 @XmlRootElement(name = "GraphParameter")
-@XmlType(propOrder = { "name", "value", "secure", "description", "componentReference", "singleType" })
+@XmlType(propOrder = { "name", "value", "secure", "description", "componentReference", "attrs", "singleType" })
 public class GraphParameter {
 
 	public static final String HIDDEN_SECURE_PARAMETER = "*****";
@@ -50,6 +56,8 @@ public class GraphParameter {
 	private String name;
 	
 	private String value;
+	
+	private GraphParameterDynamicValueProvider dynamicValue;
 	
 	private String label;
 	
@@ -94,6 +102,12 @@ public class GraphParameter {
 		return parentGraphParameters != null ? parentGraphParameters.getParentGraph() : null;
 	}
 	
+	public void init() throws ComponentNotReadyException {
+		if (dynamicValue != null) {
+			dynamicValue.init();
+		}
+	}
+	
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -109,6 +123,9 @@ public class GraphParameter {
 	
 	public void setValue(String value) {
 		this.value = (value != null) ? value : "";
+		if (value != null) {
+			this.dynamicValue = null; 
+		}
 	}
 	
 	/**
@@ -116,7 +133,53 @@ public class GraphParameter {
 	 */
 	@XmlAttribute(name="value")
 	public String getValue() {
-		return value;
+		if (dynamicValue == null || !dynamicValue.isInitialized()) {
+			return value;
+		}
+		else {
+			return dynamicValue.getValue();
+		}
+	}
+	
+	public GraphParameterAttributeNode[] getAttrs() {
+		List<GraphParameterAttributeNode> ret = new ArrayList<>();
+
+		if (dynamicValue != null) {
+			GraphParameterAttributeNode attrNode = new GraphParameterAttributeNode();
+			attrNode.setName("dynamicValue");
+			attrNode.setValue(dynamicValue.getTransformCode());
+			ret.add(attrNode);
+		}
+
+		return ret.toArray(new GraphParameterAttributeNode[ret.size()]);
+	}
+
+	@XmlElement(name="attr")
+	public void setAttrs(GraphParameterAttributeNode[] attrs) {
+		for (GraphParameterAttributeNode a : attrs) {
+			if ("dynamicValue".equals(a.getName())) {
+				setDynamicValue(a.getValue());
+			}
+		}
+	}
+
+	public void setDynamicValue(String dynamicValue) {
+		if (dynamicValue != null && !dynamicValue.isEmpty()) {
+			this.dynamicValue = GraphParameterDynamicValueProvider.create(this, dynamicValue);
+		}
+		else {
+			this.dynamicValue = null;
+		}
+	}
+	
+	@XmlTransient
+	public String getDynamicValue() {
+		if (this.dynamicValue != null) {
+			return dynamicValue.getTransformCode();
+		}
+		else {
+			return null;
+		}
 	}
 	
 	/**

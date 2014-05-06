@@ -252,6 +252,7 @@ public class XLSReader extends Node {
 
     private XLSParser parser;
     private MultiFileReader reader;
+    private String policyTypeStr;
     private PolicyType policyType = PolicyType.STRICT;
     
     private String sheetName = null;
@@ -280,12 +281,12 @@ public class XLSReader extends Node {
         this.parserType = parserType;
     }
 
-    public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    public void setPolicyType(String policyTypeStr) {
+        this.policyTypeStr = policyTypeStr;
     }
 
     public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
+    	this.policyTypeStr = (policyType != null) ? policyType.toString() : null;
     }
 
     /**
@@ -389,7 +390,13 @@ public class XLSReader extends Node {
         if (!checkInputPorts(status, 0, 1) || !checkOutputPorts(status, 1, Integer.MAX_VALUE)) {
             return status;
         }
-        
+
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
@@ -449,6 +456,8 @@ public class XLSReader extends Node {
         }
 
         super.init();
+
+        policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 
         instantiateParser();
 
