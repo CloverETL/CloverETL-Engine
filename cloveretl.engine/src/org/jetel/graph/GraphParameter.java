@@ -46,7 +46,7 @@ import org.jetel.util.string.StringUtils;
  * @created 2.8.2013
  */
 @XmlRootElement(name = "GraphParameter")
-@XmlType(propOrder = { "name", "value", "secure", "description", "componentReference", "attrs", "singleType" })
+@XmlType(propOrder = { "name", "value", "secure", "componentReference", "attrs", "singleType" })
 public class GraphParameter {
 
 	public static final String HIDDEN_SECURE_PARAMETER = "*****";
@@ -153,6 +153,13 @@ public class GraphParameter {
 			ret.add(attrNode);
 		}
 
+		if (description != null) {
+			GraphParameterAttributeNode attrNode = new GraphParameterAttributeNode();
+			attrNode.setName("description");
+			attrNode.setValue(description);
+			ret.add(attrNode);
+		}
+
 		return ret.toArray(new GraphParameterAttributeNode[ret.size()]);
 	}
 
@@ -161,6 +168,9 @@ public class GraphParameter {
 		for (GraphParameterAttributeNode a : attrs) {
 			if ("dynamicValue".equals(a.getName())) {
 				setDynamicValue(a.getValue());
+			}
+			if ("description".equals(a.getName())) {
+				setDescription(a.getValue());
 			}
 		}
 	}
@@ -265,7 +275,7 @@ public class GraphParameter {
 	 * @return description of this graph parameter
 	 * @note this attribute is not de-serialize from xml now by TransformationGraphXMLReaderWriter
 	 */
-	@XmlAttribute(name="description")
+	@XmlTransient
 	public String getDescription() {
 		return description;
 	}
