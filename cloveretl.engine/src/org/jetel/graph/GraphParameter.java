@@ -70,7 +70,9 @@ public class GraphParameter {
 	private String description;
 	
 	private String category;
-	
+
+	private String defaultHint;
+
 	private SingleType singleType;
 
 	private ComponentReference componentReference;
@@ -283,6 +285,15 @@ public class GraphParameter {
 	
 	public void setCategory(String category) {
 		this.category = category;
+	}
+
+	@XmlAttribute(name="defaultHint")
+	public String getDefaultHint() {
+		return defaultHint;
+	}
+	
+	public void setDefaultHint(String defaultHint) {
+		this.defaultHint = defaultHint;
 	}
 
 	@XmlElement(name="singleType")
