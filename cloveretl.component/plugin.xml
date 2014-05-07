@@ -743,7 +743,7 @@
 	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
 	        <singleType name="mergeJoinKey" order="true"/>
 	      </property>
-	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="inner (if not set leftOuterJoin nor fullOuterJoin parameter)">
+	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="Inner join">
 	        <enumType>
 	          <item displayValue="Inner join" value="inner"/>
 	          <item displayValue="Left outer join" value="leftOuter"/>
@@ -956,7 +956,7 @@
 	      <property category="basic" displayName="Join key" modifiable="true" name="joinKey" nullable="true" required="true">
 	        <singleType name="hashJoinKey"/>
 	      </property>
-	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="inner (if not set leftOuterJoin nor fullOuterJoin parameter)">
+	      <property category="basic" displayName="Join type" modifiable="true" name="joinType" nullable="true" defaultHint="Inner join">
 	        <enumType>
 	          <item displayValue="Inner join" value="inner"/>
 	          <item displayValue="Left outer join" value="leftOuter"/>
