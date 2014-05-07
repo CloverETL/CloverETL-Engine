@@ -36,7 +36,6 @@ import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.dictionary.DictionaryTypeFactory;
 import org.jetel.graph.runtime.AuthorityProxyFactory;
 import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
@@ -79,7 +78,7 @@ public class Plugins {
         init((String) null);
     }
     
-    public static void init(String directory) {
+    public static synchronized void init(String directory) {
     	if (directory == null) {
     		init((PluginRepositoryLocation[]) null);
     		return;
@@ -92,7 +91,7 @@ public class Plugins {
         init(repositoryLocations.toArray(new PluginRepositoryLocation[repositoryLocations.size()]));
 	}
 	
-	public static void init(PluginRepositoryLocation[] repositoryLocations) {
+	public static synchronized void init(PluginRepositoryLocation[] repositoryLocations) {
 
         if (repositoryLocations == null) {
         	repositoryLocations = new PluginRepositoryLocation[] { new PluginRepositoryLocation(new File(Defaults.DEFAULT_PLUGINS_DIRECTORY)) };
@@ -141,7 +140,10 @@ public class Plugins {
         Plugins.init(pls);
     }
 
-    public static void init(PluginLocation[] pluginLocations) {
+    /**
+     * @param pluginLocations
+     */
+    public static synchronized void init(PluginLocation[] pluginLocations) {
         //remove all previous settings
         pluginDescriptors = new HashMap<String, PluginDescriptor>();
         activePlugins = new HashMap<String, PluginDescriptor>();
@@ -162,6 +164,9 @@ public class Plugins {
         //check dependences between plugins
         checkDependences();
         
+        //non-lazy activated plugins must be activated here
+        activatePluginsIfNecessary();
+        
         //init calls of all factories for components, sequences, lookups and connections
         ComponentFactory.init();
         SequenceFactory.init();
@@ -176,7 +181,20 @@ public class Plugins {
         AuthorityProxyFactory.init();
     }
     
-    public static Map<String, PluginDescriptor> getPluginDescriptors(){
+	/**
+	 * Activates all plugins which should be activated right on engine startup.
+	 */
+	private static void activatePluginsIfNecessary() {
+    	for (String pluginId : pluginDescriptors.keySet()) {
+    		if (!pluginDescriptors.get(pluginId).isLazyActivated()
+    				&& !activePlugins.containsKey(pluginId)
+    				&& !deactivePlugins.containsKey(pluginId)) {
+    			activatePlugin(pluginId);
+    		}
+    	}
+	}
+
+	public static Map<String, PluginDescriptor> getPluginDescriptors(){
     	return pluginDescriptors;
     }
     
@@ -213,10 +231,28 @@ public class Plugins {
     		//stores prepared plugin descriptor
     		if (!pluginDescriptors.containsKey(pluginDescriptor.getId())) {
         		pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
-        		logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
     		} else {
-        		logger.warn("Plugin at '" + pluginManifestUrl + "' cannot be loaded. An another plugin is already registered with identical id attribute.");
+        		logger.warn("Plugin at '" + pluginManifestUrl + "' cannot be loaded. Another plugin is already registered with identical id attribute.");
     		}
+        }
+        
+        //log plugin descriptors
+        if (logger.isDebugEnabled()) {
+        	for (PluginDescriptor pluginDescriptor : pluginDescriptors.values()) {
+    			logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
+        	}
+        } else if (logger.isInfoEnabled()) {
+        	StringBuilder sb = new StringBuilder("Engine plug-ins loaded: ");
+        	boolean first = true;
+        	for (PluginDescriptor pluginDescriptor : pluginDescriptors.values()) {
+        		if (!first) {
+        			sb.append(", ");
+        		} else {
+        			first = false;
+        		}
+        		sb.append(pluginDescriptor.getId());
+        	}
+        	logger.info(sb.toString());
         }
     }
 
@@ -251,7 +287,7 @@ public class Plugins {
      * Activate all not yet activated plugins. All already deactivated plugins are skipped.
      * @param lazyClassLoading whether the class references are actively loaded by the plugin system 
      */
-    public static void activateAllPlugins() {
+    public static synchronized void activateAllPlugins() {
     	for(String pluginId : pluginDescriptors.keySet()) {
     		if(!activePlugins.containsKey(pluginId) && !deactivePlugins.containsKey(pluginId)) {
     			activatePlugin(pluginId);
@@ -259,7 +295,7 @@ public class Plugins {
     	}
     }
     
-    public static void activatePlugin(String pluginID) {
+    public static synchronized void activatePlugin(String pluginID) {
         //some validation tests
         if(!pluginDescriptors.containsKey(pluginID)) {
             logger.error("Attempt activate unknown plugin: " + pluginID);
@@ -279,7 +315,7 @@ public class Plugins {
         pluginDescriptor.activate();
     }
 
-    public static void deactivatePlugin(String pluginID) {
+    public static synchronized void deactivatePlugin(String pluginID) {
         //some validation tests
         if(!pluginDescriptors.containsKey(pluginID)) {
             logger.error("Attempt deactivate unknown plugin: " + pluginID);
