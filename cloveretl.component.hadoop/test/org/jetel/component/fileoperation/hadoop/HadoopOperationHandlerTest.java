@@ -33,6 +33,7 @@ import org.jetel.component.fileoperation.IOperationHandler;
 import org.jetel.component.fileoperation.ObservableHandler;
 import org.jetel.component.fileoperation.Operation;
 import org.jetel.component.fileoperation.OperationHandlerTestTemplate;
+import org.jetel.component.fileoperation.OperationKind;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.URIUtils;
@@ -102,7 +103,15 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 			prepareData(texts);
 			assertTrue(manager.exists(source));
 			CloverURI target = CloverURI.createSingleURI(baseUri2, newName);
+			
+			assertFalse(manager.move(source, target).success());
+			
+			// enable moving using DefaultOperationHandler
+			DefaultOperationHandler defaultHandler = new DefaultOperationHandler();
+			manager.registerHandler(VERBOSE ? new ObservableHandler(defaultHandler) : defaultHandler);
+			
 			assertTrue(manager.move(source, target).success());
+			
 			assertFalse(manager.exists(source));
 			// file with new name, but in the old location
 			assertFalse(manager.exists(relativeURI(newName)));
@@ -185,7 +194,17 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 		
 		super.setUp();
 		
-		DefaultOperationHandler defaultHandler = new DefaultOperationHandler();
+		DefaultOperationHandler defaultHandler = new DefaultOperationHandler() {
+
+			@Override
+			public boolean canPerform(Operation operation) {
+				if (operation.kind == OperationKind.MOVE) {
+					return false;
+				}
+				return super.canPerform(operation);
+			}
+			
+		};
 		manager.registerHandler(VERBOSE ? new ObservableHandler(defaultHandler) : defaultHandler);
 	}
 
