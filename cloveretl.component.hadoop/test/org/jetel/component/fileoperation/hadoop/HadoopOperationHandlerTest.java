@@ -98,7 +98,7 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 			String newName = originalName + ".moved";
 			CloverURI source = relativeURI(originalName);
 			assertFalse(manager.exists(source));
-			String content = "luouèkı kùò úpìl ïábelské ódy";
+			String content = "\u017Dlu\u0165ou\u010Dk\u00FD k\u016F\u0148 \u00FAp\u011Bl \u010F\u00E1belsk\u00E9 \u00F3dy";
 			texts.put(originalName, content);
 			prepareData(texts);
 			assertTrue(manager.exists(source));
