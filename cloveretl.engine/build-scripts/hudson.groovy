@@ -64,19 +64,19 @@ if( !runTests ){
 	// compile engine and run some tests
 	antBaseD = engineD
 	antArgs = [
-		"""-Dadditional.plugin.list=cloveretl.license.engine,
-									|cloveretl.component.hadoop,
-									|cloveretl.component.commercial,
-									|cloveretl.lookup.commercial,
-									|cloveretl.compiler.commercial,
-									|cloveretl.quickbase.commercial,
-									|cloveretl.tlfunction.commercial,
-									|cloveretl.ctlfunction.commercial,
-									|cloveretl.addressdoctor.commercial,
-									|cloveretl.profiler.commercial,
-									|cloveretl.mongodb.commercial,
-									|cloveretl.validator.commercial,
-									|cloveretl.spreadsheet.commercial,
+		"""-Dadditional.plugin.list=cloveretl.license.engine,\
+									|cloveretl.component.hadoop,\
+									|cloveretl.component.commercial,\
+									|cloveretl.lookup.commercial,\
+									|cloveretl.compiler.commercial,\
+									|cloveretl.quickbase.commercial,\
+									|cloveretl.tlfunction.commercial,\
+									|cloveretl.ctlfunction.commercial,\
+									|cloveretl.addressdoctor.commercial,\
+									|cloveretl.profiler.commercial,\
+									|cloveretl.mongodb.commercial,\
+									|cloveretl.validator.commercial,\
+									|cloveretl.spreadsheet.commercial,\
 									|cloveretl.oem.example.component""".stripMargin(),
 		"-Dcte.logpath=/data/cte-logs",
 		"-Dcte.hudson.link=job/${jobName}/${buildNumber}",
