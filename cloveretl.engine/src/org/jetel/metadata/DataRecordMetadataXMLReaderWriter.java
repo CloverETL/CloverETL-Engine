@@ -365,7 +365,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         if (record.getNullValues() != DataRecordMetadata.DEFAULT_NULL_VALUES) {
         	metadataElement.setAttribute(NULL_VALUE_ATTR, StringUtils.join(record.getNullValues(), Defaults.DataFormatter.DELIMITER_DELIMITERS));
         }
-        
+
+        if (record.getEofAsDelimiter() != null) {
+        	metadataElement.setAttribute(EOF_AS_DELIMITER_ATTR, String.valueOf(record.getEofAsDelimiter()));
+        }
+
 
 		Properties prop = record.getRecordProperties();
 		if (prop != null) {
@@ -536,6 +540,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String quoteChar = null;
 		String collatorSensitivity = null;
 		String nature = null;
+		String eofAsDelimiter = null;
 		String keyFieldNamesStr = null;
 		Properties recordProperties = null;
 
@@ -575,6 +580,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				skipSourceRows = itemValue;
 			} else if (itemName.equalsIgnoreCase(COLLATOR_SENSITIVITY_ATTR)) {
 				collatorSensitivity = itemValue;
+			} else if (itemName.equalsIgnoreCase(EOF_AS_DELIMITER_ATTR)) {
+				eofAsDelimiter = itemValue;
 			} else if (itemName.equalsIgnoreCase(NATURE_ATTR)) {
 				nature = itemValue;
 			} else {
@@ -653,6 +660,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			recordMetadata.setNature(DataRecordNature.fromString(nature));
 		}
 
+		if (!StringUtils.isEmpty(eofAsDelimiter)) {
+			recordMetadata.setEofAsDelimiter(Boolean.valueOf(eofAsDelimiter));
+		}
+
 		/*
 		 * parse metadata of FIELDs
 		 */
@@ -671,7 +682,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String size = null;
 			String shift = null;
 			String delimiter = null;
-			String eofAsDelimiter = null;
+			/*String*/ eofAsDelimiter = null;
 			String nullable = null;
 			String nullValue = null;
 			String localeStr = null;

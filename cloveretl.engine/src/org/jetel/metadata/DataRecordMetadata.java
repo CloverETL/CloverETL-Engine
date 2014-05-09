@@ -81,6 +81,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	
 	public static final String EMPTY_NAME = "_";
 
+	/**
+	 * Default value of eof-as-delimiter flag if {@link #eofAsDelimiter} is null.
+	 */
+	private static final boolean DEFAULT_EOF_AS_DELIMITER = false;
+
 	/** Parent graph of this metadata */
 	private transient TransformationGraph graph;
 	/** Id of the data record. */
@@ -140,6 +145,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	private String collatorSensitivity = null;
 	
+	/** If this switch is set to true, last field of this record recognises EOF as valid delimiter.
+	 * Can be null if the flag is not specified, see {@link #DEFAULT_EOF_AS_DELIMITER}.
+	 * See {@link DataFieldMetadata#isEofAsDelimiter()} */
+	private Boolean eofAsDelimiter;
+
 	/**
 	 * Metadata nature should correspond with graph nature, see {@link #checkConfig(ConfigurationStatus)}.
 	 * Different implementations of DataRecord are used for various natures.
@@ -1149,6 +1159,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		dataRecordMetadata.setRecordSize(recordSize);
 		//nature of duplicate is preserve
 		dataRecordMetadata.setNature(nature);
+		dataRecordMetadata.setEofAsDelimiter(eofAsDelimiter);
 
 		for (DataFieldMetadata field : fields) {
 			dataRecordMetadata.addField(field.duplicate());
@@ -1642,6 +1653,30 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 	}
 	
+	/**
+	 * Sets the EOF-as-delimiter flag on last field of this record.
+	 * Null value means the flag is not specified, default (false) is used.
+	 *
+	 * @param eofAsDelimiter the new value of the flag
+	 */
+	public void setEofAsDelimiter(Boolean eofAsDelimiter) {
+		this.eofAsDelimiter = eofAsDelimiter;
+	}
+
+	/**
+	 * @return the value of the EOF-as-delimiter flag (can be null, if is not specified)
+	 */
+	public Boolean getEofAsDelimiter() {
+		return eofAsDelimiter;
+	}
+
+	/**
+	 * @return true if EOF should be considered as delimiter on last field; false otherwise
+	 */
+	public boolean isEofAsDelimiter() {
+		return eofAsDelimiter != null ? eofAsDelimiter : DEFAULT_EOF_AS_DELIMITER;
+	}
+
 	/**
 	 * @return the parent graph of this metadata or null if no parent graph is specified
 	 */
