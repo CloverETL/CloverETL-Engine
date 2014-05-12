@@ -45,12 +45,13 @@ public class CodePieceExtractor {
 	 * Extracts pieces of code from given CTL code using the provided PositionedCodeVisitorFactory.
 	 * 
 	 * <p>The factory should return PositionedCodeVisitor instances. These instances can then use
-	 * the {{@link PositionedCodeVisitor#getCodePiece(SimpleNode)} method to obtain specific code pieces.
+	 * the {@link PositionedCodeVisitor#getCodePiece(SimpleNode)} method to obtain specific code pieces.
 	 * 
 	 * @param compiler
 	 * @param ctlCode CTL code to analyze.
 	 * @param visitorFactory Factory that creates PositionedCodeVisitor instances.
-	 * @return
+	 * @return Returns the visitor that was used to browse the code. Implementations should store discovered
+	 * code pieces into this visitor and then obtain them from the visitor after this method finishes.
 	 */
 	public <T extends PositionedCodeVisitor> T extract(TLCompiler compiler, String ctlCode, PositionedCodeVisitorFactory<T> visitorFactory) {
 		compiler.setTabSize(1);
