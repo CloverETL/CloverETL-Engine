@@ -527,7 +527,7 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * Sets the OEF-as-delimiter flag.
+	 * Sets the EOF-as-delimiter flag.
 	 *
 	 * @param eofAsDelimiter the new value of the flag
 	 */
@@ -536,10 +536,14 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
-	 * @return the value of the OEF-as-delimiter flag
+	 * @return the value of the EOF-as-delimiter flag (last field inherits this flag from record)
 	 */
 	public boolean isEofAsDelimiter() {
-		return eofAsDelimiter;
+		if (isLastNonAutoFilledField() && dataRecordMetadata.getEofAsDelimiter() != null) {
+			return dataRecordMetadata.getEofAsDelimiter();
+		} else {
+			return eofAsDelimiter;
+		}
 	}
 
 	/**

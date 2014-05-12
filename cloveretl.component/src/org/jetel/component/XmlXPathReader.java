@@ -32,6 +32,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
@@ -173,6 +175,7 @@ public class XmlXPathReader extends Node {
 
 	private XPathParser parser;
     private MultiFileReader reader;
+    private String policyTypeStr;
     private PolicyType policyType;
     private int skipRows=0; // do not skip rows by default
     private int numRecords = -1;
@@ -283,6 +286,8 @@ public class XmlXPathReader extends Node {
 		TransformationGraph graph = getGraph();
 		URL contextURL = getContextURL();
 		
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
         // initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, contextURL, fileURL);
         reader.setLogger(logger);
@@ -358,19 +363,10 @@ public class XmlXPathReader extends Node {
 		return aXmlXPathReader;
 	}
 
-    public void setPolicyType(String strPolicyType) {
-        policyType = PolicyType.valueOfIgnoreCase(strPolicyType);
+    public void setPolicyType(String policyTypeStr) {
+        this.policyTypeStr = policyTypeStr;
     }
     
-	/**
-	 * Return data checking policy
-	 * @return User defined data policy, or null if none was specified
-	 * @see org.jetel.exception.BadDataFormatExceptionHandler
-	 */
-	public PolicyType getPolicyType() {
-		return policyType;
-	}
-	
 	/**
 	 *  Description of the Method
 	 *
@@ -385,6 +381,12 @@ public class XmlXPathReader extends Node {
         	return status;
         }
         
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 

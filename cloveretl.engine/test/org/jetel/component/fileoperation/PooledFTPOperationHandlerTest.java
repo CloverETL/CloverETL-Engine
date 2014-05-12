@@ -36,28 +36,28 @@ public class PooledFTPOperationHandlerTest extends FTPOperationHandlerTest {
 
 	@Override
 	public void testGetPriority() {
-//		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.copy(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.move(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.delete(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.create(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.resolve(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.info(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.list(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.read(FTPOperationHandler.FTP_SCHEME)));
-		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.write(FTPOperationHandler.FTP_SCHEME)));
+//		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.copy(PooledFTPOperationHandler.FTP_SCHEME, PooledFTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.move(PooledFTPOperationHandler.FTP_SCHEME, PooledFTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.delete(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.create(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.resolve(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.info(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.list(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.read(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertEquals(IOperationHandler.TOP_PRIORITY, handler.getPriority(Operation.write(PooledFTPOperationHandler.FTP_SCHEME)));
 	}
 
 	@Override
 	public void testCanPerform() {
-//		assertTrue(handler.canPerform(Operation.copy(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.move(FTPOperationHandler.FTP_SCHEME, FTPOperationHandler.FTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.delete(FTPOperationHandler.FTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.create(FTPOperationHandler.FTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.resolve(FTPOperationHandler.FTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.info(FTPOperationHandler.FTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.list(FTPOperationHandler.FTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.read(FTPOperationHandler.FTP_SCHEME)));
-		assertTrue(handler.canPerform(Operation.write(FTPOperationHandler.FTP_SCHEME)));
+//		assertTrue(handler.canPerform(Operation.copy(PooledFTPOperationHandler.FTP_SCHEME, PooledFTPOperationHandler.FTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.move(PooledFTPOperationHandler.FTP_SCHEME, PooledFTPOperationHandler.FTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.delete(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.create(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.resolve(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.info(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.list(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.read(PooledFTPOperationHandler.FTP_SCHEME)));
+		assertTrue(handler.canPerform(Operation.write(PooledFTPOperationHandler.FTP_SCHEME)));
 	}
 
 }

@@ -39,6 +39,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -161,6 +163,7 @@ public class DBInputTable extends Node {
 	public static final String XML_INCREMENTAL_KEY_ATTRIBUTE = "incrementalKey";
 	public static final String XML_PRINTSTATEMENTS_ATTRIBUTE = "printStatements";
 	
+	private String policyTypeStr;
 	private PolicyType policyType;
 	private TextParser inputParser;
 
@@ -230,6 +233,8 @@ public class DBInputTable extends Node {
         if(isInitialized()) return;
 		super.init();
 		
+		policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+
         IConnection conn = getGraph().getConnection(dbConnectionName);
         if (conn==null){
             throw new ComponentNotReadyException("Can't obtain DBConnection object: \""+dbConnectionName+"\"");
@@ -482,6 +487,12 @@ public class DBInputTable extends Node {
         	return status;
         }
         
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         checkMetadata(status, getOutMetadata());
         
         try {
@@ -536,19 +547,13 @@ public class DBInputTable extends Node {
 	    this.fetchSize=fetchSize;
 	}
 
-    public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    public void setPolicyType(String policyTypeStr) {
+        this.policyTypeStr = policyTypeStr;
     }
     
-	/**
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 *
-	 * @param  handler
-	 */
-	public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
-	}
-
+    public void setPolicyType(PolicyType policyType) {
+    	this.policyTypeStr = (policyType != null) ? policyType.toString() : null;
+    }
 
 	public void setIncrementalFile(String incrementalFile) throws MalformedURLException {
 		this.incrementalFile = incrementalFile;

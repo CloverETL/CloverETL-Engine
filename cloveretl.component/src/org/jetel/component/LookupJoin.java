@@ -47,6 +47,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.file.FileUtils;
@@ -197,7 +199,7 @@ import org.w3c.dom.Element;
  * @since Dec 11, 2006
  * 
  */
-public class LookupJoin extends Node {
+public class LookupJoin extends Node implements MetadataProvider {
 
 	private static final String XML_LOOKUP_TABLE_ATTRIBUTE = "lookupTable";
 
@@ -250,6 +252,10 @@ public class LookupJoin extends Node {
 
 	static Log logger = LogFactory.getLog(Reformat.class);
 
+	public LookupJoin(String id) {
+		super(id);
+	}
+	
 	/**
 	 * @param id component identification
 	 * @param lookupTableName
@@ -633,6 +639,26 @@ public class LookupJoin extends Node {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
+	}
+
+	@Override
+	public MVMetadata getInputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 0) {
+			if (getOutputPort(1) != null) {
+				return metadataPropagationResolver.findMetadata(getOutputPort(1).getEdge());
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public MVMetadata getOutputMetadata(int portIndex, MetadataPropagationResolver metadataPropagationResolver) {
+		if (portIndex == 1) {
+			if (getInputPort(0) != null) {
+				return metadataPropagationResolver.findMetadata(getInputPort(0).getEdge());
+			}
+		}
+		return null;
 	}
 
 }

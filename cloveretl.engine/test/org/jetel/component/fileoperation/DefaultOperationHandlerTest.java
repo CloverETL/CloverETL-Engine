@@ -93,7 +93,7 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 		};
 		manager.registerHandler(VERBOSE ? new ObservableHandler(urlHandler) : urlHandler);
 
-		FTPOperationHandler ftpHandler = new FTPOperationHandler() {
+		PooledFTPOperationHandler ftpHandler = new PooledFTPOperationHandler() {
 			@Override
 			public boolean canPerform(Operation operation) {
 				switch (operation.kind) {

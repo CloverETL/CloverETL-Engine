@@ -180,8 +180,21 @@ public class JsonSaxParser extends SAXParser {
 		}
 		switch (token) {
 		case FIELD_NAME: {
-			names.add(parser.getText());
+            String lastButOneName = names.peekLast();
+			String lastName = parser.getText();
+
+			names.add(lastName);
 			tokens.add(token);
+			
+            // when the child field is equal to the field of its parent object (e.g. { "a": {"a": 5}})
+            if (!depthCounter.isEmpty() && lastName != null && lastName.equals(lastButOneName)) {
+                int top = depthCounter.peekLast();
+                depthCounter.add(top + 1);
+            } else {
+                // starting from 0 if the fields differ
+                depthCounter.add(0);
+            }
+
 			break;
 		}
 		case START_ARRAY: {
@@ -241,7 +254,7 @@ public class JsonSaxParser extends SAXParser {
 					}
 				}
 			}
-			depthCounter.add(Integer.valueOf(0));
+
 			handler.startElement(NAMESPACE_URI, normalizeElementName(name),normalizeElementName(name), attributesImpl);
 			break;
 		}
@@ -265,12 +278,14 @@ public class JsonSaxParser extends SAXParser {
 			if (names.size() == 1) {
 				handler.endElement(NAMESPACE_URI, normalizeElementName(names.getFirst()), normalizeElementName(names.getFirst()));
 				names.removeLast();
+				depthCounter.pollLast();
 			} else if (!tokens.isEmpty() && tokens.peekLast() == JsonToken.START_ARRAY) {
 				// end nested array
 				handler.endElement(NAMESPACE_URI,normalizeElementName(name), normalizeElementName(name));
 			} else {
 				// remove name if not inside array
 				names.removeLast();
+				depthCounter.pollLast();
 			}
 			break;
 		}
@@ -280,7 +295,6 @@ public class JsonSaxParser extends SAXParser {
 			// end current object
 			String name = names.getLast();
 
-			depthCounter.pollLast();
 			if (modifierCompatible) {
                 if (depthCounter.peekLast() > 0) {
                 	name = addNameSuffix(name, depthCounter.peekLast());
@@ -290,6 +304,7 @@ public class JsonSaxParser extends SAXParser {
 			if (tokens.isEmpty() || tokens.peekLast() != JsonToken.START_ARRAY) {
 				// remove name if not inside array
 				names.removeLast();
+				depthCounter.pollLast();
 			}
 			break;
 		}
@@ -304,6 +319,7 @@ public class JsonSaxParser extends SAXParser {
 				handler.endElement(NAMESPACE_URI, normalizeElementName(valueName), normalizeElementName(valueName));
 				tokens.removeLast();
 				names.removeLast();
+				depthCounter.pollLast();
 				break;
 			}
 			case START_ARRAY: {

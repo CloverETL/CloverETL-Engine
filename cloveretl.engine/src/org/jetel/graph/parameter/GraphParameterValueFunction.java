@@ -16,38 +16,35 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.fileoperation.hadoop;
+package org.jetel.graph.parameter;
 
-import java.net.URI;
+import org.jetel.component.Transform;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 
-public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
+/**
+ * @author Raszyk (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 29. 4. 2014
+ */
+public interface GraphParameterValueFunction extends Transform {
 
-	@Override
-	protected URI getTestingURI() {
-		return URI.create(CDH412);
-	}
-
-	/*
-	 * Used for testing MOVE between two servers.
+	public static final String GET_PARAMETER_VALUE_FUNCTION_NAME = "getValue";
+	public static final String INIT_FUNCTION_NAME = "init";
+	
+	/**
+	 * Called before {@link #getParameterValue()} is called for the first time.
+	 * @throws ComponentNotReadyException 
 	 */
-	@Override
-	protected URI getRemoteURI() {
-		return URI.create(CDH_3U5);
-	}
-
-	@Override
-	public void testInterruptDelete() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptCopy() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptMove() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
+	public void init() throws ComponentNotReadyException;
+	
+	/**
+	 * Graph parameter dynamic value as a string.
+	 * 
+	 * @return
+	 * @throws TransformException 
+	 */
+	public String getValue() throws TransformException;
 
 }

@@ -39,6 +39,8 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -155,6 +157,7 @@ public class DataReader extends Node {
 
 	protected TextParser parser;
     private MultiFileReader reader;
+    private String policyTypeStr;
     private PolicyType policyType = PolicyType.STRICT;
 
 	private String charset;
@@ -212,6 +215,8 @@ public class DataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
         super.init();
+        
+        policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
 
 		//is the logging port attached?
 		if (getOutputPort(LOG_PORT) != null) {
@@ -548,6 +553,12 @@ public class DataReader extends Node {
         	return status;
         }
 
+		if (!PolicyType.isPolicyType(policyTypeStr)) {
+			status.add("Invalid data policy: " + policyTypeStr, Severity.ERROR, this, Priority.NORMAL, XML_DATAPOLICY_ATTRIBUTE);
+		} else {
+			policyType = PolicyType.valueOfIgnoreCase(policyTypeStr);
+		}
+
         if (charset != null && !Charset.isSupported(charset)) {
         	status.add(new ConfigurationProblem(
             		"Charset "+charset+" not supported!", 
@@ -620,14 +631,14 @@ public class DataReader extends Node {
 		this.maxErrorCount = maxErrorCount;
 	}
     
-    public void setPolicyType(String strPolicyType) {
-        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    public void setPolicyType(String policyTypeStr) {
+        this.policyTypeStr = policyTypeStr;
     }
     
     public void setPolicyType(PolicyType policyType) {
-        this.policyType = policyType;
+    	this.policyTypeStr = (policyType != null) ? policyType.toString() : null;
     }
-
+    
 	@Override
 	public synchronized void free() {
 		super.free();

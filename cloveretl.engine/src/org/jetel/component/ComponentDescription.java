@@ -86,11 +86,16 @@ public interface ComponentDescription extends GraphElementDescription {
     	private Ports inputPorts;
     	@XmlElement(name = "outputPorts")
     	private Ports outputPorts;
+    	@XmlElement(name = "properties")
+    	private Attributes attributes;
     	public Ports getInputPorts() {
     		return inputPorts;
     	}
     	public Ports getOutputPorts() {
     		return outputPorts;
+    	}
+    	public Attributes getAttributes() {
+    		return attributes;
     	}
     	@XmlAttribute
 		public String getName() {
@@ -238,6 +243,63 @@ public interface ComponentDescription extends GraphElementDescription {
 		}
     }
 
+    @XmlRootElement(name = "properties")
+    public static class Attributes {
+    	@XmlElement(name = "property")
+    	private List<Attribute> attributes = new ArrayList<Attribute>();
+    	public List<Attribute> getAttributes() {
+    		return attributes;
+    	}
+    	public Attribute getAttribute(String name) {
+    		for (Attribute attribute : attributes) {
+    			if (attribute.getName().equals(name)) {
+    				return attribute;
+    			}
+    		}
+    		return null;
+    	}
+    }
+    
+    @XmlRootElement(name = "property")
+    public static class Attribute {
+    	private String name;
+    	private String displayName;
+    	private SingleType singleType;
+    	@XmlAttribute
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+    	@XmlAttribute
+		public String getDisplayName() {
+			return displayName;
+		}
+		public void setDisplayName(String displayName) {
+			this.displayName = displayName;
+		}
+    	@XmlElement
+		public SingleType getSingleType() {
+			return singleType;
+		}
+		public void setSingleType(SingleType singleType) {
+			this.singleType = singleType;
+		}
+    }
+    
+    @XmlRootElement(name = "singleType")
+    public static class SingleType {
+    	private String name;
+    	@XmlAttribute
+		public String getName() {
+			return name;
+		}
+		public void setName(String name) {
+			this.name = name;
+		}
+    }
+    
     @XmlRootElement(name = "Metadata")
     public static class Metadata {
     	private String id;

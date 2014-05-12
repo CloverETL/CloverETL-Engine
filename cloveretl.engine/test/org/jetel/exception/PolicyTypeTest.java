@@ -16,38 +16,30 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.fileoperation.hadoop;
+package org.jetel.exception;
 
-import java.net.URI;
+import org.jetel.test.CloverTestCase;
 
-public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
+/**
+ * @author Kokon (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 5. 5. 2014
+ */
+public class PolicyTypeTest extends CloverTestCase {
 
-	@Override
-	protected URI getTestingURI() {
-		return URI.create(CDH412);
+	public void testIsPolicyType() {
+		assertTrue(PolicyType.isPolicyType(null));
+		assertFalse(PolicyType.isPolicyType(""));
+		assertFalse(PolicyType.isPolicyType("a"));
+		assertFalse(PolicyType.isPolicyType("Stricta"));
+		assertFalse(PolicyType.isPolicyType("aStrict"));
+		assertFalse(PolicyType.isPolicyType("strict "));
+		assertTrue(PolicyType.isPolicyType("strict"));
+		assertTrue(PolicyType.isPolicyType("Strict"));
+		assertTrue(PolicyType.isPolicyType("STRICT"));
+		assertTrue(PolicyType.isPolicyType("CONTROLled"));
+		assertTrue(PolicyType.isPolicyType("LeNient"));
 	}
-
-	/*
-	 * Used for testing MOVE between two servers.
-	 */
-	@Override
-	protected URI getRemoteURI() {
-		return URI.create(CDH_3U5);
-	}
-
-	@Override
-	public void testInterruptDelete() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptCopy() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptMove() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
+	
 }

@@ -176,7 +176,7 @@ public final class TransformationGraph extends GraphElement {
 		sequences = new LinkedHashMap<String,Sequence> ();
 		lookupTables = new LinkedHashMap<String,LookupTable> ();
 		dataRecordMetadata = new LinkedHashMap<String,Object> ();
-		graphParameters = new GraphParameters();
+		graphParameters = new GraphParameters(this);
 		dictionary = new Dictionary(this);
 		memoryTracker = new MemoryTracker();
 		initialRuntimeContext = new GraphRuntimeContext();
@@ -447,6 +447,8 @@ public final class TransformationGraph extends GraphElement {
 	        if(isInitialized()) return;
 			super.init();
 	
+			graphParameters.init();
+			
 			//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
 			if (!isAnalysed()) {
 				TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
@@ -1278,10 +1280,6 @@ public final class TransformationGraph extends GraphElement {
 		return dictionary;
 	}
 	
-    public IAuthorityProxy getAuthorityProxy() {
-    	return getRuntimeContext().getAuthorityProxy();
-    }
-
     /**
      * @return memory tracker associated with this graph
      */

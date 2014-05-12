@@ -48,35 +48,75 @@ public class TransformationGraphXMLReaderWriterTest extends CloverTestCase {
 		parameters.addGraphParameter("key2", "");
 		parameters.addGraphParameter("key3", null);
 		parameters.addGraphParameter("key4", "value4").setSecure(true);
+		parameters.addGraphParameter("key5", "value5").setSingleType("fileURL");
+		parameters.addGraphParameter("key6", "value6").setComponentReference("component1", "fileURL");
+		parameters.addGraphParameter("key7", "value7").setPublic(true);
+		parameters.addGraphParameter("key8", "value8").setRequired(true);
 		
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		writer.writeGraphParameters(parameters, os);
 
 		ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
 		
+		System.out.println(new String(os.toByteArray()));
 		
 	    JAXBContext context = JAXBContextProvider.getInstance().getContext(DummyGraphParameters.class);
 	    Unmarshaller m = context.createUnmarshaller();
 	    
 	    DummyGraphParameters result = (DummyGraphParameters) m.unmarshal(is);
 
-		assertTrue(result.parameters.size() == 4);
+		assertTrue(result.parameters.size() == 8);
 
 		assertTrue(result.parameters.get(0).name.equals("key1"));
 		assertTrue(result.parameters.get(0).value.equals("value1"));
 		assertTrue(result.parameters.get(0).secure == false);
+		assertTrue(result.parameters.get(0).singleType == null);
+		assertTrue(result.parameters.get(0).componentReference == null);
 
 		assertTrue(result.parameters.get(1).name.equals("key2"));
 		assertTrue(result.parameters.get(1).value.equals(""));
 		assertTrue(result.parameters.get(1).secure == false);
+		assertTrue(result.parameters.get(1).singleType == null);
+		assertTrue(result.parameters.get(1).componentReference == null);
 
 		assertTrue(result.parameters.get(2).name.equals("key3"));
 		assertTrue(result.parameters.get(2).value == null);
 		assertTrue(result.parameters.get(2).secure == false);
+		assertTrue(result.parameters.get(2).singleType == null);
+		assertTrue(result.parameters.get(2).componentReference == null);
 
 		assertTrue(result.parameters.get(3).name.equals("key4"));
 		assertTrue(result.parameters.get(3).value.equals("value4"));
 		assertTrue(result.parameters.get(3).secure == true);
+		assertTrue(result.parameters.get(3).singleType == null);
+		assertTrue(result.parameters.get(3).componentReference == null);
+
+		assertTrue(result.parameters.get(4).name.equals("key5"));
+		assertTrue(result.parameters.get(4).value.equals("value5"));
+		assertTrue(result.parameters.get(4).singleType.name.equals("fileURL"));
+		assertTrue(result.parameters.get(4).componentReference == null);
+
+		assertTrue(result.parameters.get(5).name.equals("key6"));
+		assertTrue(result.parameters.get(5).value.equals("value6"));
+		assertTrue(result.parameters.get(5).singleType == null);
+		assertTrue(result.parameters.get(5).componentReference.referencedComponent.equals("component1"));
+		assertTrue(result.parameters.get(5).componentReference.referencedProperty.equals("fileURL"));
+		
+		assertTrue(result.parameters.get(6).name.equals("key7"));
+		assertTrue(result.parameters.get(6).value.equals("value7"));
+		assertTrue(result.parameters.get(6).secure == false);
+		assertTrue(result.parameters.get(6).singleType == null);
+		assertTrue(result.parameters.get(6).componentReference == null);
+		assertTrue(result.parameters.get(6).isPublic == true);
+		assertTrue(result.parameters.get(6).required == false);
+
+		assertTrue(result.parameters.get(7).name.equals("key8"));
+		assertTrue(result.parameters.get(7).value.equals("value8"));
+		assertTrue(result.parameters.get(7).secure == false);
+		assertTrue(result.parameters.get(7).singleType == null);
+		assertTrue(result.parameters.get(7).componentReference == null);
+		assertTrue(result.parameters.get(7).isPublic == false);
+		assertTrue(result.parameters.get(7).required == true);
 	}
 
 	@XmlRootElement(name = "GraphParameters")
@@ -94,6 +134,26 @@ public class TransformationGraphXMLReaderWriterTest extends CloverTestCase {
 		public String value;
 		@XmlAttribute(name="secure")
 		public boolean secure;
+		@XmlAttribute(name="public")
+		public boolean isPublic;
+		@XmlAttribute(name="required")
+		public boolean required;
+		@XmlElement(name="singleType")
+		public SingleType singleType;
+		@XmlElement(name="componentReference")
+		public ComponentReference componentReference;
 	}
 	
+	public static class SingleType {
+		@XmlAttribute(name="name")
+		public String name;
+	}
+
+	public static class ComponentReference {
+		@XmlAttribute(name="referencedComponent")
+		public String referencedComponent;
+		@XmlAttribute(name="referencedProperty")
+		public String referencedProperty;
+	}
+
 }

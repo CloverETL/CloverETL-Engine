@@ -1043,8 +1043,7 @@ public class XmlSaxParser {
 						}
 						
 //						logger.trace("processCharacters: getting field name for (" + localName + "); " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
-					} else 
-					if (key.equals(universalName)) {
+					} else if (key.equals(universalName)) {
 						fieldName = xml2clover.get(universalName);
 						
 						if(m_element_as_text) {
@@ -1081,7 +1080,8 @@ public class XmlSaxParser {
 					} else if (m_activeMapping.getExplicitCloverFields().contains(localName) || keys.contains(localName) || keys.contains(universalName)) {
 						//if local name is mentioned in explicit mapping, we will not let code do implicit mapping for this field
 						continue;
-					} else if (m_activeMapping.getSequenceField()!=null && (m_activeMapping.getSequenceField().equals(localName) || m_activeMapping.getSequenceField().equals(universalName) ) ) {
+					} 
+					if (m_activeMapping.getSequenceField()!=null && (m_activeMapping.getSequenceField().equals(localName) || m_activeMapping.getSequenceField().equals(universalName) ) ) {
 						continue; //don't do implicit mapping for fields mapped to sequence
 					} 
 
@@ -1095,107 +1095,75 @@ public class XmlSaxParser {
 
 					// XXX what if fieldName == null ???
 
-					// TODO Labels replace:
-					if (m_activeMapping.getOutputRecord() != null && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
-						int position =  m_activeMapping.getOutputRecord().getMetadata().getFieldPosition(fieldName);
-						if(position>=0) {
-							DataField field = m_activeMapping.getOutputRecord().getField(position);
-						
-						// If field is nullable and there's no character data set it to null
-						if (m_hasCharacters) {
-							
-							//logger.trace("processCharacters: storing (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
-							try {
-								if (field.getValue() != null && cloverAttributes.contains(fieldName)) {
-									// XXX WTF?
-									field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
-								} else {
-									//logger.trace("processCharacters: storing a new value (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
-									field.fromString(getCurrentValue(startIndex, endIndex, excludeCDataTag));
-								}
-							} catch (BadDataFormatException ex) {
-								// This is a bit hacky here SOOO let me explain...
-								if (field.getType() == DataFieldMetadata.DATE_FIELD) {
-									// XML dateTime format is not supported by the
-									// DateFormat oject that clover uses...
-									// so timezones are unparsable
-									// i.e. XML wants -5:00 but DateFormat wants
-									// -500
-									// Attempt to munge and retry... (there has to
-									// be a better way)
-									try {
-										// Chop off the ":" in the timezone (it HAS
-										// to be at the end)
-										String dateTime = m_characters.substring(0, m_characters.lastIndexOf(":")) + m_characters.substring(m_characters.lastIndexOf(":") + 1);
-										DateFormatter formatter = field.getMetadata().createDateFormatter();
-										field.setValue(formatter.parseDate(trim ? dateTime.trim() : dateTime));
-									} catch (Exception ex2) {
-										// Oh well we tried, throw the originating
-										// exception
-										throw ex;
-									}
-								} else {
-									throw ex;
-								}
-							}
-						} else if (field.getType() == DataFieldMetadata.STRING_FIELD
-						// and value wasn't already stored (from characters)
-						&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
-							field.setValue("");
-						}
-						}
+					if (isMappingPossible(fieldName)) {
+                        writeToOutput(fieldName, startIndex, endIndex, excludeCDataTag);
 					}
-				}
+
+				} // end of for cycle
+
 			} else {
 				fieldName = localName;
-				// TODO Labels replace:
-				if (m_activeMapping.getOutputRecord() != null && m_activeMapping.getOutputRecord().hasField(fieldName) && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
-					DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
-					// If field is nullable and there's no character data set it to null
-					if (m_hasCharacters) {
-						//logger.trace("processCharacters: storing (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
-						try {
-							if (field.getValue() != null && cloverAttributes.contains(fieldName)) {
-								// XXX WTF?
-								field.fromString(trim ? field.getValue().toString().trim() : field.getValue().toString());
-							} else {
-								//logger.trace("processCharacters: storing a new value (" + localName + "); into field " + fieldName + "; xml2clover=" + xml2clover + ", cloverAttributes=" + cloverAttributes);
-								field.fromString(getCurrentValue());
-							}
-						} catch (BadDataFormatException ex) {
-							// This is a bit hacky here SOOO let me explain...
-							if (field.getType() == DataFieldMetadata.DATE_FIELD) {
-								// XML dateTime format is not supported by the
-								// DateFormat oject that clover uses...
-								// so timezones are unparsable
-								// i.e. XML wants -5:00 but DateFormat wants
-								// -500
-								// Attempt to munge and retry... (there has to
-								// be a better way)
-								try {
-									// Chop off the ":" in the timezone (it HAS
-									// to be at the end)
-									String dateTime = m_characters.substring(0, m_characters.lastIndexOf(":")) + m_characters.substring(m_characters.lastIndexOf(":") + 1);
-									DateFormatter formatter = field.getMetadata().createDateFormatter();
-									field.setValue(formatter.parseDate(trim ? dateTime.trim() : dateTime));
-								} catch (Exception ex2) {
-									// Oh well we tried, throw the originating
-									// exception
-									throw ex;
-								}
-							} else {
-								throw ex;
-							}
-						}
-					} else if (field.getType() == DataFieldMetadata.STRING_FIELD
-					// and value wasn't already stored (from characters)
-					&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
-						field.setValue("");
-					}
+				
+				if (isMappingPossible(fieldName)) {
+					writeToOutput(fieldName, -1, -1, false);
 				}
 			}
 		}
+		
+		private boolean isMappingPossible(String fieldName) {
+			return (m_activeMapping.getOutputRecord() != null &&
+					m_activeMapping.getOutputRecord().hasField(fieldName) && 
+					(useNestedNodes || m_level - 1 <= m_activeMapping.getLevel()));
+		}
+
+		/**
+		 * Stores current value in m_characters into output field.
+		 * @param fieldName
+		 * @param startIndex
+		 * @param endIndex
+		 * @param excludeCDataTag
+		 */
+		private void writeToOutput(String fieldName, int startIndex, int endIndex, boolean excludeCDataTag) {
+
+			DataField field = m_activeMapping.getOutputRecord().getField(fieldName);
+
+			// If field is nullable and there's no character data set it to null
+			if (m_hasCharacters) {
+				
+				// write the value - if the field value is not already set or if it is set because of implicit mapping (I am not really sure about the second condition, but it was already there...)
+				if (field.getValue() == null || !cloverAttributes.contains(fieldName)) {
+                    try {
+                        field.fromString(getCurrentValue(startIndex, endIndex, excludeCDataTag));
+                    } catch (BadDataFormatException ex) {
+                        // This is a bit hacky here SOOO let me explain...
+                        if (field.getType() == DataFieldMetadata.DATE_FIELD) {
+                            // XML dateTime format is not supported by the DateFormat object that clover uses...
+                            // so timezones are unparsable i.e. XML wants -5:00 but DateFormat wants -500
+                            // Attempt to munge and retry... (there has to be a better way)
+                            try {
+                                // Chop off the ":" in the timezone (it HAS
+                                // to be at the end)
+                                String dateTime = m_characters.substring(0, m_characters.lastIndexOf(":")) + m_characters.substring(m_characters.lastIndexOf(":") + 1);
+                                DateFormatter formatter = field.getMetadata().createDateFormatter();
+                                field.setValue(formatter.parseDate(trim ? dateTime.trim() : dateTime));
+                            } catch (Exception ex2) {
+                                // Oh well we tried, throw the originating
+                                // exception
+                                throw ex;
+                            }
+                        } else {
+                            throw ex;
+                        }
+                    }
+				}
+			} else if (field.getType() == DataFieldMetadata.STRING_FIELD
+			// and value wasn't already stored (from characters)
+			&& (field.getValue() == null || field.getValue().equals(field.getMetadata().getDefaultValueStr()))) {
+				field.setValue(""); 
+			}
+		}
 	}
+	
 
 	/**
 	 * Augments the namespaceURIs with curly brackets to allow easy creation of qualified names E.g.

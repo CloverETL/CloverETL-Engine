@@ -23,8 +23,9 @@ import static org.junit.Assume.assumeTrue;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jetel.component.fileoperation.CloverURI;
 import org.jetel.component.fileoperation.DefaultOperationHandler;
@@ -32,6 +33,7 @@ import org.jetel.component.fileoperation.IOperationHandler;
 import org.jetel.component.fileoperation.ObservableHandler;
 import org.jetel.component.fileoperation.Operation;
 import org.jetel.component.fileoperation.OperationHandlerTestTemplate;
+import org.jetel.component.fileoperation.OperationKind;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.SimpleParameters.DeleteParameters;
 import org.jetel.component.fileoperation.URIUtils;
@@ -54,7 +56,8 @@ import org.jetel.util.file.FileUtils;
  */
 public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 
-	private static final String TESTING_URI = "hdfs://CDH_3U5/tmp/test_fo/";
+	protected static final String CDH_3U5 = "hdfs://CDH_3U5/tmp/test_fo/";
+	protected static final String CDH412 = "hdfs://CDH412/tmp/test_fo/";
 	
 	private static final String HADOOP_TEST_GRAPH = "hadoop-testGraph.grf";
 	
@@ -64,15 +67,67 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 	
 	private Context c = null;
 	
+	private Long timeStamp = null;
+	
 	@Override
 	protected IOperationHandler createOperationHandler() {
 		return handler = new HadoopOperationHandler();
 	}
 	
-	protected URI getTestingURI() throws URISyntaxException {
-		return new URI(TESTING_URI);
+	protected URI getTestingURI() {
+		return URI.create(CDH_3U5);
 	}
 	
+	/*
+	 * Used for testing MOVE between two servers.
+	 */
+	protected URI getRemoteURI() {
+		return URI.create(CDH412);
+	}
+	
+	@Override
+	public void testMove() throws Exception {
+		super.testMove();
+		
+		// CLO-3505: test moving between two different connections (or even servers)
+		URI baseUri2 = null;
+		try {
+			baseUri2 = createBaseURI(getRemoteURI());
+			Map<String, String> texts = new HashMap<String, String>();
+			String originalName = "differentConnections.tmp";
+			String newName = originalName + ".moved";
+			CloverURI source = relativeURI(originalName);
+			assertFalse(manager.exists(source));
+			String content = "\u017Dlu\u0165ou\u010Dk\u00FD k\u016F\u0148 \u00FAp\u011Bl \u010F\u00E1belsk\u00E9 \u00F3dy";
+			texts.put(originalName, content);
+			prepareData(texts);
+			assertTrue(manager.exists(source));
+			CloverURI target = CloverURI.createSingleURI(baseUri2, newName);
+			
+			assertFalse(manager.move(source, target).success());
+			
+			// enable moving using DefaultOperationHandler
+			DefaultOperationHandler defaultHandler = new DefaultOperationHandler();
+			manager.registerHandler(VERBOSE ? new ObservableHandler(defaultHandler) : defaultHandler);
+			
+			assertTrue(manager.move(source, target).success());
+			
+			assertFalse(manager.exists(source));
+			// file with new name, but in the old location
+			assertFalse(manager.exists(relativeURI(newName)));
+			assertTrue(manager.exists(target));
+			assertEquals(content, read(manager.getInput(target).channel()));
+		} finally {
+			if (baseUri2 != null) {
+				DeleteResult result = manager.delete(CloverURI.createURI(baseUri2), new DeleteParameters().setRecursive(true));
+				if (!result.success()) {
+					System.err.println("Failed to delete " + result.getURI(0));
+				}
+			}
+		}
+		
+	}
+
 	protected String getTestingGraph() {
 		return HADOOP_TEST_GRAPH;
 	}
@@ -97,26 +152,26 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 		}
 		return false;
 	}
+	
+	protected URI createBaseURI(URI testingUri) {
+		CloverURI tmpDirUri = CloverURI.createURI(testingUri.resolve(String.format("CloverTemp%d/", timeStamp)));
+		CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true).setMakeParents(true));
+		if (!result.success()) {
+			System.err.println(result.getFirstErrorMessage());
+		}
+		assumeTrue(result.success());
+		return tmpDirUri.getSingleURI().toURI();
+	}
 
 	@Override
 	protected URI createBaseURI() {
-		try {
-			URI base = getTestingURI();
-			CloverURI tmpDirUri = CloverURI.createURI(base.resolve(String.format("CloverTemp%d/", System.nanoTime())));
-			CreateResult result = manager.create(tmpDirUri, new CreateParameters().setDirectory(true).setMakeParents(true));
-			if (!result.success()) {
-				System.err.println(result.getFirstErrorMessage());
-			}
-			assumeTrue(result.success());
-			return tmpDirUri.getSingleURI().toURI();
-		} catch (URISyntaxException ex) {
-			return null;
-		}
+		return createBaseURI(getTestingURI());
 	}
 
 	@Override
 	protected void setUp() throws Exception {
 		c = null;
+		timeStamp = System.nanoTime();
 		
 		initEngine();
 		
@@ -139,7 +194,17 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 		
 		super.setUp();
 		
-		DefaultOperationHandler defaultHandler = new DefaultOperationHandler();
+		DefaultOperationHandler defaultHandler = new DefaultOperationHandler() {
+
+			@Override
+			public boolean canPerform(Operation operation) {
+				if (operation.kind == OperationKind.MOVE) {
+					return false;
+				}
+				return super.canPerform(operation);
+			}
+			
+		};
 		manager.registerHandler(VERBOSE ? new ObservableHandler(defaultHandler) : defaultHandler);
 	}
 
@@ -156,6 +221,7 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 			ContextProvider.unregister(c);
 			graph = null;
 		}
+		timeStamp = null;
 	}
 
 	@Override

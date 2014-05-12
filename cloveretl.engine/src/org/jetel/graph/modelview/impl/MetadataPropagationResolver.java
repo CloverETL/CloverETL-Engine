@@ -95,7 +95,8 @@ public class MetadataPropagationResolver {
 	 * @return suggested metadata for given edge
 	 */
 	public MVMetadata findMetadata(Edge edge) {
-		return findMetadata(mvGraph.getMVEdgeRecursive(edge));
+		MVEdge mvEdge = mvGraph.getMVEdgeRecursive(edge);
+		return (mvEdge != null) ? findMetadata(mvEdge) : null;
 	}
 
 	/**

@@ -23,8 +23,10 @@ import java.io.IOException;
 import org.jetel.data.Defaults;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
+import org.jetel.graph.JobType;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -100,7 +102,7 @@ public class SimpleGather extends Node {
 	/**
 	 * how many empty loops till thread wait() is called
 	 */
-	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 5;
+	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 29;
 
 	/**
 	 * how many millis to wait if we reached the specified number of empty loops (when no data has been read).
@@ -113,6 +115,78 @@ public class SimpleGather extends Node {
 
 	@Override
 	public Result execute() throws Exception {
+		//ETL Graphs and jobflows use different implementations (CLO-3538)
+		JobType runtimeJobType = getGraph().getRuntimeContext().getJobType();
+		if (runtimeJobType.isGraph()) {
+			return executeInETLGraph();
+		} else if (runtimeJobType.isJobflow()) {
+			return executeInJobflow();
+		} else {
+			throw new JetelRuntimeException("Unexpected job type for SimpleGather component - " + runtimeJobType);
+		}
+	}
+	
+	/**
+	 * Execution in regular ETL graph - forceReading is used (CLO-3538).
+	 */
+	private Result executeInETLGraph() throws Exception {
+		InputPortDirect inPort;
+		/*
+		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.
+		 */
+		int numActive;
+		int emptyLoopCounter = 0;
+		/*
+		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.
+		 */
+		int readFromPort;
+		boolean[] isEOF = new boolean[getInPorts().size()];
+		for (int i = 0; i < isEOF.length; i++) {
+			isEOF[i] = false;
+		}
+		InputPortDirect inputPorts[] = (InputPortDirect[]) getInPorts().toArray(new InputPortDirect[0]);
+		numActive = inputPorts.length;// counter of still active ports - those without EOF status
+		// the metadata is taken from output port definition
+		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+		readFromPort = 0;
+		inPort = inputPorts[readFromPort];
+		int lastReadPort = -1;
+		boolean forceReading = false;
+		while (runIt && numActive > 0) {
+			if (!isEOF[readFromPort] && (inPort.hasData() || forceReading || numActive == 1)) {
+				forceReading = false;
+				emptyLoopCounter = 0;
+				if (inPort.readRecordDirect(recordBuffer)) {
+					writeRecordToOutputPorts(recordBuffer);
+					lastReadPort = readFromPort;
+				} else {
+					isEOF[readFromPort] = true;
+					numActive--;
+				}
+				SynchronizeUtils.cloverYield();
+			} else {
+				readFromPort = (++readFromPort) % (inputPorts.length);
+				inPort = inputPorts[readFromPort];
+
+				if (lastReadPort == readFromPort) {
+					forceReading = true;
+				}
+				// have we reached the maximum empty loops count ?
+				if (emptyLoopCounter > NUM_EMPTY_LOOPS_TRESHOLD) {
+					Thread.sleep(getSleepTime());
+				} else {
+					emptyLoopCounter++;
+				}
+			}
+		}
+
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+	
+	/**
+	 * Execution in jobflow - forceReading cannot be used (CLO-3538).
+	 */
+	private Result executeInJobflow() throws Exception {
 		InputPortDirect inPort;
 		/*
 		 * we need to keep track of all input ports - it they contain data or signalized that they are empty.
