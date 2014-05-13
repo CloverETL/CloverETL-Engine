@@ -108,6 +108,7 @@ import org.jetel.ctl.extensions.IntegralLib;
 import org.jetel.ctl.extensions.TLFunctionPrototype;
 import org.jetel.ctl.extensions.TLTransformationContext;
 import org.jetel.data.DataField;
+import org.jetel.data.DataFieldInvalidStateException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DecimalDataField;
@@ -118,6 +119,7 @@ import org.jetel.data.StringDataField;
 import org.jetel.data.lookup.Lookup;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.MissingFieldException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
@@ -2212,7 +2214,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		}
 		
 		final DataField field = record.getField(node.getFieldId());
-		stack.push(fieldValue(field));
+		try {
+			stack.push(fieldValue(field));
+		} catch (DataFieldInvalidStateException e) {
+			//field value can have 'invalid' value, see DataFieldWithInvalidState
+			//access to this invalid field throws this exception
+			//let's report it as missing field
+			//see CLO-1872
+			throw new MissingFieldException(e.getMessage(), node.isOutput(), node.getRecordId(), node.getFieldName());
+		}
 		
 		return data;
 	}

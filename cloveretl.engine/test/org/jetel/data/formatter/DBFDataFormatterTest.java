@@ -7,6 +7,7 @@ import java.io.FileOutputStream;
 import java.util.Calendar;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
@@ -42,7 +43,7 @@ public class DBFDataFormatterTest extends CloverTestCase {
 		metadata.addField(new DataFieldMetadata("Field5", DataFieldMetadata.DECIMAL_FIELD, (short)18));
 		metadata.getField(4).setProperty(DataFieldMetadata.SCALE_ATTR, "3");
 		
-		record = new DataRecord(metadata);
+		record = DataRecordFactory.newRecord(metadata);
 		record.init();
 		formatter = new DBFDataFormatter("US-ASCII", (byte) 0x03);
 		formatter.init(metadata);

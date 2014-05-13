@@ -53,7 +53,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *
  * @created 31 Jan 2012
  */
-public class MapDataField extends DataField {
+public class MapDataField extends DataFieldImpl {
 
 	private static final long serialVersionUID = 7934647976668962456L;
 

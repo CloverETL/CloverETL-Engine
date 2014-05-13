@@ -33,7 +33,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @created 26 Apr 2012
  * @see TokenTracker
  */
-public class Token extends DataRecord {
+public class Token extends DataRecordImpl {
 
 	private static final long serialVersionUID = -6335039894273092797L;
 	
@@ -167,7 +167,7 @@ public class Token extends DataRecord {
 	}
 	
 	@Override
-	protected DataRecord newInstance(DataRecordMetadata metadata) {
+	protected DataRecordImpl newInstance(DataRecordMetadata metadata) {
 		return new Token(metadata);
 	}
 	

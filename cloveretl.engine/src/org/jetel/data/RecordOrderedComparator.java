@@ -105,8 +105,7 @@ public class RecordOrderedComparator extends RecordComparator {
                 }
                 if (compResult != 0) {
                     if (equalNULLs) {
-                        if (!(record1.getField(keyFields[i]).isNull && record2
-                                .getField(keyFields[i]).isNull)) {
+                        if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
                             return compResult;
                         }
                         continue;
@@ -125,8 +124,7 @@ public class RecordOrderedComparator extends RecordComparator {
                 }
                 if (compResult != 0) {
                     if (equalNULLs) {
-                        if (!(record1.getField(keyFields[i]).isNull && record2
-                                .getField(keyFields[i]).isNull)) {
+                        if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
                             return compResult;
                         }
                         continue;
@@ -178,8 +176,7 @@ public class RecordOrderedComparator extends RecordComparator {
                  
                  if (compResult != 0) {
                      if (equalNULLs) {
-                         if (!(record1.getField(keyFields[i]).isNull && record2
-                                 .getField(record2KeyFields[i]).isNull)) {
+                         if (!(record1.getField(keyFields[i]).isNull() && record2.getField(record2KeyFields[i]).isNull())) {
                              return compResult;
                          }
                          continue;
@@ -202,8 +199,7 @@ public class RecordOrderedComparator extends RecordComparator {
                 
                 if (compResult != 0) {
                     if (equalNULLs) {
-                        if (!(record1.getField(keyFields[i]).isNull && record2
-                                .getField(record2KeyFields[i]).isNull)) {
+                        if (!(record1.getField(keyFields[i]).isNull() && record2.getField(record2KeyFields[i]).isNull())) {
                             return compResult;
                         }
                         continue;

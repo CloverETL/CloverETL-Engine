@@ -140,7 +140,7 @@ public class RecordComparator implements Comparator<DataRecord> {
                 }
                 if (compResult != 0) {
                     if (equalNULLs) {
-                        if (!(field1.isNull && field2.isNull)) {
+                        if (!(field1.isNull() && field2.isNull())) {
                             return orderCorrection(i, compResult);
                         }
                         continue;
@@ -157,8 +157,8 @@ public class RecordComparator implements Comparator<DataRecord> {
 
                 if (compResult != 0) {
                     if (equalNULLs) {
-                        if (!(record1.getField(keyFields[i]).isNull && record2
-                                .getField(keyFields[i]).isNull)) {
+                        if (!(record1.getField(keyFields[i]).isNull() && record2
+                                .getField(keyFields[i]).isNull())) {
                             return orderCorrection(i, compResult);
                         }
                         continue;
@@ -214,8 +214,8 @@ public class RecordComparator implements Comparator<DataRecord> {
                  
                  if (compResult != 0) {
                      if (equalNULLs) {
-                         if (!(record1.getField(keyFields[i]).isNull && record2
-                                 .getField(record2KeyFields[i]).isNull)) {
+                         if (!(record1.getField(keyFields[i]).isNull() && record2
+                                 .getField(record2KeyFields[i]).isNull())) {
                              return orderCorrection(i, compResult);
                          }
                          continue;
@@ -233,8 +233,8 @@ public class RecordComparator implements Comparator<DataRecord> {
                 
                 if (compResult != 0) {
                     if (equalNULLs) {
-                        if (!(record1.getField(keyFields[i]).isNull && record2
-                                .getField(record2KeyFields[i]).isNull)) {
+                        if (!(record1.getField(keyFields[i]).isNull() && record2
+                                .getField(record2KeyFields[i]).isNull())) {
                             return orderCorrection(i, compResult);
                         }
                         continue;
