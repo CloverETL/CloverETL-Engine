@@ -51,7 +51,7 @@ import org.jetel.util.string.StringUtils;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
-public class LongDataField extends DataField implements Numeric, Comparable<Object> {
+public class LongDataField extends DataFieldImpl implements Numeric, Comparable<Object> {
 
 	private static final long serialVersionUID = 7919485553866177802L;
 	
@@ -155,18 +155,20 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@SuppressWarnings("deprecation")
+	@Deprecated
 	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof LongDataField){
-	        if (!fromField.isNull){
+	        if (!fromField.isNull()) {
 	            this.value = ((LongDataField) fromField).value;
 	        }
-	        setNull(fromField.isNull);
+	        setNull(fromField.isNull());
 	    } else if (fromField instanceof Numeric){
-            if (!fromField.isNull){
+            if (!fromField.isNull()) {
                 this.value = ((Numeric) fromField).getLong();
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else {
             super.copyFrom(fromField);
         }
@@ -201,15 +203,15 @@ public class LongDataField extends DataField implements Numeric, Comparable<Obje
 	@Override
 	public void setValue(DataField fromField) {
         if (fromField instanceof LongDataField){
-            if (!fromField.isNull){
+            if (!fromField.isNull()) {
                 this.value = ((LongDataField) fromField).value;
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else if (fromField instanceof Numeric){
-            if (!fromField.isNull){
+            if (!fromField.isNull()) {
                 this.value = ((Numeric) fromField).getLong();
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else {
             super.setValue(fromField);
         }

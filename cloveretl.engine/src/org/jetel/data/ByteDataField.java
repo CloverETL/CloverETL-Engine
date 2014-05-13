@@ -50,7 +50,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *@see        org.jetel.metadata.DataFieldMetadata
  */
 @SuppressWarnings("EI")
-public class ByteDataField extends DataField implements Comparable<Object> {
+public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
 
 	private static final long serialVersionUID = 3823545028385612760L;
 
@@ -117,10 +117,12 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@java.lang.SuppressWarnings("deprecation")
+	@Deprecated
 	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField) && !(this instanceof CompressedByteDataField)){
-	        if (!fromField.isNull){
+	        if (!fromField.isNull()) {
 	            int length = ((ByteDataField) fromField).value.length;
 	            if (this.value == null || this.value.length != length){
 	                this.value = new byte[length];
@@ -128,7 +130,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
                 System.arraycopy(((ByteDataField) fromField).value,
                         0, this.value, 0, length);
 	        }
-	        setNull(fromField.isNull);
+	        setNull(fromField.isNull());
 	    } else {
 	        super.copyFrom(fromField);
         }
@@ -175,7 +177,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
 	@Override
 	public void setValue(DataField fromField) {
         if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField) && !(this instanceof CompressedByteDataField)){
-            if (!fromField.isNull){
+            if (!fromField.isNull()) {
                 int length = ((ByteDataField) fromField).value.length;
                 if (this.value == null || this.value.length != length){
                     this.value = new byte[length];
@@ -183,7 +185,7 @@ public class ByteDataField extends DataField implements Comparable<Object> {
                 System.arraycopy(((ByteDataField) fromField).value,
                         0, this.value, 0, length);
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else {
             super.setValue(fromField);
         }

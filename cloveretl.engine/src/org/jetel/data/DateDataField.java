@@ -46,7 +46,7 @@ import edu.umd.cs.findbugs.annotations.SuppressWarnings;
  *
  */
 @SuppressWarnings("EI")
-public class DateDataField extends DataField implements Comparable<Object> {
+public class DateDataField extends DataFieldImpl implements Comparable<Object> {
 
 	private static final long serialVersionUID = 1529319195864286249L;
 	
@@ -124,17 +124,19 @@ public class DateDataField extends DataField implements Comparable<Object> {
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@java.lang.SuppressWarnings("deprecation")
+	@Deprecated
 	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof DateDataField){
-	        if (!fromField.isNull){
+	        if (!fromField.isNull()) {
 	        	if (this.value == null) {
 	        		this.value = new Date(((DateDataField)fromField).value.getTime());
 	        	} else {
 	            	this.value.setTime(((DateDataField)fromField).value.getTime());
 	        	}
 	        }
-	        setNull(fromField.isNull);
+	        setNull(fromField.isNull());
 	    } else {
 	        super.copyFrom(fromField);
         }
@@ -177,14 +179,14 @@ public class DateDataField extends DataField implements Comparable<Object> {
     @Override
     public void setValue(DataField fromField) {
         if (fromField instanceof DateDataField){
-            if (!fromField.isNull){
+            if (!fromField.isNull()) {
                 if (this.value == null) {
                     this.value = new Date(((DateDataField)fromField).value.getTime());
                 } else {
                     this.value.setTime(((DateDataField)fromField).value.getTime());
                 }
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else {
             super.setValue(fromField);
         }

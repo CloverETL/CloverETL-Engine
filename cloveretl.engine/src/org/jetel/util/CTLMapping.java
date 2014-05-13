@@ -165,6 +165,17 @@ public class CTLMapping {
 	private boolean outputSetDefaults = true;
 	
 	/**
+	 * Messages which should be used in case of missing an record field.
+	 */
+	private MissingRecordFieldMessage[] missingFieldChecks;
+	
+	/**
+	 * Name of component attribute in which this mapping is defined.
+	 * Error reporting purpose.  
+	 */
+	private String attributeName;
+	
+	/**
 	 * Only constructor
 	 * @param name name of CTL mapping used mainly for reporting purposes
 	 * @param component associated component used mainly for CTL mapping compilation
@@ -416,6 +427,9 @@ public class CTLMapping {
 		assert (!isInitialized);
 		isInitialized = true;
 		
+		this.missingFieldChecks = missingFieldChecks;
+		this.attributeName = xmlAttribute;
+		
 		inputRecordsArray = new DataRecord[inputRecordsList.size()];
 		inputRecordsArray = inputRecordsList.toArray(inputRecordsArray);
 
@@ -443,24 +457,7 @@ public class CTLMapping {
 	        	transformFactory.setOutMetadata(outputRecordsMetadata);
 	        	ctlTransformation = transformFactory.createTransform();
 			} catch (MissingFieldException mfe) {
-				if (mfe.isOutput()) {
-					DataRecord record = getOutputRecord(mfe.getRecordId());
-					for (MissingRecordFieldMessage check : missingFieldChecks) {
-						if (check.output && (record == getOutputRecord(check.recordName))) {
-							Object[] messageArgs = new Object[] { mfe.getFieldName() };
-							throw new ComponentNotReadyException(component, xmlAttribute, MessageFormat.format(check.errorMessage, messageArgs));
-						}
-					}
-				} else {
-					DataRecord record = getInputRecord(mfe.getRecordId());
-					for (MissingRecordFieldMessage check : missingFieldChecks) {
-						if (!check.output && (record == getInputRecord(check.recordName))) {
-							Object[] messageArgs = new Object[] { mfe.getFieldName() };
-							throw new ComponentNotReadyException(component, xmlAttribute, MessageFormat.format(check.errorMessage, messageArgs));
-						}
-					}
-				}
-				throw new ComponentNotReadyException(component, xmlAttribute, mfe);
+				throw handleMissingFieldException(mfe);
 			} catch (Exception e) {
 				throw new JetelRuntimeException(name + " is invalid.", e);
 			}
@@ -489,6 +486,27 @@ public class CTLMapping {
         	}
         }
         
+	}
+	
+	private ComponentNotReadyException handleMissingFieldException(MissingFieldException mfe) {
+		if (mfe.isOutput()) {
+			DataRecord record = getOutputRecord(mfe.getRecordId());
+			for (MissingRecordFieldMessage check : missingFieldChecks) {
+				if (check.output && (record == getOutputRecord(check.recordName))) {
+					Object[] messageArgs = new Object[] { mfe.getFieldName() };
+					return new ComponentNotReadyException(component, attributeName, MessageFormat.format(check.errorMessage, messageArgs));
+				}
+			}
+		} else {
+			DataRecord record = getInputRecord(mfe.getRecordId());
+			for (MissingRecordFieldMessage check : missingFieldChecks) {
+				if (!check.output && (record == getInputRecord(check.recordName))) {
+					Object[] messageArgs = new Object[] { mfe.getFieldName() };
+					return new ComponentNotReadyException(component, attributeName, MessageFormat.format(check.errorMessage, messageArgs));
+				}
+			}
+		}
+		return new ComponentNotReadyException(component, attributeName, mfe);
 	}
 	
 	/**
@@ -548,6 +566,10 @@ public class CTLMapping {
 			try {
 				return ctlTransformation.transform(inputRecordsArray, outputRecordsArray);
 			} catch (Exception exception) {
+				if (ExceptionUtils.instanceOf(exception, MissingFieldException.class)) {
+					MissingFieldException missingFieldException = ExceptionUtils.getAllExceptions(exception, MissingFieldException.class).get(0);
+					throw new JetelRuntimeException(handleMissingFieldException(missingFieldException));
+				}
 				try {
 					return ctlTransformation.transformOnError(exception, inputRecordsArray, outputRecordsArray);
 				} catch (TransformException e) {
