@@ -220,12 +220,13 @@ public class CTLMapping {
 	 * @param name identifier of the input record
 	 * @param inputRecord input record to be registered
 	 */
-	public void addInputRecord(String name, DataRecord inputRecord) {
+	public DataRecord addInputRecord(String name, DataRecord inputRecord) {
 		if (inputRecordsMap.containsKey(name)) {
 			throw new IllegalArgumentException("input name already used");
 		}
 		inputRecordsMap.put(name, inputRecord);
 		inputRecordsList.add(inputRecord);
+		return inputRecord;
 	}
 	
 	/**
