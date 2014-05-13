@@ -323,12 +323,15 @@ public class CloverDataFormatter extends AbstractFormatter {
 		return lastValue;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
+	/**
+	 * If enabled, saves the record size to the index file.
+	 * 
+	 * The functionality is deprecated.
+	 * 
+	 * @param recordSize
+	 * @throws IOException
 	 */
-	@Override
-	public int write(DataRecord record) throws IOException {
-		int recordSize = record.getSizeSerializedUnitary();
+	private void saveIndex(int recordSize) throws IOException {
 		if (saveIndex) {
 			//if size is grater then Short, change to negative Short
 			short index = recordSize + LEN_SIZE_SPECIFIER <= Short.MAX_VALUE ? 
@@ -339,13 +342,47 @@ public class CloverDataFormatter extends AbstractFormatter {
 			}
 			idxBuffer.putShort(index);
 		}
-		if (buffer.remaining() < recordSize + LEN_SIZE_SPECIFIER) {
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
+	 */
+	@Override
+	public int write(DataRecord record) throws IOException {
+		int recordSize = record.getSizeSerializedUnitary();
+		saveIndex(recordSize);
+		int totalSize = recordSize + LEN_SIZE_SPECIFIER;
+		if (buffer.remaining() < totalSize) {
 			flush();
 		}
 		buffer.putInt(recordSize);
 		record.serializeUnitary(buffer);
         
-        return recordSize + LEN_SIZE_SPECIFIER;
+        return totalSize;
+	}
+	
+	/**
+	 * Copies the data from the <code>recordBuffer</code>
+	 * to the output buffer.
+	 * 
+	 * It is assumed that the <code>recordBuffer</code>
+	 * is prepared for reading and has a limit set correctly.
+	 * 
+	 * @param recordBuffer
+	 * @return
+	 * @throws IOException
+	 */
+	public int writeDirect(CloverBuffer recordBuffer) throws IOException {
+		int recordSize = recordBuffer.remaining();
+		saveIndex(recordSize);
+		int totalSize = recordSize + LEN_SIZE_SPECIFIER;
+		if (buffer.remaining() < totalSize) {
+			flush();
+		}
+		buffer.putInt(recordSize);
+		buffer.put(recordBuffer);
+        
+        return totalSize;
 	}
 
 	/* (non-Javadoc)
