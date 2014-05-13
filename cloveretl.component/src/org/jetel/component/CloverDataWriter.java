@@ -27,20 +27,20 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.DataRecord;
-import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.InputPort;
+import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileURLParser;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
@@ -127,7 +127,7 @@ public class CloverDataWriter extends Node {
 	private boolean saveMetadata;
 	private DataRecordMetadata metadata;
 	private OutputStream out;//ZipOutputstream or FileOutputStream
-	private InputPort inPort;
+	private InputPortDirect inPort;
 	private int compressLevel;
 	String fileName;
     private int skip;
@@ -198,17 +198,14 @@ public class CloverDataWriter extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
-		DataRecord record = DataRecordFactory.newRecord(metadata);
+		// CLO-2657: rewritten to use direct input port reading
+		CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
 		long iRec = 0;
 		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
-		record.init();
-		while (record != null && runIt) {
+		while (inPort.readRecordDirect(recordBuffer) && runIt) {
 			iRec++;
-			record = inPort.readRecord(record);
 			if (skip >= iRec || recordTo <= iRec) continue;
-			if (record != null) {
-				formatter.write(record);
-			}
+			formatter.writeDirect(recordBuffer);
 			SynchronizeUtils.cloverYield();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -286,7 +283,7 @@ public class CloverDataWriter extends Node {
     	// creates necessary directories
         if (mkDir) FileUtils.makeDirs(getGraph().getRuntimeContext().getContextURL(), new File(FileURLParser.getMostInnerAddress(fileURL)).getParent());
 
-		inPort = getInputPort(READ_FROM_PORT);
+		inPort = getInputPortDirect(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
 		formatter.setProjectURL(getGraph().getRuntimeContext().getContextURL());
 		formatter.init(metadata);
