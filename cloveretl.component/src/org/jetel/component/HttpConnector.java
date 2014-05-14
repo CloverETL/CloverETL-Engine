@@ -356,6 +356,11 @@ public class HttpConnector extends Node {
 	public final static String XML_ADDITIONAL_HTTP_HEADERS_ATTRIBUTE = "headerProperties";
 
 	/**
+	 * The name of an XML attribute representing additional header parameters.
+	 */
+	public final static String XML_REQUEST_PARAMETERS_ATTRIBUTE = "requestParameters";
+
+	/**
 	 * The name of an XML attribute representing input field name, holding request content.
 	 */
 	private final static String XML_INPUT_PORT_FIELD_NAME = "inputField";
@@ -828,6 +833,8 @@ public class HttpConnector extends Node {
 
 	protected DataRecord additionalHeadersRecord;
 
+	protected DataRecord requestParametersRecord;
+
 	protected DataRecord requestCookiesRecord;
 
 	protected DataRecord responseCookiesRecord;
@@ -870,6 +877,8 @@ public class HttpConnector extends Node {
 	private static final String ATTRIBUTES_RECORD_NAME = "Attributes";
 
 	public static final String ADDITIONAL_HTTP_HEADERS_RECORD_NAME = "AdditionlHTTPHeaders";
+
+	public static final String REQUEST_PARAMETERS_RECORD_NAME = "RequestParameters";
 
 	public static final String REQUEST_COOKIES_RECORD_NAME = "RequestCookies";
 
@@ -1078,6 +1087,14 @@ public class HttpConnector extends Node {
 	private static final String IP_RAW_HTTP_HEADERS_NAME = "rawHTTPHeaders";
 
 	/**
+	 * String representing properties, that should be used as explicitly mapped request parameters.
+	 */
+	private String requestParametersStr;
+	private static final int IP_REQUEST_PARAMETERS_INDEX = 23;
+	private static final String IP_REQUEST_PARAMETERS_NAME = "requestParameters";
+	
+	
+	/**
 	 * String representing fields used as multipart entities.
 	 */
 	private String requestCookiesStr;
@@ -1124,6 +1141,9 @@ public class HttpConnector extends Node {
 	private Properties additionalRequestHeaders;
 	private Map<String, CharSequence> additionalRequestHeadersToUse; // additionalRequestHeaders modified by input
 																		// mapping
+
+	private Properties requestParameters;
+	private Map<String, CharSequence> requestParametersToUse; // additionalRequestHeaders modified by input
 
 	/**
 	 * Fields that should be ignored
@@ -1505,6 +1525,21 @@ public class HttpConnector extends Node {
 				}
 			}
 		}
+		
+		requestParametersToUse = (Map<String, CharSequence>) inputParamsRecord.getField(IP_REQUEST_PARAMETERS_INDEX).getValue();
+
+		if (requestParametersRecord != null) {
+			for (DataField field : requestParametersRecord) {
+				if (inputMappingTransformation.isOutputOverridden(requestParametersRecord, field)) {
+					String labelOrName = field.getMetadata().getLabelOrName();
+					if (!field.isNull()) {
+						requestParametersToUse.put(labelOrName, field.getValue().toString());
+					} else {
+						requestParametersToUse.remove(labelOrName);
+					}
+				}
+			}
+		}		
 	}
 
 	/**
@@ -1778,6 +1813,18 @@ public class HttpConnector extends Node {
 				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
 			}
 		}
+		// build properties from request headers
+		if (!StringUtils.isEmpty(requestParametersStr)) {
+			requestParameters = new Properties();
+			try {
+				requestParameters.load(new StringReader(requestParametersStr));
+
+				requestParametersRecord = DataRecordFactory.newRecord(createMetadataFromProperties(requestParameters, REQUEST_PARAMETERS_RECORD_NAME));
+				requestParametersRecord.init();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "Unexpected exception during request headers reading.", e);
+			}
+		}
 
 		// create internal result data record
 		if (hasStandardOutputPort) {
@@ -1835,11 +1882,13 @@ public class HttpConnector extends Node {
 		inputMappingOutRecordsList.add(inputParamsRecord);
 		inputMappingOutRecordsList.add(additionalHeadersRecord);
 		inputMappingOutRecordsList.add(requestCookiesRecord);
+		inputMappingOutRecordsList.add(requestParametersRecord);
 		inputMappingOutRecords = inputMappingOutRecordsList.toArray(new DataRecord[0]);
 
 		inputMappingTransformation.addOutputRecord(ATTRIBUTES_RECORD_NAME, inputParamsRecord);
 		inputMappingTransformation.addOutputRecord(ADDITIONAL_HTTP_HEADERS_RECORD_NAME, additionalHeadersRecord);
 		inputMappingTransformation.addOutputRecord(REQUEST_COOKIES_RECORD_NAME, requestCookiesRecord);
+		inputMappingTransformation.addOutputRecord(REQUEST_PARAMETERS_RECORD_NAME, requestParametersRecord);
 
 		// create input records for standard output mapping
 		standardOutputMappingTransformation.addInputRecord(INPUT_RECORD_NAME, inputRecord);
@@ -1907,6 +1956,8 @@ public class HttpConnector extends Node {
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_CONSUMER_SECRET_NAME, consumerSecret);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_OATUH_TOKEN_NAME, oAuthAccessToken);
 		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_OATUH_TOKEN_SECRET_NAME, oAuthAccessTokenSecret);
+		inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_REQUEST_PARAMETERS_NAME, requestParameters != null ? new LinkedHashMap<Object, Object>(requestParameters) : new LinkedHashMap<String, Object>());
+		
 		if (!StringUtils.isEmpty(rawHttpHeaders)) {
 			inputMappingTransformation.setDefaultOutputValue(ATTRIBUTES_RECORD_NAME, IP_RAW_HTTP_HEADERS_NAME, parseRawHttpHeadersItems());
 		}
@@ -2374,6 +2425,7 @@ public class HttpConnector extends Node {
 		httpConnector.setRequestCookies(xattribs.getString(XML_REQUEST_COOKIES_ATTRIBUTE, null));
 		httpConnector.setResponseCookies(xattribs.getString(XML_RESPONSE_COOKIES_ATTRIBUTE, null));
 		httpConnector.setStreaming(xattribs.getBoolean(XML_STREAMING_ATTRIBUTE, true));
+		httpConnector.setRequestParametersStr(xattribs.getString(XML_REQUEST_PARAMETERS_ATTRIBUTE, null));
 
 		/** job flow related properties */
 		httpConnector.setInputMapping(xattribs.getStringEx(XML_INPUT_MAPPING_ATTRIBUTE, null, RefResFlag.SPEC_CHARACTERS_OFF));
@@ -2536,8 +2588,14 @@ public class HttpConnector extends Node {
 						status.add(new ConfigurationProblem("Add input fields as parameters must be specified.", Severity.ERROR, this, Priority.NORMAL));
 					}
 				} else if (addInputFieldsAsParametersTo.equals("BODY") && PLAIN_REQUEST_METHODS.contains(requestMethod)) {
-					status.add(new ConfigurationProblem("Cannot add fields as parameters to body of HTTP request when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL));
+					status.add(new ConfigurationProblem("Cannot add input fields as parameters to body of HTTP request when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL));
 				}
+				
+				if(!StringUtils.isEmpty(this.requestParametersStr)) {
+					status.add(new ConfigurationProblem("Request parameters are defined but HTTPConnector will use input fields as parameters. Set 'Add input fields as parameters' to false if you want to use specified request parameters.", Severity.WARNING, this, Priority.NORMAL));
+				}
+			}else if(!StringUtils.isEmpty(this.requestParametersStr) && addInputFieldsAsParametersTo.equals("BODY") && PLAIN_REQUEST_METHODS.contains(requestMethod)){
+				status.add(new ConfigurationProblem("Cannot add request parameters to body of HTTP request when " + requestMethod + " method is used.", Severity.ERROR, this, Priority.NORMAL));
 			}
 		}
 
@@ -3153,8 +3211,9 @@ public class HttpConnector extends Node {
 	 * 
 	 * @param fieldsToIgnore
 	 * @return a map representing request parameters.
+	 * @throws ComponentNotReadyException 
 	 */
-	private Map<String, String> prepareRequestParameters(Set<String> fieldsToIgnore) {
+	private Map<String, String> prepareRequestParameters(Set<String> fieldsToIgnore) throws ComponentNotReadyException {
 		Map<String, String> parameters = new LinkedHashMap<String, String>();
 
 		// there are some input fields which should be added to the request
@@ -3172,6 +3231,21 @@ public class HttpConnector extends Node {
 			for (String property : unusedMetadata) {
 				parameters.put(property, inputRecord.getField(property).toString());
 			}
+		} else { // if not addInputFieldsAsParametersToUse, is there any parameter explicitly mapped
+			if (requestParametersToUse != null) {
+				for (Entry<String, CharSequence> entry : requestParametersToUse.entrySet()) {
+					if (entry.getValue() != null) {
+						String value = refResolver.resolveRef(entry.getValue().toString());
+
+						// check if the value is fully resolved
+						if (PropertyRefResolver.containsProperty(value)) {
+							throw new ComponentNotReadyException(this, "Could not resolve all references in additional HTTP header: '" + entry.getValue() + "' (resolved as '" + value + "')");
+						}
+						parameters.put(entry.getKey(), value);
+					}
+				}
+			}
+
 		}
 
 		return parameters;
@@ -3359,6 +3433,7 @@ public class HttpConnector extends Node {
 		inputParamsRecord.getField(IP_OATUH_TOKEN_INDEX).setValue(oAuthAccessTokenToUse);
 		inputParamsRecord.getField(IP_OATUH_TOKEN_SECRET_INDEX).setValue(oAuthAccessTokenSecretToUse);
 		inputParamsRecord.getField(IP_RAW_HTTP_HEADERS_INDEX).setValue(rawHttpHeadersToUse);
+		inputParamsRecord.getField(IP_REQUEST_PARAMETERS_INDEX).setValue(requestParametersToUse);
 	}
 
 	/**
@@ -3435,6 +3510,7 @@ public class HttpConnector extends Node {
 		metadata.addField(IP_TEMP_FILE_PREFIX_INDEX, new DataFieldMetadata(IP_TEMP_FILE_PREFIX_NAME, DataFieldType.STRING, null));
 		metadata.addField(IP_MULTIPART_ENTITIES_INDEX, new DataFieldMetadata(IP_MULTIPART_ENTITIES_NAME, DataFieldType.STRING, null));
 		metadata.addField(IP_RAW_HTTP_HEADERS_INDEX, new DataFieldMetadata(IP_RAW_HTTP_HEADERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.LIST));
+		metadata.addField(IP_REQUEST_PARAMETERS_INDEX, new DataFieldMetadata(IP_REQUEST_PARAMETERS_NAME, DataFieldType.STRING, null, DataFieldContainerType.MAP));
 
 		return metadata;
 	}
@@ -3692,6 +3768,22 @@ public class HttpConnector extends Node {
 
 	public void setConsumerSecret(String consumerSecret) {
 		this.consumerSecret = consumerSecret;
+	}
+
+	
+	
+	/**
+	 * @return the requestParametersStr
+	 */
+	public String getRequestParametersStr() {
+		return requestParametersStr;
+	}
+
+	/**
+	 * @param requestParametersStr the requestParametersStr to set
+	 */
+	public void setRequestParametersStr(String requestParametersStr) {
+		this.requestParametersStr = requestParametersStr;
 	}
 
 	public void setRawHttpHeaders(String rawHttpHeaders) {
