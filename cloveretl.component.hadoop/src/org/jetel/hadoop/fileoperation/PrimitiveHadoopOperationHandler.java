@@ -40,6 +40,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.hadoop.connection.HadoopConnection;
 import org.jetel.hadoop.service.filesystem.HadoopFileStatus;
 import org.jetel.hadoop.service.filesystem.HadoopFileSystemService;
+import org.jetel.util.stream.StreamUtils;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -143,9 +144,18 @@ public class PrimitiveHadoopOperationHandler implements PrimitiveOperationHandle
 		throw new UnsupportedOperationException();
 	}
 
+	/*
+	 * Used in MOVE operation if rename() fails. 
+	 */
 	@Override
 	public URI copyFile(URI source, URI target) throws IOException {
-		throw new UnsupportedOperationException();
+		try (ReadableByteChannel in = read(source)) {
+			createFile(target); // fail if parent dir does not exist
+			try (WritableByteChannel out = write(target)) {
+				StreamUtils.copy(in, out);
+				return target;
+			}
+		}
 	}
 
 	@Override

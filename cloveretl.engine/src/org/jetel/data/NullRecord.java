@@ -36,7 +36,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *  
  *@since April 21, 2008
  */
-public class NullRecord extends DataRecord {
+public class NullRecord extends DataRecordImpl {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -55,8 +55,8 @@ public class NullRecord extends DataRecord {
 	}
 	
 	@Override
-	public DataRecord duplicate() {
-		return NULL_RECORD;
+	public NullRecord duplicate() {
+		return (NullRecord) NULL_RECORD;
 	}
 	
 	@Override
@@ -190,7 +190,7 @@ final class NullMetadata extends DataRecordMetadata{
  * Fields of NullRecord
  *
  */
-final class NullField extends DataField{
+final class NullField extends DataFieldImpl {
 	
 	private static final long serialVersionUID = 1L;
 

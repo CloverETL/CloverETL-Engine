@@ -454,6 +454,12 @@ public class TransformationGraphXMLReaderWriter {
 			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
 			instantiateDictionary(dictionaryElements);
 			
+			try {
+				graph.getGraphParameters().init();
+			} catch (ComponentNotReadyException e1) {
+				throw new XMLConfigurationException(e1);
+			}
+			
 			if (!onlyParamsAndDict) {
 				// handle all defined DB connections
 				NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
@@ -898,7 +904,6 @@ public class TransformationGraphXMLReaderWriter {
 			GraphParameter gp = (GraphParameter) graphParameterUnmarshaller.unmarshal(graphParameter);
 			gp.setValue(getGraphParameterValue(gp.getName(), gp.getValue()));
 		    graphParameters.addGraphParameter(gp);
-			gp.init();
 		} catch (Exception e) {
 			throw new JetelRuntimeException("Deserialisation of graph parameters failed.", e);
 		}

@@ -42,7 +42,7 @@ import org.jetel.util.string.Compare;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
-public class StringDataField extends DataField implements CharSequence{
+public class StringDataField extends DataFieldImpl implements CharSequence {
 	
 	private static final long serialVersionUID = 6350085938993427855L;
 	
@@ -114,15 +114,16 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	@Deprecated
 	public void copyFrom(DataField fieldFrom){
 	    if (fieldFrom instanceof StringDataField ){
-	        if (!fieldFrom.isNull){
+	        if (!fieldFrom.isNull()){
 	            this.value.setLength(0);
 	            this.value.append(((StringDataField)fieldFrom).value);
 	        }
-	        setNull(fieldFrom.isNull);
+	        setNull(fieldFrom.isNull());
 	    } else {
 	        super.copyFrom(fieldFrom);
 	    }
@@ -153,11 +154,11 @@ public class StringDataField extends DataField implements CharSequence{
 	@Override
 	public void setValue(DataField fieldFrom) {
         if (fieldFrom instanceof StringDataField) {
-            if (!fieldFrom.isNull){
+            if (!fieldFrom.isNull()) {
                 this.value.setLength(0);
                 this.value.append(((StringDataField)fieldFrom).value);
             }
-            setNull(fieldFrom.isNull);
+            setNull(fieldFrom.isNull());
         } else {
             if (fieldFrom != null) {
                 setValue(fieldFrom.toString());

@@ -16,38 +16,25 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-package org.jetel.component.fileoperation.hadoop;
+package org.jetel.data;
 
-import java.net.URI;
+import org.jetel.exception.JetelRuntimeException;
 
-public class Hadoop412OperationHandlerTest extends HadoopOperationHandlerTest {
+/**
+ * This exception is thrown by {@link DataFieldWithInvalidState} in case of access
+ * to invalid value.
+ * 
+ * @author Kokon (info@cloveretl.com)
+ *         (c) Javlin, a.s. (www.cloveretl.com)
+ *
+ * @created 12. 5. 2014
+ */
+public class DataFieldInvalidStateException extends JetelRuntimeException {
 
-	@Override
-	protected URI getTestingURI() {
-		return URI.create(CDH412);
-	}
+	private static final long serialVersionUID = 6718480024280679849L;
 
-	/*
-	 * Used for testing MOVE between two servers.
-	 */
-	@Override
-	protected URI getRemoteURI() {
-		return URI.create(CDH_3U5);
-	}
-
-	@Override
-	public void testInterruptDelete() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptCopy() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
-	@Override
-	public void testInterruptMove() throws Exception {
-		// FIXME disabled - takes too long in Jenkins
-	}
-
+	public DataFieldInvalidStateException() {
+    	super("invalid field access");
+    }
+	
 }

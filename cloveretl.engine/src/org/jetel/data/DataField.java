@@ -19,82 +19,38 @@
 package org.jetel.data;
 
 import java.io.Serializable;
-import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.JetelRuntimeException;
-import org.jetel.exception.NullDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.string.StringUtils;
 
 /**
- *  A class that represents data field (its value).
+ *  An interface that represents data field and its value.
  *
  * @author      David Pavlis
  * @since       March 26, 2002
  * @see         OtherClasses
  */
-@SuppressWarnings("serial")
-public abstract class DataField implements Serializable, Comparable<Object> {
+public interface DataField extends Serializable, Comparable<Object> {
 
-	/**
-     * Reference to metadata object describing this field
-     *  
-	 * @since
-	 */
-	protected transient DataFieldMetadata metadata;
-
-	/**
-	 *  Does this field currently contain NULL value ? 
-	 *
-	 * @since    September 16, 2002
-	 */
-	protected boolean isNull;
-
-
-	/**
-	 *  Constructor
-	 *
-	 * @param  _metadata  Metadata describing field
-	 * @since
-	 */
-	public DataField(DataFieldMetadata _metadata) {
-		this.metadata = _metadata;
-	}
-
-	/**
-     * Constructor
-     * 
-	 * @param _metadata Metadata describing field
-	 * @param plain if true,create plain data field - no formatters,etc. 
-     * will be created & assigned to field
-	 */
-	public DataField(DataFieldMetadata _metadata, boolean plain) {
-        this.metadata = _metadata;
-    }
-    
-    
 	/**
 	 * Creates deep copy of existing field. 
 	 * 
 	 * @return new Field (exact copy of current field)
 	 */
-	public abstract DataField duplicate();
+	public DataField duplicate();
 	
 	/**
 	 * Sets current field's value from DataField passed as argument
 	 * @param fieldFrom DataField from which to get the value
      * @deprecated use setValue(DataField) instead
 	 */
-	public void copyFrom(DataField fieldFrom) {
-	    setValue(fieldFrom.getValue());   
-    }
+	@Deprecated
+	public void copyFrom(DataField fieldFrom);
 	
 	/**
 	 *  An operation that sets value of the data field.
@@ -104,55 +60,21 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @param  _value  The new Value value
 	 * @since
 	 */
-	public abstract void setValue(Object _value);
+	public void setValue(Object _value);
 	
 	/**
 	 * An operation that sets value of the data field from another data field.
 	 * 
 	 * @param _value data field for getting value
 	 */
-	public void setValue(DataField fromField){
-		if (fromField != null) {
-            setValue(fromField.getValue());   
-		}else{
-			setNull(true);
-		}
-	}
-
+	public void setValue(DataField fromField);
 
 	/**
 	 *  An operation that sets value of the data field to default value.
 	 *  If default value is not preset, tries to set field value to null.
 	 * @exception  BadDataFormatException  Description of the Exception
 	 */
-	public void setToDefaultValue() {
-		try {
-            Object val;
-            if((val = metadata.getDefaultValue()) != null) {
-                setValue(val);
-                return;
-            }
-			if (metadata.getDefaultValueStr() != null) {
-				//do we really need to convert the string form of default value to 'SpecChar'?
-				//this conversion was already done in DataRecordMetadataXMLReaderWriter.parseRecordMetadata()
-				fromString(StringUtils.stringToSpecChar(metadata.getDefaultValueStr()));
-				if (isNull()) {
-					throw new NullDataFormatException("Null cannot be a default value (field '" + metadata.getName() + "').");
-				}
-				metadata.setDefaultValue(getValueDuplicate());
-				return;
-			}
-			if (metadata.isNullable()) {
-				setNull(true);
-			}else{
-				throw new NullDataFormatException(metadata.getName() + 
-						" has not dafault value defined and is not nullable!");
-			}
-		} catch (Exception ex) {
-			// here, the only reason to fail is bad DefaultValue
-			throw new BadDataFormatException(metadata.getName() + " has incorrect default value", metadata.getDefaultValueStr());
-		}
-	}
+	public void setToDefaultValue();
 
 	/**
 	 *  Sets the Null value indicator/status. If passed-in value
@@ -163,17 +85,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @param  isNull  The new Null value
 	 * @since          September 16, 2002
 	 */
-	public void setNull(boolean isNull) {
-		if (isNull && !metadata.isNullable()) {
-            try {
-                setToDefaultValue();
-                return;
-            } catch(NullDataFormatException e) {
-                throw new NullDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable == false)");
-            }
-        }
-		this.isNull = isNull;
-	}
+	public void setNull(boolean isNull);
 
 	/**
 	 * An operation which sets/resets field to its
@@ -183,7 +95,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
      * have default value defined, then default value is assigned.
      * 
 	 */
-	public abstract void reset();
+	public void reset();
     
     
 	/**
@@ -195,7 +107,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @return    The Value value
 	 * @since
 	 */
-	public abstract Object getValue();
+	public Object getValue();
 
     /**
      *  Returns the duplicate of the internal value of the data field. If field's value is
@@ -206,7 +118,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
      * @return    The Value value
      * @since
      */
-    public abstract Object getValueDuplicate();
+    public Object getValueDuplicate();
     
 	/**
 	 *  Returns type of the field (String, Numeric, Date, etc.)
@@ -216,8 +128,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @deprecated use {@link #getMetadata()} and {@link DataFieldMetadata#getDataType()} instead
 	 */
     @Deprecated
-	public abstract char getType();
-
+	public char getType();
 
 	/**
 	 *  Returns metadata associated with the data field
@@ -225,10 +136,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @return    The Metadata value
 	 * @since
 	 */
-	public DataFieldMetadata getMetadata() {
-		return metadata;
-	}
-
+	public DataFieldMetadata getMetadata();
 
 	/**
 	 *  Checks the field value for being NULL.
@@ -237,9 +145,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * deemed to be NULL otherwise false;
 	 * @since     September 16, 2002
 	 */
-	public boolean isNull() {
-		return isNull;
-	}
+	public boolean isNull();
 
 	/**
 	 *  Converts field's value into String representation
@@ -248,8 +154,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @since
 	 */
 	@Override
-	public abstract String toString();
-
+	public String toString();
 
 	/**
 	 *  Parses field's value from string
@@ -257,7 +162,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @param	seq	String representation of the value to be set  
 	 * @since 11.12.2006
 	 */
-	public abstract void fromString(CharSequence seq);
+	public void fromString(CharSequence seq);
 
 	/**
 	 *  Get the field's value from ByteBuffer
@@ -267,21 +172,13 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @exception  CharacterCodingException  Description of the Exception
 	 * @since                                October 31, 2002
 	 */
-	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		fromString(decoder.decode(dataBuffer.buf()));
-	}
+	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException;
 
 	/**
 	 * @deprecated use {@link #fromByteBuffer(CloverBuffer, CharsetDecoder)} instead
 	 */
 	@Deprecated
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		CloverBuffer wrappedBuffer = CloverBuffer.wrap(dataBuffer);
-		fromByteBuffer(wrappedBuffer, decoder);
-		if (wrappedBuffer.buf() != dataBuffer) {
-			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
-		}
-	}
+	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException;
 
 	/**
 	 *  Encode the field's value into ByteBuffer. The numeric value is encoded as a string representation.
@@ -292,9 +189,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @return number of written characters for string based fields ((DataFieldMetadata.isByteBased() == false); byte based fields return 0
 	 * @since                                October 31, 2002
 	 */
-	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		return toByteBuffer(dataBuffer, encoder, Integer.MAX_VALUE);
-	}
+	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException;
 	
 	/**
 	 *  Encode the field's value into ByteBuffer. The numeric value is encoded as a string representation.
@@ -306,30 +201,13 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @return
 	 * @throws CharacterCodingException
 	 */
-	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException {
-		try {
-			String s = toString();
-			if (s.length() > maxLength) {
-				s = s.substring(0, maxLength);
-			}
-			dataBuffer.put(encoder.encode(CharBuffer.wrap(s)));
-			return s.length();
-		} catch (BufferOverflowException e) {
-			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defaultProperties file.", e);
-		}
-	}
+	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException;
 
 	/**
 	 * @deprecated use {@link #toByteBuffer(CloverBuffer, CharsetEncoder)} instead
 	 */
 	@Deprecated
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		CloverBuffer wrappedBuffer = CloverBuffer.wrap(dataBuffer);
-		toByteBuffer(wrappedBuffer, encoder);
-		if (wrappedBuffer.buf() != dataBuffer) {
-			throw new JetelRuntimeException("Deprecated method invocation failed. Please use CloverBuffer instead of ByteBuffer.");
-		}
-	}
+	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException;
 
 	/**
 	 *  Serializes data field into provided byte buffer
@@ -337,8 +215,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          September 16, 2002
 	 */
-	public abstract void serialize(CloverBuffer buffer);
-
+	public void serialize(CloverBuffer buffer);
 
 	/**
 	 *  Deserializes data field from provided byte buffer
@@ -346,8 +223,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          September 16, 2002
 	 */
-	public abstract void deserialize(CloverBuffer buffer);
-
+	public void deserialize(CloverBuffer buffer);
 
 	/**
 	 *  Checks whether two DataField objects are equal. Both
@@ -361,7 +237,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @since       September 16, 2002
 	 */
 	@Override
-	public abstract boolean equals(Object obj);
+	public boolean equals(Object obj);
 	
 	/**
 	 * Answers hash code for this field, obeying general principle:
@@ -370,8 +246,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * </code>
 	 */
 	@Override
-	public abstract int hashCode();
-
+	public int hashCode();
 
 	/**
 	 *  Compares two fields and returs -1,0,1 depending on result of comparison.
@@ -385,7 +260,7 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 * @return      Description of the Return Value
 	 */
 	@Override
-	public abstract int compareTo(Object obj);
+	public int compareTo(Object obj);
 
 
 	/**
@@ -393,5 +268,6 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 *  <i>How many bytes are required for field serialization</i>
 	 * @return    The size in bytes
 	 */
-	public abstract int getSizeSerialized();
+	public int getSizeSerialized();
+	
 }

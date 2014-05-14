@@ -51,7 +51,7 @@ import org.jetel.util.primitive.IdentityArrayList;
  *
  * @created 17 Jan 2012
  */
-public class ListDataField extends DataField implements Iterable<DataField> {
+public class ListDataField extends DataFieldImpl implements Iterable<DataField> {
 
 	private static final long serialVersionUID = -3584218178444143371L;
 
