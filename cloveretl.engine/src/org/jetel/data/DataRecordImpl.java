@@ -42,14 +42,12 @@ import org.jetel.util.primitive.BitArray;
  * @created     May 18, 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */
-public class DataRecordImpl implements DataRecord {
+public class DataRecordImpl extends DataRecord {
 
-    /** The most significant bit in a byte */
+	private static final long serialVersionUID = -7715142837674671119L;
+
+	/** The most significant bit in a byte */
 	private static final int HIGHEST_BIT = 0x80;
-
-
-	private static final long serialVersionUID = 2497808992091497225L;
-
 
     /**
      * Array for holding data fields
