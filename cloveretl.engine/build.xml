@@ -1108,6 +1108,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 			<property name="hudson.link" value="${cte.hudson.link}"/>
 			<property name="logpath" value="${cte.logpath}"/>
 			<property name="testenv.etlenvironment" value="engine"/>
+			<property name="simple.class.loading" value="true"/>
 		</ant>
 	</target>
 	
