@@ -35,14 +35,17 @@ import org.jetel.util.bytes.CloverBuffer;
  * @since       March 26, 2002
  * @see         OtherClasses
  */
-public interface DataField extends Serializable, Comparable<Object> {
+public abstract class DataField implements Serializable, Comparable<Object> {
+
+	private static final long serialVersionUID = -6730581502799121071L;
+
 
 	/**
 	 * Creates deep copy of existing field. 
 	 * 
 	 * @return new Field (exact copy of current field)
 	 */
-	public DataField duplicate();
+	public abstract DataField duplicate();
 	
 	/**
 	 * Sets current field's value from DataField passed as argument
@@ -50,7 +53,7 @@ public interface DataField extends Serializable, Comparable<Object> {
      * @deprecated use setValue(DataField) instead
 	 */
 	@Deprecated
-	public void copyFrom(DataField fieldFrom);
+	public abstract void copyFrom(DataField fieldFrom);
 	
 	/**
 	 *  An operation that sets value of the data field.
@@ -60,21 +63,21 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @param  _value  The new Value value
 	 * @since
 	 */
-	public void setValue(Object _value);
+	public abstract void setValue(Object _value);
 	
 	/**
 	 * An operation that sets value of the data field from another data field.
 	 * 
 	 * @param _value data field for getting value
 	 */
-	public void setValue(DataField fromField);
+	public abstract void setValue(DataField fromField);
 
 	/**
 	 *  An operation that sets value of the data field to default value.
 	 *  If default value is not preset, tries to set field value to null.
 	 * @exception  BadDataFormatException  Description of the Exception
 	 */
-	public void setToDefaultValue();
+	public abstract void setToDefaultValue();
 
 	/**
 	 *  Sets the Null value indicator/status. If passed-in value
@@ -85,7 +88,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @param  isNull  The new Null value
 	 * @since          September 16, 2002
 	 */
-	public void setNull(boolean isNull);
+	public abstract void setNull(boolean isNull);
 
 	/**
 	 * An operation which sets/resets field to its
@@ -95,7 +98,7 @@ public interface DataField extends Serializable, Comparable<Object> {
      * have default value defined, then default value is assigned.
      * 
 	 */
-	public void reset();
+	public abstract void reset();
     
     
 	/**
@@ -107,7 +110,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @return    The Value value
 	 * @since
 	 */
-	public Object getValue();
+	public abstract Object getValue();
 
     /**
      *  Returns the duplicate of the internal value of the data field. If field's value is
@@ -118,7 +121,7 @@ public interface DataField extends Serializable, Comparable<Object> {
      * @return    The Value value
      * @since
      */
-    public Object getValueDuplicate();
+    public abstract Object getValueDuplicate();
     
 	/**
 	 *  Returns type of the field (String, Numeric, Date, etc.)
@@ -128,7 +131,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @deprecated use {@link #getMetadata()} and {@link DataFieldMetadata#getDataType()} instead
 	 */
     @Deprecated
-	public char getType();
+	public abstract char getType();
 
 	/**
 	 *  Returns metadata associated with the data field
@@ -136,7 +139,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @return    The Metadata value
 	 * @since
 	 */
-	public DataFieldMetadata getMetadata();
+	public abstract DataFieldMetadata getMetadata();
 
 	/**
 	 *  Checks the field value for being NULL.
@@ -145,7 +148,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * deemed to be NULL otherwise false;
 	 * @since     September 16, 2002
 	 */
-	public boolean isNull();
+	public abstract boolean isNull();
 
 	/**
 	 *  Converts field's value into String representation
@@ -154,7 +157,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @since
 	 */
 	@Override
-	public String toString();
+	public abstract String toString();
 
 	/**
 	 *  Parses field's value from string
@@ -162,7 +165,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @param	seq	String representation of the value to be set  
 	 * @since 11.12.2006
 	 */
-	public void fromString(CharSequence seq);
+	public abstract void fromString(CharSequence seq);
 
 	/**
 	 *  Get the field's value from ByteBuffer
@@ -172,13 +175,13 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @exception  CharacterCodingException  Description of the Exception
 	 * @since                                October 31, 2002
 	 */
-	public void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException;
+	public abstract void fromByteBuffer(CloverBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException;
 
 	/**
 	 * @deprecated use {@link #fromByteBuffer(CloverBuffer, CharsetDecoder)} instead
 	 */
 	@Deprecated
-	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException;
+	public abstract void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException;
 
 	/**
 	 *  Encode the field's value into ByteBuffer. The numeric value is encoded as a string representation.
@@ -189,7 +192,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @return number of written characters for string based fields ((DataFieldMetadata.isByteBased() == false); byte based fields return 0
 	 * @since                                October 31, 2002
 	 */
-	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException;
+	public abstract int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException;
 	
 	/**
 	 *  Encode the field's value into ByteBuffer. The numeric value is encoded as a string representation.
@@ -201,13 +204,13 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @return
 	 * @throws CharacterCodingException
 	 */
-	public int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException;
+	public abstract int toByteBuffer(CloverBuffer dataBuffer, CharsetEncoder encoder, int maxLength) throws CharacterCodingException;
 
 	/**
 	 * @deprecated use {@link #toByteBuffer(CloverBuffer, CharsetEncoder)} instead
 	 */
 	@Deprecated
-	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException;
+	public abstract void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException;
 
 	/**
 	 *  Serializes data field into provided byte buffer
@@ -215,7 +218,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          September 16, 2002
 	 */
-	public void serialize(CloverBuffer buffer);
+	public abstract void serialize(CloverBuffer buffer);
 
 	/**
 	 *  Deserializes data field from provided byte buffer
@@ -223,7 +226,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @param  buffer  Description of Parameter
 	 * @since          September 16, 2002
 	 */
-	public void deserialize(CloverBuffer buffer);
+	public abstract void deserialize(CloverBuffer buffer);
 
 	/**
 	 *  Checks whether two DataField objects are equal. Both
@@ -237,7 +240,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @since       September 16, 2002
 	 */
 	@Override
-	public boolean equals(Object obj);
+	public abstract boolean equals(Object obj);
 	
 	/**
 	 * Answers hash code for this field, obeying general principle:
@@ -246,7 +249,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * </code>
 	 */
 	@Override
-	public int hashCode();
+	public abstract int hashCode();
 
 	/**
 	 *  Compares two fields and returs -1,0,1 depending on result of comparison.
@@ -260,7 +263,7 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 * @return      Description of the Return Value
 	 */
 	@Override
-	public int compareTo(Object obj);
+	public abstract int compareTo(Object obj);
 
 
 	/**
@@ -268,6 +271,6 @@ public interface DataField extends Serializable, Comparable<Object> {
 	 *  <i>How many bytes are required for field serialization</i>
 	 * @return    The size in bytes
 	 */
-	public int getSizeSerialized();
+	public abstract int getSizeSerialized();
 	
 }
