@@ -519,6 +519,10 @@ public class IntegerDataField extends DataFieldImpl implements Numeric, Comparab
     	}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
 
 	/**
 	 *  Performs deserialization of data
@@ -532,6 +536,10 @@ public class IntegerDataField extends DataFieldImpl implements Numeric, Comparab
         setNull(value == Integer.MIN_VALUE);
 	}
 
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.deserialize(buffer, this);
+	}
 
 	/**
 	 *  Description of the Method

@@ -116,6 +116,8 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	 * DataRecord can be deserialized into Token and vice versa.
 	 */
 	public abstract void deserializeUnitary(CloverBuffer buffer);
+	
+	public abstract void deserializeUnitary(CloverBuffer buffer,DataRecordSerializer serializer);
 
 	/**
 	 * @deprecated use {@link #deserialize(CloverBuffer)} instead
@@ -124,6 +126,8 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	public abstract void deserialize(ByteBuffer buffer);
 
 	public abstract void deserialize(CloverBuffer buffer, int[] whichFields);
+	
+	public abstract void deserialize(CloverBuffer buffer, DataRecordSerializer serializer);
 
 	/**
 	 * @deprecated use {@link #deserialize(CloverBuffer, int[])} instead
@@ -182,6 +186,16 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	 */
 	public abstract DataField getFieldByLabel(String _label);
 
+	
+	/**
+	 * An operation that returns all fields composing
+	 * this record.
+	 * 
+	 * @return array data fields 
+	 */
+	public abstract DataField[] getFields();
+	
+	
 	/**
 	 * Returns true if record contains a field with a given name.
 	 * @param name
@@ -229,6 +243,8 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	 * @since          April 23, 2002
 	 */
 	public abstract void serialize(CloverBuffer buffer);
+	
+	public abstract void serialize(CloverBuffer buffer,DataRecordSerializer serializer);
 
 	/**
 	 * Unitary deserialization should be compatible with
@@ -239,7 +255,9 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	 * DataRecord can be deserialized into Token and vice versa.
 	 */
 	public abstract void serializeUnitary(CloverBuffer buffer);
-
+	
+	public abstract void serializeUnitary(CloverBuffer buffer,DataRecordSerializer serializer);
+	
 	/**
 	 * @deprecated use {@link #serialize(CloverBuffer)} instead
 	 */

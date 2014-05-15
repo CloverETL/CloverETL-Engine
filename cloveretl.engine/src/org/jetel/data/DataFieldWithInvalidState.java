@@ -287,6 +287,11 @@ public class DataFieldWithInvalidState extends DataField {
 		}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		dataField.serialize(buffer, serializer);
+	}
+	
 	/**
 	 * @see org.jetel.data.DataField#deserialize(org.jetel.util.bytes.CloverBuffer)
 	 */
@@ -296,6 +301,11 @@ public class DataFieldWithInvalidState extends DataField {
 		setValid(true);
 	}
 
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		dataField.deserialize(buffer, serializer);
+	}
+	
 	/**
 	 * @see org.jetel.data.DataField#equals(java.lang.Object)
 	 */

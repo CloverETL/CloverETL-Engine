@@ -243,6 +243,10 @@ public class BooleanDataField extends DataFieldImpl implements Comparable<Object
 		}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
 
 	/**
 	 *  Performs deserialization of data
@@ -258,6 +262,12 @@ public class BooleanDataField extends DataFieldImpl implements Comparable<Object
 		}
 		value = (tmpl == (byte)1);
 		setNull(false);
+	}
+	
+	
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.deserialize(buffer, this);
 	}
 
 	@Override

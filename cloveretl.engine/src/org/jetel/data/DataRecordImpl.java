@@ -290,6 +290,10 @@ public class DataRecordImpl extends DataRecord {
 			}
 		}
 	}
+	
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer){
+		serializer.deserialize(buffer,this);
+	}
 
 	/**
 	 * Unitary deserialization should be compatible with
@@ -303,6 +307,11 @@ public class DataRecordImpl extends DataRecord {
 	public void deserializeUnitary(CloverBuffer buffer) {
 		this.deserialize(buffer);
 	}
+	@Override
+	public void deserializeUnitary(CloverBuffer buffer, DataRecordSerializer serializer) {
+		this.deserialize(buffer,serializer);
+	}
+	
 
 	/**
 	 * @deprecated use {@link #deserialize(CloverBuffer)} instead
@@ -445,6 +454,11 @@ public class DataRecordImpl extends DataRecord {
 		return fields[metadata.getFieldPositionByLabel(_label)];
 	}
 	
+	@Override
+	public DataField[] getFields(){
+		return fields;
+	}
+	
     /**
      * Returns true if record contains a field with a given name.
      * @param name
@@ -572,6 +586,11 @@ public class DataRecordImpl extends DataRecord {
         }
     }
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
+	
 	/**
 	 * Unitary deserialization should be compatible with
 	 * unitary serialization. Moreover this type of unitary
@@ -583,6 +602,11 @@ public class DataRecordImpl extends DataRecord {
 	@Override
 	public void serializeUnitary(CloverBuffer buffer) {
 		this.serialize(buffer);
+	}
+	
+	@Override
+	public void serializeUnitary(CloverBuffer buffer,DataRecordSerializer serializer) {
+		this.serialize(buffer,serializer);
 	}
 
 	/**

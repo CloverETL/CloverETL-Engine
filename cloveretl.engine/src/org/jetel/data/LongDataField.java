@@ -528,6 +528,10 @@ public class LongDataField extends DataFieldImpl implements Numeric, Comparable<
 		}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
 
 	/**
 	 *  Performs deserialization of data
@@ -545,6 +549,12 @@ public class LongDataField extends DataFieldImpl implements Numeric, Comparable<
 		}
 	}
 
+	
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.deserialize(buffer, this);
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 	    if (isNull || obj==null) return false;
