@@ -141,20 +141,52 @@ public final class ByteBufferUtils {
      * @since 21.11.2006
      */
     
-    public static final void encodeLength(CloverBuffer buffer,int length) {
+    public static final int encodeLength(CloverBuffer buffer,int length) {
 //    	buffer.putInt(length);
+    	int bytes=0;
         if (length <= Byte.MAX_VALUE) {
             buffer.put((byte) length);
+            bytes++;
         } else {
 
             do {
                 buffer.put((byte) (0x80 | (byte) length));
+                bytes++;
                 length = length >> 7;
             } while ((length >> 7) > 0);
             buffer.put((byte) length);
+            bytes++;
         }
+        return bytes;
     }
 
+    /**
+     * Encodes length (positive int value) into set of bytes occupying
+     * least space. Bytes are written directly to provided stream.
+     * 
+     * @param stream
+     * @param length
+     * @return number of bytes needed to encode the length and written to the stream 
+     * @throws IOException
+     */
+    public static final int encodeLength(OutputStream stream,int length) throws IOException{
+    	int bytes=0;
+        if (length <= Byte.MAX_VALUE) {
+        	stream.write((byte) length);
+            bytes++;
+        } else {
+
+            do {
+            	stream.write((byte) (0x80 | (byte) length));
+                bytes++;
+                length = length >> 7;
+            } while ((length >> 7) > 0);
+            stream.write((byte) length);
+            bytes++;
+        }
+        return bytes;
+    }
+    
     /**
      * @deprecated use {@link #encodeLength(CloverBuffer, int)} instead
      */
@@ -245,6 +277,40 @@ public final class ByteBufferUtils {
         
        return length;
     }
+    
+    
+    /**
+     * Decodes length (positive integer) from stream of bytes.
+     * 
+     * @param stream
+     * @return Decoded length or -1 if end of stream was reached
+     * @throws IOException
+     */
+    public static final int decodeLength(InputStream stream) throws IOException {
+        int length=0; 
+        byte size;
+        int offset = 0;
+        
+        int value = stream.read();
+        if (value==-1) return -1;
+        
+        size=(byte)value;
+        if (size>0){
+            return size;
+        }
+        
+        while(size<0) {
+           length = length | ((size & 0x7F) << (offset));
+           offset+=7;
+            value = stream.read();
+            if (value==-1) return -1;
+            size = (byte)value;
+        }
+        length = length | ((size & 0x7F) << (offset));
+        
+       return length;
+    }
+    
     
     /**
      * @deprecated use {@link #decodeLength(CloverBuffer)} instead
