@@ -292,6 +292,7 @@ public class ErrorReporter {
 	String process(CLVFMemberAccessExpression node){
 		final SimpleNode firstChild = (SimpleNode) node.jjtGetChild(0);
 		if( firstChild.getId() == TransformLangParserTreeConstants.JJTDICTIONARYNODE){
+			//TODO: how to get the dictionary entry value ? would probably need a reference to TransformationGraph()
 			err.format("dictionary entry: \"%s\" -> %s%n",node.getName(),"..unknown value..");
 			process(firstChild);
 		}else if (firstChild.getId() == TransformLangParserTreeConstants.JJTIDENTIFIER){
