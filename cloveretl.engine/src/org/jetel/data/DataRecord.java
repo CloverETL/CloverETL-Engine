@@ -31,6 +31,8 @@ import org.jetel.util.bytes.CloverBuffer;
  *  Fields of this data record are created only once and updated when it is needed.<br>
  *  When we need to send record through the EDGE (or other communication channel), we just serialize it 
  *  to stream of bytes (it isn't standard Java serializing, but Clover's own).
+ *  
+ *  Note: this abstract class cannot be 'interfaced' due backward compatibility on byte code level 
  *
  * @author      D.Pavlis
  * @since       March 26, 2002

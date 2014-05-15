@@ -30,6 +30,8 @@ import org.jetel.util.bytes.CloverBuffer;
 
 /**
  *  An interface that represents data field and its value.
+ *  
+ *  Note: this abstract class cannot be 'interfaced' due backward compatibility on byte code level 
  *
  * @author      David Pavlis
  * @since       March 26, 2002
