@@ -223,6 +223,14 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	public abstract void serialize(CloverBuffer buffer);
 
 	/**
+	 * Serializes data field into provided byte buffer using procided DataRecordSerializer instance
+	 * 
+	 * @param buffer
+	 * @param serializer
+	 */
+	public abstract void serialize(CloverBuffer buffer, DataRecordSerializer serializer);
+	
+	/**
 	 *  Deserializes data field from provided byte buffer
 	 *
 	 * @param  buffer  Description of Parameter
@@ -230,6 +238,14 @@ public abstract class DataField implements Serializable, Comparable<Object> {
 	 */
 	public abstract void deserialize(CloverBuffer buffer);
 
+	/**
+	 * Deserializes data field from provided byte buffer using provided DataRecordSerializer
+	 * 
+	 * @param buffer
+	 * @param serializer
+	 */
+	public abstract void deserialize(CloverBuffer buffer, DataRecordSerializer serializer);
+	
 	/**
 	 *  Checks whether two DataField objects are equal. Both
 	 * fiels should be of the same type. If they are not, ClassCastException
