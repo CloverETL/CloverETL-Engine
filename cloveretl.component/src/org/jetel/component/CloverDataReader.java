@@ -27,7 +27,10 @@ import java.util.List;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.formatter.CloverDataFormatter;
+import org.jetel.data.parser.AbstractParser;
 import org.jetel.data.parser.CloverDataParser;
+import org.jetel.data.parser.CloverDataParser35;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -106,7 +109,7 @@ public class CloverDataReader extends Node {
 
 	/** XML attribute names */
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
-	private final static String XML_INDEXFILEURL_ATTRIBUTE = "indexFileURL";
+	//private final static String XML_INDEXFILEURL_ATTRIBUTE = "indexFileURL";
 	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
 	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
 	private static final String XML_SKIPROWS_ATTRIBUTE = "skipRows";
@@ -117,9 +120,10 @@ public class CloverDataReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 
 	private String fileURL;
-	private String indexFileURL;
-	private CloverDataParser parser;
-
+	private AbstractParser parser;
+	private CloverDataParser parserNew;
+	private CloverDataParser35 parser35;
+	
 	private int skipRows;
 	private int numRecords = -1;
 	private int skipSourceRows = -1;
@@ -137,16 +141,17 @@ public class CloverDataReader extends Node {
 	 * @see #executeDirect()
 	 */
 	private boolean directReading = false;
+	
+	private boolean useOldParser = false; //indicates that we read old-format data
     
 	/**
 	 * @param id
 	 * @param fileURL
 	 * @param indexFileURL
 	 */
-	public CloverDataReader(String id, String fileURL, String indexFileURL) {
+	public CloverDataReader(String id, String fileURL) {
 		super(id);
 		this.fileURL = fileURL;
-		this.indexFileURL = indexFileURL;
 	}
 
     @Override
@@ -157,38 +162,12 @@ public class CloverDataReader extends Node {
     	}
     	else {
     		initFileIterator();
-    		parser.reset();
+    		parser.preExecute();
     		autoFilling.reset();
     	}
 		inputSource = setDataSource(); //assigns data source to a parser and returns true if succeeds
 		skip();
     }    
-
-    /**
-     * Reads records from the source file without deserialization.
-     * <p>
-     * Used if there are no autofilling fields.
-     * </p>
-     * 
-     * @throws Exception
-     */
-    private void executeDirect() throws Exception {
-    	CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-		if (inputSource) {
-			do {
-				if (checkRow() && (parser.getNextDirect(recordBuffer) != null)) {
-					autoFilling.incCounters();
-				    writeRecordBroadcastDirect(recordBuffer);
-					SynchronizeUtils.cloverYield();
-				} else {
-					// prepare next file
-					if (!nextSource()) {
-						break;
-					}
-				}				
-			} while (runIt);			
-		}
-	}
 	
     /**
      * Parses records from the input file,
@@ -223,11 +202,7 @@ public class CloverDataReader extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
-		if (directReading) {
-			executeDirect();
-		} else {
-			executeParsing();
-		}
+		executeParsing();
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -236,7 +211,7 @@ public class CloverDataReader extends Node {
     @Override
     public void postExecute() throws ComponentNotReadyException {
     	super.postExecute();
-		parser.close();
+		parser.postExecute();
     }    
 	
 	
@@ -258,7 +233,7 @@ public class CloverDataReader extends Node {
 
 	private boolean nextSource() throws ComponentNotReadyException {
 		// close previous source
-		parser.close();
+		parser.postExecute();
 		
 		// reset autofilling
 		autoFilling.resetGlobalSourceCounter();
@@ -267,10 +242,10 @@ public class CloverDataReader extends Node {
 		// prepare next source
 		if (!filenameItor.hasNext()) return false;
 		String fName = filenameItor.next();
-		if (indexFileURL != null) {
-			parser.setDataSource(new String[]{fName,indexFileURL});
-		} else {
+		try{
 			parser.setDataSource(fName);
+		}catch(IOException ex){
+			throw new ComponentNotReadyException(ex);
 		}
 		skip();
 		return true;
@@ -281,8 +256,7 @@ public class CloverDataReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL),
-					xattribs.getStringEx(XML_INDEXFILEURL_ATTRIBUTE, null, RefResFlag.URL));
+					xattribs.getStringEx(XML_FILE_ATTRIBUTE, RefResFlag.URL));
 		if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
 			aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
 		}
@@ -354,7 +328,8 @@ public class CloverDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-		parser = new CloverDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
+		parserNew = new CloverDataParser(getOutputPort(OUTPUT_PORT).getMetadata());
+		parser35 = new CloverDataParser35(getOutputPort(OUTPUT_PORT).getMetadata());
 		
 		initFileIterator();
 
@@ -371,11 +346,14 @@ public class CloverDataReader extends Node {
         }
 
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();
-		parser.init();
-		parser.setProjectURL(getGraph().getRuntimeContext().getContextURL());
+		parserNew.init();
+		parserNew.setProjectURL(getGraph().getRuntimeContext().getContextURL());
+		parser35.init();
+		parser35.setProjectURL(getGraph().getRuntimeContext().getContextURL());
+		this.parser=parserNew;
 		
     	if (metadata != null) {
-    		this.directReading = autoFilling.isAutofillingDisabled(metadata);
+    		//this.directReading = autoFilling.isAutofillingDisabled(metadata);
     		autoFilling.addAutoFillingFields(metadata);
     	}
     	autoFilling.setFilename(fileURL);
@@ -384,10 +362,13 @@ public class CloverDataReader extends Node {
 	private boolean setDataSource() throws ComponentNotReadyException {
 		if (filenameItor.hasNext()) {
 			String fName = filenameItor.next();
-			if (indexFileURL != null) {
-				parser.setDataSource(new String[]{fName,indexFileURL});
+			parserNew.setDataSource(fName);
+			if (parserNew.getVersion().formatVersion ==CloverDataFormatter.CURRENT_FORMAT_VERSION){
+				this.parser=parserNew;
 			}else{
-				parser.setDataSource(fName);
+				parser35.setVersion(parserNew.getVersion());
+				parser35.setDataSource(parserNew.getInStream());
+				this.parser=parser35;
 			}
 			return true;
 		}
@@ -438,9 +419,13 @@ public class CloverDataReader extends Node {
 	@Override
 	public synchronized void free() {
 		super.free();
-		if (parser != null) {
-			parser.close();
+		if (parserNew != null) {
+			parserNew.free();
 		}
+		if (parser35 !=null){
+			parser35.free();
+		}
+		
 	}
 	
 	@Override
