@@ -309,6 +309,38 @@ public class BitArray implements Serializable{
 		bytes.put(index, (byte) (bytes.get(index) & (~((1 << (bit % 8))))));
 	}
 
+    /*
+     * Extracts encoded value/number in array of bits using mask
+     * which defines which bits to use when extracting value.
+     * Max length of array is 8 bytes.
+     */
+    public final static int extractNumber(byte[]bytes, long mask){
+    	if(bytes.length>8) return -1;
+    	long value=0;
+    	for(int i=0;i<bytes.length;i++){
+    		value|= bytes[i]<< (8*i);
+    	}
+    	value&=mask;
+    	while((mask&0x1)==0){
+    		value>>=1;
+    		mask>>=1;
+    	}
+    	return (int)value;
+    }
+    
+    public static void encodeNumber(byte[] bytes, long mask, int value){
+    	long rvalue=value;
+    	long imask=mask;
+    	while((imask&0x1)==0){
+    		rvalue<<=1;
+    		imask>>=1;
+    	}
+    	for(int i=0;i<bytes.length;i++){
+    		bytes[i] = (byte) (bytes[i] | ((byte) ( (rvalue & mask) >> (8*i)))); 
+    	}
+    	
+    }
+    
     /**
      * How many bytes are used to store the number
      * of bits this BitArray can represent
