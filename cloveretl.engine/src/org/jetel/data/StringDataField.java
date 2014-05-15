@@ -76,11 +76,7 @@ public class StringDataField extends DataFieldImpl implements CharSequence {
      */
     public StringDataField(DataFieldMetadata _metadata,boolean plain) {
         super(_metadata);
-        if (_metadata.getSize() < 1) {
-            value = new CloverString(INITIAL_STRING_BUFFER_CAPACITY);
-        } else {
-            value = new CloverString(_metadata.getSize());
-        }
+        value = new CloverString(INITIAL_STRING_BUFFER_CAPACITY);
         // handle format string
         String regExp;
         regExp = _metadata.getFormat();
