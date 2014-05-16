@@ -111,12 +111,11 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataFieldInvalidStateException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
-import org.jetel.data.DecimalDataField;
 import org.jetel.data.Defaults;
 import org.jetel.data.NullRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.data.StringDataField;
 import org.jetel.data.lookup.Lookup;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.MissingFieldException;
@@ -2293,10 +2292,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		case DECIMAL:
 			// we want the decimal within the field to undergo satisfyPrecision() check 
 			// so that out-of-precision errors are discovered early
-			return ((DecimalDataField)field).getDecimal().getBigDecimalOutput();
+			return ((Decimal) field.getValue()).getBigDecimalOutput();
 		case STRING:
 			// StringBuilder -> String
-			return ((StringDataField)field).getValue().toString();
+			return field.getValue().toString();
 
 		case BOOLEAN:
 		case INTEGER:
