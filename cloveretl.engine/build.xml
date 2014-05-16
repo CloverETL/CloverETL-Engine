@@ -1294,6 +1294,8 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<exclude name="org/jetel/ctl/JJTTransformLangParserState.java"/>
 				<exclude name="org/jetel/graph/dictionary/jaxb/**"/>
 				<exclude name="org/jetel/util/ddl2clover/DDL2*"/>
+				<exclude name="org/jetel/util/bytes/UTF8CloverBufferReader.java"/>
+				<exclude name="org/jetel/util/bytes/UTF8CloverBufferWriter.java"/>
 			</fileset>
 		</fileheading>
 		<fail message="File ${java.src.header.invalid} has invalid header - must match ${java.src.header.file.opensource}" if="java.src.header.invalid"/>
