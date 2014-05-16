@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.BufferUnderflowException;
 
+import javolution.io.UTF8ByteBufferWriter;
+
 /**
  * <p> A UTF-8 <code>CloverBuffer</code> reader.
  *     </p>
@@ -72,7 +74,8 @@ public final class UTF8CloverBufferReader extends Reader {
      *         read; <code>false</code> otherwise.
      * @throws  IOException if an I/O error occurs.
      */
-    public boolean ready() throws IOException {
+    @Override
+	public boolean ready() throws IOException {
         if (_byteBuffer != null) {
             return _byteBuffer.hasRemaining();
         } else {
@@ -85,7 +88,8 @@ public final class UTF8CloverBufferReader extends Reader {
      *
      * @throws IOException if an I/O error occurs.
      */
-    public void close() throws IOException {
+    @Override
+	public void close() throws IOException {
         if (_byteBuffer != null) {
             reset();
         }
@@ -100,7 +104,8 @@ public final class UTF8CloverBufferReader extends Reader {
      * @throws IOException if an I/O error occurs (e.g. incomplete 
      *         character sequence being read).
      */
-    public int read() throws IOException {
+    @Override
+	public int read() throws IOException {
         if (_byteBuffer != null) {
             if (_byteBuffer.hasRemaining()) {
                 byte b = _byteBuffer.get();
@@ -179,7 +184,8 @@ public final class UTF8CloverBufferReader extends Reader {
      *         byte remaining.
      * @throws IOException if an I/O error occurs.
      */
-    public int read(char cbuf[], int off, int len) throws IOException {
+    @Override
+	public int read(char cbuf[], int off, int len) throws IOException {
         if (_byteBuffer == null)
             throw new IOException("Reader closed");
         final int off_plus_len = off + len;
@@ -260,7 +266,8 @@ public final class UTF8CloverBufferReader extends Reader {
     	read(dest,Integer.MAX_VALUE);
     }
 
-    public void reset() {
+    @Override
+	public void reset() {
         _byteBuffer = null;
         _code = 0;
         _moreBytes = 0;

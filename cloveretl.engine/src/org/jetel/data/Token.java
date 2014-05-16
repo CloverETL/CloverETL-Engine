@@ -76,12 +76,12 @@ public class Token extends DataRecordImpl {
 		super.serialize(buffer);
 	}
 	
+	@Override
 	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
 		serializeTokenId(buffer);
 		
 		super.serialize(buffer,serializer);
 	}
-	
 	
 	@Override
 	public void serializeUnitary(CloverBuffer buffer) {
@@ -100,8 +100,6 @@ public class Token extends DataRecordImpl {
 		
 		super.serialize(buffer, whichFields);
 	}
-	
-	
 	
 	private void serializeTokenId(CloverBuffer buffer) {
 		serializeTokenId(tokenId, buffer);
