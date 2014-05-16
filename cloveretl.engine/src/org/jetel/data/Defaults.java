@@ -689,7 +689,7 @@ public final class Defaults {
 			EXPRESSION_PLACEHOLDER_REGEX = getStringProperties(
 					"GraphProperties.EXPRESSION_PLACEHOLDER_REGEX", "(?<!\\\\)`(.*?)(?<!\\\\)`");
 			PROPERTY_PLACEHOLDER_REGEX = getStringProperties(
-					"GraphProperties.PROPERTY_PLACEHOLDER_REGEX", "\\$\\{(\\w+)\\}");
+					"GraphProperties.PROPERTY_PLACEHOLDER_REGEX", "\\$\\{([a-zA-Z_]\\w*)\\}");
 			PROPERTY_ALLOWED_RECURSION_DEPTH = getIntProperties(
 					"GraphProperties.PROPERTY_ALLOWED_RECURSION_DEPTH", 1000);
 		}
