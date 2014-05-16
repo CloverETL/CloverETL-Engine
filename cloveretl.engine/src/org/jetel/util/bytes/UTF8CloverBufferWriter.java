@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.CharBuffer;
 
-import org.jetel.util.string.CloverString;
+import javolution.io.UTF8ByteBufferReader;
 
 /**
  * <p> A UTF-8 <code>java.nio.ByteBuffer</code> writer.</p>
@@ -93,7 +93,8 @@ public final class UTF8CloverBufferWriter extends Writer {
      * @param  code the 31 bits Unicode of the character to be written.
      * @throws IOException if an I/O error occurs.
      */
-    public void write(int code) throws IOException {
+    @Override
+	public void write(int code) throws IOException {
         if ((code & 0xffffff80) == 0) {
             _byteBuffer.put((byte) code);
         } else { // Writes more than one byte.
@@ -141,7 +142,8 @@ public final class UTF8CloverBufferWriter extends Writer {
      * @param  len the number of characters to write.
      * @throws IOException if an I/O error occurs.
      */
-    public void write(char cbuf[], int off, int len) throws IOException {
+    @Override
+	public void write(char cbuf[], int off, int len) throws IOException {
         final int off_plus_len = off + len;
         for (int i = off; i < off_plus_len;) {
             char c = cbuf[i++];
@@ -161,7 +163,8 @@ public final class UTF8CloverBufferWriter extends Writer {
      * @param  len the number of characters to write.
      * @throws IOException if an I/O error occurs
      */
-    public void write(String str, int off, int len) throws IOException {
+    @Override
+	public void write(String str, int off, int len) throws IOException {
         final int off_plus_len = off + len;
         for (int i = off; i < off_plus_len;) {
             char c = str.charAt(i++);
@@ -216,7 +219,8 @@ public final class UTF8CloverBufferWriter extends Writer {
      *
      * @throws IOException if an I/O error occurs.
      */
-    public void flush() throws IOException {
+    @Override
+	public void flush() throws IOException {
         if (_byteBuffer == null) { throw new IOException("Writer closed"); }
     }
 
@@ -225,7 +229,8 @@ public final class UTF8CloverBufferWriter extends Writer {
      *
      * @throws IOException if an I/O error occurs
      */
-    public void close() throws IOException {
+    @Override
+	public void close() throws IOException {
         if (_byteBuffer != null) {
             reset();
         }

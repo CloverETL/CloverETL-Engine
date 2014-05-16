@@ -42,7 +42,7 @@ import org.jetel.util.string.Compare;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
-public class StringDataField extends DataFieldImpl implements CharSequence, Appendable{
+public class StringDataField extends DataFieldImpl implements CharSequence, Appendable {
 	
 	private static final long serialVersionUID = 6350085938993427855L;
 	
@@ -191,7 +191,8 @@ public class StringDataField extends DataFieldImpl implements CharSequence, Appe
 		}
 	}
 
-    public StringDataField append(CharSequence seq) {
+    @Override
+	public StringDataField append(CharSequence seq) {
         if(isNull) {
             setValue(seq);
         } else {
@@ -200,7 +201,8 @@ public class StringDataField extends DataFieldImpl implements CharSequence, Appe
         return this;
     }
     
-    public StringDataField append(char c) {
+    @Override
+	public StringDataField append(char c) {
         if(isNull) {
             setValue(new char[]{c});
         } else {
@@ -209,7 +211,8 @@ public class StringDataField extends DataFieldImpl implements CharSequence, Appe
         return this;
     }
     
-    public StringDataField append(CharSequence seq, int start, int end) {
+    @Override
+	public StringDataField append(CharSequence seq, int start, int end) {
         if(isNull) {
             setValue(seq.subSequence(start, end));
         } else {

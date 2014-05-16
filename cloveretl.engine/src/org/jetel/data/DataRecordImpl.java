@@ -291,6 +291,7 @@ public class DataRecordImpl extends DataRecord {
 		}
 	}
 	
+	@Override
 	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer){
 		serializer.deserialize(buffer,this);
 	}
@@ -307,11 +308,11 @@ public class DataRecordImpl extends DataRecord {
 	public void deserializeUnitary(CloverBuffer buffer) {
 		this.deserialize(buffer);
 	}
+	
 	@Override
 	public void deserializeUnitary(CloverBuffer buffer, DataRecordSerializer serializer) {
 		this.deserialize(buffer,serializer);
 	}
-	
 
 	/**
 	 * @deprecated use {@link #deserialize(CloverBuffer)} instead
