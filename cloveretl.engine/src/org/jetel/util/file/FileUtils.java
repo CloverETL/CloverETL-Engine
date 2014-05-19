@@ -2354,7 +2354,7 @@ public class FileUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	public static String getAbsoluteURL(URL contextURL, String fileURL) throws IOException {
+	public static String getAbsoluteURL(URL contextURL, String fileURL) throws MalformedURLException {
 		// fix context URL to be absolute
 		if (contextURL == null) {
 			contextURL = new File(".").toURI().toURL();
