@@ -77,8 +77,21 @@ public class Token extends DataRecordImpl {
 	}
 	
 	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializeTokenId(buffer);
+		
+		super.serialize(buffer,serializer);
+	}
+	
+	@Override
 	public void serializeUnitary(CloverBuffer buffer) {
 		super.serialize(buffer);
+	}
+	
+	
+	@Override
+	public void serializeUnitary(CloverBuffer buffer, DataRecordSerializer serializer) {
+		super.serialize(buffer,serializer);
 	}
 	
 	@Override
@@ -112,6 +125,13 @@ public class Token extends DataRecordImpl {
 		
 		super.deserialize(buffer);
 	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		deserializeTokenId(buffer);
+		
+		super.deserialize(buffer,serializer);
+	}
 
 	@Override
 	public void deserializeUnitary(CloverBuffer buffer) {
@@ -119,6 +139,13 @@ public class Token extends DataRecordImpl {
 		tokenId = -1;
 	}
 
+	@Override
+	public void deserializeUnitary(CloverBuffer buffer,DataRecordSerializer serializer) {
+		super.deserialize(buffer,serializer);
+		tokenId = -1;
+	}
+
+	
 	@Override
 	public void deserialize(CloverBuffer buffer, int[] whichFields) {
 		deserializeTokenId(buffer);

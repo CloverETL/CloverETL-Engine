@@ -42,14 +42,12 @@ import org.jetel.util.primitive.BitArray;
  * @created     May 18, 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */
-public class DataRecordImpl implements DataRecord {
+public class DataRecordImpl extends DataRecord {
 
-    /** The most significant bit in a byte */
+	private static final long serialVersionUID = -7715142837674671119L;
+
+	/** The most significant bit in a byte */
 	private static final int HIGHEST_BIT = 0x80;
-
-
-	private static final long serialVersionUID = 2497808992091497225L;
-
 
     /**
      * Array for holding data fields
@@ -292,6 +290,11 @@ public class DataRecordImpl implements DataRecord {
 			}
 		}
 	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer){
+		serializer.deserialize(buffer,this);
+	}
 
 	/**
 	 * Unitary deserialization should be compatible with
@@ -304,6 +307,11 @@ public class DataRecordImpl implements DataRecord {
 	@Override
 	public void deserializeUnitary(CloverBuffer buffer) {
 		this.deserialize(buffer);
+	}
+	
+	@Override
+	public void deserializeUnitary(CloverBuffer buffer, DataRecordSerializer serializer) {
+		this.deserialize(buffer,serializer);
 	}
 
 	/**
@@ -447,6 +455,11 @@ public class DataRecordImpl implements DataRecord {
 		return fields[metadata.getFieldPositionByLabel(_label)];
 	}
 	
+	@Override
+	public DataField[] getFields(){
+		return fields;
+	}
+	
     /**
      * Returns true if record contains a field with a given name.
      * @param name
@@ -574,6 +587,11 @@ public class DataRecordImpl implements DataRecord {
         }
     }
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
+	
 	/**
 	 * Unitary deserialization should be compatible with
 	 * unitary serialization. Moreover this type of unitary
@@ -585,6 +603,11 @@ public class DataRecordImpl implements DataRecord {
 	@Override
 	public void serializeUnitary(CloverBuffer buffer) {
 		this.serialize(buffer);
+	}
+	
+	@Override
+	public void serializeUnitary(CloverBuffer buffer,DataRecordSerializer serializer) {
+		this.serialize(buffer,serializer);
 	}
 
 	/**

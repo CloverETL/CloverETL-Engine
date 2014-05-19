@@ -37,7 +37,7 @@ import org.jetel.util.bytes.CloverBuffer;
  *
  * @created 12. 5. 2014
  */
-public class DataFieldWithInvalidState implements DataField {
+public class DataFieldWithInvalidState extends DataField {
 
 	private static final long serialVersionUID = 5871757668871924104L;
 
@@ -287,6 +287,11 @@ public class DataFieldWithInvalidState implements DataField {
 		}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		dataField.serialize(buffer, serializer);
+	}
+	
 	/**
 	 * @see org.jetel.data.DataField#deserialize(org.jetel.util.bytes.CloverBuffer)
 	 */
@@ -296,6 +301,11 @@ public class DataFieldWithInvalidState implements DataField {
 		setValid(true);
 	}
 
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		dataField.deserialize(buffer, serializer);
+	}
+	
 	/**
 	 * @see org.jetel.data.DataField#equals(java.lang.Object)
 	 */

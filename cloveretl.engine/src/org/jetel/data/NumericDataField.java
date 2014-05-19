@@ -547,6 +547,10 @@ public class NumericDataField extends DataFieldImpl implements Numeric, Comparab
     	}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
 
 	/**
 	 *  Performs deserialization of data
@@ -560,6 +564,10 @@ public class NumericDataField extends DataFieldImpl implements Numeric, Comparab
 		setNull(Double.isNaN(value));
 	}
 
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.deserialize(buffer, this);
+	}
 
 	/**
 	 *  Description of the Method

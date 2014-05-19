@@ -42,12 +42,12 @@ import org.jetel.util.string.Compare;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
-public class StringDataField extends DataFieldImpl implements CharSequence {
+public class StringDataField extends DataFieldImpl implements CharSequence, Appendable {
 	
 	private static final long serialVersionUID = 6350085938993427855L;
 	
-	private CloverString value;
-	private StringFormat stringFormat = null;
+	protected CloverString value;
+	protected StringFormat stringFormat = null;
 	
 	/**
 	 *  An attribute that represents ...
@@ -76,11 +76,7 @@ public class StringDataField extends DataFieldImpl implements CharSequence {
      */
     public StringDataField(DataFieldMetadata _metadata,boolean plain) {
         super(_metadata);
-        if (_metadata.getSize() < 1) {
-            value = new CloverString(INITIAL_STRING_BUFFER_CAPACITY);
-        } else {
-            value = new CloverString(_metadata.getSize());
-        }
+        value = new CloverString(INITIAL_STRING_BUFFER_CAPACITY);
         // handle format string
         String regExp;
         regExp = _metadata.getFormat();
@@ -142,7 +138,7 @@ public class StringDataField extends DataFieldImpl implements CharSequence {
         if(value == null || value instanceof CharSequence) {
             setValue((CharSequence) value);
         } else if (value instanceof char[]) {
-            setValue(new String((char[]) value));
+            setValue((char[])value);
         } else {
 			BadDataFormatException ex = new BadDataFormatException("String field \""+ getMetadata().getName() + "\" can not be set to value " + value.toString(), value.toString());
 			ex.setFieldName(getMetadata().getName());
@@ -184,13 +180,46 @@ public class StringDataField extends DataFieldImpl implements CharSequence {
 		    setNull(true);
 		}
 	}
+	
+	void setValue(char[] seq) {
+		value.setLength(0);
+		if (seq != null) {
+		    value.append(seq);
+			setNull(false);
+		} else {
+		    setNull(true);
+		}
+	}
 
-    public void append(CharSequence seq) {
+    @Override
+	public StringDataField append(CharSequence seq) {
         if(isNull) {
             setValue(seq);
         } else {
             value.append(seq);
         }
+        return this;
+    }
+    
+    @Override
+	public StringDataField append(char c) {
+        if(isNull) {
+            setValue(new char[]{c});
+        } else {
+            value.append(c);
+        }
+        return this;
+    }
+    
+    @Override
+	public StringDataField append(CharSequence seq, int start, int end) {
+        if(isNull) {
+            setValue(seq.subSequence(start, end));
+        } else {
+            value.append(seq,start,end);
+        }
+        
+        return this;
     }
 
     /**
@@ -322,6 +351,11 @@ public class StringDataField extends DataFieldImpl implements CharSequence {
     		throw new RuntimeException("The size of data buffer is only " + buffer.maximumCapacity() + ". Set appropriate parameter in defaultProperties file.", e);
     	}
 	}
+	
+	@Override
+	public void serialize(CloverBuffer buffer, DataRecordSerializer serializer){
+		serializer.serialize(buffer, this);
+	}
 
 	@Override
 	public void deserialize(CloverBuffer buffer) {
@@ -351,6 +385,11 @@ public class StringDataField extends DataFieldImpl implements CharSequence {
 			}
 			setNull(false);
 		}
+	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer){
+		serializer.deserialize(buffer, this);
 	}
 
 	@Override

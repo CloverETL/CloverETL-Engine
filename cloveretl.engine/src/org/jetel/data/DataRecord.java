@@ -31,27 +31,31 @@ import org.jetel.util.bytes.CloverBuffer;
  *  Fields of this data record are created only once and updated when it is needed.<br>
  *  When we need to send record through the EDGE (or other communication channel), we just serialize it 
  *  to stream of bytes (it isn't standard Java serializing, but Clover's own).
+ *  
+ *  Note: this abstract class cannot be 'interfaced' due backward compatibility on byte code level 
  *
  * @author      D.Pavlis
  * @since       March 26, 2002
  * @created     May 18, 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */
-public interface DataRecord extends Serializable, Comparable<Object>, Iterable<DataField> {
+public abstract class DataRecord implements Serializable, Comparable<Object>, Iterable<DataField> {
+
+	private static final long serialVersionUID = 3312575262868262204L;
 
 	/**
 	 * Creates deep copy of existing record (field by field).
 	 * 
 	 * @return new DataRecord
 	 */
-	public DataRecord duplicate();
+	public abstract DataRecord duplicate();
 
 	/**
 	 * Set fields by copying the fields from the record passed as argument.
 	 * Does not assume that both records have the right same structure - i.e. metadata.
 	 * @param fromRecord DataRecord from which to get fields' values
 	 */
-	public void copyFrom(DataRecord fromRecord);
+	public abstract void copyFrom(DataRecord fromRecord);
 
 	/**
 	 * Set fields by copying the fields from the record passed as argument.
@@ -64,7 +68,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @since
 	 */
 
-	public void copyFieldsByPosition(DataRecord sourceRecord);
+	public abstract void copyFieldsByPosition(DataRecord sourceRecord);
 
 	/**
 	 * Set fields by copying name-matching fields' values from the record passed as argument.<br>
@@ -76,7 +80,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @param sourceRecord from which copy data
 	 * @return boolean array with true values on positions, where values were copied from source record
 	 */
-	public boolean[] copyFieldsByName(DataRecord sourceRecord);
+	public abstract boolean[] copyFieldsByName(DataRecord sourceRecord);
 
 	/**
 	 *  Deletes/removes specified field. The field's internal reference
@@ -93,7 +97,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @param  _fieldNum  Description of Parameter
 	 * @since
 	 */
-	public void delField(int _fieldNum);
+	public abstract void delField(int _fieldNum);
 
 	/**
 	 *  Refreshes this record's content from ByteBuffer. 
@@ -101,7 +105,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @param  buffer  ByteBuffer from which this record's fields should be read
 	 * @since          April 23, 2002
 	 */
-	public void deserialize(CloverBuffer buffer);
+	public abstract void deserialize(CloverBuffer buffer);
 
 	/**
 	 * Unitary deserialization should be compatible with
@@ -111,21 +115,25 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * Token and DataRecord. So for example serialized
 	 * DataRecord can be deserialized into Token and vice versa.
 	 */
-	public void deserializeUnitary(CloverBuffer buffer);
+	public abstract void deserializeUnitary(CloverBuffer buffer);
+	
+	public abstract void deserializeUnitary(CloverBuffer buffer,DataRecordSerializer serializer);
 
 	/**
 	 * @deprecated use {@link #deserialize(CloverBuffer)} instead
 	 */
 	@Deprecated
-	public void deserialize(ByteBuffer buffer);
+	public abstract void deserialize(ByteBuffer buffer);
 
-	public void deserialize(CloverBuffer buffer, int[] whichFields);
+	public abstract void deserialize(CloverBuffer buffer, int[] whichFields);
+	
+	public abstract void deserialize(CloverBuffer buffer, DataRecordSerializer serializer);
 
 	/**
 	 * @deprecated use {@link #deserialize(CloverBuffer, int[])} instead
 	 */
 	@Deprecated
-	public void deserialize(ByteBuffer buffer, int[] whichFields);
+	public abstract void deserialize(ByteBuffer buffer, int[] whichFields);
 
 	/**
 	 *  Test two DataRecords for equality. Records must have the same metadata (be
@@ -136,7 +144,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @since       April 23, 2002
 	 */
 	@Override
-	public boolean equals(Object obj);
+	public abstract boolean equals(Object obj);
 
 	/**
 	 * Compares two DataRecords. Records must have the same metadata (be
@@ -146,7 +154,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	@Override
-	public int compareTo(Object obj);
+	public abstract int compareTo(Object obj);
 
 	/**
 	 *  An operation that returns DataField with
@@ -156,7 +164,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @return            The Field value
 	 * @since
 	 */
-	public DataField getField(int _fieldNum);
+	public abstract DataField getField(int _fieldNum);
 
 	/**
 	 *  An operation that returns DataField with
@@ -166,7 +174,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @return        The Field value
 	 * @since
 	 */
-	public DataField getField(String _name);
+	public abstract DataField getField(String _name);
 
 	/**
 	 *  An operation that returns DataField with
@@ -176,21 +184,31 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @return        The Field value
 	 * @since
 	 */
-	public DataField getFieldByLabel(String _label);
+	public abstract DataField getFieldByLabel(String _label);
 
+	
+	/**
+	 * An operation that returns all fields composing
+	 * this record.
+	 * 
+	 * @return array data fields 
+	 */
+	public abstract DataField[] getFields();
+	
+	
 	/**
 	 * Returns true if record contains a field with a given name.
 	 * @param name
 	 * @return
 	 */
-	public boolean hasField(String name);
+	public abstract boolean hasField(String name);
 
 	/**
 	 * Returns true if record contains a field with a given label.
 	 * @param label
 	 * @return
 	 */
-	public boolean hasLabeledField(String label);
+	public abstract boolean hasLabeledField(String label);
 
 	/**
 	 *  An attribute that returns metadata object describing the record
@@ -198,7 +216,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @return    The Metadata value
 	 * @since
 	 */
-	public DataRecordMetadata getMetadata();
+	public abstract DataRecordMetadata getMetadata();
 
 	/**
 	 *  An operation that returns numbe of fields this record
@@ -207,7 +225,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @return    The NumFields value
 	 * @since
 	 */
-	public int getNumFields();
+	public abstract int getNumFields();
 
 	/**
 	 * Initializes the record - creates its fields.
@@ -216,7 +234,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 *
 	 * @since    April 5, 2002
 	 */
-	public void init();
+	public abstract void init();
 
 	/**
 	 *  Serializes this record's content into ByteBuffer.
@@ -224,7 +242,9 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @param  buffer  ByteBuffer into which the individual fields of this record should be put
 	 * @since          April 23, 2002
 	 */
-	public void serialize(CloverBuffer buffer);
+	public abstract void serialize(CloverBuffer buffer);
+	
+	public abstract void serialize(CloverBuffer buffer,DataRecordSerializer serializer);
 
 	/**
 	 * Unitary deserialization should be compatible with
@@ -234,13 +254,15 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * Token and DataRecord. So for example serialized
 	 * DataRecord can be deserialized into Token and vice versa.
 	 */
-	public void serializeUnitary(CloverBuffer buffer);
-
+	public abstract void serializeUnitary(CloverBuffer buffer);
+	
+	public abstract void serializeUnitary(CloverBuffer buffer,DataRecordSerializer serializer);
+	
 	/**
 	 * @deprecated use {@link #serialize(CloverBuffer)} instead
 	 */
 	@Deprecated
-	public void serialize(ByteBuffer buffer);
+	public abstract void serialize(ByteBuffer buffer);
 
 	/**
 	 * Serializes this record's content into ByteBuffer.<br>
@@ -250,13 +272,13 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @param whichFields
 	 * @since 27.2.2007
 	 */
-	public void serialize(CloverBuffer buffer, int[] whichFields);
+	public abstract void serialize(CloverBuffer buffer, int[] whichFields);
 
 	/**
 	 * @deprecated {@link #serialize(CloverBuffer, int[])} instead
 	 */
 	@Deprecated
-	public void serialize(ByteBuffer buffer, int[] whichFields);
+	public abstract void serialize(ByteBuffer buffer, int[] whichFields);
 
 	/**
 	 *  Assigns new metadata to this DataRecord. If the new
@@ -268,12 +290,12 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @param  metadata  The new Metadata value
 	 * @since            April 5, 2002
 	 */
-	public void setMetadata(DataRecordMetadata metadata);
+	public abstract void setMetadata(DataRecordMetadata metadata);
 
 	/**
 	 *  An operation that sets value of all data fields to their default value.
 	 */
-	public void setToDefaultValue();
+	public abstract void setToDefaultValue();
 
 	/**
 	 *  An operation that sets value of the selected data field to its default
@@ -281,19 +303,19 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 *
 	 * @param  _fieldNum  Ordinal number of the field which should be set to default
 	 */
-	public void setToDefaultValue(int _fieldNum);
+	public abstract void setToDefaultValue(int _fieldNum);
 
 	/**
 	 *  An operation that sets value of all data fields to NULL value.
 	 */
-	public void setToNull();
+	public abstract void setToNull();
 
 	/**
 	 *  An operation that sets value of the selected data field to NULL
 	 *  value.
 	 * @param _fieldNum
 	 */
-	public void setToNull(int _fieldNum);
+	public abstract void setToNull(int _fieldNum);
 
 	/**
 	 * An operation which sets/resets all fields to their
@@ -302,7 +324,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * Nullable fields are set to NULL, non-nullable are zeroed, if they
 	 * have default value defined, then default value is assigned.
 	 */
-	public void reset();
+	public abstract void reset();
 
 	/**
 	 * An operation that resets value of specified field - by calling
@@ -310,7 +332,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * 
 	 * @param _fieldNum Ordinal number of the field which should be set to default
 	 */
-	public void reset(int _fieldNum);
+	public abstract void reset(int _fieldNum);
 
 	/**
 	 *  Creates textual representation of record's content based on values of individual
@@ -319,7 +341,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @return    Description of the Return Value
 	 */
 	@Override
-	public String toString();
+	public abstract String toString();
 
 	/**
 	 *  Gets the actual size of record (in bytes).<br>
@@ -327,7 +349,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 *
 	 * @return    The size value
 	 */
-	public int getSizeSerialized();
+	public abstract int getSizeSerialized();
 
 	/**
 	 * Size of unitary serialization form of this data record.
@@ -338,7 +360,7 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * Token and DataRecord. So for example serialized
 	 * DataRecord can be deserialized into Token and vice versa.
 	 */
-	public int getSizeSerializedUnitary();
+	public abstract int getSizeSerializedUnitary();
 
 	/**
 	 * Test whether the whole record has NULL value - i.e.
@@ -346,13 +368,13 @@ public interface DataRecord extends Serializable, Comparable<Object>, Iterable<D
 	 * @return true if all fields have NULL value otherwise false
 	 */
 
-	public boolean isNull();
+	public abstract boolean isNull();
 
 	/**
 	 * Returns iterator over all contained data fields.
 	 * @see java.lang.Iterable#iterator()
 	 */
 	@Override
-	public Iterator<DataField> iterator();
+	public abstract Iterator<DataField> iterator();
 
 }

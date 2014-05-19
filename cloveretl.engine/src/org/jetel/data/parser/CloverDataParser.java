@@ -18,9 +18,9 @@
  */
 package org.jetel.data.parser;
 
-import java.io.DataInputStream;
-import java.io.EOFException;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -29,23 +29,26 @@ import java.nio.channels.ReadableByteChannel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.CloverDataRecordSerializer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
+import org.jetel.data.DataRecordSerializer;
 import org.jetel.data.Defaults;
 import org.jetel.data.Token;
 import org.jetel.data.formatter.CloverDataFormatter;
+import org.jetel.data.formatter.CloverDataFormatter.DataCompressAlgorithm;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.JetelVersion;
+import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
+import org.jetel.util.stream.CloverDataStream;
 
 /**
  * Class for reading data saved in Clover internal format
@@ -67,23 +70,34 @@ import org.jetel.util.primitive.BitArray;
  */
 public class CloverDataParser extends AbstractParser {
 
+	
+	public static class FileConfig {
+    	public byte majorVersion;
+    	public byte minorVersion;
+    	public byte revisionVersion;
+    	public int compressionAlgorithm;
+    	public CloverDataFormatter.DataFormatVersion formatVersion;
+    	public DataRecordMetadata metadata;
+	}
+	
+	
+	
 	private final static Log logger = LogFactory.getLog(CloverDataParser.class);
 
 	private DataRecordMetadata metadata;
 	private ReadableByteChannel recordFile;
+	private CloverDataStream.Input input;
 	private CloverBuffer recordBuffer;
-	private String indexFileURL;
-	private String inData;
 	private InputStream inStream;
 	private URL projectURL;
 	
-	private boolean noDataAvailable;
-    private DataInputStream indexFile;
-    private long currentIndexPosition;
-    private long sourceRecordCounter;
-	
+    private DataRecordSerializer serializer;
+    
+    private CloverDataFormatter.DataCompressAlgorithm compress;
+    
+       
 	/** Clover version which has been used to create the input data file. */
-	private Version version;
+	private FileConfig version;
 
     /** In case the input file has been created by clover 3.4 and current job type is jobflow
      * special de-serialisation needs to be used, see CLO-1382 */
@@ -99,9 +113,20 @@ public class CloverDataParser extends AbstractParser {
 
     public CloverDataParser(DataRecordMetadata metadata){
     	this.metadata = metadata;
+    	this.compress = DataCompressAlgorithm.NONE;
     }
     
     
+	public FileConfig getVersion() {
+		return version;
+	}
+
+
+	public InputStream getInStream() {
+		return inStream;
+	}
+
+
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getNext()
 	 */
@@ -120,66 +145,14 @@ public class CloverDataParser extends AbstractParser {
 		if (nRec == 0) {
 			return 0;
 		}
-		if (indexFile != null) {
-			long currentDataPosition;
-			long nextDataPosition;
-			long skipBytes = sourceRecordCounter*LONG_SIZE_BYTES - currentIndexPosition;
-			long indexSkippedBytes = 0;
-			try {
-				// find out what is the current index in the input stream
-				if (skipBytes != indexFile.skip(skipBytes)) {
-					throw new JetelException("Unable to skip in index file - it seems to be corrupt");					
-				}
-				currentIndexPosition += skipBytes;
-				try {
-					currentDataPosition = indexFile.readLong();
-					currentIndexPosition += LONG_SIZE_BYTES;
-				} catch (EOFException e) {
-					throw new JetelException("Unable to find index for current record - index file seems to be corrupt");					
-				}				
-				// find out what is the index of the record following skipped records
-				skipBytes = (nRec - 1)*LONG_SIZE_BYTES;
-				indexSkippedBytes = indexFile.skip(skipBytes);
-				currentIndexPosition += indexSkippedBytes;
-				nextDataPosition = currentDataPosition;
-				try {
-					nextDataPosition = indexFile.readLong();
-					currentIndexPosition += LONG_SIZE_BYTES;
-				} catch (EOFException e) {
-					noDataAvailable = true;
-				}				
-			} catch (IOException e) {
-				throw new JetelException("An IO error occured while trying to skip data in index file", e);
+		DataRecord record = DataRecordFactory.newRecord(metadata);
+		record.init();
+		for (int skipped = 0; skipped < nRec; skipped++) {
+			if (getNext(record) == null) {
+				return skipped;
 			}
-			long dataSkipBytes = nextDataPosition - currentDataPosition;
-			try {
-				while (dataSkipBytes > recordBuffer.remaining()) {
-					dataSkipBytes -= recordBuffer.remaining();
-					recordBuffer.clear();
-					ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
-					recordBuffer.flip();
-					if (!recordBuffer.hasRemaining()) { // no more data available
-						break;
-					}
-				}
-				if (dataSkipBytes > recordBuffer.remaining()) { // there are not enough data available in the record file
-					throw new JetelException("Index file inconsistent with record file");
-				}
-				recordBuffer.position(recordBuffer.position() + (int)dataSkipBytes);
-			} catch (IOException e) {
-				throw new JetelException("An IO error occured while trying to skip data in record file", e);				
-			}
-			return (int)indexSkippedBytes%LONG_SIZE_BYTES;
-		} else {
-			DataRecord record = DataRecordFactory.newRecord(metadata);
-			record.init();
-			for (int skipped = 0; skipped < nRec; skipped++) {
-				if (getNext(record) == null) {
-					return skipped;
-				}
-			}
-			return nRec;
 		}
+		return nRec;
 	}
 
 	/* (non-Javadoc)
@@ -191,10 +164,12 @@ public class CloverDataParser extends AbstractParser {
 			throw new ComponentNotReadyException("Metadata are null");
 		}
         recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+        recordBuffer.order(CloverDataFormatter.BUFFER_BYTE_ORDER);
+        serializer=new CloverDataRecordSerializer();
 	}
 
 	private void doReleaseDataSource() throws IOException {
-		FileUtils.closeAll(recordFile, indexFile);
+		if (inStream!=null) inStream.close();
 	}
 	
 	@Override
@@ -214,50 +189,50 @@ public class CloverDataParser extends AbstractParser {
      */
     @Override
 	public void setDataSource(Object in) throws ComponentNotReadyException {
+    	String inData=null;
     	if (releaseDataSource) {
     		releaseDataSource();
     	}
-    	sourceRecordCounter = 0;
-    	currentIndexPosition = 0;
-    	indexFile = null;
     	
-        if (in instanceof String[]) {
+        if (in instanceof InputStream) {
+        	inStream = (InputStream) in;
+        }else if (in instanceof ReadableByteChannel){
+        	inStream = Channels.newInputStream((ReadableByteChannel)in);
+        }else if (in instanceof File){
+        	try {
+				inStream = new FileInputStream((File)in);
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
+        }else if (in instanceof String[]) {
         	inData = ((String[])in)[0];
-        	indexFileURL = ((String[])in)[1];
         }else if (in instanceof String){
         	inData = (String)in;
-        	indexFileURL = null;
-        } else if (in instanceof InputStream) {
-        	inStream = (InputStream) in;
-        	indexFileURL = null;
+    	}else{
+        	throw new ComponentNotReadyException("Unsupported Data Source type: "+in.getClass().getName());
         }
         
-        if (inData != null) {
-            try{
-            	String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
-            	if (fileName.toLowerCase().endsWith(".zip")) {
-            		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-            	}
-                recordFile = FileUtils.getReadableChannel(projectURL, !inData.startsWith("zip:") ? inData : 
-                	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
-                	
-                initIndexFile(fileName);
-            } catch (IOException ex) {
-                throw new ComponentNotReadyException(ex);
-            }
-        } else if (inStream != null) {
-        	indexFile = null;
-        	recordFile = Channels.newChannel(inStream);
+        if (inStream==null){
+        		try{
+                String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
+                 if (fileName.toLowerCase().endsWith(".zip")) {
+                 		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+                 }
+                     inStream = FileUtils.getInputStream(projectURL, !inData.startsWith("zip:") ? inData : 
+                     	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
+                     	
+                 } catch (IOException ex) {
+                     throw new ComponentNotReadyException(ex);
+                 }
         }
-    	recordBuffer.clear();
-		try {
-			ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
-			recordBuffer.flip();
-		} catch (IOException e) {
-			throw new ComponentNotReadyException(e);
-		}
-        //read and check header of clover binary data format to check out the compatibility issues
-        version = checkCompatibilityHeader(recordBuffer, metadata);
+        
+		//read and check header of clover binary data format to check out the compatibility issues
+	     version = checkCompatibilityHeader(inStream, metadata);
+	     if(version.formatVersion!=CloverDataFormatter.CURRENT_FORMAT_VERSION){
+	    	 return;
+	     }
+	     
+		 this.compress=DataCompressAlgorithm.getAlgorithm(version.compressionAlgorithm);
         
         //is the current transformation jobflow?
         isJobflow = ContextProvider.getRuntimeContext() != null
@@ -270,82 +245,104 @@ public class CloverDataParser extends AbstractParser {
         		&& isJobflow) {
         	useParsingFromJobflow_3_4 = true;
         }
+        switch(compress){
+        case NONE:
+        	this.input= new CloverDataStream.Input(inStream);
+        	break;
+        case LZ4:
+        	this.input= new CloverDataStream.Input(inStream, new CloverDataStream.DecompressorLZ4());
+        	break;
+        case GZIP:
+        	this.input= new CloverDataStream.Input(inStream, new CloverDataStream.DecompressorGZIP());
+        	break;
+        	default:
+        		throw new RuntimeException("Unsupported compression algorithm: "+compress);
+        }
+        
     }
 
-    public static Version checkCompatibilityHeader(ReadableByteChannel recordFile, DataRecordMetadata metadata) throws ComponentNotReadyException {
-        CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE);
-    	buffer.clear();
+    public static FileConfig checkCompatibilityHeader(ReadableByteChannel recordFile, DataRecordMetadata metadata) throws ComponentNotReadyException {
+    	return checkCompatibilityHeader(Channels.newInputStream(recordFile),metadata);
+    }
+    
+    public static FileConfig checkCompatibilityHeader(InputStream recordFile, DataRecordMetadata metadata) throws ComponentNotReadyException {
+    	byte[] extraBytes;
+    	CloverBuffer buffer = CloverBuffer.wrap(new byte[CloverDataFormatter.CLOVER_DATA_HEADER_LENGTH]);
 		try {
-			ByteBufferUtils.reload(buffer.buf(), recordFile);
-			buffer.flip();
+			recordFile.read(buffer.array());
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
-    	return checkCompatibilityHeader(buffer, metadata);
-    }
-
-    public static Version checkCompatibilityHeader(CloverBuffer buffer, DataRecordMetadata metadata) throws ComponentNotReadyException {
-    	try {
-	        //read clover binary data header and check backward compatibility
-	        //better header description is at CloverDataFormatter.setDataTarget() method
-	        if (CloverDataFormatter.CLOVER_DATA_HEADER != buffer.getLong()) {
-	        	//clover binary data format is definitely incompatible with current version - header is not present
-	        	throw new ComponentNotReadyException("Source clover data file is obsolete. Data cannot be read.");
-	        }
-	        long cloverDataCompatibilityHash = buffer.getLong();
-	        Version version = new Version();
-	    	version.majorVersion = buffer.get();
-	    	version.minorVersion = buffer.get();
-	    	version.revisionVersion = buffer.get();
-	    	if (cloverDataCompatibilityHash != CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_2_9
-	    			&& cloverDataCompatibilityHash != CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_3_5) {
-	        	//clover binary data format is incompatible with current version - unknown compatibility hash
-	        	throw new ComponentNotReadyException("Source clover data file is not supported (version " + version.majorVersion + "." + version.minorVersion + "." + version.revisionVersion + "). Data cannot be read.");
-	    	}
-	        
-	    	if (version.majorVersion != JetelVersion.getMajorVersion() || version.minorVersion != JetelVersion.getMinorVersion()) {
-	    		logger.warn("Source clover data file was produced by incompatible clover engine version " + version.majorVersion + "." + version.minorVersion + "." + version.revisionVersion + ". It is not encouraged usage of clover binary format.");
-	    	}
-	    	byte[] extraBytes = new byte[4];
-	    	buffer.get(extraBytes);
+		 //read clover binary data header and check backward compatibility
+        //better header description is at CloverDataFormatter.setDataTarget() method
+		long cloverHash=buffer.getLong();
+        if (CloverDataFormatter.CLOVER_DATA_HEADER != cloverHash) {
+        	//clover binary data format is definitely incompatible with current version - header is not present
+        	throw new ComponentNotReadyException("Source clover data file is obsolete. Data cannot be read.");
+        }
+        long cloverDataCompatibilityHash = buffer.getLong();
+        FileConfig version = new FileConfig();
+    	version.majorVersion = buffer.get();
+    	version.minorVersion = buffer.get();
+    	version.revisionVersion = buffer.get();
+    	if (cloverDataCompatibilityHash == CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_2_9){
+    		version.formatVersion=CloverDataFormatter.DataFormatVersion.VERSION_29;
+    	}else if (cloverDataCompatibilityHash == CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_3_5){
+    		version.formatVersion=CloverDataFormatter.DataFormatVersion.VERSION_35;
+    	}else if (cloverDataCompatibilityHash == CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_4_0){
+    		version.formatVersion=CloverDataFormatter.DataFormatVersion.VERSION_40;
+    	}else{
+    		throw new ComponentNotReadyException("Invallid Clover Data Compatibility Hash: "+cloverDataCompatibilityHash);
+    	}
+    	
+    	switch(version.formatVersion){
+    	case VERSION_29:
+    		break;
+    	case VERSION_35:
+    		extraBytes = new byte[CloverDataFormatter.HEADER_OPTIONS_ARRAY_SIZE_3_5];
+    		try {
+    			recordFile.read(extraBytes);
+    		} catch (IOException e) {
+    			throw new ComponentNotReadyException(e);
+    		}
 	    	if (BitArray.isSet(extraBytes, 0) ^ Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
 	        	throw new ComponentNotReadyException("Source file with binary data format is not compatible. Engine producer has different setup of Defaults.Record.USE_FIELDS_NULL_INDICATORS (see documentation). Data cannot be read.");
 	    	}
-	    	if (cloverDataCompatibilityHash == CloverDataFormatter.CLOVER_DATA_COMPATIBILITY_HASH_3_5) {
-	    		//check metadata compatibility
-	    		DataRecordMetadata persistedMetadata = DataRecordMetadata.deserialize(buffer);
-	    		if (!metadata.equals(persistedMetadata, false)) {
-	    			logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + persistedMetadata.toStringDataTypes());
-	    			throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
-	    		}
-	    	}
-	    	return version;
-    	} catch (ComponentNotReadyException e) {
-    		throw e;
-    	} catch (Exception e) {
-    		throw new JetelRuntimeException("Source clover data file does not have valid header.", e);
+	    	// what's left is metadata serialized, will let this to "other" parser 
+    		break;
+    	case VERSION_40:
+    		extraBytes = new byte[CloverDataFormatter.HEADER_OPTIONS_ARRAY_SIZE];
+    		try {
+    			recordFile.read(extraBytes);
+    		} catch (IOException e) {
+    			throw new ComponentNotReadyException(e);
+    		}
+        	if (BitArray.isSet(extraBytes, 0) ^ Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
+            	throw new ComponentNotReadyException("Source file with binary data format is not compatible. Engine producer has different setup of Defaults.Record.USE_FIELDS_NULL_INDICATORS (see documentation). Data cannot be read.");
+        	}
+        	version.compressionAlgorithm=BitArray.extractNumber(extraBytes, CloverDataFormatter.OPTION_MASK_COMPRESSED_DATA);
+        	//check metadata (just read,do not control now)
+        	int metasize;
+        	try {
+    			metasize=ByteBufferUtils.decodeLength(recordFile);
+    			byte[] metadef=new byte[metasize];
+    			if (recordFile.read(metadef)!=metasize){ 
+    				throw new IOException("Not enough data in file.");
+    			}
+    	    	version.metadata=DataRecordMetadataXMLReaderWriter.readMetadata(new ByteArrayInputStream(metadef));
+    		} catch (IOException e) {
+    			throw new ComponentNotReadyException("Unable to read metadata definition from CloverData file", e);
+    		}
+        	
+    		break;
+    		default:
+    			throw new ComponentNotReadyException("Source clover data file is not supported (version " + version.majorVersion + "." + version.minorVersion + "." + version.revisionVersion + "). Data cannot be read.");
     	}
+    		
+    	return version;
     }
 
-    private boolean initIndexFile(String fileName) throws ComponentNotReadyException {
-    	indexFile = null;
-    	try {
-	        if (inData.startsWith("zip:")){
-	            indexFile = new DataInputStream(FileUtils.getInputStream(projectURL, inData + "#" + CloverDataFormatter.INDEX_DIRECTORY + 
-	            		fileName + CloverDataFormatter.INDEX_EXTENSION));
-	        }else{//read index from binary file
-	            if (indexFileURL == null){
-	            	indexFile = new DataInputStream(FileUtils.getInputStream(projectURL, inData + CloverDataFormatter.INDEX_EXTENSION));
-	            }else{
-	            	indexFile = new DataInputStream((FileUtils.getInputStream(projectURL, indexFileURL)));
-	            }
-	        }
-    	} catch (IOException e) {
-    		indexFile = null;
-    	}
-        return indexFile != null;
-    }
-    
+ 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#close()
 	 */
@@ -354,70 +351,33 @@ public class CloverDataParser extends AbstractParser {
 		releaseDataSource();
 	}
 	
-	/**
-	 * Makes sure there is at least one complete record
-	 * in <code>recordBuffer</code>.
-	 * Also sets the position of <code>recordBuffer</code> to the beginning
-	 * of the record.
-	 * <p>
-	 * Returns the length of the next serialized record in bytes.
-	 * </p>
-	 *  
-	 * @return length of the next serialized record in <code>recordBuffer</code> in bytes
-	 * or -1 if no data is available
-	 * @throws JetelException
-	 */
-	private int fillRecordBuffer() throws JetelException {
-		// the skip rows has skipped whole file
-		if (noDataAvailable) return -1;
-		
-		//refill buffer if we are on the end of buffer
-		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER) {
-			try {
-				ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
-				recordBuffer.flip();
-			} catch (IOException e) {
-				throw new JetelException(e.getLocalizedMessage());
-			}
-		}
-		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER){
-			return -1;
-		}
-		int recordSize = recordBuffer.getInt();
-		//refill buffer if we are on the end of buffer
-		if (recordBuffer.remaining() < recordSize) {
-			recordBuffer.compact();
-			
-			if (recordBuffer.capacity() < recordSize) {
-				recordBuffer.expand(0, recordSize);
-			}
-			try {
-				recordFile.read(recordBuffer.buf());
-			} catch(IOException ex) {
-				throw new JetelException(ex.getLocalizedMessage());
-			}
-			recordBuffer.flip();
-		}
-		
-		return recordSize;
-	}
-
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
 	 */
 	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
-		if (fillRecordBuffer() < 0) {
-			return null;
+		final int size;
+		try{
+			size=ByteBufferUtils.decodeLength(input);
+			if (size<0) return null; //end of file reached
+		
+			recordBuffer.clear();
+			recordBuffer.limit(size);
+			if (input.read(recordBuffer)==-1){
+				throw new JetelException("Insufficient data in datastream.");
+			}
+			
+			recordBuffer.flip();
+		
+		}catch(IOException ex){
+			throw new JetelException(ex);
 		}
 		
 		if (!useParsingFromJobflow_3_4) {
-			record.deserializeUnitary(recordBuffer);
+			record.deserializeUnitary(recordBuffer,serializer);
 		} else {
-			record.deserialize(recordBuffer);
+			record.deserialize(recordBuffer,serializer);
 		}
-		
-		sourceRecordCounter++;
 		return record;
 	}
 	
@@ -437,7 +397,29 @@ public class CloverDataParser extends AbstractParser {
 	 * @throws JetelException
 	 */
 	public CloverBuffer getNextDirect(CloverBuffer targetBuffer) throws JetelException {
-		int recordSize = fillRecordBuffer();
+		throw new JetelException("unsupported direct reading");
+		/*
+		final int size;
+		try{
+			size=ByteBufferUtils.decodeLength(input);
+			if (size<0) return null; //end of file reached
+		
+			recordBuffer.clear();
+			recordBuffer.limit(size);
+			if (input.read(recordBuffer)==-1){
+				throw new JetelException("Insufficient data in datastream.");
+			}
+			
+			recordBuffer.flip();
+		
+		}catch(IOException ex){
+			throw new JetelException(ex);
+		}
+		
+		sourceRecordCounter++;
+		return targetBuffer.put(recordBuffer);
+		*/
+		/*int recordSize = fillRecordBuffer();
 		if (recordSize < 0) {
 			return null;
 		}
@@ -459,7 +441,7 @@ public class CloverDataParser extends AbstractParser {
 		targetBuffer.flip(); // prepare for reading
 		
 		sourceRecordCounter++;
-		return targetBuffer;
+		return targetBuffer;*/
 	}
 	
 	/* (non-Javadoc)
@@ -527,12 +509,6 @@ public class CloverDataParser extends AbstractParser {
 	@Override
 	public boolean nextL3Source() {
 		return false;
-	}
-	
-	public static class Version {
-    	public byte majorVersion;
-    	public byte minorVersion;
-    	public byte revisionVersion;
 	}
 	
 }

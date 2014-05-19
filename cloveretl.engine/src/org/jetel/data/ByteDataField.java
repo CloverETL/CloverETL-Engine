@@ -450,6 +450,11 @@ public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
     	}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
+	
 
 	/**
 	 *  Performs deserialization of data
@@ -473,6 +478,12 @@ public class ByteDataField extends DataFieldImpl implements Comparable<Object> {
 			setNull(false);
 		}
 	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.deserialize(buffer, this);
+	}
+	
 
 	@Override
 	public boolean equals(Object obj) {

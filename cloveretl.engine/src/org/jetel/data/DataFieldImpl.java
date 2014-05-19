@@ -40,7 +40,7 @@ import org.jetel.util.string.StringUtils;
  * @see         OtherClasses
  */
 @SuppressWarnings("serial")
-public abstract class DataFieldImpl implements DataField {
+public abstract class DataFieldImpl extends DataField {
 
 	/**
      * Reference to metadata object describing this field
