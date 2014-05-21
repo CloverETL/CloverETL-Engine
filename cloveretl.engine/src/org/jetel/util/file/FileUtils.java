@@ -30,10 +30,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.Proxy;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -83,6 +81,7 @@ import org.jetel.util.Pair;
 import org.jetel.util.bytes.SystemOutByteChannel;
 import org.jetel.util.exec.PlatformUtils;
 import org.jetel.util.protocols.ProxyAuthenticable;
+import org.jetel.util.protocols.ProxyConfiguration;
 import org.jetel.util.protocols.UserInfo;
 import org.jetel.util.protocols.amazon.S3InputStream;
 import org.jetel.util.protocols.amazon.S3OutputStream;
@@ -1100,29 +1099,11 @@ public class FileUtils {
     /**
      * Creates an proxy from the file url string.
      * @param fileURL
+     * @see ProxyConfiguration#getProxy(String)
      * @return
      */
     public static Proxy getProxy(String fileURL) {
-    	// create an url
-    	URL url;
-    	try {
-			url = getFileURL(fileURL);
-		} catch (MalformedURLException e) {
-			return null;
-		}
-		// get proxy type
-		ProxyProtocolEnum proxyProtocolEnum;
-    	if ((proxyProtocolEnum = ProxyProtocolEnum.fromString(url.getProtocol())) == null) {
-    		return null;
-    	}
-		// no proxy
-    	if (proxyProtocolEnum == ProxyProtocolEnum.NO_PROXY) {
-    		return Proxy.NO_PROXY;
-    	}
-    	// create a proxy
-    	SocketAddress addr = new InetSocketAddress(url.getHost(), url.getPort() < 0 ? 8080 : url.getPort());
-    	Proxy proxy = new Proxy(Proxy.Type.valueOf(proxyProtocolEnum.getProxyString()), addr);
-		return proxy;
+    	return ProxyConfiguration.getProxy(fileURL);
 	}
 
 	/**
@@ -2354,7 +2335,7 @@ public class FileUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	public static String getAbsoluteURL(URL contextURL, String fileURL) throws IOException {
+	public static String getAbsoluteURL(URL contextURL, String fileURL) throws MalformedURLException {
 		// fix context URL to be absolute
 		if (contextURL == null) {
 			contextURL = new File(".").toURI().toURL();
