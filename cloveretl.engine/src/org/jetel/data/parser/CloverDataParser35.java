@@ -20,7 +20,6 @@ package org.jetel.data.parser;
 
 import java.io.DataInputStream;
 import java.io.EOFException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -34,20 +33,16 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.Token;
 import org.jetel.data.formatter.CloverDataFormatter;
-import org.jetel.data.parser.CloverDataParser.FileConfig;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.exception.PolicyType;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.JobType;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
-import org.jetel.util.primitive.BitArray;
 
 /**
  * Class for reading data saved in Clover internal format
