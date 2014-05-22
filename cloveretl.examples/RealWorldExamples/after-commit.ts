@@ -62,5 +62,12 @@
 	<FunctionalTest ident="ValidateData" graphFile="graph/ValidateData.grf">
 		<FlatFile outputFile="data-out/invalid_contacts.csv" supposedFile="supposed-out/invalid_contacts.csv"/>
 	</FunctionalTest>
+	
+	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf">
+		<Property name="OAUTH_API_KEY" value="r0h8VjKBinQUaEhAksjEjUw3v" />
+		<Property name="OAUTH_API_KEY_SECRET" value="KrNSU4lT9Po5Lam4X7adf57CXFFpZc8fPljTo0OrhcbattKWOU" />
+		<Property name="OAUTH_ACCESS_TOKEN" value="2492653806-5XIsyYAfv289fUcN3vIsCIbXAgsgKqfM2KnXawU" />
+		<Property name="OAUTH_ACCESS_TOKEN_SECRET" value="Mpnb4Vbwt2BH9XcNL4EogKct7huGTDgvtDRZeheQeDSKB" />
+	</FunctionalTest>
 
 </TestScenario>
