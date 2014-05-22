@@ -55,7 +55,7 @@ import org.jetel.util.string.StringUtils;
  * @created 7.6.2012
  */
 public class CTLTransformUtils {
-    private static class CtlAssignmentFinder extends NavigatingVisitor {
+    public static class CtlAssignmentFinder extends NavigatingVisitor {
     	private final org.jetel.ctl.ASTnode.Node ast;
     	public DataRecordMetadata[] inputMetadata;
     	public DataRecordMetadata[] outputMetadata;
@@ -183,13 +183,26 @@ public class CTLTransformUtils {
     private static Set<Field> findUsedOutputFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
     		DataRecordMetadata[] outMeta, String code, boolean output) {
     	Set<Field> result = findUsedFields(graph, inMeta, outMeta, code);
-    	for (Iterator<Field> it = result.iterator(); it.hasNext(); ) {
+    	filterFields(result, output);
+    	return result;
+    }
+    
+    /**
+     * Filters the collection, preserving only output fields
+     * (if <code>output == true</code>)
+     * or input fields (if <code>output == false</code>).
+     * 
+     * @param fields - collection of fields
+     * @param output - <code>true</code> if output fields should be preserved,
+     * 				   <code>false</code> if input fields should be preserved
+     */
+    public static void filterFields(Iterable<Field> fields, boolean output) {
+    	for (Iterator<Field> it = fields.iterator(); it.hasNext(); ) {
     		Field f = it.next();
     		if (f.output != output) {
     			it.remove();
     		}
     	}
-    	return result;
     }
     
     public static Set<Field> findUsedOutputFields(TransformationGraph graph, DataRecordMetadata[] inMeta,
