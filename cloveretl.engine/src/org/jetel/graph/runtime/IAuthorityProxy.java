@@ -127,6 +127,7 @@ public abstract class IAuthorityProxy {
 		public GraphTracking tracking;
 		public JobType jobType;
 		public String executionGroup;
+		public String executionLabel;
 		
 		@Override
 		public String toString() {

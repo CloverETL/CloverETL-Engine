@@ -55,6 +55,7 @@ public class GraphRuntimeContext {
 	private long runId;
 	private Long parentRunId;
 	private String executionGroup;
+	private String executionLabel;
 	private boolean daemon;
 	private String logLocation;
 	private Level logLevel;
@@ -149,7 +150,8 @@ public class GraphRuntimeContext {
 		ret.batchMode = isBatchMode();
 		ret.contextURL = getContextURL();
 		ret.dictionaryContent = DictionaryValuesContainer.duplicate(getDictionaryContent());
-		ret.executionGroup = executionGroup;
+		ret.executionGroup = getExecutionGroup();
+		ret.executionLabel = getExecutionLabel();
 		ret.daemon = daemon;
 		ret.clusterNodeId = clusterNodeId;
 		ret.classLoader = getClassLoader();
@@ -186,6 +188,7 @@ public class GraphRuntimeContext {
 		prop.setProperty("contextURL", String.valueOf(getContextURL()));
 		prop.setProperty("dictionaryContent", String.valueOf(getDictionaryContent()));
 		prop.setProperty("executionGroup", String.valueOf(getExecutionGroup()));
+		prop.setProperty("executionLabel", String.valueOf(getExecutionLabel()));
 		prop.setProperty("deamon", Boolean.toString(isDaemon()));
 		prop.setProperty("clusterNodeId", String.valueOf(getClusterNodeId()));
 		prop.setProperty("jobType", String.valueOf(getJobType()));
@@ -568,6 +571,20 @@ public class GraphRuntimeContext {
 	 */
 	public void setExecutionGroup(String executionGroup) {
 		this.executionGroup = executionGroup;
+	}
+
+	/**
+	 * @return human-readable identification of this graph execution
+	 */
+	public String getExecutionLabel() {
+		return executionLabel;
+	}
+
+	/**
+	 * @param executionLabel human-readable identification of this graph execution
+	 */
+	public void setExecutionLabel(String executionLabel) {
+		this.executionLabel = executionLabel;
 	}
 
 	/**
