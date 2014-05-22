@@ -169,7 +169,10 @@ public class CloverDataParser extends AbstractParser {
 	}
 
 	private void doReleaseDataSource() throws IOException {
-		if (inStream!=null) inStream.close();
+		if (inStream != null) {
+			inStream.close();
+			inStream = null; // setDataSource() tests inStream for null
+		}
 	}
 	
 	@Override
@@ -212,7 +215,7 @@ public class CloverDataParser extends AbstractParser {
         	throw new ComponentNotReadyException("Unsupported Data Source type: "+in.getClass().getName());
         }
         
-        if (inStream==null){
+        if (inStream==null) { // doReleaseDataSource() should set the previous stream to null
         		try{
                 String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
                  if (fileName.toLowerCase().endsWith(".zip")) {
