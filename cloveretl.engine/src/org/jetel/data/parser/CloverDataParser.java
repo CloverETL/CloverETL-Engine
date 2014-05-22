@@ -297,7 +297,6 @@ public class CloverDataParser extends AbstractParser {
     	
     	switch(version.formatVersion){
     	case VERSION_29:
-    		break;
     	case VERSION_35:
     		extraBytes = new byte[CloverDataFormatter.HEADER_OPTIONS_ARRAY_SIZE_3_5];
     		try {

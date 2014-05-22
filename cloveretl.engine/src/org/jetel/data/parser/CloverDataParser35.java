@@ -256,11 +256,13 @@ public class CloverDataParser35 extends AbstractParser {
 
 	private void readStoredMetadata(CloverBuffer buffer, DataRecordMetadata metadata)
 			throws ComponentNotReadyException {
-		// check metadata compatibility
-		DataRecordMetadata persistedMetadata = DataRecordMetadata.deserialize(buffer);
-		if (!metadata.equals(persistedMetadata, false)) {
-			logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + persistedMetadata.toStringDataTypes());
-			throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
+		if (getVersion().formatVersion == CloverDataFormatter.DataFormatVersion.VERSION_35) {
+			// check metadata compatibility - 
+			DataRecordMetadata persistedMetadata = DataRecordMetadata.deserialize(buffer);
+			if (!metadata.equals(persistedMetadata, false)) {
+				logger.error("Data structure of input file is not compatible with used metadata. File data structure: " + persistedMetadata.toStringDataTypes());
+				throw new ComponentNotReadyException("Data structure of input file is not compatible with used metadata. More details available in log.");
+			}
 		}
 	}
 
