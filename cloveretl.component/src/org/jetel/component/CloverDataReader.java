@@ -240,13 +240,7 @@ public class CloverDataReader extends Node {
 		autoFilling.resetSourceCounter();
 		
 		// prepare next source
-		if (!filenameItor.hasNext()) return false;
-		String fName = filenameItor.next();
-		try{
-			parser.setDataSource(fName);
-		}catch(IOException ex){
-			throw new ComponentNotReadyException(ex);
-		}
+		if (!setDataSource()) return false;
 		skip();
 		return true;
 	}
