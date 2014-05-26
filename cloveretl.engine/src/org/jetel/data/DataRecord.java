@@ -275,6 +275,16 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	public abstract void serialize(CloverBuffer buffer, int[] whichFields);
 
 	/**
+	 * Unitary deserialization should be compatible with
+	 * unitary serialization. Moreover this type of unitary
+	 * serialization and deserialization should be compatible
+	 * with all descendants of DataRecord - for now it is only
+	 * Token and DataRecord. So for example serialized
+	 * DataRecord can be deserialized into Token and vice versa.
+	 */
+	public abstract void serializeUnitary(CloverBuffer buffer, int[] whichFields);
+
+	/**
 	 * @deprecated {@link #serialize(CloverBuffer, int[])} instead
 	 */
 	@Deprecated
