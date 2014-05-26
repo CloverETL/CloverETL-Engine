@@ -639,6 +639,11 @@ public class DataRecordImpl extends DataRecord {
         }
     }
 
+    @Override
+	public void serializeUnitary(CloverBuffer buffer,int[] whichFields) {
+    	serialize(buffer, whichFields);
+    }
+
     /**
      * @deprecated {@link #serialize(CloverBuffer, int[])} instead
      */
