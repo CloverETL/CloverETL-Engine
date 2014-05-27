@@ -524,6 +524,9 @@ public final class TransformationGraph extends GraphElement {
 	public synchronized void preExecute() throws ComponentNotReadyException {
 		super.preExecute();
 
+		//check all required graph parameters whether the values have been passed from executor
+		validateRequiredGraphParameters();
+		
 		//print out types of all edges
 		printEdgesInfo();
 		
@@ -1354,6 +1357,20 @@ public final class TransformationGraph extends GraphElement {
 		}
 	}
 
+	/**
+	 * Checks whether values for all required graph parameters have been passed from executor of this graph. 
+	 */
+	private void validateRequiredGraphParameters() {
+		if (getRuntimeContext().isValidateRequiredParameters()) {
+			for (GraphParameter graphParameter : getGraphParameters().getAllGraphParameters()) {
+				if (graphParameter.isRequired()
+						&& !getRuntimeContext().getAdditionalProperties().containsKey(graphParameter.getName())) {
+					throw new JetelRuntimeException("Required graph parameter '" + graphParameter.getName() + "' is not specified.");
+				}
+			}
+		}
+	}
+	
 	public String getAuthor() {
 		return author;
 	}
