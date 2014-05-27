@@ -50,6 +50,12 @@ public class SubgraphUtils {
     /** the name of an XML attribute used to pass a URL specified the executed subgraph */
     public static final String XML_JOB_URL_ATTRIBUTE = "jobURL";
 
+    /**
+     * Name of single type of component property (and graph parameters) for fileURL.
+     * Graph parameters with this type is handled in special way in Subgraph component.
+     * Relative paths are converted to absolute, see Subgraph.applySubgraphParameter().
+     */
+    public static final String FILE_URL_SINGLE_TYPE = "file";
 	/**
 	 * Prefix of custom attributes of Subgraph component.
 	 */
