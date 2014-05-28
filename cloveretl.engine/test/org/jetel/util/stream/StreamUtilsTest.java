@@ -20,6 +20,7 @@ package org.jetel.util.stream;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 import org.jetel.test.CloverTestCase;
@@ -114,107 +115,154 @@ public class StreamUtilsTest extends CloverTestCase {
 			}
 		}
 	}
-
-    public void testReadBlocking() throws IOException {
+	
+	private static interface ChannelReader {
+		public int readBlocking(ReadableByteChannel channel, ByteBuffer buffer) throws IOException;
+		
+		/**
+		 * The expected return value when requesting 0 bytes
+		 * from a channel/stream that has reached EOF.
+		 * 
+		 * @return -1 (channel) or 0 (stream)
+		 */
+		public int eof();
+	}
+	
+	private void testReadBlocking(ChannelReader reader) throws IOException {
     	ByteBuffer buffer5 = ByteBuffer.allocate(5);
     	ByteBuffer buffer0 = ByteBuffer.allocate(0);
     	ReadableByteChannel channel;
     	
     	//NoDataChannel
     	buffer5.clear();
-    	assertEquals(-1, StreamUtils.readBlocking(new NoDataChannel(), buffer5));
+    	assertEquals(-1, reader.readBlocking(new NoDataChannel(), buffer5));
     	
     	buffer0.clear();
-    	assertEquals(-1, StreamUtils.readBlocking(new NoDataChannel(), buffer0));
+    	// see ChannelReader.eof()
+    	assertEquals(reader.eof(), reader.readBlocking(new NoDataChannel(), buffer0));
     	
     	buffer5.clear();
     	buffer5.limit(0);
-    	assertEquals(-1, StreamUtils.readBlocking(new NoDataChannel(), buffer5));
+    	assertEquals(reader.eof(), reader.readBlocking(new NoDataChannel(), buffer5));
 
     	buffer5.clear();
     	buffer5.position(5);
-    	assertEquals(-1, StreamUtils.readBlocking(new NoDataChannel(), buffer5));
+    	assertEquals(reader.eof(), reader.readBlocking(new NoDataChannel(), buffer5));
     	
     	//OneByteChannel
     	buffer5.clear();
     	channel = new OneByteChannel();
-    	assertEquals(1, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(1, reader.readBlocking(channel, buffer5));
     	buffer5.flip();
     	assertEquals(123, buffer5.get());
     	buffer5.compact();
-    	assertEquals(-1, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(-1, reader.readBlocking(channel, buffer5));
     	
     	buffer0.clear();
     	channel = new OneByteChannel();
-    	assertEquals(0, StreamUtils.readBlocking(channel, buffer0));
-    	assertEquals(0, StreamUtils.readBlocking(channel, buffer0));
+    	assertEquals(0, reader.readBlocking(channel, buffer0));
+    	assertEquals(0, reader.readBlocking(channel, buffer0));
     	
     	buffer5.clear();
     	buffer5.limit(0);
     	channel = new OneByteChannel();
-    	assertEquals(0, StreamUtils.readBlocking(channel, buffer5));
-    	assertEquals(0, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(0, reader.readBlocking(channel, buffer5));
+    	assertEquals(0, reader.readBlocking(channel, buffer5));
 
     	buffer5.clear();
     	buffer5.position(5);
     	channel = new OneByteChannel();
-    	assertEquals(0, StreamUtils.readBlocking(channel, buffer5));
-    	assertEquals(0, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(0, reader.readBlocking(channel, buffer5));
+    	assertEquals(0, reader.readBlocking(channel, buffer5));
 
     	buffer5.clear();
     	buffer5.position(4);
     	channel = new OneByteChannel();
-    	assertEquals(1, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(1, reader.readBlocking(channel, buffer5));
     	buffer5.flip();
     	assertEquals(123, buffer5.get());
     	buffer5.clear();
-    	assertEquals(-1, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(-1, reader.readBlocking(channel, buffer5));
 
     	//LazyOneByteChannel
     	buffer5.clear();
     	channel = new LazyThreeBytesChannel();
-    	assertEquals(3, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(3, reader.readBlocking(channel, buffer5));
     	buffer5.flip();
     	assertEquals(1, buffer5.get());
     	assertEquals(2, buffer5.get());
     	assertEquals(3, buffer5.get());
     	buffer5.compact();
-    	assertEquals(-1, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(-1, reader.readBlocking(channel, buffer5));
     	
     	buffer5.clear();
     	channel = new LazyThreeBytesChannel();
     	buffer5.limit(2);
-    	assertEquals(2, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(2, reader.readBlocking(channel, buffer5));
     	buffer5.flip();
     	assertEquals(1, buffer5.get());
     	assertEquals(2, buffer5.get());
     	buffer5.compact();
-    	assertEquals(1, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(1, reader.readBlocking(channel, buffer5));
     	buffer5.flip();
     	assertEquals(3, buffer5.get());
     	buffer5.compact();
-    	assertEquals(-1, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(-1, reader.readBlocking(channel, buffer5));
     	buffer0.clear();
-    	assertEquals(-1, StreamUtils.readBlocking(channel, buffer0));
+    	assertEquals(reader.eof(), reader.readBlocking(channel, buffer0));
     	
     	buffer0.clear();
     	channel = new LazyThreeBytesChannel();
-    	assertEquals(0, StreamUtils.readBlocking(channel, buffer0));
+    	assertEquals(0, reader.readBlocking(channel, buffer0));
 
     	buffer5.clear();
     	channel = new LazyThreeBytesChannel();
     	buffer5.position(5);
-    	assertEquals(0, StreamUtils.readBlocking(channel, buffer5));
-    	assertEquals(0, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(0, reader.readBlocking(channel, buffer5));
+    	assertEquals(0, reader.readBlocking(channel, buffer5));
     	buffer5.position(4);
-    	assertEquals(1, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(1, reader.readBlocking(channel, buffer5));
     	buffer5.position(4);
     	assertEquals(1, buffer5.get());
     	buffer5.clear();
-    	assertEquals(2, StreamUtils.readBlocking(channel, buffer5));
+    	assertEquals(2, reader.readBlocking(channel, buffer5));
     	buffer5.flip();
     	assertEquals(2, buffer5.get());
     	assertEquals(3, buffer5.get());
-    }
+	}
 
+    public void testReadBlocking() throws IOException {
+    	testReadBlocking(new ChannelReader() {
+			
+			@Override
+			public int readBlocking(ReadableByteChannel channel, ByteBuffer buffer) throws IOException {
+				return StreamUtils.readBlocking(channel, buffer);
+			}
+
+			@Override
+			public int eof() {
+				return -1;
+			}
+		});
+    }
+    
+    public void testReadBlockingStream() throws IOException {
+    	testReadBlocking(new ChannelReader() {
+			
+			@Override
+			public int readBlocking(ReadableByteChannel channel, ByteBuffer buffer) throws IOException {
+				int result = StreamUtils.readBlocking(Channels.newInputStream(channel), buffer.array(), buffer.position(), buffer.remaining());
+				if (result > 0) {
+					buffer.position(buffer.position() + result);
+				}
+		    	return result;
+			}
+
+			@Override
+			public int eof() {
+				return 0;
+			}
+		});
+    }
+    
 }
