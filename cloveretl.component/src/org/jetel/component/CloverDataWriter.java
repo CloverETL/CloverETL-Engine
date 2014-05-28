@@ -207,18 +207,31 @@ public class CloverDataWriter extends Node {
 	
 	@Override
 	public Result execute() throws Exception {
-		// CLO-2657: rewritten to use direct input port reading
-		DataRecord record = DataRecordFactory.newRecord(this.metadata);
-		record.init();
-		long iRec = 0;
-		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
-		while ((record= inPort.readRecord(record))!=null && runIt) {
-			iRec++;
-			if (skip >= iRec || recordTo <= iRec) continue;
-			formatter.write(record);
-			SynchronizeUtils.cloverYield();
+		if (formatter.isRawData()) {
+			// CLO-2657: use direct input port reading
+			CloverBuffer recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE);
+			long iRec = 0;
+			int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
+			while (inPort.readRecordDirect(recordBuffer) && runIt) {
+				iRec++;
+				if (skip >= iRec || recordTo <= iRec) continue;
+				formatter.writeDirect(recordBuffer);
+				SynchronizeUtils.cloverYield();
+			}
+	        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+		} else {
+			DataRecord record = DataRecordFactory.newRecord(this.metadata);
+			record.init();
+			long iRec = 0;
+			int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
+			while ((record= inPort.readRecord(record))!=null && runIt) {
+				iRec++;
+				if (skip >= iRec || recordTo <= iRec) continue;
+				formatter.write(record);
+				SynchronizeUtils.cloverYield();
+			}
+	        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 		}
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
     @Override

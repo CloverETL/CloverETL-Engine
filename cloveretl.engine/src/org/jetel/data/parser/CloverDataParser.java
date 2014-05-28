@@ -34,7 +34,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DataRecordSerializer;
 import org.jetel.data.Defaults;
-import org.jetel.data.Token;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.data.formatter.CloverDataFormatter.DataCompressAlgorithm;
 import org.jetel.exception.ComponentNotReadyException;
@@ -68,7 +67,7 @@ import org.jetel.util.stream.CloverDataStream;
  * @since Oct 13, 2006
  *
  */
-public class CloverDataParser extends AbstractParser {
+public class CloverDataParser extends AbstractParser implements ICloverDataParser {
 
 	
 	public static class FileConfig {
@@ -78,6 +77,7 @@ public class CloverDataParser extends AbstractParser {
     	public int compressionAlgorithm;
     	public CloverDataFormatter.DataFormatVersion formatVersion;
     	public DataRecordMetadata metadata;
+    	public boolean raw;
 	}
 	
 	
@@ -145,11 +145,20 @@ public class CloverDataParser extends AbstractParser {
 		if (nRec == 0) {
 			return 0;
 		}
-		DataRecord record = DataRecordFactory.newRecord(metadata);
-		record.init();
-		for (int skipped = 0; skipped < nRec; skipped++) {
-			if (getNext(record) == null) {
-				return skipped;
+		if (isDirectReadingSupported()) {
+			CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+			for (int skipped = 0; skipped < nRec; skipped++) {
+				if (getNextDirect(buffer)) {
+					return skipped;
+				}
+			}
+		} else {
+			DataRecord record = DataRecordFactory.newRecord(metadata);
+			record.init();
+			for (int skipped = 0; skipped < nRec; skipped++) {
+				if (getNext(record) == null) {
+					return skipped;
+				}
 			}
 		}
 		return nRec;
@@ -272,7 +281,10 @@ public class CloverDataParser extends AbstractParser {
     	byte[] extraBytes;
     	CloverBuffer buffer = CloverBuffer.wrap(new byte[CloverDataFormatter.CLOVER_DATA_HEADER_LENGTH]);
 		try {
-			recordFile.read(buffer.array());
+			int count = recordFile.read(buffer.array());
+			if (count != buffer.capacity()) {
+				throw new IOException("Failed to read file header");
+			}
 		} catch (IOException e) {
 			throw new ComponentNotReadyException(e);
 		}
@@ -315,7 +327,10 @@ public class CloverDataParser extends AbstractParser {
     	case VERSION_40:
     		extraBytes = new byte[CloverDataFormatter.HEADER_OPTIONS_ARRAY_SIZE];
     		try {
-    			recordFile.read(extraBytes);
+    			int count = recordFile.read(extraBytes);
+    			if (count != extraBytes.length) {
+    				throw new IOException("Failed to read file header");
+    			}
     		} catch (IOException e) {
     			throw new ComponentNotReadyException(e);
     		}
@@ -323,6 +338,7 @@ public class CloverDataParser extends AbstractParser {
             	throw new ComponentNotReadyException("Source file with binary data format is not compatible. Engine producer has different setup of Defaults.Record.USE_FIELDS_NULL_INDICATORS (see documentation). Data cannot be read.");
         	}
         	version.compressionAlgorithm=BitArray.extractNumber(extraBytes, CloverDataFormatter.OPTION_MASK_COMPRESSED_DATA);
+        	version.raw = BitArray.extractNumber(extraBytes, CloverDataFormatter.OPTION_MASK_RAW_DATA) == 1;
         	//check metadata (just read,do not control now)
         	int metasize;
         	try {
@@ -358,21 +374,8 @@ public class CloverDataParser extends AbstractParser {
 	 */
 	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
-		final int size;
-		try{
-			size=ByteBufferUtils.decodeLength(input);
-			if (size<0) return null; //end of file reached
-		
-			recordBuffer.clear();
-			recordBuffer.limit(size);
-			if (input.read(recordBuffer)==-1){
-				throw new JetelException("Insufficient data in datastream.");
-			}
-			
-			recordBuffer.flip();
-		
-		}catch(IOException ex){
-			throw new JetelException(ex);
+		if (!getNextDirect(recordBuffer)) {
+			return null; //end of file reached
 		}
 		
 		if (!useParsingFromJobflow_3_4) {
@@ -398,52 +401,25 @@ public class CloverDataParser extends AbstractParser {
 	 * @return <code>targetBuffer</code> or <code>null</code> if no data available
 	 * @throws JetelException
 	 */
-	public CloverBuffer getNextDirect(CloverBuffer targetBuffer) throws JetelException {
-		throw new JetelException("unsupported direct reading");
-		/*
+	@Override
+	public boolean getNextDirect(CloverBuffer targetBuffer) throws JetelException {
 		final int size;
-		try{
+		try {
 			size=ByteBufferUtils.decodeLength(input);
-			if (size<0) return null; //end of file reached
+			if (size<0) return false; //end of file reached
 		
-			recordBuffer.clear();
-			recordBuffer.limit(size);
-			if (input.read(recordBuffer)==-1){
+			targetBuffer.clear();
+			targetBuffer.limit(size);
+			if (input.read(targetBuffer)==-1){
 				throw new JetelException("Insufficient data in datastream.");
 			}
 			
-			recordBuffer.flip();
-		
-		}catch(IOException ex){
+			targetBuffer.flip();
+		} catch(IOException ex){
 			throw new JetelException(ex);
 		}
 		
-		sourceRecordCounter++;
-		return targetBuffer.put(recordBuffer);
-		*/
-		/*int recordSize = fillRecordBuffer();
-		if (recordSize < 0) {
-			return null;
-		}
-		
-	    targetBuffer.clear();
-	    
-		//in case current transformation is jobflow, tokenId must be added to targetBuffer
-		//since tokenId is not part of clover data file
-		//this is not applied for data files created by 3.3 and 3.4 clover versions,
-		//where tokenId has been serialised into clover data files
-		if (isJobflow && !useParsingFromJobflow_3_4) {
-			Token.serializeTokenId(-1, targetBuffer);
-		}
-
-		int oldLimit = recordBuffer.limit(); // store old limit
-		recordBuffer.limit(recordBuffer.position() + recordSize); // set new limit
-		targetBuffer.put(recordBuffer); // copy data up to new limit and update recordBuffer position
-		recordBuffer.limit(oldLimit); // restore old limit
-		targetBuffer.flip(); // prepare for reading
-		
-		sourceRecordCounter++;
-		return targetBuffer;*/
+		return true;
 	}
 	
 	/* (non-Javadoc)
@@ -511,6 +487,11 @@ public class CloverDataParser extends AbstractParser {
 	@Override
 	public boolean nextL3Source() {
 		return false;
+	}
+	
+	@Override
+	public boolean isDirectReadingSupported() {
+		return getVersion().raw;
 	}
 	
 }

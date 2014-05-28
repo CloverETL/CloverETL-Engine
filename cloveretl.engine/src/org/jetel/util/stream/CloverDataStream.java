@@ -689,7 +689,7 @@ public class CloverDataStream {
 		@Override
 		public int read() throws IOException {
 			if (!buffer.hasRemaining()) {
-				if (!readBufferedData())
+				if (!readDataBlock())
 					return -1; // end of stream
 			}
 			return buffer.get() & 0xFF;
@@ -705,7 +705,7 @@ public class CloverDataStream {
 				count += l;
 				off += l;
 				len -= l;
-				if (!readBufferedData())
+				if (!readDataBlock())
 					return -1; //end of stream;
 
 			}
@@ -718,7 +718,7 @@ public class CloverDataStream {
 			final int pos=inbuffer.position();
 			while (buffer.remaining() < inbuffer.remaining()) {
 				inbuffer.put(buffer);
-				if (!readBufferedData())
+				if (!readDataBlock())
 					return -1;
 			}
 			final int savelimit = buffer.limit();
@@ -732,7 +732,7 @@ public class CloverDataStream {
 			final int pos=inbuffer.position();
 			while (buffer.remaining() < inbuffer.remaining()) {
 				inbuffer.put(buffer.array(), buffer.position(), buffer.remaining());
-				if (!readBufferedData())
+				if (!readDataBlock())
 					return -1;
 			}
 			final int savelimit = buffer.limit();
@@ -750,13 +750,11 @@ public class CloverDataStream {
 			}
 		}
 
-		
-		
-		private boolean readBufferedData() throws IOException {
+		private boolean readDataBlock() throws IOException {
 			buffer.clear();
 			// store index of new block which will be added (but only if it contains beginning of record
 			// firstRecordPosition
-			final int readin=in.read(buffer.array(), 0, CLOVER_BLOCK_HEADER_LENGTH);
+			final int readin=StreamUtils.readBlocking(in, buffer.array(), 0, CLOVER_BLOCK_HEADER_LENGTH);
 			if (readin==-1) return false;
 			if (readin!= CLOVER_BLOCK_HEADER_LENGTH || !testBlockHeader(buffer)) {
 				throw new IOException("Missing block header. Probably corrupted data !");
@@ -788,10 +786,14 @@ public class CloverDataStream {
 					compressedBuffer = CloverBuffer.wrap(new byte[findNearestPow2(compressedLength)]);
 					compressedBuffer.order(BUFFER_BYTE_ORDER);
 				}
-				in.read(compressedBuffer.array(), 0, compressedLength);
+				if (StreamUtils.readBlocking(in, compressedBuffer.array(), 0, compressedLength) != compressedLength) {
+					throw new IOException("Unexpected end of file");
+				}
 				decompressor.decompress(compressedBuffer.array(), 0, compressedLength , buffer.array(), 0, rawLength);
 			} else {
-				in.read(buffer.array(), 0, rawLength);
+				if (StreamUtils.readBlocking(in, buffer.array(), 0, rawLength) != rawLength) {
+					throw new IOException("Unexpected end of file");
+				}
 			}
 			buffer.position(0);
 			buffer.limit(rawLength);
@@ -858,7 +860,7 @@ public class CloverDataStream {
 			if (blockPosition==-1) return -1;
 			
 			seekableChannel.position(blockPosition);
-			if(!readBufferedData()) throw new IOException("Unable to seek.");
+			if(!readDataBlock()) throw new IOException("Unable to seek.");
 			if (firstRecordPosition>=0){
 				buffer.position(firstRecordPosition);
 				return blockPosition+firstRecordPosition;

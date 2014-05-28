@@ -62,7 +62,7 @@ import org.jetel.util.file.FileUtils;
  * @since Oct 13, 2006
  *
  */
-public class CloverDataParser35 extends AbstractParser {
+public class CloverDataParser35 extends AbstractParser implements ICloverDataParser {
 
 	private final static Log logger = LogFactory.getLog(CloverDataParser.class);
 
@@ -352,10 +352,11 @@ public class CloverDataParser35 extends AbstractParser {
 	 * @return <code>targetBuffer</code> or <code>null</code> if no data available
 	 * @throws JetelException
 	 */
-	public CloverBuffer getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+	@Override
+	public boolean getNextDirect(CloverBuffer targetBuffer) throws JetelException {
 		int recordSize = fillRecordBuffer();
 		if (recordSize < 0) {
-			return null;
+			return false;
 		}
 		
 	    targetBuffer.clear();
@@ -375,7 +376,7 @@ public class CloverDataParser35 extends AbstractParser {
 		targetBuffer.flip(); // prepare for reading
 		
 		sourceRecordCounter++;
-		return targetBuffer;
+		return true;
 	}
 	
 	/* (non-Javadoc)
@@ -454,7 +455,10 @@ public class CloverDataParser35 extends AbstractParser {
 	public void setVersion(CloverDataParser.FileConfig version) {
 		this.version = version;
 	}
-	
-	
+
+	@Override
+	public boolean isDirectReadingSupported() {
+		return true;
+	}
 	
 }
