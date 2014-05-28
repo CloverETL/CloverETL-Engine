@@ -51,6 +51,7 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_TRANSACTION_MODE = false;
 	public static final boolean DEFAULT_BATCH_MODE = true;
 	public static final boolean DEFAULT_TOKEN_TRACKING = true;
+	public static final boolean DEFAULT_VALIDATE_REQUIRED_PARAMETERS = true;
 	
 	private long runId;
 	private Long parentRunId;
@@ -101,6 +102,8 @@ public class GraphRuntimeContext {
 	private String parentSubgraphComponentId;
 	private IAuthorityProxy authorityProxy;
 	private MetadataProvider metadataProvider;
+	/** Should executor check required graph parameters? */
+	private boolean validateRequiredParameters;
 	
 	public GraphRuntimeContext() {
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
@@ -122,6 +125,7 @@ public class GraphRuntimeContext {
 		setAuthorityProxy(AuthorityProxyFactory.createDefaultAuthorityProxy());
 		locale = null;
 		timeZone = null;
+		validateRequiredParameters = DEFAULT_VALIDATE_REQUIRED_PARAMETERS;
 	}
 	
 	/* (non-Javadoc)
@@ -161,6 +165,7 @@ public class GraphRuntimeContext {
 		ret.authorityProxy = getAuthorityProxy();
 		ret.executionType = getExecutionType();
 		ret.metadataProvider = getMetadataProvider();
+		ret.validateRequiredParameters = isValidateRequiredParameters();
 		
 		return ret;
 	}
@@ -194,6 +199,7 @@ public class GraphRuntimeContext {
 		prop.setProperty("jobType", String.valueOf(getJobType()));
 		prop.setProperty("jobUrl", String.valueOf(getJobUrl()));
 		prop.setProperty("executionType", String.valueOf(getExecutionType()));
+		prop.setProperty("validateRequiredParameters", Boolean.toString(isValidateRequiredParameters()));
 		
 		return prop;
 	}
@@ -765,6 +771,20 @@ public class GraphRuntimeContext {
 	}
 
 	/**
+	 * @return true if executor should check required graph parameters
+	 */
+	public boolean isValidateRequiredParameters() {
+		return validateRequiredParameters;
+	}
+
+	/**
+	 * Sets whether executor should check required graph parameters.
+	 */
+	public void setValidateRequiredParameters(boolean validateRequiredParameters) {
+		this.validateRequiredParameters = validateRequiredParameters;
+	}
+
+	/**
 	 * This enum is attempt to provide a more generic way to this runtime configuration.
 	 * Should not be used by third-party applications, can be changed in the future.
 	 */
@@ -819,6 +839,12 @@ public class GraphRuntimeContext {
 			@Override
 			public Object parseValue(String s) {
 				return s;
+			}
+		},
+		VALIDATE_REQUIRED_PARAMETERS("validateRequiredParameters", Boolean.class) {
+			@Override
+			public Object parseValue(String s) {
+				return parseBoolean(s);
 			}
 		};
 		

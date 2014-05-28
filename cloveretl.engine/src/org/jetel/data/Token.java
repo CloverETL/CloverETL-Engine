@@ -101,6 +101,11 @@ public class Token extends DataRecordImpl {
 		super.serialize(buffer, whichFields);
 	}
 	
+    @Override
+	public void serializeUnitary(CloverBuffer buffer,int[] whichFields) {
+    	super.serialize(buffer, whichFields);
+    }
+
 	private void serializeTokenId(CloverBuffer buffer) {
 		serializeTokenId(tokenId, buffer);
 	}

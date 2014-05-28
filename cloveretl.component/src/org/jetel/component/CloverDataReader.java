@@ -28,9 +28,9 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.CloverDataFormatter;
-import org.jetel.data.parser.AbstractParser;
 import org.jetel.data.parser.CloverDataParser;
 import org.jetel.data.parser.CloverDataParser35;
+import org.jetel.data.parser.ICloverDataParser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -120,7 +120,7 @@ public class CloverDataReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 
 	private String fileURL;
-	private AbstractParser parser;
+	private ICloverDataParser parser;
 	private CloverDataParser parserNew;
 	private CloverDataParser35 parser35;
 	
@@ -167,42 +167,65 @@ public class CloverDataReader extends Node {
     	}
 		inputSource = setDataSource(); //assigns data source to a parser and returns true if succeeds
 		skip();
-    }    
-	
+    }
+    
     /**
-     * Parses records from the input file,
-     * sets autofilling fields,
-     * serializes the records and writes them to the output port(s).
+     * Reads records from the source file without deserialization.
      * <p>
-     * Should be deprecated in the future, since autofilling probably
-     * doesn't work anyway.
+     * Used if there are no autofilling fields.
      * </p>
      * 
      * @throws Exception
      */
-	private void executeParsing() throws Exception {
-		DataRecord record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-        record.init();
-        DataRecord rec;
-		if (inputSource) {
-			do {
-				if (checkRow() && (rec = parser.getNext(record)) != null) {
-			        autoFilling.setLastUsedAutoFillingFields(rec);
-				    writeRecordBroadcast(rec);
-					SynchronizeUtils.cloverYield();
-				} else {
-					// prepare next file
-					if (!nextSource()) {
-						break;
-					}
-				}				
-			} while (runIt);			
-		}
-	}
+    private void readFileDirect(CloverBuffer recordBuffer) throws Exception {
+    	while (runIt && checkRow() && parser.getNextDirect(recordBuffer)) {
+			autoFilling.incCounters();
+		    writeRecordBroadcastDirect(recordBuffer);
+			SynchronizeUtils.cloverYield();
+    	}
+    }
+    
+    /**
+     * Parses records from the input file,
+     * sets autofilling fields,
+     * serializes the records and writes them to the output port(s).
+     * 
+     * @throws Exception
+     */
+    private void parseFile(DataRecord record) throws Exception {
+    	DataRecord rec;
+		while (runIt && checkRow() && (rec = parser.getNext(record)) != null) {
+	        autoFilling.setLastUsedAutoFillingFields(rec);
+		    writeRecordBroadcast(rec);
+			SynchronizeUtils.cloverYield();
+		}				
+    }
 	
 	@Override
 	public Result execute() throws Exception {
-		executeParsing();
+    	CloverBuffer recordBuffer = null;
+    	DataRecord record = null;
+		if (inputSource) {
+			do {
+				// direct reading may not be supported for all input files, e.g. mixed versions in one directory
+				if (directReading && parser.isDirectReadingSupported()) {
+					if (recordBuffer == null) {
+				    	recordBuffer = CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+					}
+					readFileDirect(recordBuffer);
+				} else {
+					if (record == null) {
+						record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+				        record.init();
+					}
+					parseFile(record);
+				}
+				if (!nextSource()) { // prepare next file
+					break;
+				}
+			} while (runIt);			
+		}
+
 		broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -347,7 +370,7 @@ public class CloverDataReader extends Node {
 		this.parser=parserNew;
 		
     	if (metadata != null) {
-    		//this.directReading = autoFilling.isAutofillingDisabled(metadata);
+    		this.directReading = autoFilling.isAutofillingDisabled(metadata);
     		autoFilling.addAutoFillingFields(metadata);
     	}
     	autoFilling.setFilename(fileURL);

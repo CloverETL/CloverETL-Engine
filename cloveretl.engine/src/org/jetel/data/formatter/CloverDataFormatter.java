@@ -20,25 +20,19 @@ package org.jetel.data.formatter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteOrder;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.StandardOpenOption;
-
-import javax.management.RuntimeErrorException;
 
 import org.jetel.data.CloverDataRecordSerializer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordSerializer;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.Formatter.DataTargetType;
 import org.jetel.data.parser.CloverDataParser;
 import org.jetel.data.parser.CloverDataParser.FileConfig;
 import org.jetel.exception.ComponentNotReadyException;
@@ -48,7 +42,6 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.stream.CloverDataStream;
 
@@ -110,6 +103,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public static final long OPTION_MASK_USE_FIELDS_NULL_INDICATORS = 0b01; //bit 1
 	public static final long OPTION_MASK_COMPRESSED_DATA = 0b1110;  // bits 2..4 one of compressions 000 -> none 001 -> LZ4 010..111 -> reserved
 	public static final long OPTION_MASK_STORE_INDEX_DATA = 0b1110000;  // bits 5..7 size of index (entries) stored 00 - none 001 -> 64 010 ->128 011->256 
+	public static final long OPTION_MASK_RAW_DATA = 0b10000000;  // bit 8: raw data (1 -> raw data, 0 -> custom serialization) 
 	
 	public final static int CLOVER_DATA_HEADER_LENGTH= 
 			LONG +  // data header
@@ -137,6 +131,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	private String fileName;
 	private boolean isOpen = false;
 	private DataCompressAlgorithm compress;
+	private boolean raw = true;
 	private URL projectURL;
 	private DataRecordMetadata metadata;	
 	
@@ -187,17 +182,18 @@ public class CloverDataFormatter extends AbstractFormatter {
 		isOpen = true;
 		boolean writeHeader = true;
 		if (append) {
-			if (!(writer instanceof FileChannel)) {
+			if (!(writer instanceof SeekableByteChannel)) {
 				throw new RuntimeException("Seekable stream is required for appending. Got "+writer.getClass().getName());
 			}
 			try {
-				if (((FileChannel) writer).size() > 0) {
-					FileConfig version = CloverDataParser.checkCompatibilityHeader((FileChannel)writer, metadata);
+				if (((SeekableByteChannel) writer).size() > 0) {
+					FileConfig version = CloverDataParser.checkCompatibilityHeader((SeekableByteChannel)writer, metadata);
 					//check that we have compatible format version
 					if (version.formatVersion!=CURRENT_FORMAT_VERSION){
 						throw new IOException("Can not append. Target file is of incompatible version - "+version.formatVersion);
 					}
 					this.compress = DataCompressAlgorithm.getAlgorithm(version.compressionAlgorithm);
+					this.raw = version.raw;
 					writeHeader = false;
 				} else {
 					// write header information for compatibility testing while later reading
@@ -237,7 +233,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 				throw new RuntimeException("Unsupported compression algorithm: " + compress);
 			}
 			if (append) {
-				this.output.seekToAppend((FileChannel) writer);
+				this.output.seekToAppend((SeekableByteChannel) writer);
 			} else {
 				this.output.setPosition(size); // need to tell CloverDataStream what is current position of the wrapped
 												// stream
@@ -271,6 +267,7 @@ public class CloverDataFormatter extends AbstractFormatter {
         if (isSaveIndex()){
         	BitArray.encodeNumber(extraBytes, OPTION_MASK_STORE_INDEX_DATA, DEFAULT_BLOCK_INDEX_SIZE.getId());
         }
+        BitArray.encodeNumber(extraBytes, OPTION_MASK_RAW_DATA, raw ? 1 : 0);
         
         buffer.put(extraBytes);
         //serialize used metadata into data file - will be used to validate input file by CloverDataParser 
@@ -325,10 +322,25 @@ public class CloverDataFormatter extends AbstractFormatter {
 		buffer.clear();
 		record.serialize(buffer, serializer);
 		buffer.flip();
-		final int recordSize=buffer.remaining();
+		return writeDirect(buffer);
+	}
+
+	/**
+	 * Copies the data from the <code>recordBuffer</code>
+	 * to the output.
+	 * 
+	 * It is assumed that the <code>recordBuffer</code>
+	 * is prepared for reading and has a limit set correctly.
+	 * 
+	 * @param recordBuffer
+	 * @return
+	 * @throws IOException
+	 */
+	public int writeDirect(CloverBuffer recordBuffer) throws IOException {
+		int recordSize = recordBuffer.remaining();
 		output.markRecordStart();
 		final int lenbytes=ByteBufferUtils.encodeLength(output, recordSize);
-		output.write(buffer);
+		output.write(recordBuffer);
         return recordSize + lenbytes;
 	}
 
@@ -373,20 +385,25 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public boolean isCompressData() {
 		return this.compress!=DataCompressAlgorithm.NONE;
 	}
+	
+	public boolean isRawData() {
+		return this.raw;
+	}
 
 	/**
 	 * @param compress the compress to set
 	 */
 	public void setCompressLevel(int compressLevel) {
-		if (compressLevel==0){
-			this.compress=DataCompressAlgorithm.NONE;
-		}else if (compressLevel <7){
-			this.compress=DataCompressAlgorithm.LZ4;
-		}else{
-			this.compress=DataCompressAlgorithm.GZIP;
+		if (compressLevel == 0) {
+			this.compress = DataCompressAlgorithm.NONE;
+		} else if (compressLevel < 7) {
+			this.compress = DataCompressAlgorithm.LZ4;
+		} else {
+			this.compress = DataCompressAlgorithm.GZIP;
 		}
-		
-		
+		if (compressLevel > 1) {
+			raw = false;
+		}
 	}
 	
 public enum DataCompressAlgorithm {
