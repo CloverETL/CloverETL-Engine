@@ -39,7 +39,11 @@ import org.jetel.util.string.StringUtils;
  */
 public class GraphParameterDynamicValueProvider {
 	
-	private final TransformationGraph graph;
+	private static interface TransformationGraphProvider {
+		TransformationGraph getGraph();
+	}
+	
+	private final TransformationGraphProvider graphProvider;
 	private final String parameterName;
 	private final String transformCode;
 	private final TransformFactory<GraphParameterValueFunction> factory;
@@ -48,27 +52,43 @@ public class GraphParameterDynamicValueProvider {
 	private GraphParameterValueFunction transform;
 	private boolean recursionFlag;
 
-	private GraphParameterDynamicValueProvider(TransformationGraph graph, String parameterName, String transformCode, TransformFactory<GraphParameterValueFunction> factory) {
+	private GraphParameterDynamicValueProvider(TransformationGraphProvider graphProvider, String parameterName, String transformCode, TransformFactory<GraphParameterValueFunction> factory) {
 		super();
-		this.graph = graph;
+		this.graphProvider = graphProvider;
 		this.parameterName = parameterName;
 		this.transformCode = transformCode;
 		this.factory = factory;
 	}
 	
-	public static GraphParameterDynamicValueProvider create(GraphParameter graphParameter, String transformCode) {
-		return create(graphParameter.getParentGraph(), graphParameter.getName(), transformCode);
-	}
-	
-	public static GraphParameterDynamicValueProvider create(TransformationGraph graph, String parameterName, String transformCode) {
+	public static GraphParameterDynamicValueProvider create(final GraphParameter graphParameter, String transformCode) {
+		TransformationGraphProvider transformationGraphProvider = new TransformationGraphProvider() {
+			@Override
+			public TransformationGraph getGraph() {
+				return graphParameter.getParentGraph();
+			}
+		};
+		
 		TransformFactory<GraphParameterValueFunction> factory = TransformFactory.createTransformFactory(GraphParameterValueFunctionDescriptor.newInstance());
 		factory.setTransform(transformCode);
 
-		return new GraphParameterDynamicValueProvider(graph, parameterName, transformCode, factory);
+		return new GraphParameterDynamicValueProvider(transformationGraphProvider, graphParameter.getName(), transformCode, factory);
+	}
+	
+	public static GraphParameterDynamicValueProvider create(final TransformationGraph graph, String parameterName, String transformCode) {
+		TransformationGraphProvider transformationGraphProvider = new TransformationGraphProvider() {
+			@Override
+			public TransformationGraph getGraph() {
+				return graph;
+			}
+		};
+		TransformFactory<GraphParameterValueFunction> factory = TransformFactory.createTransformFactory(GraphParameterValueFunctionDescriptor.newInstance());
+		factory.setTransform(transformCode);
+
+		return new GraphParameterDynamicValueProvider(transformationGraphProvider, parameterName, transformCode, factory);
 	}
 	
 	private Node createNodeForTransformation() {
-		Node node = new Node(StringUtils.normalizeName("__PARAM_TRANSFORM_NODE_" + parameterName), graph) {
+		Node node = new Node(StringUtils.normalizeName("__PARAM_TRANSFORM_NODE_" + parameterName), graphProvider.getGraph()) {
 			@Override
 			protected Result execute() throws Exception {
 				return null;
