@@ -316,7 +316,10 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     	case VERSION_35:
     		extraBytes = new byte[CloverDataFormatter.HEADER_OPTIONS_ARRAY_SIZE_3_5];
     		try {
-    			recordFile.read(extraBytes);
+    			int count = StreamUtils.readBlocking(recordFile, extraBytes);
+    			if (count != extraBytes.length) {
+    				throw new IOException("Failed to read file header");
+    			}
     		} catch (IOException e) {
     			throw new ComponentNotReadyException(e);
     		}
