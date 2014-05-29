@@ -240,6 +240,9 @@ public class StreamUtils {
 	 * 
 	 * @param stream source {@link InputStream}
 	 * @param buffer populated byte buffer
+	 * @param offset starting position in the buffer
+	 * @param length number of requested bytes
+	 * 
 	 * @return number of read bytes
 	 * @throws IOException
 	 */
@@ -259,6 +262,28 @@ public class StreamUtils {
 		}
 		
 		return result != 0 ? result : -1;
+	}
+	
+	/**
+	 * Tries to read <code>buffer.length</code> bytes to the given buffer from the given
+	 * stream, starting at offset 0. It is somehow blocking operation, even incoming data are not
+	 * ready in channel, operation tries to populate complete remaining bytes
+	 * in buffer. Only end of stream can cause the buffer is not completely populated.
+	 * 
+	 * <p>
+	 * <b>Returns 0 when requesting 0 bytes from a stream that has reached EOF</b>,
+	 * which differs from
+	 * {@link #readBlocking(ReadableByteChannel, ByteBuffer)}.
+	 * </p>
+	 * 
+	 * @param stream source {@link InputStream}
+	 * @param buffer populated byte buffer
+	 * 
+	 * @return number of read bytes
+	 * @throws IOException
+	 */
+	public static int readBlocking(InputStream stream, byte[] buffer) throws IOException {
+		return readBlocking(stream, buffer, 0, buffer.length);
 	}
 
 }
