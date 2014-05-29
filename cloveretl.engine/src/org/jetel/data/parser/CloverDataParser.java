@@ -48,6 +48,7 @@ import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.stream.CloverDataStream;
+import org.jetel.util.stream.StreamUtils;
 
 /**
  * Class for reading data saved in Clover internal format
@@ -281,7 +282,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     	byte[] extraBytes;
     	CloverBuffer buffer = CloverBuffer.wrap(new byte[CloverDataFormatter.CLOVER_DATA_HEADER_LENGTH]);
 		try {
-			int count = recordFile.read(buffer.array());
+			int count = StreamUtils.readBlocking(recordFile, buffer.array());
 			if (count != buffer.capacity()) {
 				throw new IOException("Failed to read file header");
 			}
@@ -327,7 +328,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     	case VERSION_40:
     		extraBytes = new byte[CloverDataFormatter.HEADER_OPTIONS_ARRAY_SIZE];
     		try {
-    			int count = recordFile.read(extraBytes);
+    			int count = StreamUtils.readBlocking(recordFile, extraBytes);
     			if (count != extraBytes.length) {
     				throw new IOException("Failed to read file header");
     			}
@@ -344,7 +345,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         	try {
     			metasize=ByteBufferUtils.decodeLength(recordFile);
     			byte[] metadef=new byte[metasize];
-    			if (recordFile.read(metadef)!=metasize){ 
+    			if (StreamUtils.readBlocking(recordFile, metadef) != metasize){ 
     				throw new IOException("Not enough data in file.");
     			}
     	    	version.metadata=DataRecordMetadataXMLReaderWriter.readMetadata(new ByteArrayInputStream(metadef));
