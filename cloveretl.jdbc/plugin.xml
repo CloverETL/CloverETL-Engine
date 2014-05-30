@@ -169,11 +169,10 @@
 	<extension point-id="jdbcDriver">
 		<parameter id="database" value="MSSQL"/>
 		<parameter id="name" value="Microsoft SQL Server"/>
-		<parameter id="dbDriver" value="net.sourceforge.jtds.jdbc.Driver"/>
-		<parameter id="driverLibrary" value="lib/jtds/jtds-1.2.8.jar"/>
+		<parameter id="dbDriver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+		<parameter id="driverLibrary" value="lib/mssql/sqljdbc4.jar"/>
 		<parameter id="urlHint">
-			<value>jdbc:jtds:sqlserver://hostname:1433/database;instance=instanceName</value>
-			<value>jdbc:jtds:sqlserver://hostname:1433/database</value>
+			<value>jdbc:sqlserver://hostname:1435;databaseName=database</value>
 		</parameter>
 		<parameter id="jdbcSpecific" value="MSSQL"/>
 	</extension>
