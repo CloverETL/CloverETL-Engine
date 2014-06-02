@@ -416,7 +416,7 @@ public class XPathParser extends AbstractParser {
 	            }
 	        }
 		} catch (TransformerException e) {
-			throw new JetelException("", e);
+			throw new JetelException("XPath parsing failed.", e);
 		}
 		return recordResult;
 	}
