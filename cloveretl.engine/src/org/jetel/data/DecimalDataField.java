@@ -51,7 +51,7 @@ import org.jetel.util.string.Compare;
  *@since      November 30, 2005
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-public class DecimalDataField extends DataField implements Numeric, Comparable<Object> {
+public class DecimalDataField extends DataFieldImpl implements Numeric, Comparable<Object> {
 
 	private static final long serialVersionUID = -9212721402316376203L;
 	
@@ -172,18 +172,20 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
      * @deprecated use setValue(DataField) instead
 	 */
+	@SuppressWarnings("deprecation")
+	@Deprecated
 	@Override
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof DecimalDataField){
-	        if (!fromField.isNull) {
+	        if (!fromField.isNull()) {
 	            this.value.setValue(((DecimalDataField) fromField).value);
 	        }
-	        setNull(fromField.isNull);
+	        setNull(fromField.isNull());
         } else if (fromField instanceof Numeric){
-            if (!fromField.isNull) {
+            if (!fromField.isNull()) {
                 this.value.setValue(((Numeric) fromField).getDecimal());
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
 	    } else {
 	    	super.copyFrom(fromField);
 	    }
@@ -218,15 +220,15 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
 	@Override
 	public void setValue(DataField fromField) {
         if (fromField instanceof DecimalDataField){
-            if (!fromField.isNull) {
+            if (!fromField.isNull()) {
                 this.value.setValue(((DecimalDataField) fromField).value);
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else if (fromField instanceof Numeric){
-            if (!fromField.isNull) {
+            if (!fromField.isNull()) {
                 this.value.setValue(((Numeric) fromField).getDecimal());
             }
-            setNull(fromField.isNull);
+            setNull(fromField.isNull());
         } else {
             super.setValue(fromField);
         }
@@ -548,6 +550,10 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
     	}
 	}
 
+	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.serialize(buffer, this);
+	}
 
 	/**
 	 *  Performs deserialization of data
@@ -561,7 +567,12 @@ public class DecimalDataField extends DataField implements Numeric, Comparable<O
         setNull(value.isNaN());
 	}
 
+	@Override
+	public void deserialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializer.deserialize(buffer, this);
+	}
 
+	
 	/**
 	 *  Description of the Method
 	 *

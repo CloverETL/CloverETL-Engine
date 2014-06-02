@@ -457,5 +457,9 @@ public class TLCompiler implements ITLCompiler {
 	public DataRecordMetadata[] getOutputMetadata() {
 		return outMetadata;
 	}
+	
+	public TransformationGraph getGraph() {
+		return graph;
+	}
 
 }

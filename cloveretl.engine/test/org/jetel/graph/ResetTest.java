@@ -195,6 +195,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("CompanyChecks.grf") // an example that needs embedded derby
 							&& !file.getName().equals("DatabaseAccess.grf") // an example that needs embedded derby
 							&& !file.getName().equals("graphDatabaseAccess.grf") // an example that needs embedded derby
+							&& !file.getName().equals("Twitter.grf") // an example that needs credentials
 							&& !file.getName().equals("XMLReader_no_output_port.grf") // ok, is to fail
 							&& !file.getName().startsWith("Proxy_") // allowed to run only on virt-cyan as proxy tests
 							&& !file.getName().equals("SandboxOperationHandlerTest.grf") // runs only on server

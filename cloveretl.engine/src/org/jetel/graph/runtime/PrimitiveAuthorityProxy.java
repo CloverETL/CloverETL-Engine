@@ -65,7 +65,6 @@ import org.jetel.util.FileConstrains;
 import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.classloader.MultiParentClassLoader;
-import org.jetel.util.compile.ClassLoaderUtils;
 import org.jetel.util.file.FileUtils;
 
 /**
@@ -75,6 +74,11 @@ import org.jetel.util.file.FileUtils;
  * @created Jul 11, 2008
  */
 public class PrimitiveAuthorityProxy extends IAuthorityProxy {
+
+	/**
+	 * RunId random generator.
+	 */
+	private static Random random = new Random();
 
 	/**
 	 * Suffix of temp files created by standalone engine
@@ -262,10 +266,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	private static long getUniqueRunId(long parentRunId) {
-		Random random = new Random();
-		long runId = Math.abs((random.nextLong() % 999));
-		return (runId != parentRunId) ? runId : runId + 1;
-		// TODO returned runId mustn't be unique
+		return Math.abs((random.nextLong()));
 	}
 	
 	/**

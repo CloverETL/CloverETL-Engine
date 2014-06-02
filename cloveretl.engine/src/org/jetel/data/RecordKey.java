@@ -252,7 +252,7 @@ public class RecordKey {
 					compResult = field.compareTo(record2.getField(keyFields[i]));
 				}
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
 		                return compResult;
 		            }
 		        }
@@ -266,7 +266,7 @@ public class RecordKey {
 					compResult = field.compareTo(record2.getField(keyFields[i]));
 				}
 		        if (compResult != 0) {
-		            if (record1.getField(keyFields[i]).isNull && record2.getField(keyFields[i]).isNull) {
+		            if (record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull()) {
 		            	comparedNulls = true;
 		            }
 		            return compResult;
@@ -306,7 +306,7 @@ public class RecordKey {
 					compResult = field.compareTo(record2.getField(record2KeyFields[i]));
 				}
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(record2KeyFields[i]).isNull)){
+		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(record2KeyFields[i]).isNull())) {
 		                return compResult;
 		            }
 		        }
@@ -320,7 +320,7 @@ public class RecordKey {
 					compResult = field.compareTo(record2.getField(record2KeyFields[i]));
 				}
 		        if (compResult != 0) {
-		            if (record1.getField(keyFields[i]).isNull && record2.getField(record2KeyFields[i]).isNull) {
+		            if (record1.getField(keyFields[i]).isNull() && record2.getField(record2KeyFields[i]).isNull()) {
 		            	comparedNulls = true;
 		            }
 		            return compResult;
@@ -404,7 +404,7 @@ public class RecordKey {
 				}
 
 		        if (!field1.equals(field2)) {
-		            if (!(field1.isNull && field2.isNull)){
+		            if (!(field1.isNull() && field2.isNull())) {
 		                return false;
 		            }
 		        }
@@ -680,7 +680,7 @@ public class RecordKey {
 					compResult = field.compareTo(record2.getField(keyFields[i]));
 				}
 		        if (compResult != 0) {
-		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		            if (!(record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull())) {
 		                return field;
 		            }
 		        }
@@ -694,7 +694,7 @@ public class RecordKey {
 					compResult = field.compareTo(record2.getField(keyFields[i]));
 				}
 		        if (compResult != 0) {
-		            if (record1.getField(keyFields[i]).isNull && record2.getField(keyFields[i]).isNull) {
+		            if (record1.getField(keyFields[i]).isNull() && record2.getField(keyFields[i]).isNull()) {
 		            	comparedNulls = true;
 		            }
 		            return field;

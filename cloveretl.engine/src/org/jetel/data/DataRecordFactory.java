@@ -42,7 +42,7 @@ public final class DataRecordFactory {
     	if (metadata.getNature() == DataRecordNature.TOKEN) {
 			return new Token(metadata);
 		} else {
-			return new DataRecord(metadata);
+			return new DataRecordImpl(metadata);
 		}
     }
 
@@ -78,6 +78,18 @@ public final class DataRecordFactory {
      */
     public static CloverBuffer newRecordCloverBuffer() {
     	return CloverBuffer.allocateDirect(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+    }
+    
+    /**
+     * @return data record with data fields, which are able to mark the as invalid
+     * @see DataFieldWithInvalidState
+     * @see DataRecordWithInvalidState
+     */
+    public static DataRecordWithInvalidState newRecordWithInvalidState(DataRecordMetadata metadata) {
+    	DataRecordWithInvalidState result = new DataRecordWithInvalidState(metadata);
+    	result.init();
+    	result.reset();
+    	return result;
     }
     
 }

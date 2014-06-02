@@ -34,6 +34,8 @@ import org.jetel.graph.parameter.GraphParameterAttributeNode;
 import org.jetel.graph.parameter.GraphParameterDynamicValueProvider;
 import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.util.SubgraphUtils;
+import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -131,14 +133,33 @@ public class GraphParameter {
 	}
 	
 	/**
+	 * @return true if value of this graph parameter is defined by CTL code
+	 */
+	public boolean hasDynamicValue() {
+		return dynamicValue != null && dynamicValue.isInitialized();
+	}
+	
+	/**
+	 * @param flag 
+	 * @return resolved value of this graph parameter
+	 * @see PropertyRefResolver
+	 */
+	public String getValueResolved(RefResFlag flag) {
+		if (!hasDynamicValue()) {
+			return getParentGraph().getPropertyRefResolver().resolveRef(value, flag);
+		} else {
+			return dynamicValue.getValue();
+		}
+	}
+	
+	/**
 	 * @return value of this parameter; can contain a parameter reference recursively
 	 */
 	@XmlAttribute(name="value")
 	public String getValue() {
-		if (dynamicValue == null || !dynamicValue.isInitialized()) {
+		if (!hasDynamicValue()) {
 			return value;
-		}
-		else {
+		} else {
 			return dynamicValue.getValue();
 		}
 	}

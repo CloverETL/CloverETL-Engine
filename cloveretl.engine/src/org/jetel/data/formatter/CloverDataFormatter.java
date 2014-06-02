@@ -18,38 +18,32 @@
  */
 package org.jetel.data.formatter;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
+import java.io.RandomAccessFile;
 import java.net.URL;
-import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 
+import org.jetel.data.CloverDataRecordSerializer;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordSerializer;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.CloverDataParser;
+import org.jetel.data.parser.CloverDataParser.FileConfig;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
-import org.jetel.graph.ContextProvider;
-import org.jetel.graph.runtime.IAuthorityProxy;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.bytes.ByteBufferUtils;
 import org.jetel.util.bytes.CloverBuffer;
-import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
-
-import de.schlichtherle.truezip.zip.ZipEntry;
-import de.schlichtherle.truezip.zip.ZipOutputStream;
-
+import org.jetel.util.stream.CloverDataStream;
 
 /**
  * Class for saving data in Clover internal format
@@ -69,13 +63,14 @@ import de.schlichtherle.truezip.zip.ZipOutputStream;
  */
 public class CloverDataFormatter extends AbstractFormatter {
 	
+
 	/**
 	 * This long value is used as a header for internal clover binary data sources/targets.
 	 * CloverDataReader and CloverDataWriter components are dedicated to work with this data format.
 	 * Each clover data source (since 2.9 version) starts with this value and follows
 	 * with compatibility value @see CLOVER_DATA_COMPATIBILITY_HASH, one byte for major version number,
 	 * one byte for minor version number, one byte for revision number, and other four bytes
-	 * for type of encoding.
+	 * for various options.
 	 * NOTE: cannot be changed from defaultProperties file
 	 */
 	public final static long CLOVER_DATA_HEADER = 7198760165196065077L;
@@ -88,7 +83,36 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 */
 	public final static long CLOVER_DATA_COMPATIBILITY_HASH_2_9 = 620003156160528134L;
 	public final static long CLOVER_DATA_COMPATIBILITY_HASH_3_5 = 7252194213196531926L;
+	public final static long CLOVER_DATA_COMPATIBILITY_HASH_4_0 = 3154188142006786177L;
 
+	public final static DataFormatVersion CURRENT_FORMAT_VERSION = DataFormatVersion.VERSION_40;
+	
+	public final static ByteOrder BUFFER_BYTE_ORDER = ByteOrder.BIG_ENDIAN;
+	public final static DataIndexTableSize DEFAULT_BLOCK_INDEX_SIZE = DataIndexTableSize.S128;
+	public final static DataCompressAlgorithm DEFAULT_COMPRESSION_ALGORITHM = DataCompressAlgorithm.LZ4;
+	
+	private final static short LEN_SIZE_SPECIFIER = 4;
+	private final static int LONG = 8;
+	private final static int BYTE = 1;
+	
+	/**
+	 * Various Options on/off as bits in header (masks)
+	 */
+	public static final int HEADER_OPTIONS_ARRAY_SIZE = 8;
+	public static final int HEADER_OPTIONS_ARRAY_SIZE_3_5 = 4;
+	public static final long OPTION_MASK_USE_FIELDS_NULL_INDICATORS = 0b01; //bit 1
+	public static final long OPTION_MASK_COMPRESSED_DATA = 0b1110;  // bits 2..4 one of compressions 000 -> none 001 -> LZ4 010..111 -> reserved
+	public static final long OPTION_MASK_STORE_INDEX_DATA = 0b1110000;  // bits 5..7 size of index (entries) stored 00 - none 001 -> 64 010 ->128 011->256 
+	public static final long OPTION_MASK_RAW_DATA = 0b10000000;  // bit 8: raw data (1 -> raw data, 0 -> custom serialization) 
+	
+	public final static int CLOVER_DATA_HEADER_LENGTH= 
+			LONG +  // data header
+			LONG +  // compatibility hash
+			BYTE +  // major ver
+			BYTE +  // minor ver
+			BYTE;  // revision ver
+	
+	public final static int CLOVER_DATA_HEADER_OPTIONS_OFFSET= CLOVER_DATA_HEADER_LENGTH -1;
 	
 	public final static char FILE_SEPARATOR = '/';
 	public final static String DATA_DIRECTORY = "DATA" + FILE_SEPARATOR;
@@ -99,22 +123,20 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public final static String TMP_EXTENSION = ".tmp";
 
 	private WritableByteChannel writer;
+	private CloverDataStream.Output output;
 	private OutputStream out;//FileOutputStream or ZipOutputStream
 	private CloverBuffer buffer;
-	private WritableByteChannel idxWriter;
-	private ByteBuffer idxBuffer;
 	private boolean saveIndex;
 	private String fileURL;
 	private String fileName;
-	private File idxTmpFile;
-	private ReadableByteChannel idxReader;
 	private boolean isOpen = false;
+	private DataCompressAlgorithm compress;
+	private boolean raw = true;
 	private URL projectURL;
 	private DataRecordMetadata metadata;	
 	
-	private final static short LEN_SIZE_SPECIFIER = 4;
-	private final static int SHORT_SIZE_BYTES = 2;
-	private final static int LONG_SIZE_BYTES = 8;
+	private DataRecordSerializer serializer;
+
 
 	
 	/**
@@ -126,6 +148,7 @@ public class CloverDataFormatter extends AbstractFormatter {
 	public CloverDataFormatter(String fileName,boolean saveIndex) {
 		this.fileURL = fileName;
 		this.saveIndex = saveIndex;
+		this.compress= DataCompressAlgorithm.NONE;
 	}
 
 	/* (non-Javadoc)
@@ -134,77 +157,124 @@ public class CloverDataFormatter extends AbstractFormatter {
 	@Override
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		this.metadata = metadata;
-        buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE);
+        buffer = CloverBuffer.allocateDirect(Defaults.Record.RECORDS_BUFFER_SIZE+LEN_SIZE_SPECIFIER);
+        buffer.order(BUFFER_BYTE_ORDER);
+        serializer = new CloverDataRecordSerializer();
  	}
 
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
     @Override
-	public void setDataTarget(Object outputDataTarget) {
-        //create output stream
-    	this.out = (OutputStream) outputDataTarget;
-    	File file = null;
-        try {
-        	file = new File(FileUtils.getFile(projectURL, fileURL));
-			this.fileName = file.getName();
-		} catch (MalformedURLException e) {
-			// can't happen - used for obtaining output stream
-		}
-		if (fileName.endsWith(".zip")) {
-			fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-		}
-		writer = Channels.newChannel(this.out);
-        if (saveIndex) {//create temporary index file
-            try{
-                idxTmpFile = IAuthorityProxy.getAuthorityProxy(ContextProvider.getGraph()).newTempFile(fileName, -1);
-                idxWriter = Channels.newChannel(new DataOutputStream(new FileOutputStream(idxTmpFile)));
-            }catch(Exception ex){
-                throw new RuntimeException(ex);
-            }
-            idxBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+	public void setDataTarget(Object outputDataTarget) throws IOException {
+		buffer.clear();
+		// create output stream
+		if (outputDataTarget instanceof OutputStream){
+			this.out = (OutputStream) outputDataTarget;
+			writer = Channels.newChannel(this.out);
+		}else if (outputDataTarget instanceof File){
+			this.fileName=((File)outputDataTarget).getAbsolutePath();
+			this.writer = new RandomAccessFile((File)outputDataTarget,"rw").getChannel();
+			this.out = Channels.newOutputStream(this.writer);
+		}else{
+        	throw new IOException("Unsupported  Data Target type: "+outputDataTarget.getClass().getName());
         }
-        isOpen = true;
-
-        if (append) {
-        	if (!(writer instanceof FileChannel)) {
-        		throw new RuntimeException("Seekable stream is required if append is true.");
-        	}
-        	try {
-				if (((FileChannel) writer).size() > 0) {
-					CloverDataParser.checkCompatibilityHeader(Channels.newChannel(new FileInputStream(file)), metadata);
+		isOpen = true;
+		boolean writeHeader = true;
+		if (append) {
+			if (!(writer instanceof SeekableByteChannel)) {
+				throw new RuntimeException("Seekable stream is required for appending. Got "+writer.getClass().getName());
+			}
+			try {
+				if (((SeekableByteChannel) writer).size() > 0) {
+					FileConfig version = CloverDataParser.checkCompatibilityHeader((SeekableByteChannel)writer, metadata);
+					//check that we have compatible format version
+					if (version.formatVersion!=CURRENT_FORMAT_VERSION){
+						throw new IOException("Can not append. Target file is of incompatible version - "+version.formatVersion);
+					}
+					this.compress = DataCompressAlgorithm.getAlgorithm(version.compressionAlgorithm);
+					this.raw = version.raw;
+					writeHeader = false;
 				} else {
-					//write header information for compatibility testing while later reading
-			        writeCompatibilityHeader();
+					// write header information for compatibility testing while later reading
+					writeHeader = true;
+					append=false; //zero length, thus no appending actually
 				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			} catch (ComponentNotReadyException e) {
 				throw new RuntimeException(e);
 			}
-        } else {
-        	//write header information for compatibility testing while later reading
-            writeCompatibilityHeader();
-        }
-    }
+		}
+		try {
+			int size = 0;
+			if (writeHeader) {
+				// write header information for compatibility testing while later reading
+				writeCompatibilityHeader();
+				buffer.flip();
+				size = buffer.remaining();
+				writer.write(buffer.buf());
+			}
+
+			switch (compress) {
+			case NONE:
+				this.output = new CloverDataStream.Output(out);
+				this.output.setCompress(false);
+				break;
+			case LZ4:
+				this.output = new CloverDataStream.Output(out, CloverDataStream.Output.DEFAULT_BLOCK_SIZE, new CloverDataStream.CompressorLZ4());
+				this.output.setCompress(true);
+				break;
+			case GZIP:
+				this.output = new CloverDataStream.Output(out, CloverDataStream.Output.DEFAULT_BLOCK_SIZE, new CloverDataStream.CompressorGZIP());
+				this.output.setCompress(true);
+				break;
+			default:
+				throw new RuntimeException("Unsupported compression algorithm: " + compress);
+			}
+			if (append) {
+				this.output.seekToAppend((SeekableByteChannel) writer);
+			} else {
+				this.output.setPosition(size); // need to tell CloverDataStream what is current position of the wrapped
+												// stream
+			}
+		} catch (IOException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+    
+    @Override
+	public DataTargetType getPreferredDataTargetType() {
+		return DataTargetType.FILE;
+	}
 
     private void writeCompatibilityHeader() {
         //write a clover data binary header @see Defaults.Component.CLOVER_DATA_HEADER
-        //HEADER & COMPATIBILITY_HASH & MAJOR_VERSION & MINOR_VERSION & REVISION_VERSION & 4_EXTRA_BYTES
+        //HEADER & COMPATIBILITY_HASH & MAJOR_VERSION & MINOR_VERSION & REVISION_VERSION & 8_EXTRA_BYTES
         buffer.putLong(CLOVER_DATA_HEADER);
-        buffer.putLong(CLOVER_DATA_COMPATIBILITY_HASH_3_5);
+        buffer.putLong(CLOVER_DATA_COMPATIBILITY_HASH_4_0);
         buffer.put((byte) JetelVersion.getMajorVersion());
         buffer.put((byte) JetelVersion.getMinorVersion());
         buffer.put((byte) JetelVersion.getRevisionVersion());
         //extra bytes now used only first bit to distinquish whether null fields are serialized as a bit array
         //@see Defaults.Record.USE_FIELDS_NULL_INDICATORS
-    	byte[] extraBytes = new byte[4];
+    	byte[] extraBytes = new byte[HEADER_OPTIONS_ARRAY_SIZE];
         if (Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
-        	BitArray.set(extraBytes, 0);
+        	BitArray.encodeNumber(extraBytes, OPTION_MASK_USE_FIELDS_NULL_INDICATORS,1);
         }
+        //encode compression
+        BitArray.encodeNumber(extraBytes, OPTION_MASK_COMPRESSED_DATA, compress.getId());
+        if (isSaveIndex()){
+        	BitArray.encodeNumber(extraBytes, OPTION_MASK_STORE_INDEX_DATA, DEFAULT_BLOCK_INDEX_SIZE.getId());
+        }
+        BitArray.encodeNumber(extraBytes, OPTION_MASK_RAW_DATA, raw ? 1 : 0);
+        
         buffer.put(extraBytes);
         //serialize used metadata into data file - will be used to validate input file by CloverDataParser 
-        metadata.serialize(buffer);
+        byte[] metaser = metadataSerialize(metadata);
+        //encode serialized metadata length
+        ByteBufferUtils.encodeLength(buffer,metaser.length);
+        buffer.put(metaser);
     }
     
     @Override
@@ -218,70 +288,10 @@ public class CloverDataFormatter extends AbstractFormatter {
 		}
 	}
 	
-    @SuppressWarnings("resource")
 	@Override
 	public void finish() throws IOException{
     	if (!isOpen) return;
-    	
     	flush();
-			if (out instanceof ZipOutputStream) {
-				((ZipOutputStream)out).closeEntry();
-			}
-			if (saveIndex) {
-				idxReader = new FileInputStream(idxTmpFile).getChannel();
-				if (idxTmpFile.length() > 0){//if some indexes were saved to tmp file, save the rest of indexes
-					ByteBufferUtils.flush(idxBuffer,idxWriter);
-					ByteBufferUtils.reload(idxBuffer,idxReader);
-				}
-				idxWriter.close();
-				idxBuffer.flip();
-				long startValue = 0;//first index
-				int position;
-				if (out instanceof ZipOutputStream) {
-					//put entry INEX/fileName.idx
-					((ZipOutputStream)out).putNextEntry(new ZipEntry(INDEX_DIRECTORY + fileName + INDEX_EXTENSION));
-					//append indexes from tmp file 
-					do {
-						startValue = changSizeToIndex(startValue);
-						position = buffer.position();
-						flush();
-					}while (position == buffer.limit());
-					//clear up
-					((ZipOutputStream)out).closeEntry();
-					idxReader.close();
-					idxTmpFile.delete();
-				}else{//out instanceof FileOutputStream
-			    	//get last old index
-					if (append) {
-						try{
-							DataInputStream idxIn = new DataInputStream(FileUtils.getInputStream(projectURL, 
-								fileURL + CloverDataFormatter.INDEX_EXTENSION));
-							idxIn.skip(idxIn.available() - LONG_SIZE_BYTES);
-							startValue = idxIn.readLong();
-						} catch (IOException e) {
-							// do nothing: index file apparently doesn't exist
-						} 
-					}
-					//append indexes from tmp file 
-					if (fileURL.startsWith("zip:")) {
-						idxWriter = FileUtils.getWritableChannel(projectURL, fileURL + "#" + INDEX_DIRECTORY + fileName +
-								CloverDataFormatter.INDEX_EXTENSION, append, 0);
-					}
-					else {
-						idxWriter = FileUtils.getWritableChannel(projectURL, fileURL + CloverDataFormatter.INDEX_EXTENSION, 
-							append, -1);
-					}
-					do {
-						startValue = changSizeToIndex(startValue);
-						position = buffer.position();
-						ByteBufferUtils.flush(buffer.buf(),idxWriter);
-					}while (position == buffer.limit());
-					//clear up
-					idxReader.close();
-					idxTmpFile.delete();
-					idxWriter.close();
-				}
-			}
     }
     
 	/* (non-Javadoc)//			writer.close();
@@ -291,61 +301,47 @@ public class CloverDataFormatter extends AbstractFormatter {
 	@Override
 	public void close() throws IOException {
 		if (!isOpen) return;
+		output.close();
 		if (writer.isOpen()) {
 			writer.close();
 		}
 		isOpen = false;
 	}
 	
+	
 	/**
-	 * This method fills buffer with indexes created from records's sizes stored
-	 *  in tmp file or idxBuffer
+	 * If enabled, saves the record size to the index file.
 	 * 
-	 * @param lastValue value to start from
-	 * @return
+	 * The functionality is deprecated.
+	 * 
+	 * @param recordSize
 	 * @throws IOException
-	 */
-	private long changSizeToIndex(long lastValue) throws IOException{
-		short actualValue;
-		while (buffer.remaining() >= LONG_SIZE_BYTES){
-			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){//end of idxBuffer, reload it
-				ByteBufferUtils.reload(idxBuffer,idxReader);
-				idxBuffer.flip();
-			}
-			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){//there is no more sizes to working up
-				break;
-			}
-			buffer.putLong(lastValue);
-			actualValue = idxBuffer.getShort();
-			//if negative value change to big Integer
-			lastValue += actualValue > 0 ? actualValue : Short.MAX_VALUE - actualValue;
-		}
-		return lastValue;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
 	@Override
 	public int write(DataRecord record) throws IOException {
-		int recordSize = record.getSizeSerializedUnitary();
-		if (saveIndex) {
-			//if size is grater then Short, change to negative Short
-			short index = recordSize + LEN_SIZE_SPECIFIER <= Short.MAX_VALUE ? 
-					(short)(recordSize + LEN_SIZE_SPECIFIER) : 
-					(short)(Short.MAX_VALUE - (recordSize + LEN_SIZE_SPECIFIER));
-			if (idxBuffer.remaining() < SHORT_SIZE_BYTES){
-				ByteBufferUtils.flush(idxBuffer,idxWriter);
-			}
-			idxBuffer.putShort(index);
-		}
-		if (buffer.remaining() < recordSize + LEN_SIZE_SPECIFIER) {
-			flush();
-		}
-		buffer.putInt(recordSize);
-		record.serializeUnitary(buffer);
-        
-        return recordSize + LEN_SIZE_SPECIFIER;
+		buffer.clear();
+		record.serialize(buffer, serializer);
+		buffer.flip();
+		return writeDirect(buffer);
+	}
+
+	/**
+	 * Copies the data from the <code>recordBuffer</code>
+	 * to the output.
+	 * 
+	 * It is assumed that the <code>recordBuffer</code>
+	 * is prepared for reading and has a limit set correctly.
+	 * 
+	 * @param recordBuffer
+	 * @return
+	 * @throws IOException
+	 */
+	public int writeDirect(CloverBuffer recordBuffer) throws IOException {
+		int recordSize = recordBuffer.remaining();
+		output.markRecordStart();
+		final int lenbytes=ByteBufferUtils.encodeLength(output, recordSize);
+		output.write(recordBuffer);
+        return recordSize + lenbytes;
 	}
 
 	/* (non-Javadoc)
@@ -353,8 +349,8 @@ public class CloverDataFormatter extends AbstractFormatter {
 	 */
 	@Override
 	public void flush() throws IOException {
-		ByteBufferUtils.flush(buffer.buf(),writer);
-		out.flush();
+		//output.flush();
+		//out.flush();
 	}
 	
 	public boolean isSaveIndex() {
@@ -375,4 +371,95 @@ public class CloverDataFormatter extends AbstractFormatter {
 		this.projectURL = projectURL;
 	}
 
+	
+	
+	protected byte[] metadataSerialize(DataRecordMetadata metadata) {
+		ByteArrayOutputStream  outStream = new ByteArrayOutputStream();
+		DataRecordMetadataXMLReaderWriter.write(metadata, outStream);
+		return outStream.toByteArray();
+	}
+
+	/**
+	 * @return the compress
+	 */
+	public boolean isCompressData() {
+		return this.compress!=DataCompressAlgorithm.NONE;
+	}
+	
+	public boolean isRawData() {
+		return this.raw;
+	}
+
+	/**
+	 * @param compress the compress to set
+	 */
+	public void setCompressLevel(int compressLevel) {
+		if (compressLevel == 0) {
+			this.compress = DataCompressAlgorithm.NONE;
+		} else if (compressLevel < 7) {
+			this.compress = DataCompressAlgorithm.LZ4;
+		} else {
+			this.compress = DataCompressAlgorithm.GZIP;
+		}
+		if (compressLevel > 1) {
+			raw = false;
+		}
+	}
+	
+public enum DataCompressAlgorithm {
+		
+		NONE(0),
+		LZ4(1),
+		GZIP(2);
+		
+		private int id;
+		
+		DataCompressAlgorithm(int algorithm){
+			this.id=algorithm;
+		}
+		
+		public int getId(){
+			return id;
+		}
+		
+		public static DataCompressAlgorithm getAlgorithm(int id){
+			switch(id){
+			case 0: return NONE;
+			case 1: return LZ4;
+			case 2: return GZIP;
+			default:
+				return NONE;
+			}
+		}
+	}	
+		
+	public enum DataIndexTableSize {
+		
+		NONE(0,0),
+		S64(64,1),
+		S128(128,2),
+		S256(256,3),
+		S512(512,4);
+		
+		private int size;
+		private int id;
+		
+		DataIndexTableSize(int size,int id){
+			this.id=id;
+			this.size=size;
+		}
+		
+		public int getId(){
+			return id;
+		}
+		
+		public int getSize(){
+			return size;
+		}
+	}	
+	
+	public enum DataFormatVersion{
+		VERSION_29, VERSION_35, VERSION_40;
+	}
+	
 }

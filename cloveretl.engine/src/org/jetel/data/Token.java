@@ -33,7 +33,7 @@ import org.jetel.util.bytes.CloverBuffer;
  * @created 26 Apr 2012
  * @see TokenTracker
  */
-public class Token extends DataRecord {
+public class Token extends DataRecordImpl {
 
 	private static final long serialVersionUID = -6335039894273092797L;
 	
@@ -77,8 +77,21 @@ public class Token extends DataRecord {
 	}
 	
 	@Override
+	public void serialize(CloverBuffer buffer,DataRecordSerializer serializer) {
+		serializeTokenId(buffer);
+		
+		super.serialize(buffer,serializer);
+	}
+	
+	@Override
 	public void serializeUnitary(CloverBuffer buffer) {
 		super.serialize(buffer);
+	}
+	
+	
+	@Override
+	public void serializeUnitary(CloverBuffer buffer, DataRecordSerializer serializer) {
+		super.serialize(buffer,serializer);
 	}
 	
 	@Override
@@ -88,6 +101,11 @@ public class Token extends DataRecord {
 		super.serialize(buffer, whichFields);
 	}
 	
+    @Override
+	public void serializeUnitary(CloverBuffer buffer,int[] whichFields) {
+    	super.serialize(buffer, whichFields);
+    }
+
 	private void serializeTokenId(CloverBuffer buffer) {
 		serializeTokenId(tokenId, buffer);
 	}
@@ -112,6 +130,13 @@ public class Token extends DataRecord {
 		
 		super.deserialize(buffer);
 	}
+	
+	@Override
+	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer) {
+		deserializeTokenId(buffer);
+		
+		super.deserialize(buffer,serializer);
+	}
 
 	@Override
 	public void deserializeUnitary(CloverBuffer buffer) {
@@ -119,6 +144,13 @@ public class Token extends DataRecord {
 		tokenId = -1;
 	}
 
+	@Override
+	public void deserializeUnitary(CloverBuffer buffer,DataRecordSerializer serializer) {
+		super.deserialize(buffer,serializer);
+		tokenId = -1;
+	}
+
+	
 	@Override
 	public void deserialize(CloverBuffer buffer, int[] whichFields) {
 		deserializeTokenId(buffer);
@@ -167,7 +199,7 @@ public class Token extends DataRecord {
 	}
 	
 	@Override
-	protected DataRecord newInstance(DataRecordMetadata metadata) {
+	protected DataRecordImpl newInstance(DataRecordMetadata metadata) {
 		return new Token(metadata);
 	}
 	

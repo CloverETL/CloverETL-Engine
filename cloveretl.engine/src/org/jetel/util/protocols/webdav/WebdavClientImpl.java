@@ -22,9 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.ProxySelector;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -52,6 +50,7 @@ import org.apache.http.impl.client.DefaultProxyAuthenticationHandler;
 import org.apache.http.impl.client.SystemDefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
 import org.jetel.util.protocols.ProxyConfiguration;
+import org.jetel.util.protocols.UserInfo;
 
 import com.github.sardine.DavResource;
 import com.github.sardine.impl.SardineException;
@@ -108,14 +107,12 @@ public class WebdavClientImpl extends SardineImpl implements WebdavClient {
             
         });
 		
-		Proxy proxy = proxyConfiguration.getProxy();
-		if (proxy != null && proxy != Proxy.NO_PROXY) {
-			URI proxyUri = URI.create(proxyConfiguration.getProxyString());
-			String userInfo = proxyUri.getUserInfo();
-			if (userInfo != null) {
-				HttpHost proxyHost = new HttpHost(proxyUri.getHost(), proxyUri.getPort());
+		if (proxyConfiguration.isProxyUsed()) {
+			UserInfo userInfo = proxyConfiguration.getUserInfo();
+			if (!userInfo.isEmpty()) {
+				HttpHost proxyHost = new HttpHost(proxyConfiguration.getHost(), proxyConfiguration.getPort());
 				client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxyHost);
-				setProxyCredentials(client, proxyHost.getHostName(), proxyHost.getPort(), userInfo);
+				setProxyCredentials(client, proxyHost.getHostName(), proxyHost.getPort(), userInfo.getUserInfo());
 			}
 		}
 	}
@@ -150,7 +147,9 @@ public class WebdavClientImpl extends SardineImpl implements WebdavClient {
 	 */
 	private void setDefaultProxyCredentials(String protocol) {
 		protocol = protocol.toLowerCase();
-		String proxyUserInfo = getUserInfo(System.getProperty(protocol + ".proxyUser"), System.getProperty(protocol + ".proxyPassword"));
+		String user = System.getProperty(protocol + ".proxyUser");
+		String password = System.getProperty(protocol + ".proxyPassword");
+		String proxyUserInfo = getUserInfo(user, password);
 		String proxyHost = System.getProperty(protocol + ".proxyHost"); // null means any host
 		String proxyPortString = System.getProperty(protocol + ".proxyPort");
 		int proxyPort = -1; // -1 means any port
