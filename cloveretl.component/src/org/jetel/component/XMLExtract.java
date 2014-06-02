@@ -488,14 +488,14 @@ public class XMLExtract extends Node {
 			int read = pushbackInputStream.read(bom);
 			int unread = 0;
 
-			int[] unsigned = new int[read];
-			for (int i = 0; i < read; i++) {
-				unsigned[i] = bom[i] & 0xFF;
-			}
-
 			String warnEncoding = null;
 
 			if (read == 4) {
+				int[] unsigned = new int[read];
+				for (int i = 0; i < read; i++) {
+					unsigned[i] = bom[i] & 0xFF;
+				}
+				
 				if (unsigned[0] == 0xFF && unsigned[1] == 0xFE && unsigned[2] == 0x00 && unsigned[3] == 0x00) {
 					// unsigned.UTF_32_LE;
 					if (!"UTF-32LE".equals(this.charset)) {
