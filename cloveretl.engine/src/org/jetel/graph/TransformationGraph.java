@@ -62,6 +62,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.TrueZipVFSEntries;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -154,6 +155,13 @@ public final class TransformationGraph extends GraphElement {
 	 * Flag which indicates the graph has been already analysed by {@link TransformationGraphAnalyzer#analyseGraph(TransformationGraph, GraphRuntimeContext, boolean)}
 	 */
 	private boolean isAnalysed = false;
+	
+	/**
+	 * Execution label is human-readable text which can describe execution of this graph.
+	 * This text is specified directly in grf file, but can be parametrised by public graph parameters.
+	 * This is default for runtime equivalent {@link GraphRuntimeContext#getExecutionLabel()}.
+	 */
+	private String executionLabel;
 	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
@@ -1462,6 +1470,23 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	public void setAnalysed(boolean isAnalysed) {
 		this.isAnalysed = isAnalysed;
+	}
+
+	/**
+	 * Execution label is human-readable text which describes this graph execution.
+	 * Can be parametrised by graph parameters.
+	 * @return resolved execution label for this graph instance
+	 */
+	public String getExecutionLabel() {
+		return getPropertyRefResolver().resolveRef(executionLabel, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	/**
+	 * Sets human-readable description of execution of this graph.
+	 * @param executionLabel
+	 */
+	public void setExecutionLabel(String executionLabel) {
+		this.executionLabel = executionLabel;
 	}
 
 	@Override
