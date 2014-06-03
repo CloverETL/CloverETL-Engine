@@ -279,7 +279,7 @@ public class UtilLib extends TLFunctionLibrary {
     @TLFunctionAnnotation("Returns a map of environment variables. The map is unmodifiable.")
     public static String getComponentProperty(TLFunctionCallContext context, String name) {
     	Node node = context.getTransformationContext().getNode();
-    	if (node == null) {
+    	if (node == null || node.getAttributes() == null) {
     		throw new IllegalStateException("Component properties are not available");
     	}
 		return node.getAttributes().getProperty(name);
