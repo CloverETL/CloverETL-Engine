@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.concurrent.CyclicBarrier;
 
@@ -122,6 +123,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
      * Tracker cannot be null, at least {@link PrimitiveComponentTokenTracker} is used. 
      */
     protected ComponentTokenTracker tokenTracker;    
+    
+    private Properties attributes;
     
 	/**
 	 *  Various PORT kinds identifiers
@@ -1479,7 +1482,15 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	return componentDescription;
     }
 
-    /**
+	public Properties getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Properties attributes) {
+		this.attributes = attributes;
+	}
+
+	/**
      * This method blocks current thread until all input and output edges are
      * complete - last record is read, EOF indicator is reached.
      */

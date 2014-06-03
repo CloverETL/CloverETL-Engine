@@ -43,6 +43,7 @@ import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.XmlUtils;
 import org.jetel.util.property.ComponentXMLAttributes;
+import org.jetel.util.property.RefResFlag;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -224,6 +225,8 @@ public class ComponentFactory {
 			
 			//preset description to the node
 			component.setDescriptor(componentMap.get(componentType));
+			
+			component.setAttributes(xattribs.attributes2Properties(new String[0], RefResFlag.ALL_OFF));
         } catch (Exception e) {
         	throw createException(xattribs, e);
         }
