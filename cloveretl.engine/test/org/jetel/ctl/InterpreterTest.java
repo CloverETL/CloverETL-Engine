@@ -22,6 +22,7 @@ public class InterpreterTest extends CompilerTestCase {
 	public void executeCode(ITLCompiler compiler) {
 		executor = (TransformLangExecutor)compiler.getCompiledCode();
 		
+		executor.setNode(node);
 		executor.setInputRecords(inputRecords);
 		executor.setOutputRecords(outputRecords);
 		executor.setRuntimeLogger(graph.getLogger());

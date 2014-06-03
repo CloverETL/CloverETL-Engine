@@ -21,6 +21,8 @@ package org.jetel.ctl.extensions;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jetel.graph.Node;
+
 /**
  * Global transformation context shared
  * between all function calls from the same transformation.
@@ -40,12 +42,22 @@ public class TLTransformationContext {
 	
 	private Map<Object, Object> cache = new HashMap<Object, Object>(5);
 	
+	private Node node;
+	
 	public Object getCachedObject(Object key) {
 		return cache.get(key);
 	}
 	
 	public Object setCachedObject(Object key, Object value) {
 		return cache.put(key, value);
+	}
+
+	public Node getNode() {
+		return node;
+	}
+
+	public void setNode(Node node) {
+		this.node = node;
 	}
 
 }
