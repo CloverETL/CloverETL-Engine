@@ -2449,7 +2449,21 @@ public class HttpConnector extends Node {
 			return false;
 		}
 
-		return inputMapping.contains("$out.0." + attributeName + " =");
+		if (inputMapping.contains("$out.0." + attributeName + " =")) {
+			return true;
+		}
+
+		InputPort inputPort = getInputPort(INPUT_PORT_NUMBER);
+		if (inputMapping.contains("$out.0.* =")) {
+			if (inputPort != null) {
+				DataRecordMetadata metadata = inputPort.getMetadata();
+				if (metadata != null && metadata.getField(attributeName) != null) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	@Override
