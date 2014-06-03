@@ -316,6 +316,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor, Transf
 		this.graph = graph;
 	}
 
+	public void setNode(org.jetel.graph.Node node) {
+		context.setNode(node);
+	}
+
 	public Log getRuntimeLogger() {
 		return runtimeLogger;
 	}

@@ -30,6 +30,7 @@ import org.jetel.ctl.data.TLTypeEnum;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.HashCodeUtil;
 import org.jetel.util.property.PropertyRefResolver;
@@ -49,6 +50,7 @@ public class UtilLib extends TLFunctionLibrary {
            	"getRawParamValues".equals(functionName) ? new GetRawParamValuesFunction() :
         	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
     		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
+        	"getComponentProperty".equals(functionName) ? new GetComponentPropertyFunction() : 
     		"hashCode".equals(functionName)	? new HashCodeFunction() :	null; 
     		
 		if (ret == null) {
@@ -270,6 +272,29 @@ public class UtilLib extends TLFunctionLibrary {
     	@Override
     	public void execute(Stack stack, TLFunctionCallContext context) {
     		stack.push(getEnvironmentVariables(context));
+    	}
+    }
+    
+    // GET COMPONENT PROPERTY
+    @TLFunctionAnnotation("Returns a map of environment variables. The map is unmodifiable.")
+    public static String getComponentProperty(TLFunctionCallContext context, String name) {
+    	Node node = context.getTransformationContext().getNode();
+    	if (node == null || node.getAttributes() == null) {
+    		throw new IllegalStateException("Component properties are not available");
+    	}
+		return node.getAttributes().getProperty(name);
+    }
+    
+    class GetComponentPropertyFunction implements TLFunctionPrototype {
+    	
+    	@Override
+    	public void init(TLFunctionCallContext context) {
+    	}
+    	
+    	@Override
+    	public void execute(Stack stack, TLFunctionCallContext context) {
+    		String name = stack.popString();
+    		stack.push(getComponentProperty(context, name));
     	}
     }
     
