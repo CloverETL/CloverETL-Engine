@@ -50,7 +50,7 @@ public class UtilLib extends TLFunctionLibrary {
            	"getRawParamValues".equals(functionName) ? new GetRawParamValuesFunction() :
         	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
     		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
-        	"getComponentProperty".equals(functionName) ? new GetComponentPropertyFunction() : 
+        	"getComponentAttribute".equals(functionName) ? new GetComponentAttributeFunction() : 
     		"hashCode".equals(functionName)	? new HashCodeFunction() :	null; 
     		
 		if (ret == null) {
@@ -275,17 +275,20 @@ public class UtilLib extends TLFunctionLibrary {
     	}
     }
     
-    // GET COMPONENT PROPERTY
-    @TLFunctionAnnotation("Returns a map of environment variables. The map is unmodifiable.")
-    public static String getComponentProperty(TLFunctionCallContext context, String name) {
+    // GET COMPONENT ATTRIBUTE
+    @TLFunctionAnnotation("Returns the value of a component attribute.")
+    public static String getComponentAttribute(TLFunctionCallContext context, String name) {
     	Node node = context.getTransformationContext().getNode();
     	if (node == null || node.getAttributes() == null) {
-    		throw new IllegalStateException("Component properties are not available");
+    		throw new IllegalStateException("Component attributes are not available");
+    	}
+    	if (name == null) {
+    		return null;
     	}
 		return node.getAttributes().getProperty(name);
     }
     
-    class GetComponentPropertyFunction implements TLFunctionPrototype {
+    class GetComponentAttributeFunction implements TLFunctionPrototype {
     	
     	@Override
     	public void init(TLFunctionCallContext context) {
@@ -294,7 +297,7 @@ public class UtilLib extends TLFunctionLibrary {
     	@Override
     	public void execute(Stack stack, TLFunctionCallContext context) {
     		String name = stack.popString();
-    		stack.push(getComponentProperty(context, name));
+    		stack.push(getComponentAttribute(context, name));
     	}
     }
     
