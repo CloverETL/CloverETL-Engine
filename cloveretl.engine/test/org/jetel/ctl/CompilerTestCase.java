@@ -9856,7 +9856,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 //		check("ret3", null);
 	}
 
-	public void test_utillib_getComponentAttribute() {
+	public void test_utillib_getComponentProperty() {
 		final String expected = "expectedValue";
 		this.node = new Node("TEST", graph) {
 
@@ -9874,13 +9874,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			}
 			
 		};
-		doCompile("test_utillib_getComponentAttribute");
+		doCompile("test_utillib_getComponentProperty");
 		check("transform", expected);
 	}
 
-	public void test_utillib_getComponentAttribute_expect_error() {
+	public void test_utillib_getComponentProperty_expect_error() {
 		try {
-			doCompile("test_utillib_getComponentAttribute");
+			doCompile("test_utillib_getComponentProperty");
 			fail();
 		} catch (Exception ex) {}
 	}
