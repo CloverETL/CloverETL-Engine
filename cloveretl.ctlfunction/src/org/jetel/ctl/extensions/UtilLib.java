@@ -276,11 +276,14 @@ public class UtilLib extends TLFunctionLibrary {
     }
     
     // GET COMPONENT PROPERTY
-    @TLFunctionAnnotation("Returns a map of environment variables. The map is unmodifiable.")
+    @TLFunctionAnnotation("Returns the value of a component property.")
     public static String getComponentProperty(TLFunctionCallContext context, String name) {
     	Node node = context.getTransformationContext().getNode();
     	if (node == null || node.getAttributes() == null) {
     		throw new IllegalStateException("Component properties are not available");
+    	}
+    	if (name == null) {
+    		return null;
     	}
 		return node.getAttributes().getProperty(name);
     }

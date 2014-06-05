@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 
 import org.jetel.data.ByteDataField;
@@ -32,7 +33,6 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.StringDataField;
 import org.jetel.util.bytes.FileSeekableByteChannel;
-import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.FileUtils;
 
 /**

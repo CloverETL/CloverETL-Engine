@@ -9878,6 +9878,13 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("transform", expected);
 	}
 
+	public void test_utillib_getComponentProperty_expect_error() {
+		try {
+			doCompile("test_utillib_getComponentProperty");
+			fail();
+		} catch (Exception ex) {}
+	}
+
 	public void test_utillib_getJavaProperties() {
 		String key1 = "my.testing.property";
 		String key2 = "my.testing.property2";
