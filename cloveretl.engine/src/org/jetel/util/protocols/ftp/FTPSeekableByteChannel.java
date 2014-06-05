@@ -30,9 +30,9 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SeekableByteChannel;
 
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.string.StringUtils;
 
 /**
