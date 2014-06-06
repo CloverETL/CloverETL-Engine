@@ -732,7 +732,7 @@
 	
 	
 	<target name="check-sources">
-		<if><matches pattern=".*\.commercial" string="${plugin.dir.name}"/>
+		<if><matches pattern=".*\.commercial|.*\.initiate\..*" string="${plugin.dir.name}"/>
 			<then>
 				<property name="plugin.java.src.header.file" value="${dir.build-scripts}/engine.commercial.license.txt"/>
 			</then>
