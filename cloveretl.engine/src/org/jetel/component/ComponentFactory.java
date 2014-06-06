@@ -226,6 +226,11 @@ public class ComponentFactory {
 			//preset description to the node
 			component.setDescriptor(componentMap.get(componentType));
 			
+			//set annotation about location of the component (subgraph only)
+			component.setPartOfDebugInput(xattribs.getBoolean(Node.XML_PART_OF_DEBUG_INPUT_ATTRIBUTE, false));
+			component.setPartOfDebugOutput(xattribs.getBoolean(Node.XML_PART_OF_DEBUG_OUTPUT_ATTRIBUTE, false));
+			
+			//remember all component's attribute for further usage, see getComponentProperty() CTL method
 			component.setAttributes(xattribs.attributes2Properties(new String[0], RefResFlag.ALL_OFF));
         } catch (Exception e) {
         	throw createException(xattribs, e);

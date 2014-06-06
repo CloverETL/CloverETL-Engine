@@ -31,11 +31,13 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
+import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.analyse.GraphCycleInspector;
@@ -198,37 +200,26 @@ public class TransformationGraphAnalyzer {
 				}
 			}
 			
-			sortComponents(result, nodes);
+			detectInputOutputComponents(result, nodes);
 			
 			return result;
 		}
 
-		private void sortComponents(SubgraphAnalysisResult result, Collection<Node> nodes) {
+		private void detectInputOutputComponents(SubgraphAnalysisResult result, Collection<Node> nodes) {
 			Set<Node> debugInputNodes = new HashSet<>();
 			Set<Node> debugOutputNodes = new HashSet<>();
 			Set<Node> activeNodes = new HashSet<>();
-			if (result.getSubgraphInputPrecedentNodes() != null) {
-				debugInputNodes.addAll(result.getSubgraphInputPrecedentNodes());
-			}
-			if (result.getSubgraphOutputFollowingNodes() != null) {
-				debugOutputNodes.addAll(result.getSubgraphOutputFollowingNodes());
-			}
-			int beginPhase = result.getSubgraphInput() != null ? result.getSubgraphInput().getPhaseNum() : Integer.MIN_VALUE;
-			int endPhase = result.getSubgraphOutput() != null ? result.getSubgraphOutput().getPhaseNum() : Integer.MAX_VALUE;
+			
 			for (Node component : nodes) {
-				if (component == result.getSubgraphInput() || component == result.getSubgraphOutput()) {
-					continue;
-				}
-				if (component.getPhaseNum() < beginPhase && !debugInputNodes.contains(component)) {
+				if (component.isPartOfDebugInput()) {
 					debugInputNodes.add(component);
-				}
-				else if (component.getPhaseNum() > endPhase && !debugOutputNodes.contains(component)) {
+				} else if (component.isPartOfDebugOutput()) {
 					debugOutputNodes.add(component);
-				}
-				else {
+				} else {
 					activeNodes.add(component);
 				}
 			}
+			
 			result.setDebugInputNodes(debugInputNodes);
 			result.setDebugOutputNodes(debugOutputNodes);
 			result.setActiveNodes(activeNodes);
@@ -318,77 +309,75 @@ public class TransformationGraphAnalyzer {
 			this.subgraphOutputFollowingNodes = subgraphOutputFollowingNodes;
 		}
 		public void validate() throws SubgraphAnalysisValidationException {
-			if (subgraphInputFollowingNodes != null && subgraphInputPrecedentNodes != null) {
-				if (!CollectionUtils.intersection(subgraphInputFollowingNodes, subgraphInputPrecedentNodes).isEmpty()) {
-					throw new SubgraphAnalysisValidationException("A component preceding the SubgraphInput component is probably connected with a component following SubgraphInput.");
-				}
-			}
-			if (subgraphOutputFollowingNodes != null && subgraphOutputPrecedentNodes != null) {
-				if (!CollectionUtils.intersection(subgraphOutputFollowingNodes, subgraphOutputPrecedentNodes).isEmpty()) {
-					throw new SubgraphAnalysisValidationException("A component following the SubgraphOutput component is probably connected with a component preceding SubgraphOutput.");
-				}
-			}
-			if (subgraphInputPrecedentNodes != null && subgraphOutput != null && subgraphInputPrecedentNodes.contains(subgraphOutput)) {
-				throw new SubgraphAnalysisValidationException("SubgraphOutput is connected to a component preceding SubgraphInput");
-			}
-			if (subgraphOutputFollowingNodes != null && subgraphInput != null && subgraphOutputFollowingNodes.contains(subgraphInput)) {
-				throw new SubgraphAnalysisValidationException("SubgraphInput is connected to a component following SubgraphOutput");
-			}
+			ConfigurationStatus subgraphStatus = subgraph.getPreCheckConfigStatus();
+
 			for (Edge edge : getSubgraph().getEdges().values()) {
 				Node reader = edge.getReader();
 				Node writer = edge.getWriter();
 				
-				if (reader == subgraphInput || reader == subgraphOutput || writer == subgraphInput || writer == subgraphOutput) {
-					continue;
-				}
-				
 				if (reader != null && writer != null) {
-					validateEdge(reader, writer);
-					validateEdge(writer, reader);
+					validateEdge(subgraphStatus, writer, reader);
 				}
 			}
-			if (subgraphInput != null) {
-				for (Node node : subgraphInputPrecedentNodes) {
-					if (node.getPhaseNum() > subgraphInput.getPhaseNum()) {
-						throw new SubgraphAnalysisValidationException(String.format("Component %s is connected to debugging input components but is in phase %d", node.getName(), node.getPhaseNum()));
+		}
+		
+		/**
+		 * Checks all invalid combination of the edge routing.
+		 */
+		private void validateEdge(ConfigurationStatus subgraphStatus, Node from, Node to) {
+			if (from == getSubgraphInput()) {
+				if (to == getSubgraphInput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (to != getSubgraphOutput()) {
+					if (to.isPartOfDebugInput()) {
+						reportError(subgraphStatus, from, to);
+					} else if (to.isPartOfDebugOutput()) {
+						reportError(subgraphStatus, from, to);
 					}
 				}
-			}
-			if (subgraphOutput != null) {
-				for (Node node : subgraphOutputFollowingNodes) {
-					if (subgraphOutput.getPhaseNum() > node.getPhaseNum()) {
-						throw new SubgraphAnalysisValidationException(String.format("Component %s is connected to debugging output components but is in phase %d", node.getName(), node.getPhaseNum()));
-					}
+			} else if (from == getSubgraphOutput()) {
+				if (to == getSubgraphOutput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (to == getSubgraphInput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (to.isPartOfDebugInput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (!to.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (to == getSubgraphInput()) {
+				if (from.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (!from.isPartOfDebugInput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (to == getSubgraphOutput()) {
+				if (from.isPartOfDebugInput()) {
+					reportError(subgraphStatus, from, to);
+				} else if (from.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (from.isPartOfDebugInput()) {
+				if (!to.isPartOfDebugInput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (from.isPartOfDebugOutput()) {
+				if (!to.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
+				}
+			} else if (!from.isPartOfDebugInput() && !from.isPartOfDebugOutput()) {
+				if (to.isPartOfDebugInput() || to.isPartOfDebugOutput()) {
+					reportError(subgraphStatus, from, to);
 				}
 			}
 		}
-		private void validateEdge(Node componentA, Node componentB) throws SubgraphAnalysisValidationException {
-			if (debugInputNodes.contains(componentA) && !debugInputNodes.contains(componentB)) {
-				throw new SubgraphAnalysisValidationException(String.format("Debugging input component %s is connected to %s which is not a debugging input component.",
-						componentA.getName(), componentB.getName()));
-			}
-			if (debugOutputNodes.contains(componentA) && !debugOutputNodes.contains(componentB)) {
-				throw new SubgraphAnalysisValidationException(String.format("Debugging output component %s is connected to %s which is not a debugging output component.",
-						componentA.getName(), componentB.getName()));
-			}
-		}
-		public Integer getStartPhase() {
-			return subgraphInput != null ? subgraphInput.getPhaseNum() : null;
-		}
-		public Integer getEndPhase() {
-			return subgraphOutput != null ? subgraphOutput.getPhaseNum() : null;
-		}
-		public boolean isActivePhase(int phaseNum) {
-			if (getStartPhase() != null && phaseNum < getStartPhase()) {
-				return false;
-			}
-			if (getEndPhase() != null && getEndPhase() < phaseNum) {
-				return false;
-			}
-			return true;
+		
+		private void reportError(ConfigurationStatus subgraphStatus, Node from, Node to) {
+			subgraphStatus.add("Invalid subgraph layout. Edge from " + from + " to " + to + " is not allowed.", Severity.ERROR, from, Priority.NORMAL);
+			subgraphStatus.add("Invalid subgraph layout. Edge from " + from + " to " + to + " is not allowed.", Severity.ERROR, to, Priority.NORMAL);
 		}
 	}
-	
+
 	/**
 	 * Checks subgraph layout and removes all components before SubgraphInput and after SubgraphOutput.
 	 */

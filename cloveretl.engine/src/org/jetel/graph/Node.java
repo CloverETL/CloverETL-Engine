@@ -126,6 +126,12 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     
     private Properties attributes;
     
+    /** Subgraph only. Is this component part of debug input phase of the subgraph. */
+    private boolean partOfDebugInput = false;
+    
+    /** Subgraph only. Is this component part of debug output phase of the subgraph. */
+    private boolean partOfDebugOutput = false;
+    
 	/**
 	 *  Various PORT kinds identifiers
 	 *
@@ -142,6 +148,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
 	public final static String XML_TYPE_ATTRIBUTE="type";
     public final static String XML_ENABLED_ATTRIBUTE="enabled";
     public final static String XML_ALLOCATION_ATTRIBUTE = "allocation";
+    public final static String XML_PART_OF_DEBUG_INPUT_ATTRIBUTE = "debugInput";
+    public final static String XML_PART_OF_DEBUG_OUTPUT_ATTRIBUTE = "debugOutput";
 
     /**
      *  Standard constructor.
@@ -1502,5 +1510,29 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     		outputPort.getEdge().waitForEOF();
     	}
     }
-    
+
+	public void setPartOfDebugInput(boolean partOfDebugInput) {
+		this.partOfDebugInput = partOfDebugInput;
+	}
+
+	/**
+	 * Subgraph only feature.
+	 * @return true if this component is part of debug input phase of this subgraph
+	 */
+	public boolean isPartOfDebugInput() {
+		return partOfDebugInput;
+	}
+	
+	public void setPartOfDebugOutput(boolean partOfDebugOutput) {
+		this.partOfDebugOutput = partOfDebugOutput;
+	}
+
+	/**
+	 * Subgraph only feature.
+	 * @return true if this component is part of debug output phase of this subgraph
+	 */
+	public boolean isPartOfDebugOutput() {
+		return partOfDebugOutput;
+	}
+
 }
