@@ -109,4 +109,8 @@ public final class JetelVersion {
     public static final String getJavaRequiredVersion(){
         return JAVA_REQUIRED_VERSION;
     }
+
+    public static String getVersion() {
+    	return MAJOR_VERSION+"."+MINOR_VERSION+"."+REVISION_VERSION+"."+VERSION_SUFFIX;
+    }
 }
