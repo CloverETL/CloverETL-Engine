@@ -103,8 +103,8 @@ public class AggregateMappingParser {
 	private List<FieldMapping> fieldMapping = new ArrayList<FieldMapping>();
 	private List<ConstantMapping> constantMapping = new ArrayList<ConstantMapping>();
 	
-	private final DateFormat DATE_FORMAT = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
-	private final DateFormat DATETIME_FORMAT = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
+	private static final ThreadLocal<DateFormat> DATE_FORMAT = new DateFormatCache(Defaults.DEFAULT_DATE_FORMAT);
+	private static final ThreadLocal<DateFormat> DATETIME_FORMAT = new DateFormatCache(Defaults.DEFAULT_DATETIME_FORMAT);
 	
 	/**
 	 * 
@@ -197,7 +197,7 @@ public class AggregateMappingParser {
 	 * @return value of the constant.
 	 * @throws AggregationException if the constant format is invalid.
 	 */
-	public Object getConstantValue(String text) throws AggregationException {
+	public static Object getConstantValue(String text) throws AggregationException {
 		String value = text.trim();
 
 		if (Pattern.compile("^" + MAPPING_STRING_REGEX + "$").matcher(value).matches()) {
@@ -489,9 +489,9 @@ public class AggregateMappingParser {
 	 * @return date value of the constant.
 	 * @throws AggregationException
 	 */
-	private Date createDate(String constant) throws AggregationException {
+	private static Date createDate(String constant) throws AggregationException {
 		try {
-			return DATE_FORMAT.parse(constant);
+			return DATE_FORMAT.get().parse(constant);
 		} catch (ParseException e) {
 			throw new AggregationException("Date is in invalid  format: " + constant, e);
 		}
@@ -521,9 +521,9 @@ public class AggregateMappingParser {
 	 * @return datetime value of the constant.
 	 * @throws AggregationException
 	 */
-	private Date createDatetime(String constant) throws AggregationException {
+	private static Date createDatetime(String constant) throws AggregationException {
 		try {
-			return DATETIME_FORMAT.parse(constant);
+			return DATETIME_FORMAT.get().parse(constant);
 		} catch (ParseException e) {
 			throw new AggregationException("Date is in invalid  format: " + constant, e);
 		}
@@ -874,6 +874,27 @@ public class AggregateMappingParser {
 		 */
 		public String getInputField() {
 			return inputField;
+		}
+	}
+	
+	/**
+	 * Thread-safe wrapper of SimpleDateFormat.
+	 * 
+	 * @author krivanekm (info@cloveretl.com)
+	 *         (c) Javlin, a.s. (www.cloveretl.com)
+	 *
+	 * @created 30. 5. 2014
+	 */
+	private static class DateFormatCache extends ThreadLocal<DateFormat> {
+		private final String format;
+
+		public DateFormatCache(String format) {
+			this.format = format;
+		}
+
+		@Override
+		protected DateFormat initialValue() {
+			return new SimpleDateFormat(format);
 		}
 	}
 }
