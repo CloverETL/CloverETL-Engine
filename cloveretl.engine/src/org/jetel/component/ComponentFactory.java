@@ -226,7 +226,9 @@ public class ComponentFactory {
 			//preset description to the node
 			component.setDescriptor(componentMap.get(componentType));
 			
-			component.setAttributes(xattribs.attributes2Properties(new String[0], RefResFlag.ALL_OFF));
+			if (xattribs != null) {
+                component.setAttributes(xattribs.attributes2Properties(new String[0], RefResFlag.ALL_OFF));
+			}
         } catch (Exception e) {
         	throw createException(xattribs, e);
         }
