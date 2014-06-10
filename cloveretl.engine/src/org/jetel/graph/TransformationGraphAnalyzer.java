@@ -311,6 +311,31 @@ public class TransformationGraphAnalyzer {
 		public void validate() throws SubgraphAnalysisValidationException {
 			ConfigurationStatus subgraphStatus = subgraph.getPreCheckConfigStatus();
 
+			//phase order check
+			if (getSubgraphInput().getPhaseNum() > getSubgraphOutput().getPhaseNum()) {
+				subgraphStatus.add("Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.", Severity.ERROR, getSubgraphInput(), Priority.NORMAL);
+				subgraphStatus.add("Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.", Severity.ERROR, getSubgraphOutput(), Priority.NORMAL);
+			}
+			for (Node component : getSubgraph().getNodes().values()) {
+				if (component.isPartOfDebugInput()) {
+					if (component.getPhaseNum() > getSubgraphInput().getPhaseNum()) {
+						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is greater than SubgraphInput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+					}
+				} else if (component.isPartOfDebugOutput()) {
+					if (component.getPhaseNum() < getSubgraphOutput().getPhaseNum()) {
+						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is less than SubgraphOutput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+					}
+				} else {
+					if (component.getPhaseNum() < getSubgraphInput().getPhaseNum()) {
+						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is less than SubgraphInput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+					}
+					if (component.getPhaseNum() > getSubgraphOutput().getPhaseNum()) {
+						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is greater than SubgraphOutput's phase number.", Severity.ERROR, component, Priority.NORMAL);
+					}
+				}
+			}
+			
+			//graph layout - edges routing
 			for (Edge edge : getSubgraph().getEdges().values()) {
 				Node reader = edge.getReader();
 				Node writer = edge.getWriter();
