@@ -231,7 +231,9 @@ public class ComponentFactory {
 			component.setPartOfDebugOutput(xattribs.getBoolean(Node.XML_PART_OF_DEBUG_OUTPUT_ATTRIBUTE, false));
 			
 			//remember all component's attribute for further usage, see getComponentProperty() CTL method
-			component.setAttributes(xattribs.attributes2Properties(new String[0], RefResFlag.ALL_OFF));
+			if (xattribs != null) {
+                component.setAttributes(xattribs.attributes2Properties(new String[0], RefResFlag.ALL_OFF));
+			}
         } catch (Exception e) {
         	throw createException(xattribs, e);
         }
