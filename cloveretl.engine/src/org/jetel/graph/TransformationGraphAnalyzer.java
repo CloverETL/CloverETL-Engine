@@ -49,6 +49,7 @@ import org.jetel.graph.modelview.impl.MVEngineGraph;
 import org.jetel.graph.modelview.impl.MetadataPropagationResolver;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.SingleThreadWatchDog;
+import org.jetel.util.GraphUtils;
 import org.jetel.util.SubgraphUtils;
 
 /*
@@ -312,24 +313,24 @@ public class TransformationGraphAnalyzer {
 			ConfigurationStatus subgraphStatus = subgraph.getPreCheckConfigStatus();
 
 			//phase order check
-			if (getSubgraphInput().getPhaseNum() > getSubgraphOutput().getPhaseNum()) {
+			if (getSubgraphInput().getPhaseNum() > getSubgraphOutput().getPhaseNum() &&  !GraphUtils.hasEdge(getSubgraphInput(), getSubgraphOutput())) {
 				subgraphStatus.add("Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.", Severity.ERROR, getSubgraphInput(), Priority.NORMAL);
 				subgraphStatus.add("Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.", Severity.ERROR, getSubgraphOutput(), Priority.NORMAL);
 			}
 			for (Node component : getSubgraph().getNodes().values()) {
 				if (component.isPartOfDebugInput()) {
-					if (component.getPhaseNum() > getSubgraphInput().getPhaseNum()) {
+					if (component.getPhaseNum() > getSubgraphInput().getPhaseNum() && !GraphUtils.hasEdge(component, getSubgraphOutput())) {
 						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is greater than SubgraphInput's phase number.", Severity.ERROR, component, Priority.NORMAL);
 					}
 				} else if (component.isPartOfDebugOutput()) {
-					if (component.getPhaseNum() < getSubgraphOutput().getPhaseNum()) {
+					if (component.getPhaseNum() < getSubgraphOutput().getPhaseNum() && !GraphUtils.hasEdge(getSubgraphOutput(), component)) {
 						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is less than SubgraphOutput's phase number.", Severity.ERROR, component, Priority.NORMAL);
 					}
 				} else {
-					if (component.getPhaseNum() < getSubgraphInput().getPhaseNum()) {
+					if (component.getPhaseNum() < getSubgraphInput().getPhaseNum() && !GraphUtils.hasEdge(getSubgraphInput(), component)) {
 						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is less than SubgraphInput's phase number.", Severity.ERROR, component, Priority.NORMAL);
 					}
-					if (component.getPhaseNum() > getSubgraphOutput().getPhaseNum()) {
+					if (component.getPhaseNum() > getSubgraphOutput().getPhaseNum() && !GraphUtils.hasEdge(component, getSubgraphOutput())) {
 						subgraphStatus.add("Invalid phase order. Phase number of component " + component + " is greater than SubgraphOutput's phase number.", Severity.ERROR, component, Priority.NORMAL);
 					}
 				}

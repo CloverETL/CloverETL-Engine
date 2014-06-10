@@ -24,6 +24,7 @@ import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeFactory;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
@@ -278,6 +279,20 @@ public class GraphUtils {
 		} else {
 			throw new IllegalArgumentException("unexpected edge types for combination " + edgeType1 + " " + edgeType2);
 		}
+	}
+
+	/**
+	 * @param source reader component of expected edge
+	 * @param target writer component of expected edge
+	 * @return true if an edge from source to target component exists
+	 */
+	public static boolean hasEdge(Node source, Node target) {
+		for (OutputPort outputPort : source.getOutPorts()) {
+			if (outputPort.getEdge().getReader() == target) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }
