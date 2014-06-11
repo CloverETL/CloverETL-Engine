@@ -538,6 +538,29 @@
 				<method name="set*JAXB"/>
 			</keepclassmembernames>
 
+			<keep name="com.initiatesystems.etl.connection.InitiateUtils"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.Attribute"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.MemHead"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.Segment"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.EntXtsk"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.IdtXtsk"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.MemXtsk"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.EntLink"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.connection.segment.NonAttributeSegmentRegistry"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.provider.MappingElementProvider"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.element.common.ControlMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.element.common.SequenceMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.element.initiate.InitiateMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.filter.SourceInitiateMappingFilter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.filter.TargetInitiateMappingFilter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.filter.SourceSequenceMappingFilter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.filter.SourceControlMappingFilter"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.expressions.FilterExpressionTargetMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.mapping.expressions.FilterExpressionSourceMappingElement"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.dictionary.QueryMemberDictionaryType"><field access="public"/><method access="public"/></keep>
+			<keep name="com.initiatesystems.etl.formatter.MemPutJoiner"><field access="public"/><method access="public"/></keep>
+			
+
 			<!-- template to copy&paste
 			<keep name="xxxxxx"><field access="protected public"/><method access="protected public"/></keep>
 			-->
