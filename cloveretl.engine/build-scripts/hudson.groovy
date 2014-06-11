@@ -154,6 +154,11 @@ if( !runTests ){
 	if (testName == "performance") {
 		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
 	}
+	if (testName == "tests-after-commit-java-1.6-IBM") {
+		// prevent OutOfMemoryError and Segmentation error on IBM Java
+		antArgs += "-Drunscenarios.Xmx=-Xmx1024m"
+	}
+
 	
 	
 	cloverD = new File(baseD, "cloverETL")
