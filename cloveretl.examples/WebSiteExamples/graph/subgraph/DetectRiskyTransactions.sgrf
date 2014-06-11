@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed Apr 02 17:07:51 CEST 2014" guiVersion="0.0.0.devel" id="1396451422194" licenseType="Commercial" modified="Thu Apr 03 19:08:51 CEST 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.3" showComponentDetails="true">
+<Graph author="User" created="Wed Apr 02 17:07:51 CEST 2014" guiVersion="0.0.0.devel" id="1396451422194" licenseType="Commercial" modified="Wed Jun 11 14:45:56 CEST 2014" modifiedBy="Kokon" name="Default graph name" nature="subgraph" revision="1.7" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="rates" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\n" type="delimited">
@@ -38,7 +38,7 @@
 <GraphParameter name="RATES_FILE" value="http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"/>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="94" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="DetectRiskyTransactions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="375" x="38" y="49">
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="94" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="DetectRiskyTransactions" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="375" x="800" y="-20">
 <attr name="text"><![CDATA[Subgraph that detects risky transactions based on some rules. Different types of risky transactions are returned on separate outputs.]]></attr>
 </Note>
 <Dictionary/>
@@ -81,7 +81,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="DebugInput" guiX="50" guiY="265" id="DEBUG_INPUT" recordsNumber="0" type="DATA_GENERATOR">
+<Node debugInput="true" enabled="enabled" guiName="DebugInput" guiX="14" guiY="241" id="DEBUG_INPUT" recordsNumber="0" type="DATA_GENERATOR">
 <attr name="generate"><![CDATA[//#CTL2
 
 // Generates output record.
@@ -110,9 +110,9 @@ function integer generate() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="DebugOutput" guiX="1837" guiY="182" id="DEBUG_OUTPUT" type="TRASH"/>
-<Node enabled="enabled" guiName="DebugOutput" guiX="1837" guiY="299" id="DEBUG_OUTPUT1" type="TRASH"/>
-<Node enabled="enabled" guiName="DebugOutput" guiX="1837" guiY="416" id="DEBUG_OUTPUT2" type="TRASH"/>
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1877" guiY="182" id="DEBUG_OUTPUT" type="TRASH"/>
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1877" guiY="299" id="DEBUG_OUTPUT1" type="TRASH"/>
+<Node debugOutput="true" enabled="enabled" guiName="DebugOutput" guiX="1877" guiY="416" id="DEBUG_OUTPUT2" type="TRASH"/>
 <Node enabled="enabled" guiName="Format Fields" guiX="513" guiY="472" id="FORMAT_FIELDS" type="REFORMAT">
 <attr name="transform"><![CDATA[//#CTL2
 integer counter = 1;
@@ -215,8 +215,16 @@ function integer getOutputPort() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="170" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT"/>
-<Node enabled="enabled" guiName="SubgraphOutput" guiX="1723" guiY="204" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="228" guiY="-64" id="SUBGRAPH_INPUT" type="SUBGRAPH_INPUT">
+<Port guiY="257" name="0"/>
+<Port guiY="313" name="1"/>
+</Node>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="1763" guiY="-64" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="213" name="0"/>
+<Port guiY="320" name="1"/>
+<Port guiY="437" name="2"/>
+<Port guiY="499" name="3"/>
+</Node>
 <Node aggregateKey="customer_id" enabled="enabled" guiName="Sum Transactions by Customer" guiX="1116" guiY="496" id="SUM_TRANSACTIONS_BY_CUSTOMER" mapping="$customer_id:=$customer_id;$customer_last_name:=first($customer_last_name);$customer_first_name:=first($customer_first_name);$amount:=sum($amount);$currency:=&quot;€&quot;;" type="AGGREGATE"/>
 <Edge debugMode="false" fromNode="AMOUNT_400K:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge12" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="SORT_AMOUNT_DESCENDING:0"/>
 <Edge debugMode="true" fromNode="CONVERT_CURRENCY:0" guiBendpoints="1004:731|1004:992|331:992|331:1235" guiLocks="1358|685|506" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="SPLIT_RECORD_BY_LOGIC:0"/>
