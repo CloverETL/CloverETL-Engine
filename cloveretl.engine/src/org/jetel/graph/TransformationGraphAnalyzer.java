@@ -312,6 +312,16 @@ public class TransformationGraphAnalyzer {
 		public void validate() throws SubgraphAnalysisValidationException {
 			ConfigurationStatus subgraphStatus = subgraph.getPreCheckConfigStatus();
 
+			if (getSubgraphInput() == null) {
+				subgraphStatus.add("Missing SubgraphInput component.", Severity.ERROR, getSubgraph(), Priority.NORMAL);
+				return;
+			}
+
+			if (getSubgraphOutput() == null) {
+				subgraphStatus.add("Missing SubgraphOutput component.", Severity.ERROR, getSubgraph(), Priority.NORMAL);
+				return;
+			}
+
 			//phase order check
 			if (getSubgraphInput().getPhaseNum() > getSubgraphOutput().getPhaseNum() &&  !GraphUtils.hasEdge(getSubgraphInput(), getSubgraphOutput())) {
 				subgraphStatus.add("Invalid phase order. Phase number of SubgraphInput is greater than SubgraphOutput's phase number.", Severity.ERROR, getSubgraphInput(), Priority.NORMAL);
