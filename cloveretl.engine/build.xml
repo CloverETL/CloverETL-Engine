@@ -162,7 +162,14 @@
 
 	<target name="plugin-build">
 		<echo message="Building plugin - ${plugin.dir}"/>
-		<propertyregex property="plugin.obfuscate" input="${plugin.dir}" regexp="${obfuscate.plugin.pattern}" replace="true" defaultvalue="false"/>
+		<condition property="plugin.obfuscate" else="false">
+			<and>
+				<isset property="obfuscate.plugin.pattern" />
+				<not><equals arg1="${obfuscate.plugin.pattern}" arg2="" /></not>
+				<matches pattern="${obfuscate.plugin.pattern}" string="${plugin.dir}" />
+			</and>
+		</condition>
+		<!-- <propertyregex property="plugin.obfuscate" input="${plugin.dir}" regexp="${obfuscate.plugin.pattern}" replace="true" defaultvalue="false"/> -->
 		<echo>Property plugin.obfuscate set to ${plugin.obfuscate}. Created from input: ${plugin.dir}, with regexp: ${obfuscate.plugin.pattern}</echo>
 		<ant dir="../${plugin.dir}" inheritAll="false" inheritrefs="false">
 			<property name="dir.dist" value="${dir.package}"/>
