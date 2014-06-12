@@ -95,6 +95,7 @@ public final class Defaults {
 	}
 
     private static void loadDefaultProperties() {
+    	Defaults.properties = null; // prevent memory leak caused by multiple initialization
         InputStream is;
 
         //load defaults from build-in properties file as a java resource - defaultProperties
