@@ -157,6 +157,7 @@ if( !runTests ){
 	if (testName == "tests-after-commit-java-1.6-IBM") {
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
 		antArgs += "-Drunscenarios.Xmx=-Xmx1024m"
+		println "antArgs: " + antArgs;
 	}
 
 	
