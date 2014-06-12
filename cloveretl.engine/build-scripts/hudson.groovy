@@ -16,7 +16,12 @@ jobBasename = jobNameM[0][1]
 jobGoal = jobNameM[0][3]
 versionSuffix = jobNameM[0][4]
 
+println "jobBasename: " + jobBasename;
+println "jobGoal: " + jobGoal;
+println "versionSuffix: " + versionSuffix;
+
 if( !jobGoal ) jobGoal = "after-commit"
+println "jobGoal: " + jobGoal;
 runTests = jobGoal.startsWith("tests") && jobGoal.contains("java") 
 if( runTests ) {
 	testNameM = jobGoal =~ /^tests-(.+)-(java-[^-]+-[^-]+)(-(.*))?$/
@@ -25,9 +30,13 @@ if( runTests ) {
 	testJVM = testNameM[0][2]
 	testOption = testNameM[0][4]
 	testConfiguration = "engine-${versionSuffix}_${testJVM}"
+	println "testName: " + testName;
+	println "testJVM: " + testJVM;
+	println "testOption: " + testOption;
 	if( testOption ) {
 		testConfiguration += "-" + testOption
 	}   
+	println "testConfiguration: " + testConfiguration;
 	scenarios = testName + ".ts"
 }
  
