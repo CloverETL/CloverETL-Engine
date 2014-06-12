@@ -59,6 +59,8 @@ jobIdent = jobIdent.replaceAll('-', '_').toLowerCase()
 new File(baseD, "cloveretl.test.scenarios/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 new File(baseD, "cloveretl.examples/ExtExamples/jobIdent.prm").write("JOB_IDENT=" + jobIdent)
 
+println "runTests: " + runTests;
+
 antCustomEnv = ["ANT_OPTS":"-Xmx2048m -XX:MaxPermSize=256m"]
 if( !runTests ){
 	// compile engine and run some tests
@@ -159,7 +161,7 @@ if( !runTests ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx1024m"
 		println "antArgs: " + antArgs;
 	}
-	println testName;
+	println "testName: " + testName;
 
 	
 	
