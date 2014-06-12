@@ -159,6 +159,7 @@ if( !runTests ){
 		antArgs += "-Drunscenarios.Xmx=-Xmx1024m"
 		println "antArgs: " + antArgs;
 	}
+	println testName;
 
 	
 	
