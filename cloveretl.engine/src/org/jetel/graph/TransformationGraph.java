@@ -162,6 +162,14 @@ public final class TransformationGraph extends GraphElement {
 	 * This is default for runtime equivalent {@link GraphRuntimeContext#getExecutionLabel()}.
 	 */
 	private String executionLabel;
+
+	/**
+	 * This checkConfig status is populated in graph factorisation.
+	 * Once the real {@link #checkConfig(ConfigurationStatus)} method is
+	 * executed this preliminary issues are copied to the final result.
+	 * @see TransformationGraphAnalyzer
+	 */
+	private ConfigurationStatus preCheckConfigStatus = new ConfigurationStatus();
 	
 	public TransformationGraph() {
 		this(DEFAULT_GRAPH_ID);
@@ -1140,14 +1148,16 @@ public final class TransformationGraph extends GraphElement {
 		if (!isAnalysed()) {
 			TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
 		}
-
+		
 		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
 		Context c = ContextProvider.registerGraph(this);
 		try {
 	    	if(status == null) {
 	            status = new ConfigurationStatus();
 	        }
-	    	
+
+	    	status.addAll(preCheckConfigStatus);
+			
 	    	graphParameters.checkConfig(status);
 	        
 	        //check dictionary
@@ -1489,9 +1499,17 @@ public final class TransformationGraph extends GraphElement {
 		this.executionLabel = executionLabel;
 	}
 
+	/**
+	 * @return configuration status which can be populated by graph factorisation and
+	 * later will be part of {@link #checkConfig(ConfigurationStatus)} result
+	 */
+	public ConfigurationStatus getPreCheckConfigStatus() {
+		return preCheckConfigStatus;
+	}
+
 	@Override
 	public String toString() {
 		return getId() + ":" + getRuntimeContext().getRunId();
 	}
-	
+
 }
