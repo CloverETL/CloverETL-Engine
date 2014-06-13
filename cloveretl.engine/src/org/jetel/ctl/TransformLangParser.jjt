@@ -862,7 +862,9 @@ void ImportSource() :{	Token t;	String filenameURL;}{	// must parse whole 
 	 	t=<STRING_LITERAL> { filenameURL=unquote(t.image); }		| 
 		t=<STRING_PLAIN_LITERAL> { filenameURL=t.image; } 
 	 )
-	{		// tag end of import
+	{
+	    if (graph != null && graph.getPropertyRefResolver() != null) {
+	      filenameURL = graph.getPropertyRefResolver().resolveRef(filenameURL, RefResFlag.URL);	    }		// tag end of import
 		jjtThis.end(t.endLine,t.endColumn);
 
 		// to prevent parsing of an existing import

@@ -939,7 +939,9 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
           jjtc000 = false;
         }
 /*@egen*/
-	{		// tag end of import
+	{
+	    if (graph != null && graph.getPropertyRefResolver() != null) {
+	      filenameURL = graph.getPropertyRefResolver().resolveRef(filenameURL, RefResFlag.URL);	    }		// tag end of import
 		jjtn000.end(t.endLine,t.endColumn);
 
 		// to prevent parsing of an existing import
