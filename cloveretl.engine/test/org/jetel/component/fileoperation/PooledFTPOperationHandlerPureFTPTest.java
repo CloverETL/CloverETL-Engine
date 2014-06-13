@@ -35,7 +35,7 @@ import org.jetel.component.fileoperation.result.CreateResult;
  *
  * @created 29. 4. 2014
  */
-public class PooledFTPOperationHandlerTest2 extends PooledFTPOperationHandlerTest {
+public class PooledFTPOperationHandlerPureFTPTest extends PooledFTPOperationHandlerTest {
 	
 	private static final String testingUri = "ftp://pureftpuser:test@koule:66/tmp/file_operation_tests/";
 
