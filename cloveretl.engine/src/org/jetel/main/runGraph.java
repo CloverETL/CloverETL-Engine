@@ -538,7 +538,6 @@ public class runGraph {
         System.out.println("-pass\t\t\tpassword for decrypting of hidden connections passwords");
         System.out.println("-stdin\t\t\tload graph definition from STDIN");
         System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
-        System.out.println("-checkconfig\t\tonly check graph configuration");
         System.out.println("-skipcheckconfig\t\tskip checking of graph configuration");
         System.out.println("-noJMX\t\t\tturns off sending graph tracking information");
         System.out.println("-config <filename>\t\tload default engine properties from specified file");
