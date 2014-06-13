@@ -447,6 +447,7 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 	}
 
 
+	@Override
 	public CloverDataParser.FileConfig getVersion() {
 		return version;
 	}

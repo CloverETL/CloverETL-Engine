@@ -18,6 +18,7 @@
  */
 package org.jetel.data.parser;
 
+import org.jetel.data.parser.CloverDataParser.FileConfig;
 import org.jetel.exception.JetelException;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -52,5 +53,11 @@ public interface ICloverDataParser extends Parser {
 	 * @throws JetelException
 	 */
 	public boolean getNextDirect(CloverBuffer buffer) throws JetelException;
+	
+	/**
+	 * Returns the format specification of the current data source.
+	 * @return
+	 */
+	public FileConfig getVersion();
 	
 }

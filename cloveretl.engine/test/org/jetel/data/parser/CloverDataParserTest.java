@@ -18,12 +18,19 @@
  */
 package org.jetel.data.parser;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.commons.io.output.ByteArrayOutputStream;
+import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordFactory;
+import org.jetel.data.Defaults;
 import org.jetel.data.formatter.CloverDataFormatter;
-import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataFieldType;
+import org.jetel.data.parser.CloverDataParser.FileConfig;
+import org.jetel.data.parser.CloverDataParser35Test.LazyInputStream;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.DataRecordParsingType;
+import org.jetel.util.bytes.CloverBuffer;
 
 /**
  * @author krivanekm (info@cloveretl.com)
@@ -31,52 +38,125 @@ import org.jetel.metadata.DataRecordParsingType;
  *
  * @created Mar 15, 2013
  */
-public class CloverDataParserTest extends AbstractParserTestCase {
+public class CloverDataParserTest extends CloverDataParser35Test {
 
 	@Override
-	protected Parser createParser() throws Exception {
-		DataRecordMetadata metadata = new DataRecordMetadata("metadata");
-		metadata.addField(new DataFieldMetadata("field", DataFieldType.STRING, 1));
-		return new CloverDataParser(metadata);
+	protected ICloverDataParser createParser() throws Exception {
+		CloverDataParser parser = new CloverDataParser(getMetadata());
+		parser.init();
+		return parser;
 	}
-
-	private DataRecordMetadata metadata = null;
-	private byte[] bytes = null;
 	
-	protected DataRecordMetadata getMetadata() {
-		if (metadata == null) {
-			metadata = new DataRecordMetadata("metadata", DataRecordParsingType.FIXEDLEN);
-			metadata.addField(new DataFieldMetadata("field", DataFieldType.STRING, 1));
+	private void writeRecord(CloverDataFormatter formatter, DataRecord record, CloverBuffer buffer) throws IOException {
+		if (formatter.isRawData()) {
+			serializeRecord(record, buffer);
+			formatter.writeDirect(buffer);
+		} else {
+			formatter.write(record);
 		}
-		
-		return metadata;
 	}
-	
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		this.metadata = null;
-		this.bytes = null;
+
+	protected byte[] getBytes(int compressLevel) {
+		try {
+			CloverDataFormatter formatter = new CloverDataFormatter("anything", true);
+			formatter.setCompressLevel(compressLevel);
+			DataRecordMetadata metadata = getMetadata();
+			formatter.init(metadata);
+			ByteArrayOutputStream os = new ByteArrayOutputStream();
+			formatter.setDataTarget(os);
+			formatter.writeHeader();
+			DataRecord record = DataRecordFactory.newRecord(metadata);
+			record.init();
+			CloverBuffer buffer = null;
+			if (formatter.isRawData()) {
+				buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
+			}
+			record.getField(0).setValue("test1");
+			writeRecord(formatter, record, buffer);
+			record.getField(0).setValue("test2");
+			writeRecord(formatter, record, buffer);
+			formatter.writeFooter();
+			formatter.flush();
+			formatter.close();
+			return os.toByteArray();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	protected byte[] getBytes() {
 		if (bytes == null) {
-			try {
-				CloverDataFormatter formatter = new CloverDataFormatter("anything", true);
-				formatter.init(getMetadata());
-				ByteArrayOutputStream os = new ByteArrayOutputStream();
-				formatter.setDataTarget(os);
-				formatter.writeHeader();
-				formatter.writeFooter();
-				formatter.flush();
-				formatter.close();
-				bytes = os.toByteArray();
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+			bytes = getBytes(-1);
 		}
 		
 		return bytes;
 	}
+
+	@Override
+	protected void setDataSource(ICloverDataParser parser, InputStream is) throws Exception {
+		parser.setDataSource(is);
+	}
+	
+	@Override
+	public void testCompatibilityHeader() throws Exception {
+		InputStream is;
+		FileConfig version;
+		DataRecordMetadata metadata = getMetadata();
+		
+		is = new LazyInputStream(new ByteArrayInputStream(getBytes()));
+		version = CloverDataParser.checkCompatibilityHeader(is, metadata);
+		assertEquals(CloverDataFormatter.DataFormatVersion.VERSION_40, version.formatVersion);
+		assertEquals(CloverDataFormatter.DataCompressAlgorithm.LZ4.getId(), version.compressionAlgorithm);
+		assertTrue(version.raw);
+		
+		is = new ByteArrayInputStream(getBytes(0));
+		version = CloverDataParser.checkCompatibilityHeader(is, metadata);
+		assertEquals(CloverDataFormatter.DataFormatVersion.VERSION_40, version.formatVersion);
+		assertEquals(CloverDataFormatter.DataCompressAlgorithm.NONE.getId(), version.compressionAlgorithm);
+		assertTrue(version.raw);
+
+		is = new ByteArrayInputStream(getBytes(1));
+		version = CloverDataParser.checkCompatibilityHeader(is, metadata);
+		assertEquals(CloverDataFormatter.DataFormatVersion.VERSION_40, version.formatVersion);
+		assertEquals(CloverDataFormatter.DataCompressAlgorithm.LZ4.getId(), version.compressionAlgorithm);
+		assertTrue(version.raw);
+
+		is = new ByteArrayInputStream(getBytes(2));
+		version = CloverDataParser.checkCompatibilityHeader(is, metadata);
+		assertEquals(CloverDataFormatter.DataFormatVersion.VERSION_40, version.formatVersion);
+		assertEquals(CloverDataFormatter.DataCompressAlgorithm.LZ4.getId(), version.compressionAlgorithm);
+		assertFalse(version.raw);
+
+		is = new ByteArrayInputStream(getBytes(7));
+		version = CloverDataParser.checkCompatibilityHeader(is, metadata);
+		assertEquals(CloverDataFormatter.DataFormatVersion.VERSION_40, version.formatVersion);
+		assertEquals(CloverDataFormatter.DataCompressAlgorithm.GZIP.getId(), version.compressionAlgorithm);
+		assertFalse(version.raw);
+	}
+
+	@Override
+	public void testParse() throws Exception {
+		super.testParse();
+
+		InputStream is;
+		FileConfig version;
+		
+		is = new ByteArrayInputStream(getBytes(0));
+		version = testParse(is);
+		assertTrue(version.raw);
+
+		is = new ByteArrayInputStream(getBytes(1));
+		version = testParse(is);
+		assertTrue(version.raw);
+
+		is = new ByteArrayInputStream(getBytes(2));
+		version = testParse(is);
+		assertFalse(version.raw); // may change in the future
+
+		is = new ByteArrayInputStream(getBytes(7));
+		version = testParse(is);
+		assertFalse(version.raw); // may change in the future
+	}
+	
 }
