@@ -158,7 +158,8 @@ if( !runTests ){
 		// disable Hadoop tests
 		antArgs += "-Dexcludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
-		antArgs += "-Drunscenarios.Xmx=-Xmx1024m"
+		antArgs += "-Drunscenarios.Xmx=-Xmx2048m"
+		antArgs += "-Drunscenarios.MaxPermSize=-XX:MaxPermSize=512m"
 	}
 
 	
