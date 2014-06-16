@@ -538,11 +538,11 @@ public abstract class IAuthorityProxy {
 		Node component = ContextProvider.getNode();
 		TransformationGraph graph = ContextProvider.getGraph();
 		if (component != null && graph != null) {
-			logger.trace("Component " + component + " from graph " + graph + " acquires new temporary file " + newTempFile);
+			logger.info("Component " + component + " from graph " + graph + " acquires new temporary file " + newTempFile, new Exception());
 		} else if (graph != null) {
-			logger.trace("Graph " + graph + " acquires new temporary file " + newTempFile);
+			logger.info("Graph " + graph + " acquires new temporary file " + newTempFile, new Exception());
 		} else {
-			logger.trace("New temporary file created " + newTempFile);
+			logger.info("New temporary file created " + newTempFile, new Exception());
 		}
 	}
 	
