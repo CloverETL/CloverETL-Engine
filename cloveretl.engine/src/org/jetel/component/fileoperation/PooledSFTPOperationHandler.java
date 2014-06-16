@@ -195,7 +195,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 	}
 
 	private void delete(ChannelSftp channel, URI uri, DeleteParameters params) throws IOException, SftpException {
-		Info info = info(uri, channel);
+		Info info = simpleInfo(uri, channel); // CLO-3949
 		if (info == null) {
 			throw new FileNotFoundException(MessageFormat.format(FileOperationMessages.getString("IOperationHandler.file_not_found"), uri.toString())); //$NON-NLS-1$
 		}
@@ -223,12 +223,13 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		return manager.defaultResolve(wildcards);
 	}
 
-	private class SFTPInfo implements Info {
+	private static class SFTPInfo implements Info {
 		
 		private final String name;
 		private final LsEntry file;
 		private final URI uri;
 		private final URI parent;
+		private final SftpATTRS attrs;
 		
 		private static final int S_IREAD = 00400; // read by owner
 		private static final int S_IWRITE= 00200; // write by owner
@@ -238,6 +239,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			this.file = file;
 			this.parent = parent;
 			this.name = name;
+			this.attrs = file.getAttrs();
 			if (file.getAttrs().isDir() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
 				name = name + URIUtils.PATH_SEPARATOR;
 			}
@@ -246,6 +248,23 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			} else {
 				this.uri = URIUtils.getChildURI(parent, name);
 			}
+		}
+		
+		/**
+		 * CLO-3949:
+		 * Simplified constructor, file deletion speed optimization.
+		 * Does not contain filename,
+		 * some methods may throw exceptions upon invocation.
+		 * 
+		 * @param attrs
+		 * @param self
+		 */
+		private SFTPInfo(SftpATTRS attrs, URI self) {
+			this.file = null;
+			this.parent = null;
+			this.name = null;
+			this.uri = self;
+			this.attrs = attrs;
 		}
 		
 		@Override
@@ -265,7 +284,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public boolean isDirectory() {
-			return file.getAttrs().isDir();
+			return attrs.isDir();
 		}
 
 		@Override
@@ -275,7 +294,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		
 		@Override
 		public Boolean isLink() {
-			return file.getAttrs().isLink();
+			return attrs.isLink();
 		}
 
 		@Override
@@ -291,7 +310,7 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Date getLastModified() {
-			return new Date(file.getAttrs().getMTime() * 1000L);
+			return new Date(attrs.getMTime() * 1000L);
 		}
 
 		@Override
@@ -301,12 +320,12 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Date getLastAccessed() {
-			return new Date(file.getAttrs().getATime() * 1000L);
+			return new Date(attrs.getATime() * 1000L);
 		}
 
 		@Override
 		public Long getSize() {
-			return file.getAttrs().getSize();
+			return attrs.getSize();
 		}
 
 		@Override
@@ -321,17 +340,17 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 
 		@Override
 		public Boolean canRead() {
-			return (file.getAttrs().getPermissions() & S_IREAD) != 0;
+			return (attrs.getPermissions() & S_IREAD) != 0;
 		}
 
 		@Override
 		public Boolean canWrite() {
-			return (file.getAttrs().getPermissions() & S_IWRITE) != 0;
+			return (attrs.getPermissions() & S_IWRITE) != 0;
 		}
 
 		@Override
 		public Boolean canExecute() {
-			return (file.getAttrs().getPermissions() & S_IEXEC) != 0;
+			return (attrs.getPermissions() & S_IEXEC) != 0;
 		}
 		
 	}
@@ -369,15 +388,42 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 		return sb.toString();
 	}
 	
-	private Info info(URI targetUri, ChannelSftp channel) throws IOException {
+	/**
+	 * CLO-3949:
+	 * Speed optimization, only performs STAT for regular files.
+	 * 
+	 * @param targetUri
+	 * @param channel
+	 * @return
+	 * @throws IOException
+	 */
+	private Info simpleInfo(URI targetUri, ChannelSftp channel) throws IOException {
+		return info(targetUri, channel, true);
+	}
+	
+	/**
+	 * 
+	 * @param targetUri
+	 * @param channel
+	 * @param simple - only performs STAT for regular files
+	 * @return
+	 * @throws IOException
+	 * @see <a href="https://bug.javlin.eu/browse/CLO-3949">CLO-3949</a>
+	 */
+	private Info info(URI targetUri, ChannelSftp channel, boolean simple) throws IOException {
 		try {
 			String path = getPath(targetUri);
 			SftpATTRS attrs = channel.stat(path);
 			if (!attrs.isDir()) {
-				@SuppressWarnings("unchecked")
-				Vector<LsEntry> files = channel.ls(path);
-				if ((files != null) && !files.isEmpty()) {
-					return info(files.get(0), null, null, targetUri);
+				if (simple) {
+					// speed optimization, does not contain filename!
+					return new SFTPInfo(attrs, targetUri);
+				} else {
+					@SuppressWarnings("unchecked")
+					Vector<LsEntry> files = channel.ls(path);
+					if ((files != null) && !files.isEmpty()) {
+						return info(files.get(0), null, null, targetUri);
+					}
 				}
 			} else {
 				@SuppressWarnings("unchecked")
@@ -406,6 +452,10 @@ public class PooledSFTPOperationHandler implements IOperationHandler {
 			throw new IOException("Failed to get SFTP file info", e);
 		}
 		return null;
+	}
+
+	private Info info(URI targetUri, ChannelSftp channel) throws IOException {
+		return info(targetUri, channel, false);
 	}
 	
 	private PooledSFTPConnection connect(URI uri) throws IOException {
