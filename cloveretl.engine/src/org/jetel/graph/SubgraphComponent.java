@@ -43,10 +43,11 @@ public interface SubgraphComponent {
 	public String getSubgraphURL();
 	
 	/**
+	 * @param strict should be an exception thrown or just null return in case of some error
 	 * @return subgraph instance without metadata propagation
 	 * (this instance is dedicated for further automatic metadata propagation) 
 	 */
-	public TransformationGraph getSubgraphNoMetadataPropagation();
+	public TransformationGraph getSubgraphNoMetadataPropagation(boolean strict);
 	
 	/**
 	 * @param portIndex

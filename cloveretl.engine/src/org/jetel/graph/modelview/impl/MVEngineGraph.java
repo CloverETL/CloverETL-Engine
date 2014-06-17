@@ -105,7 +105,7 @@ public class MVEngineGraph implements MVGraph {
 			mvSubgraphs = new HashMap<>();
 			for (Node component : engineGraph.getNodes().values()) {
 				if (component instanceof SubgraphComponent) {
-					TransformationGraph engineSubgraph = ((SubgraphComponent) component).getSubgraphNoMetadataPropagation();
+					TransformationGraph engineSubgraph = ((SubgraphComponent) component).getSubgraphNoMetadataPropagation(false);
 					if (engineSubgraph != null) { //can be null if the subgraph component is not correctly defined - invalid subgraph URL 
 						MVGraph mvSubgraph = new MVEngineGraph(engineSubgraph, getMVComponent(component.getId()));
 						mvSubgraphs.put(getMVComponent(component.getId()), mvSubgraph);
