@@ -172,9 +172,21 @@ public final class TransformationGraph extends GraphElement {
 	private ConfigurationStatus preCheckConfigStatus = new ConfigurationStatus();
 	
 	public TransformationGraph() {
-		this(DEFAULT_GRAPH_ID);
+		this(iddqd());
 	}
 
+	private static String iddqd() {
+		Exception e = new Exception();
+		String id = "";
+		StackTraceElement[] stackTrace = e.getStackTrace();
+		for (int i = Math.min(stackTrace.length - 1, 10); i >= 2; i--) {
+			String[] classNameElements = stackTrace[i].getClassName().split("\\.");
+			
+			id = id + classNameElements[classNameElements.length - 1] + "_" + stackTrace[i].getLineNumber() + "_";
+		}
+		return id;
+	}
+	
 	/**
 	 *Constructor for the TransformationGraph object
 	 *
