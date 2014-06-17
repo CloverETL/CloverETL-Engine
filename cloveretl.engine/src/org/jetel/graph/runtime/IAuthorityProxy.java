@@ -537,13 +537,19 @@ public abstract class IAuthorityProxy {
 	protected void logNewTempFile(File newTempFile) {
 		Node component = ContextProvider.getNode();
 		TransformationGraph graph = ContextProvider.getGraph();
+
+		String stacktrace = ExceptionUtils.stackTraceToString(new Exception());
+		stacktrace = stacktrace.replaceAll("Exception", "Exxception");
+		stacktrace = stacktrace.replaceAll("exception", "exxception");
+		stacktrace = stacktrace.replaceAll("EXCEPTION", "EXXCEPTION");
 		if (component != null && graph != null) {
-			logger.info("Component " + component + " from graph " + graph + " acquires new temporary file " + newTempFile, new Exception());
+			logger.info("!!!kokon!!! Component " + component + " from graph " + graph + " acquires new temporary file " + newTempFile);
 		} else if (graph != null) {
-			logger.info("Graph " + graph + " acquires new temporary file " + newTempFile, new Exception());
+			logger.info("!!!kokon!!! Graph " + graph + " acquires new temporary file " + newTempFile);
 		} else {
-			logger.info("New temporary file created " + newTempFile, new Exception());
+			logger.info("!!!kokon!!! New temporary file created " + newTempFile);
 		}
+		logger.info("!!!kokon!!!\n" + stacktrace);
 	}
 	
 	/**
