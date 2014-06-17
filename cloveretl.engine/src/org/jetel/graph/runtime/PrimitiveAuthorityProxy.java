@@ -420,7 +420,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
 		try {
 			
-			File file = File.createTempFile("kokon_" + label + "_"+ ContextProvider.getGraph() + "_", suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
+			File file = File.createTempFile("kokon_" + label + "_"+ ContextProvider.getGraph().getId() + "_", suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
 			logNewTempFile(file);
 			return file;
 		} catch (IOException e) {
