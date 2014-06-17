@@ -43,7 +43,7 @@ public class JetelRuntimeException extends RuntimeException {
     }
 
     public JetelRuntimeException(Throwable cause) {
-        super(cause);
+        super(null, cause);
     }
 
 }
