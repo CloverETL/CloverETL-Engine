@@ -182,7 +182,7 @@ public final class TransformationGraph extends GraphElement {
 		for (int i = Math.min(stackTrace.length - 1, 10); i >= 2; i--) {
 			String[] classNameElements = stackTrace[i].getClassName().split("\\.");
 			
-			id = id + classNameElements[classNameElements.length - 1] + "_" + stackTrace[i].getLineNumber() + "_";
+			id = id + StringUtils.normalizeString(classNameElements[classNameElements.length - 1]) + "_" + StringUtils.normalizeString(String.valueOf(stackTrace[i].getLineNumber())) + "_";
 		}
 		return id;
 	}
