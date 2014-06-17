@@ -419,7 +419,6 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
 		try {
-
 			File file = File.createTempFile("kokon_" + label + "_graphId_" + ContextProvider.getGraph().getId() + "_runId_" + ContextProvider.getGraph().getRuntimeContext().getRunId() + "_", suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
 			logNewTempFile(file);
 			return file;
