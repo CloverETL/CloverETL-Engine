@@ -1844,7 +1844,7 @@ public class FileUtils {
 		URL url = getFileURL(contextURL, input);
 		if (SandboxUrlUtils.isSandboxUrl(url)) { // CLS-754
 			try {
-				CloverURI cloverUri = CloverURI.createURI(url.toURI());
+				CloverURI cloverUri = CloverURI.createURI(url.toString());
 				File file = FileManager.getInstance().getFile(cloverUri); 
 				if (file != null) {
 					return file.toString();
