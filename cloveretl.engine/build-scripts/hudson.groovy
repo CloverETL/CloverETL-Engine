@@ -156,7 +156,7 @@ if( !runTests ){
 	}
 	if (testName == "after-commit" && testJVM.endsWith("IBM")) {
 		// disable Hadoop tests
-		antArgs += "-Dexcludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
+		antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
 		antArgs += "-Drunscenarios.Xmx=-Xmx1024m"
 	}
