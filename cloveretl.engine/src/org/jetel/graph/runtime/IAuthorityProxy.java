@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Date;
@@ -53,7 +54,6 @@ import org.jetel.graph.runtime.jmx.GraphTracking;
 import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
-import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.file.WcardPattern;
 import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.string.StringUtils;
@@ -537,13 +537,19 @@ public abstract class IAuthorityProxy {
 	protected void logNewTempFile(File newTempFile) {
 		Node component = ContextProvider.getNode();
 		TransformationGraph graph = ContextProvider.getGraph();
+
+		String stacktrace = ExceptionUtils.stackTraceToString(new Exception());
+		stacktrace = stacktrace.replaceAll("Exception", "Exxception");
+		stacktrace = stacktrace.replaceAll("exception", "exxception");
+		stacktrace = stacktrace.replaceAll("EXCEPTION", "EXXCEPTION");
 		if (component != null && graph != null) {
-			logger.trace("Component " + component + " from graph " + graph + " acquires new temporary file " + newTempFile);
+			logger.info("!!!kokon!!! Component " + component + " from graph " + graph + " acquires new temporary file " + newTempFile);
 		} else if (graph != null) {
-			logger.trace("Graph " + graph + " acquires new temporary file " + newTempFile);
+			logger.info("!!!kokon!!! Graph " + graph + " acquires new temporary file " + newTempFile);
 		} else {
-			logger.trace("New temporary file created " + newTempFile);
+			logger.info("!!!kokon!!! New temporary file created " + newTempFile);
 		}
+		logger.info("!!!kokon!!!\n" + stacktrace);
 	}
 	
 	/**

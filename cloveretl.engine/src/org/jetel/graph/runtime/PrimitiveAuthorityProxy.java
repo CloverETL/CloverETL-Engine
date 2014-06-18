@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collection;
@@ -62,7 +63,6 @@ import org.jetel.graph.runtime.jmx.TrackingEvent;
 import org.jetel.main.runGraph;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.FileConstrains;
-import org.jetel.util.bytes.SeekableByteChannel;
 import org.jetel.util.classloader.GreedyURLClassLoader;
 import org.jetel.util.classloader.MultiParentClassLoader;
 import org.jetel.util.file.FileUtils;
@@ -419,7 +419,16 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
 		try {
-			File file = File.createTempFile(label, suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
+
+			String graphId = null;
+			long runId = -1;
+			if (ContextProvider.getGraph() != null) {
+				graphId = ContextProvider.getGraph().getId();
+				if (ContextProvider.getGraph().getRuntimeContext() != null) {
+					runId = ContextProvider.getGraph().getRuntimeContext().getRunId();
+				}
+			}
+			File file = File.createTempFile("kokon_" + label + "_graphId_" + graphId + "_runId_" + runId + "_", suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
 			logNewTempFile(file);
 			return file;
 		} catch (IOException e) {

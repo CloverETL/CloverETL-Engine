@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -102,7 +103,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	protected int maxCached = 0;
 	protected boolean storeNulls = false;
 	
-	private List<DBLookup> activeLookups = new ArrayList<DBLookup>();
+	private List<DBLookup> activeLookups = Collections.synchronizedList(new ArrayList<DBLookup>());
 	
 	public DBLookupTable(String id, String connectionId, String metadataId, String sqlQuery){
 		super(id);
@@ -143,11 +144,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 */
 	@Override
 	public DataRecordMetadata getMetadata() {
-		if (dbMetadata == null){
-			for (DBLookup activeLookup : activeLookups) {
-				if (activeLookup.getMetadata() != null) {
-					dbMetadata = activeLookup.getMetadata();
-					break;
+		if (dbMetadata == null) {
+			synchronized (activeLookups) {
+				for (DBLookup activeLookup : activeLookups) {
+					if (activeLookup.getMetadata() != null) {
+						dbMetadata = activeLookup.getMetadata();
+						break;
+					}
 				}
 			}
 		}
@@ -197,8 +200,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	public void postExecute() throws ComponentNotReadyException {
 		super.postExecute();
 		try {
-			for (DBLookup activeLookup : activeLookups) {
-				activeLookup.close();
+			synchronized (activeLookups) {
+				for (DBLookup activeLookup : activeLookups) {
+					activeLookup.close();
+				}
 			}
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
@@ -277,8 +282,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     
     @Override
     public synchronized void clear() {
-    	for (DBLookup activeLookup : activeLookups) {
-    		activeLookup.clear();
+    	synchronized (activeLookups) {
+	    	for (DBLookup activeLookup : activeLookups) {
+	    		activeLookup.clear();
+	    	}
     	}
     }
 
@@ -288,9 +295,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
             super.free();
             
             try {
-                for (DBLookup activeLookup : activeLookups) {
-                    activeLookup.close();
-                }
+            	synchronized (activeLookups) {
+	                for (DBLookup activeLookup : activeLookups) {
+	                    activeLookup.close();
+	                }
+            	}
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             } finally {

@@ -40,6 +40,7 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 import net.jpountz.util.Utils;
 import net.jpountz.xxhash.XXHashFactory;
 
+import org.jetel.util.LZ4Provider;
 import org.jetel.util.bytes.CloverBuffer;
 
 public class CloverDataStream {
@@ -93,7 +94,7 @@ public class CloverDataStream {
 		private final LZ4Compressor compressor;
 
 		public CompressorLZ4() {
-			this.compressor = LZ4Factory.fastestInstance().fastCompressor();
+			this.compressor = LZ4Provider.fastestInstance().fastCompressor();
 		}
 		
 		@Override
@@ -112,7 +113,7 @@ public class CloverDataStream {
 		private final LZ4FastDecompressor decompressor;
 
 		public DecompressorLZ4() {
-			this.decompressor = LZ4Factory.fastestInstance().fastDecompressor();
+			this.decompressor = LZ4Provider.fastestInstance().fastDecompressor();
 		}
 		
 		@Override
@@ -645,7 +646,7 @@ public class CloverDataStream {
 		 * @param blockSize
 		 *            the maximum number of bytes to try to compress at once, must be >= 64 and <= 32 M
 		 * @param decompressor
-		 *            the {@link LZ4Decompressor} instance to use to compress data
+		 *            the {@link Decompressor} instance to use to compress data
 		 */
 		public Input(InputStream in, Decompressor decompressor, Checksum checksum) {
 			super(in);

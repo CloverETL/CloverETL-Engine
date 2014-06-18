@@ -657,8 +657,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         
         //check phase order
         if (reader.getPhaseNum() < writer.getPhaseNum()) {
-        	status.add(new ConfigurationProblem("Invalid phase order", Severity.ERROR, reader, Priority.NORMAL));
-        	status.add(new ConfigurationProblem("Invalid phase order", Severity.ERROR, writer, Priority.NORMAL));
+        	status.add(new ConfigurationProblem("Invalid phase order. Phase number of component " + reader + " is less than " + writer + "'s phase number.", Severity.ERROR, reader, Priority.NORMAL));
+        	status.add(new ConfigurationProblem("Invalid phase order. Phase number of component " + writer + " is greater than " + reader + "'s phase number.", Severity.ERROR, writer, Priority.NORMAL));
         }
         
         return status;

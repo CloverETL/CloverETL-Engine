@@ -62,6 +62,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.file.TrueZipVFSEntries;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
+import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -155,10 +156,37 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	private boolean isAnalysed = false;
 	
+	/**
+	 * Execution label is human-readable text which can describe execution of this graph.
+	 * This text is specified directly in grf file, but can be parametrised by public graph parameters.
+	 * This is default for runtime equivalent {@link GraphRuntimeContext#getExecutionLabel()}.
+	 */
+	private String executionLabel;
+
+	/**
+	 * This checkConfig status is populated in graph factorisation.
+	 * Once the real {@link #checkConfig(ConfigurationStatus)} method is
+	 * executed this preliminary issues are copied to the final result.
+	 * @see TransformationGraphAnalyzer
+	 */
+	private ConfigurationStatus preCheckConfigStatus = new ConfigurationStatus();
+	
 	public TransformationGraph() {
-		this(DEFAULT_GRAPH_ID);
+		this(iddqd());
 	}
 
+	private static String iddqd() {
+		Exception e = new Exception();
+		String id = "";
+		StackTraceElement[] stackTrace = e.getStackTrace();
+		for (int i = Math.min(stackTrace.length - 1, 10); i >= 2; i--) {
+			String[] classNameElements = stackTrace[i].getClassName().split("\\.");
+			
+			id = id + StringUtils.normalizeString(classNameElements[classNameElements.length - 1]) + "_" + StringUtils.normalizeString(String.valueOf(stackTrace[i].getLineNumber())) + "_";
+		}
+		return id;
+	}
+	
 	/**
 	 *Constructor for the TransformationGraph object
 	 *
@@ -1132,14 +1160,16 @@ public final class TransformationGraph extends GraphElement {
 		if (!isAnalysed()) {
 			TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
 		}
-
+		
 		//register current thread in ContextProvider - it is necessary to static approach to transformation graph
 		Context c = ContextProvider.registerGraph(this);
 		try {
 	    	if(status == null) {
 	            status = new ConfigurationStatus();
 	        }
-	    	
+
+	    	status.addAll(preCheckConfigStatus);
+			
 	    	graphParameters.checkConfig(status);
 	        
 	        //check dictionary
@@ -1464,9 +1494,34 @@ public final class TransformationGraph extends GraphElement {
 		this.isAnalysed = isAnalysed;
 	}
 
+	/**
+	 * Execution label is human-readable text which describes this graph execution.
+	 * Can be parametrised by graph parameters.
+	 * @return resolved execution label for this graph instance
+	 */
+	public String getExecutionLabel() {
+		return getPropertyRefResolver().resolveRef(executionLabel, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	/**
+	 * Sets human-readable description of execution of this graph.
+	 * @param executionLabel
+	 */
+	public void setExecutionLabel(String executionLabel) {
+		this.executionLabel = executionLabel;
+	}
+
+	/**
+	 * @return configuration status which can be populated by graph factorisation and
+	 * later will be part of {@link #checkConfig(ConfigurationStatus)} result
+	 */
+	public ConfigurationStatus getPreCheckConfigStatus() {
+		return preCheckConfigStatus;
+	}
+
 	@Override
 	public String toString() {
 		return getId() + ":" + getRuntimeContext().getRunId();
 	}
-	
+
 }

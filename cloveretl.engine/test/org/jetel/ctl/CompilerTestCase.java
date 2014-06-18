@@ -44,6 +44,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.ContextProvider;
 import org.jetel.graph.ContextProvider.Context;
+import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
@@ -109,6 +111,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	protected DataRecord[] outputRecords;
 	
 	protected TransformationGraph graph;
+	
+	protected Node node;
 
 	public CompilerTestCase(boolean compileToJava) {
 		this.compileToJava = compileToJava;
@@ -181,6 +185,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		inputRecords = null;
 		outputRecords = null;
 		graph = null;
+		node = null;
 	}
 
 	protected TransformationGraph createEmptyGraph() {
@@ -628,7 +633,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		ITLCompiler compiler = TLCompilerFactory.createCompiler(graph, inMetadata, outMetadata, "UTF-8");
 		// *** NOTE: please don't remove this commented code. It is used for debugging
 		// ***       Uncomment the code to get the compiled Java code during test execution.
-		// ***       Please don't commit this code uncommited.
+		// ***       Please don't commit this code uncommented.
 	
 //		try {
 //			System.out.println(compiler.convertToJava(expStr, CTLRecordTransform.class, testIdentifier));
@@ -9849,6 +9854,35 @@ public abstract class CompilerTestCase extends CloverTestCase {
 //		CLO-1700
 //		check("ret2", null);
 //		check("ret3", null);
+	}
+
+	public void test_utillib_getComponentProperty() {
+		final String expected = "expectedValue";
+		this.node = new Node("TEST", graph) {
+
+			@Override
+			protected Result execute() throws Exception {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Properties getAttributes() {
+				Properties attributes = new Properties();
+				attributes.put("transform", expected);
+				return attributes;
+			}
+			
+		};
+		doCompile("test_utillib_getComponentProperty");
+		check("transform", expected);
+	}
+
+	public void test_utillib_getComponentProperty_expect_error() {
+		try {
+			doCompile("test_utillib_getComponentProperty");
+			fail();
+		} catch (Exception ex) {}
 	}
 
 	public void test_utillib_getJavaProperties() {

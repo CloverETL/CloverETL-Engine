@@ -364,7 +364,7 @@ public class GraphParameter {
 					} else {
 						//referenced component is Subgraph component
 						SubgraphComponent subgraphComponent = (SubgraphComponent) component;
-						TransformationGraph subgraph = subgraphComponent.getSubgraphNoMetadataPropagation();
+						TransformationGraph subgraph = subgraphComponent.getSubgraphNoMetadataPropagation(true);
 						String graphParameterName = SubgraphUtils.getPublicGraphParameterName(componentReference.getAttributeName());
 						if (subgraph.getGraphParameters().hasGraphParameter(graphParameterName)) {
 							//referenced public subgraph parameter found

@@ -18,6 +18,9 @@
  */
 package org.jetel.util.exec;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 /**
  * Provides type of current platform - WINDOWS, LINUX, MAC.
@@ -36,6 +39,14 @@ public class PlatformUtils {
 	/* Determines the system OS and sets os accordingly */
 	private static PlatformType platformType;
 	
+	private static final String javaVendor = System.getProperty("java.vendor");
+	
+	private static final String javaVersion = System.getProperty("java.version");
+	
+	private static int javaMajorVersion = -1;
+	
+	private static final String osArch = System.getProperty("os.arch");
+	
 	static {
 		String platformIdentifier = System.getProperty("os.name").toLowerCase();
 		
@@ -45,6 +56,11 @@ public class PlatformUtils {
 			platformType = PlatformType.WINDOWS;
 		} else {
 			platformType = PlatformType.LINUX;
+		}
+		
+		Matcher m = Pattern.compile("1\\.(\\d)\\.(\\d)").matcher(javaVersion);
+		if (m.matches()) {
+			javaMajorVersion = Integer.parseInt(m.group(1));
 		}
 	}
 	
@@ -83,6 +99,22 @@ public class PlatformUtils {
 	 */
 	public static PlatformType getPlatformType() {
 		return platformType;
+	}
+	
+	public static String getJavaVendor() {
+		return javaVendor;
+	}
+	
+	public static String getOSArch() {
+		return osArch;
+	}
+	
+	public static String getJavaVersion() {
+		return javaVersion;
+	}
+	
+	public static int getJavaMajorVersion() {
+		return javaMajorVersion;
 	}
 	
 }

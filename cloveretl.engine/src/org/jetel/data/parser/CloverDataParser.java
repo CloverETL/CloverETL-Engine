@@ -118,6 +118,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     }
     
     
+	@Override
 	public FileConfig getVersion() {
 		return version;
 	}
