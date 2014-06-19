@@ -35,6 +35,10 @@ public class SubgraphUtils {
 	 * License product id.
 	 */
 	public static final String PRODUCT_ID = "com.cloveretl.server";
+	/**
+	 * License product id for Runtime.
+	 */
+	public static final String RUNTIME_PRODUCT_ID = "com.cloveretl.runtime";
 	
 	/**
 	 * License feature id for subgraphs.
