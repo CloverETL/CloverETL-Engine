@@ -159,6 +159,15 @@ if( !runTests ){
 		antArgs += "-Dtestenv.excludedtestidentpattern=Hadoop.*|HDFS.*|Hive.*"
 		// prevent OutOfMemoryError and Segmentation error on IBM Java
 		antArgs += "-Drunscenarios.Xmx=-Xmx1024m"
+		// enable JMX on port 9010
+		antArgs += "-Dcom.sun.management.jmxremote"
+		antArgs += "-Dcom.sun.management.jmxremote.port=9010"
+		antArgs += "-Dcom.sun.management.jmxremote.local.only=false"
+		antArgs += "-Dcom.sun.management.jmxremote.authenticate=false"
+		antArgs += "-Dcom.sun.management.jmxremote.ssl=false"
+		// enable remote debugging on port 1044
+		antArgs += "-Xdebug"
+		antArgs += "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=1044"
 	}
 
 	
