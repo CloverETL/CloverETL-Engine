@@ -124,16 +124,28 @@ public class Token extends DataRecordImpl {
 		}
 	}
 	
+	/**
+	 * Reads tokenId header from the given buffer.
+	 * @param buffer source buffer
+	 */
+	public static long deserializeTokenId(CloverBuffer buffer) {
+		if (buffer.get() == EMPTY_TOKEN_TAG) {
+			return -1;
+		} else {
+			return buffer.getLong();
+		}
+	}
+	
 	@Override
 	public void deserialize(CloverBuffer buffer) {
-		deserializeTokenId(buffer);
+		setTokenId(buffer);
 		
 		super.deserialize(buffer);
 	}
 	
 	@Override
 	public void deserialize(CloverBuffer buffer, DataRecordSerializer serializer) {
-		deserializeTokenId(buffer);
+		setTokenId(buffer);
 		
 		super.deserialize(buffer,serializer);
 	}
@@ -153,17 +165,13 @@ public class Token extends DataRecordImpl {
 	
 	@Override
 	public void deserialize(CloverBuffer buffer, int[] whichFields) {
-		deserializeTokenId(buffer);
+		setTokenId(buffer);
 		
 		super.deserialize(buffer, whichFields);
 	}
 
-	private void deserializeTokenId(CloverBuffer buffer) {
-		if (buffer.get() == EMPTY_TOKEN_TAG) {
-			tokenId = -1;
-		} else {
-			tokenId = buffer.getLong();
-		}
+	private void setTokenId(CloverBuffer buffer) {
+		tokenId = deserializeTokenId(buffer);
 	}
 	
 	@Override
