@@ -34,6 +34,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
 import org.jetel.data.DataRecordSerializer;
 import org.jetel.data.Defaults;
+import org.jetel.data.Token;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.data.formatter.CloverDataFormatter.DataCompressAlgorithm;
 import org.jetel.exception.ComponentNotReadyException;
@@ -414,7 +415,15 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			if (size<0) return false; //end of file reached
 		
 			targetBuffer.clear();
-			targetBuffer.limit(size);
+
+			// CLO-2657:
+			//in case current transformation is jobflow, tokenId must be added to targetBuffer
+			//since tokenId is not part of clover data file
+			if (isJobflow) {
+				Token.serializeTokenId(-1, targetBuffer);
+			}
+
+			targetBuffer.limit(targetBuffer.position() + size);
 			if (input.read(targetBuffer)==-1){
 				throw new JetelException("Insufficient data in datastream.");
 			}
