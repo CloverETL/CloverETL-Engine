@@ -50,6 +50,7 @@ import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.stream.CloverDataStream;
 import org.jetel.util.stream.StreamUtils;
+import org.jetel.util.string.StringUtils;
 
 /**
  * Class for reading data saved in Clover internal format
@@ -233,8 +234,28 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
                  if (fileName.toLowerCase().endsWith(".zip")) {
                  		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
                  }
-                     inStream = FileUtils.getInputStream(projectURL, !inData.startsWith("zip:") ? inData : 
-                     	inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
+                 	if (inData.startsWith("zip:")) { // CLO-4045
+                 		StringBuilder sbAnchor = new StringBuilder(); 
+                 		FileUtils.getArchiveType(inData, new StringBuilder(), sbAnchor);
+                 		if (!StringUtils.isEmpty(sbAnchor)) { // CLO-4045: archive entry is already specified in the URL
+                 			inStream = FileUtils.getInputStream(projectURL, inData);
+                 		} else {
+                     		try {
+                     			// backward compatibility, append #DATA/fileName
+                     			inStream = FileUtils.getInputStream(projectURL,  
+                         				inData + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName);
+                     		} catch (IOException ioe) {
+                     			try {
+                         			inStream = FileUtils.getInputStream(projectURL, inData);
+                     			} catch (IOException ioe2) {
+                     				ioe.addSuppressed(ioe2);
+                     				throw ioe;
+                     			}
+                     		}
+                 		}
+                 	} else {
+                 		inStream = FileUtils.getInputStream(projectURL, inData);
+                 	}
                      	
                  } catch (IOException ex) {
                      throw new ComponentNotReadyException(ex);
