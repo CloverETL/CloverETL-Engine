@@ -49,7 +49,7 @@
 	<FunctionalTest ident="WebServicesWSClient" graphFile="graph/WebServicesWSClient.grf" />
 	
 	<FunctionalTest ident="WritingTextData" graphFile="graph/WritingTextData.grf">
-		<FlatFile outputFile="data-out/customers/AK.txt" supposedFile="supposed-out/AK.txt"/>
+		<FlatFile outputFile="data-ou t/customers/AK.txt" supposedFile="supposed-out/AK.txt"/>
 		<FlatFile outputFile="data-out/customers/WY.txt" supposedFile="supposed-out/WY.txt"/>
 		<FlatFile outputFile="data-out/customers2/customers3.xml" supposedFile="supposed-out/customers3.xml"/>
 	</FunctionalTest>
@@ -61,6 +61,10 @@
 
 	<FunctionalTest ident="ValidateData" graphFile="graph/ValidateData.grf">
 		<FlatFile outputFile="data-out/invalid_contacts.csv" supposedFile="supposed-out/invalid_contacts.csv"/>
+	</FunctionalTest>
+	
+	<FunctionalTest ident="JSONProcessing" graphFile="graph/JSONProcessing.grf">
+		<FlatFile outputFile="data-out/Actors.json" supposedFile="supposed-out/Actors.json"/>
 	</FunctionalTest>
 	
 	<FunctionalTest ident="Twitter" graphFile="graph/Twitter.grf">
