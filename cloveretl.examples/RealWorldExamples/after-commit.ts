@@ -63,7 +63,7 @@
 		<FlatFile outputFile="data-out/invalid_contacts.csv" supposedFile="supposed-out/invalid_contacts.csv"/>
 	</FunctionalTest>
 	
-		<FunctionalTest ident="ValidateData" graphFile="graph/JSONProcessing.grf">
+	<FunctionalTest ident="JSONProcessing" graphFile="graph/JSONProcessing.grf">
 		<FlatFile outputFile="data-out/Actors.json" supposedFile="supposed-out/Actors.json"/>
 	</FunctionalTest>
 	
