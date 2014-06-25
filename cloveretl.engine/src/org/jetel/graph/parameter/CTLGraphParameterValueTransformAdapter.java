@@ -23,6 +23,7 @@ import org.jetel.ctl.CTLAbstractTransformAdapter;
 import org.jetel.ctl.TransformLangExecutor;
 import org.jetel.ctl.TransformLangExecutorRuntimeException;
 import org.jetel.ctl.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.ctl.data.TLTypePrimitive;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
@@ -46,9 +47,11 @@ public class CTLGraphParameterValueTransformAdapter extends CTLAbstractTransform
 		super.init();
 		
 		getParameterValueFunction = executor.getFunction(GET_PARAMETER_VALUE_FUNCTION_NAME);
-		
 		if (getParameterValueFunction == null) {
 			throw new ComponentNotReadyException(GET_PARAMETER_VALUE_FUNCTION_NAME + " is not defined");
+		}
+		if (!(getParameterValueFunction.getType().equals(TLTypePrimitive.STRING))) {
+			throw new ComponentNotReadyException(GET_PARAMETER_VALUE_FUNCTION_NAME + " must have 'string' return type");
 		}
 	}
 
@@ -56,11 +59,11 @@ public class CTLGraphParameterValueTransformAdapter extends CTLAbstractTransform
 	public String getValue() {
 		Object parameterValue = executor.executeFunction(getParameterValueFunction, NO_ARGUMENTS, NO_DATA_RECORDS, NO_DATA_RECORDS);
 		
-		if (parameterValue == null || !(parameterValue instanceof String)) {
+		if (parameterValue != null && !(parameterValue instanceof String)) {
 			throw new TransformLangExecutorRuntimeException(getParameterValueFunction.getName() + "() function must return 'string'");
 		}
 		
-		String stringParameterValue = (String) parameterValue;
+		String stringParameterValue = parameterValue != null ? parameterValue.toString() : "null";
 		
 		return stringParameterValue;
 	}
