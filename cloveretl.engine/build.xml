@@ -155,7 +155,7 @@
 	<target name="build-engine" depends="compile,package">
 	</target>
 
-	<target name="build-plugins" depends="build-engine">
+	<target name="build-plugins" depends="build-engine" unless="no-plugins">
 		<foreach list="${plugin.list}" inheritall="true" target="plugin-build" param="plugin.dir"/>
 		<property name="dir.dist" value="${dir.package}"/>
 	</target>
@@ -182,7 +182,7 @@
 		</ant>
 	</target>
 
-	<target name="clean-plugins">
+	<target name="clean-plugins" unless="no-plugins">
 		<foreach list="${plugin.list}" inheritall="true" target="plugin-clean" param="plugin.dir"/>
 	</target>
 
