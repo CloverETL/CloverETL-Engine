@@ -419,16 +419,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
 		try {
-
-			String graphId = null;
-			long runId = -1;
-			if (ContextProvider.getGraph() != null) {
-				graphId = ContextProvider.getGraph().getId();
-				if (ContextProvider.getGraph().getRuntimeContext() != null) {
-					runId = ContextProvider.getGraph().getRuntimeContext().getRunId();
-				}
-			}
-			File file = File.createTempFile("kokon_" + label + "_graphId_" + graphId + "_runId_" + runId + "_", suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
+			File file = File.createTempFile(label, suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
 			logNewTempFile(file);
 			return file;
 		} catch (IOException e) {
