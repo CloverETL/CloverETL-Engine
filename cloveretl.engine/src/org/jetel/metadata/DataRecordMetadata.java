@@ -49,7 +49,9 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.IGraphElement;
 import org.jetel.graph.JobType;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.bytes.CloverBuffer;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.BitArray;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.PropertyRefResolver;
@@ -130,6 +132,11 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private TypedProperties recordProperties = new TypedProperties();
 	private String localeStr = null;
 	private String timeZoneStr = null;
+
+	/**
+	 * Lazy initialised timezone provider instance returned by {@link #getTimeZone()} method. 
+	 */
+	private TimeZoneProvider timeZoneProvider;
 
 	/** a format string for numbers */
 	private String numberFormatStr = null;
@@ -1054,6 +1061,17 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 */
 	public String getTimeZoneStr() {
 		return timeZoneStr;
+	}
+
+	/**
+	 * @return timezone provider, which is based on {@link #getTimeZoneStr()} for non-null value
+	 * or is based on default runtime timezone {@link GraphRuntimeContext#getTimeZone()}. 
+	 */
+	public TimeZoneProvider getTimeZone() {
+		if (timeZoneProvider == null) {
+			timeZoneProvider = new TimeZoneProvider(getTimeZoneStr());
+		}
+		return timeZoneProvider;
 	}
 
 	/**
