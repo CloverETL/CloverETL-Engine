@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GraphParameters>
+<GraphParameter name="JIRA_REST_URL" value="${JIRA_URL}/rest/api/2"/>
+<GraphParameter name="JIRA_URL" value="https://bug.javlin.eu"/>
+<GraphParameter name="DEFAULT_QUERY" value="fixVersion = rel-3-5-0 AND labels = release-notes"/>
+</GraphParameters>
