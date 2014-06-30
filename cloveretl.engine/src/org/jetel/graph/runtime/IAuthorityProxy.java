@@ -164,13 +164,21 @@ public abstract class IAuthorityProxy {
 		
 		public RuntimeException getException() {
 			if (status.code() < 0 || status == Result.N_A) {
-				return new JetelRuntimeException("Job " + jobUrl + (runId > 0 ? ("(#" + runId + ")") : "") + " finished with final status " + status + ".",
+				return new JetelRuntimeException(getJobLabel() + " " + jobUrl + (runId > 0 ? ("(#" + runId + ")") : "") + " finished with final status " + status + ".",
 						new StackTraceWrapperException(errMessage, errException));
 			} else {
 				return null;
 			}
 		}
 
+		private String getJobLabel() {
+			if (jobType != null) {
+				return jobType.getLabel();
+			} else {
+				return "Job";
+			}
+		}
+		
 		/**
 		 * Sets {@link #errMessage} and {@link #errException} based on given {@link Exception}.
 		 */
