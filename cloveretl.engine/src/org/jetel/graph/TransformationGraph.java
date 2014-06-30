@@ -164,6 +164,22 @@ public final class TransformationGraph extends GraphElement {
 	private String executionLabel;
 
 	/**
+	 * Component category - readers, writers, joiners, ...
+	 * This information is not used in runtime, but is necessary
+	 * for SubgraphComponentDynamization in designer, where TranformationGraph is
+	 * used as model for various Subgraph component modifications.
+	 */
+	private String category;
+
+	/**
+	 * Path to icon, which is used only by subgraphs. It is of course useless
+	 * for runtime, but it is necessary for SubgraphComponentDynamization
+	 * in designer, where TranformationGraph is used as model for various
+	 * Subgraph component modifications.
+	 */
+	private String iconPath;
+
+	/**
 	 * This checkConfig status is populated in graph factorisation.
 	 * Once the real {@link #checkConfig(ConfigurationStatus)} method is
 	 * executed this preliminary issues are copied to the final result.
@@ -172,21 +188,9 @@ public final class TransformationGraph extends GraphElement {
 	private ConfigurationStatus preCheckConfigStatus = new ConfigurationStatus();
 	
 	public TransformationGraph() {
-		this(iddqd());
+		this(DEFAULT_GRAPH_ID);
 	}
 
-	private static String iddqd() {
-		Exception e = new Exception();
-		String id = "";
-		StackTraceElement[] stackTrace = e.getStackTrace();
-		for (int i = Math.min(stackTrace.length - 1, 10); i >= 2; i--) {
-			String[] classNameElements = stackTrace[i].getClassName().split("\\.");
-			
-			id = id + StringUtils.normalizeString(classNameElements[classNameElements.length - 1]) + "_" + StringUtils.normalizeString(String.valueOf(stackTrace[i].getLineNumber())) + "_";
-		}
-		return id;
-	}
-	
 	/**
 	 *Constructor for the TransformationGraph object
 	 *
@@ -1509,6 +1513,22 @@ public final class TransformationGraph extends GraphElement {
 	 */
 	public void setExecutionLabel(String executionLabel) {
 		this.executionLabel = executionLabel;
+	}
+
+	public String getCategory() {
+		return getPropertyRefResolver().resolveRef(category, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public String getIconPath() {
+		return getPropertyRefResolver().resolveRef(iconPath, RefResFlag.SPEC_CHARACTERS_OFF);
+	}
+
+	public void setIconPath(String iconPath) {
+		this.iconPath = iconPath;
 	}
 
 	/**

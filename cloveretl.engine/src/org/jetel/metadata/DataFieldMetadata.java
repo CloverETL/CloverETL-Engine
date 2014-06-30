@@ -34,6 +34,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.bytes.CloverBuffer;
 import org.jetel.util.formatter.BooleanFormatter;
@@ -41,6 +42,7 @@ import org.jetel.util.formatter.BooleanFormatterFactory;
 import org.jetel.util.formatter.DateFormatter;
 import org.jetel.util.formatter.DateFormatterFactory;
 import org.jetel.util.formatter.ParseBooleanException;
+import org.jetel.util.formatter.TimeZoneProvider;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 
@@ -145,6 +147,11 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	private String timeZoneStr = null;
 
+	/**
+	 * Lazy initialised timezone provider instance returned by {@link #getTimeZone()} method. 
+	 */
+	private TimeZoneProvider timeZoneProvider;
+	
 	/**
 	 * See Collator.setStregth(String strength). It is used only in string fields.
 	 */
@@ -1093,6 +1100,17 @@ public class DataFieldMetadata implements Serializable {
 		return null;
 	}
 
+	/**
+	 * @return timezone provider, which is based on {@link #getTimeZoneStr()} for non-null value
+	 * or is based on default runtime timezone ({@link GraphRuntimeContext#getTimeZone()}). 
+	 */
+	public TimeZoneProvider getTimeZone() {
+		if (timeZoneProvider == null) {
+			timeZoneProvider = new TimeZoneProvider(getTimeZoneStr());
+		}
+		return timeZoneProvider;
+	}
+	
 	/**
 	 * Set collator sensitivity string.	
 	 * @param collatorSensitivity
