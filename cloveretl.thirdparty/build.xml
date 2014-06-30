@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <project name="cloveretl" default="build" basedir=".">
-
+ 
 	<property name="dir.engine" value="../cloveretl.engine"/>
 	<property name="dir.engine.tools" value="${dir.engine}/tools"/>		
 	
