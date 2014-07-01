@@ -351,6 +351,69 @@ public class BitArray implements Serializable{
     public int getLengthBytes() {
         return lengthBytes;
     }   
+    
+    
+    /**
+     * Calculates bit AND of two byte array arguments.
+     * If one is shorter than the other, then only the
+     * common length of bits are processed.
+     * 
+     * @param first
+     * @param second
+     * @return
+     */
+    public static byte[] bitAnd(byte[] first,byte[] second){
+    	final int len=Math.min(first.length, second.length);
+    	byte[] result=new byte[len];
+    	for(int i=0;i<len;i++){
+    		result[i]=(byte)(first[i]&second[i]);
+    	}
+    	return result;
+    }
+    
+    /**
+     * Calculates bit OR of two byte array arguments.
+     * If one is shorter than the other, then only the
+     * common length of bits are processed.
+     * 
+     * @param first
+     * @param second
+     * @return
+     */
+    public static byte[] bitOr(byte[] first,byte[] second){
+    	final int len=Math.min(first.length, second.length);
+    	byte[] result=new byte[len];
+    	for(int i=0;i<len;i++){
+    		result[i]=(byte)(first[i]|second[i]);
+    	}
+    	return result;
+    }
+    
+    /**
+     * Calculates bit XOR of two byte array arguments.
+     * If one is shorter than the other, then only the
+     * common length of bits are processed.
+     * 
+     * @param first
+     * @param second
+     * @return
+     */
+    public static byte[] bitXor(byte[] first,byte[] second){
+    	final int len=Math.min(first.length, second.length);
+    	byte[] result=new byte[len];
+    	for(int i=0;i<len;i++){
+    		result[i]=(byte)(first[i] ^ second[i]);
+    	}
+    	return result;
+    }
+    
+    public static byte[] bitNegate(byte[] first){
+    	byte[] result=new byte[first.length];
+    	for(int i=0;i<result.length;i++){
+    		result[i]=(byte) ~first[i];
+    	}
+    	return result;
+    }
 }
 /*
  *  End class BitArray
