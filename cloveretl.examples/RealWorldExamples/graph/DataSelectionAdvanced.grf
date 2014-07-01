@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="Petr" created="Thu Jul 01 14:14:48 CEST 2010" guiVersion="4.0.0.M1" id="1277991711576" licenseType="Commercial" modified="Tue Mar 25 14:35:19 CET 2014" modifiedBy="User" name="graphAccessingDataSources" revision="1.91" showComponentDetails="true">
+<Graph author="Petr" created="Thu Jul 01 14:14:48 CEST 2010" guiVersion="4.0.0.M2" id="1277991711576" licenseType="Evaluation" modified="Mon Jun 30 19:41:39 CEST 2014" modifiedBy="User" name="graphAccessingDataSources" revision="1.103" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/orders_with_autofilling.fmt" id="Metadata0"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata2"/>
@@ -63,9 +63,6 @@ The following  can be mapped to output fields:
  - function (count())
  - constant ]]></attr>
 </Note>
-<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="128" id="Note5" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Deprecated XLS_READER" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="220" x="814" y="105">
-<attr name="text"><![CDATA[Please note that this example uses and already deprecated XLSReader component - please use SpreadsheetDataReader that has far more features and performance]]></attr>
-</Note>
 <Dictionary/>
 </Global>
 <Phase number="0">
@@ -76,12 +73,48 @@ The following  can be mapped to output fields:
 <Node enabled="enabled" fileURL="tar:(${DATAIN_DIR}/delimited/Orders.tar)#Orders_Br*.csv" guiName="selects from .tar" guiX="58" guiY="590" id="DATA_READER4" skipRows="1" type="DATA_READER">
 <attr name="guiDescription"><![CDATA[Wildcard usage]]></attr>
 </Node>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiName="reads whole .xlsx" guiX="120" guiY="171" id="READS_WHOLE_XLSX" sheet="*" type="SPREADSHEET_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>true</writeHeader>
+    </globalAttributes>
+    <defaultSkip>1</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="0">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="A1"/>
+                <headerRange begin="B1"/>
+                <headerRange begin="C1"/>
+                <headerRange begin="D1"/>
+                <headerRange begin="E1"/>
+                <headerRange begin="F1"/>
+                <headerRange begin="G1"/>
+                <headerRange begin="H1"/>
+                <headerRange begin="I1"/>
+                <headerRange begin="J1"/>
+                <headerRange begin="K1"/>
+                <headerRange begin="L1"/>
+                <headerRange begin="M1"/>
+                <headerRange begin="N1"/>
+                <headerRange begin="O1"/>
+                <headerRange begin="P1"/>
+                <headerRange begin="Q1"/>
+                <headerRange end="inf1" begin="R1"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>
+]]></attr>
+</Node>
 <Node enabled="enabled" guiName="discards all" guiX="669" guiY="105" id="TRASH0" type="TRASH"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/delimited/Orders.xlsx" guiName="reads whole .xlsx" guiX="111" guiY="164" id="XLS_READER0" sheetName="*" type="XLS_READER"/>
 <Edge debugMode="true" fromNode="AGGREGATE0:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata5" outPort="Port 0 (out)" toNode="TRASH0:0"/>
 <Edge fromNode="DATA_READER3:0" guiBendpoints="" guiLocks="null|null|null" guiRouter="Manhattan" id="Edge8" inPort="Port 1 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="CONCATENATE0:1"/>
 <Edge fromNode="DATA_READER4:0" guiBendpoints="268:601|268:521" guiLocks="256|null|null" guiRouter="Manual" id="Edge9" inPort="Port 2 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="CONCATENATE0:2"/>
-<Edge debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="393:175|393:117" guiLocks="381|null|null" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="AGGREGATE0:0"/>
+<Edge debugMode="true" fromNode="READS_WHOLE_XLSX:0" guiBendpoints="453:313|453:222|396:222|396:126" guiLocks="381|396|222" guiRouter="Manual" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="AGGREGATE0:0"/>
 </Phase>
 <Phase number="1">
 <Node aggregateKey="ShipCountry" enabled="enabled" guiName="how many from?" guiX="831" guiY="482" id="AGGREGATE1" mapping="$From:=$ShipCountry;$Count:=count();" sorted="false" type="AGGREGATE"/>

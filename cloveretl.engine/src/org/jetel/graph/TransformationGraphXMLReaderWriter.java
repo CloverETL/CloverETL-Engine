@@ -213,7 +213,9 @@ public class TransformationGraphXMLReaderWriter {
 	public final static String GUI_VERSION_ATTRIBUTE = "guiVersion";
 	public final static String EXECUTION_LABEL_ATTRIBUTE = "executionLabel";
 	public final static String CATEGORY_ATTRIBUTE = "category";
-	public final static String ICON_PATH_ATTRIBUTE = "iconPath";
+	public final static String SMALL_ICON_PATH_ATTRIBUTE = "smallIconPath";
+	public final static String MEDIUM_ICON_PATH_ATTRIBUTE = "mediumIconPath";
+	public final static String LARGE_ICON_PATH_ATTRIBUTE = "largeIconPath";
 	public final static String JOB_TYPE_ATTRIBUTE = "nature";
 	public final static String SHOW_COMPONENT_DETAILS_ATTRIBUTE = "showComponentDetails";
 	
@@ -439,7 +441,9 @@ public class TransformationGraphXMLReaderWriter {
 	        graph.setGuiVersion(grfAttributes.getString(GUI_VERSION_ATTRIBUTE, null));
 	        graph.setExecutionLabel(grfAttributes.getString(EXECUTION_LABEL_ATTRIBUTE, null));
 	        graph.setCategory(grfAttributes.getString(CATEGORY_ATTRIBUTE, null));
-	        graph.setIconPath(grfAttributes.getString(ICON_PATH_ATTRIBUTE, null));
+	        graph.setSmallIconPath(grfAttributes.getString(SMALL_ICON_PATH_ATTRIBUTE, null));
+	        graph.setMediumIconPath(grfAttributes.getString(MEDIUM_ICON_PATH_ATTRIBUTE, null));
+	        graph.setLargeIconPath(grfAttributes.getString(LARGE_ICON_PATH_ATTRIBUTE, null));
 	        graph.setStaticJobType(JobType.fromString(grfAttributes.getString(JOB_TYPE_ATTRIBUTE, null)));
 	
 			// handle all defined graph parameters - old-fashion

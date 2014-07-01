@@ -988,9 +988,19 @@ public class ConvertLib extends TLFunctionLibrary {
 		return StringUtils.toOutputStringCTL(o);
 	}
 	
+	// this method is not annotated as it should not be directly visible in CTL
+	private static final String toStringInternal(Object o,String format) {
+		return StringUtils.toOutputStringCTL(o,format);
+	}
+	
 	@TLFunctionAnnotation("Returns string representation of its argument")
 	public static final String toString(TLFunctionCallContext context, Integer i) {
 		return toStringInternal(i);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument using provided Java String format.")
+	public static final String toString(TLFunctionCallContext context, Integer i, String format) {
+		return toStringInternal(i,format);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
@@ -998,14 +1008,29 @@ public class ConvertLib extends TLFunctionLibrary {
 		return toStringInternal(l);
 	}
 	
+	@TLFunctionAnnotation("Returns string representation of its argument using provided Java String format.")
+	public static final String toString(TLFunctionCallContext context, Long l, String format) {
+		return toStringInternal(l,format);
+	}
+	
 	@TLFunctionAnnotation("Returns string representation of its argument")
 	public static final String toString(TLFunctionCallContext context, Double d) {
 		return toStringInternal(d);
 	}
 	
+	@TLFunctionAnnotation("Returns string representation of its argument using provided Java String format.")
+	public static final String toString(TLFunctionCallContext context, Double d,String format) {
+		return toStringInternal(d,format);
+	}
+	
 	@TLFunctionAnnotation("Returns string representation of its argument")
 	public static final String toString(TLFunctionCallContext context, BigDecimal d) {
 		return toStringInternal(d);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument using provided Java String format.")
+	public static final String toString(TLFunctionCallContext context, BigDecimal d, String format) {
+		return toStringInternal(d,format);
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
@@ -1014,8 +1039,18 @@ public class ConvertLib extends TLFunctionLibrary {
 	}
 	
 	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final <E> String toString(TLFunctionCallContext context, List<E> list,String format) {
+		return toStringInternal(list,format);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
 	public static final <K,V> String toString(TLFunctionCallContext context, Map<K,V> map) {
 		return toStringInternal(map);
+	}
+	
+	@TLFunctionAnnotation("Returns string representation of its argument")
+	public static final <K,V> String toString(TLFunctionCallContext context, Map<K,V> map,String format) {
+		return toStringInternal(map,format);
 	}
 	
 	// toString
@@ -1027,7 +1062,14 @@ public class ConvertLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			stack.push(toStringInternal(stack.pop()));
+			
+			if (context.getParams().length==2){
+				final Object fStr=stack.pop();
+				final Object val=stack.pop();
+				stack.push(toStringInternal(val,(String)fStr));
+			}else{
+				stack.push(toStringInternal(stack.pop()));
+			}
 		}
 
 	}

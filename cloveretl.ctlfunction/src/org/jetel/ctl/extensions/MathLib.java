@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jetel.ctl.Stack;
+import org.jetel.util.primitive.BitArray;
 
 public class MathLib extends TLFunctionLibrary {
 	
@@ -580,6 +581,11 @@ public class MathLib extends TLFunctionLibrary {
     	return i | j;
     }
     
+    @TLFunctionAnnotation("Computes bitwise OR of two operands.")
+    public static final byte[] bitOr(TLFunctionCallContext context, byte[] i, byte[] j) {
+    	return BitArray.bitOr(i, j);
+    }
+    
     class BitOrFunction implements TLFunctionPrototype {
 
 		@Override
@@ -594,13 +600,15 @@ public class MathLib extends TLFunctionLibrary {
 		    */
 		   if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 		    stack.push(bitOr(context,stack.popInt(), stack.popInt()));
-		   } else {
+		   } else  if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
 		    
 		    /*
-		     * In all other cases, i.e. bitOr(int,long), bitOr(long, int), bitOr(long,long)
+		     * In other cases, i.e. bitOr(int,long), bitOr(long, int), bitOr(long,long)
 		     * the compiler will automatically cast int to long so we have to always call bitOr(long,long)
 		     */
 		    stack.push(bitOr(context, stack.popLong(), stack.popLong()));
+		   } else {
+			   stack.push(bitOr(context, stack.popByteArray(), stack.popByteArray()));
 		   }
 		   
 		  } 
@@ -616,6 +624,11 @@ public class MathLib extends TLFunctionLibrary {
 	public static final Integer bitAnd(TLFunctionCallContext context, Integer i, Integer j) {
 		return i & j;
 	}
+	
+	@TLFunctionAnnotation("Computes bitwise AND of two operands.")
+    public static final byte[] bitAnd(TLFunctionCallContext context, byte[] i, byte[] j) {
+    	return BitArray.bitAnd(i, j);
+    }
 
 	class BitAndFunction implements TLFunctionPrototype {
 
@@ -631,13 +644,15 @@ public class MathLib extends TLFunctionLibrary {
 		    */
 		   if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 		    stack.push(bitAnd(context,stack.popInt(), stack.popInt()));
-		   } else {
+		   } else  if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
 		    
 		    /*
-		     * In all other cases, i.e. bitAnd(int,long), bitAnd(long, int), bitAnd(long,long)
+		     * In other cases, i.e. bitAnd(int,long), bitAnd(long, int), bitAnd(long,long)
 		     * the compiler will automatically cast int to long so we have to always call bitAnd(long,long)
 		     */
 		    stack.push(bitAnd(context, stack.popLong(), stack.popLong()));
+		   } else {
+			   stack.push(bitAnd(context, stack.popByteArray(), stack.popByteArray()));
 		   }
 		   
 		  } 
@@ -651,6 +666,11 @@ public class MathLib extends TLFunctionLibrary {
     @TLFunctionAnnotation("Computes bitwise XOR of two operands.")
     public static final Integer bitXor(TLFunctionCallContext context, Integer i, Integer j) {
     	return i ^ j;
+    }
+    
+    @TLFunctionAnnotation("Computes bitwise XOR of two operands.")
+    public static final byte[] bitXor(TLFunctionCallContext context, byte[] i, byte[] j) {
+    	return BitArray.bitXor(i, j);
     }
     
     class BitXorFunction implements TLFunctionPrototype {
@@ -667,13 +687,15 @@ public class MathLib extends TLFunctionLibrary {
 		    */
 		   if (context.getParams()[0].isInteger() && context.getParams()[1].isInteger()) {
 		    stack.push(bitXor(context,stack.popInt(), stack.popInt()));
-		   } else {
+		   } else if (context.getParams()[0].isLong() && context.getParams()[1].isLong()) {
 		    
 		    /*
-		     * In all other cases, i.e. bitXor(int,long), bitXor(long, int), bitXor(long,long)
+		     * In other cases, i.e. bitXor(int,long), bitXor(long, int), bitXor(long,long)
 		     * the compiler will automatically cast int to long so we have to always call bitXor(long,long)
 		     */
 		    stack.push(bitXor(context, stack.popLong(), stack.popLong()));
+		   } else {
+			   stack.push(bitXor(context, stack.popByteArray(), stack.popByteArray()));
 		   }
 		   
 		  } 
@@ -760,6 +782,11 @@ public class MathLib extends TLFunctionLibrary {
     	return ~i;
     }
     
+    @TLFunctionAnnotation("Inverts all bits in argument")
+    public static final byte[] bitNegate(TLFunctionCallContext context, byte[] i) {
+    	return BitArray.bitNegate(i);
+    }
+    
     class BitNegateFunction implements TLFunctionPrototype {
     	
 		@Override
@@ -773,6 +800,9 @@ public class MathLib extends TLFunctionLibrary {
     			return;
     		} else if (context.getParams()[0].isLong()) {
     			stack.push(bitNegate(context, stack.popLong()));
+    			return;
+    		} else if (context.getParams()[0].isByteArray()){
+    			stack.push(bitNegate(context, stack.popByteArray()));
     			return;
     		}
     	}
@@ -790,6 +820,11 @@ public class MathLib extends TLFunctionLibrary {
 	public static final Boolean bitIsSet(TLFunctionCallContext context, Long input, Integer bitPosition) {
     	return ((input & ( 1l << bitPosition)) != 0);
 	}
+    
+    @TLFunctionAnnotation("Tests if n-th bit of 1st argument is set")
+	public static final Boolean bitIsSet(TLFunctionCallContext context, byte[] input, Integer bitPosition) {
+    	return BitArray.isSet(input, bitPosition);
+	}
 
     
     class BitIsSetFunction implements TLFunctionPrototype {
@@ -806,6 +841,9 @@ public class MathLib extends TLFunctionLibrary {
 			} else if (context.getParams()[0].isLong()) {
 				int bitPosition = stack.popInt();
 				stack.push(bitIsSet(context, stack.popLong(), bitPosition));
+			} else if (context.getParams()[0].isByteArray()) {
+				int bitPosition = stack.popInt();
+				stack.push(bitIsSet(context, stack.popByteArray(), bitPosition));
 			}
 		}
     }
@@ -831,6 +869,18 @@ public class MathLib extends TLFunctionLibrary {
     	
     	return result;
 	}
+    
+    @TLFunctionAnnotation("Sets or resets n-th bit of 1st argument")
+	public static final byte[] bitSet(TLFunctionCallContext context, byte[] input, Integer bitPosition, boolean value) {
+    	byte[] result = new byte[input.length];
+    	System.arraycopy(input, 0, result, 0, input.length);
+    	if (value)
+    		BitArray.set(result, bitPosition);
+		else
+			BitArray.reset(result, bitPosition);
+    	
+    	return result;
+	}
 
 
     
@@ -848,8 +898,9 @@ public class MathLib extends TLFunctionLibrary {
 				stack.push(bitSet(context, stack.popInt(), bitPosition, value));
 			} else if (context.getParams()[0].isLong()) {
 				stack.push(bitSet(context, stack.popLong(), bitPosition, value));
+			} else if (context.getParams()[0].isByteArray()) {
+				stack.push(bitSet(context, stack.popByteArray(), bitPosition, value));
 			}
-			
 		}
     	
     }

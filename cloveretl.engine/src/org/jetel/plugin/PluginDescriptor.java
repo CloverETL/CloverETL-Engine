@@ -51,7 +51,9 @@ import org.xml.sax.SAXException;
  */
 public class PluginDescriptor {
 
-	private static final Pattern ABSOLUTE_PLUGIN_URL_PATTERN = Pattern.compile("clover:/plugin/([^/]*)/(.*)");
+	public static final String PLUGIN_URL_PREFIX = "clover:/plugin/";
+	
+	private static final Pattern PLUGIN_URL_PATTERN = Pattern.compile(PLUGIN_URL_PREFIX + "([^/]*)/(.*)");
 
     static Log logger = LogFactory.getLog(Plugins.class);
 
@@ -317,20 +319,24 @@ public class PluginDescriptor {
      * @return
      * @throws MalformedURLException
      */
-    public URL getURL(String path) throws MalformedURLException {
-        Matcher matcher = ABSOLUTE_PLUGIN_URL_PATTERN.matcher(path);
+    public URL getURL(String url) throws MalformedURLException {
+	    Matcher matcher = PLUGIN_URL_PATTERN.matcher(url);
         if (matcher.matches()) {
         	String pluginId = matcher.group(1);
         	String relativePath = matcher.group(2);
-        	PluginDescriptor descriptor = Plugins.getPluginDescriptor(pluginId);
-        	if (descriptor != null) {
-        		return descriptor.getURL(relativePath);
+        	if (!StringUtils.isEmpty(pluginId)) {
+	        	PluginDescriptor descriptor = Plugins.getPluginDescriptor(pluginId);
+	        	if (descriptor != null) {
+		        	return FileUtils.getFileURL(descriptor.getManifest(), relativePath);
+	        	} else {
+	        		throw new MalformedURLException("Invalid URL '" + url + "', plugin '" + pluginId + "' does not exist.");
+	        	}
         	} else {
-        		throw new MalformedURLException("Invalid url '" + path + "'.");
+	        	return FileUtils.getFileURL(manifest, relativePath);
         	}
-        } else {
-        	return FileUtils.getFileURL(manifest, path);
-        }
+    	} else {
+        	return FileUtils.getFileURL(manifest, url);
+    	}
     }
     
     /**
@@ -510,6 +516,33 @@ public class PluginDescriptor {
 				logger.warn("Probably non-standard jvm is used. The native libraries in '" + getId() + "' plugin are ignored.");
 			}
     	}
+    }
+    
+    /**
+     * @return true for url with following pattern 'clover:/plugin/<pluginId>/<path>'
+     */
+    public static boolean isPluginURL(String url) {
+    	if (url != null) { 
+	        Matcher matcher = PLUGIN_URL_PATTERN.matcher(url);
+	        return matcher.matches();
+    	} else {
+    		return false;
+    	}
+    }
+    
+    /**
+     * @param pluginId
+     * @param path
+     * @return plugin URL with following shape "clover:/plugin/<pluginId>/<path>"
+     */
+    public static String createPluginURL(String pluginId, String path) {
+    	if (pluginId == null) {
+    		pluginId = "";
+    	}
+    	if (!path.startsWith("/")) {
+    		path = "/" + path;
+    	}
+    	return PLUGIN_URL_PREFIX + pluginId + path; 
     }
     
 }

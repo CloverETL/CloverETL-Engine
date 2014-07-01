@@ -200,4 +200,21 @@ public final class SandboxUrlUtils {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Joins context URL with an other URL. If the second URL is regular
+	 * sandbox URL, only the secon attribute is returned. But if the second URL
+	 * is relative path, first context URL is taken into consideration and
+	 * the relative path is joined with the sandbox given by the first attribute.
+	 * For example:
+	 * joinSandboxUrls("xxx", "sandbox://test/data.txt") -> "sandbox://test/data.txt" 
+	 * joinSandboxUrls("sandbox://test/foo.txt"", "./some/data.txt") -> "sandbox://test/some/data.txt" 
+	 */
+	public static String joinSandboxUrls(String contextSandboxUrl, String sandboxUrl) {
+		if (isSandboxUrl(sandboxUrl) || !isSandboxUrl(contextSandboxUrl)) {
+			return sandboxUrl;
+		}
+		String sandboxName = getSandboxName(contextSandboxUrl);
+		return getSandboxPath(sandboxName, sandboxUrl);
+	}
+	
 }

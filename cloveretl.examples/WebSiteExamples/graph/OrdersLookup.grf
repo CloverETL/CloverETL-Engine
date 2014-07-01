@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="4.0.0.M1" id="1280312940927" licenseType="Commercial" modified="Tue Mar 25 11:27:46 CET 2014" modifiedBy="User" name="graphFilters_Lookups" revision="1.44" showComponentDetails="true">
+<Graph author="lucie" created="Wed Jul 28 10:10:37 CEST 2010" guiVersion="4.0.0.M2" id="1280312940927" licenseType="Evaluation" modified="Mon Jun 30 19:36:05 CEST 2014" modifiedBy="User" name="graphFilters_Lookups" revision="1.45" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata1"/>
 <Metadata fileURL="${META_DIR}/orders.fmt" id="Metadata4"/>
@@ -47,9 +47,47 @@ Join order details with customer information from Lookup table using Reformat]]>
 <Node enabled="enabled" guiName="Gather Customer Lists" guiX="387" guiY="404" id="GATHER_CUSTOMER_LISTS" type="SIMPLE_GATHER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region1.csv" guiName="Read Customer List [1]" guiX="75" guiY="312" id="READ_CUSTOMER_LIST_1" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="${DATAIN_DIR}/customers_region2.csv" guiName="Read Customer List [2]" guiX="75" guiY="521" id="READ_CUSTOMER_LIST_2" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${DATAIN_DIR}/Orders.xlsx" guiName="Read Orders" guiX="61" guiY="725" id="READ_ORDERS1" sheet="*" type="SPREADSHEET_READER">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>true</writeHeader>
+    </globalAttributes>
+    <defaultSkip>0</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="0">
+            <autoMappingType>ORDER</autoMappingType>
+            <headerRanges>
+                <headerRange begin="A1"/>
+                <headerRange begin="B1"/>
+                <headerRange begin="C1"/>
+                <headerRange begin="D1"/>
+                <headerRange begin="E1"/>
+                <headerRange begin="F1"/>
+                <headerRange begin="G1"/>
+                <headerRange begin="H1"/>
+                <headerRange begin="I1"/>
+                <headerRange begin="J1"/>
+                <headerRange begin="K1"/>
+                <headerRange begin="L1"/>
+                <headerRange begin="M1"/>
+                <headerRange begin="N1"/>
+                <headerRange begin="O1"/>
+                <headerRange begin="P1"/>
+                <headerRange begin="Q1"/>
+                <headerRange end="inf1" begin="R1"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>
+]]></attr>
+</Node>
 <Edge debugMode="true" fromNode="GATHER_CUSTOMER_LISTS:0" guiBendpoints="430:174|430:164" guiLocks="442|null|null" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="CUSTOMER_LOOKUP_TABLE:0"/>
 <Edge fromNode="READ_CUSTOMER_LIST_1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="GATHER_CUSTOMER_LISTS:0"/>
 <Edge fromNode="READ_CUSTOMER_LIST_2:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 1 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="GATHER_CUSTOMER_LISTS:1"/>
+<Edge fromNode="READ_ORDERS1:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (output)" toNode="EXTRACT_LATE_ORDERS:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" guiName="Extract Late Orders" guiX="267" guiY="725" id="EXTRACT_LATE_ORDERS" type="EXT_FILTER">
@@ -92,9 +130,7 @@ function integer transform() {
 ]]></attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${DATAOUT_DIR}/orders_late.txt" guiName="Output Late Order Records" guiX="698" guiY="725" id="OUTPUT_LATE_ORDER_RECORDS" outputFieldNames="true" type="DATA_WRITER"/>
-<Node enabled="enabled" fileURL="${DATAIN_DIR}/Orders.xlsx" guiName="Read Orders" guiX="74" guiY="725" id="READ_ORDERS" sheetName="*" type="XLS_READER"/>
 <Edge debugMode="true" fromNode="EXTRACT_LATE_ORDERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge5" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="GET_CUSTOMER_DETAILS:0"/>
 <Edge debugMode="true" fromNode="GET_CUSTOMER_DETAILS:0" guiBendpoints="58:0|58:-2" guiRouter="Manual" id="Edge6" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="OUTPUT_LATE_ORDER_RECORDS:0"/>
-<Edge fromNode="READ_ORDERS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata4" outPort="Port 0 (out)" toNode="EXTRACT_LATE_ORDERS:0"/>
 </Phase>
 </Graph>

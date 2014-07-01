@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph author="User" created="Thu May 22 10:10:35 CEST 2014" guiVersion="4.0.0.M2" id="1400746470340" licenseType="Evaluation" modified="Fri Jun 27 16:49:33 CEST 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.47" showComponentDetails="true">
+<Global>
+<Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="jira_login" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="session_name" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="session_value" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="login_rest_response" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="login_rest_status_code" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="login_rest_error_message" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record fieldDelimiter="|" name="login" recordDelimiter="\r\n" type="delimited">
+<Field name="username" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="login_rest_call" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" recordSize="-1" type="delimited">
+<Field eofAsDelimiter="false" name="login_rest_response" nullable="true" shift="0" size="0" type="string"/>
+<Field eofAsDelimiter="false" name="login_rest_status_code" nullable="true" shift="0" size="0" type="integer"/>
+<Field eofAsDelimiter="false" name="login_rest_error_message" nullable="true" shift="0" size="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
+<Record fieldDelimiter="|" name="parsed_session" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
+<Field name="session_name" type="string"/>
+<Field name="session_value" type="string"/>
+</Record>
+</Metadata>
+<GraphParameters>
+<GraphParameter name="JIRA_LOGIN_URL" value="${JIRA_URL}/rest/auth/1/session"/>
+<GraphParameter name="USER" public="true" required="true"/>
+<GraphParameter name="PASSWORD" public="true" required="true" secure="false"/>
+<GraphParameterFile fileURL="workspace.prm"/>
+<GraphParameterFile fileURL="jira.prm"/>
+</GraphParameters>
+<Note alignment="1" backgroundColorB="225" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="101" id="Note0" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Description" titleColorB="0" titleColorG="0" titleColorR="0" titleFontSize="10" width="323" x="-110" y="-293">
+<attr name="text"><![CDATA[Performs login to JIRA, returns the session.
+
+Returns empty record if no login was provided...]]></attr>
+</Note>
+<Dictionary/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiName="Combine" guiX="473" guiY="234" id="COMBINE" incompleteTuples="true" type="COMBINE">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.session_name = $in.0.session_name;
+	$out.0.session_value = $in.0.session_value;
+	$out.0.login_rest_response = $in.1.login_rest_response;
+	$out.0.login_rest_status_code = $in.1.login_rest_status_code;
+	$out.0.login_rest_error_message = $in.1.login_rest_error_message;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Create empty result - anonymous login" guiX="396" guiY="-93" id="CREATE_EMPTY_RESULT_ANONYMOUS_LOGIN" type="REFORMAT">
+<attr name="transform"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="GetJobInput" guiX="-101" guiY="-93" id="GET_JOB_INPUT" type="GET_JOB_INPUT">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.username = getParamValue("USER");
+
+	printLog(info, "USER: x" + getParamValue("USER") + "x");
+	printLog(info, "brekeke: x" + getParamValue("brekeke") + "x");
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="HTTPConnector" guiX="85" guiY="50" id="HTTPCONNECTOR" requestMethod="POST" type="HTTP_CONNECTOR" url="${JIRA_LOGIN_URL}">
+<attr name="requestContent"><![CDATA[{
+    "username": "${USER}",
+    "password": "${PASSWORD}"
+}]]></attr>
+<attr name="headerProperties"><![CDATA[Content-Type=application/json
+]]></attr>
+<attr name="standardOutputMapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	$out.0.login_rest_response = $in.1.content;
+	$out.0.login_rest_status_code = $in.1.statusCode;
+	$out.0.login_rest_error_message = $in.1.errorMessage;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="JSONExtract" guiX="664" guiY="50" id="JSONEXTRACT" schema="${META_DIR}/session_json.xsd" sourceUri="port:$0.login_rest_response:discrete" type="JSON_EXTRACT">
+<attr name="mapping"><![CDATA[<Mappings>
+	<Mapping element="json_object">
+		<Mapping element="session">
+			<Mapping element="value" outPort="0"
+					xmlFields="../{}name;../{}value"
+					cloverFields="session_name;session_value">
+			</Mapping>
+		</Mapping>
+	</Mapping>
+</Mappings>
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Login failed" guiX="873" guiY="325" id="LOGIN_FAILED" type="FAIL">
+<attr name="mapping"><![CDATA[//#CTL2
+
+// Transforms input record into output record.
+function integer transform() {
+	string errorMessage = "Login failed. Status code: " + $in.0.login_rest_status_code + " Error Message: " + $in.0.login_rest_error_message + "\n"
+	+ "\n"
+	+ "Response:\n"
+	+ $in.0.login_rest_response;
+	
+	$out.0.errorMessage = errorMessage;
+
+	return ALL;
+}
+
+// Called during component initialization.
+// function boolean init() {}
+
+// Called during each graph run before the transform is executed. May be used to allocate and initialize resources
+// required by the transform. All resources allocated within this method should be released
+// by the postExecute() method.
+// function void preExecute() {}
+
+// Called only if transform() throws an exception.
+// function integer transformOnError(string errorMessage, string stackTrace) {}
+
+// Called during each graph run after the entire transform was executed. Should be used to free any resources
+// allocated within the preExecute() method.
+// function void postExecute() {}
+
+// Called to return a user-defined error message when an error occurs.
+// function string getMessage() {}
+]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Login provided?" guiX="85" guiY="-93" id="LOGIN_PROVIDED" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+!isBlank($in.0.username)]]></attr>
+</Node>
+<Node enabled="enabled" guiName="Login success?" guiX="680" guiY="234" id="LOGIN_SUCCESS" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+
+$in.0.session_name != null && $in.0.session_value != null]]></attr>
+</Node>
+<Node enabled="enabled" guiName="REST success?" guiX="479" guiY="50" id="REST_SUCCESS" type="EXT_FILTER">
+<attr name="filterExpression"><![CDATA[//#CTL2
+$in.0.login_rest_status_code == 200]]></attr>
+</Node>
+<Node enabled="enabled" guiName="SimpleCopy" guiX="280" guiY="48" id="SIMPLE_COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiName="SimpleGather" guiX="894" guiY="-95" id="SIMPLE_GATHER" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiName="SubgraphInput" guiX="-175" guiY="-290" id="SUBGRAPH_INPUT0" type="SUBGRAPH_INPUT">
+<Port guiY="-90" name="0"/>
+</Node>
+<Node enabled="enabled" guiName="SubgraphOutput" guiX="1067" guiY="-290" id="SUBGRAPH_OUTPUT" type="SUBGRAPH_OUTPUT">
+<Port guiY="-79" name="0"/>
+<Port guiY="-40" name="1"/>
+</Node>
+<Edge debugMode="true" fromNode="COMBINE:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="LOGIN_SUCCESS:0"/>
+<Edge debugMode="true" fromNode="CREATE_EMPTY_RESULT_ANONYMOUS_LOGIN:0" guiBendpoints="" guiRouter="Manhattan" id="Edge14" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="SIMPLE_GATHER:0"/>
+<Edge debugMode="true" fromNode="GET_JOB_INPUT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge6" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="LOGIN_PROVIDED:0"/>
+<Edge debugMode="true" fromNode="HTTPCONNECTOR:0" guiBendpoints="" guiRouter="Manhattan" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="SIMPLE_COPY:0"/>
+<Edge debugMode="true" fromNode="JSONEXTRACT:0" guiBendpoints="" guiRouter="Manhattan" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="COMBINE:0"/>
+<Edge debugMode="true" fromNode="LOGIN_PROVIDED:0" guiBendpoints="" guiRouter="Manhattan" id="Edge7" inPort="Port 0 (in)" outPort="Port 0 (accepted)" toNode="HTTPCONNECTOR:0"/>
+<Edge debugMode="true" fromNode="LOGIN_PROVIDED:1" guiBendpoints="" guiRouter="Manhattan" id="Edge15" inPort="Port 0 (in)" outPort="Port 1 (rejected)" toNode="CREATE_EMPTY_RESULT_ANONYMOUS_LOGIN:0"/>
+<Edge debugMode="true" fromNode="LOGIN_SUCCESS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge9" inPort="Port 1 (in)" outPort="Port 0 (accepted)" toNode="SIMPLE_GATHER:1"/>
+<Edge debugMode="true" fromNode="LOGIN_SUCCESS:1" guiBendpoints="" guiRouter="Manhattan" id="Edge10" inPort="Port 0 (in)" outPort="Port 1 (rejected)" toNode="LOGIN_FAILED:0"/>
+<Edge debugMode="true" fromNode="REST_SUCCESS:0" guiBendpoints="" guiRouter="Manhattan" id="Edge8" inPort="Port 0 (input)" outPort="Port 0 (accepted)" toNode="JSONEXTRACT:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY:0" guiBendpoints="" guiRouter="Manhattan" id="Edge2" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="REST_SUCCESS:0"/>
+<Edge fromNode="SIMPLE_COPY:1" guiBendpoints="" guiRouter="Manhattan" id="Edge4" inPort="Port 1 (in)" outPort="Port 1 (out)" toNode="COMBINE:1"/>
+<Edge debugMode="true" fromNode="SIMPLE_GATHER:0" guiBendpoints="" guiRouter="Manhattan" id="Edge11" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="SUBGRAPH_OUTPUT:0"/>
+</Phase>
+</Graph>
