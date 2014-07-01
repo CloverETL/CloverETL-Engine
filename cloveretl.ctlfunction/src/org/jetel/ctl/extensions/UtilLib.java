@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLTypeEnum;
+import org.jetel.ctl.extensions.StringLib.CharAtFunction;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.GraphParameter;
 import org.jetel.graph.GraphParameters;
@@ -51,7 +52,9 @@ public class UtilLib extends TLFunctionLibrary {
         	"getJavaProperties".equals(functionName) ? new GetJavaPropertiesFunction() :
     		"getEnvironmentVariables".equals(functionName) ? new GetEnvironmentVariablesFunction() : 
         	"getComponentProperty".equals(functionName) ? new GetComponentPropertyFunction() : 
-    		"hashCode".equals(functionName)	? new HashCodeFunction() :	null; 
+    		"hashCode".equals(functionName)	? new HashCodeFunction() :	
+    		"byteAt".equals(functionName) ? new ByteAtFunction() : 
+    		"byteSet".equals(functionName) ? new ByteSetFunction() :null; 
     		
 		if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -422,5 +425,47 @@ public class UtilLib extends TLFunctionLibrary {
 		}
 
     }
+    
+    // BYTE AT
+ 	@TLFunctionAnnotation("Returns byte at the specified position of input bytearray")
+ 	public static final Integer byteAt(TLFunctionCallContext context, byte[] input, int position) {
+ 		return Integer.valueOf(0xff & input[position]);
+ 	}
+
+ 	class  ByteAtFunction implements TLFunctionPrototype {
+
+ 		@Override
+ 		public void init(TLFunctionCallContext context) {
+ 		}
+
+ 		@Override
+ 		public void execute(Stack stack, TLFunctionCallContext context) {
+ 			final int pos = stack.popInt();
+ 			final byte[] input = stack.popByteArray();
+ 			stack.push(byteAt(context, input, pos));
+ 		}
+ 	}
+ 	
+ 	// BYTE SET
+  	@TLFunctionAnnotation("Returns byte at the specified position of input bytearray")
+  	public static final void byteSet(TLFunctionCallContext context, byte[] input, int position, int value) {
+  		input[position]= (byte)( value & 0xff);
+  	}
+
+  	class ByteSetFunction implements TLFunctionPrototype {
+
+  		@Override
+  		public void init(TLFunctionCallContext context) {
+  		}
+
+  		@Override
+  		public void execute(Stack stack, TLFunctionCallContext context) {
+  			final int value = stack.popInt();
+  			final int pos = stack.popInt();
+  			final byte[] input = stack.popByteArray();
+  			byteSet(context, input, pos, value);
+  		}
+  	}
+
     
 }
