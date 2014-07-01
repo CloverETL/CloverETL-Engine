@@ -52,6 +52,7 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_BATCH_MODE = true;
 	public static final boolean DEFAULT_TOKEN_TRACKING = true;
 	public static final boolean DEFAULT_VALIDATE_REQUIRED_PARAMETERS = true;
+	private static final boolean DEFAULT_EMBEDDED_RUN = true;
 	
 	private long runId;
 	private Long parentRunId;
@@ -91,6 +92,7 @@ public class GraphRuntimeContext {
 	private boolean synchronizedRun;
 	private boolean transactionMode;
 	private boolean batchMode;
+	private boolean embeddedRun;
 	private URL contextURL;
 	private DictionaryValuesContainer dictionaryContent;
 	/** Hint for the server environment where to execute the graph */
@@ -117,6 +119,7 @@ public class GraphRuntimeContext {
 		transactionMode = DEFAULT_TRANSACTION_MODE;
 		batchMode = DEFAULT_BATCH_MODE;
 		tokenTracking = DEFAULT_TOKEN_TRACKING;
+		embeddedRun = DEFAULT_EMBEDDED_RUN;
 		runtimeClassPath = new URL[0];
 		compileClassPath = new URL[0];
 		dictionaryContent = new DictionaryValuesContainer();
@@ -783,6 +786,22 @@ public class GraphRuntimeContext {
 	public void setValidateRequiredParameters(boolean validateRequiredParameters) {
 		this.validateRequiredParameters = validateRequiredParameters;
 	}
+	
+	/**
+	 * @return returns true if the runtime server is embedded
+	 */
+	public boolean isEmbeddedRun() {
+		return embeddedRun;
+	}
+
+	/**
+	 * @param sets whether the runtime server is embedded
+	 */
+	public void setEmbeddedRun(boolean embeddedRun) {
+		this.embeddedRun = embeddedRun;
+	}
+
+
 
 	/**
 	 * This enum is attempt to provide a more generic way to this runtime configuration.
