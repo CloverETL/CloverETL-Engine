@@ -31,6 +31,20 @@ import org.jetel.graph.Edge;
  */
 public class SubgraphUtils {
 
+	/**
+	 * License product id.
+	 */
+	public static final String PRODUCT_ID = "com.cloveretl.server";
+	/**
+	 * License product id for Runtime.
+	 */
+	public static final String RUNTIME_PRODUCT_ID = "com.cloveretl.runtime";
+	
+	/**
+	 * License feature id for subgraphs.
+	 */
+	public static final String FEATURE_ID = "com.cloveretl.server.subgraph";
+
 	/** Type of SubgraphInput component. */
 	public static final String SUBGRAPH_INPUT_TYPE = "SUBGRAPH_INPUT";
 	/** Type of SubgraphOutput component. */

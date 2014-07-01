@@ -35,26 +35,34 @@ import org.jetel.util.string.StringUtils;
 public enum JobType {
 
 	/** This type represents regular ETL graphs */
-	ETL_GRAPH("etlGraph", FileType.ETL_GRAPH),
+	ETL_GRAPH("etlGraph", "Graph", FileType.ETL_GRAPH),
 	/** This type represents jobflows */
-	JOBFLOW("jobflow", FileType.JOBFLOW),
-	PROFILER_JOB("profilerJob", FileType.PROFILER_JOB),
-	SUBGRAPH("subgraph", FileType.SUBGRAPH, ETL_GRAPH),
-	SUBJOBFLOW("subjobflow", FileType.SUBJOBFLOW, JOBFLOW);
+	JOBFLOW("jobflow", "Jobflow", FileType.JOBFLOW),
+	PROFILER_JOB("profilerJob", "Profiler job", FileType.PROFILER_JOB),
+	SUBGRAPH("subgraph", "Subgraph", FileType.SUBGRAPH, ETL_GRAPH),
+	SUBJOBFLOW("subjobflow", "Subjobflow", FileType.SUBJOBFLOW, JOBFLOW);
 
 	/** This type is used in case the type is not specified in different way. */
 	public static final JobType DEFAULT = ETL_GRAPH;
 
 	private String id;
 	
+	private String label;
+	
 	/** Associated file type. */
 	private FileType fileType;
 	
 	private JobType parent;
 	
-	private JobType(String id, FileType fileType) {
+	private JobType(String id, String label, FileType fileType) {
 		this.id = id;
+		this.label = label;
 		this.fileType = fileType;
+	}
+
+	private JobType(String id, String label, FileType fileType, JobType parent) {
+		this(id, label, fileType);
+		this.parent = parent;
 	}
 
 	public String getId() {
@@ -70,9 +78,8 @@ public enum JobType {
 		return this.name();
 	}
 	
-	private JobType(String id, FileType fileType, JobType parent) {
-		this(id, fileType);
-		this.parent = parent;
+	public String getLabel() {
+		return label;
 	}
 	
 	@Override
