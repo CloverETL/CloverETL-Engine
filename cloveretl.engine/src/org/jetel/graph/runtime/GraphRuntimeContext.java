@@ -52,7 +52,7 @@ public class GraphRuntimeContext {
 	public static final boolean DEFAULT_BATCH_MODE = true;
 	public static final boolean DEFAULT_TOKEN_TRACKING = true;
 	public static final boolean DEFAULT_VALIDATE_REQUIRED_PARAMETERS = true;
-	private static final boolean DEFAULT_EMBEDDED_RUN = false;
+	private static final boolean DEFAULT_EMBEDDED_RUN = true;
 	
 	private long runId;
 	private Long parentRunId;
