@@ -35,8 +35,8 @@ public class TimeZoneProvider implements Serializable {
 	
 	private static final long serialVersionUID = -1794232110904205542L;
 	
-	private static final String JODA_PREFIX = "joda:";
-	private static final String JAVA_PREFIX = "java:";
+	public static final String JODA_PREFIX = "joda:";
+	public static final String JAVA_PREFIX = "java:";
 
 	private final TimeZone javaTimeZone;
 	
@@ -136,6 +136,22 @@ public class TimeZoneProvider implements Serializable {
 	@Override
 	public String toString() {
 		return config;
+	}
+	
+	/**
+	 * Returns true if timezone string contained at least one Java timezone.
+	 * @return
+	 */
+	public boolean hasJavaTimeZone() {
+		return this.javaTimeZone != null;
+	}
+	
+	/**
+	 * Returns true it timezone string contained at least on Joda timezone.
+	 * @return
+	 */
+	public boolean hasJodaTimeZone() {
+		return this.jodaTimeZone != null;
 	}
 	
 	/**
