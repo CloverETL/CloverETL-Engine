@@ -1131,9 +1131,8 @@ public abstract class Node extends GraphElement implements Runnable, CloverWorke
     	
     	//component allocation is limited for jobflows
     	if (!getGraph().getRuntimeJobType().isGraph()) {
-    		if (!getAllocation().isNeighboursAllocation()
-    				&& (!getAllocation().isClusterNodesAllocation() || getAllocation().toClusterNodesAllocation().getClusterNodes().size() != 1)) {
-        		status.add("Invalid component allocation. Only single worker allocation can be specified in jobflow.", Severity.ERROR, this, Priority.NORMAL);
+    		if (!getAllocation().isNeighboursAllocation()) {
+        		status.add("Invalid component allocation. Only regular ETL graphs can be distributed.", Severity.ERROR, this, Priority.NORMAL);
     		}
     	}
     	
