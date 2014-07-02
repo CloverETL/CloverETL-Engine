@@ -555,6 +555,31 @@ public abstract class IAuthorityProxy {
 	}
 	
 	/**
+	 * Takes given label and adds information about current runId and componentId.
+	 * This can be used by newTemp*() methods to create better temporary file name.
+	 * The result has following pattern:
+	 * <label>_runId_<runId>_componentId_<componentId>
+	 */
+	protected String decorateTempFileLabel(String label) {
+		StringBuilder result = new StringBuilder(label);
+		
+		//attach runId to file name
+		GraphRuntimeContext runtimeContext = ContextProvider.getRuntimeContext();
+		if (runtimeContext != null) {
+			result.append("_runId_");
+			result.append(runtimeContext.getRunId());
+		}
+		//attach componentId to file name
+		String componentId = ContextProvider.getComponentId();
+		if (!StringUtils.isEmpty(componentId)) {
+			result.append("_componentId_");
+			result.append(componentId);
+		}
+		
+		return result.toString();
+	}
+
+	/**
 	 * Returns new temporary file without custom label being part of its name. If more locations are present, random is
 	 * chosen. For more details see {@link #newTempFile(String, int)}.
 	 * 
