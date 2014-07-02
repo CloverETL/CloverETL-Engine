@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<plugin
+    id="com.cloveretl.tableau.TableauWriter"
+    version="1.0.0"
+    provider-name="Javlin, a.s.">
+
+    <runtime>
+        <library path="bin/"/>
+        <library path="lib/dataextract.jar"/>
+        <library path="lib/jna.jar"/>
+    </runtime>
+
+	<requires engine-version="0.0.0.devel">
+    </requires>
+    
+
+    <extension point-id="component">
+       <ETLComponent
+        category="writers"
+        className="com.cloveretl.tableau.TableauWriter"
+        name="Tableau Writer"
+        type="TABLEAU_WRITER"
+        iconPath="icons/TableauWriter">
+
+        <shortDescription>A component that writes data in the native Tableau TDE file format.</shortDescription>
+        <description>A component that writes data in the native Tableau TDE file format.</description>
+
+        <inputPorts>
+            <singlePort name="0" required="true" />
+        </inputPorts>
+	
+
+        <properties>
+        	 <property category="basic" displayName="Output file URL" modifiable="true" name="outputFile" nullable="true" required="true" defaultHint="Path to local file with *.tde suffix">
+	        	<singleType name="file" selectionMode="file_only" mandatory_existing_file="false"/>
+	      	 </property>
+	
+			 <property category="basic" displayName="Table name" modifiable="false" name="tableName" nullable="false" required="false" defaultHint="Extract (Tableau requires table name to be &quot;Extract&quot;)">
+	        	<singleType name="string" />
+	      	 </property>
+
+        	<property category="basic" displayName="Default table collation" modifiable="true" name="defaultTableCollation" nullable="true" required="false" defaultHint="EN_US (Select table collation from list)">
+				<singleType name="tableauCollationType" />
+	      	</property>
+	        
+        	<property category="advanced" displayName="Behavior if table exists" modifiable="true" name="appendToTable" nullable="true" required="false" defaultHint="Append to table">
+	        	 <enumType>
+		          <item displayValue="Append to table" value="true" />
+		          <item displayValue="Terminate processing" value="false" />
+	        	</enumType>
+	      	 </property>
+	        
+	        <property category="advanced" displayName="Overwrite output file" modifiable="true" name="overwrite" nullable="true" required="false" defaultHint="true">
+	        	<singleType name="bool" />
+	      	 </property>
+        
+        </properties>
+
+    </ETLComponent>
+    </extension>
+
+</plugin>
