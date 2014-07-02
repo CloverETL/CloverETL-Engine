@@ -419,6 +419,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public File newTempFile(String label, String suffix, int allocationHint) throws TempFileCreationException {
 		try {
+			label = decorateTempFileLabel(label);
 			File file = File.createTempFile(label, suffix == null ? CLOVER_TMP_FILE_SUFFIX : suffix);
 			logNewTempFile(file);
 			return file;
@@ -430,6 +431,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	@Override
 	public File newTempDir(String label, int allocationHint) throws TempFileCreationException {
 		try {
+			label = decorateTempFileLabel(label);
 			File tmp = Files.createTempDirectory(label).toFile(); // CLO-226
 			logNewTempFile(tmp);
 			return tmp;
