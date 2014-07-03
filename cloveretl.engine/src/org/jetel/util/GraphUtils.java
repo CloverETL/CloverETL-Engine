@@ -18,16 +18,39 @@
  */
 package org.jetel.util;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import org.apache.commons.io.IOUtils;
+import org.jetel.data.DataField;
+import org.jetel.data.DataRecord;
 import org.jetel.enums.EdgeTypeEnum;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeFactory;
+import org.jetel.graph.GraphParameter;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.metadata.DataFieldContainerType;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.file.FileUtils;
+import org.jetel.util.file.SandboxUrlUtils;
+import org.jetel.util.primitive.TypedProperties;
+import org.jetel.util.string.StringUtils;
 
 /**
  * This is utility class for graph manipulation.  
@@ -42,6 +65,13 @@ import org.jetel.graph.TransformationGraph;
  * @see ClusteredGraphProvider
  */
 public class GraphUtils {
+
+	public static final String DICTIONARY_METADATA_NAME = "Dictionary";
+
+	public static final String JOB_PARAMETERS_METADATA_NAME = "JobParameters";
+
+    public static final String PUBLIC_GRAPH_PARAMETER_ATTRIBUTE = "public";
+    public static final String REQUIRED_GRAPH_PARAMETER_ATTRIBUTE = "required";
 
 	/**
 	 * Inserts the given component into the given edge.
@@ -295,4 +325,204 @@ public class GraphUtils {
 		return false;
 	}
 	
+	/**
+	 * Creates metadata based on graph parameters of the graph.
+	 */
+	public static DataRecordMetadata createMetadataFromGraphParameters(TransformationGraph graph) {
+		if (graph != null) {
+			DataRecordMetadata metadata = new DataRecordMetadata(JOB_PARAMETERS_METADATA_NAME);
+			
+			List<GraphParameter> parameters = graph.getGraphParameters().getAllGraphParameters();
+			
+			for (GraphParameter graphParameter : parameters) {
+				DataFieldMetadata field = new DataFieldMetadata("_", DataFieldType.STRING, null);
+				field.setLabel(graphParameter.getName());
+				//set description to be shown in tooltip
+				String description = "Default value: '" + graphParameter.getValue() + "'";
+				if (!StringUtils.isEmpty(graphParameter.getDescription())) {
+					description += "\nDescription: " + graphParameter.getDescription(); 
+				}
+				field.setDescription(description);
+				if (graphParameter.isPublic()) {
+					// in the GUI code it is too late because of normalization
+					field.setProperty(PUBLIC_GRAPH_PARAMETER_ATTRIBUTE, Boolean.TRUE.toString());
+				}
+				if (graphParameter.isRequired()) {
+					// in the GUI code it is too late because of normalization
+					field.setProperty(REQUIRED_GRAPH_PARAMETER_ATTRIBUTE, Boolean.TRUE.toString());
+				}
+				metadata.addField(field);
+			}
+			
+			metadata.normalize();
+			
+			for (int i = 0; i < parameters.size(); i++) {
+				// override the labels after normalize()
+				metadata.getField(i).setLabel(parameters.get(i).getLabelOrName());
+			}
+	
+			return metadata.getFields().length > 0 ? metadata : null;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Populates the given record by data from graph parameters of the given graph.
+	 * @param graph graph parameters of this graph are source for record population
+	 * @param record populated record
+	 */
+	public static void populateRecordFromGraphParameters(TransformationGraph graph, DataRecord record) {
+		if (graph != null && record != null) {
+			TypedProperties graphParameters = graph.getGraphParameters().asProperties();
+			populateRecordFromProperties(graphParameters, record);
+		}
+	}
+
+	/**
+	 * Populates the given record by data from the given properties.
+	 * @param properties source of data
+	 * @param record populated record
+	 */
+	public static void populateRecordFromProperties(TypedProperties properties, DataRecord record) {
+		if (properties != null && record != null) {
+			for (DataField field : record) {
+				String fieldName = field.getMetadata().getName();
+				if (field.getMetadata().getDataType() == DataFieldType.STRING
+						&& properties.containsKey(fieldName)) {
+					String graphParameter = properties.getProperty(fieldName);
+					field.setValue(graphParameter);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Creates data record metadata based on dictionary of given transformation graph.
+	 * @param graph 
+	 * @param onlyInput <code>true</code> if only input dictionary entries should be considered;
+	 * <code>false</code> if only output dictionary entries should be considered; null if all entries
+	 * should be considered
+	 * @return
+	 */
+	public static DataRecordMetadata createMetadataFromDictionary(TransformationGraph graph, Boolean onlyInput) {
+		if (graph != null) {
+			DataRecordMetadata metadata = new DataRecordMetadata(DICTIONARY_METADATA_NAME);
+			
+			Dictionary dictionary = graph.getDictionary();
+			List<DataFieldMetadata> fields = new ArrayList<DataFieldMetadata>();
+			for (String entryName : dictionary.getKeys()) {
+				if (onlyInput == null
+						|| ((onlyInput && dictionary.isInput(entryName))
+								|| (!onlyInput && dictionary.isOutput(entryName)))) {
+					DataFieldType fieldType = dictionary.getType(entryName).getFieldType(dictionary.getContentType(entryName));
+					DataFieldContainerType fieldContainerType = dictionary.getType(entryName).getFieldContainerType();
+					if (fieldType != null && fieldContainerType != null) {
+						DataFieldMetadata field = new DataFieldMetadata("_", fieldType, null, fieldContainerType);
+						field.setLabel(entryName);
+						//set description, which will be shown in tooltip
+						Object defaultValue = dictionary.getValue(entryName);
+						if (defaultValue != null) {
+							field.setDescription("Default: " + defaultValue.toString());
+						}
+						fields.add(field);
+					}
+				}
+			}
+			
+			//sort fields
+			Collections.sort(fields, new Comparator<DataFieldMetadata>() {
+				@Override
+				public int compare(DataFieldMetadata field1, DataFieldMetadata field2) {
+					return field1.getLabel().compareTo(field2.getLabel());
+				}
+			});
+			
+			//add sorted fields into metadata
+			for (DataFieldMetadata field : fields) {
+				metadata.addField(field);
+			}
+
+			metadata.normalize();
+	
+			return metadata.getFields().length > 0 ? metadata : null;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Populates given record by default values from a graph dictionary. 
+	 * @param dictionary dictionary is source for record population
+	 * @param record record to populate
+	 */
+	public static void populateRecordFromDictionary(Dictionary dictionary, DataRecord record) {
+		if (record != null) {
+			//initialize dictionary if necessary
+			if (!dictionary.isInitialized()) {
+				try {
+					dictionary.init();
+				} catch (ComponentNotReadyException e) {
+					throw new JetelRuntimeException("Dictionary initialization failed. Default dictionary values are not available.");
+				}
+			}
+			for (DataField field : record) {
+				String entryName = field.getMetadata().getLabelOrName();
+				if (dictionary.hasEntry(entryName)) {
+					if (field.getMetadata().getDataType().equals(dictionary.getType(entryName).getFieldType(dictionary.getContentType(entryName)))
+							&& field.getMetadata().getContainerType().equals(dictionary.getType(entryName).getFieldContainerType())) {
+						field.setValue(dictionary.getValue(entryName));
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @return transformation graph instance defined in the given location (only graph parameters and dictionary are loaded)
+	 */
+	public static TransformationGraph createGraphAsInterface(URL contextUrl, String fileUrl, GraphRuntimeContext runtimeContext) {
+		return createGraph(contextUrl, fileUrl, runtimeContext, true, false, false);
+	}
+
+	/**
+	 * @return transformation graph instance defined in the given location (automatic metadata propagation is turned off)
+	 */
+	public static TransformationGraph createGraphNoMetadataPropagation(URL contextUrl, String fileUrl, GraphRuntimeContext runtimeContext) {
+		return createGraph(contextUrl, fileUrl, runtimeContext, false, false, false);
+	}
+
+	/**
+	 * @return transformation graph instance defined in the given location
+	 */
+	public static TransformationGraph createGraphWithMetadataPropagation(URL contextUrl, String fileUrl, GraphRuntimeContext runtimeContext) {
+		return createGraph(contextUrl, fileUrl, runtimeContext, false, true, true);
+	}
+
+	private static TransformationGraph createGraph(URL contextUrl, String fileUrl, GraphRuntimeContext runtimeContext, boolean onlyParamsAndDict, boolean metadataPropagation, boolean strictParsing) {
+		if (FileUtils.isMultiURL(fileUrl)) {
+			throw new JetelRuntimeException("Only simple job URL is allowed (" + fileUrl + ").");
+		}
+		InputStream in = null;
+		try {
+			//if the fileUrl is absolute path to a sandbox, contextURL of loaded graph has to be updated
+			if (SandboxUrlUtils.isSandboxUrl(fileUrl)) {
+				//for example for fileURL="sandbox:/project/graph/myGraph.grf" is contextURL="sandbox:/project/"
+				runtimeContext.setContextURL(SandboxUrlUtils.getSandboxUrl(SandboxUrlUtils.getSandboxName(fileUrl)));
+			}
+			runtimeContext.setJobUrl(FileUtils.getFileURL(contextUrl, fileUrl).toString());
+			
+	        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(runtimeContext);
+	        graphReader.setStrictParsing(strictParsing);
+	        graphReader.setOnlyParamsAndDict(onlyParamsAndDict);
+	        graphReader.setMetadataPropagation(metadataPropagation);
+	        in = FileUtils.getInputStream(contextUrl, fileUrl);
+	        return graphReader.read(in);
+		} catch (Exception e) {
+			throw new JetelRuntimeException("Job '" + fileUrl + "' cannot be loaded. ", e);
+		} finally {
+			IOUtils.closeQuietly(in);
+		}
+	}
+
 }
