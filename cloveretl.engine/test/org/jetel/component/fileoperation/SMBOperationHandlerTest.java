@@ -18,6 +18,8 @@
  */
 package org.jetel.component.fileoperation;
 
+import static org.jetel.component.fileoperation.CloverURI.createURI;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -160,6 +162,13 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 				System.out.println(result.getResult());
 			}
 		}
+		
+		// CLO-4062:
+		String input = "smb://honza:test*@virt-support/mysmbshare";
+		uri = CloverURI.createURI(input);
+		result = manager.resolve(uri);
+		assertEquals(1, result.getResult().size());
+		assertEquals(URI.create(input), result.getResult().get(0).toURI());
 	}
 	
 	@Override
