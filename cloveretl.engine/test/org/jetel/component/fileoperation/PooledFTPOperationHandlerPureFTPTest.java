@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.result.CreateResult;
+import org.jetel.component.fileoperation.result.ResolveResult;
 
 /**
  * Tests FTP handler on Pure-FTPd, 
@@ -50,5 +51,20 @@ public class PooledFTPOperationHandlerPureFTPTest extends PooledFTPOperationHand
 		} catch (URISyntaxException ex) {
 			return null;
 		}
+	}
+
+	@Override
+	public void testResolve() throws Exception {
+		super.testResolve();
+
+		CloverURI uri;
+		ResolveResult result;
+		
+		// CLO-4062:
+		String input = "ftp://wildcards:pas*word@koule:66/";
+		uri = CloverURI.createURI(input);
+		result = manager.resolve(uri);
+		assertEquals(1, result.getResult().size());
+		assertEquals(URI.create(input), result.getResult().get(0).toURI());
 	}
 }
