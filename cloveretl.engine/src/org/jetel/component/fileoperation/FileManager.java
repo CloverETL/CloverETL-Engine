@@ -847,11 +847,9 @@ public class FileManager {
 						break;
 					}
 				}
-				if (prevPathSepIdx >= 0) {
-					if (prevPathSepIdx > 0) {
-						result.add(remaining.substring(0, prevPathSepIdx + 1));
-						remaining = remaining.substring(prevPathSepIdx + 1);
-					}
+				if (prevPathSepIdx > 0) {
+					result.add(remaining.substring(0, prevPathSepIdx + 1));
+					remaining = remaining.substring(prevPathSepIdx + 1);
 				}
 				int nextPathSepIdx = -1;
 				for (int i = 1; i < remaining.length(); i++) {
