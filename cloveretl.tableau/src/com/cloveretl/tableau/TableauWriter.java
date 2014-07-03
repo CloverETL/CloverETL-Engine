@@ -228,12 +228,15 @@ public class TableauWriter extends Node  {
 				throw new ComponentNotReadyException("Output file path must point to a local file with \".tde\" suffix");
 			}
 
-			logger.debug("Setting target file to: " +  outputFileName + "");
+			logger.debug("Input files is configured to: \"" +  outputFileName + "\"");
 			
 			File targetFile = FileUtils.getJavaFile(getContextURL(), outputFileName);
+
+			logger.debug("Resolved target file to: \"" +  targetFile + "\"");
 			
-			// Create any missing directories	
-			FileUtils.makeDirs(getContextURL(), outputFileName);
+			// Create any missing directories
+			//FIXME FileUtils.makeDirs() fails on Server while it works fine in Designer .... 
+			FileUtils.createParentDirs(getContextURL(), outputFileName);
 			
 			if (targetFile.exists()) {
 				if (overwriteTargetFileFlag) {
