@@ -106,7 +106,7 @@ public class SpeedLimiter extends Node {
     private CTLMapping inputMapping;
 
     private DataRecord inputRecord; 
-    private DataRecord outputRecord; 
+    private DataRecord mappingRecord; 
     
 	/**
 	 * @param id
@@ -126,8 +126,10 @@ public class SpeedLimiter extends Node {
 		inputMapping = new CTLMapping("Input mapping", this);
 		inputMapping.setTransformation(inputMappingCode);
 		
-		inputRecord = inputMapping.addInputMetadata(INPUT_RECORD_ID, getInputPort(0).getMetadata());
-		outputRecord = inputMapping.addOutputMetadata(DELAY_RECORD_NAME, createDelayMetadata());
+		if (getInputPort(0) != null) {
+			inputRecord = inputMapping.addInputMetadata(INPUT_RECORD_ID, getInputPort(0).getMetadata());
+		}
+		mappingRecord = inputMapping.addOutputMetadata(DELAY_RECORD_NAME, createDelayMetadata());
 		if (delay >= 0) {
 			inputMapping.setDefaultOutputValue(DELAY_RECORD_NAME, DELAY_MILLIS_NAME, delay);
 		}
@@ -153,25 +155,35 @@ public class SpeedLimiter extends Node {
 	@Override
 	public Result execute() throws Exception {
 		InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
-		while (inPort.readRecordDirect(recordBuffer) && runIt) {
-			inputRecord.deserialize(recordBuffer);
-			inputMapping.execute();
-			CloverString delayStr = (CloverString) outputRecord.getField(DELAY_INDEX).getValue();
-			if (delayStr != null) {
-				delay(TimeIntervalUtils.parseInterval(delayStr.toString()));
-			} else {
-				Long delay = (Long) outputRecord.getField(DELAY_MILLIS_INDEX).getValue();
-				if (delay != null) {
-					delay(delay);
-				} else {
-					throw new JetelRuntimeException("Delay is not specified.");
-				}
+		if (inPort != null) {
+			while (inPort.readRecordDirect(recordBuffer) && runIt) {
+				inputRecord.deserialize(recordBuffer);
+				inputMapping.execute();
+				delay();
+				recordBuffer.rewind();
+				writeRecordBroadcastDirect(recordBuffer);
+				SynchronizeUtils.cloverYield();
 			}
-			recordBuffer.rewind();
-			writeRecordBroadcastDirect(recordBuffer);
-			SynchronizeUtils.cloverYield();
+		}
+		else {
+			inputMapping.execute();
+			delay();
 		}
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
+	}
+
+	private void delay() throws InterruptedException {
+		CloverString delayStr = (CloverString) mappingRecord.getField(DELAY_INDEX).getValue();
+		if (delayStr != null) {
+			delay(TimeIntervalUtils.parseInterval(delayStr.toString()));
+		} else {
+			Long delay = (Long) mappingRecord.getField(DELAY_MILLIS_INDEX).getValue();
+			if (delay != null) {
+				delay(delay);
+			} else {
+				throw new JetelRuntimeException("Delay is not specified.");
+			}
+		}
 	}
 
 	/**
@@ -191,9 +203,14 @@ public class SpeedLimiter extends Node {
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
 
-		checkInputPorts(status, 1, 1);
-		checkOutputPorts(status, 1, Integer.MAX_VALUE);
-		checkMetadata(status, getInMetadata(), getOutMetadata());
+		if (getOutputPort(0) != null) {
+			checkInputPorts(status, 1, 1);
+			checkOutputPorts(status, 1, Integer.MAX_VALUE);
+			checkMetadata(status, getInMetadata(), getOutMetadata());
+		}
+		else if (getInputPort(0) != null) {
+			checkInputPorts(status, 1, 1);
+		}
 
 		if (delay == -1 && StringUtils.isEmpty(inputMappingCode)) {
 			status.add(new ConfigurationProblem("Delay is not specified.", Severity.ERROR, this, Priority.NORMAL));
