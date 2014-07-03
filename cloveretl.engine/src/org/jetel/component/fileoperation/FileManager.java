@@ -38,6 +38,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
@@ -61,6 +63,7 @@ import org.jetel.graph.ContextProvider;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.runtime.GraphRuntimeContext;
 import org.jetel.graph.runtime.PrimitiveAuthorityProxy;
+import org.jetel.util.string.StringUtils;
 
 /**
  * The FileManager and related classes
@@ -778,7 +781,51 @@ public class FileManager {
 	static boolean hasWildcards(String path) {
 		return path.contains(QUESTION_MARK) || path.contains(ASTERISK);
 	}
+	
+	private static final Pattern URL_PREFIX_PATTERN = Pattern.compile("^(([^/]+):/+[^/]+/?)(.*)");
+	
+	/**
+	 * CLO-4062:
+	 * 
+	 * This method should be used for standard
+	 * server-based hierarchical URIs,
+	 * because it ignores wildcards in the authority,
+	 * e.g. in the password.
+	 * 
+	 * @param uri
+	 * @return
+	 */
+	static List<String> getUriParts(String uri) {
+		Matcher m = URL_PREFIX_PATTERN.matcher(uri);
+		if (m.matches()) {
+			String scheme = m.group(2);
+			if (!scheme.equals(LocalOperationHandler.FILE_SCHEME)) {
+				return getParts(m.group(1), m.group(3));
+			}
+		}
+			
+		return getParts(uri);
+	}
+	
+	private static List<String> getParts(String prefix, String suffix) {
+		List<String> result = getParts(suffix);
+		if (!StringUtils.isEmpty(prefix)) {
+			if (result.isEmpty()) {
+				return Arrays.asList(prefix);
+			} else {
+				result.set(0, prefix + result.get(0));
+			}
+		}
+		return result;
+	}
 
+	/**
+	 * For server-based hierarchical URIs,
+	 * use {@link #getUriParts(String)} instead.
+	 * 
+	 * @param uri
+	 * @return
+	 */
 	static List<String> getParts(String uri) {
 		List<String> result = new ArrayList<String>();
 		String remaining = uri;
@@ -883,7 +930,7 @@ public class FileManager {
 			return Arrays.asList(wildcards);
 		}
 		
-		List<String> parts = getParts(uriString);
+		List<String> parts = getUriParts(uriString);
 		InfoResult infoResult = info((SingleCloverURI) CloverURI.createURI(parts.get(0)));
 		if (!infoResult.success()) {
 			throw new IOException(FileOperationMessages.getString("FileManager.info_failed"), infoResult.getFirstError()); //$NON-NLS-1$
