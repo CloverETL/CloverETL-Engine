@@ -464,12 +464,6 @@ public class TransformationGraphXMLReaderWriter {
 			NodeList dictionaryElements = document.getElementsByTagName(DICTIONARY_ELEMENT);
 			instantiateDictionary(dictionaryElements);
 			
-			try {
-				graph.getGraphParameters().init();
-			} catch (ComponentNotReadyException e1) {
-				throw new XMLConfigurationException(e1);
-			}
-			
 			if (!onlyParamsAndDict) {
 				// handle all defined DB connections
 				NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
@@ -912,22 +906,20 @@ public class TransformationGraphXMLReaderWriter {
 	private void instantiateGraphParameter(GraphParameters graphParameters, Element graphParameter) throws XMLConfigurationException {
 		try {
 			GraphParameter gp = (GraphParameter) graphParameterUnmarshaller.unmarshal(graphParameter);
-			gp.setValue(getGraphParameterValue(gp.getName(), gp.getValue()));
+			overrideParameterValue(gp);
 		    graphParameters.addGraphParameter(gp);
 		} catch (Exception e) {
 			throw new JetelRuntimeException("Deserialisation of graph parameters failed.", e);
 		}
 	}
 
-	/**
-	 * Returns either value from additional graph parameters from runtime context or suggested value.
-	 */
-	private String getGraphParameterValue(String name, String suggestedValue) {
+	private void overrideParameterValue(GraphParameter gp) {
 		Properties additionalProperties = runtimeContext.getAdditionalProperties();
-		if (additionalProperties.containsKey(name)) {
-			return additionalProperties.getProperty(name);
-		} else {
-			return suggestedValue;
+		if (additionalProperties.containsKey(gp.getName())) {
+			gp.setValue(additionalProperties.getProperty(gp.getName()));
+		}
+		else {
+			// gp.setValue(gp.getValue());
 		}
 	}
 	
@@ -954,9 +946,9 @@ public class TransformationGraphXMLReaderWriter {
 	 * Load parameter file.
 	 */
 	public void instantiateGraphParametersFile(GraphParameters graphParameters, String resolvedFileURL) throws XMLConfigurationException {
-		InputStream is = null;
-        try {
-        	is = FileUtils.getInputStream(runtimeContext.getContextURL(), resolvedFileURL);
+		try (
+				InputStream is = FileUtils.getInputStream(runtimeContext.getContextURL(), resolvedFileURL)
+		) {
         	Document document = prepareDocument(is);
         	instantiateGraphParameters(graphParameters, Arrays.asList(document.getDocumentElement()));
         } catch (Exception e) {
@@ -964,14 +956,6 @@ public class TransformationGraphXMLReaderWriter {
         		graphParameters.addProperties(loadGraphProperties(resolvedFileURL));
         	} catch(IOException ex) {
         		throwXMLConfigurationException("Can't load property definition from " + resolvedFileURL, ex);
-        	}
-        } finally {
-        	if (is != null) {
-        		try {
-        			is.close();
-        		} catch (IOException e) {
-        			//DO NOTHING
-        		}
         	}
         }
 	}

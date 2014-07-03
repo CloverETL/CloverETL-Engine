@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -249,14 +248,6 @@ public class GraphParameters {
 			//clear references to parent GraphParameters
 			for (GraphParameter oldGraphParameter : oldGraphParameters) {
 				oldGraphParameter.setParentGraphParameters(null);
-			}
-		}
-	}
-	
-	public void init() throws ComponentNotReadyException {
-		synchronized (parameters) {
-			for (GraphParameter param: parameters.values()) {
-				param.init();
 			}
 		}
 	}

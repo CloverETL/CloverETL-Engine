@@ -481,8 +481,6 @@ public final class TransformationGraph extends GraphElement {
 	        if(isInitialized()) return;
 			super.init();
 	
-			graphParameters.init();
-			
 			//analyse the graph if necessary - usually the graph is analysed already in TransformationGraphXMLReaderWriter
 			if (!isAnalysed()) {
 				TransformationGraphAnalyzer.analyseGraph(this, getRuntimeContext(), true);
