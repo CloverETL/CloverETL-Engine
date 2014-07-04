@@ -91,6 +91,7 @@ public class StringLib extends TLFunctionLibrary {
 			"getUrlQuery".equals(functionName) ? new GetUrlQueryFunction() : //$NON-NLS-1$
 			"getUrlRef".equals(functionName) ? new GetUrlRefFunction() : //$NON-NLS-1$
 			"toAbsolutePath".equals(functionName) ? new ToAbsolutePathFunction() : //$NON-NLS-1$
+			"toProjectUrl".equals(functionName) ? new ToProjectUrlFunction() : //$NON-NLS-1$
 			"escapeUrl".equals(functionName) ? new EscapeUrlFunction() : //$NON-NLS-1$
 			"unescapeUrl".equals(functionName) ? new UnescapeUrlFunction() : null; //$NON-NLS-1$
 
@@ -1467,6 +1468,32 @@ public class StringLib extends TLFunctionLibrary {
 		public void execute(Stack stack, TLFunctionCallContext context) {
 			final String url = stack.popString();
 			stack.push(toAbsolutePath(context, url));
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts the argument to an absolute URL with respect to the project URL")
+	public static final String toProjectUrl(TLFunctionCallContext context, String url) {
+		if (url == null) {
+			return null;
+		}
+		URL contextUrl = context.getGraph().getRuntimeContext().getContextURL();
+		try {
+			return FileUtils.getAbsoluteURL(contextUrl, url);
+		} catch (MalformedURLException ex) {
+			throw new JetelRuntimeException(ex);
+		}
+	}
+	
+	class ToProjectUrlFunction implements TLFunctionPrototype {
+	
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+		
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			final String url = stack.popString();
+			stack.push(toProjectUrl(context, url));
 		}
 	}
 	

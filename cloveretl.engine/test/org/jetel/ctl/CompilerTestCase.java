@@ -10149,4 +10149,27 @@ public abstract class CompilerTestCase extends CloverTestCase {
 			// do nothing
 		}
 	}
+
+	public void test_stringlib_toProjectUrl() throws IOException {
+		doCompile("test_stringlib_toProjectUrl");
+		String result;
+		
+		result = (String) getVariable("ret1");
+		assertTrue(result.startsWith("file:") || result.startsWith("sandbox:"));
+		result = (String) getVariable("ret2");
+		assertTrue(result.startsWith("file:") || result.startsWith("sandbox:"));
+		check("ret3", "ftp://kennen_ftp/home");
+		check("ret4", null);
+		check("ret5", "file:/home/user/workspace/myproject");
+		check("ret6", "sandbox://mysandbox/user/workspace/myproject");
+	}
+	
+	public void test_stringlib_toProjectUrl_expect_error(){
+		try {
+			doCompile("function integer transform(){string str = toProjectUrl('https://user@gooddata.com:password@secure-di.gooddata.com/'); return 0;}","test_stringlib_toProjectUrl_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
 }
