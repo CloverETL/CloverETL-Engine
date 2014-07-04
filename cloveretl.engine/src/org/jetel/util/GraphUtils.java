@@ -19,19 +19,24 @@
 package org.jetel.util;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
+import org.jetel.component.RecordTransform;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordWithInvalidState;
 import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.JetelRuntimeException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.EdgeFactory;
 import org.jetel.graph.GraphParameter;
@@ -42,7 +47,9 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.dictionary.Dictionary;
+import org.jetel.graph.dictionary.DictionaryValuesContainer;
 import org.jetel.graph.runtime.GraphRuntimeContext;
+import org.jetel.graph.runtime.IAuthorityProxy.RunStatus;
 import org.jetel.metadata.DataFieldContainerType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
@@ -66,13 +73,42 @@ import org.jetel.util.string.StringUtils;
  */
 public class GraphUtils {
 
-	public static final String DICTIONARY_METADATA_NAME = "Dictionary";
-
 	public static final String JOB_PARAMETERS_METADATA_NAME = "JobParameters";
 
+	public static final String DICTIONARY_METADATA_NAME = "Dictionary";
+
+    public static final String RUN_STATUS_RECORD_NAME = "RunStatus";
+
+    private static final int RS_RUN_ID_INDEX = 0;
+    private static final int RS_ORIGINAL_JOB_URL_INDEX = 1;
+    private static final int RS_START_TIME_INDEX = 2;
+    private static final int RS_END_TIME_INDEX = 3;
+    private static final int RS_DURATION_INDEX = 4;
+    private static final int RS_EXECUTION_GROUP_INDEX = 5;
+    private static final int RS_EXECUTION_LABEL_INDEX = 6;
+    private static final int RS_STATUS_INDEX = 7;
+    private static final int RS_ERR_EXCEPTION_INDEX = 8;
+    private static final int RS_ERR_MESSAGE_INDEX = 9;
+    private static final int RS_ERR_COMPONENT_INDEX = 10;
+    private static final int RS_ERR_COMPONENT_TYPE_INDEX = 11;
+    
+    private static final String RS_RUN_ID_NAME = "runId";
+    private static final String RS_ORIGINAL_JOB_URL_NAME = "originalJobURL";
+    private static final String RS_START_TIME_NAME = "startTime";
+    private static final String RS_END_TIME_NAME = "endTime";
+    private static final String RS_DURATION_NAME = "duration";
+    private static final String RS_EXECUTION_GROUP_NAME = "executionGroup";
+    private static final String RS_EXECUTION_LABEL_NAME = "executionLabel";
+    public static final String RS_STATUS_NAME = "status";
+    private static final String RS_ERR_EXCEPTION_NAME = "errException";
+    private static final String RS_ERR_MESSAGE_NAME = "errMessage";
+    private static final String RS_ERR_COMPONENT_NAME = "errComponent";
+    private static final String RS_ERR_COMPONENT_TYPE_NAME = "errComponentType";
+    
     public static final String PUBLIC_GRAPH_PARAMETER_ATTRIBUTE = "public";
     public static final String REQUIRED_GRAPH_PARAMETER_ATTRIBUTE = "required";
 
+    
 	/**
 	 * Inserts the given component into the given edge.
 	 */
@@ -522,6 +558,125 @@ public class GraphUtils {
 			throw new JetelRuntimeException("Job '" + fileUrl + "' cannot be loaded. ", e);
 		} finally {
 			IOUtils.closeQuietly(in);
+		}
+	}
+
+	/**
+	 * Performs the given transformation. OnError method is invoked if something goes wrong.
+	 */
+	public static int performTransformation(RecordTransform transformation, DataRecord[] inRecords, DataRecord[] outRecords, String errMessage) {
+		try {
+			return transformation.transform(inRecords, outRecords);
+		} catch (Exception exception) {
+			try {
+				return transformation.transformOnError(exception, inRecords, outRecords);
+			} catch (TransformException e) {
+				throw new JetelRuntimeException(errMessage, e);
+			}
+		}
+	}
+	
+	/**
+	 * Populates the given record based on dictionary content passed by {@link RunStatus}
+	 */
+	public static void populateDictionaryRecordFromRunStatus(DataRecord outputDictionaryRecord, RunStatus runStatus) {
+		if (outputDictionaryRecord != null) {
+			outputDictionaryRecord.reset();
+			if (outputDictionaryRecord instanceof DataRecordWithInvalidState) {
+				//mark all fields as invalid, see CLO-1872
+				//only populated fields will be have valid value
+				((DataRecordWithInvalidState) outputDictionaryRecord).setValid(false);
+			}
+			DictionaryValuesContainer dictionaryContent = runStatus.dictionaryOut;
+			if (dictionaryContent != null) {
+				for (Entry<String, Serializable> entry : dictionaryContent.getContent().entrySet()) {
+					if (outputDictionaryRecord.hasField(entry.getKey())) {
+						outputDictionaryRecord.getField(entry.getKey()).setValue(entry.getValue());
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Populates the given record based on tracking information passed by {@link RunStatus}
+	 */
+	public static void populateTrackingRecordFromRunStatus(DataRecord trackingRecord, RunStatus runStatus) {
+		if (trackingRecord != null) {
+			trackingRecord.reset();
+			if (trackingRecord instanceof DataRecordWithInvalidState) {
+				//mark all fields as invalid, see CLO-1872
+				//only populated fields will be have valid value
+				((DataRecordWithInvalidState) trackingRecord).setValid(false);
+			}
+			if (runStatus.tracking != null) {
+				try {
+					TrackingMetadataToolkit.populateTrackingRecord(trackingRecord, runStatus.tracking);
+				} catch (Exception e) {
+					throw new JetelRuntimeException("Tracking record population failed.", e);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Populates the given record based {@link RunStatus} object.
+	 */
+	public static void populateRecordFromRunStatus(DataRecord runStatusRecord, RunStatus runStatus) {
+		runStatusRecord.getField(RS_RUN_ID_INDEX).setValue(runStatus.runId);
+		runStatusRecord.getField(RS_ORIGINAL_JOB_URL_INDEX).setValue(runStatus.jobUrl);
+		runStatusRecord.getField(RS_START_TIME_INDEX).setValue(runStatus.startTime);
+		runStatusRecord.getField(RS_END_TIME_INDEX).setValue(runStatus.endTime);
+		runStatusRecord.getField(RS_DURATION_INDEX).setValue(runStatus.duration);
+		runStatusRecord.getField(RS_EXECUTION_GROUP_INDEX).setValue(runStatus.executionGroup);
+		runStatusRecord.getField(RS_EXECUTION_LABEL_INDEX).setValue(runStatus.executionLabel);
+		runStatusRecord.getField(RS_STATUS_INDEX).setValue(runStatus.status != null ? runStatus.status.message() : null);
+		runStatusRecord.getField(RS_ERR_EXCEPTION_INDEX).setValue(runStatus.errException);
+		runStatusRecord.getField(RS_ERR_MESSAGE_INDEX).setValue(runStatus.errMessage);
+		runStatusRecord.getField(RS_ERR_COMPONENT_INDEX).setValue(runStatus.errComponent);
+		runStatusRecord.getField(RS_ERR_COMPONENT_TYPE_INDEX).setValue(runStatus.errComponentType);
+	}
+	
+	/**
+	 * @return metadata for {@link RunStatus}
+	 */
+	public static DataRecordMetadata createRunStatusMetadata() {
+		DataRecordMetadata metadata = new DataRecordMetadata(RUN_STATUS_RECORD_NAME);
+		
+		metadata.addField(RS_RUN_ID_INDEX, new DataFieldMetadata(RS_RUN_ID_NAME, DataFieldType.LONG, null));
+		metadata.addField(RS_ORIGINAL_JOB_URL_INDEX, new DataFieldMetadata(RS_ORIGINAL_JOB_URL_NAME, DataFieldType.STRING, null));
+		metadata.addField(RS_START_TIME_INDEX, new DataFieldMetadata(RS_START_TIME_NAME, DataFieldType.DATE, null));
+		metadata.addField(RS_END_TIME_INDEX, new DataFieldMetadata(RS_END_TIME_NAME, DataFieldType.DATE, null));
+		metadata.addField(RS_DURATION_INDEX, new DataFieldMetadata(RS_DURATION_NAME, DataFieldType.LONG, null));
+		metadata.addField(RS_EXECUTION_GROUP_INDEX, new DataFieldMetadata(RS_EXECUTION_GROUP_NAME, DataFieldType.STRING, null));
+		metadata.addField(RS_EXECUTION_LABEL_INDEX, new DataFieldMetadata(RS_EXECUTION_LABEL_NAME, DataFieldType.STRING, null));
+		metadata.addField(RS_STATUS_INDEX, new DataFieldMetadata(RS_STATUS_NAME, DataFieldType.STRING, null));
+		metadata.addField(RS_ERR_EXCEPTION_INDEX, new DataFieldMetadata(RS_ERR_EXCEPTION_NAME, DataFieldType.STRING, null));
+		metadata.addField(RS_ERR_MESSAGE_INDEX, new DataFieldMetadata(RS_ERR_MESSAGE_NAME, DataFieldType.STRING, null));
+		metadata.addField(RS_ERR_COMPONENT_INDEX, new DataFieldMetadata(RS_ERR_COMPONENT_NAME, DataFieldType.STRING, null));
+		metadata.addField(RS_ERR_COMPONENT_TYPE_INDEX, new DataFieldMetadata(RS_ERR_COMPONENT_TYPE_NAME, DataFieldType.STRING, null));
+
+		return metadata;
+	}
+
+	/**
+	 * Data values from given data records are copied to the given graph dictionary.
+	 * @param dictionary populated graph dictionary
+	 * @param dictionaryRecord source data record 
+	 */
+	public static void populateDictionaryFromRecord(Dictionary dictionary, CTLMapping mapping, String dictionaryRecordName) {
+		DataRecord dictionaryRecord = mapping.getOutputRecord(dictionaryRecordName);
+		if (dictionaryRecord != null) {
+			for (DataField field : dictionaryRecord) {
+				if (mapping.isOutputOverridden(dictionaryRecord, field)) {
+					Object val = field.getValueDuplicate();
+					try {
+						dictionary.setValue(field.getMetadata().getLabelOrName(), (Serializable) val);
+					} catch (ComponentNotReadyException e) {
+						throw new JetelRuntimeException("Dictionary entry '" + field.getMetadata().getLabelOrName() + "' cannot be populated with '" + val + "'.", e);
+					}
+				}
+			}
 		}
 	}
 
