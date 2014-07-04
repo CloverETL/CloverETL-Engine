@@ -66,5 +66,17 @@ public class PooledFTPOperationHandlerPureFTPTest extends PooledFTPOperationHand
 		result = manager.resolve(uri);
 		assertEquals(1, result.getResult().size());
 		assertEquals(URI.create(input), result.getResult().get(0).toURI());
+
+		input = "ftp://wildcards:pas*word@koule:66/wildcards/*.tmp";
+		uri = CloverURI.createURI(input);
+		result = manager.resolve(uri);
+		assertEquals(1, result.getResult().size());
+		assertEquals(URI.create("ftp://wildcards:pas*word@koule:66/wildcards/file.tmp"), result.getResult().get(0).toURI());
+		
+		input = "ftp://wildcards:pas*word@koule:66/wildcards/nonExistingFile.tmp";
+		uri = CloverURI.createURI(input);
+		result = manager.resolve(uri);
+		assertEquals(1, result.getResult().size());
+		assertEquals(URI.create(input), result.getResult().get(0).toURI());
 	}
 }
