@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.0.0.M2" id="1401291104482" licenseType="Evaluation" modified="Fri Jun 27 17:24:03 CEST 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.20" showComponentDetails="true">
+<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.0.0.M2" id="1401291104482" licenseType="Evaluation" modified="Thu Jul 03 17:47:12 CEST 2014" modifiedBy="User" name="Default graph name" nature="subgraph" revision="1.32" showComponentDetails="true">
 <Global>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="jira_search_metadata" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
@@ -12,6 +12,8 @@
 <Metadata id="Metadata0" previewAttachmentCharset="ISO-8859-1">
 <Record fieldDelimiter="|" name="jira_search_result" previewAttachmentCharset="ISO-8859-1" recordDelimiter="\r\n" type="delimited">
 <Field name="issue_id" type="string"/>
+<Field name="type" type="string"/>
+<Field name="summary" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata2" previewAttachmentCharset="ISO-8859-1">
@@ -119,7 +121,7 @@ function integer transform() {
 	string rest_url = getParamValue("JIRA_SEARCH_URL") 
 		+ "startAt=" + $in.0.start_at 
 		+ "&maxResults=" + getParamValue("DEFAULT_MAX_RESULTS") 
-		+ "&fields=id"
+		+ "&fields=id,summary,issuetype"
 		+ "&jql=" + escaped_query;
 	$out.0.rest_url = rest_url;
 			
@@ -184,7 +186,7 @@ function integer transform() {
 // function string getMessage() {}
 ]]></attr>
 </Node>
-<Node enabled="enabled" guiName="Parse search JSON" guiX="1148" guiY="50" id="PARSE_SEARCH_JSON" schema="${META_DIR}/search_result_json.xsd" sourceUri="port:$0.content:discrete" type="JSON_EXTRACT">
+<Node enabled="enabled" guiName="Parse search JSON" guiX="1148" guiY="50" id="PARSE_SEARCH_JSON" schema="${META_DIR}/issue_json.xsd" sourceUri="port:$0.content:discrete" type="JSON_EXTRACT">
 <attr name="mapping"><![CDATA[<Mappings>
 	<Mapping element="json_object" outPort="1"
 			xmlFields="{}maxResults;{}startAt;{}total"
@@ -192,6 +194,14 @@ function integer transform() {
 		<Mapping element="issues" outPort="0"
 				xmlFields="{}key"
 				cloverFields="issue_id">
+			<Mapping element="fields" useParentRecord="true"
+					xmlFields="{}summary"
+					cloverFields="summary">
+				<Mapping element="issuetype" useParentRecord="true"
+						xmlFields="{}name"
+						cloverFields="type">
+				</Mapping>
+			</Mapping>
 		</Mapping>
 	</Mapping>
 </Mappings>
