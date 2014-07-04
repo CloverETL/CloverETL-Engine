@@ -778,11 +778,41 @@ public class FileManager {
 	private static final String QUESTION_MARK = "?"; //$NON-NLS-1$
 	private static final char PATH_SEPARATOR = '/';
 
+	/**
+	 * For server-based hierarchical URIs,
+	 * use {@link #uriHasWildcards(String)} instead.
+	 * 
+	 * @param uri
+	 * @return
+	 */
 	static boolean hasWildcards(String path) {
 		return path.contains(QUESTION_MARK) || path.contains(ASTERISK);
 	}
 	
 	private static final Pattern URL_PREFIX_PATTERN = Pattern.compile("^(([^/]+):/+[^/]+/?)(.*)");
+	
+	/**
+	 * CLO-4062:
+	 * 
+	 * This method should be used for standard
+	 * server-based hierarchical URIs,
+	 * because it ignores wildcards in the authority,
+	 * e.g. in the password.
+	 * 
+	 * @param uri
+	 * @return
+	 */
+	static boolean uriHasWildcards(String uri) {
+		Matcher m = URL_PREFIX_PATTERN.matcher(uri);
+		if (m.matches()) {
+			String scheme = m.group(2);
+			if (!scheme.equals(LocalOperationHandler.FILE_SCHEME)) {
+				return hasWildcards(m.group(3));
+			}
+		}
+			
+		return hasWildcards(uri);
+	}
 	
 	/**
 	 * CLO-4062:
@@ -924,7 +954,7 @@ public class FileManager {
 
 	public List<SingleCloverURI> defaultResolve(SingleCloverURI wildcards) throws IOException {
 		String uriString = wildcards.toString();
-		if (wildcards.isRelative() || !hasWildcards(uriString)) {
+		if (wildcards.isRelative() || !uriHasWildcards(uriString)) {
 			return Arrays.asList(wildcards);
 		}
 		

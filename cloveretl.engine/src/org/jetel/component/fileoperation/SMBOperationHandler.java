@@ -449,7 +449,7 @@ public class SMBOperationHandler implements IOperationHandler {
 	}
 	
 	private static boolean hasWildcards(String path) {
-		return FileManager.hasWildcards(path);
+		return FileManager.uriHasWildcards(path);
 	}
 	
 	@Override
