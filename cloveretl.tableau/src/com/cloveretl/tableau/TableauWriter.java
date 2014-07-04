@@ -243,7 +243,7 @@ public class TableauWriter extends Node  {
 					// Tableau API throws exception if target file exists. We must delete it, there is no "replace" option
 					// See docs of constructor for Extract class
 					if (!targetFile.delete()) {
-						throw new ComponentNotReadyException("Unable to delete output file, the file is probably locked. Output file: " + outputFileName);
+						throw new ComponentNotReadyException("Unable to delete output file, the file is probably locked. Output file: " + targetFile);
 					}
 				}
 			}
@@ -252,7 +252,7 @@ public class TableauWriter extends Node  {
 				this.targetExtract = new Extract(targetFile.getCanonicalPath());
 				return this.targetExtract;
 			} catch (TableauException e) {
-				throw new ComponentNotReadyException("Unable to open output file. Output file: " + outputFileName,e);
+				throw new ComponentNotReadyException("Unable to open output file. Output file: " + targetFile,e);
 			}
 			
 			
