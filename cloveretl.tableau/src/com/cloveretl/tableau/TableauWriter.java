@@ -248,8 +248,8 @@ public class TableauWriter extends Node  {
 				}
 			}
 			
-			try {
-				this.targetExtract = new Extract(outputFileName);
+			try {	
+				this.targetExtract = new Extract(targetFile.getCanonicalPath());
 				return this.targetExtract;
 			} catch (TableauException e) {
 				throw new ComponentNotReadyException("Unable to open output file. Output file: " + outputFileName,e);
