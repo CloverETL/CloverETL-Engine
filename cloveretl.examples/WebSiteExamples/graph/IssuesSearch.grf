@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.0.0.M2" id="1401282602437" licenseType="Evaluation" modified="Mon Jun 30 18:33:25 CEST 2014" modifiedBy="User" name="testing_search" revision="1.17" showComponentDetails="true">
+<Graph author="User" created="Wed May 28 13:40:15 CEST 2014" guiVersion="4.0.0.M2" id="1401282602437" licenseType="Evaluation" modified="Thu Jul 03 17:54:29 CEST 2014" modifiedBy="User" name="testing_search" revision="1.24" showComponentDetails="true">
 <Global>
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
@@ -10,7 +10,7 @@
 <attr name="text"><![CDATA[Configure your JIRA URL in the jira.prm file and your login in jira_login.prm file.]]></attr>
 </Note>
 <Note alignment="1" backgroundColorB="255" backgroundColorG="255" backgroundColorR="255" enabled="true" folded="false" height="183" id="Note2" textColorB="0" textColorG="0" textColorR="0" textFontSize="8" title="Scenario" titleColorB="64" titleColorG="64" titleColorR="64" titleFontSize="10" width="343" x="32" y="92">
-<attr name="text"><![CDATA[We would like to find all JIRA issues that match a certain search query.
+<attr name="text"><![CDATA[We would like to generate release notes document by searching for all JIRA issues that match a certain search query.
 
 JIRASearch is a subgraph that searches in JIRA via its REST API - it calls the API, parses the response and packages it all in an easy to use package.]]></attr>
 </Note>
@@ -24,7 +24,38 @@ JIRASearch is a subgraph that searches in JIRA via its REST API - it calls the A
 </Global>
 <Phase number="0">
 <Node __PASSWORD="${PASSWORD}" __QUERY="${DEFAULT_QUERY}" __USER="${USER}" enabled="enabled" guiName="JIRASearch" guiX="32" guiY="341" id="JIRA_SEARCH" jobURL="${SUBGRAPH_DIR}/JIRASearch.sgrf" type="SUBGRAPH"/>
-<Node enabled="enabled" fileURL="${DATAOUT_DIR}/release-notes-issues.txt" guiName="UniversalDataWriter" guiX="275" guiY="341" id="UNIVERSAL_DATA_WRITER" outputFieldNames="true" type="DATA_WRITER"/>
-<Edge debugMode="true" fromNode="JIRA_SEARCH:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (in)" outPort="Port 0 (out)" toNode="UNIVERSAL_DATA_WRITER:0"/>
+<Node enabled="enabled" existingSheetsActions="REMOVE_SHEETS" fileURL="${DATAOUT_DIR}/release-notes-${VERSION}.xlsx" guiName="Release notes" guiX="239" guiY="341" id="RELEASE_NOTES" sheet="Sheet0" templateFileURL="${DATAIN_DIR}/release-notes-template.xlsx" type="SPREADSHEET_WRITER" writeMode="OVERWRITE_SHEET_IN_MEMORY">
+<attr name="mapping"><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<mapping>
+    <globalAttributes>
+        <orientation>VERTICAL</orientation>
+        <step>1</step>
+        <writeHeader>false</writeHeader>
+    </globalAttributes>
+    <defaultSkip>1</defaultSkip>
+    <headerGroups>
+        <headerGroup skip="1">
+            <cloverField>issue_id</cloverField>
+            <headerRanges>
+                <headerRange begin="A2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>type</cloverField>
+            <headerRanges>
+                <headerRange begin="B2"/>
+            </headerRanges>
+        </headerGroup>
+        <headerGroup skip="1">
+            <cloverField>summary</cloverField>
+            <headerRanges>
+                <headerRange begin="C2"/>
+            </headerRanges>
+        </headerGroup>
+    </headerGroups>
+</mapping>
+]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="JIRA_SEARCH:0" guiBendpoints="" guiRouter="Manhattan" id="Edge3" inPort="Port 0 (input)" outPort="Port 0 (out)" toNode="RELEASE_NOTES:0"/>
 </Phase>
 </Graph>
