@@ -80,7 +80,7 @@ public class TransformationGraphXMLReaderWriterTest extends CloverTestCase {
 		assertTrue(result.parameters.get(1).componentReference == null);
 
 		assertTrue(result.parameters.get(2).name.equals("key3"));
-		assertTrue(result.parameters.get(2).value == null);
+		assertTrue(result.parameters.get(2).value.isEmpty());
 		assertTrue(result.parameters.get(2).secure == false);
 		assertTrue(result.parameters.get(2).singleType == null);
 		assertTrue(result.parameters.get(2).componentReference == null);
