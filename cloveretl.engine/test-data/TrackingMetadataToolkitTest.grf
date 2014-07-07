@@ -7,7 +7,7 @@
 </Record>
 </Metadata>
 <Property id="GraphParameter0" name="NUM_RECORDS" value="1"/>
-<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Property fileURL="test-data/workspace.prm" id="GraphParameter1"/>
 <Dictionary>
 <Entry dictval.value="123" id="DictionaryEntry0" input="true" name="COUNTER" output="false" type="integer"/>
 <Entry id="DictionaryEntry1" input="false" name="RESULT" output="true" type="long"/>
