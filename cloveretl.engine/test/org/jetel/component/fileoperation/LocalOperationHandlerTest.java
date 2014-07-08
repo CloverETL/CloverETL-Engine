@@ -204,6 +204,7 @@ public class LocalOperationHandlerTest extends OperationHandlerTestTemplate {
 				System.out.println(uri);
 				assertTrue(result.success());
 				assertTrue(result.isDirectory());
+				assertTrue(result.getName().isEmpty());
 				System.out.println(result.getResult());
 			}
 		}

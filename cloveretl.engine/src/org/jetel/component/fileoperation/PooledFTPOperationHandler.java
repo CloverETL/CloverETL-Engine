@@ -114,7 +114,11 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 			if (m.matches()) {
 				name = m.group(1); // some FTPs return full file paths as names, we want only the filename 
 			}
+			if (name.equals("/")) {
+				name = ""; // root directory has no name
+			}
 			this.name = name;
+			// name is modified just for the URI
 			if (file.isDirectory() && !name.endsWith(URIUtils.PATH_SEPARATOR)) {
 				name = name + URIUtils.PATH_SEPARATOR;
 			}
@@ -329,7 +333,7 @@ public class PooledFTPOperationHandler implements IOperationHandler {
 		if (getPath(targetUri.normalize()).equals(URIUtils.PATH_SEPARATOR)) {
 			FTPFile root = new FTPFile();
 			root.setType(FTPFile.DIRECTORY_TYPE);
-			root.setName(URIUtils.CURRENT_DIR_NAME);
+			root.setName("");
 			return info(root, null, targetUri);
 		} else {
 			String path = getPath(targetUri);

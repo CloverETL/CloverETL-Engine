@@ -377,6 +377,30 @@ public class HadoopOperationHandlerTest extends OperationHandlerTestTemplate {
 //	}
 
 	@Override
+	public void testInfo() throws Exception {
+		super.testInfo();
+		
+		String connectionId = getTestingURI().getAuthority();
+		
+		CloverURI uri;
+		InfoResult result;
+		
+		uri = CloverURI.createURI("hdfs://" + connectionId + "/");
+		result = manager.info(uri);
+		assertTrue(result.success());
+		assertTrue(result.isDirectory());
+		assertTrue(result.getName().isEmpty());
+		System.out.println(result.getResult());
+
+		uri = CloverURI.createURI("hdfs://" + connectionId);
+		result = manager.info(uri);
+		assertTrue(result.success());
+		assertTrue(result.isDirectory());
+		assertTrue(result.getName().isEmpty());
+		System.out.println(result.getResult());
+	}
+
+	@Override
 	protected void generate(URI root, int depth) throws IOException {
 		int i = 0;
 		for ( ; i < 20; i++) {

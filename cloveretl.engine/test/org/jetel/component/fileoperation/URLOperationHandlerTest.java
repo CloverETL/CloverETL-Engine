@@ -90,6 +90,48 @@ public class URLOperationHandlerTest extends OperationHandlerTestTemplate {
 		info = manager.info(uri).getInfo();
 		assertNotNull(info);
 		assertTrue(info.isFile());
+
+		uri = createURI("ftp://test:test@koule/");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri).getInfo();
+		assertNotNull(info);
+		assertTrue(info.isFile());
+		assertTrue(info.getName().isEmpty());
+
+		uri = createURI("ftp://test:test@koule");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri).getInfo();
+		assertNotNull(info);
+		assertTrue(info.isFile());
+		assertTrue(info.getName().isEmpty());
+
+		uri = createURI("http://www.cloveretl.com/");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri).getInfo();
+		assertNotNull(info);
+		assertTrue(info.isFile());
+		assertTrue(info.getName().isEmpty());
+
+		uri = createURI("http://www.cloveretl.com");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri).getInfo();
+		assertNotNull(info);
+		assertTrue(info.isFile());
+		assertTrue(info.getName().isEmpty());
+
+		uri = createURI("http:(direct:)//www.cloveretl.com/");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri).getInfo();
+		assertNotNull(info);
+		assertTrue(info.isFile());
+		assertTrue(info.getName().isEmpty());
+
+		uri = createURI("http:(direct:)//www.cloveretl.com");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri).getInfo();
+		assertNotNull(info);
+		assertTrue(info.isFile());
+		assertTrue(info.getName().isEmpty());
 	}
 
 	@Override

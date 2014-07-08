@@ -172,6 +172,29 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 	}
 	
 	@Override
+	public void testInfo() throws Exception {
+		super.testInfo();
+		
+		CloverURI uri;
+		Info info;
+
+		// CLO-4062:
+		uri = createURI("smb://virt-orange%3BSMBTest:p%40ss%7B%2F%7D@VIRT-ORANGE/");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri).getInfo();
+		assertNotNull(info);
+		assertTrue(info.isDirectory());
+		assertEquals("VIRT-ORANGE", info.getName());
+		
+		uri = createURI("smb://virt-orange%3BSMBTest:p%40ss%7B%2F%7D@VIRT-ORANGE");
+		System.out.println(uri.getAbsoluteURI());
+		info = manager.info(uri).getInfo();
+		assertNotNull(info);
+		assertTrue(info.isDirectory());
+		assertEquals("VIRT-ORANGE", info.getName());
+	}
+
+	@Override
 	protected void generate(URI root, int depth) throws IOException {
 		int i = 0;
 		for ( ; i < 20; i++) {
