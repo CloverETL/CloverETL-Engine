@@ -31,6 +31,8 @@ import java.nio.channels.Channels;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.jetel.component.fileoperation.SimpleParameters.CopyParameters;
+
 public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 	
 	private DefaultOperationHandler handler = null;
@@ -219,6 +221,13 @@ public class DefaultOperationHandlerTest extends LocalOperationHandlerTest {
 //		target = relativeURI("JAR_" + name);
 //		assertTrue(manager.copy(source, target));
 //		assertEquals(originalContent, read(manager.getInput(target).next()));
+		
+		source = CloverURI.createURI("ftp://ftproottest:test@koule:66/");
+		target = relativeURI("copiedFtpRoot/");
+		assertTrue(manager.create(target).success());
+		assertTrue(manager.copy(source, target, new CopyParameters().setRecursive(true)).success());
+		CloverURI checkUri = CloverURI.createSingleURI(target.getSingleURI().getAbsoluteURI().toURI(), "rootFtpFile.txt");
+		assertTrue(manager.exists(checkUri));
 	}
 
 	@Override

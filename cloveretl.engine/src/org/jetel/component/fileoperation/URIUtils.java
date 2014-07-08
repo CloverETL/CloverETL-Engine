@@ -90,8 +90,25 @@ public class URIUtils {
 	}
 	
 	public static String getFileName(URI uri) {
-		String uriString = uri.toString();
-		return uriString.substring(uriString.lastIndexOf('/') + 1);
+		URI tmpUri = uri.normalize();
+		String path = tmpUri.getRawPath(); // it is assumed that the URI does not contain ?
+		// TODO how about #
+		if (path == null) {
+			return ""; // root
+		}
+		
+		if (path.endsWith("/")) {
+			path = path.substring(0, path.length() - 1);
+		}
+		int slashIdx = path.lastIndexOf('/');
+		if (slashIdx >= 0) {
+			path = path.substring(slashIdx + 1);
+		}
+		if (path.equals("..")) {
+			return ""; // relative path with too many ".." segments and no filename
+		}
+		
+		return urlDecode(path);
 	}
 
 	public static String urlEncode(String str) {

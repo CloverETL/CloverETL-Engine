@@ -291,7 +291,7 @@ public class FTPOperationHandler implements IOperationHandler {
 		if (getPath(targetUri.normalize()).equals(URIUtils.PATH_SEPARATOR)) {
 			FTPFile root = new FTPFile();
 			root.setType(FTPFile.DIRECTORY_TYPE);
-			root.setName(URIUtils.CURRENT_DIR_NAME);
+			root.setName("");
 			return info(root, null, targetUri);
 		} else {
 			String path = getPath(targetUri);

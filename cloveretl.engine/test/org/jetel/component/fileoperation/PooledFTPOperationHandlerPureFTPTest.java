@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 
 import org.jetel.component.fileoperation.SimpleParameters.CreateParameters;
 import org.jetel.component.fileoperation.result.CreateResult;
+import org.jetel.component.fileoperation.result.InfoResult;
 import org.jetel.component.fileoperation.result.ResolveResult;
 
 /**
@@ -78,5 +79,25 @@ public class PooledFTPOperationHandlerPureFTPTest extends PooledFTPOperationHand
 		result = manager.resolve(uri);
 		assertEquals(1, result.getResult().size());
 		assertEquals(URI.create(input), result.getResult().get(0).toURI());
+	}
+
+	@Override
+	public void testRootInfo() throws Exception {
+		CloverURI uri;
+		InfoResult result;
+		
+		uri = CloverURI.createURI("ftp://ftproottest:test@koule:66/");
+		result = manager.info(uri);
+		assertTrue(result.success());
+		assertTrue(result.isDirectory());
+		assertTrue(result.getName().isEmpty());
+		System.out.println(result.getResult());
+
+		uri = CloverURI.createURI("ftp://ftproottest:test@koule:66");
+		result = manager.info(uri);
+		assertTrue(result.success());
+		assertTrue(result.isDirectory());
+		assertTrue(result.getName().isEmpty());
+		System.out.println(result.getResult());
 	}
 }
