@@ -61,7 +61,10 @@ import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.string.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Years;
+import org.junit.FixMethodOrder;
+import org.junit.runners.MethodSorters;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class CompilerTestCase extends CloverTestCase {
 
 	// ---------- RECORD NAMES -----------
@@ -588,7 +591,17 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 * Executes the code using the default graph and records.
 	 */
 	protected void doCompile(String expStr, String testIdentifier) {
-		TransformationGraph graph = createDefaultGraph(); 
+		doCompile(expStr, testIdentifier, null);
+	}
+
+	/**
+	 * Executes the code using the default graph and records.
+	 */
+	protected void doCompile(String expStr, String testIdentifier, TransformationGraphCustomizer customizer) {
+		TransformationGraph graph = createDefaultGraph();
+		if (customizer != null) {
+			customizer.customize(graph);
+		}
 		
 		DataRecord[] inRecords = new DataRecord[] { createDefaultRecord(graph.getDataRecordMetadata(INPUT_1)), createDefaultRecord(graph.getDataRecordMetadata(INPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(INPUT_3)), createDefaultMultivalueRecord(graph.getDataRecordMetadata(INPUT_4)) };
 		DataRecord[] outRecords = new DataRecord[] { createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_1)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_2)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_3)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_4)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_5)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_6)), createEmptyRecord(graph.getDataRecordMetadata(OUTPUT_7)) };
@@ -765,8 +778,12 @@ public abstract class CompilerTestCase extends CloverTestCase {
 	 *            identifier defining CTL file to load code from
 	 */
 	protected void doCompile(String testIdentifier) {
+		doCompile(testIdentifier, (TransformationGraphCustomizer) null);
+	}
+	
+	protected void doCompile(String testIdentifier, TransformationGraphCustomizer customizer) {
 		String sourceCode = loadSourceCode(testIdentifier);
-		doCompile(sourceCode, testIdentifier);
+		doCompile(sourceCode, testIdentifier, customizer);
 	}
 
 	protected void printMessages(List<ErrorMessage> diagnosticMessages) {
@@ -1278,6 +1295,8 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		doCompile("test_dynamiclib_getFieldType");
 		check("ret1", "string");
 		check("ret2", "number");
+		check("ret3", "string");
+		check("ret4", "number");
 	}
 	
 	public void test_dynamiclib_getFieldType_expect_error(){
@@ -1293,14 +1312,345 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+		// null record
 		try {
 			doCompile("function integer transform(){firstInput fi = null; string str = fi.getFieldType(5); return 0;}","test_dynamiclib_getFieldType_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
 		}
+		// null integer variable
+		try {
+			doCompile("function integer transform(){integer nullVariable = null; $in.0.getFieldType(nullVariable); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		// non-existing field (by name)
+		try {
+			doCompile("function integer transform(){getFieldType($in.0, 'nonExistingField'); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		// ambiguous call
+		doCompileExpectError("function integer transform(){getFieldType($in.0, null); return 0;}","test_dynamiclib_getFieldType_expect_error", Arrays.asList("Function 'getFieldType' is ambiguous"));
+		
+		// null string variable
+		try {
+			doCompile("function integer transform(){string nullVariable = null; getFieldType($in.0, nullVariable); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// empty string
+		try {
+			doCompile("function integer transform(){getFieldType($in.0, ''); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		// null record
+		try {
+			doCompile("function integer transform(){firstInput fi = null; fi.getFieldType('Name'); return 0;}","test_dynamiclib_getFieldType_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
 	}
 	
+	public void test_dynamiclib_getFieldProperties() {
+		doCompile("test_dynamiclib_getFieldProperties", new TransformationGraphCustomizer() {
+			
+			@Override
+			public void customize(TransformationGraph graph) {
+				graph.getDataRecordMetadata(INPUT_1).getField("Age").setProperty("myProperty", "myValue");
+			}
+		});
+		
+		Map<String, String> expected = new HashMap<>(1);
+		expected.put("myProperty", "myValue");
+		
+		check("ret1", expected);
+		check("ret2", expected);
+		check("ret3", Collections.emptyMap()); // other field
+		check("ret4", Collections.emptyMap()); // other record
+		check("ret5", expected);
+	}
+	
+	public void test_dynamiclib_getFieldProperties_expect_error() {
+		// ambiguous call
+		doCompileExpectError("function integer transform(){getFieldProperties($in.0, null); return 0;}","test_dynamiclib_getFieldProperties_expect_error", Arrays.asList("Function 'getFieldProperties' is ambiguous"));
+
+		try {
+			doCompile("function integer transform(){integer nullInteger = null; getFieldProperties($in.0, nullInteger); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		try {
+			doCompile("function integer transform(){string nullString = null; getFieldProperties($in.0, nullString); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		try {
+			doCompile("function integer transform(){getFieldProperties($in.0, -5); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		try {
+			doCompile("function integer transform(){getFieldProperties($in.0, 'nonExistingField'); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		try {
+			doCompile("function integer transform(){getFieldProperties($out.0, 'nonExistingField'); return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		try {
+			doCompile("function integer transform(){getFieldProperties($out.0, 'Name')['unmodifiable'] = 'modified'; return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		try {
+			doCompile("function integer transform(){getFieldProperties($out.0, 0)['unmodifiable'] = 'modified'; return 0;}","test_dynamiclib_getFieldProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getFieldPropertyValue() {
+		doCompile("test_dynamiclib_getFieldPropertyValue", new TransformationGraphCustomizer() {
+			
+			@Override
+			public void customize(TransformationGraph graph) {
+				graph.getDataRecordMetadata(INPUT_1).getField("Age").setProperty("myProperty", "myValue");
+			}
+		});
+		
+		String expected = "myValue";
+		
+		check("ret1", expected);
+		check("ret2", expected);
+		check("ret3", null);
+		check("ret4", null);
+		check("ret5", null);
+		check("ret6", expected);
+	}
+	
+	public void test_dynamiclib_getFieldPropertyValue_expect_error() {
+		// ambiguous call
+		doCompileExpectError("function integer transform(){getFieldPropertyValue($in.0, null, 'myProperty'); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error", Arrays.asList("Function 'getFieldPropertyValue' is ambiguous"));
+
+		// null field index
+		try {
+			doCompile("function integer transform(){integer nullInteger = null; getFieldPropertyValue($in.0, nullInteger, 'myProperty'); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// null field name
+		try {
+			doCompile("function integer transform(){string nullString = null; getFieldPropertyValue($in.0, nullString, 'myProperty'); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// null property name
+		try {
+			doCompile("function integer transform(){string nullString = null; getFieldPropertyValue($in.0, 'Name', nullString); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// empty property name
+		try {
+			doCompile("function integer transform(){getFieldPropertyValue($in.0, 'Name', ''); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// negative field index
+		try {
+			doCompile("function integer transform(){getFieldPropertyValue($in.0, -5, 'myProperty'); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// non-existing input field
+		try {
+			doCompile("function integer transform(){getFieldPropertyValue($in.0, 'nonExistingField', 'myProperty'); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// non-existing output field
+		try {
+			doCompile("function integer transform(){getFieldPropertyValue($out.0, 'nonExistingField', 'myProperty'); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+		// null literal record
+		try {
+			doCompile("function integer transform(){getFieldPropertyValue(null, 'Name', 'myProperty'); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// null variable record
+		try {
+			doCompile("function integer transform(){firstInput myRecord = null; getFieldPropertyValue(myRecord, 'Name', 'myProperty'); return 0;}","test_dynamiclib_getFieldPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_dynamiclib_getRecordName() {
+		doCompile("test_dynamiclib_getRecordName");
+		
+		check("ret1", "firstInput");
+		check("ret2", "firstOutput");
+		check("ret3", "multivalueInput");
+		check("ret4", "firstInput");
+	}
+	
+	public void test_dynamiclib_getRecordName_expect_error() {
+		try {
+			doCompile("function integer transform(){getRecordName(null); return 0;}","test_dynamiclib_getRecordName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput nullRecord = null; getRecordName(nullRecord); return 0;}","test_dynamiclib_getRecordName_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
+	public void test_dynamiclib_getRecordProperties() {
+		doCompile("test_dynamiclib_getRecordProperties", new TransformationGraphCustomizer() {
+			
+			@Override
+			public void customize(TransformationGraph graph) {
+				graph.getDataRecordMetadata(INPUT_1).getRecordProperties().setProperty("myProperty", "myValue");
+			}
+		});
+		
+		Map<String, String> expected = new HashMap<>(1);
+		expected.put("myProperty", "myValue");
+		
+		check("ret1", expected);
+		check("ret2", Collections.emptyMap());
+		check("ret3", Collections.emptyMap());
+		check("ret4", expected);
+	}
+	
+	public void test_dynamiclib_getRecordProperties_expect_error() {
+		// null variable
+		try {
+			doCompile("function integer transform(){firstInput nullRecord = null; getRecordProperties(nullRecord); return 0;}","test_dynamiclib_getRecordProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// null literal
+		try {
+			doCompile("function integer transform(){getRecordProperties(null); return 0;}","test_dynamiclib_getRecordProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// unmodifiable
+		try {
+			doCompile("function integer transform(){getRecordProperties($out.0)['unmodifiable'] = 'modified'; return 0;}","test_dynamiclib_getRecordProperties_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		
+	}
+	
+	public void test_dynamiclib_getRecordPropertyValue() {
+		doCompile("test_dynamiclib_getRecordPropertyValue", new TransformationGraphCustomizer() {
+			
+			@Override
+			public void customize(TransformationGraph graph) {
+				graph.getDataRecordMetadata(INPUT_1).getRecordProperties().setProperty("myProperty", "myValue");
+			}
+		});
+		
+		String expected = "myValue";
+		
+		check("ret1", expected);
+		check("ret2", null);
+		check("ret3", null);
+		check("ret4", expected);
+		check("ret5", null);
+	}
+	
+	public void test_dynamiclib_getRecordPropertyValue_expect_error() {
+		// null literal name
+		try {
+			doCompile("function integer transform(){getRecordPropertyValue($in.0, null); return 0;}","test_dynamiclib_getRecordPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// null variable name
+		try {
+			doCompile("function integer transform(){string nullString = null; getRecordPropertyValue($in.0, nullString); return 0;}","test_dynamiclib_getRecordPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// empty property name
+		try {
+			doCompile("function integer transform(){getRecordPropertyValue($in.0, ''); return 0;}","test_dynamiclib_getRecordPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+
+		// null record
+		try {
+			doCompile("function integer transform(){firstInput myRecord = null; getRecordPropertyValue(myRecord, 'myProperty'); return 0;}","test_dynamiclib_getRecordPropertyValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+
 	public void test_dynamiclib_getIntValue(){
 		doCompile("test_dynamiclib_getIntValue");
 		check("ret1", CompilerTestCase.VALUE_VALUE);
@@ -1740,6 +2090,32 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		}
 		try {
 			doCompile("function integer transform(){$out.0.setStringValue(11, 'Vaigar'); return 0;}","test_dynamiclib_setStringValue_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+	}
+	
+	public void test_dynamiclib_getFieldNames() {
+		doCompile("test_dynamiclib_getFieldNames");
+		
+		check("fieldNames1", Arrays.asList("Field1", "Age", "City"));
+		check("fieldNames2", Arrays.asList("Name", "Age", "City", "Born", "BornMillisec", "Value", "Flag", "ByteArray", "Currency", "additionalString"));
+		check("fieldNames3", Arrays.asList("Name", "Age", "City", "Born", "BornMillisec", "Value", "Flag", "ByteArray", "Currency", "additionalString2"));
+		
+		// the underlying record must not be modified
+		check("fieldNames4", Arrays.asList("Name", "Age", "City", "Born", "BornMillisec", "Value", "Flag", "ByteArray", "Currency"));
+	}
+	
+	public void test_dynamiclib_getFieldNames_expect_error() {
+		try {
+			doCompile("function integer transform(){getFieldNames(null); return 0;}","test_dynamiclib_getFieldNames_expect_error");
+			fail();
+		} catch (Exception e) {
+			// do nothing
+		}
+		try {
+			doCompile("function integer transform(){firstInput nullRecord = null; getFieldNames(nullRecord); return 0;}","test_dynamiclib_getFieldNames_expect_error");
 			fail();
 		} catch (Exception e) {
 			// do nothing
@@ -9330,6 +9706,7 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		check("parsedDouble1", 100.13);
 		check("parsedDouble2", 123123123.123);
 		check("parsedDouble3", -350000.01);
+		check("parsedDouble4", Double.valueOf("12345678901234567890"));
 		check("nullRet1", null);
 		check("nullRet2", null);
 		check("nullRet3", null);
@@ -10171,5 +10548,9 @@ public abstract class CompilerTestCase extends CloverTestCase {
 		} catch (Exception e) {
 			// do nothing
 		}
+	}
+	
+	private static interface TransformationGraphCustomizer {
+		public void customize(TransformationGraph graph);
 	}
 }

@@ -53,4 +53,9 @@
 		<parameter id="className" value="org.jetel.ctl.extensions.StringLibExt"/>
 	</extension>
 
+	<extension point-id="ctlfunction">
+		<parameter id="libraryName" value="string"/>
+		<parameter id="className" value="org.jetel.ctl.extensions.DynamicLibExt"/>
+	</extension>
+
 </plugin>
