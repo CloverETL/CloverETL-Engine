@@ -380,7 +380,7 @@ public class JsonSaxParser extends SAXParser {
 				}
 				out.append(">"); //$NON-NLS-1$
 			} catch (IOException e) {
-				new SAXException(e);
+				throw new SAXException(e);
 			}
 			
 		}
@@ -390,7 +390,7 @@ public class JsonSaxParser extends SAXParser {
 			try {
 				out.append("</").append(localName).append(">");  //$NON-NLS-1$//$NON-NLS-2$
 			} catch (IOException e) {
-				new SAXException(e);
+				throw new SAXException(e);
 			}
 			
 		}
@@ -401,7 +401,7 @@ public class JsonSaxParser extends SAXParser {
 			try {
 				out.write(ch,start,length);
 			} catch (IOException e) {
-				new SAXException(e);
+				throw new SAXException(e);
 			}
 		}
 	}
