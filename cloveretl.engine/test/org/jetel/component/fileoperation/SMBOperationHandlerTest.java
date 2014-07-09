@@ -206,7 +206,7 @@ public class SMBOperationHandlerTest extends OperationHandlerTestTemplate {
 	
 	@Override
 	protected long getTolerance() {
-		return 1000;
+		return 1500;
 	}
 
 	public void testAdministrativeShare() throws Exception {
