@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.jetel.connection.jdbc;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.sql.Connection;
@@ -575,6 +576,16 @@ public class DBConnectionImpl extends AbstractDBConnection {
         if(StringUtils.isEmpty(sqlQuery)) {
             throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
         }
+        try {
+        	// CLO-4238:
+        	SQLScriptParser sqlParser = new SQLScriptParser();
+        	sqlParser.setBackslashQuoteEscaping(getJdbcSpecific().isBackslashEscaping());
+        	sqlParser.setRequireLastDelimiter(false);
+        	sqlParser.setStringInput(sqlQuery);
+			sqlQuery = sqlParser.getNextStatement();
+		} catch (IOException e1) {
+			logger.warn("Failed to parse SQL query", e1);
+		}
 
         int index = sqlQuery.toUpperCase().indexOf("WHERE");
 
