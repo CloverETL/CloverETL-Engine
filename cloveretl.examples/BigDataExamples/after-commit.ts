@@ -23,7 +23,9 @@
 
 	<!-- this is not a test, it only sets correct parameters to hadoop.prm (the graph is not a part of the examples
 		and thus it is placed in data-tmp -->
-	<FunctionalTest ident="SetHadoopParameters" graphFile="data-tmp/setParameters.grf" excludedEtlEnvironment="engine" />
+	<FunctionalTest ident="SetHadoopParameters" graphFile="data-tmp/setParameters.grf" excludedEtlEnvironment="engine" >
+		<PrepareFile file="data-tmp/setParameters.grf" />
+	</FunctionalTest>
 	
 	<FunctionalTest ident="UniqueVisits-HadoopHive" graphFile="jobflow/UniqueVisits-HadoopHive.jbf" excludedEtlEnvironment="engine" excludedContainers="websphere85">
 		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors.txt"/>
