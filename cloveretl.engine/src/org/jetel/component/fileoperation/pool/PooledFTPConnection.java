@@ -92,6 +92,7 @@ public class PooledFTPConnection extends AbstractPoolableConnection {
 	        if (!FTPReply.isPositiveCompletion(reply)) {
 	        	throw new IOException(FileOperationMessages.getString("FTPOperationHandler.connection_failed")); //$NON-NLS-1$
 	        }
+	        ftp.printWorkingDirectory(); // CLO-4241
 		} catch (IOException ioe) {
 			disconnect();
 			throw new IOException(FileOperationMessages.getString("FTPOperationHandler.connection_failed"), ioe); //$NON-NLS-1$
