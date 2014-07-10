@@ -11,7 +11,10 @@
 	
 	<!-- this is not a test, it only sets correct CONN_DIR to workspace.prm (the graph is not a part of the examples
 		and thus it is placed in data-tmp -->
-	<FunctionalTest ident="SetConnDir" graphFile="data-tmp/setConnDir.grf" excludedEtlEnvironment="engine" />
+	<FunctionalTest ident="SetConnDir" graphFile="data-tmp/setConnDir.grf" excludedEtlEnvironment="engine" >
+		<!-- graph file doesn;t exist in the sandbox ... it will be uploaded -->
+		<PrepareFile file="data-tmp/setConnDir.grf" />
+	</FunctionalTest>
 	
 	<FunctionalTest ident="UniqueVisits-MongoDB" graphFile="jobflow/UniqueVisits-MongoDB.jbf" excludedEtlEnvironment="engine">
 		<FlatFile outputFile="data-tmp/unique_visitors.txt" supposedFile="supposed-out/unique_visitors_mongo.txt"/>
