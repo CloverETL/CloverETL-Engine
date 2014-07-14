@@ -28,7 +28,9 @@ import org.jetel.data.DataRecordFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.data.parser.CloverDataParser.FileConfig;
-import org.jetel.data.parser.CloverDataParser35Test.LazyInputStream;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.bytes.CloverBuffer;
 
@@ -133,6 +135,15 @@ public class CloverDataParserTest extends CloverDataParser35Test {
 		assertEquals(CloverDataFormatter.DataFormatVersion.VERSION_40, version.formatVersion);
 		assertEquals(CloverDataFormatter.DataCompressAlgorithm.GZIP.getId(), version.compressionAlgorithm);
 		assertFalse(version.raw);
+		
+		try {
+			is = new ByteArrayInputStream(getBytes());
+			DataRecordMetadata incorrectMetadata = new DataRecordMetadata("incorrectMetadata");
+			metadata.addField(new DataFieldMetadata("field", DataFieldType.STRING, '|'));
+			metadata.addField(new DataFieldMetadata("field2", DataFieldType.STRING, '|'));
+			version = CloverDataParser.checkCompatibilityHeader(is, incorrectMetadata);
+			fail();
+		} catch (ComponentNotReadyException ex) {}
 	}
 
 	@Override
