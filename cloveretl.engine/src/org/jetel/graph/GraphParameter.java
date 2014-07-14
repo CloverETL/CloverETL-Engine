@@ -391,7 +391,7 @@ public class GraphParameter {
 		this.singleType = new SingleType(singleTypeName);
 	}
 
-	@XmlElement(name="componentReference")
+	@XmlElement(name="ComponentReference")
 	public ComponentReference getComponentReference() {
 		return componentReference;
 	}
