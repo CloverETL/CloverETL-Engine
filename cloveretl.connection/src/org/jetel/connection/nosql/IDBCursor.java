@@ -29,6 +29,4 @@ import java.util.Iterator;
  */
 public interface IDBCursor<T> extends Closeable, Iterator<T>, Iterable<T> {
 	
-	public int count();
-
 }
