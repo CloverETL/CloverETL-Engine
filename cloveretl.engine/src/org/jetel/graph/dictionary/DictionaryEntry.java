@@ -59,7 +59,16 @@ public class DictionaryEntry {
 	}
 
 	public void init(Dictionary dictionary) throws ComponentNotReadyException {
-		value = type.init(value, dictionary);
+		ClassLoader formerClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(type.getClass().getClassLoader());
+			value = type.init(value, dictionary);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(dictionary, "Can't initialize dictionary type " + type + ".", e);
+		} finally {
+			Thread.currentThread().setContextClassLoader(formerClassLoader);
+		}
+		
 		defaultValue = value;
 	}
 
