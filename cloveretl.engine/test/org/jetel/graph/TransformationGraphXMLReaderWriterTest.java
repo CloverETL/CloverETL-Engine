@@ -138,9 +138,9 @@ public class TransformationGraphXMLReaderWriterTest extends CloverTestCase {
 		public boolean isPublic;
 		@XmlAttribute(name="required")
 		public boolean required;
-		@XmlElement(name="singleType")
+		@XmlElement(name="SingleType")
 		public SingleType singleType;
-		@XmlElement(name="componentReference")
+		@XmlElement(name="ComponentReference")
 		public ComponentReference componentReference;
 	}
 	
