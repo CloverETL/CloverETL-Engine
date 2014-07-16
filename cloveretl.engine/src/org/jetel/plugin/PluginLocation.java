@@ -53,4 +53,7 @@ public class PluginLocation {
 		return classloader;
 	}
 	
+	public String toString() {
+		return "PluginLocation<"+getLocation().toString()+">";
+	}
 }
