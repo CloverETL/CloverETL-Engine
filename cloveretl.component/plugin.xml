@@ -1932,13 +1932,15 @@
 	  <ETLComponent category="readers" iconPath="icons/readers/CloverDataReader" name="CloverDataReader" type="CLOVER_READER" className="org.jetel.component.CloverDataReader">
 	    <shortDescription>Reads data from Clover files.</shortDescription>
 	    <description>Reads data from files written in internal binary Clover data format and sends data records to all connected output ports.</description>
-	    <inputPorts />
+	    <inputPorts>
+			<singlePort name="0" label="input"/>
+	    </inputPorts>
 	    <outputPorts>
 	      <multiplePort required="true" />
 	    </outputPorts>
 	    <properties>
 	      <property category="basic" displayName="File URL" modifiable="true" name="fileURL" nullable="true" required="true">
-	        <singleType name="file" selectionMode="file_only" />
+	        <singleType name="file" selectionMode="file_only" fields="input" dictionary="input" />
 	      </property>
 	      <property category="advanced" displayName="Number of skipped records" modifiable="true" name="skipRows" nullable="true" redundant="startRecord|finalRecord">
 	        <singleType name="int" />

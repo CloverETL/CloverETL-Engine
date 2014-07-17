@@ -31,30 +31,6 @@ import org.jetel.util.bytes.CloverBuffer;
 public interface ICloverDataParser extends Parser {
 
 	/**
-	 * Returns <code>true</code> if the current file can be 
-	 * parsed using direct reading.
-	 * 
-	 * @return <code>true</code> if direct reading is possible
-	 */
-	public boolean isDirectReadingSupported();
-	
-	/**
-	 * Reads the next serialized record into the provided buffer.
-	 * The target buffer is cleared first.
-	 * <p>
-	 * The position of the target buffer will be set to 0
-	 * and the limit will be set to the end of the serialized record.
-	 * </p><p>
-	 * Returns <code>false</code> to indicate EOF.
-	 * </p>
-	 * 
-	 * @param targetBuffer the target buffer
-	 * @return <code>true</code> on success, <code>false</code> if EOF has been reached
-	 * @throws JetelException
-	 */
-	public boolean getNextDirect(CloverBuffer buffer) throws JetelException;
-	
-	/**
 	 * Returns the format specification of the current data source.
 	 * @return
 	 */

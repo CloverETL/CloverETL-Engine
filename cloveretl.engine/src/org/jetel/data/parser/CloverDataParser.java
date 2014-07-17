@@ -152,7 +152,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 		if (isDirectReadingSupported()) {
 			CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 			for (int skipped = 0; skipped < nRec; skipped++) {
-				if (!getNextDirect(buffer)) {
+				if (getNextDirect(buffer)!=1) {
 					return skipped;
 				}
 			}
@@ -337,6 +337,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     	switch(version.formatVersion){
     	case VERSION_29:
     	case VERSION_35:
+    		version.raw=true;
     		extraBytes = new byte[CloverDataFormatter.HEADER_OPTIONS_ARRAY_SIZE_3_5];
     		try {
     			int count = StreamUtils.readBlocking(recordFile, extraBytes);
@@ -405,8 +406,21 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	 */
 	@Override
 	public DataRecord getNext(DataRecord record) throws JetelException {
-		if (!getNextDirect(recordBuffer)) {
-			return null; //end of file reached
+		final int size;
+		try {
+			size=ByteBufferUtils.decodeLength(input);
+			if (size<0) return null; //end of file reached
+		
+			recordBuffer.clear();
+
+			recordBuffer.limit(recordBuffer.position() + size);
+			if (input.read(recordBuffer)==-1){
+				throw new JetelException("Insufficient data in datastream.");
+			}
+			
+			recordBuffer.flip();
+		} catch(IOException ex){
+			throw new JetelException(ex);
 		}
 		
 		if (!useParsingFromJobflow_3_4) {
@@ -433,11 +447,12 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	 * @throws JetelException
 	 */
 	@Override
-	public boolean getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+	public int getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+		if (!version.raw) return -1;
 		final int size;
 		try {
 			size=ByteBufferUtils.decodeLength(input);
-			if (size<0) return false; //end of file reached
+			if (size<0) return 0; //end of file reached
 		
 			targetBuffer.clear();
 
@@ -458,7 +473,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			throw new JetelException(ex);
 		}
 		
-		return true;
+		return 1;
 	}
 	
 	/* (non-Javadoc)
@@ -530,7 +545,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	
 	@Override
 	public boolean isDirectReadingSupported() {
-		return getVersion().raw;
+		return true;
 	}
 	
 }
