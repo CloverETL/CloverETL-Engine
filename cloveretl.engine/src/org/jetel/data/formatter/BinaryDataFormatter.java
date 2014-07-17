@@ -26,7 +26,9 @@ import java.io.OutputStream;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
+import org.jetel.data.CloverDataRecordSerializer;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DataRecordSerializer;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelRuntimeException;
@@ -47,12 +49,14 @@ import org.jetel.util.bytes.CloverBuffer;
 public class BinaryDataFormatter extends AbstractFormatter {
 
 	private WritableByteChannel writer;
-	private CloverBuffer buffer;
+	private CloverBuffer buffer,serBuffer;
 	private DataRecordMetadata metaData;
 	private boolean useDirectBuffers = true;
 	
 	/** Which kind of data record serialization should be used? */
 	private boolean unitarySerialization = false;
+	
+	private DataRecordSerializer serializer;
 	
 	public BinaryDataFormatter() {
 		
@@ -118,6 +122,8 @@ public class BinaryDataFormatter extends AbstractFormatter {
 		this.metaData = _metadata;
 		int limitSize = Math.max(Defaults.Record.RECORD_LIMIT_SIZE, Defaults.Record.RECORDS_BUFFER_SIZE);
 		buffer = CloverBuffer.allocate(Defaults.Record.RECORDS_BUFFER_SIZE, limitSize, useDirectBuffers);
+		serBuffer = CloverBuffer.allocate(Defaults.Record.RECORDS_BUFFER_SIZE, limitSize, useDirectBuffers);
+		serializer = new CloverDataRecordSerializer();
  	}
 
 	public DataRecordMetadata getMetadata() {
@@ -150,19 +156,24 @@ public class BinaryDataFormatter extends AbstractFormatter {
 
 	@Override
 	public int write(DataRecord record) throws IOException {
-		int recordSize = unitarySerialization ? record.getSizeSerializedUnitary() : record.getSizeSerialized();
-		int lengthSize = ByteBufferUtils.lengthEncoded(recordSize);
-		if (buffer.remaining() < recordSize + lengthSize) {
+		serBuffer.clear();
+        if (unitarySerialization) {
+            //record.serializeUnitary(buffer);
+        	serializer.serialize(serBuffer, record);
+        } else {
+        	//record.serialize(buffer);
+        	serializer.serialize(serBuffer, record);
+        }
+        serBuffer.flip();
+
+		int lengthSize = ByteBufferUtils.lengthEncoded(serBuffer.remaining());
+		if (buffer.remaining() < serBuffer.remaining() + lengthSize) {
 			flush();
 		}
-        ByteBufferUtils.encodeLength(buffer, recordSize);
-        if (unitarySerialization) {
-            record.serializeUnitary(buffer);
-        } else {
-        	record.serialize(buffer);
-        }
-        
-        return recordSize + lengthSize;
+		int pos=buffer.position();
+        ByteBufferUtils.encodeLength(buffer, serBuffer.remaining());
+        buffer.put(serBuffer);
+        return buffer.position()-pos;
 	}
 	
 	public int write(CloverBuffer record) throws IOException {

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
 import org.apache.commons.logging.Log;
@@ -220,12 +221,14 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
     	if (in instanceof InputStream) {
         	inStream = (InputStream) in;
         	indexFileURL = null;
-        }
-        
-       if (inStream != null) {
-        	indexFile = null;
         	recordFile = Channels.newChannel(inStream);
+        }else if (in instanceof FileChannel){
+        	recordFile = (FileChannel) in;
+        	indexFileURL = null;
+        	inStream = Channels.newInputStream(recordFile);
         }
+        noDataAvailable=false;
+    	
     	recordBuffer.clear();
 		try {
 			ByteBufferUtils.reload(recordBuffer.buf(),recordFile);
@@ -297,6 +300,7 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 			}
 		}
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER){
+			noDataAvailable = true;
 			return -1;
 		}
 		int recordSize = recordBuffer.getInt();
@@ -310,7 +314,7 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 			try {
 				recordFile.read(recordBuffer.buf());
 			} catch(IOException ex) {
-				throw new JetelException(ex.getLocalizedMessage());
+				throw new JetelException(ex.getMessage(),ex);
 			}
 			recordBuffer.flip();
 		}
@@ -353,10 +357,10 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 	 * @throws JetelException
 	 */
 	@Override
-	public boolean getNextDirect(CloverBuffer targetBuffer) throws JetelException {
+	public int getNextDirect(CloverBuffer targetBuffer) throws JetelException {
 		int recordSize = fillRecordBuffer();
 		if (recordSize < 0) {
-			return false;
+			return 0;
 		}
 		
 	    targetBuffer.clear();
@@ -376,7 +380,7 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
 		targetBuffer.flip(); // prepare for reading
 		
 		sourceRecordCounter++;
-		return true;
+		return 1;
 	}
 	
 	/* (non-Javadoc)
