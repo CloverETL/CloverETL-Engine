@@ -46,5 +46,6 @@
 	
 	<FunctionalTest ident="IssuesSearch" graphFile="graph/IssuesSearch.grf" excludedEtlEnvironment="engine" />
 	
+	<FunctionalTest ident="ReadTweets" graphFile="graph/ReadTweets.grf" excludedEtlEnvironment="engine" />
 
 </TestScenario>
