@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph author="lucie" created="Thu Jul 29 01:29:10 CEST 2010" guiVersion="4.0.0.M1" id="1280360243915" licenseType="Commercial" modified="Tue Mar 25 14:34:45 CET 2014" modifiedBy="User" name="graphDatabaseAccess" revision="1.73" showComponentDetails="true">
+<Graph author="lucie" created="Thu Jul 29 01:29:10 CEST 2010" guiVersion="4.0.0.M2" id="1280360243915" licenseType="Evaluation" modified="Fri Jul 18 16:47:19 CEST 2014" modifiedBy="User" name="graphDatabaseAccess" revision="1.75" showComponentDetails="true">
 <Global>
 <Metadata fileURL="${META_DIR}/customers.fmt" id="Metadata0"/>
 <Metadata id="Metadata1" previewAttachmentCharset="ISO-8859-1">
@@ -20,7 +20,7 @@
 <Field name="lastname" type="string"/>
 </Record>
 </Metadata>
-<Connection database="DERBY" dbURL="jdbc:derby://localhost:1527/${DATAIN_DIR}/customers.db" id="Connection0" jdbcSpecific="DERBY" name="Derby" password="app" type="JDBC" user="app"/>
+<Connection database="DERBY" dbURL="jdbc:derby://localhost:65000/${DATAIN_DIR}/customers.db" id="Connection0" jdbcSpecific="DERBY" name="Derby" password="app" type="JDBC" user="app"/>
 <GraphParameters>
 <GraphParameterFile fileURL="workspace.prm"/>
 </GraphParameters>

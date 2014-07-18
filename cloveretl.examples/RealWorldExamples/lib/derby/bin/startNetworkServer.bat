@@ -24,7 +24,7 @@ if "%_USE_CLASSPATH%"=="no" goto runNoClasspath
 if not "%CLASSPATH%"=="" goto runWithClasspath
 
 :runNoClasspath
-START /min "Running network server" "%_JAVACMD%" %DERBY_OPTS% -classpath "%LOCALCLASSPATH%" org.apache.derby.drda.NetworkServerControl start
+START /min "Running network server" "%_JAVACMD%" %DERBY_OPTS% -Dderby.drda.portNumber=65000 -classpath "%LOCALCLASSPATH%" org.apache.derby.drda.NetworkServerControl start
 goto end
 
 :runWithClasspath
