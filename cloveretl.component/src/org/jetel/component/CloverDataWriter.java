@@ -189,10 +189,11 @@ public class CloverDataWriter extends Node {
         		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
         	}
         	if (this.append){
-        		if (!FileUtils.isLocalFile(getGraph().getRuntimeContext().getContextURL(), fileName)){
-        			throw new ComponentNotReadyException("Can append only to local file.");
-        		}else{
-        			formatter.setDataTarget(new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), fileURL)));
+        		try {
+        			File file = FileUtils.getJavaFile(getGraph().getRuntimeContext().getContextURL(), fileURL);
+        			formatter.setDataTarget(file);
+        		} catch (Exception e) {
+        			throw new ComponentNotReadyException("Can append only to local file.", e);
         		}
         	}else{
         		out = FileUtils.  getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
