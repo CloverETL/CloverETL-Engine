@@ -184,10 +184,6 @@ public class CloverDataWriter extends Node {
     	}
 
     	try{//create output stream and rewrite existing data
-        	fileName = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), fileURL)).getName();
-        	if (fileName.toLowerCase().endsWith(".zip")) {
-        		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-        	}
         	if (this.append){
         		try {
         			File file = FileUtils.getJavaFile(getGraph().getRuntimeContext().getContextURL(), fileURL);
@@ -196,9 +192,18 @@ public class CloverDataWriter extends Node {
         			throw new ComponentNotReadyException("Can append only to local file.", e);
         		}
         	}else{
-        		out = FileUtils.  getOutputStream(getGraph().getRuntimeContext().getContextURL(), 
-					fileURL.startsWith("zip:") ? fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName : fileURL, 
-					append, compressLevel);
+
+        		//do we really need this?
+        		if (fileURL.startsWith("zip:")) {
+	            	fileName = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), fileURL)).getName();
+	            	if (fileName.toLowerCase().endsWith(".zip")) {
+	            		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+	            	}
+	            	fileURL = fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName;
+        		}
+        		/////
+        		
+        		out = FileUtils.  getOutputStream(getGraph().getRuntimeContext().getContextURL(), fileURL, append, compressLevel);
         		formatter.setDataTarget(out);
         	}
 		} catch(IOException e) {
