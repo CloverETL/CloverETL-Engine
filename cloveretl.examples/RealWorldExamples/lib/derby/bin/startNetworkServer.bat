@@ -1,4 +1,5 @@
 @echo off
+
 @REM Licensed to the Apache Software Foundation (ASF) under one
 @REM or more contributor license agreements.  See the NOTICE file
 @REM distributed with this work for additional information
@@ -24,15 +25,13 @@ if "%_USE_CLASSPATH%"=="no" goto runNoClasspath
 if not "%CLASSPATH%"=="" goto runWithClasspath
 
 :runNoClasspath
-START /min "Running network server" "%_JAVACMD%" %DERBY_OPTS% -Dderby.drda.portNumber=65000 -classpath "%LOCALCLASSPATH%" org.apache.derby.drda.NetworkServerControl start
+"%_JAVACMD%" %DERBY_OPTS% -classpath "%LOCALCLASSPATH%" org.apache.derby.drda.NetworkServerControl start %DERBY_CMD_LINE_ARGS%
 goto end
 
 :runWithClasspath
-START /min "Running network server" "%_JAVACMD%" %DERBY_OPTS% -classpath "%CLASSPATH%;%LOCALCLASSPATH%" org.apache.derby.drda.NetworkServerControl start %DERBY_CMD_LINE_ARGS%
+"%_JAVACMD%" %DERBY_OPTS% -classpath "%CLASSPATH%;%LOCALCLASSPATH%" org.apache.derby.drda.NetworkServerControl start %DERBY_CMD_LINE_ARGS%
 goto end
 
 :end
 set _JAVACMD=
 set DERBY_CMD_LINE_ARGS=
-
-
