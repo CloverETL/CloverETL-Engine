@@ -1,3 +1,5 @@
+@echo off
+
 @REM Licensed to the Apache Software Foundation (ASF) under one
 @REM or more contributor license agreements.  See the NOTICE file
 @REM distributed with this work for additional information
@@ -61,7 +63,7 @@ set _JAVACMD=%JAVACMD%
 
 if "%JAVA_HOME%" == "" goto noJavaHome
 if not exist "%JAVA_HOME%\bin\java.exe" goto noJavaHome
-if "%_JAVACMD%" == "" set _JAVACMD=%JAVA_HOME%\bin\javaw.exe
+if "%_JAVACMD%" == "" set _JAVACMD=%JAVA_HOME%\bin\java.exe
 goto endcommon
 
 :noJavaHome
