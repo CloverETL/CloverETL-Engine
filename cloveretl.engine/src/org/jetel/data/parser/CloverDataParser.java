@@ -547,5 +547,13 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 	public boolean isDirectReadingSupported() {
 		return true;
 	}
+
+
+	@Override
+	public DataSourceType getPreferredDataSourceType() {
+		return DataSourceType.STREAM;
+	}
+	
+	
 	
 }

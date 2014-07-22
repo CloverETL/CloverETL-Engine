@@ -45,7 +45,9 @@ public interface Parser {
 	 * data source type by a {@link Parser}.
 	 */
 	public enum DataSourceType {
-		/** Data source represented by {@link ReadableByteChannel} or {@link InputStream} */
+		/** Data source represented by  {@link InputStream} */
+		STREAM,
+		/** Data source represented by {@link ReadableByteChannel} */
 		CHANNEL,
 		/** Data source represented by {@link File} */
 		FILE,
