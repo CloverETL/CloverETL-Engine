@@ -20,6 +20,7 @@ package org.jetel.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -259,6 +260,10 @@ public class ReadableChannelIterator {
 				return preferredDataSource;
 			}
 			
+			if (preferredDataSourceType == DataSourceType.STREAM) {
+				return createInputStream(currentFileName);
+			}
+			
 			return createReadableByteChannel(currentFileName);
 		}
 		return null;
@@ -347,6 +352,24 @@ public class ReadableChannelIterator {
 	public void blankRead() {
 		// empty read
 		if (portReadingIterator != null) portReadingIterator.blankRead();
+	}
+	
+	/**
+	 * Creates input stream for a file name.
+	 * 
+	 * @param fileName
+	 * @return
+	 * @throws JetelException
+	 */
+	private InputStream createInputStream(String fileName) throws JetelException {
+		defaultLogger.debug("Opening input file " + fileName);
+		try {
+			InputStream iStream = FileUtils.getInputStream(contextURL, fileName);
+			defaultLogger.debug("Reading input file " + fileName);
+			return iStream;
+		} catch (IOException e) {
+			throw new JetelException("File is unreachable: " + fileName, e);
+		}
 	}
 	
 	/**
