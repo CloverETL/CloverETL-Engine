@@ -53,14 +53,12 @@
 	 	  <FlatFile outputFile="data-out/wrongKey.out" supposedFile="supposed-out/wrongKey.CheckForeignKey.out"/>	                                                                    
 		  <FlatFile outputFile="data-out/fixedKey.out" supposedFile="supposed-out/fixedKey.CheckForeignKey.out"/>
 	</FunctionalTest>
-<!--
+	
+<!-- Disabled until CLO-4360 fixed
 <FunctionalTest ident="CloverData" graphFile="graph/graphCloverData.grf">
 	 <FlatFile outputFile="data-out/strucured_customers.txt" supposedFile="supposed-out/strucured_customers.CloverData.txt"/>
-     
-<DeleteFile file="data-out/strucured_customers.txt"/>
--->
-
-</FunctionalTest>
+     <DeleteFile file="data-out/strucured_customers.txt"/>
+</FunctionalTest-->
 
 <FunctionalTest ident="DataPolicy" graphFile="graph/graphDataPolicy.grf" assertion="false">
 	 <FlatFile outputFile="data-out/correctCustomersControlled.txt" supposedFile="supposed-out/correctCustomers.DataPolicy.Controlled.txt"/>
