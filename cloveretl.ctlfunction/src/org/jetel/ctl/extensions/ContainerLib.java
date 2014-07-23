@@ -23,8 +23,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.jetel.ctl.Stack;
 import org.jetel.ctl.data.TLType;
@@ -51,7 +54,9 @@ public class ContainerLib extends TLFunctionLibrary {
     		"containsAll".equals(functionName) ? new ContainsAllFunction() :
     		"containsKey".equals(functionName) ? new ContainsKeyFunction() :
     		"containsValue".equals(functionName) ? new ContainsValueFunction() : 
-    		"getKeys".equals(functionName) ? new GetKeysFunction() : null;
+    		"getKeys".equals(functionName) ? new GetKeysFunction() :
+    		"getValues".equals(functionName) ? new GetValuesFunction() :
+    		"toMap".equals(functionName) ? new ToMapFunction() : null;
 
     	if (ret == null) {
     		throw new IllegalArgumentException("Unknown function '" + functionName + "'");
@@ -489,6 +494,67 @@ public class ContainerLib extends TLFunctionLibrary {
 			if (context.getParams()[0].isMap()) {
 				Map<Object, Object> map = stack.popMap();
 				stack.push(getKeys(context, map));
+			}
+		}
+	}
+	
+	@TLFunctionAnnotation("Returns the values of the map.")
+	public static final <K, V> List<V> getValues(TLFunctionCallContext context, Map<K, V> map) {
+		return new ArrayList<V>(map.values());
+	}
+	class GetValuesFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[0].isMap()) {
+				Map<Object, Object> map = stack.popMap();
+				stack.push(getValues(context, map));
+			}
+		}
+	}
+	
+	@TLFunctionAnnotation("Converts input list to map where list items become map's keys, all values are the same constant.")
+	public static final <K, V> Map<K,V> toMap(TLFunctionCallContext context, List<K> keys, V constant) {
+		Map <K,V> map = new HashMap<K,V>(keys.size());
+		for(K key: keys){
+			map.put(key, constant);
+		}
+		return map;
+		
+	}
+	
+	@TLFunctionAnnotation("Converts two input lists to map where first list items become map's keys and second list corresponding values.")
+	public static final <K, V> Map<K,V> toMap(TLFunctionCallContext context, List<K> keys, List<V> values) {
+		Map <K,V> map = new HashMap<K,V>(keys.size());
+		Iterator<V> iter = values.iterator();
+		if (keys.size()!=values.size()){
+			throw new IllegalArgumentException("Keys list does not match values list in size.");
+		}
+		for(K key: keys){
+			map.put(key, iter.next());
+		}
+		return map;
+		
+	}
+	
+	class ToMapFunction implements TLFunctionPrototype{
+		
+		@Override
+		public void init(TLFunctionCallContext context) {
+		}
+
+		@Override
+		public void execute(Stack stack, TLFunctionCallContext context) {
+			if (context.getParams()[1].isList()) {
+				List<Object> values = stack.popList();
+				stack.push(toMap(context, stack.popList(), values));
+			}else{
+				Object constant = stack.pop();
+				stack.push(toMap(context, stack.popList(), constant));
 			}
 		}
 	}
