@@ -174,6 +174,7 @@ public class SpreadsheetUtils {
 	public static enum SpreadsheetWriteMode {
 
 		OVERWRITE_SHEET_IN_MEMORY,
+		OVERWRITE_SHEET_IN_STREAM,
 		INSERT_INTO_SHEET_IN_MEMORY,
 		APPEND_TO_SHEET_IN_MEMORY,
 		CREATE_FILE_IN_STREAM,
@@ -190,7 +191,7 @@ public class SpreadsheetUtils {
         }
         
         public boolean isStreamed() {
-        	return (this == CREATE_FILE_IN_STREAM);
+        	return (this == OVERWRITE_SHEET_IN_STREAM || this == CREATE_FILE_IN_STREAM);
         }
         
         public boolean isAppend() {
@@ -202,7 +203,7 @@ public class SpreadsheetUtils {
         }
         
         public boolean isOverwritingSheetOrFile() {
-        	return (this == OVERWRITE_SHEET_IN_MEMORY || isCreatingNewFile());
+        	return (this == OVERWRITE_SHEET_IN_MEMORY || this == OVERWRITE_SHEET_IN_MEMORY || isCreatingNewFile());
         }
         
         public boolean isCreatingNewFile() {
@@ -224,6 +225,10 @@ public class SpreadsheetUtils {
             }
 
             return DO_NOTHING;
+        }
+        
+        public boolean isDoNothing() {
+        	return (this == DO_NOTHING);
         }
         
         public boolean isRemovingAllRows() {
