@@ -1967,11 +1967,14 @@ public class StringUtils {
 	 * @return
 	 */
 	public static boolean isNumber(CharSequence str) {
-		if (str == null || str.length() == 0) {
+		if (isEmpty(str)) {
 			return false;
 		}
 		int start = 0;
 		if (str.charAt(0) == '-') {
+			if (str.length() == 1) { // CLO-3856
+				return false;
+			}
 			start = 1;
 		}
 		boolean decimalPiontIndex = false;
