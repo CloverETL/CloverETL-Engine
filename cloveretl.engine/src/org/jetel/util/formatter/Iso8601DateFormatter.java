@@ -21,29 +21,49 @@ package org.jetel.util.formatter;
 import java.util.Date;
 import java.util.Locale;
 
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 /**
- * ISO-8601 date formatter suitable for processing dates from XML documents.
+ * Represents the date formatter for ISO8601 standard.
  * 
  * @author jan.michalica (info@cloveretl.com)
  *         (c) Javlin, a.s. (www.cloveretl.com)
  *
  * @created 1.4.2014
  */
-enum Iso8601DateFormatter implements DateFormatter {
+class Iso8601DateFormatter implements DateFormatter {
 	
-	date(ISODateTimeFormat.dateParser(), ISODateTimeFormat.date()),
-	time(ISODateTimeFormat.timeParser(), ISODateTimeFormat.time()),
-	dateTime(ISODateTimeFormat.dateTimeParser(), ISODateTimeFormat.dateTime());
+	private DateTimeFormatter parser;
+	private DateTimeFormatter printer;
 	
-	private final DateTimeFormatter parser;
-	private final DateTimeFormatter printer;
+	private String pattern;
+	private Locale locale;
 	
-	private Iso8601DateFormatter(DateTimeFormatter parser, DateTimeFormatter printer) {
-		this.parser = parser;
-		this.printer = printer;
+	public Iso8601DateFormatter(String format, Locale locale, DateTimeZone dateTimeZone) {
+		switch (format) {
+        	case "date":
+        		parser = ISODateTimeFormat.dateParser().withZone(dateTimeZone);
+        		printer = ISODateTimeFormat.date().withZone(dateTimeZone);
+        		break;
+        	case "time":
+        		parser = ISODateTimeFormat.timeParser().withZone(dateTimeZone);
+        		printer = ISODateTimeFormat.time().withZone(dateTimeZone);
+        		break;
+        	default:
+        		// "dateTime"
+        		parser = ISODateTimeFormat.dateTimeParser().withZone(dateTimeZone);
+        		printer = ISODateTimeFormat.dateTime().withZone(dateTimeZone);
+		}
+		
+		this.locale = locale;
+		this.pattern = format;
+		
+		if (locale != null) {
+			parser = parser.withLocale(locale);
+			printer = printer.withLocale(locale);
+		}
 	}
 	
 	@Override
@@ -68,12 +88,12 @@ enum Iso8601DateFormatter implements DateFormatter {
 
 	@Override
 	public String getPattern() {
-		return name();
+		return pattern;
 	}
 
 	@Override
 	public Locale getLocale() {
-		return null;
+		return locale;
 	}
 
 	@Override
