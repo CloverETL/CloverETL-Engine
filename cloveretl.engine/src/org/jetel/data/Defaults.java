@@ -240,7 +240,7 @@ public final class Defaults {
         DEFAULT_TIME_FORMAT = getStringProperties("DEFAULT_TIME_FORMAT", "HH:mm:ss");
         DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
         DEFAULT_LOCALE = getStringProperties("DEFAULT_LOCALE", MiscUtils.localeToString(Locale.getDefault()));
-        DEFAULT_TIME_ZONE = getStringProperties("DEFAULT_TIME_ZONE", "'java:"+ TimeZone.getDefault().getID() + "';'joda:" + DateTimeZone.getDefault().getID() + "';'iso-8601:" + DateTimeZone.getDefault().getID() + "'");
+        DEFAULT_TIME_ZONE = getStringProperties("DEFAULT_TIME_ZONE", "'java:"+ TimeZone.getDefault().getID() + "';'joda:" + DateTimeZone.getDefault().getID() + "'");
         DEFAULT_REGEXP_TRUE_STRING = getStringProperties("DEFAULT_REGEXP_TRUE_STRING", "T|TRUE|YES|Y||t|true|1|yes|y");
         DEFAULT_REGEXP_FALSE_STRING = getStringProperties("DEFAULT_REGEXP_FALSE_STRING", "F|FALSE|NO|N||f|false|0|no|n");
         DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
