@@ -41,7 +41,7 @@ public final class DateFormatterFactory {
 		if (formatType == DataFieldFormatType.JODA) {
 			return new JodaDateFormatter(DataFieldFormatType.JODA.getFormat(formatString), locale, timeZoneProvider.getJodaTimeZone());
 		} else if (formatType == DataFieldFormatType.ISO_8601) {
-			return new Iso8601DateFormatter(DataFieldFormatType.ISO_8601.getFormat(formatString), locale, timeZoneProvider.getISO8601TimeZone());
+			return new Iso8601DateFormatter(DataFieldFormatType.ISO_8601.getFormat(formatString), locale, timeZoneProvider.getJodaTimeZone());
 		} else {
 			TimeZone tz = timeZoneProvider.getJavaTimeZone();
 			if (DataFieldFormatType.getFormatType(formatString) == DataFieldFormatType.JAVA) {

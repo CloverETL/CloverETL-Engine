@@ -43,8 +43,6 @@ public class TimeZoneProvider implements Serializable {
 	
 	private final DateTimeZone jodaTimeZone;
 	
-	private final DateTimeZone iso8601TimeZone;
-	
 	private final String config;
 	
 	/**
@@ -68,7 +66,6 @@ public class TimeZoneProvider implements Serializable {
 		this.config = timeZoneStr;
 		
 		DateTimeZone joda = null;
-		DateTimeZone iso = null;
 		TimeZone java = null;
 		String[] parts = StringUtils.split(timeZoneStr, ";");
 		if (parts != null) {
@@ -82,7 +79,7 @@ public class TimeZoneProvider implements Serializable {
 				if (id.startsWith(JODA_PREFIX)) {
 					joda = DateTimeZone.forID(id.substring(JODA_PREFIX.length()));
 				} else if (id.startsWith(ISO8601_PREFIX)) {
-					iso = DateTimeZone.forID(id.substring(ISO8601_PREFIX.length()));
+					joda = DateTimeZone.forID(id.substring(ISO8601_PREFIX.length()));
 				} else {
 					if (id.startsWith(JAVA_PREFIX)) {
 						id = id.substring(JAVA_PREFIX.length());
@@ -93,7 +90,6 @@ public class TimeZoneProvider implements Serializable {
 		}
 		this.javaTimeZone = java;
 		this.jodaTimeZone = joda;
-		this.iso8601TimeZone = iso;
 	}
 	
 	/**
@@ -114,16 +110,6 @@ public class TimeZoneProvider implements Serializable {
 			throw new TimeZoneUndefinedException("No \"joda:\" time zone has been set: " + config);
 		}
 		return jodaTimeZone;
-	}
-	
-	/**
-	 * @return the iso8601TimeZone
-	 */
-	public DateTimeZone getISO8601TimeZone() {
-		if (iso8601TimeZone == null) {
-			throw new TimeZoneUndefinedException("No \"iso-8601:\" time zone has been set: " + config);
-		}
-		return iso8601TimeZone;
 	}
 
 	@Override
