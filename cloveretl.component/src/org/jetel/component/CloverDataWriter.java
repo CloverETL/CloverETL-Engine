@@ -194,16 +194,17 @@ public class CloverDataWriter extends Node {
         	}else{
 
         		//do we really need this?
+        		String resultedURL = fileURL;
         		if (fileURL.startsWith("zip:")) {
 	            	fileName = new File(FileUtils.getFile(getGraph().getRuntimeContext().getContextURL(), fileURL)).getName();
 	            	if (fileName.toLowerCase().endsWith(".zip")) {
 	            		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
 	            	}
-	            	fileURL = fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName;
+	            	resultedURL = fileURL + "#" + CloverDataFormatter.DATA_DIRECTORY + fileName;
         		}
         		/////
         		
-        		out = FileUtils.  getOutputStream(getGraph().getRuntimeContext().getContextURL(), fileURL, append, compressLevel);
+        		out = FileUtils.  getOutputStream(getGraph().getRuntimeContext().getContextURL(), resultedURL, append, compressLevel);
         		formatter.setDataTarget(out);
         	}
 		} catch(IOException e) {
