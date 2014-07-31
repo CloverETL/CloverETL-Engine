@@ -49,10 +49,10 @@ function string getValue() {
 	return "${DATATMP_DIR}";
 }
 ]]></attr>
-<ComponentReference referencedComponent="UNIVERSAL_DATA_WRITER" referencedProperty="fileURL"/>
+<componentReference referencedComponent="UNIVERSAL_DATA_WRITER" referencedProperty="fileURL"/>
 </GraphParameter>
 <GraphParameter defaultHint="$out.0.* = $in.0.*" label="Input mapping" name="INPUT_MAPPING" public="true" required="false" value="//#CTL2&#10;&#10;// Transforms input record into output record.&#10;function integer transform() {&#10;&#9;$out.0.* = $in.0.*;&#10;&#10;&#9;return ALL;&#10;}&#10;&#10;// Called during component initialization.&#10;// function boolean init() {}&#10;&#10;// Called during each graph run before the transform is executed. May be used to allocate and initialize resources&#10;// required by the transform. All resources allocated within this method should be released&#10;// by the postExecute() method.&#10;// function void preExecute() {}&#10;&#10;// Called only if transform() throws an exception.&#10;// function integer transformOnError(string errorMessage, string stackTrace) {}&#10;&#10;// Called during each graph run after the entire transform was executed. Should be used to free any resources&#10;// allocated within the preExecute() method.&#10;// function void postExecute() {}&#10;&#10;// Called to return a user-defined error message when an error occurs.&#10;// function string getMessage() {}&#10;">
-<ComponentReference referencedComponent="INPUT_MAPPING" referencedProperty="transform"/>
+<componentReference referencedComponent="INPUT_MAPPING" referencedProperty="transform"/>
 </GraphParameter>
 <GraphParameter label="Name" name="METADATA_NAME" public="true" required="false" secure="false" value="myMetadata"/>
 <GraphParameter label="Type" name="METADATA_TYPE" public="true" value="delimited"/>

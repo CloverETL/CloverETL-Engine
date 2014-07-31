@@ -182,35 +182,4 @@ public class PropertiesUtils {
 		}
 	}
 
-	/**
-	 * This method copies properties from a Properties to other Properties.
-	 * @param from
-	 * @param to
-	 */
-	public static void copy(Properties from, Properties to) {
-		if (from != null && to != null) {
-			for (String propertyName : from.stringPropertyNames()) {
-				String propertyValue = from.getProperty(propertyName);
-				if (propertyValue != null) {
-					to.setProperty(propertyName, propertyValue);
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Creates duplicate of given Properties.
-	 * @param properties
-	 * @return Properties duplicate
-	 */
-	public static Properties duplicate(Properties properties) {
-		if (properties != null) {
-			Properties result = new Properties();
-			copy(properties, result);
-			return result;
-		} else {
-			return null;
-		}
-	}
-	
 }

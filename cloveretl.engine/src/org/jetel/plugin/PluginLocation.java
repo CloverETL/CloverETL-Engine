@@ -53,8 +53,4 @@ public class PluginLocation {
 		return classloader;
 	}
 	
-	@Override
-	public String toString() {
-		return "PluginLocation<"+getLocation().toString()+">";
-	}
 }
