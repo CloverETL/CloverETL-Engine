@@ -60,7 +60,6 @@ import org.jetel.util.crypto.Enigma;
 import org.jetel.util.file.FileUtils;
 import org.jetel.util.primitive.TypedProperties;
 import org.jetel.util.property.ComponentXMLAttributes;
-import org.jetel.util.property.PropertiesUtils;
 import org.jetel.util.property.RefResFlag;
 import org.jetel.util.string.StringUtils;
 import org.w3c.dom.Element;
@@ -873,7 +872,7 @@ public class DBConnectionImpl extends AbstractDBConnection {
 		}
 		Driver driver = jdbcDriver.getDriver();
 		Connection connection;
-		Properties connectionProperties = PropertiesUtils.duplicate(jdbcDriver.getProperties());
+		Properties connectionProperties = new Properties(jdbcDriver.getProperties());
 		connectionProperties.putAll(createConnectionProperties());
 		
         try {

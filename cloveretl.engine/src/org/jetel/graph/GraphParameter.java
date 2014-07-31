@@ -320,7 +320,7 @@ public class GraphParameter {
 		this.defaultHint = defaultHint;
 	}
 
-	@XmlElement(name="SingleType")
+	@XmlElement(name="singleType")
 	public SingleType getSingleType() {
 		return singleType;
 	}
@@ -391,7 +391,7 @@ public class GraphParameter {
 		this.singleType = new SingleType(singleTypeName);
 	}
 
-	@XmlElement(name="ComponentReference")
+	@XmlElement(name="componentReference")
 	public ComponentReference getComponentReference() {
 		return componentReference;
 	}

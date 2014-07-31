@@ -230,16 +230,16 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
         
         if (inStream==null) { // doReleaseDataSource() should set the previous stream to null
         		try{
+                String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
+                 if (fileName.toLowerCase().endsWith(".zip")) {
+                 		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
+                 }
                  	if (inData.startsWith("zip:")) { // CLO-4045
                  		StringBuilder sbAnchor = new StringBuilder(); 
                  		FileUtils.getArchiveType(inData, new StringBuilder(), sbAnchor);
                  		if (!StringUtils.isEmpty(sbAnchor)) { // CLO-4045: archive entry is already specified in the URL
                  			inStream = FileUtils.getInputStream(projectURL, inData);
                  		} else {
-                            String fileName = new File(FileUtils.getFile(projectURL, inData)).getName();
-                            if (fileName.toLowerCase().endsWith(".zip")) {
-                            		fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
-                            }
                      		try {
                      			// backward compatibility, append #DATA/fileName
                      			inStream = FileUtils.getInputStream(projectURL,  
