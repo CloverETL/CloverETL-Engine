@@ -43,6 +43,10 @@ Record.DEFAULT_COMPRESSION_LEVEL=5
 #It has been tested that the performance improvement is negligible. 
 DEFAULT_INTERNAL_IO_BUFFER_SIZE = 32768
 
+#This constant determines the default size of buffer used for flat file input and analysis. 
+#Size of this buffer directly impacts the worst case scenario of flat file input analysis.
+DEFAULT_FLAT_FILE_INPUT_BUFFER_SIZE = 65536
+
 DEFAULT_DATE_FORMAT = yyyy-MM-dd
 DEFAULT_TIME_FORMAT = HH\:mm\:ss
 #uncomment this property when locale should be independent on underlying platform otherwise system default locale is used

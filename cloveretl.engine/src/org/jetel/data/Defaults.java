@@ -227,6 +227,7 @@ public final class Defaults {
 
     private static void initializeInternal() {
         DEFAULT_INTERNAL_IO_BUFFER_SIZE = getIntProperties("DEFAULT_INTERNAL_IO_BUFFER_SIZE", 32768);
+        DEFAULT_FLAT_FILE_INPUT_BUFFER_SIZE = getIntProperties("DEFAULT_FLAT_FILE_INPUT_BUFFER_SIZE", 65536);
         DEFAULT_DATE_FORMAT = getStringProperties("DEFAULT_DATE_FORMAT", "yyyy-MM-dd");
         DEFAULT_TIME_FORMAT = getStringProperties("DEFAULT_TIME_FORMAT", "HH:mm:ss");
         DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
@@ -272,6 +273,11 @@ public final class Defaults {
 	 * when buffering IO, what is the default size of the buffer
 	 */
 	public static int DEFAULT_INTERNAL_IO_BUFFER_SIZE;// = 32768;
+	
+	/**
+	 * when buffering IO, what is the default size of the buffer
+	 */
+	public static int DEFAULT_FLAT_FILE_INPUT_BUFFER_SIZE;// = 65536;
 	
 	/**
 	 * Used in FileChannel.transferFrom() and FileChannel.transferTo() 
