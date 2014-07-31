@@ -50,7 +50,6 @@ public class GraphParameterDynamicValueProvider {
 	private final TransformFactory<GraphParameterValueFunction> factory;
 	
 	private boolean initialized;
-	private boolean initializing;
 	private GraphParameterValueFunction transform;
 	private boolean recursionFlag;
 
@@ -97,11 +96,10 @@ public class GraphParameterDynamicValueProvider {
 		return node;
 	}
 	
-	public void init() throws ComponentNotReadyException {
-		if (initialized || initializing) {
+	public synchronized void init() throws ComponentNotReadyException {
+		if (initialized) {
 			return;
 		}
-		initializing = true;
 		Node node = createNodeForTransformation();
 		factory.setComponent(node);
 		PropertyRefResolver propertyRefResolver = graphProvider.getGraph().getPropertyRefResolver();
@@ -114,23 +112,19 @@ public class GraphParameterDynamicValueProvider {
 		transform.init();
 		
 		initialized = true;
-		initializing = false;
 	}
 	
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		return factory.checkConfig(status);
 	}
 	
-	public String getValue() {
+	public synchronized String getValue() {
 		try {
 			init();
 		} catch (ComponentNotReadyException e1) {
 			throw new JetelRuntimeException("Cannot initialize dynamic parameter", e1);
 		}
 		
-		if (initializing) {
-			return "";
-		}
 		try {
 			if (recursionFlag) {
 				throw new JetelRuntimeException(MessageFormat.format(
@@ -140,11 +134,12 @@ public class GraphParameterDynamicValueProvider {
 			
 			recursionFlag = true;
 			String parameterValue = transform.getValue();
-			recursionFlag = false;
 			
 			return parameterValue;
 		} catch (TransformException e) {
 			throw new JetelRuntimeException("Cannot get parameter value", e);
+		} finally {
+			recursionFlag = false;
 		}
 	}
 	
