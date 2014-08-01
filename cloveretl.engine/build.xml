@@ -92,7 +92,12 @@
               select="\3" />
 	
 	<if>
+		<and>
 		  <isset property="version.suffix"/>
+		  <not>
+		    <equals arg1="${version.suffix}" arg2=""/>
+		  </not>
+		</and>
 		         <then>
 		    		<echo> version.suffix: ${version.suffix} </echo>
 		            <property name="engine.version" value="${version.major}-${version.minor}-${version.revision}-${version.suffix}" />
