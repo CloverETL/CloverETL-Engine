@@ -94,6 +94,7 @@
 	<if>
 		  <isset property="version.suffix"/>
 		         <then>
+		    		<echo> version.suffix: ${version.suffix} </echo>
 		            <property name="engine.version" value="${version.major}-${version.minor}-${version.revision}-${version.suffix}" />
 		         </then>
 		<else>
