@@ -28,10 +28,8 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.CloverDataRecordSerializer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
-import org.jetel.data.DataRecordSerializer;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -81,8 +79,6 @@ public class BinaryDataParser extends AbstractParser {
 	private boolean eofReached;
 
 	private long processedBytes;
-	
-	private DataRecordSerializer serializer;
 	
 	/** Which kind of data record deserialisation should be used? */
 	private boolean unitaryDeserialization = false;
@@ -183,10 +179,9 @@ public class BinaryDataParser extends AbstractParser {
 			}
 
 			if (unitaryDeserialization) {
-				//record.deserializeUnitary(buffer);
-				record.deserialize(buffer,serializer);
+				record.deserializeUnitary(buffer);
 			} else {
-				record.deserialize(buffer,serializer);
+				record.deserialize(buffer);
 			}
 			
 			return record;
@@ -303,7 +298,6 @@ public class BinaryDataParser extends AbstractParser {
 
 		eofReached = false;
 		processedBytes = 0;
-		serializer = new CloverDataRecordSerializer();
 	}
 
 	public DataRecordMetadata getMetadata() {
