@@ -250,7 +250,7 @@ public class CloverDataReader extends Node implements MultiFileListener {
         reader.setInputPort(getInputPort(INPUT_PORT)); //for port protocol: ReadableChannelIterator reads data
         reader.setPropertyRefResolver(getPropertyRefResolver());
         reader.setDictionary(graph.getDictionary());
-        reader.setSkipSourceRows(skipRows);
+        reader.setSkipSourceRows(skipSourceRows);
 
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
