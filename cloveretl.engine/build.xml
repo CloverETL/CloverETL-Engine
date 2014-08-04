@@ -1179,7 +1179,7 @@ This software is licensed under the terms you may find in the file named "LICENS
 				<sleep seconds="5" />
 				<antcall target="generate-eval-license" />
 				<antcall target="runtests-scenario-coverage" />
-				<antcall target="runtests-coverage" />
+				<!-- <antcall target="runtests-coverage" /> temporarily disabled -->
 				<antcall target="clean-eval-license" />
 			</sequential>
 		</parallel>
