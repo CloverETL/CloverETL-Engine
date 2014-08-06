@@ -63,9 +63,10 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 	
 	@Override
 	public Connection connect(Driver driver, String url, Properties info) throws SQLException {
-		if (!System.getProperty("os.name").toLowerCase().contains("windows")) {
-			// prevent JVM crash on Linux due missing .so library - see CLO-2707
-			throw new SQLException("Connection to MS Access is supported on MS Windows only.");
+		if ("sun.jdbc.odbc.JdbcOdbcDriver".equals(driver.getClass().getName()) &&
+			!System.getProperty("os.name", "").toLowerCase().contains("windows")) {
+			// prevent JVM crash on Linux due missing libodbc.so library - see CLO-2707
+			throw new SQLException("Connection to MS Access using JDBC-ODBC bridge is supported on MS Windows only.");
 		}
 		return super.connect(driver, url, info);
 	}
