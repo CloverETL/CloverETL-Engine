@@ -19,10 +19,12 @@
 package org.jetel.connection.jdbc.specific.impl;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
+import java.util.Properties;
 
 import org.jetel.connection.jdbc.AbstractCopySQLData.CopyBoolean;
 import org.jetel.connection.jdbc.specific.conn.MSAccessConnection;
@@ -36,6 +38,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -59,6 +62,15 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 	}
 	
 	@Override
+	public Connection connect(Driver driver, String url, Properties info) throws SQLException {
+		if (!System.getProperty("os.name").toLowerCase().contains("windows")) {
+			// prevent JVM crash on Linux due missing .so library - see CLO-2707
+			throw new SQLException("Connection to MS Access is supported on MS Windows only.");
+		}
+		return super.connect(driver, url, info);
+	}
+	
+	@Override
 	public SqlConnection createSQLConnection(DBConnection dbConnection, Connection connection, OperationType operationType) throws JetelException {
 		return new MSAccessConnection(dbConnection, connection, operationType);
 	}
@@ -70,7 +82,7 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 		switch(sqlType) {
 		case Types.BOOLEAN:
 		case Types.BIT:
-			if (fieldMetadata.getType() == DataFieldMetadata.BOOLEAN_FIELD) {
+			if (fieldMetadata.getDataType() == DataFieldType.BOOLEAN) {
 				return new ODBCCopyBoolean(record, fromIndex, toIndex);
 			} 
 		}
@@ -97,13 +109,13 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 	public ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata, Node node) {
 		for (DataRecordMetadata dataRecordMetadata: metadata) {
 			for (DataFieldMetadata dataField: dataRecordMetadata.getFields()) {
-				switch (dataField.getType()) {
-				case DataFieldMetadata.LONG_FIELD:
+				switch (dataField.getDataType()) {
+				case LONG:
 					status.add(new ConfigurationProblem("Metadata on input port must not use field of type long " +
 							"because of restrictions of used driver." + CONVERT_STRING, 
 							ConfigurationStatus.Severity.ERROR, node, ConfigurationStatus.Priority.NORMAL));
 					break;
-				case DataFieldMetadata.DECIMAL_FIELD:
+				case DECIMAL:
 					status.add(new ConfigurationProblem("Metadata on input port must not use field of type decimal " +
 							"because of restrictions of used driver. " + CONVERT_STRING, 
 							ConfigurationStatus.Severity.ERROR, node, ConfigurationStatus.Priority.NORMAL));
@@ -132,10 +144,10 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 
 	@Override
 	public int jetelType2sql(DataFieldMetadata field) {
-		switch (field.getType()) {
-		case DataFieldMetadata.BOOLEAN_FIELD:
+		switch (field.getDataType()) {
+		case BOOLEAN:
 			return Types.BIT;
-		case DataFieldMetadata.NUMERIC_FIELD:
+		case NUMBER:
 			return Types.DOUBLE;
 		default:
 			return super.jetelType2sql(field);
@@ -146,7 +158,7 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 	public char sqlType2jetel(int sqlType) {
 		switch (sqlType) {
 		case Types.BIT:
-			return DataFieldMetadata.BOOLEAN_FIELD;
+			return DataFieldType.BOOLEAN.getShortName();
 		default:
 			return super.sqlType2jetel(sqlType);
 		}
