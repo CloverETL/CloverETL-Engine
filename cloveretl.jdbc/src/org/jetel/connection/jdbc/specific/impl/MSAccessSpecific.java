@@ -40,6 +40,7 @@ import org.jetel.graph.Node;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataFieldType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.exec.PlatformUtils;
 
 /**
  * @author slamam (info@cloveretl.com)
@@ -64,7 +65,7 @@ public class MSAccessSpecific extends GenericODBCSpecific {
 	@Override
 	public Connection connect(Driver driver, String url, Properties info) throws SQLException {
 		if ("sun.jdbc.odbc.JdbcOdbcDriver".equals(driver.getClass().getName()) &&
-			!System.getProperty("os.name", "").toLowerCase().contains("windows")) {
+			!PlatformUtils.isWindowsPlatform()) {
 			// prevent JVM crash on Linux due missing libodbc.so library - see CLO-2707
 			throw new SQLException("Connection to MS Access using JDBC-ODBC bridge is supported on MS Windows only.");
 		}
