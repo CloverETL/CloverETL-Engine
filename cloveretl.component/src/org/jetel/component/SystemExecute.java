@@ -311,7 +311,7 @@ public class SystemExecute extends Node{
 		//Creating and initializing record from input port
 		DataRecord in_record=null;
 		InputPort inPort = getInputPort(INPUT_PORT);
-		//If there is input port read metadadata, initialize in_record and create data formater
+		//If there is input port read metadata, initialize in_record and create data formatter
 		if (inPort!=null) {
 			DataRecordMetadata meta=inPort.getMetadata();
 			in_record = DataRecordFactory.newRecord(meta);
@@ -320,7 +320,7 @@ public class SystemExecute extends Node{
 		}else{
 			formatter=null;
 		}
-//		Creating and initializing record to otput port
+//		Creating and initializing record to output port
 		DataRecord out_record=null;
 		OutputPort outPort=getOutputPort(OUTPUT_PORT);
 		//If there is output port read metadadata, initialize out_record and create proper data parser
@@ -376,25 +376,32 @@ public class SystemExecute extends Node{
 		}
 
 		//if output is sent to output port log process error stream
-		if (sendData!=null){ 
-			BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
-			BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
-			String line;
-			StringBuffer errmes=new StringBuffer();
-			int i=0;
-			while (((line=err.readLine())!=null)&&i++<Math.max(capturedErrorLines,ERROR_LINES)){
-				if (i<=capturedErrorLines)
-					logger.warn(line);
-				if (i<=ERROR_LINES)
-					errmes.append(line+"\n");
+		if (sendData != null) {
+			BufferedReader err = null;
+			try {
+				BufferedInputStream process_err = new BufferedInputStream(process.getErrorStream());
+				err = new BufferedReader(new InputStreamReader(process_err));
+				String line;
+				StringBuffer errmes = new StringBuffer();
+				int i = 0;
+				while ((line = err.readLine()) != null) {
+					i++;
+					if (i <= capturedErrorLines) {
+						logger.warn(line);
+					}
+					if (i <= ERROR_LINES) {
+						errmes.append(line + "\n");
+					} else if (i == ERROR_LINES) {
+						errmes.append(".......\n");
+					}
+				}
+				if (errmes.length() > 0) {
+					logger.error(errmes.toString());
+				}
+			} finally {
+				FileUtils.close(err);
 			}
-			if (ERROR_LINES<i) errmes.append(".......\n");
-			err.close();
-			process_err.close();
-			if (errmes.length() > 0) {
-				logger.error(errmes.toString());
-			}			
-		}            
+		}
 		
 		// wait for executed process to finish
 		// wait for SendData and/or GetData threads to finish work
@@ -434,7 +441,7 @@ public class SystemExecute extends Node{
 				}
 			}
 		}
-		//chek results of getting and sending data
+		//check results of getting and sending data
 		String resultMsg = null;
 		if (getData!=null){
 			if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
@@ -494,11 +501,11 @@ public class SystemExecute extends Node{
 		if (ok) {
 			return Result.FINISHED_OK;
 		}else{
-			if (getData.getResultException() != null) {
+			if (getData != null && getData.getResultException() != null) {
 				logger.error("Exception in thread writing to std-in of executed system process:", getData.getResultException());
 			}
-			if (sendData.getResultException() != null) {
-				logger.error("Exception in thread reading std-out of executed system process", getData.getResultException());
+			if (sendData != null && sendData.getResultException() != null) {
+				logger.error("Exception in thread reading std-out of executed system process", sendData.getResultException());
 			}
 			throw new JetelException(resultMsg);
 		}
