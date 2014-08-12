@@ -522,12 +522,15 @@ public class DataParser extends AbstractTextParser {
 					}
 					//check record delimiter presence for last field
 					if(hasRecordDelimiter && fieldCounter + 1 == numFields && character != -1) {
-						int followRecord = followRecordDelimiter(); 
-						if(followRecord>0) { //record delimiter is not found
-							return parsingErrorFound("Too many characters found", record, fieldCounter);
-						}
-						if(followRecord<0) { //record delimiter is not found
-							return parsingErrorFound("Unexpected record delimiter, probably record is too short.", record, fieldCounter);
+						int followRecord = followRecordDelimiter();
+						//check whether EOF follows right the data (handling eofAsDelimiter flag)
+						if (followRecord != Integer.MIN_VALUE) {
+							if(followRecord>0) { //record delimiter is not found
+								return parsingErrorFound("Too many characters found", record, fieldCounter);
+							}
+							if(followRecord<0) { //record delimiter is not found
+								return parsingErrorFound("Unexpected record delimiter, probably record is too short.", record, fieldCounter);
+							}
 						}
 					}
 
@@ -849,7 +852,8 @@ public class DataParser extends AbstractTextParser {
 	
 	/**
 	 * Follow record delimiter in the input channel?
-	 * @return 0 if record delimiter follows. -1 if record is too short, 1 if record is longer
+	 * @return 0 if record delimiter follows. Negative value if record is too short, 
+	 * positive value if record is longer and MIN_INT if EOF found instead of a delimiter
 	 */
 	private int followRecordDelimiter() {
 		int count = 1;
@@ -869,7 +873,12 @@ public class DataParser extends AbstractTextParser {
 			throw new RuntimeException(getErrorMessage(null, null), e);
 		}
 		//end of file
-		return -1;
+		if (count == 1) {
+			//EOF found instead of delimiter
+			return Integer.MIN_VALUE;
+		} else {
+			return count;
+		}
 	}
 
 	/**
