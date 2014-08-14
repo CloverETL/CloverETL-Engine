@@ -503,6 +503,7 @@ public class MultiFileReader {
 	        }
 	        // no autofilling with direct buffer
 	        // autoFilling.setLastUsedAutoFillingFields(rec);
+	        autoFilling.incCounters();
 	        
 	        if (success==0) channelIterator.blankRead();
 	        
