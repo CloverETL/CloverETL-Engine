@@ -132,10 +132,7 @@ public class CloverDataReader extends Node implements MultiFileListener {
 	private int numRecords = -1;
 	private int skipSourceRows = -1;
 	private int numSourceRecords = -1;
-    private int skipped = 0; // number of records skipped to satisfy the skipRows attribute, records skipped to satisfy skipSourceRows are not included
     
-    private AutoFilling autoFilling = new AutoFilling();
-	
 	/**
 	 * Used if there are no autofilled fields in the output metadata.
 	 * @see #executeDirect()
@@ -181,11 +178,10 @@ public class CloverDataReader extends Node implements MultiFileListener {
     		record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
     		record.init();
     	}
-    	while (runIt && checkRow()) {
+    	while (runIt) {
     		if (readDirect){
     			status = reader.getNextDirect(recordBuffer); 
     			if (status==1){
-    				autoFilling.incCounters();
     				writeRecordBroadcastDirect(recordBuffer);
     				SynchronizeUtils.cloverYield();
     				continue;
@@ -198,7 +194,6 @@ public class CloverDataReader extends Node implements MultiFileListener {
     		}
     		record = reader.getNext(record); 
     		if (record!=null){
-    			 autoFilling.setLastUsedAutoFillingFields(record);
     			 writeRecordBroadcast(record);
     		}else{
     			break;
@@ -217,22 +212,6 @@ public class CloverDataReader extends Node implements MultiFileListener {
     }    
 	
 	
-	
-	/**
-	 * Checks numRecords. Returns true if the source could return a record.
-	 * @return
-	 * @throws ComponentNotReadyException 
-	 */
-	private final boolean checkRow() {
-        if(numRecords > 0 && numRecords <= autoFilling.getGlobalCounter()) {
-            return false;
-        }
-        if (numSourceRecords > 0 && numSourceRecords <= autoFilling.getSourceCounter()) {
-        	return false;
-        }
-       	return true;
-	}
-
 	private void prepareParser() throws ComponentNotReadyException {
 		this.parser=new InternalParser(getOutputPort(OUTPUT_PORT).getMetadata(), getGraph().getRuntimeContext().getContextURL());
 		this.parser.init();
@@ -335,43 +314,14 @@ public class CloverDataReader extends Node implements MultiFileListener {
 		
 		DataRecordMetadata metadata = getOutputPort(OUTPUT_PORT).getMetadata();		
     	if (metadata != null) {
+    		// the Autofilling instance is only used to determine if the metadata contain autofilled fields
+    	    AutoFilling autoFilling = new AutoFilling();
     		this.attemptDirectReading = autoFilling.isAutofillingDisabled(metadata);
     		this.readDirect = attemptDirectReading && parser.isDirectReadingSupported();
-    		autoFilling.addAutoFillingFields(metadata);
     	}
-    	autoFilling.setFilename(fileURL);
 	}
 	
 	
-	/**
-	 * Performs skip operation at the start of a data source. Per-source skip is always performed.
-	 * If the target number of globally skipped records has not yet been reached, it is followed
-	 * by global skip.  
-	 * Increases per-source number of records by number of records skipped to satisfy global skip attribute.
-	 * @throws JetelException 
-	 */
-	private void skip() {
-		int skippedInCurrentSource = 0;
-		try {
-			if (skipSourceRows > 0) {
-				parser.skip(skipSourceRows);
-			}
-			if (skipped >= skipRows) {
-				return;
-			}
-			int globalSkipInCurrentSource = skipRows - skipped;
-			if (numSourceRecords >= 0 && numSourceRecords < globalSkipInCurrentSource) {
-				// records for global skip in local file are limited by max number of records from local file
-				globalSkipInCurrentSource = numSourceRecords;
-			}
-			skippedInCurrentSource = parser.skip(globalSkipInCurrentSource);
-		} catch (JetelException e) {			
-		}
-        autoFilling.incSourceCounter(skippedInCurrentSource);
-        skipped += skippedInCurrentSource;
-    }
-    
-
 	@Override
 	public synchronized void free() {
 		super.free();
@@ -403,7 +353,6 @@ public class CloverDataReader extends Node implements MultiFileListener {
 	 * @param startRecord The startRecord to set.
 	 */
 	public void setSkipRows(int skipRows) {
-		this.skipped = 0;
 		this.skipRows = Math.max(skipRows, 0);
 	}
 	
