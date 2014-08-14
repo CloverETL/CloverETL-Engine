@@ -25,6 +25,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.DataRecordFactory;
@@ -185,19 +186,25 @@ public class CloverDataParser35Test extends AbstractParserTestCase {
 		DataRecord record = DataRecordFactory.newRecord(metadata);
 		record.init();
 		
-		if (raw) {
+		if (raw) { // try direct reading
 			CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
-			parser.getNextDirect(buffer);
-			record.deserializeUnitary(buffer);
-			assertEquals("test1", record.getField(0).getValue().toString());
-			parser.getNextDirect(buffer);
-			record.deserializeUnitary(buffer);
-			assertEquals("test2", record.getField(0).getValue().toString());
-		} else {
+			int result = parser.getNextDirect(buffer);
+			if (result == -1) { // direct reading not supported
+				raw = false;
+			} else {
+				record.deserializeUnitary(buffer);
+				assertEquals("test1", Objects.toString(record.getField(0).getValue(), null));
+				parser.getNextDirect(buffer);
+				record.deserializeUnitary(buffer);
+				assertEquals("test2", Objects.toString(record.getField(0).getValue(), null));
+			}
+		}
+		
+		if (!raw) {
 			parser.getNext(record);
-			assertEquals("test1", record.getField(0).getValue().toString());
+			assertEquals("test1", Objects.toString(record.getField(0).getValue(), null));
 			parser.getNext(record);
-			assertEquals("test2", record.getField(0).getValue().toString());
+			assertEquals("test2", Objects.toString(record.getField(0).getValue(), null));
 		}
 	}
 	
@@ -205,7 +212,7 @@ public class CloverDataParser35Test extends AbstractParserTestCase {
 		ICloverDataParser parser = createParser();
 		setDataSource(parser, is);
 		
-		testParse(parser, parser.isDirectReadingSupported());
+		testParse(parser, true); // always try direct reading first
 		
 		return parser.getVersion();
 	}
