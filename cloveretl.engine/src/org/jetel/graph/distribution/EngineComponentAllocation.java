@@ -215,6 +215,9 @@ public abstract class EngineComponentAllocation {
 				if (rawAllocation.startsWith(NumberEngineComponentAllocation.PREFIX)) {
 					String numberStr = rawAllocation.substring(NumberEngineComponentAllocation.PREFIX.length());
 					try {
+						if (numberStr.startsWith("${") && numberStr.endsWith("}")) {
+							return EngineComponentAllocation.createParameterNumberAllocation(numberStr);
+						}
 						int number = Integer.valueOf(numberStr);
 						return EngineComponentAllocation.createNumberAllocation(number);
 					} catch (NumberFormatException e) {
@@ -247,6 +250,47 @@ public abstract class EngineComponentAllocation {
 	 */
 	public boolean isNumberAllocation() {
 		return this instanceof NumberEngineComponentAllocation;
+	}
+	
+	///////////////////
+	//number in parameter allocation
+	public static class ParameterNumberEngineComponentAllocation extends EngineComponentAllocation {
+		private String paramString;
+
+		private ParameterNumberEngineComponentAllocation(String paramString) {
+			this.paramString = paramString;
+		}
+
+		public String getParamString() {
+			return paramString;
+		}
+
+		@Override
+		public String toString() {
+			return NumberEngineComponentAllocation.PREFIX + paramString;
+		}
+	}
+
+	/**
+	 * @return component allocation instance which sits on specified number of cluster nodes, number specified by parameter
+	 */
+	public static ParameterNumberEngineComponentAllocation createParameterNumberAllocation(String paramString) {
+		return new ParameterNumberEngineComponentAllocation(paramString);
+	}
+	
+	/**
+	 * Converts this allocation to {@link ParameterNumberEngineComponentAllocation}.
+	 * Can be called only if {@link #isParameterNumberAllocation()}.
+	 */
+	public ParameterNumberEngineComponentAllocation toParameterNumberAllocation() {
+		return (ParameterNumberEngineComponentAllocation) this;
+	}
+
+	/**
+	 * @return true if this allocation is {@link ParameterNumberEngineComponentAllocation}; false otherwise
+	 */
+	public boolean isParameterNumberAllocation() {
+		return this instanceof ParameterNumberEngineComponentAllocation;
 	}
 
 	////////////////////
