@@ -376,7 +376,7 @@
 			<keep extends="org.jetel.graph.GraphElement">
 				<field access="protected public"/><method access="protected public"/>
 			</keep>
-			<keep implements="org.jetel.connection.jdbc.specific.JdbcSpecific">
+			<keep implements="org.jetel.database.sql.JdbcSpecific">
 				<field access="protected public"/><method access="protected public"/>
 			</keep>
 
