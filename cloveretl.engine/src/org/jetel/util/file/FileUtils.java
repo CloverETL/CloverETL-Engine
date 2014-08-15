@@ -2212,6 +2212,7 @@ public class FileUtils {
 	/**
 	 * Closes all objects passed as the argument.
 	 * If any of them throws an exception, the first exception is thrown.
+	 * The remaining exceptions are added as suppressed to the first one.
 	 * 
 	 * @param closeables
 	 * @throws IOException
@@ -2230,6 +2231,8 @@ public class FileUtils {
 					} catch (IOException ex) {
 						if (firstException == null) {
 							firstException = ex;
+						} else {
+							firstException.addSuppressed(ex);
 						}
 					}
 				}
