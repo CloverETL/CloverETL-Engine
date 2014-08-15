@@ -463,6 +463,13 @@ public class ContainerLib extends TLFunctionLibrary {
 	public static final <K, V> boolean containsValue(TLFunctionCallContext context, Map<K, V> map, V value) {
 		return map.containsValue(value);
 	}
+	
+	@SuppressWarnings("unchecked")
+	@TLFunctionAnnotation("Checks if a list contains a specified value. The list must be sorted in ascending order.")
+	public static final <V> boolean containsValue(TLFunctionCallContext context, List<V> list, V value) {
+		return Collections.binarySearch(((List<? extends Comparable<? super V>>) list), value)>=0;
+	}
+	
 	class ContainsValueFunction implements TLFunctionPrototype{
 		
 		@Override
@@ -471,10 +478,15 @@ public class ContainerLib extends TLFunctionLibrary {
 
 		@Override
 		public void execute(Stack stack, TLFunctionCallContext context) {
-			if (context.getParams()[0].isMap()) {
+			TLType type=context.getParams()[0];
+			if (type.isMap()) {
 				Object value = stack.pop();
 				Map<Object, Object> map = stack.popMap();
 				stack.push(containsValue(context, map, value));
+			}else if (type.isList()){
+				Object value = stack.pop();
+				List<Object> list = stack.popList();
+				stack.push(containsValue(context, list, value));
 			}
 		}
 	}
