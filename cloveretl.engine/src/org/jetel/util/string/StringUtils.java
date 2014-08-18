@@ -269,7 +269,7 @@ public class StringUtils {
             	lineSpacesForNextRow = 0;
             }
             byte[] charBytes = null;
-            while(j<lineLength) {
+            while(j<lineLength && (stringPosition<string.length())) {
             	String currentCharacter = String.valueOf(string.charAt(stringPosition++));
             	stringBuilder.append(!Character.isWhitespace(currentCharacter.charAt(0)) ? currentCharacter : ' ');
             	try {
