@@ -149,7 +149,7 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 		if (nRec == 0) {
 			return 0;
 		}
-		if (isDirectReadingSupported()) {
+		if (version.raw) {
 			CloverBuffer buffer = CloverBuffer.allocate(Defaults.Record.RECORD_INITIAL_SIZE, Defaults.Record.RECORD_LIMIT_SIZE);
 			for (int skipped = 0; skipped < nRec; skipped++) {
 				if (getNextDirect(buffer)!=1) {
