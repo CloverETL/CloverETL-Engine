@@ -548,7 +548,12 @@ public class DataParser extends AbstractTextParser {
                     } else {
                         //maybe the field has EOF delimiter
                         if(eofAsDelimiters[fieldCounter]) {
+                        	//populate the field
                             populateField(record, fieldCounter, fieldBuffer);
+                            //clear all the rest fields
+                            for (int i = fieldCounter + 1; i < numFields; i++) {
+                            	record.getField(i).reset();
+                            }
                             return record;
                         }
                         return parsingErrorFound("Unexpected end of file", record, fieldCounter);
