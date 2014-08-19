@@ -18,12 +18,14 @@
  */
 package org.jetel.graph.modelview.impl;
 
+import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.util.string.StringUtils;
 
 /**
  * General model wrapper for engine edge ({@link Edge}).
@@ -145,6 +147,28 @@ public class MVEngineEdge implements MVEdge {
 		return engineEdge.getInputPortNumber();
 	}
 
+	@Override
+	public MVGraph getParentMVGraph() {
+		return parentMVGraph;
+	}
+	
+	@Override
+	public MVEdge getMetadataRef() {
+		String metadataRef = engineEdge.getMetadataRef();
+		if (!StringUtils.isEmpty(metadataRef)) {
+			//this primitive parsing should be substituted by something more complex in the future
+			if (metadataRef.startsWith("#//")) {
+				String edgeId = metadataRef.substring(3);
+				MVEdge edge = getParentMVGraph().getMVEdge(edgeId);
+				return edge;
+			} else {
+				throw new JetelRuntimeException("Invalid metadata reference " + metadataRef);
+			}
+		} else {
+			return null;
+		}
+	}
+	
 	@Override
 	public int hashCode() {
 		return engineEdge.hashCodeIdentity();

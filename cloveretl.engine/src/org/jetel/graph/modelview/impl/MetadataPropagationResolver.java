@@ -131,43 +131,51 @@ public class MetadataPropagationResolver {
 	private MVMetadata findMetadataInternal(MVEdge edge) {
 		MVMetadata result = null;
 		MVComponent originComponent = null;
-		//check writer
-		MVComponent writer = edge.getWriter();
-		if (writer != null) {
-			if (writer.isPassThrough()) {
-				for (MVEdge inputEdge : writer.getInputEdges().values()) {
-					result = combineMetadata(result, findMetadata(inputEdge));
-				}
-			} else {
-				result = combineMetadata(result, writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this));
-			}
-			if (result != null) {
-				originComponent = writer;
-			}
-		}
-
-		//check reader
-		MVComponent reader = edge.getReader();
-		if (reader != null) {
-			MVMetadata metadataFromWriter = result;
-			if (reader.isPassThrough()) {
-				for (MVEdge outputEdge : reader.getOutputEdges().values()) {
-					result = combineMetadata(result, findMetadata(outputEdge));
-				}
-			} else {
-				result = combineMetadata(result, reader.getDefaultInputMetadata(edge.getInputPortIndex(), this));
-			}
-			if (result != metadataFromWriter) {
-				originComponent = reader;
-			}
-		}
 		
-		if (result != null) {
-			if (originComponent != null) {
-				//construct metadata origin
-				result.addToOriginPath(originComponent);
-			} else {
-				throw new IllegalStateException();
+		MVEdge referencedEdge = edge.getMetadataRef();
+		if (referencedEdge != null) {
+			//metadata reference is not empty - metadata should be derived from a referenced edge
+			result = findMetadata(referencedEdge);
+			result.addToOriginPath(referencedEdge);
+		} else {
+			//check writer
+			MVComponent writer = edge.getWriter();
+			if (writer != null) {
+				if (writer.isPassThrough()) {
+					for (MVEdge inputEdge : writer.getInputEdges().values()) {
+						result = combineMetadata(result, findMetadata(inputEdge));
+					}
+				} else {
+					result = combineMetadata(result, writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this));
+				}
+				if (result != null) {
+					originComponent = writer;
+				}
+			}
+	
+			//check reader
+			MVComponent reader = edge.getReader();
+			if (reader != null) {
+				MVMetadata metadataFromWriter = result;
+				if (reader.isPassThrough()) {
+					for (MVEdge outputEdge : reader.getOutputEdges().values()) {
+						result = combineMetadata(result, findMetadata(outputEdge));
+					}
+				} else {
+					result = combineMetadata(result, reader.getDefaultInputMetadata(edge.getInputPortIndex(), this));
+				}
+				if (result != metadataFromWriter) {
+					originComponent = reader;
+				}
+			}
+			
+			if (result != null) {
+				if (originComponent != null) {
+					//construct metadata origin
+					result.addToOriginPath(originComponent);
+				} else {
+					throw new IllegalStateException();
+				}
 			}
 		}
 		
