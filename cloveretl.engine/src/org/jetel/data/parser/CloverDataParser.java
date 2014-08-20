@@ -423,11 +423,22 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
 			throw new JetelException(ex);
 		}
 		
-		if (!useParsingFromJobflow_3_4) {
-			record.deserializeUnitary(recordBuffer,serializer);
+		if (version.raw) { 
+			// fix for switching from non-direct file to a direct one
+			// see CDR_multiFileReader_CLO-4333.grf
+			if (!useParsingFromJobflow_3_4) {
+				record.deserializeUnitary(recordBuffer);
+			} else {
+				record.deserialize(recordBuffer);
+			}
 		} else {
-			record.deserialize(recordBuffer,serializer);
+			if (!useParsingFromJobflow_3_4) {
+				record.deserializeUnitary(recordBuffer,serializer);
+			} else {
+				record.deserialize(recordBuffer,serializer);
+			}
 		}
+		
 		return record;
 	}
 	
