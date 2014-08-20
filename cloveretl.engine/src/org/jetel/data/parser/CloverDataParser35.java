@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
 import org.apache.commons.logging.Log;
@@ -222,8 +221,8 @@ public class CloverDataParser35 extends AbstractParser implements ICloverDataPar
         	inStream = (InputStream) in;
         	indexFileURL = null;
         	recordFile = Channels.newChannel(inStream);
-        }else if (in instanceof FileChannel){
-        	recordFile = (FileChannel) in;
+        } else if (in instanceof ReadableByteChannel) {
+        	recordFile = (ReadableByteChannel) in;
         	indexFileURL = null;
         	inStream = Channels.newInputStream(recordFile);
         }
