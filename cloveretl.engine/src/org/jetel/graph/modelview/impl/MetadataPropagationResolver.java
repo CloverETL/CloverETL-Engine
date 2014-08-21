@@ -65,25 +65,23 @@ public class MetadataPropagationResolver {
 	}
 
 	/**
-	 * For all edges with direct metadata is also calculated which metadata would be propagated
-	 * to this edge, if the edge does not have metadata directly assigned.
+	 * For all edges is also calculated which metadata would be propagated
+	 * to this edge from neighbours, if the edge does not have any metadata directly assigned.
 	 * It is useful only for designer purpose. Designer shows to user, which metadata
-	 * will be on the edge, for "no metadata" option on the edge. 
+	 * would be on the edge, for "no metadata" option on the edge. 
 	 */
 	private void findAllNoMetadata() {
 		//go through all edges without direct metadata
 		for (Edge edge : mvGraph.getModel().getEdges().values()) {
 			MVEdge mvEdge = mvGraph.getMVEdge(edge.getId());
-			if (mvEdge.hasMetadataDirect()) {
-				//set virtual no metadata on the edge
-				mvEdge.setPropagatedMetadata(null);
-				//find the "no metadata"
-				MVMetadata noMetadata = findMetadataInternal(mvEdge);
-				//remember the result
-				mvEdge.setNoMetadata(noMetadata);
-				//reset the resolver for next iteration
-				reset();
-			}
+			//set virtual no metadata on the edge
+			mvEdge.setPropagatedMetadata(null);
+			//find the "no metadata"
+			MVMetadata noMetadata = findMetadataFromNeighbours(mvEdge);
+			//remember the result
+			mvEdge.setNoMetadata(noMetadata);
+			//reset the resolver for next iteration
+			reset();
 		}
 	}
 	
@@ -130,52 +128,63 @@ public class MetadataPropagationResolver {
 	
 	private MVMetadata findMetadataInternal(MVEdge edge) {
 		MVMetadata result = null;
-		MVComponent originComponent = null;
 		
 		MVEdge referencedEdge = edge.getMetadataRef();
 		if (referencedEdge != null) {
-			//metadata reference is not empty - metadata should be derived from a referenced edge
+			//metadata are dedicated by an edge reference
 			result = findMetadata(referencedEdge);
-			result.addToOriginPath(referencedEdge);
-		} else {
-			//check writer
-			MVComponent writer = edge.getWriter();
-			if (writer != null) {
-				if (writer.isPassThrough()) {
-					for (MVEdge inputEdge : writer.getInputEdges().values()) {
-						result = combineMetadata(result, findMetadata(inputEdge));
-					}
-				} else {
-					result = combineMetadata(result, writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this));
-				}
-				if (result != null) {
-					originComponent = writer;
-				}
-			}
-	
-			//check reader
-			MVComponent reader = edge.getReader();
-			if (reader != null) {
-				MVMetadata metadataFromWriter = result;
-				if (reader.isPassThrough()) {
-					for (MVEdge outputEdge : reader.getOutputEdges().values()) {
-						result = combineMetadata(result, findMetadata(outputEdge));
-					}
-				} else {
-					result = combineMetadata(result, reader.getDefaultInputMetadata(edge.getInputPortIndex(), this));
-				}
-				if (result != metadataFromWriter) {
-					originComponent = reader;
-				}
-			}
-			
 			if (result != null) {
-				if (originComponent != null) {
-					//construct metadata origin
-					result.addToOriginPath(originComponent);
-				} else {
-					throw new IllegalStateException();
+				result.addToOriginPath(referencedEdge);
+			}
+		} else {
+			//otherwise try to ask your neighbours
+			result = findMetadataFromNeighbours(edge);
+		}
+		
+		return result;
+	}
+
+	private MVMetadata findMetadataFromNeighbours(MVEdge edge) {
+		MVMetadata result = null;
+		MVComponent originComponent = null;
+
+		//check writer
+		MVComponent writer = edge.getWriter();
+		if (writer != null) {
+			if (writer.isPassThrough()) {
+				for (MVEdge inputEdge : writer.getInputEdges().values()) {
+					result = combineMetadata(result, findMetadata(inputEdge));
 				}
+			} else {
+				result = combineMetadata(result, writer.getDefaultOutputMetadata(edge.getOutputPortIndex(), this));
+			}
+			if (result != null) {
+				originComponent = writer;
+			}
+		}
+
+		//check reader
+		MVComponent reader = edge.getReader();
+		if (reader != null) {
+			MVMetadata metadataFromWriter = result;
+			if (reader.isPassThrough()) {
+				for (MVEdge outputEdge : reader.getOutputEdges().values()) {
+					result = combineMetadata(result, findMetadata(outputEdge));
+				}
+			} else {
+				result = combineMetadata(result, reader.getDefaultInputMetadata(edge.getInputPortIndex(), this));
+			}
+			if (result != metadataFromWriter) {
+				originComponent = reader;
+			}
+		}
+		
+		if (result != null) {
+			if (originComponent != null) {
+				//construct metadata origin
+				result.addToOriginPath(originComponent);
+			} else {
+				throw new IllegalStateException();
 			}
 		}
 		

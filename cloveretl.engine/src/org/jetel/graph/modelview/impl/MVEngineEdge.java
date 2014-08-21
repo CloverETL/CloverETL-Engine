@@ -18,13 +18,13 @@
  */
 package org.jetel.graph.modelview.impl;
 
-import org.jetel.exception.JetelRuntimeException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
 import org.jetel.graph.modelview.MVComponent;
 import org.jetel.graph.modelview.MVEdge;
 import org.jetel.graph.modelview.MVGraph;
 import org.jetel.graph.modelview.MVMetadata;
+import org.jetel.util.ReferenceUtils;
 import org.jetel.util.string.StringUtils;
 
 /**
@@ -156,13 +156,13 @@ public class MVEngineEdge implements MVEdge {
 	public MVEdge getMetadataRef() {
 		String metadataRef = engineEdge.getMetadataRef();
 		if (!StringUtils.isEmpty(metadataRef)) {
-			//this primitive parsing should be substituted by something more complex in the future
-			if (metadataRef.startsWith("#//")) {
-				String edgeId = metadataRef.substring(3);
+			String edgeId = ReferenceUtils.getElementID(metadataRef);
+			try {
 				MVEdge edge = getParentMVGraph().getMVEdge(edgeId);
 				return edge;
-			} else {
-				throw new JetelRuntimeException("Invalid metadata reference " + metadataRef);
+			} catch (Exception e) {
+				//edge reference is somehow corrupted, let's ignore it
+				return null;
 			}
 		} else {
 			return null;
