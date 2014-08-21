@@ -18,6 +18,11 @@
  */
 package org.jetel.component.fileoperation;
 
+import java.io.IOException;
+import java.net.URI;
+
+import org.apache.commons.net.ftp.FTPConnectionClosedException;
+
 
 public class PooledFTPOperationHandlerTest extends FTPOperationHandlerTest {
 	
@@ -58,6 +63,23 @@ public class PooledFTPOperationHandlerTest extends FTPOperationHandlerTest {
 		assertTrue(handler.canPerform(Operation.list(PooledFTPOperationHandler.FTP_SCHEME)));
 		assertTrue(handler.canPerform(Operation.read(PooledFTPOperationHandler.FTP_SCHEME)));
 		assertTrue(handler.canPerform(Operation.write(PooledFTPOperationHandler.FTP_SCHEME)));
+	}
+	
+	/**
+	 * test for CLO-4404
+	 */
+	public void testErrorReporting() {
+		URI uri = URI.create("ftp://invalid_user:invalid_pass@koule/");
+		try {
+			handler.connect(uri);
+			fail();
+		} catch (IOException e) {
+			if (e.getSuppressed().length == 0 || !(e.getSuppressed()[0] instanceof FTPConnectionClosedException)) {
+				fail();
+			}
+		} catch (Exception e) {
+			fail();
+		}
 	}
 
 }
