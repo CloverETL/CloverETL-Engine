@@ -1195,6 +1195,9 @@ public class TransformationGraphXMLReaderWriter {
 	private void throwXMLConfigurationException(String message, Throwable cause) throws XMLConfigurationException {
 		if (isStrictParsing()) {
 			throw new XMLConfigurationException(message, cause);
+		} else {
+			//strict mode is off, so exception is logged only on debug level
+			logger.debug("Graph factorization failed (strictMode = false): " + message, cause);
 		}
 	}
 	
