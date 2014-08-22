@@ -203,8 +203,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("rpc-literal-service-test.grf") // remove after CLO-2396 solved
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
 							&& !file.getName().equals("EmailReader_BadDataFormatException.grf") // ok, is to fail
-							&& !file.getName().equals("PhaseOrderCheck.grf") // ok, is to fail
-							&& file.getName().startsWith("Hadoop"); //temporarily for debugging purposes
+							&& !file.getName().equals("PhaseOrderCheck.grf"); // ok, is to fail
 					
 				}
 			};
