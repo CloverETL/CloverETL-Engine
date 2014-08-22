@@ -446,8 +446,7 @@ public class runGraph {
             System.exit(result.code());
             break;
         default:
-            ExceptionUtils.logHighlightedException(logger, cloverFuture.getWatchDog().getErrorMessage(),
-    				cloverFuture.getWatchDog().getCauseException());
+            ExceptionUtils.logHighlightedException(logger, null, cloverFuture.getWatchDog().getCauseException());
             logger.error("Execution of graph failed !");
             System.exit(result.code());
         }
