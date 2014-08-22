@@ -204,7 +204,7 @@ public class ResetTest extends CloverTestCase {
 							&& !file.getName().equals("informix.grf") // remove after CLO-2793 solved
 							&& !file.getName().equals("EmailReader_BadDataFormatException.grf") // ok, is to fail
 							&& !file.getName().equals("PhaseOrderCheck.grf") // ok, is to fail
-							&& !file.getName().startsWith("Hadoop"); //temporarily disabled for debugging purposes
+							&& file.getName().startsWith("Hadoop"); //temporarily for debugging purposes
 					
 				}
 			};
