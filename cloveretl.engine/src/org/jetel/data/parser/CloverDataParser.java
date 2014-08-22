@@ -347,9 +347,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     		} catch (IOException e) {
     			throw new ComponentNotReadyException(e);
     		}
-	    	if (BitArray.isSet(extraBytes, 0) ^ Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
-	        	throw new ComponentNotReadyException("Source file with binary data format is not compatible. Engine producer has different setup of Defaults.Record.USE_FIELDS_NULL_INDICATORS (see documentation). Data cannot be read.");
-	    	}
 	    	// what's left is metadata serialized, will let this to "other" parser 
     		break;
     	case VERSION_40:
@@ -362,9 +359,6 @@ public class CloverDataParser extends AbstractParser implements ICloverDataParse
     		} catch (IOException e) {
     			throw new ComponentNotReadyException(e);
     		}
-        	if (BitArray.isSet(extraBytes, 0) ^ Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
-            	throw new ComponentNotReadyException("Source file with binary data format is not compatible. Engine producer has different setup of Defaults.Record.USE_FIELDS_NULL_INDICATORS (see documentation). Data cannot be read.");
-        	}
         	version.compressionAlgorithm=BitArray.extractNumber(extraBytes, CloverDataFormatter.OPTION_MASK_COMPRESSED_DATA);
         	version.raw = BitArray.extractNumber(extraBytes, CloverDataFormatter.OPTION_MASK_RAW_DATA) == 1;
         	//check metadata (just read,do not control now)

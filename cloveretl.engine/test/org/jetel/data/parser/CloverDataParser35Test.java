@@ -99,9 +99,6 @@ public class CloverDataParser35Test extends AbstractParserTestCase {
 				os.writeByte(5);
 				os.writeByte(0);
 				byte[] extraBytes = new byte[CloverDataFormatter.HEADER_OPTIONS_ARRAY_SIZE_3_5];
-				if (Defaults.Record.USE_FIELDS_NULL_INDICATORS) {
-					BitArray.set(extraBytes, 0);
-				}
 				os.write(extraBytes);
 				CloverBuffer buffer = CloverBuffer.wrap(new byte[100]);
 				metadata.serialize(buffer);
