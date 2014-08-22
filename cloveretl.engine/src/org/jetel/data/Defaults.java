@@ -399,7 +399,6 @@ public final class Defaults {
 			FIELD_LIMIT_SIZE = getIntProperties("Record.FIELD_LIMIT_SIZE", 33554432);
 			DEFAULT_COMPRESSION_LEVEL = getIntProperties("Record.DEFAULT_COMPRESSION_LEVEL",
 					Deflater.DEFAULT_COMPRESSION);
-			USE_FIELDS_NULL_INDICATORS = getBooleanProperties("Record.USE_FIELDS_NULL_INDICATORS", false);
 			RECORDS_BUFFER_SIZE = getIntProperties("Graph.RECORDS_BUFFER_SIZE",
 					Defaults.Record.RECORD_INITIAL_SIZE * 4);
 		}
@@ -446,15 +445,6 @@ public final class Defaults {
 		 * interval 0-9.
 		 */
 		public static int DEFAULT_COMPRESSION_LEVEL;// = Deflater.DEFAULT_COMPRESSION;
-
-		/**
-		 * Switch- shall we handle differently (during serialization) NULLable records (record which has at least one
-		 * field NULLable ?)<br>
-		 * If true then during serialization of record, first is saved array of bits (one bit for each field which can
-		 * be NULLable) and bits are set depending of NULL status of the field being serialized.<br>
-		 * This may speed serialization of record contains many fields with mostly NULL value assigned.
-		 */
-		public static boolean USE_FIELDS_NULL_INDICATORS; // = false;
 
 		/**
 		 * Size of internal buffer for temporary storing several data records.
