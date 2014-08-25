@@ -73,6 +73,11 @@ import org.jetel.util.file.FileUtils;
 public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 
 	/**
+	 * RunId random generator.
+	 */
+	private static Random random = new Random();
+
+	/**
 	 * Suffix of temp files created by standalone engine
 	 */
 	private static final String CLOVER_TMP_FILE_SUFFIX = ".clover.tmp";
@@ -112,6 +117,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
         runtimeContext.setDictionaryContent(givenRuntimeContext.getDictionaryContent());
         runtimeContext.setRuntimeClassPath(givenRuntimeContext.getRuntimeClassPath());
         runtimeContext.setCompileClassPath(givenRuntimeContext.getCompileClassPath());
+        runtimeContext.setJobUrl(givenRuntimeContext.getJobUrl());
         
         // debug mode has to be turned off, parallel edge debugging is not available for non-server graph processing 
         runtimeContext.setDebugMode(false);
@@ -257,10 +263,7 @@ public class PrimitiveAuthorityProxy extends IAuthorityProxy {
 	}
 
 	private static long getUniqueRunId(long parentRunId) {
-		Random random = new Random();
-		long runId = Math.abs((random.nextLong() % 999));
-		return (runId != parentRunId) ? runId : runId + 1;
-		// TODO returned runId mustn't be unique
+		return Math.abs((random.nextLong()));
 	}
 	
 	/**

@@ -62,6 +62,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.plugin.PluginLocation;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.CompareUtils;
 import org.jetel.util.ExceptionUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.PlatformUtils;
@@ -151,6 +152,11 @@ public class RunGraph extends Node{
 	private static final String XML_CLOVER_CMD_LINE = "cloverCmdLineArgs";
 	private static final String XML_IGNORE_GRAPH_FAIL = "ignoreGraphFail";
 	private static final String XML_PARAMS_TO_PASS = "paramsToPass";
+	/**
+	 * This is hidden component attribute, which can turn on basic validation of recursive graph execution (see CLO-4586)
+	 */
+	private static final String XML_RECURSION_DETECTION_ATTRIBUTE = "recursionDetection";
+
 	private static final String XML_MK_DIRS_ATTRIBUTE = "makeDirs";
 
 	private final static String DEFAULT_JAVA_CMD_LINE = "java -cp";
@@ -196,6 +202,11 @@ public class RunGraph extends Node{
 	private int exitValue;		
 	private String outputFileName;
 	private static Log logger = LogFactory.getLog(RunGraph.class);
+	
+	/**
+	 * Should be basic validation of recursive graph execution performed ?
+	 */
+	private boolean recursionDetection = false;
 	
 	private void setCloverCmdLineArgs(String cloverCmdLineArgs) {
 		this.cloverCmdLineArgs = cloverCmdLineArgs;
@@ -394,6 +405,11 @@ public class RunGraph extends Node{
 	}
 	
 	private Result runSingleGraph(String graphName, DataRecord output, String cloverCommandLineArgs) throws IOException, InterruptedException {
+		if (recursionDetection
+				&& CompareUtils.equals(graphName, getGraph().getRuntimeContext().getJobUrl())) {
+			throw new JetelRuntimeException("Recursive graph execution detected (" + graphName + ").");
+		}
+
 		OutputRecordData outputRecordData = new OutputRecordData(output, graphName);
 		if (sameInstance) {			
 			logger.info("Running graph " + graphName + " in the same instance.");
@@ -510,10 +526,10 @@ public class RunGraph extends Node{
 		runtimeContext.setUseJMX(this.getGraph().getRuntimeContext().useJMX());
 		runtimeContext.setRuntimeClassPath(this.getGraph().getRuntimeContext().getRuntimeClassPath());
 		runtimeContext.setCompileClassPath(this.getGraph().getRuntimeContext().getCompileClassPath());
-		
+		runtimeContext.setJobUrl(graphFileName);
 		RunStatus rs = this.getGraph().getAuthorityProxy().executeGraphSync( graphFileName, runtimeContext, null);
 		
-		outputRecordData.setDescription(assembleDescription(rs));
+		outputRecordData.setDescription(rs.errException);
 		outputRecordData.setDuration(rs.duration);
 		outputRecordData.setGraphName(graphFileName);
 		outputRecordData.setMessage(rs.status.message());
@@ -527,24 +543,10 @@ public class RunGraph extends Node{
     		outputRecordData.setDescription("");
 		} else {
         	outputRecordData.setResult(Result.ERROR.equals(rs.status) ? "Error" : rs.status.message());
-        	outputRecordData.setDescription("Execution of graph '" + graphFileName + "' failed! " + assembleDescription(rs));
-            logError("Execution of graph '" + graphFileName + "' failed!", assembleException(rs));
+        	outputRecordData.setDescription("Execution of graph '" + graphFileName + "' failed! " + rs.errException);
+            logError("Execution of graph '" + graphFileName + "' failed!", new JetelRuntimeException(rs.errMessage));
 		}
 		return rs.status;
-	}
-
-	private String assembleDescription(RunStatus runStatus) {
-		String message = runStatus.errMessage;
-		String exception = runStatus.errException;
-		if (!StringUtils.isEmpty(message)) {
-			return message + (!StringUtils.isEmpty(exception) ? "\nInner exception: " + exception : "");
-		} else {
-			return (!StringUtils.isEmpty(exception)) ? "Inner exception: " + exception : "";
-		}
-	}
-
-	private Exception assembleException(RunStatus runStatus) {
-		return new JetelRuntimeException(assembleDescription(runStatus));
 	}
 
 	private void logError(String message, Throwable e) {
@@ -801,11 +803,19 @@ public class RunGraph extends Node{
 		if (xattribs.exists(XML_IGNORE_GRAPH_FAIL)) {
 			runG.setIgnoreGraphFail(xattribs.getBoolean(XML_IGNORE_GRAPH_FAIL));
 		}
+		if (xattribs.exists(XML_RECURSION_DETECTION_ATTRIBUTE)) {
+			runG.setRecursionDetection(xattribs.getBoolean(XML_RECURSION_DETECTION_ATTRIBUTE));
+		}
+
 		runG.setMkDir(xattribs.getBoolean(XML_MK_DIRS_ATTRIBUTE, false));
-									
+
 		return runG;
 	}
 	
+	protected void setRecursionDetection(boolean recursionDetection) {
+		this.recursionDetection = recursionDetection;
+	}
+
 	/**
 	 * Sets output file 
 	 * 
