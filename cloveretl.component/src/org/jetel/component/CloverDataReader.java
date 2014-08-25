@@ -177,6 +177,7 @@ public class CloverDataReader extends Node implements MultiFileListener {
     	if (record == null) {
     		record = DataRecordFactory.newRecord(getOutputPort(OUTPUT_PORT).getMetadata());
     		record.init();
+    		record.setDeserializeAutofilledFields(false); // CLO-4591
     	}
     	while (runIt) {
     		if (readDirect){

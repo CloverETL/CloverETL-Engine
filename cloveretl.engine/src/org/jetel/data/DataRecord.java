@@ -386,5 +386,15 @@ public abstract class DataRecord implements Serializable, Comparable<Object>, It
 	 */
 	@Override
 	public abstract Iterator<DataField> iterator();
+	
+	/**
+	 * If disabled, deserialization will skip auto-filled fields.
+	 * Enabled by default.
+	 * 
+	 * @param deserializeAutofilledFields set to <code>false</code> to make deserialization skip autofilled fields
+	 * 
+	 * @see <a href="https://bug.javlin.eu/browse/CLO-4591">CLO-4591</a>
+	 */
+	public abstract void setDeserializeAutofilledFields(boolean deserializeAutofilledFields);
 
 }
