@@ -49,7 +49,8 @@ import com.tableausoftware.DataExtract.Type;
 
 public class TableauWriter extends Node  {
 
-	
+	//TODO put this in messages properties file
+	private final static String INVALID_SUFFIX_MESSAGE = "Output file path must point to a file with \".tde\" suffix";
 
 	public final static String TABLEAU_WRITER = "TABLEAU_WRITER";
 
@@ -224,12 +225,6 @@ public class TableauWriter extends Node  {
 
 			if (outputFileName == null || outputFileName.isEmpty()) {
 				throw new ComponentNotReadyException("Output file path is not set. Enter valid path pointing to a local file with \".tde\" suffix");
-			}
-			
-			
-			// Tableau API requires that the target file ends with ".tde". See Extract constructor doc
-			if (!outputFileName.endsWith(REQUIRED_FILE_SUFFIX)) {
-				throw new ComponentNotReadyException("Output file path must point to a local file with \".tde\" suffix");
 			}
 
 			logger.debug("Input files is configured to: \"" +  outputFileName + "\"");
@@ -430,11 +425,14 @@ public class TableauWriter extends Node  {
 				errMessage = "Unable to initialize Tableu native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage();
 			}
 		}
-		
-		if (status != null && errMessage != null) {
-			status.add(new ConfigurationProblem(errMessage, Severity.ERROR, this, Priority.NORMAL));
-		} else {
-			System.err.println(errMessage);
+
+		if (errMessage != null) {
+			if (status != null) {
+				status.add(new ConfigurationProblem(errMessage, Severity.ERROR,
+						this, Priority.NORMAL));
+			} else {
+				System.err.println(errMessage);
+			}
 		}
 	}
 	
@@ -443,6 +441,11 @@ public class TableauWriter extends Node  {
 		status = super.checkConfig(status);
 		
 		checkDefaultCollation(status);
+		
+		// Tableau API requires that the target file ends with ".tde". See Extract constructor doc
+		if (!outputFileName.endsWith(REQUIRED_FILE_SUFFIX)) {
+			status.add(new ConfigurationProblem(INVALID_SUFFIX_MESSAGE, Severity.ERROR, this, Priority.NORMAL));
+		}
 		
 		return status;
 		
