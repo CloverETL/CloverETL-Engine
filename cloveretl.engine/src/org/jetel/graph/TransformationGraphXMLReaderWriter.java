@@ -993,11 +993,14 @@ public class TransformationGraphXMLReaderWriter {
 		boolean progress = true;
 		while (!unresolvedGraphParametersFiles.isEmpty() && progress) {
 			progress = false;
+			List<Element> resolvedGraphParametersFiles = new ArrayList<Element>();
 			for (Element graphParameterFile : unresolvedGraphParametersFiles) {
 				if (instantiateGraphParametersFile(graphParameters, graphParameterFile)) {
 					progress = true;
+					resolvedGraphParametersFiles.add(graphParameterFile);
 				}
 			}
+			unresolvedGraphParametersFiles.removeAll(resolvedGraphParametersFiles);
 			if (!progress) {
 		    	throwXMLConfigurationException("Failed to resolve following parameter file URL: " + unresolvedGraphParametersFiles.get(0).getAttribute("fileURL"));
 			}
