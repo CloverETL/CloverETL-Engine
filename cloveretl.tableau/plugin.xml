@@ -37,7 +37,7 @@
 	      	 </property>
 	
 			 <property category="basic" displayName="Table name" modifiable="false" name="tableName" nullable="false" required="false" defaultHint="Extract (Tableau requires table name to be &quot;Extract&quot;)">
-	        	<singleType name="string" />
+	        	<singleType name="tableNameType" />
 	      	 </property>
 
         	<property category="basic" displayName="Default table collation" modifiable="true" name="defaultTableCollation" nullable="true" required="false" defaultHint="EN_US (Select table collation from list)">
