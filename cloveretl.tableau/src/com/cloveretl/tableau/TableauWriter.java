@@ -116,6 +116,10 @@ public class TableauWriter extends Node  {
 		super.init();
 		
 		prepareInputRecord();
+		
+		if (defaultTableCollation == null) {
+			checkDefaultCollation(null);
+		}
 	}
 	
 	@Override
@@ -395,9 +399,13 @@ public class TableauWriter extends Node  {
 		
 	}
 	
-	@Override
-	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		ConfigurationStatus result = super.checkConfig(status);
+	/**
+	 * Sets default collation. If status is null, prints errors to System.err
+	 * @param status
+	 */
+	private void checkDefaultCollation(ConfigurationStatus status) {
+		String errMessage = null;
+		
 		
 		/* 
 		 * Ugly hack by mtomcanyi: Tableau Java libraries require native libraries to be on PATH. 
@@ -412,20 +420,31 @@ public class TableauWriter extends Node  {
 	        	try {
 	        		defaultTableCollation = Collation.valueOf(rawTableCollation);
 	        	} catch (IllegalArgumentException e) {
-	        		result.add(new ConfigurationProblem("Illegal value for default table collation: " + rawTableCollation, Severity.ERROR, this, Priority.NORMAL));
+	        		errMessage = "Illegal value for default table collation: " + rawTableCollation;
 	        	}
 	        }
 		} catch (UnsatisfiedLinkError | NoClassDefFoundError e) {
-			String errMessage = null;
 			if (System.getProperty("os.name").startsWith("Mac")) {
 				errMessage = "The " + getClass().getSimpleName() + "does not work on Mac OS X as Tableau does not provide libraries for Mac.";
 			} else {
 				errMessage = "Unable to initialize Tableu native libraries. Make sure they are installed and configured in PATH environment variable (see component docs). Underlying error: \n" + e.getMessage();
 			}
-			result.add(new ConfigurationProblem(errMessage, Severity.ERROR, this, Priority.NORMAL));
 		}
 		
-		return result;
+		if (status != null && errMessage != null) {
+			status.add(new ConfigurationProblem(errMessage, Severity.ERROR, this, Priority.NORMAL));
+		} else {
+			System.err.println(errMessage);
+		}
+	}
+	
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		status = super.checkConfig(status);
+		
+		checkDefaultCollation(status);
+		
+		return status;
 		
 	}
 	
